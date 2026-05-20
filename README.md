@@ -17,7 +17,7 @@ This repo holds documentation, workflow exports, and rebuild instructions for a 
 
 ## Current status
 
-See **[docs/MVP_STATUS.md](docs/MVP_STATUS.md)** for consolidated MVP progress — **4 PASS + 1 PARTIAL** (criterion 1); v4 active, v5 off.
+See **[docs/MVP_STATUS.md](docs/MVP_STATUS.md)** for consolidated MVP progress — **4 PASS + 1 PARTIAL** (criterion 1); v4 active, v5 off. **C1 decision:** [decision packet](docs/decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) (**OPEN**).
 
 ## MVP deadline
 
@@ -37,6 +37,7 @@ Documentation in this repo must be sufficient to recreate the full automation se
 | Doc | Description |
 |-----|-------------|
 | [docs/MVP_STATUS.md](docs/MVP_STATUS.md) | Consolidated MVP snapshot and next gate |
+| [docs/decision-packets/2026-05-21-criterion-1-latency-closure-decision.md](docs/decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) | Criterion 1 closure decision (**OPEN**) |
 | [docs/MVP_CRITERIA.md](docs/MVP_CRITERIA.md) | Five closure criteria for Automation MVP |
 | [docs/RUNTIME_GATES.md](docs/RUNTIME_GATES.md) | One-step runtime gates (never batched) |
 | [docs/TELEGRAM_SETUP.md](docs/TELEGRAM_SETUP.md) | Telegram bot setup (Day 2+) |

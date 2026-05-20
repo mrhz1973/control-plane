@@ -85,19 +85,29 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 ---
 
-## Recommended next runtime gate
+## Recommended next decision gate (criterion 1)
+
+**User decision required** — [Decision Packet: Criterion 1 latency closure](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) (**OPEN**).
+
+Choose **D-C1-A** (accept C1 PARTIAL → operational MVP with exception) or **D-C1-B** (open strict &lt;30s webhook/v5 gate). No runtime until **D-C1-B** is explicitly chosen. MVP remains **not** closed until this decision is recorded.
+
+## Recommended next runtime gate (after C1 decision)
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 1: latency measurement or closure decision
+### Option A — Record D-C1-A (docs-only follow-up)
 
-Measure v4 push → Telegram latency ([V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md)) **or** document explicit acceptance of **PARTIAL** for criterion 1 (best-effort 1–5 min polling). Required for **5/5 MVP** closure.
+If user chooses **D-C1-A**: docs commit updating MVP acceptance wording; C1 stays **PARTIAL**; no n8n/webhook/v5.
 
-### Option B — Public HTTPS / webhook path (optional strict &lt;30s)
+### Option B — D-C1-B strict path (runtime, separate sessions)
 
-See [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) — separate from criterion 5; v5 stays off until gate satisfied.
+Measure latency optional ([V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md)) then [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook — only after **D-C1-B**.
 
-### Option C — Runtime scope (separate decision)
+### Option C — Public HTTPS / webhook path (D-C1-B only)
+
+See [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) — blocked until [C1 decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) records **D-C1-B**.
+
+### Option D — Runtime scope (separate decision)
 
 Promote multirepo **draft** to replace or extend active v4 — **not** part of Cycle 3 docs registration; requires its own gate per [RUNTIME_GATES.md](RUNTIME_GATES.md).
 

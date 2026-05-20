@@ -83,7 +83,11 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 
 **Criterion 5:** **closed** — see [N8N_REBUILD.md § FIELD result](N8N_REBUILD.md#field-validation-checklist-criterion-5).
 
-**Next runtime gate (separate session):** criterion **1** — v4 latency measurement ([V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md)) and/or explicit **PARTIAL** acceptance for MVP 5/5 decision; optional [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) for strict sub-30s. **This docs-only registration task does not run SSH, Docker, n8n, or Telegram.**
+| Criterion 1 — closure decision | **OPEN** — [Decision Packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) (**USER DECISION REQUIRED**); recommend **D-C1-A** (PARTIAL accepted) vs **D-C1-B** (strict &lt;30s) |
+
+**Next gate (order):** **C1 decision packet first** — no webhook/v5/public HTTPS runtime until user records **D-C1-B**. If **D-C1-A**, follow-up is **docs-only** MVP acceptance; no runtime from the packet itself.
+
+**Runtime after D-C1-B only:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → GitHub webhook ([V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md) optional baseline).
 
 **Other gates (separate sessions):** multirepo draft promotion (explicit decision only).
 
