@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after Cycle 2 preparation for criterion 3 (2026-05-20, dev-method n8n handoff lessons — READY, not executed). Update this file when a criterion changes.
+**Last consolidated:** after Cycle 2 missing Telegram diagnosis (2026-05-20, dev-method `5ce0a25`, v4 scope cause B). Update this file when a criterion changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -64,7 +64,7 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 ### 3 — Three end-to-end cycles (1 / 3)
 
 - **Cycle 1:** **PASS** (2026-05-20) — `cursor-coordinate-converter`, commit **`34d543d`**, v4 Telegram.
-- **Cycle 2:** **READY / NOT EXECUTED** — `dev-method`, task **Document n8n handoff runtime compatibility lessons**; implementer **Cursor DEV** pending; proof = commit + v4 Telegram + clean `git status`. See [END_TO_END_CYCLES.md § Cycle 2](END_TO_END_CYCLES.md#cycle-2--ready--not-executed).
+- **Cycle 2:** **BLOCKED** — commit **`5ce0a25`** on `dev-method` OK; **v4 Telegram missing** (diagnosis: v4 polls **control-plane only**, not dev-method). See [END_TO_END_CYCLES.md § Cycle 2](END_TO_END_CYCLES.md#cycle-2--commit-done--telegram-missing-not-pass).
 - **Cycle 3:** **PENDING** — after Cycle 2 PASS.
 - Criterion 3 not closed until **3 / 3 PASS**.
 
@@ -85,9 +85,9 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 3: Execute Cycle 2 (READY)
+### Option A — Criterion 3: Fix notifica path then close Cycle 2
 
-Cycle 1 **PASS** (`34d543d`). Cycle 2 **prepared** on **`dev-method`**. Next: run **Cursor DEV** with prompt in [END_TO_END_CYCLES.md § Cycle 2 execution prompt source](END_TO_END_CYCLES.md#cycle-2-execution-prompt-source) → commit `docs: document n8n handoff runtime compatibility` → push → v4 Telegram → record PASS in cycle log. **Never** use `control-plane` as cycle target.
+Cycle 2 commit **`5ce0a25`** done; **Telegram missing** because v4 scope is **`control-plane` only** ([END_TO_END_CYCLES.md § v4 repo scope](END_TO_END_CYCLES.md#v4-repo-scope-commit-notifications)). **Single next gate:** extend v4 polling to `dev-method` (and GIS if needed) + re-export, **or** document agreed alternate notifica — then confirm phone message for `5ce0a25` or re-push proof commit. **Do not** mark Cycle 2 PASS without notifica. Audit Cycle 1 GIS `34d543d` notifica attribution if needed.
 
 ### Option B — Criterion 1 latency measurement
 

@@ -58,9 +58,11 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 | Execute Command config fix (`NODES_EXCLUDE=[]`) | **Applied** 2026-05-20 |
 | n8n manual workflow + Telegram | **PASS** 2026-05-20 — criterion 2 closed |
 
-| Cycle 1 end-to-end (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d`, v4 Telegram |
+| Cycle 1 end-to-end (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d` (re-audit notifica vs v4 scope if needed) |
+| Cycle 2 commit (dev-method) | **Done** — `5ce0a25`; Telegram **missing** |
+| Missing-notification diagnosis | **Done** 2026-05-20 — cause **B**: v4 does not poll `dev-method` |
 
-**Next gates (separate, one per session):** criterion 3 **Cycle 2** (prefer `dev-method`, distinct task); criterion 1 v4 latency measurement; criterion 5 rebuild field validation. **No new workflows.**
+**Next gates (separate, one per session):** **extend v4 repo scope** (dev-method + GIS) or agreed alternate notifica for Cycle 2 close; criterion 1 latency; criterion 5 rebuild. **No new workflows** until MVP 5/5 unless scope extension is the one chosen change to existing v4.
 
 ### Not exceptions (defer until after 5/5 PASS)
 

@@ -62,11 +62,27 @@ Until [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) is satisfied, Telegram ma
 
 | Path | Valid for criterion 3? |
 |------|-------------------------|
-| **v4 polling** (`CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4`) | **Yes** — if message clearly relates to the commit you just pushed and dedupe did not spam duplicates |
+| **v4 polling** (`CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4`) | **Yes for criterion 3 only if** the pushed commit is on a repo v4 actually polls — committed export polls **`mrhz1973/control-plane` only** (not `dev-method` or `cursor-coordinate-converter`). See [v4 repo scope](#v4-repo-scope-commit-notifications) |
 | **v5 webhook** (production) | Yes when enabled and stable — not required for first three cycles |
 | Manual Telegram workflow only | **No** — not tied to push after real implementer commit |
 
 Note: v4 is **one-minute** polling; criterion 1 strict &lt;30s is separate. Criterion 3 only requires that notification **arrived** after the push, not sub-30s.
+
+---
+
+## v4 repo scope (commit notifications)
+
+**Canonical committed export** (`2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json`) and [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) history:
+
+| Repo | Polled by v4? |
+|------|----------------|
+| `mrhz1973/control-plane` | **Yes** — `GET …/repos/mrhz1973/control-plane/commits?per_page=1`; Data Table key `github:mrhz1973/control-plane:last_commit_sha` |
+| `mrhz1973/dev-method` | **No** |
+| `mrhz1973/cursor-coordinate-converter` | **No** |
+
+**Implication:** A push to **dev-method** or **GIS** does **not** produce a v4 “scheduled poll commit notification” unless runtime was extended beyond the committed export (not evidenced in this diagnosis). Criterion 3 cycles on product repos need either **v4 scope extension** (separate runtime gate), **v5 webhook** when public HTTPS exists, or an agreed alternate notifica path documented at cycle close.
+
+**Cycle 1 audit note (2026-05-20):** GIS commit `34d543d` (18:58 UTC) was recorded with “v4 Telegram received.” Control-plane commits `f2bbc51` / `b97aec3` (18:52 / 19:04 UTC) align with v4 scope. Re-verify whether Cycle 1 notifica was a **control-plane** poll message vs **handoff** Telegram (`Prompt ready: yes`) before treating GIS-only v4 as proven.
 
 ---
 
@@ -143,22 +159,26 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 
 ---
 
-### Cycle 2 — READY / NOT EXECUTED
+### Cycle 2 — COMMIT DONE / TELEGRAM MISSING (not PASS)
 
-**Status:** **READY** — prepared for execution; **NOT EXECUTED** (no implementer run, no dev-method commit, no v4 notifica for this cycle yet).
+**Status:** Implementer + commit **done**; v4 Telegram **not received** for dev-method push — Cycle 2 **not PASS**.
 
 | Field | Value |
 |-------|--------|
-| data/ora | _pending — fill when Telegram notifica received_ |
+| data/ora | 2026-05-20 (commit); notifica _missing_ |
 | repo | `mrhz1973/dev-method` |
 | **task** | **DEV-METHOD — Document n8n handoff runtime compatibility lessons** |
-| handoff source | CONTROL PLANE prepared handoff after Cycle 1 **PASS** (criterion 2 n8n manual + [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) lessons); distinct from Cycle 1 GIS task |
-| implementer (target) | **Cursor DEV** (dev-method) — _not GIS, not control-plane_ |
-| commit hash | _pending_ |
-| **expected commit message** | `docs: document n8n handoff runtime compatibility` |
-| **expected files** | `patterns/local-handoff-generator.md`; other existing dev-method docs/README only if pertinent |
-| Telegram notification | _pending — **required:** v4 polling message on phone for **this** pushed commit_ |
-| esito | **READY** (not PASS) |
+| handoff source | CONTROL PLANE prepared handoff after Cycle 1 **PASS** (criterion 2 n8n manual + [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) lessons) |
+| implementer | **Cursor DEV** — executed |
+| commit hash | **`5ce0a25`** |
+| commit message | `docs: document n8n handoff runtime compatibility` |
+| files changed | `patterns/local-handoff-generator.md`, `CHANGELOG.md`, `ROADMAP.md` (per GitHub) |
+| Telegram notification | **not received** — expected v4 for pushed commit; none on phone |
+| esito | **NOT PASS** (commit done; notifica missing) |
+
+**Diagnosis (2026-05-20, read-only):** **Cause B — v4 does not monitor `dev-method`.** See [Cycle 2 missing Telegram diagnosis](#cycle-2-missing-telegram-diagnosis-2026-05-20). Not A (commit at 19:20 UTC; container up 2h+; schedule active). Not C/D in logs (no GitHub/Telegram workflow errors; dev-method never polled). **Do not** mark PASS until notifica path matches an agreed criterion-3 proof.
+
+**Prior READY state:** execution prompt in [Cycle 2 execution prompt source](#cycle-2-execution-prompt-source) — steps 2–3 of four-step cycle remain open for notifica only if scope is fixed.
 
 **Type:** docs-only / method documentation — consolidate operational lessons from n8n handoff gate (Execute Command, `NODES_EXCLUDE`, root `safe.directory`, gate ladder).
 
@@ -180,7 +200,23 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 
 **Execution prompt:** copy from [Cycle 2 execution prompt source](#cycle-2-execution-prompt-source) in a **separate** Cursor DEV session — do **not** run from control-plane docs-only tasks.
 
-**Note:** Cycle 1 PASS on GIS (`34d543d`) does not close Cycle 2. This cycle documents **method** lessons for future handoff/n8n operators; repo must differ from Cycle 1.
+---
+
+### Cycle 2 missing Telegram diagnosis (2026-05-20)
+
+| Check | Result |
+|-------|--------|
+| Commit `5ce0a25` on GitHub | **Exists** — pushed 2026-05-20T19:20:28Z, message `docs: document n8n handoff runtime compatibility` |
+| n8n container `root-n8n-1` | **Up** — image `docker.n8n.io/n8nio/n8n`, version **2.19.5** |
+| v4 workflow active | **Yes** — log: `Activated workflow "CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4"` (ID redacted in logs) |
+| v4 repo scope (export + runtime design) | **`mrhz1973/control-plane` only** — no `dev-method` URL in committed export |
+| Container logs (GitHub/Telegram/schedule errors) | **None observed** for workflow execution; PostHog/Rudder/UI 403 noise only |
+| Dedupe skip for `5ce0a25` | **N/A** — commit never fetched because repo out of scope |
+| Classification | **B — v4 does not monitor dev-method** |
+
+**Assumption error:** Cycle 2 prep assumed v4 polling on **watched product repos** (`dev-method`, GIS). MVP provisional v4 was built and validated for **control-plane** commit notify only ([WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md)).
+
+**Single recommended next gate (pick one):** extend v4 (or successor) to poll `dev-method` + GIS with separate Data Table keys per repo — **one** runtime change + re-export; **or** close Cycle 2 with an explicitly documented alternate notifica path (not done in this task).
 
 ---
 
@@ -415,7 +451,7 @@ FINAL REPORT (required):
 4. No token, chat_id, webhook URL, or secret appears in committed records;
 5. [MVP_CRITERIA.md](MVP_CRITERIA.md) §3 status updated to **PASS** after review.
 
-**Current tracker status:** **1 / 3 PASS** — Cycle 1 **PASS** (`34d543d`); Cycle 2 **READY / NOT EXECUTED** on `dev-method`; Cycle 3 **PENDING**; criterion 3 **not** fully closed.
+**Current tracker status:** **1 / 3 PASS** — Cycle 1 **PASS** (`34d543d`, notifica path audit recommended); Cycle 2 **COMMIT DONE / TELEGRAM MISSING** (`5ce0a25`, cause **B**); Cycle 3 **PENDING**; criterion 3 **not** fully closed.
 
 ---
 
@@ -426,8 +462,9 @@ FINAL REPORT (required):
 | Define valid / invalid cycle | Done in this file |
 | Pre-fill cycle log template | Done — Cycle 1 **PASS**; Cycle 2 **READY**; Cycle 3 **PENDING** |
 | Cycle 1 (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d`, v4 Telegram |
-| Cycle 2 preparation (dev-method n8n lessons) | **READY** — prompt in [Cycle 2 execution prompt source](#cycle-2-execution-prompt-source) |
-| Execute Cycle 2 implementer + commit + notifica | **Not in this task** |
+| Cycle 2 implementer + commit | **Done** — `5ce0a25` on dev-method |
+| Cycle 2 v4 Telegram | **Missing** — diagnosis **B** (v4 scope) |
+| Extend v4 repo scope / alternate notifica | **Next runtime gate** — not in this docs task |
 | Close criterion 3 | **PENDING** (**1 / 3 PASS**) |
 
 ---
