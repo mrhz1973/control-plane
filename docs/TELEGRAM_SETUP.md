@@ -49,4 +49,20 @@ Workflow n8n control-plane importato e testato manualmente.
 - **Schedule:** not enabled in this gate.
 - **Existing Alina workflows:** not touched.
 
-**Prossimo gate (non in questo task):** collegare una sorgente reale separata al workflow control-plane, mantenendo webhook e schedule come gate separati.
+## n8n GitHub latest commit manual notify — PASS
+
+Workflow n8n control-plane importato e testato manualmente con sorgente GitHub reale.
+
+- **Workflow name:** `CONTROL PLANE - GitHub latest commit manual notify`
+- **Source:** latest public commit from `mrhz1973/control-plane` via GitHub REST public read.
+- **Credential used:** `CONTROL PLANE - Telegram Bot`
+- **Execution mode:** manual test only.
+- **Result:** Telegram message received on the user's phone.
+- **GitHub token:** not used.
+- **Telegram token:** not committed.
+- **chat_id:** not committed.
+- **GitHub webhook:** not configured in this gate.
+- **Schedule:** not enabled in this gate.
+- **Existing Alina workflows:** not touched.
+
+**Prossimo gate (non in questo task):** passare da test manuale a trigger controllato, mantenendo webhook pubblico e schedule come gate separati.
