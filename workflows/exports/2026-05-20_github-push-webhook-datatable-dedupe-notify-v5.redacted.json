@@ -1,0 +1,387 @@
+{
+  "name": "CONTROL PLANE - GitHub push webhook Data Table dedupe notify v5",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "control-plane-github-push-redacted",
+        "responseMode": "onReceived",
+        "responseData": "firstEntryJson",
+        "options": {}
+      },
+      "id": "webhook-github-push-redacted-v5",
+      "name": "Webhook - GitHub push",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        120,
+        320
+      ],
+      "webhookId": "__REDACTED_WEBHOOK_ID__"
+    },
+    {
+      "parameters": {},
+      "id": "manual-trigger-redacted-v5",
+      "name": "Manual Trigger - test payload only",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        120,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const incoming = $json.body ? $json.body : $json;\nconst isManualFallback = !incoming.repository && !incoming.after;\nconst payload = isManualFallback ? { repository: { full_name: 'mrhz1973/control-plane' }, ref: 'refs/heads/main', after: 'manual-test-sha-placeholder', before: '', head_commit: { message: 'manual webhook-shape test payload', url: 'manual-test-url' } } : incoming;\nconst repo = payload.repository?.full_name || 'unknown/repo';\nconst after = payload.after || payload.head_commit?.id || '';\nconst before = payload.before || '';\nconst ref = payload.ref || '';\nconst branch = ref.startsWith('refs/heads/') ? ref.replace('refs/heads/', '') : ref;\nconst message = payload.head_commit?.message || 'no head commit message';\nconst url = payload.head_commit?.url || payload.compare || 'no URL';\nconst stateKey = `github:${repo}:last_push_head_sha`;\nreturn [{ json: { stateKey, currentSha: after, shortSha: after.substring(0, 7), previousPayloadSha: before, repo, branch, message, url, eventType: 'github_push' } }];"
+      },
+      "id": "normalize-github-push-redacted-v5",
+      "name": "Normalize GitHub push payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "condition": "eq",
+              "keyValue": "={{ $json.stateKey }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "id": "datatable-get-state-redacted-v5",
+      "name": "Data Table - Get last push state",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        680,
+        420
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const event = $('Normalize GitHub push payload').first().json;\nconst storedValue = $json.value || '';\nconst isNew = Boolean(event.currentSha && event.currentSha !== storedValue);\nreturn [{ json: { ...event, storedSha: storedValue, isNew } }];"
+      },
+      "id": "decide-webhook-dedupe-redacted-v5",
+      "name": "Decide Data Table webhook dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is-new-webhook-event-redacted-v5",
+              "leftValue": "={{ $json.isNew }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-new-webhook-event-redacted-v5",
+      "name": "IF - New push event?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "condition": "eq",
+              "keyValue": "={{ $json.stateKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ $json.stateKey }}",
+            "value": "={{ $json.currentSha }}",
+            "updated_at": "={{ $now.toISO() }}",
+            "note": "={{ 'Latest GitHub push notification for ' + $json.repo + ' / ' + $json.branch }}"
+          },
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "note",
+              "displayName": "note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ]
+        }
+      },
+      "id": "datatable-upsert-webhook-state-redacted-v5",
+      "name": "Data Table - Upsert push state",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1520,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const event = $('Decide Data Table webhook dedupe').first().json;\nconst previous = event.storedSha ? event.storedSha.substring(0, 7) : 'none';\nreturn [{ json: { text: `CONTROL PLANE GitHub webhook notification\\nRepo: ${event.repo}\\nBranch: ${event.branch}\\nNew head: ${event.shortSha}\\nPrevious stored: ${previous}\\nMessage: ${event.message}\\nURL: ${event.url}` } }];"
+      },
+      "id": "format-webhook-telegram-message-redacted-v5",
+      "name": "Format webhook Telegram message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "__CONFIGURE_CHAT_ID_IN_N8N_UI__",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-send-webhook-redacted-v5",
+      "name": "Telegram - Send webhook notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2080,
+        320
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "__REDACTED_N8N_CREDENTIAL_ID__",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { status: 'duplicate_skip', reason: 'Push event already stored in control_plane_state', repo: $json.repo, branch: $json.branch, currentSha: $json.currentSha, storedSha: $json.storedSha } }];"
+      },
+      "id": "duplicate-skip-webhook-redacted-v5",
+      "name": "Duplicate skip - no Telegram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        520
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook - GitHub push": {
+      "main": [
+        [
+          {
+            "node": "Normalize GitHub push payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger - test payload only": {
+      "main": [
+        [
+          {
+            "node": "Normalize GitHub push payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize GitHub push payload": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Get last push state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Get last push state": {
+      "main": [
+        [
+          {
+            "node": "Decide Data Table webhook dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Data Table webhook dedupe": {
+      "main": [
+        [
+          {
+            "node": "IF - New push event?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - New push event?": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Upsert push state",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Duplicate skip - no Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Upsert push state": {
+      "main": [
+        [
+          {
+            "node": "Format webhook Telegram message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format webhook Telegram message": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send webhook notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "__REDACTED_VERSION_ID__",
+  "triggerCount": 0,
+  "tags": [
+    {
+      "name": "control-plane"
+    },
+    {
+      "name": "github"
+    },
+    {
+      "name": "webhook"
+    },
+    {
+      "name": "telegram"
+    },
+    {
+      "name": "datatable"
+    },
+    {
+      "name": "dedupe"
+    },
+    {
+      "name": "redacted"
+    },
+    {
+      "name": "v5"
+    }
+  ],
+  "meta": {
+    "redaction": "No token, no operational chat_id, no credential id, no workflow id, no production webhook URL, and no webhook secret are committed.",
+    "runtimeStatus": "Template/export record only. Not imported or executed by this commit. Workflow active=false.",
+    "stateStore": "Uses n8n Data Table named control_plane_state with columns key, value, updated_at, note.",
+    "source": "GitHub push webhook payload. Manual Trigger is included only for local shape testing and uses a placeholder payload when no webhook body exists.",
+    "dedupe": "State key is derived from repo full_name. Sends Telegram only when GitHub push head SHA differs from stored value, then upserts the new SHA.",
+    "securityGate": "Before production GitHub webhook activation, choose a private webhook path and configure GitHub webhook delivery. Webhook signing/secret validation remains a separate hardening gate if required.",
+    "nextGate": "Import v5 in n8n, configure Data Table and Telegram fields locally, run manual placeholder test once, then stop before any GitHub webhook setup."
+  }
+}
