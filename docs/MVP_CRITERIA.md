@@ -14,7 +14,7 @@ Automation MVP is **closed** only when all five criteria below are true.
 - **Validated:** Telegram bot, n8n Telegram credential, manual Telegram workflow, GitHub latest-commit read, Data Table dedupe, and v4 one-minute controlled polling are working.
 - **MVP provisional path:** `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` is active and prevents duplicate Telegram notifications with `control_plane_state`.
 - **Still PENDING for strict criterion:** sub-30-second delivery from GIS Tool or dev-method push. One-minute polling does not satisfy the strict 30-second requirement.
-- **Next likely gate:** GitHub webhook as a separate controlled runtime gate, if strict sub-30-second notification is required.
+- **Next likely gate:** GitHub webhook as a separate controlled runtime gate, if strict sub-30-second notification is required. Prerequisite: [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) (public HTTPS to n8n, or stay on v4 polling).
 - **Verification method:** Push a commit to `dev-method` or `cursor-coordinate-converter`, then confirm Telegram message arrives on the user's phone within 30 seconds.
 
 ---

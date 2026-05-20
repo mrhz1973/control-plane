@@ -2,6 +2,19 @@
 
 This document records the next runtime gate required before using a real GitHub webhook with n8n.
 
+**Docs-only:** updating this file does not run runtime, open n8n UI, or configure webhooks.
+
+## At a glance
+
+| Item | State |
+|------|--------|
+| **v4 polling** (`CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4`) | **Active** — provisional MVP path: GitHub public read → `control_plane_state` dedupe → Telegram |
+| **v5 webhook** (`CONTROL PLANE - GitHub push webhook Data Table dedupe notify v5`) | **Inactive** — imported and manually tested (placeholder), then disabled |
+| **GitHub webhook (production)** | **Not configured** — cannot target `localhost`; GitHub must reach a public HTTPS endpoint |
+| **n8n access today** | localhost / SSH tunnel only — not valid for GitHub delivery |
+| **Before real webhook** | Safe public HTTPS URL to n8n (or keep polling) — see options below |
+| **Secrets in repo** | None — no tokens, chat IDs, webhook URLs, or webhook secrets committed |
+
 ## Current status
 
 The current working MVP path is:
@@ -26,9 +39,9 @@ Status:
 
 ## Problem
 
-GitHub cannot deliver webhooks to `localhost`.
+GitHub cannot deliver webhooks to `localhost` or other URLs reachable only on your machine or via SSH tunnel.
 
-A real GitHub webhook requires a public HTTPS endpoint reachable from GitHub.
+A real GitHub webhook requires a **public HTTPS** endpoint reachable from GitHub’s servers. Until that exists, **keep v4 polling**; do not point GitHub at an n8n webhook URL that is not publicly reachable.
 
 ## Requirement
 
@@ -107,9 +120,15 @@ Do not configure a GitHub webhook again until one of these is true:
 - n8n has a reachable public HTTPS URL; or
 - another safe relay exists between GitHub and n8n.
 
+## Prerequisite for runtime gates 4–5
+
+Per [RUNTIME_GATES.md](RUNTIME_GATES.md), “configurare webhook GitHub” and “testare webhook” stay **blocked** until this public HTTPS gate is satisfied (or polling remains the chosen path).
+
 ## Runtime rules
 
 Do not do any of the following without a separate explicit runtime gate:
+
+- execute runtime as part of a docs-only review task;
 
 - expose port 5678 publicly;
 - publish n8n UI without access protection;
