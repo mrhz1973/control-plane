@@ -143,6 +143,7 @@ Workflow n8n control-plane v4 attivato per polling controllato, validato, spento
 - **Schedule:** one-minute controlled polling validated and currently resumed as provisional MVP path.
 - **Validation:** after activation, no duplicate Telegram was received during the observation window when no new GitHub commit occurred.
 - **Dedupe result:** PASS — Data Table state prevented duplicate Telegram notifications.
+- **Stability check:** after resuming v4 and creating a documentation commit, only the expected single Telegram was observed and no duplicate messages followed during the observation window.
 - **GitHub token:** not used.
 - **Telegram token:** not committed.
 - **chat_id:** not committed.
@@ -167,4 +168,4 @@ Workflow n8n control-plane v5 importato e testato manualmente con payload placeh
 - **chat_id:** not committed.
 - **Existing Alina workflows:** not touched.
 
-**Current provisional path:** v4 one-minute polling remains active as the working MVP path. **Next gate:** expose n8n through a secure public HTTPS URL or another safe relay before attempting real GitHub webhook delivery.
+**Current provisional path:** v4 one-minute polling remains active and stable as the working MVP path. **Next gate:** expose n8n through a secure public HTTPS URL or another safe relay before attempting real GitHub webhook delivery.
