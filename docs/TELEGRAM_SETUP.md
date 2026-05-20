@@ -115,4 +115,21 @@ Workflow n8n control-plane v3 importato e testato manualmente con stato persiste
 - **Schedule:** not enabled in this gate.
 - **Existing Alina workflows:** not touched.
 
-**Prossimo gate (non in questo task):** prepare a schedule-capable variant or activate controlled polling as a separate runtime gate. Do not activate schedule/webhook without an explicit gate.
+## n8n GitHub Data Table scheduled v4 — manual PASS
+
+Workflow n8n control-plane v4 importato e testato manualmente.
+
+- **Workflow name:** `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4`
+- **State table:** `control_plane_state`
+- **Source:** latest public commit from `mrhz1973/control-plane` via GitHub REST public read.
+- **Credential used:** `CONTROL PLANE - Telegram Bot`.
+- **Execution mode:** manual test only.
+- **Manual result:** OK.
+- **Schedule trigger:** present in workflow but not activated in this gate.
+- **GitHub token:** not used.
+- **Telegram token:** not committed.
+- **chat_id:** not committed.
+- **GitHub webhook:** not configured in this gate.
+- **Existing Alina workflows:** not touched.
+
+**Prossimo gate (non in questo task):** activate the v4 workflow schedule as a separate runtime gate, then validate controlled polling behavior. Webhook remains a separate future gate for sub-30-second notifications.
