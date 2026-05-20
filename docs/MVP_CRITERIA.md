@@ -11,6 +11,8 @@ Automation MVP is **closed** only when all five criteria below are true.
 **Criterion:** Push su GIS Tool o dev-method → notifica Telegram al telefono utente entro 30 secondi
 
 - **Status:** PENDING
+- **Prerequisite PASS:** local Telegram bot `sendMessage` verified (see [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md)). Full push-triggered notification remains PENDING.
+- **Still PENDING for this criterion:** GitHub webhook, n8n Telegram credential, n8n workflow, push-triggered notification, schedule trigger.
 - **Verification method:** Push a commit to `dev-method` or `cursor-coordinate-converter`, then confirm Telegram message arrives on the user's phone within 30 seconds.
 
 ---
