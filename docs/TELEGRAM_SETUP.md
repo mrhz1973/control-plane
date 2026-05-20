@@ -65,23 +65,24 @@ Workflow n8n control-plane importato e testato manualmente con sorgente GitHub r
 - **Schedule:** not enabled in this gate.
 - **Existing Alina workflows:** not touched.
 
-## n8n GitHub commit poll dedupe notify v2 — first run PASS
+## n8n GitHub commit poll dedupe notify v2 — first run PASS, second run FAIL
 
 Workflow n8n control-plane v2 importato e testato manualmente con deduplica su ultimo commit.
 
 - **Workflow name:** `CONTROL PLANE - GitHub commit poll dedupe notify v2`
 - **Source:** latest public commit from `mrhz1973/control-plane` via GitHub REST public read.
-- **Dedupe mechanism:** workflow static data key `lastSeenControlPlaneSha`.
+- **Dedupe mechanism attempted:** workflow static data key `lastSeenControlPlaneSha`.
 - **Fix applied:** v2 uses `$getWorkflowStaticData('global')` for n8n Code node compatibility.
 - **Credential used:** `CONTROL PLANE - Telegram Bot`.
-- **Execution mode:** manual first run only.
+- **Execution mode:** manual editor/test runs only.
 - **First-run result:** Telegram message received on the user's phone.
+- **Second-run result:** FAIL — a second Telegram message was received instead of duplicate-skip.
+- **Interpretation:** Telegram and GitHub read are working; the static-data dedupe method is not reliable for this manual validation path.
 - **GitHub token:** not used.
 - **Telegram token:** not committed.
 - **chat_id:** not committed.
 - **GitHub webhook:** not configured in this gate.
 - **Schedule:** not enabled in this gate.
 - **Existing Alina workflows:** not touched.
-- **Still pending:** second manual run must duplicate-skip without sending a second Telegram.
 
-**Prossimo gate (non in questo task):** eseguire una seconda volta il workflow v2 per validare duplicate-skip; poi decidere separatamente se attivare schedule controllata o usare webhook.
+**Prossimo gate (non in questo task):** replace static-data dedupe with a persistent state mechanism that can be validated manually, preferably an n8n Data Table or another explicit state store. Do not activate schedule/webhook until duplicate-skip is proven.
