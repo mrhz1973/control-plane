@@ -1,0 +1,133 @@
+{
+  "name": "CONTROL PLANE - Handoff generate manual Telegram v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-handoff-v1-redacted",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "node /files/handoff-runtime/dev-method/tools/handoff-generate.mjs --repo /files/handoff-runtime/cursor-coordinate-converter --method /files/handoff-runtime/dev-method --implementer cursor --stdout --dry-run --strict-format --require-ready"
+      },
+      "id": "execute-handoff-dry-run-v1-redacted",
+      "name": "Execute Command - handoff dry-run",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst raw = item.stdout || item.output || '';\nconst exitCode = item.exitCode ?? item.code ?? null;\n\nfunction pick(label) {\n  const re = new RegExp('^' + label + ':\\\\s*(.+)$', 'mi');\n  const m = raw.match(re);\n  return m ? m[1].trim() : 'unknown';\n}\n\nconst promptReady = pick('Prompt ready');\nconst embeddedFormat = pick('Embedded format');\nconst taskStatus = pick('Task status');\nconst operationType = pick('Operation type');\nconst riskLevel = pick('Risk level');\n\nconst text = [\n  'CONTROL PLANE handoff',\n  'Prompt ready: ' + promptReady,\n  'Embedded format: ' + embeddedFormat,\n  'Task status: ' + taskStatus,\n  'Operation type: ' + operationType,\n  'Risk level: ' + riskLevel,\n  'Exit code: ' + (exitCode ?? 'unknown'),\n  'Target: cursor-coordinate-converter',\n  'Mode: manual dry-run',\n].join('\\n');\n\nreturn [{ json: { stdout: raw, exitCode, promptReady, embeddedFormat, taskStatus, operationType, riskLevel, text } }];"
+      },
+      "id": "parse-handoff-output-v1-redacted",
+      "name": "Parse handoff stdout",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "REDACTED_TELEGRAM_CHAT_ID_SET_IN_N8N_UI",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-send-handoff-v1-redacted",
+      "name": "Telegram - Send handoff result",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1080,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REDACTED_TELEGRAM_CREDENTIAL_ID",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute Command - handoff dry-run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command - handoff dry-run": {
+      "main": [
+        [
+          {
+            "node": "Parse handoff stdout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse handoff stdout": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send handoff result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "__REDACTED_VERSION_ID__",
+  "triggerCount": 0,
+  "tags": [
+    {
+      "name": "control-plane"
+    },
+    {
+      "name": "handoff"
+    },
+    {
+      "name": "telegram"
+    },
+    {
+      "name": "manual-test"
+    },
+    {
+      "name": "redacted"
+    },
+    {
+      "name": "v1"
+    }
+  ],
+  "meta": {
+    "redaction": "No token, no operational chat_id, no real credential id, no workflow id, and no webhook secret are committed. chatId and credential id are placeholders only.",
+    "runtimeStatus": "Template/export prepared only. active=false. Not imported, executed, or activated by this commit.",
+    "command": "Container path dry-run validated 2026-05-20. Requires /files/handoff-runtime mount and git safe.directory for dev-method and cursor-coordinate-converter inside n8n container.",
+    "criterion": "MVP criterion 2 — manual n8n workflow + Telegram Prompt ready yes/no.",
+    "nextGate": "Import inactive in n8n UI, link CONTROL PLANE - Telegram Bot credential, set chatId in UI only, run Manual Trigger once, confirm Telegram message, then re-export redacted JSON if runtime differs."
+  }
+}

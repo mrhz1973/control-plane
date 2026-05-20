@@ -182,6 +182,34 @@ Dry-run executed **inside the n8n container** against mounted runtime repos. **N
 
 ---
 
+## Manual n8n workflow v1 prepared
+
+**Date:** 2026-05-20
+
+**Status:** **Prepared / import pending** — export committed; **not** imported, executed, or activated.
+
+| Field | Value |
+|-------|--------|
+| **Export file** | [workflows/exports/2026-05-20_handoff-generate-manual-telegram-v1.redacted.json](../workflows/exports/2026-05-20_handoff-generate-manual-telegram-v1.redacted.json) |
+| **Workflow name** | `CONTROL PLANE - Handoff generate manual Telegram v1` |
+| **active in export** | `false` |
+| **Flow** | Manual Trigger → Execute Command (handoff dry-run) → Parse stdout → Telegram |
+| **Command** | Same container dry-run validated 2026-05-20 |
+
+### Runtime steps (next gate — not this task)
+
+1. Import workflow JSON in n8n UI (**inactive**).
+2. Link credential **`CONTROL PLANE - Telegram Bot`**.
+3. Set **chat_id** only in n8n UI — never commit.
+4. Leave workflow **inactive** until manual test is ready (do not activate schedule/webhook).
+5. Run **Manual Trigger** once.
+6. Confirm Telegram message contains **`Prompt ready: yes`** or **`Prompt ready: no`**.
+7. If PASS and runtime differs from export → re-export redacted JSON and update this doc.
+
+**Criterion 2:** still **open** until step 6 PASS on user's phone.
+
+---
+
 ## Docs-only path (now)
 
 | Step | Status |
@@ -189,8 +217,8 @@ Dry-run executed **inside the n8n container** against mounted runtime repos. **N
 | Design document (this file) | **Done** |
 | Local CLI dry-run (`Prompt ready: yes`) | **PASS** — [Local CLI dry-run PASS](#local-cli-dry-run-pass) |
 | Container CLI dry-run inside n8n | **PASS** — [n8n container CLI dry-run PASS](#n8n-container-cli-dry-run-pass) |
-| n8n handoff workflow (manual trigger + Telegram) | **Not run** |
-| n8n workflow JSON export (handoff) | **Not created** — after workflow PASS |
+| Manual n8n workflow v1 export | **Prepared / import pending** — [Manual n8n workflow v1 prepared](#manual-n8n-workflow-v1-prepared) |
+| n8n handoff workflow import + Telegram test | **Not run** |
 | MVP criterion 2 closure | **PENDING** |
 
 Updating this file does **not** satisfy criterion 2. Closure requires a real n8n run and a Telegram message on the user's phone.
@@ -203,10 +231,9 @@ Follow [RUNTIME_GATES.md](RUNTIME_GATES.md). Suggested order for criterion 2 onl
 
 1. ~~Confirm `handoff-generate.mjs` runs locally~~ — **PASS** (2026-05-20 local CLI; [Local CLI dry-run PASS](#local-cli-dry-run-pass)).
 2. ~~Confirm generator runs inside n8n container~~ — **PASS** (2026-05-20 container CLI; [n8n container CLI dry-run PASS](#n8n-container-cli-dry-run-pass)).
-3. Import or build n8n **handoff** workflow **inactive** (allowed [workflow freeze](RUNTIME_GATES.md#workflow-freeze-rule-mvp) exception); link `CONTROL PLANE - Telegram Bot`; set `chat_id` in UI.
-4. n8n **manual** trigger → execute same container command → verify Telegram shows `Prompt ready: yes` or `Prompt ready: no`.
-5. Export redacted workflow JSON to `workflows/exports/` per [workflows/README.md](../workflows/README.md).
-6. (Optional later) webhook trigger — only after public HTTPS gate.
+3. Import [handoff workflow v1 export](../workflows/exports/2026-05-20_handoff-generate-manual-telegram-v1.redacted.json) **inactive** (allowed [workflow freeze](RUNTIME_GATES.md#workflow-freeze-rule-mvp) exception); link `CONTROL PLANE - Telegram Bot`; set `chat_id` in UI.
+4. n8n **manual** trigger → verify Telegram shows `Prompt ready: yes` or `Prompt ready: no`.
+5. Re-export redacted workflow JSON if runtime differs from committed template.
 
 Do **not** combine: import + execute + activate webhook + schedule in one session.
 
@@ -219,7 +246,7 @@ Do **not** combine: import + execute + activate webhook + schedule in one sessio
 - Store token, chat_id, webhook URL, or webhook secret in repo
 - Configure GitHub webhook to localhost
 - Enable v5 or production webhook for handoff
-- Modify `workflows/exports/*.json` in this task
+- Modify other `workflows/exports/*.json` in this task
 - Touch GIS (`cursor-coordinate-converter` automation), DEV repo content, or **alina-lavoro**
 - Commit unredacted workflow exports
 

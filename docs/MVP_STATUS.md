@@ -60,8 +60,9 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 - **Local CLI (2026-05-20):** dry-run → **`Prompt ready: yes`** ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)).
 - **Container CLI (2026-05-20):** same dry-run inside n8n container → **`Prompt ready: yes`**, exit codes 0.
-- **Still open for criterion 2:** build/import manual n8n workflow that runs the same command and sends **`Prompt ready: yes/no`** on Telegram.
-- **Next gate:** n8n manual workflow execution + Telegram (handoff workflow is allowed [workflow freeze](RUNTIME_GATES.md#workflow-freeze-rule-mvp) exception).
+- **Manual workflow v1 export:** **prepared / import pending** — `2026-05-20_handoff-generate-manual-telegram-v1.redacted.json` (**not** PASS).
+- **Still open for criterion 2:** import in n8n, manual trigger, Telegram **`Prompt ready: yes/no`** on phone.
+- **Next gate:** import inactive workflow → link credential → set chat_id in UI → Manual Trigger once ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)).
 
 ### 3 — Three end-to-end cycles (0 / 3)
 
@@ -87,7 +88,7 @@ Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested pr
 
 ### Option A — Criterion 2 (n8n handoff workflow + Telegram)
 
-Build/import one manual n8n workflow that runs the container command documented in [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) and sends Telegram **`Prompt ready: yes/no`**. Local + container CLI already PASS; workflow execution + Telegram still pending.
+Build/import one manual n8n workflow from [2026-05-20_handoff-generate-manual-telegram-v1.redacted.json](../workflows/exports/2026-05-20_handoff-generate-manual-telegram-v1.redacted.json) (prepared, import pending). Local + container CLI already PASS; Telegram delivery still pending.
 
 ### Option B — Criterion 1 latency measurement
 

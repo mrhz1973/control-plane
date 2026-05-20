@@ -34,8 +34,9 @@ Automation MVP is **closed** only when all five criteria below are true.
 **Criterion:** handoff-generate.mjs può essere invocato da n8n (manuale o webhook) e il risultato Prompt ready: yes/no arriva su Telegram
 
 - **Status:** LOCAL + CONTAINER CLI PASS / PENDING N8N WORKFLOW TELEGRAM
-- **Documented:** [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) — design, local CLI dry-run PASS, n8n container CLI dry-run PASS (2026-05-20), future n8n workflow flow.
-- **Validated (CLI only):** local and n8n-container dry-runs against `cursor-coordinate-converter` produced structured output with **`Prompt ready: yes`** and exit code 0; no execution, commit, push, n8n workflow, Telegram, or secrets.
+- **Documented:** [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) — design, local/container CLI PASS, [manual workflow v1 export](../workflows/exports/2026-05-20_handoff-generate-manual-telegram-v1.redacted.json) prepared/import pending.
+- **Prepared (not closure):** redacted manual handoff workflow v1 export exists; import + Telegram test pending.
+- **Validated (CLI only):** local and n8n-container dry-runs → **`Prompt ready: yes`**, exit code 0; no Telegram yet.
 - **Still PENDING for closure:** n8n **workflow** manual trigger invokes the generator and Telegram delivers `Prompt ready: yes` or `Prompt ready: no` on the user's phone.
 - **Verification method:** Trigger the n8n workflow (manual or webhook), invoke `handoff-generate.mjs`, and confirm a Telegram message shows `Prompt ready: yes` or `Prompt ready: no`.
 
