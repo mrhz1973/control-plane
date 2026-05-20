@@ -35,3 +35,29 @@ When a real gate is reached, give exactly one concrete action and wait for the u
 | 10 | attivare schedule trigger | user / n8n | yes | One runtime action per step |
 
 **Rule:** Complete and verify one gate before starting the next. Do not combine gates (e.g. install n8n and import workflow in the same session step).
+
+---
+
+## Workflow freeze rule (MVP)
+
+Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
+
+### Allowed exceptions
+
+| Exception | Examples |
+|-----------|----------|
+| **Bugfix on v4** | Fix dedupe, Telegram format, GitHub read URL for watched repos |
+| **Cleanup** | Remove unused/duplicate CONTROL PLANE test workflows before commit |
+| **Discardable test** | One-off test workflow deleted before any export/commit |
+
+### Not exceptions (defer until after 5/5 PASS)
+
+| Blocked | Why |
+|---------|-----|
+| Automatic branch cleanup workflow | New scope — measure friction after MVP |
+| Ollama integration | Day 5+ rule — stabilize first |
+| Second generic Telegram workflow | Duplicates v4 path |
+| Data Table backup workflow | Ops extras — not MVP |
+| CI/CD workflow in n8n | Not MVP closure |
+
+After **5/5 PASS**, add **one** new capability at a time with an explicit friction/cost note in docs.

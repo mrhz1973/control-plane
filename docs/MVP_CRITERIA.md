@@ -1,5 +1,13 @@
 # MVP closure criteria
 
+## Document role
+
+| | |
+|---|---|
+| **Ruolo** | Definizione **canonica** dei 5 criteri MVP e di cosa significa PASS |
+| **Cambia** | Solo se cambia la definizione di PASS per un criterio |
+| **Stato corrente** | Vive in [MVP_STATUS.md](MVP_STATUS.md) |
+
 Automation MVP is **closed** only when all five criteria below are true.
 
 **Consolidated snapshot:** [MVP_STATUS.md](MVP_STATUS.md)
@@ -15,7 +23,7 @@ Automation MVP is **closed** only when all five criteria below are true.
 - **Status:** PARTIAL PASS / PENDING FINAL 30s WEBHOOK
 - **Validated:** Telegram bot, n8n Telegram credential, manual Telegram workflow, GitHub latest-commit read, Data Table dedupe, and v4 one-minute controlled polling are working.
 - **MVP provisional path:** `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` is active and prevents duplicate Telegram notifications with `control_plane_state`.
-- **Still PENDING for strict criterion:** sub-30-second delivery from GIS Tool or dev-method push. One-minute polling does not satisfy the strict 30-second requirement.
+- **Still PENDING for strict criterion:** sub-30-second delivery from GIS Tool or dev-method push. One-minute polling does not satisfy the strict 30-second requirement. Measure with [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md).
 - **Next likely gate:** GitHub webhook as a separate controlled runtime gate, if strict sub-30-second notification is required. Prerequisite: [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) (public HTTPS to n8n, or stay on v4 polling).
 - **Verification method:** Push a commit to `dev-method` or `cursor-coordinate-converter`, then confirm Telegram message arrives on the user's phone within 30 seconds.
 
@@ -50,7 +58,7 @@ Automation MVP is **closed** only when all five criteria below are true.
 - **Status:** PASS
 - **Documented:** [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) — full inventory, canonical v4, inactive v5, historical v2 (failed dedupe), v3 manual PASS, redaction rules, runtime-vs-commit status.
 - **Validated exports:** seven redacted JSON files under `workflows/exports/`; canonical provisional MVP export is v4 scheduled Data Table dedupe.
-- **Runtime match:** PASS — active n8n workflow `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` was visually checked against the committed redacted v4 export; expected UI-only chat_id/credential linkage differences do not require committing secrets.
+- **Runtime match:** PASS — active n8n workflow visually checked against committed redacted v4 export; see [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) for verified vs not-verified perimeter.
 - **Still pending outside criterion 4:** handoff workflow export after criterion 2 runtime exists.
 - **Verification method:** A redacted workflow JSON file exists under `workflows/exports/` following the naming convention in [workflows/README.md](../workflows/README.md), and active runtime v4 matches the committed redacted export.
 

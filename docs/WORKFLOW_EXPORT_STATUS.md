@@ -31,6 +31,30 @@ Runtime match status: **PASS** — the active n8n v4 workflow was visually check
 
 ---
 
+## v4 runtime match perimeter (visual operational PASS)
+
+Criterion 4 remains **PASS** for operational visual match. A future export/diff can strengthen audit if needed.
+
+### Verified (visual operational check)
+
+- Active workflow **v4** present and enabled in n8n
+- Expected nodes present: Manual Trigger, Schedule Trigger, GitHub latest commit read, Prepare event, Data Table get/decide/upsert on `control_plane_state`, IF new commit, Format Telegram message, Telegram send, duplicate-skip / no-Telegram branch
+- Data Table name **`control_plane_state`**
+- Dedupe behavior validated historically (duplicate-skip, no spam)
+- Telegram send path uses credential name **`CONTROL PLANE - Telegram Bot`**
+
+### NOT verified visually
+
+- Byte-for-byte diff export JSON ↔ runtime export
+- Every internal node parameter and default
+- Dedupe expressions line-by-line (Code node JS)
+- Exact schedule cron string in runtime UI (export says 1 minute; **pending exact UI read** if audit required)
+- All GitHub URL variants if runtime was extended beyond export without re-commit
+
+**Note:** Re-export and commit if runtime diverges materially; criterion 4 reopens until match is recorded again.
+
+---
+
 ## Future / inactive export
 
 | File | Workflow name | Role |

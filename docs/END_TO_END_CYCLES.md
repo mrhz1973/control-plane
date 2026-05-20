@@ -106,44 +106,46 @@ Add one section per cycle below (or append rows in your local log). **Never** pu
 
 Record **real** cycles here when they happen. Until three `PASS` rows exist, criterion 3 stays open.
 
-### Cycle 1
+**Important:** Docs-only commits to **control-plane** do **not** count toward criterion 3 (see “What does NOT count” above). The first **valid** cycle must be on **`dev-method`** or **`cursor-coordinate-converter`** with handoff → implementer → push → Telegram.
+
+### Cycle 1 — PENDING (planned)
 
 | Field | Value |
 |-------|--------|
 | data/ora | _pending_ |
-| repo | _pending_ |
-| handoff source | _pending_ |
-| implementer | _pending_ |
+| repo | _pending — optional smoke: `mrhz1973/control-plane` docs-only push (Telegram via v4 only; **does not count** toward criterion 3 PASS). **First valid cycle:** `mrhz1973/dev-method` or `mrhz1973/cursor-coordinate-converter`_ |
+| handoff source | _pending — real task handoff for valid cycle; N/A for control-plane docs smoke_ |
+| implementer | _pending — e.g. Cursor on watched repo_ |
 | commit hash | _pending_ |
-| Telegram notification | _pending_ |
-| esito | _pending_ |
-| note | _pending_ |
+| Telegram notification | _pending — expected via v4 polling after push_ |
+| esito | **PENDING** (not PASS) |
+| note | Control-plane docs-only commits **never** count as criterion 3 PASS. Use them only to observe v4 notify if desired. First **valid** cycle must be handoff → implementer → push on **dev-method** or **cursor-coordinate-converter**. |
 
-### Cycle 2
+### Cycle 2 — PENDING (planned)
 
 | Field | Value |
 |-------|--------|
 | data/ora | _pending_ |
-| repo | _pending_ |
+| repo | `mrhz1973/dev-method` or `mrhz1973/cursor-coordinate-converter` (distinct task from Cycle 1) |
 | handoff source | _pending_ |
 | implementer | _pending_ |
 | commit hash | _pending_ |
-| Telegram notification | _pending_ |
-| esito | _pending_ |
-| note | _pending_ |
+| Telegram notification | _pending — expected via v4 polling_ |
+| esito | **PENDING** (not PASS) |
+| note | Second real push on watched repo; confirm dedupe (no duplicate Telegram for same SHA). |
 
-### Cycle 3
+### Cycle 3 — PENDING (planned)
 
 | Field | Value |
 |-------|--------|
 | data/ora | _pending_ |
-| repo | _pending_ |
-| handoff source | _pending_ |
+| repo | `mrhz1973/dev-method` (preferred if Cycle 3 includes handoff gate) |
+| handoff source | _pending — `handoff-generate.mjs` via n8n manual when criterion 2 runtime tested; expect `Prompt ready: yes/no` on Telegram before or as part of cycle_ |
 | implementer | _pending_ |
 | commit hash | _pending_ |
-| Telegram notification | _pending_ |
-| esito | _pending_ |
-| note | _pending_ |
+| Telegram notification | _pending — commit notify via v4 and/or handoff result message_ |
+| esito | **PENDING** (not PASS) |
+| note | Full pipeline including criterion 2 handoff path when ready: handoff → implementer → commit → notifica. |
 
 ---
 
@@ -166,7 +168,7 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 | Action | Status |
 |--------|--------|
 | Define valid / invalid cycle | Done in this file |
-| Pre-fill cycle log template | Done — values `_pending_` |
+| Pre-fill cycle log template | Done — three **PENDING** planned cycles (not PASS) |
 | Execute real cycles | **Not in this task** |
 | Close criterion 3 | **PENDING** |
 
