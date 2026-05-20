@@ -141,7 +141,7 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 | commit hash | _pending_ |
 | Telegram notification | _pending — expected via v4 polling_ |
 | esito | **PENDING** (not PASS) |
-| note | Second cycle on **GIS** (frozen) — only if a real authorized task exists; otherwise use **dev-method** with a distinct task. Must differ from Cycle 1 repo. **Never** use control-plane. |
+| note | Second cycle on **GIS** (frozen) — only if a real authorized task exists; otherwise use **dev-method** with a distinct task. Must differ from Cycle 1 repo. **Never** use control-plane. **2026-05-20:** local CLI dry-run produced `Prompt ready: yes` for GIS T1.3 task — **does not count** as cycle PASS (no implementer → commit → notifica); may seed future Cycle 2 when task is executed. |
 
 ### Cycle 3 — PENDING (planned)
 

@@ -124,14 +124,44 @@ Record on your machine (not in repo):
 
 ---
 
+## Local CLI dry-run PASS
+
+**Date:** 2026-05-20
+
+Local PowerShell gate executed from method repo clone. **No n8n, no tunnel, no webhook, no GIS file changes, no commit/push, no secrets.**
+
+| Field | Value |
+|-------|--------|
+| **Method repo** | `mrhz1973/dev-method` (local: `dev-method` clone) |
+| **Target repo** | `mrhz1973/cursor-coordinate-converter` (local: `cursor-coordinate-converter` clone) |
+| **Command class** | Local CLI dry-run |
+| **Script** | `node .\tools\handoff-generate.mjs` |
+| **Flags** | `--implementer cursor`, `--stdout`, `--dry-run`, `--strict-format`, `--require-ready` |
+| **Embedded format** | structured |
+| **Prompt ready** | **yes** |
+| **Task status** | pending |
+| **Operation type** | plan |
+| **Risk level** | medium |
+| **Commit authorized** | yes (not executed — dry-run) |
+| **Push authorized** | yes (not executed — dry-run) |
+| **Dry-run mode** | YES — no execution performed |
+| **Discovery docs** | `docs/orchestrator/latest.md`, `docs/orchestrator/inbox/2026-05-20_0055_t1-1-polygon-flow-closeout.md` |
+| **Task generated** | GIS — T1.3 PCN/Geoportale OGC layer gate decision packet |
+
+**What did not happen:** no implementer run, no GIS files modified, no commit/push from generator, no n8n, no Telegram, no secrets read or committed.
+
+**Conclusion:** Local CLI generator path **PASS**. Criterion 2 remains **open** until n8n invokes the script and Telegram receives **`Prompt ready: yes`** or **`Prompt ready: no`** on the user's phone.
+
+---
+
 ## Docs-only path (now)
 
 | Step | Status |
 |------|--------|
-| Design document (this file) | **Done** when committed |
+| Design document (this file) | **Done** |
+| Local CLI dry-run (`Prompt ready: yes`) | **PASS** — see above |
 | n8n workflow JSON export | **Not created** — after runtime workflow exists |
-| Script execution test | **Not run** |
-| Telegram result test | **Not run** |
+| n8n invocation + Telegram | **Not run** |
 | MVP criterion 2 closure | **PENDING** |
 
 Updating this file does **not** satisfy criterion 2. Closure requires a real n8n run and a Telegram message on the user's phone.
@@ -142,7 +172,7 @@ Updating this file does **not** satisfy criterion 2. Closure requires a real n8n
 
 Follow [RUNTIME_GATES.md](RUNTIME_GATES.md). Suggested order for criterion 2 only:
 
-1. Confirm `handoff-generate.mjs` runs on VPS with known inputs (manual SSH/shell, outside n8n) — document command locally.
+1. ~~Confirm `handoff-generate.mjs` runs locally with known inputs~~ — **PASS** (2026-05-20 local CLI dry-run; see [Local CLI dry-run PASS](#local-cli-dry-run-pass)). VPS/n8n path still pending.
 2. Import or build n8n workflow **inactive**; link `CONTROL PLANE - Telegram Bot`; set `chat_id` in UI.
 3. n8n **manual** trigger → execute script → verify Telegram shows `Prompt ready: yes` or `Prompt ready: no`.
 4. Export redacted workflow JSON to `workflows/exports/` per [workflows/README.md](../workflows/README.md).
@@ -183,6 +213,6 @@ When runtime is allowed:
 | Telegram bot + credential | PASS ([TELEGRAM_SETUP.md](TELEGRAM_SETUP.md)) |
 | v4 commit polling | Active provisional path — independent of criterion 2 |
 | Public HTTPS for GitHub webhook | Not required for **manual** criterion 2 test |
-| dev-method script contract | Source of truth in dev-method repo — confirm flags before VPS test |
+| dev-method script contract | Local CLI PASS 2026-05-20 — n8n + Telegram still pending |
 
 Criterion 3 (three full cycles) builds on criterion 2 but is a **separate** closure item.
