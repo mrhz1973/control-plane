@@ -26,7 +26,7 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 | # | Criterion | Status | Detail doc |
 |---|-----------|--------|------------|
 | 1 | Push → Telegram &lt;30s | **PARTIAL** — v4 polling provisional; sub-30s pending | [MVP_CRITERIA.md](MVP_CRITERIA.md) §1, [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
-| 2 | handoff-generate.mjs via n8n → `Prompt ready: yes/no` | **LOCAL + CONTAINER CLI PASS / PENDING N8N WORKFLOW + TELEGRAM** | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
+| 2 | handoff-generate.mjs via n8n → `Prompt ready: yes/no` | **LOCAL + CONTAINER CLI PASS / EXECUTE COMMAND BLOCKED / FASE 2 DECISION NEEDED** | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
 | 3 | 3 real cycles handoff → implementer → commit → notifica | **DOCUMENTED** — **0 / 3 PASS** | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
 | 4 | Workflow JSON redacted in repo | **PASS** — runtime v4 visual match | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
 | 5 | Rebuild from zero if VPS dies | **PARTIAL / DOCUMENTED** — pending field validation | [N8N_REBUILD.md](N8N_REBUILD.md) |
@@ -56,13 +56,13 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 - **Provisional:** v4 satisfies “notify on new commit” but **not** strict sub-30-second delivery.
 - **Pending:** sub-30s path needs webhook + public HTTPS, or measured latency per [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md).
 
-### 2 — Handoff via n8n (LOCAL + CONTAINER CLI PASS / pending n8n workflow + Telegram)
+### 2 — Handoff via n8n (CLI PASS / Execute Command blocked)
 
-- **Local CLI (2026-05-20):** dry-run → **`Prompt ready: yes`** ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)).
-- **Container CLI (2026-05-20):** same dry-run inside n8n container → **`Prompt ready: yes`**, exit codes 0.
-- **Manual workflow v1 export:** **prepared / import pending** — `2026-05-20_handoff-generate-manual-telegram-v1.redacted.json` (**not** PASS).
-- **Still open for criterion 2:** import in n8n, manual trigger, Telegram **`Prompt ready: yes/no`** on phone.
-- **Next gate:** import inactive workflow → link credential → set chat_id in UI → Manual Trigger once ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)).
+- **Local + container CLI (2026-05-20):** dry-run → **`Prompt ready: yes`**, exit 0.
+- **Manual workflow v1 export:** prepared; import **blocked** by n8n v2 default Execute Command disable ([diagnosis](HANDOFF_N8N_GATE.md#self-hosted-n8n-execute-command-availability-diagnosis)).
+- **Diagnosis conclusion A:** enable via `NODES_EXCLUDE=[]` (or documented equivalent) — **FASE 2 config fix**, not done yet.
+- **Still open:** config gate → import → manual trigger → Telegram on phone.
+- **Not PASS.** No bridge as first option.
 
 ### 3 — Three end-to-end cycles (0 / 3)
 
@@ -86,9 +86,9 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 2 (n8n handoff workflow + Telegram)
+### Option A — Criterion 2 FASE 2: Execute Command config fix
 
-Build/import one manual n8n workflow from [2026-05-20_handoff-generate-manual-telegram-v1.redacted.json](../workflows/exports/2026-05-20_handoff-generate-manual-telegram-v1.redacted.json) (prepared, import pending). Local + container CLI already PASS; Telegram delivery still pending.
+Enable Execute Command on n8n **2.19.5** per [diagnosis](HANDOFF_N8N_GATE.md#self-hosted-n8n-execute-command-availability-diagnosis) (**conclusion A**: set `NODES_EXCLUDE=[]`, restart container — separate runtime gate). Then import handoff v1 and manual Telegram test.
 
 ### Option B — Criterion 1 latency measurement
 

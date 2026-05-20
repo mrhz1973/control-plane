@@ -210,15 +210,80 @@ Dry-run executed **inside the n8n container** against mounted runtime repos. **N
 
 ---
 
-## Docs-only path (now)
+## Self-hosted n8n Execute Command availability diagnosis
+
+**Date:** 2026-05-20  
+**Method:** read-only SSH + `docker inspect` / `docker exec` (no n8n UI, no workflow run, no container restart, no config changes).
+
+### Runtime observed
+
+| Item | Finding |
+|------|---------|
+| **Container** | `root-n8n-1` (`a740e772bcca`) |
+| **Image** | `docker.n8n.io/n8nio/n8n` |
+| **n8n CLI version** | `2.19.5` |
+| **Execute Command on disk** | **Present** — `ExecuteCommand.node.js` under `n8n-nodes-base/dist/nodes/ExecuteCommand/` |
+| **Code node on disk** | **Present** — `n8n-nodes-base/dist/nodes/Code/Code.node.js` |
+| **NODES_EXCLUDE** | **Not set** in container env |
+| **NODES_INCLUDE** | **Not set** |
+| **N8N_BLOCK_ENV_ACCESS_IN_NODE** | Not set |
+| **N8N_RESTRICT_FILE_ACCESS_TO** | Not set |
+| **N8N_RUNNERS_ENABLED** | `true` |
+| **NODE_FUNCTION_ALLOW_BUILTIN** | Not set |
+| **NODE_FUNCTION_ALLOW_EXTERNAL** | Not set |
+
+### n8n v2 default policy (verified in container)
+
+n8n **v2** ships `disabled-nodes.rule.js` which disables by default:
+
+- `n8n-nodes-base.executeCommand`
+- `n8n-nodes-base.localFileTrigger`
+
+When **`NODES_EXCLUDE` is not set**, workflows using Execute Command are flagged/disabled. n8n docs in that rule recommend enabling via explicit env, e.g. **`NODES_EXCLUDE=[]`** (empty exclude list).
+
+**Interpretation:** the node package exists, but the **runtime node registry excludes it by default** until env is configured.
+
+### Export v1 compatibility (`2026-05-20_handoff-generate-manual-telegram-v1.redacted.json`)
+
+| Check | Result |
+|-------|--------|
+| Execute Command `type` | `n8n-nodes-base.executeCommand` — matches on-disk node name |
+| Execute Command `typeVersion` | `1` |
+| Code node `typeVersion` | `2` |
+| Telegram node | Standard redacted template pattern |
+
+**Finding:** export shape is **consistent** with installed node types. Import/UI issues are **unlikely** to be caused by wrong JSON type string alone; primary blocker is v2 **default disable policy**, not missing files.
+
+### Conclusion: **A — likely config exclusion; fix may be NODES_EXCLUDE / env config**
+
+| Code | Meaning | This deployment |
+|------|---------|-----------------|
+| **A** | Config exclusion — enable via `NODES_EXCLUDE=[]` or explicit include/exclude policy | **Selected** |
+| B | Execute Command absent — Code-only rewrite | **Rejected** — node files present |
+| C | Export type mismatch | **Rejected as primary** — types match; policy block dominates |
+| D | Inconclusive | **Rejected** — sufficient container evidence |
+
+**Not chosen yet:** Code node rewrite (B fallback) or bridge — only if config fix fails after controlled runtime gate.
+
+### FASE 2 prerequisite (not executed in this task)
+
+1. Set `NODES_EXCLUDE=[]` (or equivalent documented enablement) on n8n container via compose/env — **separate runtime gate**.
+2. Restart n8n container — **separate runtime gate** (not done here).
+3. Re-import or open handoff workflow v1; confirm Execute Command node appears/enabled.
+4. Then proceed with manual trigger + Telegram test.
+
+**FASE 2 is blocked** until step 1–3 are validated.
+
+---
 
 | Step | Status |
 |------|--------|
 | Design document (this file) | **Done** |
 | Local CLI dry-run (`Prompt ready: yes`) | **PASS** — [Local CLI dry-run PASS](#local-cli-dry-run-pass) |
 | Container CLI dry-run inside n8n | **PASS** — [n8n container CLI dry-run PASS](#n8n-container-cli-dry-run-pass) |
-| Manual n8n workflow v1 export | **Prepared / import pending** — [Manual n8n workflow v1 prepared](#manual-n8n-workflow-v1-prepared) |
-| n8n handoff workflow import + Telegram test | **Not run** |
+| Manual n8n workflow v1 export | **Prepared / import blocked by Execute Command policy** — [diagnosis](#self-hosted-n8n-execute-command-availability-diagnosis) |
+| Execute Command availability diagnosis | **Done** — conclusion **A** (v2 default disable; config fix needed) |
+| n8n handoff workflow import + Telegram test | **Blocked** — pending FASE 2 config gate |
 | MVP criterion 2 closure | **PENDING** |
 
 Updating this file does **not** satisfy criterion 2. Closure requires a real n8n run and a Telegram message on the user's phone.
@@ -231,9 +296,10 @@ Follow [RUNTIME_GATES.md](RUNTIME_GATES.md). Suggested order for criterion 2 onl
 
 1. ~~Confirm `handoff-generate.mjs` runs locally~~ — **PASS** (2026-05-20 local CLI; [Local CLI dry-run PASS](#local-cli-dry-run-pass)).
 2. ~~Confirm generator runs inside n8n container~~ — **PASS** (2026-05-20 container CLI; [n8n container CLI dry-run PASS](#n8n-container-cli-dry-run-pass)).
-3. Import [handoff workflow v1 export](../workflows/exports/2026-05-20_handoff-generate-manual-telegram-v1.redacted.json) **inactive** (allowed [workflow freeze](RUNTIME_GATES.md#workflow-freeze-rule-mvp) exception); link `CONTROL PLANE - Telegram Bot`; set `chat_id` in UI.
-4. n8n **manual** trigger → verify Telegram shows `Prompt ready: yes` or `Prompt ready: no`.
-5. Re-export redacted workflow JSON if runtime differs from committed template.
+3. ~~Import handoff workflow v1~~ — **blocked** until [Execute Command diagnosis](#self-hosted-n8n-execute-command-availability-diagnosis) FASE 2 config fix (`NODES_EXCLUDE=[]` + container restart gate).
+4. Import handoff workflow v1 **inactive**; link credential; set chat_id in UI.
+5. n8n **manual** trigger → verify Telegram `Prompt ready: yes/no`.
+6. Re-export redacted JSON if runtime differs.
 
 Do **not** combine: import + execute + activate webhook + schedule in one session.
 
