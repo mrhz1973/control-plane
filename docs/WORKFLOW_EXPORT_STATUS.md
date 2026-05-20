@@ -12,8 +12,8 @@
 
 | Level | Meaning |
 |-------|---------|
-| **PARTIAL PASS (now)** | Redacted exports exist under `workflows/exports/`; canonical v4 export matches provisional MVP path |
-| **Full PASS (pending)** | Runtime n8n workflow matches committed redacted export after activation/configuration; re-export if diverged |
+| **PASS (now)** | Redacted exports exist under `workflows/exports/`; canonical v4 export matches the provisional MVP path; active runtime v4 was visually checked against the committed redacted export |
+| **Reopen if runtime diverges** | If runtime n8n workflow changes nodes, schedule, repo list, or message format, export again, redact, commit, and update this file |
 
 **Rule:** If runtime workflow changes in n8n (nodes, schedule, repo list, message format), export again, redact, commit — or criterion 4 reopens.
 
@@ -26,6 +26,8 @@
 | `2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json` | `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` | **Active provisional path** — GitHub public read → `control_plane_state` dedupe → Telegram; one-minute schedule |
 
 Use this file for [N8N_REBUILD.md](N8N_REBUILD.md) import. Runtime v4 is **active and stable** per [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md).
+
+Runtime match status: **PASS** — the active n8n v4 workflow was visually checked against this committed redacted export. UI-only credential/chat_id linkage differs as expected and must not be committed.
 
 ---
 
@@ -90,14 +92,14 @@ Each export includes a `redaction` note in JSON metadata confirming what was str
 
 ---
 
-## Runtime vs committed export (pending check)
+## Runtime vs committed export
 
-Before closing criterion 4 fully:
+Criterion 4 full closure has been reached for the current provisional MVP path:
 
-1. Open active workflow **v4** in n8n (runtime gate — not this task).
-2. Compare structure to `2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json` (nodes, schedule interval, Data Table name, GitHub URL pattern).
-3. If identical except chat_id/credential linkage → criterion 4 can move to **PASS**.
-4. If runtime diverged → export from n8n, redact, commit new dated file, update this doc.
+1. Active workflow **v4** was opened in n8n during the runtime gate.
+2. The user visually confirmed the expected structure: manual trigger, schedule trigger, GitHub latest commit read, Data Table `control_plane_state`, dedupe logic, Telegram send, and duplicate-skip/no-Telegram branch.
+3. This matches `2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json` except for expected UI-only chat_id/credential linkage.
+4. No re-export was needed.
 
 **Handoff workflow (criterion 2):** no export yet — expected after first runtime PASS.
 
@@ -109,8 +111,9 @@ Before closing criterion 4 fully:
 |--------|--------|
 | Inventory committed exports | Done |
 | Mark canonical v4 / inactive v5 / failed v2 | Done |
+| Runtime v4 match recorded | **PASS** |
 | Modify `workflows/exports/*.json` | **Not done** — forbidden |
-| Re-export from n8n | **Not done** — runtime gate |
+| Re-export from n8n | **Not done** — not needed for current v4 match |
 
 ---
 
@@ -127,10 +130,10 @@ Before closing criterion 4 fully:
 
 ## Verification (criterion 4 full closure)
 
-- [ ] Redacted v4 JSON exists in repo — **yes**
-- [ ] Follows naming convention — **yes**
-- [ ] Runtime v4 matches committed export — **pending manual compare**
-- [ ] No secrets in committed exports — **yes** (per file metadata)
+- [x] Redacted v4 JSON exists in repo
+- [x] Follows naming convention
+- [x] Runtime v4 matches committed export
+- [x] No secrets in committed exports (per file metadata)
 - [ ] After handoff MVP: add redacted handoff workflow export when criterion 2 runtime exists
 
-When runtime match is confirmed, set [MVP_CRITERIA.md](MVP_CRITERIA.md) §4 to **PASS**.
+Criterion 4 is **PASS** in [MVP_CRITERIA.md](MVP_CRITERIA.md).
