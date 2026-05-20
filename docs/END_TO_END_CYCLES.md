@@ -119,44 +119,175 @@ Add one section per cycle below (or append rows in your local log). **Never** pu
 
 Record **real** cycles here when they happen. Until three `PASS` rows exist, criterion 3 stays open. See [Repo eligibility](#repo-eligibility-for-end-to-end-cycles) above.
 
-### Cycle 1 — PENDING (planned)
+### Cycle 1 — READY / NOT EXECUTED
+
+**Status:** **READY** — prepared for execution; **NOT EXECUTED** (no implementer run, no GIS commit, no v4 notifica for this cycle yet).
+
+| Field | Value |
+|-------|--------|
+| data/ora | _pending — fill when Telegram notifica received_ |
+| repo | `mrhz1973/cursor-coordinate-converter` |
+| **task** | **GIS — T1.3 PCN/Geoportale OGC layer gate decision packet** |
+| handoff source | n8n manual workflow **PASS** 2026-05-20 (`CONTROL PLANE - Handoff generate manual Telegram v1` → `Prompt ready: yes`, exit 0); equivalent validated via `handoff-generate.mjs` dry-run (local + container CLI) — see [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
+| implementer (target) | **Cursor GIS verde** — _not run yet_ |
+| commit hash | _pending_ |
+| **expected commit message** | `docs: T1.3 OGC layer gate decision packet` |
+| **expected files** | `docs/orchestrator/latest.md`, `docs/orchestrator/inbox/*.md` |
+| Telegram notification | _pending — **required:** v4 polling message on phone for **this** pushed commit_ |
+| esito | **READY** (not PASS) |
+
+**Forbidden in implementer session (GIS repo):**
+
+| Forbidden | Reason |
+|-----------|--------|
+| `coordinate_converter Claude.html` | Docs-only cycle; no monolite changes |
+| `package.json`, build/deploy files | Out of scope |
+| `mrhz1973/control-plane` | Observer repo — not cycle target |
+| `dev-method`, `alina-lavoro` | Out of scope |
+| `git add .` | Stage only intentional docs |
+
+**Completion proof required (all three before esito → PASS):**
+
+1. **Commit hash** on `cursor-coordinate-converter` `main` with message `docs: T1.3 OGC layer gate decision packet`.
+2. **Telegram notification** from active v4 workflow for that pushed commit (on user's phone).
+3. **Final `git status --short`** clean in GIS repo (only after intentional docs staged).
+
+**Execution prompt:** copy from [Cycle 1 execution prompt source](#cycle-1-execution-prompt-source) in a **separate** Cursor GIS session — do **not** run from control-plane docs-only tasks.
+
+**Note:** Criterion 2 handoff PASS alone does **not** close Cycle 1. CLI dry-run `Prompt ready: yes` (2026-05-20) seeded this task but did not execute implementer → commit → notifica.
+
+---
+
+### Cycle 2 — PENDING (planned, after Cycle 1 PASS)
 
 | Field | Value |
 |-------|--------|
 | data/ora | _pending_ |
 | repo | `mrhz1973/dev-method` |
-| handoff source | _pending_ |
+| handoff source | _pending — distinct task from Cycle 1_ |
 | implementer | _pending_ |
 | commit hash | _pending_ |
 | Telegram notification | _pending — expected via v4 polling after push_ |
 | esito | **PENDING** (not PASS) |
-| note | First real cycle on **dev-method**: handoff → implementer → push → Telegram via v4. |
+| note | Second cycle on **dev-method** — must differ from Cycle 1 repo/task. **Never** use control-plane as cycle target. |
 
-### Cycle 2 — PENDING (planned)
+---
 
-| Field | Value |
-|-------|--------|
-| data/ora | _pending_ |
-| repo | `mrhz1973/cursor-coordinate-converter` |
-| handoff source | _pending_ |
-| implementer | _pending_ |
-| commit hash | _pending_ |
-| Telegram notification | _pending — expected via v4 polling_ |
-| esito | **PENDING** (not PASS) |
-| note | Second cycle on **GIS** (frozen) — only if a real authorized task exists; otherwise use **dev-method** with a distinct task. Must differ from Cycle 1 repo. **Never** use control-plane. **2026-05-20:** local CLI dry-run produced `Prompt ready: yes` for GIS T1.3 task — **does not count** as cycle PASS (no implementer → commit → notifica); may seed future Cycle 2 when task is executed. |
-
-### Cycle 3 — PENDING (planned)
+### Cycle 3 — PENDING (planned, after Cycle 2 PASS)
 
 | Field | Value |
 |-------|--------|
 | data/ora | _pending_ |
-| repo | `mrhz1973/dev-method` |
-| handoff source | _pending — `handoff-generate.mjs` via n8n manual when criterion 2 runtime tested; expect `Prompt ready: yes/no` on Telegram_ |
+| repo | `mrhz1973/dev-method` **or** `mrhz1973/cursor-coordinate-converter` |
+| handoff source | _pending — `handoff-generate.mjs` via n8n manual or local; full four-step evidence_ |
 | implementer | _pending_ |
 | commit hash | _pending_ |
-| Telegram notification | _pending — `Prompt ready: yes/no` plus commit notification via v4 if applicable_ |
+| Telegram notification | _pending — v4 commit notify on phone_ |
 | esito | **PENDING** (not PASS) |
-| note | Handoff-generate / criterion 2 validation cycle: full pipeline handoff → implementer → commit → notifica. |
+| note | Third distinct real cycle; third `PASS` closes criterion 3. |
+
+---
+
+## Cycle 1 execution prompt source
+
+**Purpose:** Copy-paste prompt for **Cursor GIS verde** in a **future** session. **Do not execute** this prompt from control-plane docs-only work.
+
+**Handoff lineage:** Structured task from GIS orchestrator inbox (`2026-05-20_0055_t1-1-polygon-flow-closeout.md` § Future Handoff Prompt) — validated `Prompt ready: yes` via n8n manual handoff 2026-05-20.
+
+```markdown
+MODALITÀ: GIS — CRITERION 3 CYCLE 1 / T1.3 GATE DECISION PACKET (DOCS-ONLY)
+
+Repo locale previsto:
+C:\Users\mrhz\Documents\AI\GitHub\cursor-coordinate-converter
+
+Obiettivo:
+Eseguire il task docs-only T1.3 — produrre il gate decision packet PCN/Geoportale OGC, committare e pushare su main, poi verificare notifica Telegram v4 per quel commit (ciclo CONTROL PLANE criterion 3 step 2–4).
+
+TASK: GIS — T1.3 PCN/Geoportale OGC layer gate decision packet
+TASK STATUS: pending
+Operation type: plan
+Risk level: medium
+Target file(s):
+  - docs/orchestrator/latest.md
+  - docs/orchestrator/inbox/*.md
+Preferred implementer: Cursor
+Commit: authorized
+Push: authorized
+
+Preflight obbligatorio (GIS repo):
+1. git rev-parse --show-toplevel
+2. git branch --show-current  → must be main (stop if not)
+3. git status --short
+4. se status non è vuoto, fermati e fai report (non procedere senza decisione)
+5. git log -1 --oneline
+
+SESSION / REPO GUARD:
+- Repo: mrhz1973/cursor-coordinate-converter
+- Local path: C:\Users\mrhz\Documents\AI\GitHub\cursor-coordinate-converter
+- Branch: main (stop if not main)
+- Do NOT touch dev-method, alina-lavoro, control-plane, or unrelated repos
+- Do NOT modify coordinate_converter Claude.html in this task
+- Do NOT use git add .
+- Docs-only: nessun codice nel monolite, nessun deploy, nessun package.json
+
+CONTEXT:
+- T1.1 compound polygon flow: CLOSED (closeout 2026-05-20_0055_t1-1-polygon-flow-closeout.md).
+- T1.2 CoT XML waypoint: CLOSED with browser PASS (orchestratore 2026-05-19).
+- Next Tier 1 sequence per 2026-05-19_1300_next-tier1-plan.md: Blocco 1 CoT done, Blocco 2 polygon done, Separato = T1.3 PCN/Geoportale research-gated.
+- Candidate C requires gate clearance before any WMS/WMTS code in monolite.
+- CONTROL PLANE handoff PASS 2026-05-20: Prompt ready yes (n8n manual workflow); this session completes implementer → commit → notifica for MVP cycle 1.
+
+SCOPE:
+- Produce a gate decision packet (docs-only) answering the five gates in next-tier1-plan.md § Gate decision packet — PCN/Geoportale (deferred):
+  1) Endpoint availability (official WMS/WMTS URLs + public documentation)
+  2) CORS feasibility from file:// or app origin
+  3) Licensing / ToS for offline-first peer distribution
+  4) OPSEC review (gov IT servers from classified/air-gapped context)
+  5) Tile fetch compatibility with existing tile engine (not Leaflet)
+- For each gate: PASS / FAIL / UNKNOWN + evidence links or notes (no secrets).
+- End with recommendation: proceed to implementation planning | remain deferred | blocked.
+- Update docs/orchestrator/latest.md (brief top entry) + one new inbox file with full packet (timestamped name).
+
+OUT OF SCOPE:
+- Implementing WMS/WMTS layers in coordinate_converter Claude.html
+- Scraping external viewers or unofficial endpoints
+- Network calls except public documentation fetch if needed for evidence
+- Changing package.json, build, deploy, tags
+- control-plane, dev-method, alina-lavoro repos
+
+FILES ALLOWED:
+- docs/orchestrator/latest.md
+- docs/orchestrator/inbox/*.md
+
+FILES FORBIDDEN:
+- coordinate_converter Claude.html
+- package.json, package-lock.json, build tooling, deploy config, secrets, .env
+- dev-method repo, alina-lavoro repo, control-plane repo
+
+VALIDATION:
+- git status --short (clean before start; only intentional docs after)
+- git diff -- docs/orchestrator/latest.md docs/orchestrator/inbox/
+- git diff --check
+
+GIT RULES:
+- git rev-parse --show-toplevel; git branch --show-current; git status --short; git log -1 --oneline at start
+- Never git add .
+- Stage only intentional docs files
+- Commit message: docs: T1.3 OGC layer gate decision packet
+- Push: authorized on origin main (after user/control-plane cycle gate allows runtime)
+
+COMMIT MESSAGE:
+docs: T1.3 OGC layer gate decision packet
+
+FINAL REPORT (required):
+- Gate table with PASS/FAIL/UNKNOWN per gate
+- Overall recommendation (proceed | deferred | blocked)
+- Files changed; inbox path; latest.md updated yes/no
+- Commit hash (short + full optional)
+- Push result
+- Final git status --short (must be clean)
+- Note for CONTROL PLANE: record commit hash + Telegram v4 received in docs/END_TO_END_CYCLES.md Cycle 1 → esito PASS
+```
 
 ---
 
@@ -170,7 +301,7 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 4. No token, chat_id, webhook URL, or secret appears in committed records;
 5. [MVP_CRITERIA.md](MVP_CRITERIA.md) §3 status updated to **PASS** after review.
 
-**Current tracker status:** 0 / 3 PASS — criterion open.
+**Current tracker status:** 0 / 3 PASS — Cycle 1 **READY / NOT EXECUTED** on `cursor-coordinate-converter`; criterion open.
 
 ---
 
@@ -179,9 +310,10 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 | Action | Status |
 |--------|--------|
 | Define valid / invalid cycle | Done in this file |
-| Pre-fill cycle log template | Done — three **PENDING** planned cycles (not PASS) |
-| Execute real cycles | **Not in this task** |
-| Close criterion 3 | **PENDING** |
+| Pre-fill cycle log template | Done — Cycle 1 **READY**; Cycles 2–3 **PENDING** |
+| Cycle 1 preparation (GIS T1.3) | **READY** — prompt in [Cycle 1 execution prompt source](#cycle-1-execution-prompt-source) |
+| Execute Cycle 1 implementer + commit + notifica | **Not in this task** |
+| Close criterion 3 | **PENDING** (0 / 3 PASS) |
 
 ---
 

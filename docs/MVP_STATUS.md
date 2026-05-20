@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after MVP criterion 2 PASS (2026-05-20 handoff manual + Telegram). Update this file when a criterion changes.
+**Last consolidated:** after Cycle 1 preparation for criterion 3 (2026-05-20, GIS T1.3 gate packet — READY, not executed). Update this file when a criterion changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -63,7 +63,8 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 ### 3 — Three end-to-end cycles (0 / 3)
 
-- Tracker template ready; no completed PASS cycles recorded.
+- **Cycle 1:** **READY / NOT EXECUTED** — target `cursor-coordinate-converter`, task **T1.3 OGC layer gate decision packet** (docs-only); handoff source criterion 2 PASS 2026-05-20; implementer **Cursor GIS verde** pending; proof = commit hash + v4 Telegram + clean GIS `git status`. See [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md#cycle-1--ready--not-executed).
+- Cycles 2–3 still **PENDING**; no PASS recorded.
 - Notification may use v4 polling until webhook exists.
 
 ### 4 — Workflow export (PASS)
@@ -83,9 +84,9 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 3: End-to-end cycle 1
+### Option A — Criterion 3: Execute Cycle 1 (READY)
 
-Criterion 2 **PASS**. Next: real cycle on `dev-method` or `cursor-coordinate-converter` — handoff → implementer → commit → notifica ([END_TO_END_CYCLES.md](END_TO_END_CYCLES.md)).
+Criterion 2 **PASS**. Cycle 1 **prepared** on `cursor-coordinate-converter` (GIS T1.3 docs-only). Next runtime gate: run **Cursor GIS verde** with prompt in [END_TO_END_CYCLES.md § Cycle 1 execution prompt source](END_TO_END_CYCLES.md#cycle-1-execution-prompt-source) → commit/push → confirm v4 Telegram → record PASS in cycle log.
 
 ### Option B — Criterion 1 latency measurement
 
