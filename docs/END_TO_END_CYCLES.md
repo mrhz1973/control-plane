@@ -143,18 +143,44 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 
 ---
 
-### Cycle 2 — PENDING (planned, after Cycle 1 PASS)
+### Cycle 2 — READY / NOT EXECUTED
+
+**Status:** **READY** — prepared for execution; **NOT EXECUTED** (no implementer run, no dev-method commit, no v4 notifica for this cycle yet).
 
 | Field | Value |
 |-------|--------|
-| data/ora | _pending_ |
+| data/ora | _pending — fill when Telegram notifica received_ |
 | repo | `mrhz1973/dev-method` |
-| handoff source | _pending — distinct task from Cycle 1_ |
-| implementer | _pending_ |
+| **task** | **DEV-METHOD — Document n8n handoff runtime compatibility lessons** |
+| handoff source | CONTROL PLANE prepared handoff after Cycle 1 **PASS** (criterion 2 n8n manual + [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) lessons); distinct from Cycle 1 GIS task |
+| implementer (target) | **Cursor DEV** (dev-method) — _not GIS, not control-plane_ |
 | commit hash | _pending_ |
-| Telegram notification | _pending — expected via v4 polling after push_ |
-| esito | **PENDING** (not PASS) |
-| note | Second cycle on **dev-method** — must differ from Cycle 1 repo/task. **Never** use control-plane as cycle target. |
+| **expected commit message** | `docs: document n8n handoff runtime compatibility` |
+| **expected files** | `patterns/local-handoff-generator.md`; other existing dev-method docs/README only if pertinent |
+| Telegram notification | _pending — **required:** v4 polling message on phone for **this** pushed commit_ |
+| esito | **READY** (not PASS) |
+
+**Type:** docs-only / method documentation — consolidate operational lessons from n8n handoff gate (Execute Command, `NODES_EXCLUDE`, root `safe.directory`, gate ladder).
+
+**Forbidden in implementer session:**
+
+| Forbidden | Reason |
+|-----------|--------|
+| `mrhz1973/control-plane` | Observer repo — not cycle target |
+| `cursor-coordinate-converter`, `alina-lavoro` | Out of scope |
+| n8n UI, workflow execution, runtime on VPS | Docs-only in dev-method |
+| token, chat_id, credential ID, webhook URL, secrets | Security |
+| `git add .` | Stage only intentional docs |
+
+**Completion proof required (all three before esito → PASS):**
+
+1. **Commit hash** on `dev-method` `main` with message `docs: document n8n handoff runtime compatibility`.
+2. **Telegram notification** from active v4 workflow for that pushed commit (on user's phone).
+3. **Final `git status --short`** clean in dev-method repo.
+
+**Execution prompt:** copy from [Cycle 2 execution prompt source](#cycle-2-execution-prompt-source) in a **separate** Cursor DEV session — do **not** run from control-plane docs-only tasks.
+
+**Note:** Cycle 1 PASS on GIS (`34d543d`) does not close Cycle 2. This cycle documents **method** lessons for future handoff/n8n operators; repo must differ from Cycle 1.
 
 ---
 
@@ -173,9 +199,112 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 
 ---
 
+## Cycle 2 execution prompt source
+
+**Purpose:** Copy-paste prompt for **Cursor DEV** (dev-method) in a **future** session. **Do not execute** this prompt from control-plane docs-only work.
+
+**Handoff lineage:** Prepared by CONTROL PLANE after Cycle 1 PASS and criterion 2 n8n handoff runtime lessons ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)).
+
+```markdown
+MODALITÀ: DEV-METHOD — CRITERION 3 CYCLE 2 / N8N HANDOFF RUNTIME COMPATIBILITY (DOCS-ONLY)
+
+Repo locale previsto:
+C:\Users\mrhz\Documents\AI\GitHub\dev-method
+
+Obiettivo:
+Documentare nel metodo le lezioni operative emerse dal gate n8n handoff CONTROL PLANE (criterion 2 + Cycle 1 context), committare e pushare su main, poi verificare notifica Telegram v4 per quel commit (criterion 3 step 2–4).
+
+TASK: DEV-METHOD — Document n8n handoff runtime compatibility lessons
+TASK STATUS: pending
+Operation type: documentation
+Risk level: low
+Target file(s):
+  - patterns/local-handoff-generator.md
+  - existing dev-method docs or README only if directly pertinent (no new scope)
+Preferred implementer: Cursor DEV
+Commit: authorized
+Push: authorized
+
+Preflight obbligatorio (dev-method repo):
+1. git rev-parse --show-toplevel
+2. git branch --show-current  → must be main (stop if not)
+3. git status --short
+4. se status non è vuoto, fermati e fai report (non procedere senza decisione)
+5. git log -1 --oneline
+
+SESSION / REPO GUARD:
+- Repo: mrhz1973/dev-method
+- Local path: C:\Users\mrhz\Documents\AI\GitHub\dev-method
+- Branch: main (stop if not main)
+- Do NOT touch control-plane, cursor-coordinate-converter, alina-lavoro, or unrelated repos
+- Do NOT open n8n UI, run workflows, SSH to VPS, or send Telegram from this task
+- Do NOT use git add .
+- Docs-only: nessun runtime, nessun deploy, nessun codice tool changes unless strictly required for doc accuracy (prefer doc-only edits)
+
+CONTEXT:
+- CONTROL PLANE MVP: criterion 2 PASS (n8n manual handoff → Prompt ready yes); Cycle 1 PASS on GIS (34d543d).
+- Cycle 2 must land in dev-method (method repo), distinct repo from Cycle 1.
+- Lessons source: control-plane HANDOFF_N8N_GATE (Execute Command diagnosis, NODES_EXCLUDE=[], root safe.directory, gate ladder).
+
+SCOPE — add or extend documentation (minimum content):
+1. n8n v2 can disable `n8n-nodes-base.executeCommand` when `NODES_EXCLUDE` is not explicitly set; document default-disable behavior.
+2. `NODES_EXCLUDE=[]` is the config fix used in CONTROL PLANE self-hosted n8n — document as required explicit allow, not “unset means allow all”.
+3. Execute Command may run as user `root` in the container even when prior CLI tests used user `node` — document user/context mismatch.
+4. For Git repos mounted in the container, `git safe.directory` must be configured for the **actual** user running Execute Command (e.g. root), not only for node.
+5. Distinguish clearly (do not conflate):
+   - local CLI dry-run PASS;
+   - container CLI dry-run PASS;
+   - n8n workflow Manual Trigger PASS;
+   - Telegram delivery PASS.
+6. Recommend **separate runtime gates**; do not skip directly to HTTP bridge if config fix is sufficient.
+7. Never document token, chat_id, credential ID, webhook URL, or secrets — use placeholders only.
+
+Preferred placement:
+- Primary: `patterns/local-handoff-generator.md` (new subsection on n8n / self-hosted compatibility, or appendix cross-link).
+- Secondary: only touch other existing dev-method docs if they already discuss handoff/n8n and need a one-line cross-reference.
+
+OUT OF SCOPE:
+- Modifying control-plane or GIS repos
+- n8n workflow import, activation, Execute Command nodes in production
+- Implementing HTTP bridge or new automation
+- Committing secrets or real credential identifiers
+
+FILES ALLOWED:
+- patterns/local-handoff-generator.md
+- existing dev-method documentation files already in repo (if pertinent)
+
+FILES FORBIDDEN:
+- control-plane repo, cursor-coordinate-converter repo, alina-lavoro repo
+- any file containing real tokens, chat_id, credential IDs, webhook URLs
+
+VALIDATION:
+- git status --short (clean before start; only intentional docs after)
+- git diff --check
+- git diff -- patterns/ docs/ README.md (as applicable)
+
+GIT RULES:
+- Never git add .
+- Stage only intentional documentation files
+- Commit message: docs: document n8n handoff runtime compatibility
+- Push: authorized on origin main
+
+COMMIT MESSAGE:
+docs: document n8n handoff runtime compatibility
+
+FINAL REPORT (required):
+- Summary of sections added/updated (file paths)
+- Confirmation all 7 minimum lesson bullets are covered
+- Commit hash (short + full optional)
+- Push result
+- Final git status --short (must be clean)
+- Note for CONTROL PLANE: record commit hash + Telegram v4 received in docs/END_TO_END_CYCLES.md Cycle 2 → esito PASS
+```
+
+---
+
 ## Cycle 1 execution prompt source
 
-**Purpose:** Copy-paste prompt for **Cursor GIS verde** in a **future** session. **Do not execute** this prompt from control-plane docs-only work.
+**Purpose:** Copy-paste prompt for **Cursor GIS verde** in a **future** session. **Do not execute** this prompt from control-plane docs-only work. **Cycle closed** — archived for audit.
 
 **Handoff lineage:** Structured task from GIS orchestrator inbox (`2026-05-20_0055_t1-1-polygon-flow-closeout.md` § Future Handoff Prompt) — validated `Prompt ready: yes` via n8n manual handoff 2026-05-20.
 
@@ -286,7 +415,7 @@ FINAL REPORT (required):
 4. No token, chat_id, webhook URL, or secret appears in committed records;
 5. [MVP_CRITERIA.md](MVP_CRITERIA.md) §3 status updated to **PASS** after review.
 
-**Current tracker status:** **1 / 3 PASS** — Cycle 1 **PASS** on `cursor-coordinate-converter` (commit `34d543d`); Cycles 2–3 open; criterion 3 **not** fully closed.
+**Current tracker status:** **1 / 3 PASS** — Cycle 1 **PASS** (`34d543d`); Cycle 2 **READY / NOT EXECUTED** on `dev-method`; Cycle 3 **PENDING**; criterion 3 **not** fully closed.
 
 ---
 
@@ -295,9 +424,10 @@ FINAL REPORT (required):
 | Action | Status |
 |--------|--------|
 | Define valid / invalid cycle | Done in this file |
-| Pre-fill cycle log template | Done — Cycle 1 **PASS**; Cycles 2–3 **PENDING** |
+| Pre-fill cycle log template | Done — Cycle 1 **PASS**; Cycle 2 **READY**; Cycle 3 **PENDING** |
 | Cycle 1 (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d`, v4 Telegram |
-| Execute Cycles 2–3 | **Pending** — separate runtime gates |
+| Cycle 2 preparation (dev-method n8n lessons) | **READY** — prompt in [Cycle 2 execution prompt source](#cycle-2-execution-prompt-source) |
+| Execute Cycle 2 implementer + commit + notifica | **Not in this task** |
 | Close criterion 3 | **PENDING** (**1 / 3 PASS**) |
 
 ---

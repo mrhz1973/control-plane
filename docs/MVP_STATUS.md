@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after Cycle 1 PASS for criterion 3 (2026-05-20, GIS commit `34d543d`, v4 Telegram). Update this file when a criterion changes.
+**Last consolidated:** after Cycle 2 preparation for criterion 3 (2026-05-20, dev-method n8n handoff lessons — READY, not executed). Update this file when a criterion changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -63,9 +63,10 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 ### 3 — Three end-to-end cycles (1 / 3)
 
-- **Cycle 1:** **PASS** (2026-05-20) — `cursor-coordinate-converter`, task T1.3 gate decision packet, implementer **Cursor GIS verde**, commit **`34d543d`**, v4 Telegram on phone. Docs-only; no monolite/code.
-- **Cycles 2–3:** **PENDING** — criterion 3 not closed until **3 / 3 PASS**.
-- Notification may use v4 polling until webhook exists.
+- **Cycle 1:** **PASS** (2026-05-20) — `cursor-coordinate-converter`, commit **`34d543d`**, v4 Telegram.
+- **Cycle 2:** **READY / NOT EXECUTED** — `dev-method`, task **Document n8n handoff runtime compatibility lessons**; implementer **Cursor DEV** pending; proof = commit + v4 Telegram + clean `git status`. See [END_TO_END_CYCLES.md § Cycle 2](END_TO_END_CYCLES.md#cycle-2--ready--not-executed).
+- **Cycle 3:** **PENDING** — after Cycle 2 PASS.
+- Criterion 3 not closed until **3 / 3 PASS**.
 
 ### 4 — Workflow export (PASS)
 
@@ -84,9 +85,9 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 3: Execute Cycle 2
+### Option A — Criterion 3: Execute Cycle 2 (READY)
 
-Cycle 1 **PASS** (`34d543d`). Next: distinct cycle — prefer **`dev-method`** with a real authorized task, or a **different GIS task**; **never** `control-plane` as cycle target. Full pipeline: handoff → implementer → commit → v4 Telegram → record in [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md).
+Cycle 1 **PASS** (`34d543d`). Cycle 2 **prepared** on **`dev-method`**. Next: run **Cursor DEV** with prompt in [END_TO_END_CYCLES.md § Cycle 2 execution prompt source](END_TO_END_CYCLES.md#cycle-2-execution-prompt-source) → commit `docs: document n8n handoff runtime compatibility` → push → v4 Telegram → record PASS in cycle log. **Never** use `control-plane` as cycle target.
 
 ### Option B — Criterion 1 latency measurement
 
