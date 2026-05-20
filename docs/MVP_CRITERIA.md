@@ -44,9 +44,10 @@ Automation MVP is **closed** only when all five criteria below are true.
 
 **Criterion:** Utente ha completato almeno 3 cicli reali end-to-end: handoff → implementer → commit → notifica
 
-- **Status:** DOCUMENTED / PENDING VALIDATION (0 / 3 PASS)
-- **Documented:** [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) — valid/invalid cycle rules, minimum record fields, cycle log template, v4 polling as valid notification path, criterion 2 dependency, closure rule.
-- **Still PENDING for closure:** three real cycles recorded with **esito: PASS** (handoff → implementer → commit pushed → Telegram received on phone).
+- **Status:** **1 / 3 PASS** (not fully PASS)
+- **Validated:** Cycle 1 **PASS** (2026-05-20) — `mrhz1973/cursor-coordinate-converter`, commit **`34d543d`** (`docs: T1.3 OGC layer gate decision packet`), handoff from criterion 2 n8n manual **`Prompt ready: yes`**, implementer **Cursor GIS verde**, Telegram **received** via v4 for that commit. See [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md).
+- **Documented:** [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) — valid/invalid cycle rules, cycle log, v4 polling path, closure rule.
+- **Still PENDING for closure:** Cycles 2 and 3 with **esito: PASS** (two more full pipelines).
 - **Verification method:** Document three completed cycles with timestamps: handoff generated, implementer run, commit pushed, Telegram notification received.
 
 ---

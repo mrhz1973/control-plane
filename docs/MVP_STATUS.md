@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after Cycle 1 preparation for criterion 3 (2026-05-20, GIS T1.3 gate packet — READY, not executed). Update this file when a criterion changes.
+**Last consolidated:** after Cycle 1 PASS for criterion 3 (2026-05-20, GIS commit `34d543d`, v4 Telegram). Update this file when a criterion changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -27,7 +27,7 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 |---|-----------|--------|------------|
 | 1 | Push → Telegram &lt;30s | **PARTIAL** — v4 polling provisional; sub-30s pending | [MVP_CRITERIA.md](MVP_CRITERIA.md) §1, [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
 | 2 | handoff-generate.mjs via n8n → `Prompt ready: yes/no` | **PASS** — handoff manual workflow → Telegram `Prompt ready: yes` | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
-| 3 | 3 real cycles handoff → implementer → commit → notifica | **DOCUMENTED** — **0 / 3 PASS** | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
+| 3 | 3 real cycles handoff → implementer → commit → notifica | **1 / 3 PASS** — Cycle 1 GIS `34d543d` + v4 Telegram | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
 | 4 | Workflow JSON redacted in repo | **PASS** — runtime v4 visual match | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
 | 5 | Rebuild from zero if VPS dies | **PARTIAL / DOCUMENTED** — pending field validation | [N8N_REBUILD.md](N8N_REBUILD.md) |
 
@@ -61,10 +61,10 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 - **2026-05-20:** `CONTROL PLANE - Handoff generate manual Telegram v1` — Manual Trigger → `handoff-generate.mjs` → Telegram **`Prompt ready: yes`**, exit code 0, on phone.
 - Workflow remained **inactive**; no webhook; v4/v5 unchanged.
 
-### 3 — Three end-to-end cycles (0 / 3)
+### 3 — Three end-to-end cycles (1 / 3)
 
-- **Cycle 1:** **READY / NOT EXECUTED** — target `cursor-coordinate-converter`, task **T1.3 OGC layer gate decision packet** (docs-only); handoff source criterion 2 PASS 2026-05-20; implementer **Cursor GIS verde** pending; proof = commit hash + v4 Telegram + clean GIS `git status`. See [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md#cycle-1--ready--not-executed).
-- Cycles 2–3 still **PENDING**; no PASS recorded.
+- **Cycle 1:** **PASS** (2026-05-20) — `cursor-coordinate-converter`, task T1.3 gate decision packet, implementer **Cursor GIS verde**, commit **`34d543d`**, v4 Telegram on phone. Docs-only; no monolite/code.
+- **Cycles 2–3:** **PENDING** — criterion 3 not closed until **3 / 3 PASS**.
 - Notification may use v4 polling until webhook exists.
 
 ### 4 — Workflow export (PASS)
@@ -84,9 +84,9 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 3: Execute Cycle 1 (READY)
+### Option A — Criterion 3: Execute Cycle 2
 
-Criterion 2 **PASS**. Cycle 1 **prepared** on `cursor-coordinate-converter` (GIS T1.3 docs-only). Next runtime gate: run **Cursor GIS verde** with prompt in [END_TO_END_CYCLES.md § Cycle 1 execution prompt source](END_TO_END_CYCLES.md#cycle-1-execution-prompt-source) → commit/push → confirm v4 Telegram → record PASS in cycle log.
+Cycle 1 **PASS** (`34d543d`). Next: distinct cycle — prefer **`dev-method`** with a real authorized task, or a **different GIS task**; **never** `control-plane` as cycle target. Full pipeline: handoff → implementer → commit → v4 Telegram → record in [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md).
 
 ### Option B — Criterion 1 latency measurement
 

@@ -119,42 +119,27 @@ Add one section per cycle below (or append rows in your local log). **Never** pu
 
 Record **real** cycles here when they happen. Until three `PASS` rows exist, criterion 3 stays open. See [Repo eligibility](#repo-eligibility-for-end-to-end-cycles) above.
 
-### Cycle 1 — READY / NOT EXECUTED
+### Cycle 1 — PASS
 
-**Status:** **READY** — prepared for execution; **NOT EXECUTED** (no implementer run, no GIS commit, no v4 notifica for this cycle yet).
+**Status:** **PASS** (2026-05-20) — full pipeline: handoff → implementer → commit → Telegram notifica.
 
 | Field | Value |
 |-------|--------|
-| data/ora | _pending — fill when Telegram notifica received_ |
+| data/ora | 2026-05-20 |
 | repo | `mrhz1973/cursor-coordinate-converter` |
 | **task** | **GIS — T1.3 PCN/Geoportale OGC layer gate decision packet** |
-| handoff source | n8n manual workflow **PASS** 2026-05-20 (`CONTROL PLANE - Handoff generate manual Telegram v1` → `Prompt ready: yes`, exit 0); equivalent validated via `handoff-generate.mjs` dry-run (local + container CLI) — see [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
-| implementer (target) | **Cursor GIS verde** — _not run yet_ |
-| commit hash | _pending_ |
-| **expected commit message** | `docs: T1.3 OGC layer gate decision packet` |
-| **expected files** | `docs/orchestrator/latest.md`, `docs/orchestrator/inbox/*.md` |
-| Telegram notification | _pending — **required:** v4 polling message on phone for **this** pushed commit_ |
-| esito | **READY** (not PASS) |
+| handoff source | Criterion 2 **PASS** — n8n manual handoff (`CONTROL PLANE - Handoff generate manual Telegram v1` → **`Prompt ready: yes`**, exit 0); see [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
+| implementer | **Cursor GIS verde** |
+| commit hash | `34d543d` |
+| commit message | `docs: T1.3 OGC layer gate decision packet` |
+| files changed | `docs/orchestrator/latest.md`, `docs/orchestrator/inbox/2026-05-20_0130_t1-3-pcn-geoportale-ogc-gate-decision.md` |
+| Telegram notification | **received** — v4 polling for commit `34d543d` (on user's phone) |
+| **final evidence** | Docs-only GIS commit; no `coordinate_converter Claude.html`, no `package.json`, no deploy/code; v4 Telegram for pushed commit |
+| esito | **PASS** |
 
-**Forbidden in implementer session (GIS repo):**
+**Steps evidenced:** (1) handoff via criterion 2 n8n manual + validated generator output; (2) Cursor GIS verde executed docs-only gate packet; (3) commit `34d543d` pushed to `main`; (4) v4 Telegram notifica received for that commit.
 
-| Forbidden | Reason |
-|-----------|--------|
-| `coordinate_converter Claude.html` | Docs-only cycle; no monolite changes |
-| `package.json`, build/deploy files | Out of scope |
-| `mrhz1973/control-plane` | Observer repo — not cycle target |
-| `dev-method`, `alina-lavoro` | Out of scope |
-| `git add .` | Stage only intentional docs |
-
-**Completion proof required (all three before esito → PASS):**
-
-1. **Commit hash** on `cursor-coordinate-converter` `main` with message `docs: T1.3 OGC layer gate decision packet`.
-2. **Telegram notification** from active v4 workflow for that pushed commit (on user's phone).
-3. **Final `git status --short`** clean in GIS repo (only after intentional docs staged).
-
-**Execution prompt:** copy from [Cycle 1 execution prompt source](#cycle-1-execution-prompt-source) in a **separate** Cursor GIS session — do **not** run from control-plane docs-only tasks.
-
-**Note:** Criterion 2 handoff PASS alone does **not** close Cycle 1. CLI dry-run `Prompt ready: yes` (2026-05-20) seeded this task but did not execute implementer → commit → notifica.
+**Reference:** execution prompt used — [Cycle 1 execution prompt source](#cycle-1-execution-prompt-source) (archived for audit; cycle closed).
 
 ---
 
@@ -301,7 +286,7 @@ FINAL REPORT (required):
 4. No token, chat_id, webhook URL, or secret appears in committed records;
 5. [MVP_CRITERIA.md](MVP_CRITERIA.md) §3 status updated to **PASS** after review.
 
-**Current tracker status:** 0 / 3 PASS — Cycle 1 **READY / NOT EXECUTED** on `cursor-coordinate-converter`; criterion open.
+**Current tracker status:** **1 / 3 PASS** — Cycle 1 **PASS** on `cursor-coordinate-converter` (commit `34d543d`); Cycles 2–3 open; criterion 3 **not** fully closed.
 
 ---
 
@@ -310,10 +295,10 @@ FINAL REPORT (required):
 | Action | Status |
 |--------|--------|
 | Define valid / invalid cycle | Done in this file |
-| Pre-fill cycle log template | Done — Cycle 1 **READY**; Cycles 2–3 **PENDING** |
-| Cycle 1 preparation (GIS T1.3) | **READY** — prompt in [Cycle 1 execution prompt source](#cycle-1-execution-prompt-source) |
-| Execute Cycle 1 implementer + commit + notifica | **Not in this task** |
-| Close criterion 3 | **PENDING** (0 / 3 PASS) |
+| Pre-fill cycle log template | Done — Cycle 1 **PASS**; Cycles 2–3 **PENDING** |
+| Cycle 1 (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d`, v4 Telegram |
+| Execute Cycles 2–3 | **Pending** — separate runtime gates |
+| Close criterion 3 | **PENDING** (**1 / 3 PASS**) |
 
 ---
 

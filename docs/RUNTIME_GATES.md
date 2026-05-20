@@ -58,7 +58,9 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 | Execute Command config fix (`NODES_EXCLUDE=[]`) | **Applied** 2026-05-20 |
 | n8n manual workflow + Telegram | **PASS** 2026-05-20 — criterion 2 closed |
 
-**Next gates (separate):** criterion 3 end-to-end cycles; criterion 1 latency; criterion 5 rebuild field validation.
+| Cycle 1 end-to-end (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d`, v4 Telegram |
+
+**Next gates (separate, one per session):** criterion 3 **Cycle 2** (prefer `dev-method`, distinct task); criterion 1 v4 latency measurement; criterion 5 rebuild field validation. **No new workflows.**
 
 ### Not exceptions (defer until after 5/5 PASS)
 
