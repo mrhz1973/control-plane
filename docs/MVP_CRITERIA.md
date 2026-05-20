@@ -34,7 +34,9 @@ Automation MVP is **closed** only when all five criteria below are true.
 
 **Criterion:** Utente ha completato almeno 3 cicli reali end-to-end: handoff → implementer → commit → notifica
 
-- **Status:** PENDING
+- **Status:** DOCUMENTED / PENDING VALIDATION (0 / 3 PASS)
+- **Documented:** [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) — valid/invalid cycle rules, minimum record fields, cycle log template, v4 polling as valid notification path, criterion 2 dependency, closure rule.
+- **Still PENDING for closure:** three real cycles recorded with **esito: PASS** (handoff → implementer → commit pushed → Telegram received on phone).
 - **Verification method:** Document three completed cycles with timestamps: handoff generated, implementer run, commit pushed, Telegram notification received.
 
 ---
