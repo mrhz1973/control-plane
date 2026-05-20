@@ -1,9 +1,19 @@
 # Criterion 1 latency closure decision
 
-**Status:** **OPEN** / **USER DECISION REQUIRED**
+**Status:** **DECIDED**
+
+| Field | Value |
+|-------|--------|
+| **Decision** | **D-C1-A** |
+| **Date** | 2026-05-21 |
+| **Accepted SLA** | Best-effort **1–5 min** via v4 polling |
+| **Runtime changes** | **None** |
+| **v5 / webhook** | **Not activated** |
+| **Criterion 1** | Remains **PARTIAL** — not technical PASS |
+| **MVP outcome** | **Operational MVP accepted with C1 latency exception** |
 
 **Packet date:** 2026-05-21  
-**Docs-only:** This packet does not run n8n, SSH, Docker, webhooks, v5, or Telegram. Cursor does not choose the outcome.
+**Docs-only:** This packet does not run n8n, SSH, Docker, webhooks, v5, or Telegram.
 
 ---
 
@@ -11,8 +21,8 @@
 
 | Item | State |
 |------|--------|
-| Control Plane MVP | **4 PASS + 1 PARTIAL** |
-| Only non-PASS criterion | **Criterion 1** — push → Telegram &lt;30s |
+| Control Plane MVP | **Operational accepted** (D-C1-A) — C1 **PARTIAL** exception; C2–C5 **PASS** |
+| Only non-PASS criterion | **Criterion 1** — push → Telegram &lt;30s (accepted exception) |
 | Active path | v4 one-minute polling — working, deduped |
 | Strict &lt;30s | Not guaranteed by v4; needs separate technical gate (likely [PUBLIC_WEBHOOK_GATE.md](../PUBLIC_WEBHOOK_GATE.md) → v5 → GitHub webhook) |
 | Current C1 documentation | **PARTIAL** — SLA best-effort **1–5 minutes** ([MVP_CRITERIA.md](../MVP_CRITERIA.md) §1, [V4_POLLING_LATENCY.md](../V4_POLLING_LATENCY.md)) |
@@ -62,23 +72,23 @@
 
 ---
 
-## Decision required (user / orchestrator)
+## Decision record
 
-| ID | Choice |
-|----|--------|
-| **D-C1-A** | Accept C1 **PARTIAL** as final **operational** exception for MVP; no new runtime in this decision |
-| **D-C1-B** | Reject PARTIAL closure; open strict &lt;30s technical gate (webhook/v5/HTTPS) |
+| ID | Choice | Status |
+|----|--------|--------|
+| **D-C1-A** | Accept C1 **PARTIAL** as final **operational** exception for MVP | **Selected** 2026-05-21 |
+| **D-C1-B** | Reject PARTIAL closure; open strict &lt;30s technical gate | Not selected |
 
-Record the chosen ID and date in a follow-up **docs-only** commit (not in this packet).
+Recorded in docs commit `docs: record D-C1-A operational MVP acceptance`.
 
 ---
 
-## Effects if D-C1-A
+## Effects applied (D-C1-A)
 
-- Update [MVP_STATUS.md](../MVP_STATUS.md) and [MVP_CRITERIA.md](../MVP_CRITERIA.md): **operational MVP accepted with C1 exception**.
-- Criterion 1 status stays **PARTIAL** — do **not** relabel as PASS.
+- [MVP_STATUS.md](../MVP_STATUS.md) and [MVP_CRITERIA.md](../MVP_CRITERIA.md) updated: **operational MVP accepted with C1 exception**.
+- Criterion 1 status stays **PARTIAL** — not relabeled as PASS.
 - MVP labeled **accepted-with-exception**, **not** strict **5/5 PASS**.
-- No webhook, v5, or schedule changes from the docs update alone.
+- No webhook, v5, or schedule changes from this decision.
 
 ---
 
@@ -90,11 +100,10 @@ Record the chosen ID and date in a follow-up **docs-only** commit (not in this p
 
 ---
 
-## Prohibited in this packet (both options until user decides)
+## Prohibited (D-C1-A — no runtime from this decision)
 
-- Runtime commands, n8n UI, SSH, VPS/Docker changes
-- GitHub webhook configuration or v5 activation
-- Telegram sends or workflow activation
+- Runtime commands, n8n UI, SSH, VPS/Docker changes triggered by accepting D-C1-A
+- GitHub webhook configuration or v5 activation (post-MVP optional only)
 - Tokens, chat_id, credential IDs, webhook URLs, or secrets in git
 
 ---

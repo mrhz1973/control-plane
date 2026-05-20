@@ -8,7 +8,9 @@
 | **Cambia** | Solo se cambia la definizione di PASS per un criterio |
 | **Stato corrente** | Vive in [MVP_STATUS.md](MVP_STATUS.md) |
 
-Automation MVP is **closed** only when all five criteria below are true.
+Automation MVP is **strictly closed** only when all five criteria below are **PASS**.
+
+**Operational closure (2026-05-21):** User decision **D-C1-A** — MVP **operationally accepted with C1 latency exception**. Criterion 1 remains **PARTIAL** (not technical PASS). This is **not** strict **5/5 PASS**. See [MVP_STATUS.md](MVP_STATUS.md) and [decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md).
 
 **Consolidated snapshot:** [MVP_STATUS.md](MVP_STATUS.md)
 
@@ -20,11 +22,12 @@ Automation MVP is **closed** only when all five criteria below are true.
 
 **Criterion:** Push su GIS Tool o dev-method → notifica Telegram al telefono utente entro 30 secondi
 
-- **Status:** PARTIAL PASS / PENDING FINAL 30s WEBHOOK
+- **Status:** **PARTIAL** (canonical text unchanged — not technical PASS)
+- **Operational decision:** **D-C1-A** (2026-05-21) — accepted as **final operational MVP exception**; SLA best-effort **1–5 min** via v4 polling. See [decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md).
 - **Validated:** Telegram bot, n8n Telegram credential, manual Telegram workflow, GitHub latest-commit read, Data Table dedupe, and v4 one-minute controlled polling are working.
 - **MVP provisional path:** `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` is active and prevents duplicate Telegram notifications with `control_plane_state`.
-- **Still PENDING for strict criterion:** sub-30-second delivery from GIS Tool or dev-method push. One-minute polling does not satisfy the strict 30-second requirement. Measure with [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md).
-- **Next likely gate:** GitHub webhook as a separate controlled runtime gate, if strict sub-30-second notification is required. Prerequisite: [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) (public HTTPS to n8n, or stay on v4 polling).
+- **Still PENDING for strict criterion text only:** sub-30-second delivery. Not required for operational MVP closure under D-C1-A.
+- **Post-MVP optional:** strict &lt;30s via [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook — only if explicitly reopened (would have been D-C1-B).
 - **Verification method:** Push a commit to `dev-method` or `cursor-coordinate-converter`, then confirm Telegram message arrives on the user's phone within 30 seconds.
 
 ---

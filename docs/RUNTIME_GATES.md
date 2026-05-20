@@ -83,15 +83,14 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 
 **Criterion 5:** **closed** — see [N8N_REBUILD.md § FIELD result](N8N_REBUILD.md#field-validation-checklist-criterion-5).
 
-| Criterion 1 — closure decision | **OPEN** — [Decision Packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) (**USER DECISION REQUIRED**); recommend **D-C1-A** (PARTIAL accepted) vs **D-C1-B** (strict &lt;30s) |
+| Criterion 1 — closure decision | **DECIDED** 2026-05-21 — **D-C1-A** ([Decision Packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md)) |
+| Operational MVP | **Accepted** with C1 latency exception; C1 remains **PARTIAL**; **not** strict 5/5 PASS |
 
-**Next gate (order):** **C1 decision packet first** — no webhook/v5/public HTTPS runtime until user records **D-C1-B**. If **D-C1-A**, follow-up is **docs-only** MVP acceptance; no runtime from the packet itself.
+**No runtime authorized by D-C1-A.** Webhook / v5 / public HTTPS = **post-MVP optional** only — not the next automatic gate. Reopen strict C1 only via explicit new decision (former D-C1-B path).
 
-**Runtime after D-C1-B only:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → GitHub webhook ([V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md) optional baseline).
+**Post-MVP optional:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook; multirepo draft promotion — each requires its own explicit gate.
 
-**Other gates (separate sessions):** multirepo draft promotion (explicit decision only).
-
-### Not exceptions (defer until after 5/5 PASS)
+### Not exceptions (post-MVP — workflow freeze relaxed for new scope)
 
 | Blocked | Why |
 |---------|-----|

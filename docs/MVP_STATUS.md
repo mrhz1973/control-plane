@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after criterion 5 FIELD validation **PASS** (2026-05-20 recovery drill; runtime unchanged). Update this file when a criterion changes.
+**Last consolidated:** after **D-C1-A** — operational MVP accepted with C1 latency exception (2026-05-21; no runtime). Update this file when a criterion or acceptance state changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -19,15 +19,17 @@ Single-page snapshot of Automation MVP progress. Details live in linked docs; th
 
 ## Closure overview
 
-MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.md) are fully **PASS**.
+MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.md) are **PASS**.
 
-**Current scorecard:** **4 PASS + 1 PARTIAL** — MVP **not** fully closed (criterion 1 sub-30s path pending).
+**Operational MVP (2026-05-21):** **Accepted / closed with C1 latency exception** — decision **D-C1-A**. **Not** strict **5/5 PASS**.
+
+**Scorecard:** C1 **PARTIAL** (accepted final operational exception) · C2–C5 **PASS**
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
 
 | # | Criterion | Status | Detail doc |
 |---|-----------|--------|------------|
-| 1 | Push → Telegram &lt;30s | **PARTIAL** — v4 polling provisional; sub-30s pending | [MVP_CRITERIA.md](MVP_CRITERIA.md) §1, [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
+| 1 | Push → Telegram &lt;30s | **PARTIAL** — **D-C1-A** accepted (SLA 1–5 min); not technical PASS | [MVP_CRITERIA.md](MVP_CRITERIA.md) §1, [decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) |
 | 2 | handoff-generate.mjs via n8n → `Prompt ready: yes/no` | **PASS** | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
 | 3 | 3 real cycles handoff → implementer → commit → notifica | **PASS** — **3 / 3** | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
 | 4 | Workflow JSON redacted in repo | **PASS** | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
@@ -52,11 +54,11 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 ## Criterion summaries
 
-### 1 — Push notification (partial)
+### 1 — Push notification (PARTIAL — operational exception)
 
+- **D-C1-A (2026-05-21):** Accepted as **final operational exception** — SLA best-effort **1–5 min** via v4 polling. Criterion **not** relabeled PASS.
 - **Working:** Telegram, n8n credential, GitHub public read, Data Table dedupe, v4 controlled polling.
-- **Provisional:** v4 satisfies “notify on new commit” but **not** strict sub-30-second delivery.
-- **Pending:** sub-30s path needs webhook + public HTTPS, or measured latency per [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md).
+- **Strict &lt;30s:** Deferred — post-MVP optional ([PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) / v5) only if explicitly reopened.
 
 ### 2 — Handoff via n8n (PASS)
 
@@ -68,7 +70,7 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 - **Cycle 1:** **PASS** (2026-05-20) — `cursor-coordinate-converter`, commit **`34d543d`**.
 - **Cycle 2:** **PASS** (2026-05-20) — `dev-method`, commit **`5ce0a25`**; multirepo **draft** notifica (`Previous: none`).
 - **Cycle 3:** **PASS** (2026-05-20) — `dev-method`, commit **`0be529d`**; multirepo **draft** notifica (`Previous: 5ce0a25`); dedupe **1** new + **2** duplicate-skip. File `docs/control-plane-cycle3-note.md`.
-- **Criterion 3 closed** — all three cycles evidenced; MVP **not** 5/5 until criterion 1 reaches **PASS** or accepted **PARTIAL**.
+- **Criterion 3 closed** — all three cycles evidenced.
 
 ### 4 — Workflow export (PASS)
 
@@ -85,33 +87,17 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 ---
 
-## Recommended next decision gate (criterion 1)
+## Post-MVP (no immediate runtime gate)
 
-**User decision required** — [Decision Packet: Criterion 1 latency closure](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) (**OPEN**).
+**D-C1-A recorded (2026-05-21):** Operational MVP **accepted** — [decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) (**DECIDED**). No mandatory next gate.
 
-Choose **D-C1-A** (accept C1 PARTIAL → operational MVP with exception) or **D-C1-B** (open strict &lt;30s webhook/v5 gate). No runtime until **D-C1-B** is explicitly chosen. MVP remains **not** closed until this decision is recorded.
+| Optional improvement | When |
+|------------------------|------|
+| Strict C1 &lt;30s (webhook/v5/HTTPS) | Only if user **explicitly reopens** D-C1-B path — [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
+| Multirepo draft promotion | Separate explicit decision — [RUNTIME_GATES.md](RUNTIME_GATES.md) |
+| New n8n workflows | After operational MVP — [workflow freeze rule](RUNTIME_GATES.md#workflow-freeze-rule-mvp) relaxed for post-MVP scope |
 
-## Recommended next runtime gate (after C1 decision)
-
-Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
-
-### Option A — Record D-C1-A (docs-only follow-up)
-
-If user chooses **D-C1-A**: docs commit updating MVP acceptance wording; C1 stays **PARTIAL**; no n8n/webhook/v5.
-
-### Option B — D-C1-B strict path (runtime, separate sessions)
-
-Measure latency optional ([V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md)) then [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook — only after **D-C1-B**.
-
-### Option C — Public HTTPS / webhook path (D-C1-B only)
-
-See [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) — blocked until [C1 decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) records **D-C1-B**.
-
-### Option D — Runtime scope (separate decision)
-
-Promote multirepo **draft** to replace or extend active v4 — **not** part of Cycle 3 docs registration; requires its own gate per [RUNTIME_GATES.md](RUNTIME_GATES.md).
-
-Do **not** in the same session: enable v5, configure GitHub webhook, or create new n8n workflows ([workflow freeze rule](RUNTIME_GATES.md#workflow-freeze-rule-mvp)).
+**Default:** Keep v4 active, v5 off, no webhook. Stabilize; do not batch runtime changes.
 
 ---
 
@@ -122,9 +108,9 @@ Do **not** in the same session: enable v5, configure GitHub webhook, or create n
 | A | ~~v4 runtime ↔ export match~~ | **Done** — criterion 4 PASS |
 | B | ~~Handoff n8n manual + Telegram~~ | **Done** — criterion 2 PASS |
 | C | ~~End-to-end cycle 1 → 3~~ | **Done** — criterion 3 **PASS** (3/3) |
-| D | v4 latency measurement (3 commits) | [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md) |
+| D | ~~C1 closure decision~~ | **Done** — **D-C1-A** operational acceptance 2026-05-21 |
 | E | ~~Rebuild field validation~~ | **Done** — criterion 5 **PASS** (recovery drill 2026-05-20) |
-| F | Public HTTPS → webhook → v5 (optional strict &lt;30s) | [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
+| F | Public HTTPS → webhook → v5 | **Post-MVP optional** — not next automatic gate |
 
 ---
 
