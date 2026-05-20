@@ -49,6 +49,11 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 | **Bugfix on v4** | Fix dedupe, Telegram format, GitHub read URL for watched repos |
 | **Cleanup** | Remove unused/duplicate CONTROL PLANE test workflows before commit |
 | **Discardable test** | One-off test workflow deleted before any export/commit |
+| **Criterion 2 handoff workflow** | Single manual workflow: container command + Telegram `Prompt ready: yes/no` — next gate for MVP §2 |
+
+### Criterion 2 — next gate (not a new generic workflow)
+
+Next step for MVP criterion 2 is **n8n manual workflow execution** (import/build the handoff workflow, manual trigger, Telegram delivery). This is the allowed handoff exception above — **not** a new workflow outside MVP freeze scope (no branch cleanup, Ollama, generic Telegram duplicate, etc.).
 
 ### Not exceptions (defer until after 5/5 PASS)
 
