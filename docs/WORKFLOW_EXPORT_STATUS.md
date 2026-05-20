@@ -52,7 +52,9 @@ Runtime match status: **PASS** — the active n8n v4 workflow was visually check
 
 **Next gate:** Re-import or update imported draft in n8n UI to match corrected export → manual test inactive → expect **3 items** through Prepare → per-repo Telegram or duplicate_skip.
 
-**First manual test (imported draft, 2026-05-20):** No Telegram — execution routed to **Duplicate skip**. Emit **3** items, GitHub **3** items, Prepare **1** item only. **Probable cause:** item propagation bug (`$input.first()`, `$('Prepare …').first()`, Code nodes default run-once-for-all-items). **Draft export corrected** in repo; runtime v4 (control-plane only) **unchanged**.
+**First manual test (imported draft, 2026-05-20):** Item propagation bug — Prepare **1** item. Fixed in `f5cd992` export (`runOnceForEachItem`, `.item`).
+
+**Second manual test (after item fix, 2026-05-20):** Emit/GitHub/Prepare **3** items; Telegram **only** `mrhz1973/control-plane` `f5cd992` (Previous `74df80b`). **No** Telegram for `dev-method` `5ce0a25`. **Probable cause:** per-item **Data Table Get by key** dropped repos without an existing state row (only `github:mrhz1973/control-plane:last_commit_sha` existed). **Draft corrected:** load all state rows on trigger + Decide joins snapshot; missing key → `storedValue ''`. Runtime v4 **unchanged**.
 
 ---
 

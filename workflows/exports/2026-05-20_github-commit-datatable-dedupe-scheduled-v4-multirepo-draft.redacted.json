@@ -34,6 +34,28 @@
     },
     {
       "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "returnAll": true,
+        "limit": 100
+      },
+      "id": "datatable-load-all-state-multirepo-draft",
+      "name": "Data Table - Load all state rows",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        520
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
         "jsCode": "// DRAFT — one item per watched repo; per-repo Data Table keys.\nconst repos = [\n  { ownerRepo: 'mrhz1973/control-plane', stateKey: 'github:mrhz1973/control-plane:last_commit_sha', sourceRepo: 'mrhz1973/control-plane' },\n  { ownerRepo: 'mrhz1973/dev-method', stateKey: 'github:mrhz1973/dev-method:last_commit_sha', sourceRepo: 'mrhz1973/dev-method' },\n  { ownerRepo: 'mrhz1973/cursor-coordinate-converter', stateKey: 'github:mrhz1973/cursor-coordinate-converter:last_commit_sha', sourceRepo: 'mrhz1973/cursor-coordinate-converter' }\n];\nreturn repos.map((r) => ({ json: r }));"
       },
       "id": "emit-watched-repos-multirepo-draft",
@@ -88,40 +110,7 @@
     },
     {
       "parameters": {
-        "resource": "row",
-        "operation": "get",
-        "dataTableId": {
-          "__rl": true,
-          "mode": "name",
-          "value": "control_plane_state"
-        },
-        "matchType": "allConditions",
-        "filters": {
-          "conditions": [
-            {
-              "keyName": "key",
-              "condition": "eq",
-              "keyValue": "={{ $json.stateKey }}"
-            }
-          ]
-        },
-        "returnAll": false,
-        "limit": 1
-      },
-      "id": "datatable-get-state-multirepo-draft",
-      "name": "Data Table - Get last seen commit",
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1.1,
-      "position": [
-        1240,
-        320
-      ],
-      "alwaysOutputData": true
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "// Per-repo dedupe: Prepare.item matches Data Table Get.item index.\nconst latest = $('Prepare latest commit event').item.json;\nconst storedValue = $json.value || '';\nconst isNew = Boolean(latest.currentSha && latest.currentSha !== storedValue);\nreturn {\n  json: {\n    ...latest,\n    previousSha: storedValue || '',\n    isNew\n  }\n};"
+        "jsCode": "// Join all Prepare items (3 repos) with state snapshot; missing Data Table row => storedValue ''.\nconst prepareItems = $('Prepare latest commit event').all();\nconst stateRows = $('Data Table - Load all state rows').all().map((entry) => entry.json);\nreturn prepareItems.map((item) => {\n  const latest = item.json;\n  const row = stateRows.find((r) => r.key === latest.stateKey);\n  const storedValue = row?.value || '';\n  const isNew = Boolean(latest.currentSha && latest.currentSha !== storedValue);\n  return {\n    json: {\n      ...latest,\n      previousSha: storedValue || '',\n      isNew,\n      hadStateRow: Boolean(row?.key)\n    }\n  };\n});"
       },
       "id": "decide-dedupe-multirepo-draft",
       "name": "Decide Data Table dedupe",
@@ -295,6 +284,11 @@
       "main": [
         [
           {
+            "node": "Data Table - Load all state rows",
+            "type": "main",
+            "index": 0
+          },
+          {
             "node": "Emit watched repos (3)",
             "type": "main",
             "index": 0
@@ -306,11 +300,21 @@
       "main": [
         [
           {
+            "node": "Data Table - Load all state rows",
+            "type": "main",
+            "index": 0
+          },
+          {
             "node": "Emit watched repos (3)",
             "type": "main",
             "index": 0
           }
         ]
+      ]
+    },
+    "Data Table - Load all state rows": {
+      "main": [
+        []
       ]
     },
     "Emit watched repos (3)": {
@@ -336,17 +340,6 @@
       ]
     },
     "Prepare latest commit event": {
-      "main": [
-        [
-          {
-            "node": "Data Table - Get last seen commit",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Data Table - Get last seen commit": {
       "main": [
         [
           {
@@ -467,9 +460,11 @@
     "dedupe": "Per-repo SHA compare; Telegram only when latest SHA differs from stored value for that repo key; upsert after send path.",
     "firstRunBehavior": "On first import, seed Data Table rows or expect one Telegram per repo whose latest SHA differs from empty stored value — plan manual test inactive before enabling schedule to avoid surprise spam.",
     "polling": "1 minute schedule (same as v4). Does not satisfy strict 30s SLA; webhook remains separate gate.",
-    "itemPropagationFix": "2026-05-20 — Code nodes Prepare/Decide/Format/Duplicate skip use mode runOnceForEachItem; use .item not .first() so 3 repos stay 3 items.",
-    "firstManualTestImportedDraft": "2026-05-20 — Manual Trigger: Emit 3 items, GitHub 3 items, Prepare 1 item only; IF → Duplicate skip; no Telegram. Root cause: Prepare used $input.first() + default run-once-for-all-items; Decide used Prepare.first().",
-    "nextGate": "Re-import or paste-update corrected draft in n8n (inactive). Manual Trigger: expect Prepare 3 items, then per-repo IF/Telegram or duplicate_skip. Seed Data Table keys if avoiding retro-spam for 5ce0a25/34d543d. Active v4 (control-plane only) unchanged.",
+    "itemPropagationFix": "2026-05-20 — Prepare/Format/Duplicate skip: runOnceForEachItem + .item; Decide: run-once-for-all-items over Prepare.all() after full state load.",
+    "missingStateRowFix": "2026-05-20 — Removed per-item Data Table Get (drops items when key row missing). Added Data Table - Load all state rows on trigger; Decide joins Prepare (3) with snapshot; missing key => storedValue '' => isNew true.",
+    "secondManualTestImportedDraft": "2026-05-20 — After item fix: Emit/GitHub/Prepare 3 items; Telegram only control-plane f5cd992 (Previous 74df80b); dev-method 5ce0a25 missing. Cause: Get-by-key emitted only repos with existing rows.",
+    "firstManualTestImportedDraft": "2026-05-20 — Prepare 1 item; item propagation bug (fixed in f5cd992 export).",
+    "nextGate": "Re-import draft with missing-state-row fix (inactive). Manual Trigger: Decide 3 items; expect Telegram for dev-method if 5ce0a25 !== stored (empty if no row). Seed keys to skip retro-notify. Active v4 unchanged.",
     "replacesOrExtends": "Intended to extend/replace active v4 only after UI validation — not a second parallel production workflow."
   }
 }

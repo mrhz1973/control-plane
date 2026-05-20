@@ -35,8 +35,9 @@ Example: `2026-05-20_push-notify.redacted.json`
 - **Runtime:** active v4 on VPS still **control-plane only** until UI import/update gate
 - **Purpose:** fix Cycle 2 missing Telegram (`5ce0a25`) and support criterion 3 on product repos
 - **Redaction:** same rules as v4 — `__CONFIGURE_CHAT_ID_IN_N8N_UI__`, `__REDACTED_N8N_CREDENTIAL_ID__`, no tokens in JSON
-- **Item propagation (2026-05-20):** first imported draft collapsed 3→1 at Prepare (`$input.first()` / `.first()` on Code nodes). Corrected export uses `mode: runOnceForEachItem` and `.item` pairing.
-- **Next:** re-import corrected JSON in n8n (inactive); Manual Trigger must show **3 items** on Prepare; then schedule after PASS
+- **Item propagation (2026-05-20):** `runOnceForEachItem` + `.item` on Prepare/Format; Decide uses `Prepare.all()` + full state snapshot.
+- **Missing state rows (2026-05-20):** per-item Data Table Get dropped repos without rows; fix = **Data Table - Load all state rows** on trigger, no per-repo Get.
+- **Next:** re-import latest draft (inactive); Manual Trigger → Prepare **3** + Decide **3** → Telegram per repo (incl. dev-method if `5ce0a25` new)
 
 ## Do not commit
 
