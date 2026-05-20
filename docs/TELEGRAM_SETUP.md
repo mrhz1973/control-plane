@@ -65,4 +65,23 @@ Workflow n8n control-plane importato e testato manualmente con sorgente GitHub r
 - **Schedule:** not enabled in this gate.
 - **Existing Alina workflows:** not touched.
 
-**Prossimo gate (non in questo task):** passare da test manuale a trigger controllato, mantenendo webhook pubblico e schedule come gate separati.
+## n8n GitHub commit poll dedupe notify v2 — first run PASS
+
+Workflow n8n control-plane v2 importato e testato manualmente con deduplica su ultimo commit.
+
+- **Workflow name:** `CONTROL PLANE - GitHub commit poll dedupe notify v2`
+- **Source:** latest public commit from `mrhz1973/control-plane` via GitHub REST public read.
+- **Dedupe mechanism:** workflow static data key `lastSeenControlPlaneSha`.
+- **Fix applied:** v2 uses `$getWorkflowStaticData('global')` for n8n Code node compatibility.
+- **Credential used:** `CONTROL PLANE - Telegram Bot`.
+- **Execution mode:** manual first run only.
+- **First-run result:** Telegram message received on the user's phone.
+- **GitHub token:** not used.
+- **Telegram token:** not committed.
+- **chat_id:** not committed.
+- **GitHub webhook:** not configured in this gate.
+- **Schedule:** not enabled in this gate.
+- **Existing Alina workflows:** not touched.
+- **Still pending:** second manual run must duplicate-skip without sending a second Telegram.
+
+**Prossimo gate (non in questo task):** eseguire una seconda volta il workflow v2 per validare duplicate-skip; poi decidere separatamente se attivare schedule controllata o usare webhook.
