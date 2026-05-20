@@ -2,6 +2,8 @@
 
 Automation MVP is **closed** only when all five criteria below are true.
 
+**Consolidated snapshot:** [MVP_STATUS.md](MVP_STATUS.md)
+
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
 
 ---

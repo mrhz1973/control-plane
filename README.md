@@ -17,14 +17,11 @@ This repo holds documentation, workflow exports, and rebuild instructions for a 
 
 ## Current status
 
-- **Day 1** — bootstrap docs-only
-- No runtime active
-- No Telegram token stored in this repo
-- No n8n workflow active yet
+See **[docs/MVP_STATUS.md](docs/MVP_STATUS.md)** for consolidated MVP progress (v4 polling active, v5 off, criterion tracker).
 
 ## MVP deadline
 
-**7 days** from bootstrap. See [docs/MVP_CRITERIA.md](docs/MVP_CRITERIA.md) for closure criteria.
+**7 days** from bootstrap. See [docs/MVP_CRITERIA.md](docs/MVP_CRITERIA.md) for closure criteria and [docs/MVP_STATUS.md](docs/MVP_STATUS.md) for current snapshot.
 
 ## Rebuild principle
 
@@ -39,6 +36,7 @@ Documentation in this repo must be sufficient to recreate the full automation se
 
 | Doc | Description |
 |-----|-------------|
+| [docs/MVP_STATUS.md](docs/MVP_STATUS.md) | Consolidated MVP snapshot and next gate |
 | [docs/MVP_CRITERIA.md](docs/MVP_CRITERIA.md) | Five closure criteria for Automation MVP |
 | [docs/RUNTIME_GATES.md](docs/RUNTIME_GATES.md) | One-step runtime gates (never batched) |
 | [docs/TELEGRAM_SETUP.md](docs/TELEGRAM_SETUP.md) | Telegram bot setup (Day 2+) |
