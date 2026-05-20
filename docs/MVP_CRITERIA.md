@@ -52,5 +52,7 @@ Automation MVP is **closed** only when all five criteria below are true.
 
 **Criterion:** README control-plane con istruzioni per ricostruire il setup da zero se VPS muore
 
-- **Status:** PENDING
+- **Status:** PARTIAL PASS / PENDING FIELD VALIDATION
+- **Documented:** [N8N_REBUILD.md](N8N_REBUILD.md) — operational runbook (n8n prerequisites, Telegram credential, `control_plane_state`, v4 import, chat_id in UI, manual dedupe tests, v5 off, recovery scenarios, hard rules). [README.md](../README.md) links rebuild principle.
+- **Still PENDING for closure:** follow the runbook on a clean VPS without prior state and confirm smoke test checklist passes in production.
 - **Verification method:** Follow [N8N_REBUILD.md](N8N_REBUILD.md) and root [README.md](../README.md) on a clean VPS without prior state; smoke test passes.

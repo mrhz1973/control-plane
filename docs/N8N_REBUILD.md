@@ -1,53 +1,222 @@
-# n8n rebuild guide
+# n8n rebuild and recovery runbook
 
-**Purpose:** Rebuild the n8n control-plane automation stack if the VPS dies.
+**Purpose:** Rebuild or recover the CONTROL PLANE automation stack if the VPS dies, n8n is lost, or workflows need to be recreated from this repo.
 
-**Bootstrap note:** No installation is performed in the Day 1 docs-only task. Sections below are placeholders until runtime work begins.
+**Docs-only note:** Following this guide is a **runtime gate**. Do not execute steps during a docs-only review task.
 
----
-
-## VPS access
-
-**Status:** TODO
-
-- SSH host, user, and key location (document locally, not in repo)
-- Firewall ports required for n8n and webhooks
+**Related docs:** [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) (PASS history), [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) (webhook blocked until public HTTPS), [RUNTIME_GATES.md](RUNTIME_GATES.md) (one step at a time), [workflows/README.md](../workflows/README.md) (export rules).
 
 ---
 
-## Docker / n8n
+## Target state after rebuild
 
-**Status:** TODO
-
-- Install method (Docker Compose or native)
-- n8n version pin
-- Persistent volume paths
-- Public URL / reverse proxy
-
----
-
-## Credential restore
-
-**Status:** TODO
-
-- Telegram bot token → n8n credentials
-- GitHub webhook secret → n8n / GitHub settings
-- No credentials stored in this repository
+| Component | Expected state |
+|-----------|----------------|
+| **MVP path** | v4 polling active — provisional MVP |
+| **v4 workflow** | `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` |
+| **v4 flow** | GitHub public read → `control_plane_state` dedupe → Telegram |
+| **v5 workflow** | `CONTROL PLANE - GitHub push webhook Data Table dedupe notify v5` — import optional, **stay inactive** |
+| **GitHub webhook** | **Not configured** until public HTTPS exists |
+| **Secrets** | Token and chat_id only in n8n UI / local secure store — **never in this repo** |
 
 ---
 
-## Workflow import
+## What you need before starting
 
-**Status:** TODO
+Keep these **outside the repo** (password manager, local notes, BotFather, n8n backup):
 
-- Import redacted JSON from `workflows/exports/`
-- Re-link credentials in n8n UI after import
+- VPS SSH access (host, user, key) — document locally, not here
+- Telegram bot token for `@mrhz_control_plane_mvp_bot` (from BotFather)
+- Operational Telegram `chat_id` (recovered locally; see [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md))
+- n8n install method already used on the VPS (Docker Compose or native)
+- Clone of this repo: `mrhz1973/control-plane`
+
+**Do not commit:** tokens, chat IDs, webhook URLs, webhook secrets, tunnel credentials, or credential IDs.
 
 ---
 
-## Smoke test
+## Step 1 — n8n prerequisites
 
-**Status:** TODO
+One runtime gate per [RUNTIME_GATES.md](RUNTIME_GATES.md). Complete each sub-step before the next.
 
-- Push to a watched repo → Telegram within 30s ([MVP_CRITERIA.md](MVP_CRITERIA.md) criterion 1)
-- Manual handoff trigger → `Prompt ready: yes/no` on Telegram (criterion 2)
+1. **Install or restore n8n** on the VPS (Docker or native). Pin version locally if you track it; this repo does not store install commands with secrets.
+2. **Confirm n8n is reachable** for you (localhost on VPS, or SSH tunnel). Gate 7: test UI loads.
+3. **Persistent storage:** ensure n8n data volume survives container restart (workflows, credentials, Data Tables).
+4. **Do not** expose port `5678` to the public Internet without a separate security gate (reverse proxy, auth, or tunnel). See [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md).
+5. **Do not** modify existing Alina workflows during CONTROL PLANE rebuild.
+
+---
+
+## Step 2 — Telegram credential in n8n
+
+Recreate the credential in the n8n UI only.
+
+| Field | Value |
+|-------|--------|
+| **Credential type** | Telegram |
+| **Credential name** | `CONTROL PLANE - Telegram Bot` |
+| **Token** | Paste from BotFather — **not** from this repo |
+
+After save, run a minimal local `getMe` / `sendMessage` test if the bot was recreated (see [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) local test section). Token stays in n8n or ephemeral env only.
+
+---
+
+## Step 3 — Data Table `control_plane_state`
+
+Create in n8n UI: **Data → Data tables → Create**.
+
+| Column | Purpose |
+|--------|---------|
+| `key` | Dedupe key (e.g. `github:mrhz1973/control-plane:last_commit_sha`) |
+| `value` | Last seen SHA or state value |
+| `updated_at` | Last update timestamp |
+| `note` | Optional human note |
+
+**Table name:** `control_plane_state`
+
+**Scope:** CONTROL PLANE workflows only. Empty table on fresh rebuild is OK — first run will insert state.
+
+**Recovery tip:** If you have an n8n export/backup of the Data Table, restore it locally; do not commit table contents to git.
+
+---
+
+## Step 4 — Import workflow v4 (provisional MVP)
+
+**Export file:** `workflows/exports/2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json`
+
+1. In n8n: **Workflows → Import from file** → select the v4 redacted JSON.
+2. Confirm workflow name: `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4`.
+3. **Re-link credential:** open Telegram node → select `CONTROL PLANE - Telegram Bot` (import does not restore credential secrets).
+4. **Configure chat_id in UI only:** Telegram node `chatId` is placeholder `__CONFIGURE_CHAT_ID_IN_N8N_UI__` in the export — replace with your operational chat_id in the n8n node parameter. **Do not** commit the value back to git.
+5. **Data Table nodes:** confirm table name `control_plane_state` resolves (select table in UI if import left unresolved references).
+6. **GitHub read:** v4 uses public REST read (no GitHub token). Watched repo in current export: `mrhz1973/control-plane`. Extend or duplicate later for `dev-method` / `cursor-coordinate-converter` if needed.
+7. **Save workflow inactive** until manual tests pass.
+
+---
+
+## Step 5 — Manual verification (no spam)
+
+Run **one gate at a time**. Goal: prove Telegram + dedupe without flooding the phone.
+
+### 5a — Manual trigger, first run
+
+1. Leave **Schedule Trigger disabled** (workflow inactive or schedule off).
+2. Execute via **Manual Trigger** only.
+3. **Expected:** one Telegram if the latest commit SHA is new relative to empty/missing Data Table row.
+4. **Check Data Table:** row inserted/updated for key `github:mrhz1973/control-plane:last_commit_sha` (or equivalent from workflow).
+
+### 5b — Manual trigger, duplicate skip
+
+1. Run Manual Trigger again **without** a new GitHub commit.
+2. **Expected:** execution completes; **no second Telegram** (duplicate skip path).
+3. If a second message arrives, stop — fix Data Table dedupe before enabling schedule.
+
+### 5c — Optional new-commit test
+
+1. Push a **docs-only** commit to a watched repo (or wait for natural activity).
+2. Run Manual Trigger once (or enable schedule only after 5a–5b pass).
+3. **Expected:** exactly one Telegram for the new SHA.
+
+### 5d — Enable v4 schedule (provisional MVP)
+
+Only after 5a–5b pass:
+
+1. Activate workflow.
+2. Schedule: **one-minute** controlled polling (already in v4 export).
+3. Observe briefly: no duplicate Telegram when no new commit occurs.
+4. Document PASS in [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) or commit notes if criteria met.
+
+**Anti-spam rule:** do not repeatedly manual-trigger while debugging Telegram formatting. Fix dedupe first, then message content.
+
+---
+
+## Step 6 — v5 webhook (import optional, keep off)
+
+**Export file:** `workflows/exports/2026-05-20_github-push-webhook-datatable-dedupe-notify-v5.redacted.json`
+
+| Action | Do |
+|--------|-----|
+| Import v5 | Optional — for future use |
+| Re-link Telegram credential | Yes, if imported |
+| Configure chat_id in UI | Yes — same as v4, locally only |
+| Manual placeholder test | Once, via Manual Trigger — then **disable** |
+| Activate webhook / GitHub webhook | **No** — blocked |
+
+**Why v5 stays off:** GitHub cannot reach `localhost` or SSH-tunnel-only n8n. Production webhook requires a **public HTTPS** URL. See [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md).
+
+**Do not:**
+
+- Configure GitHub repository webhook to an n8n localhost URL
+- Commit production webhook URL or webhook secret
+- Enable v5 production path before public HTTPS gate
+
+---
+
+## Step 7 — Smoke test checklist
+
+After rebuild, confirm:
+
+- [ ] n8n UI reachable (your access path only)
+- [ ] Credential `CONTROL PLANE - Telegram Bot` saved in n8n
+- [ ] Data Table `control_plane_state` exists with four columns
+- [ ] v4 imported, chat_id set in UI, credential linked
+- [ ] Manual run: Telegram received once for new SHA
+- [ ] Manual re-run: duplicate skip, no extra Telegram
+- [ ] v4 schedule active **only if** duplicate skip validated
+- [ ] v5 inactive; no GitHub webhook configured
+- [ ] No tokens, chat_id, or webhook URLs in git diff
+
+**Strict MVP criterion 1** (sub-30-second push notification) is **not** satisfied by v4 one-minute polling alone. That remains PARTIAL until webhook or faster path exists.
+
+---
+
+## Recovery scenarios
+
+### A — VPS lost, n8n empty
+
+Follow Steps 1–7 from scratch. Restore token/chat_id from local secure store. Data Table starts empty; first poll may notify latest commit once — acceptable if dedupe then holds.
+
+### B — n8n workflows deleted, instance intact
+
+Skip Step 1 if n8n still runs. Recreate credential if missing (Step 2). Recreate or verify Data Table (Step 3). Re-import v4 (Step 4). Re-run manual verification (Step 5).
+
+### C — Data Table corrupted or wrong state
+
+Export table backup if available. Or delete offending rows in UI (keys starting with `github:`). Re-run manual dedupe test (5a–5b) before re-enabling schedule.
+
+### D — Telegram bot token rotated
+
+Update credential in n8n UI only. Re-run one manual Telegram test. No repo changes.
+
+### E — Need strict &lt;30s notifications later
+
+Separate gate: public HTTPS ([PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md)) → configure GitHub webhook → enable v5 → disable or keep v4 as rollback.
+
+---
+
+## Do not do (hard rules)
+
+| Forbidden | Reason |
+|-----------|--------|
+| Put token or chat_id in repo | Security |
+| Commit webhook URL with secret | Security |
+| GitHub webhook → localhost | GitHub cannot deliver |
+| Expose port 5678 publicly without proxy/auth | Security |
+| Batch install + import + activate + webhook | [RUNTIME_GATES.md](RUNTIME_GATES.md) |
+| Modify Alina workflows | Out of scope |
+| Enable v5 webhook before public HTTPS | [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
+| Re-import unredacted exports | [workflows/README.md](../workflows/README.md) |
+
+---
+
+## Optional earlier workflows (reference only)
+
+Earlier manual-test exports under `workflows/exports/` (v2/v3, manual notify, Telegram test) are **not required** for MVP recovery. Use v4 as the canonical provisional path. Import others only for debugging history.
+
+---
+
+## After rebuild
+
+1. Record PASS/FAIL in [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) if runtime gates were executed.
+2. Update [MVP_CRITERIA.md](MVP_CRITERIA.md) if closure status changed.
+3. Re-export redacted v4 from n8n if runtime workflow diverged from committed JSON; follow [workflows/README.md](../workflows/README.md).
