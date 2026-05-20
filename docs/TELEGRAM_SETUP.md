@@ -132,15 +132,15 @@ Workflow n8n control-plane v4 importato e testato manualmente.
 - **GitHub webhook:** not configured in this gate.
 - **Existing Alina workflows:** not touched.
 
-## n8n GitHub Data Table scheduled v4 — controlled polling PASS then paused
+## n8n GitHub Data Table scheduled v4 — controlled polling PASS then resumed
 
-Workflow n8n control-plane v4 attivato per polling controllato, validato e poi spento temporaneamente.
+Workflow n8n control-plane v4 attivato per polling controllato, validato, spento temporaneamente durante la preparazione webhook e poi riattivato come MVP provvisorio.
 
 - **Workflow name:** `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4`
 - **State table:** `control_plane_state`
 - **Source:** latest public commit from `mrhz1973/control-plane` via GitHub REST public read.
 - **Credential used:** `CONTROL PLANE - Telegram Bot`.
-- **Schedule:** one-minute controlled polling validated, then turned off to avoid Telegram messages for documentation commits while webhook v5 is prepared.
+- **Schedule:** one-minute controlled polling validated and currently resumed as provisional MVP path.
 - **Validation:** after activation, no duplicate Telegram was received during the observation window when no new GitHub commit occurred.
 - **Dedupe result:** PASS — Data Table state prevented duplicate Telegram notifications.
 - **GitHub token:** not used.
@@ -149,9 +149,9 @@ Workflow n8n control-plane v4 attivato per polling controllato, validato e poi s
 - **GitHub webhook:** not configured in this gate.
 - **Existing Alina workflows:** not touched.
 
-## n8n GitHub push webhook Data Table dedupe notify v5 — manual PASS
+## n8n GitHub push webhook Data Table dedupe notify v5 — manual PASS then disabled
 
-Workflow n8n control-plane v5 importato e testato manualmente con payload placeholder.
+Workflow n8n control-plane v5 importato e testato manualmente con payload placeholder, poi spento perché il webhook production URL non è pubblicamente raggiungibile quando n8n è aperto solo via localhost/tunnel.
 
 - **Workflow name:** `CONTROL PLANE - GitHub push webhook Data Table dedupe notify v5`
 - **State table:** `control_plane_state`
@@ -159,12 +159,12 @@ Workflow n8n control-plane v5 importato e testato manualmente con payload placeh
 - **Credential used:** `CONTROL PLANE - Telegram Bot`.
 - **Execution mode:** manual placeholder test only.
 - **Manual result:** OK.
-- **Production GitHub webhook:** not configured in this gate.
-- **Workflow activation:** not enabled in this gate.
+- **Current runtime status:** inactive / not published.
+- **Production GitHub webhook:** not configured; GitHub rejected localhost because it is not reachable from the public Internet.
 - **Webhook URL/secret:** not committed.
 - **GitHub token:** not used.
 - **Telegram token:** not committed.
 - **chat_id:** not committed.
 - **Existing Alina workflows:** not touched.
 
-**Prossimo gate (non in questo task):** configure a real GitHub webhook delivery to v5 as a separate runtime gate, then validate sub-30-second notification behavior.
+**Current provisional path:** v4 one-minute polling remains active as the working MVP path. **Next gate:** expose n8n through a secure public HTTPS URL or another safe relay before attempting real GitHub webhook delivery.
