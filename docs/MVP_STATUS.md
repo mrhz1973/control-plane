@@ -30,7 +30,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
 - **Runtime:** v4 **active** · v5 **off** · webhook **not configured** · **no mandatory next gate**
-- **Post-MVP optional:** strict &lt;30s (reopen D-C1-B path); multirepo draft promotion; new n8n workflows (one gate each)
+- **Post-MVP optional:** [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) — strict &lt;30s, multirepo, new workflows, observability, dev-method (one gate each)
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
 
@@ -96,13 +96,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 ## Post-MVP (no immediate runtime gate)
 
-**D-C1-A recorded (2026-05-21):** Operational MVP **accepted** — [decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) (**DECIDED**). No mandatory next gate.
-
-| Optional improvement | When |
-|------------------------|------|
-| Strict C1 &lt;30s (webhook/v5/HTTPS) | Only if user **explicitly reopens** D-C1-B path — [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
-| Multirepo draft promotion | Separate explicit decision — [RUNTIME_GATES.md](RUNTIME_GATES.md) |
-| New n8n workflows | After operational MVP — [workflow freeze rule](RUNTIME_GATES.md#workflow-freeze-rule-mvp) relaxed for post-MVP scope |
+**D-C1-A recorded (2026-05-21):** Operational MVP **accepted** — [decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) (**DECIDED**). No mandatory next gate. Ordered optional work: **[POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)** (PM-01 … PM-05).
 
 **Default:** Keep v4 active, v5 off, no webhook. Stabilize; do not batch runtime changes.
 
@@ -139,6 +133,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 |-----|------|
 | [MVP_CRITERIA.md](MVP_CRITERIA.md) | Five closure criteria (authoritative text) |
 | [MVP_STATUS.md](MVP_STATUS.md) | This consolidated index |
+| [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) | Post-MVP optional backlog (PM-01 … PM-05) |
 | [RUNTIME_GATES.md](RUNTIME_GATES.md) | One-step runtime gates |
 | [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) | Telegram / n8n PASS history |
 | [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) | HTTPS before webhook |
