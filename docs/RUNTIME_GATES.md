@@ -68,7 +68,7 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 | Sequential state load fix | **Prepared** — Trigger → Load all → gate → Emit (not parallel) |
 | Third draft manual test | **FAIL** — Decide: Load all not executed |
 
-**Allowed next runtime gate:** **re-import** draft with sequential state-load order → Manual Trigger → Decide **3** → Telegram dev-method `5ce0a25`. **Do not** modify active v4 or v5.
+**Allowed next runtime gate:** re-import multirepo draft from `main` → reconnect credential/chat_id in UI → **Manual Trigger once** (workflow **inactive**) → verify Decide **3 items** + Telegram dev-method `5ce0a25`. **No** schedule activation in this gate. **Do not** modify active v4 or v5.
 
 **Other gates (separate sessions):** Cycle 2 close after notifica; criterion 1 latency; criterion 5 rebuild.
 

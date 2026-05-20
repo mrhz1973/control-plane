@@ -49,34 +49,21 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        400,
-        520
+        280,
+        320
       ],
       "alwaysOutputData": true
     },
     {
       "parameters": {
-        "jsCode": "// Collapse state rows to 1 item so Emit runs once (3 repos). Rows stay in $('Data Table - Load all state rows').all() for Decide.\nconst rows = $input.all();\nreturn [{ json: { stateSnapshotReady: true, stateRowCount: rows.length } }];"
-      },
-      "id": "state-load-gate-multirepo-draft",
-      "name": "State load gate (single item)",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        560,
-        320
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// DRAFT — one item per watched repo; per-repo Data Table keys.\nconst repos = [\n  { ownerRepo: 'mrhz1973/control-plane', stateKey: 'github:mrhz1973/control-plane:last_commit_sha', sourceRepo: 'mrhz1973/control-plane' },\n  { ownerRepo: 'mrhz1973/dev-method', stateKey: 'github:mrhz1973/dev-method:last_commit_sha', sourceRepo: 'mrhz1973/dev-method' },\n  { ownerRepo: 'mrhz1973/cursor-coordinate-converter', stateKey: 'github:mrhz1973/cursor-coordinate-converter:last_commit_sha', sourceRepo: 'mrhz1973/cursor-coordinate-converter' }\n];\nreturn repos.map((r) => ({ json: r }));"
+        "jsCode": "// DRAFT — run once for all items from Load all (0..N state rows); always output 3 repo targets.\n// $('Data Table - Load all state rows').all() remains valid for Decide on this execution path.\nconst repos = [\n  { ownerRepo: 'mrhz1973/control-plane', stateKey: 'github:mrhz1973/control-plane:last_commit_sha', sourceRepo: 'mrhz1973/control-plane' },\n  { ownerRepo: 'mrhz1973/dev-method', stateKey: 'github:mrhz1973/dev-method:last_commit_sha', sourceRepo: 'mrhz1973/dev-method' },\n  { ownerRepo: 'mrhz1973/cursor-coordinate-converter', stateKey: 'github:mrhz1973/cursor-coordinate-converter:last_commit_sha', sourceRepo: 'mrhz1973/cursor-coordinate-converter' }\n];\nreturn repos.map((r) => ({ json: r }));"
       },
       "id": "emit-watched-repos-multirepo-draft",
       "name": "Emit watched repos (3)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        720,
+        440,
         320
       ]
     },
@@ -319,17 +306,6 @@
       "main": [
         [
           {
-            "node": "State load gate (single item)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "State load gate (single item)": {
-      "main": [
-        [
-          {
             "node": "Emit watched repos (3)",
             "type": "main",
             "index": 0
@@ -482,8 +458,9 @@
     "polling": "1 minute schedule (same as v4). Does not satisfy strict 30s SLA; webhook remains separate gate.",
     "itemPropagationFix": "2026-05-20 — Prepare/Format/Duplicate skip: runOnceForEachItem + .item; Decide: run-once-for-all-items over Prepare.all() after full state load.",
     "missingStateRowFix": "2026-05-20 — Load all state rows + Decide join; missing key => storedValue '' => isNew true.",
-    "stateLoadExecutionOrderFix": "2026-05-20 — Sequential: Trigger → Load all state rows → State load gate (single item) → Emit (3) → … → Decide. Parallel trigger→Emit broke $('Load all state rows').all() (node not executed).",
-    "thirdManualTestImportedDraft": "2026-05-20 — Prepare 3 items; Decide failed: Node 'Data Table - Load all state rows' hasn't been executed (parallel branch from trigger).",
+    "stateLoadExecutionOrderFix": "2026-05-20 — Sequential only: Trigger → Data Table - Load all state rows → Emit watched repos (3) → GitHub → Prepare → Decide. No parallel Trigger→Emit. No intermediate nodes between Load all and Emit.",
+    "controlPlaneStateTableObserved": "2026-05-20 UI: control_plane_state has only github:mrhz1973/control-plane:last_commit_sha; dev-method key absent — commit 5ce0a25 should isNew=true after fix.",
+    "thirdManualTestImportedDraft": "2026-05-20 — Prepare 3 items (incl. dev-method 5ce0a25); Decide failed: 'Data Table - Load all state rows' hasn't been executed. Load all not on sequential path to Decide (parallel trigger wiring in imported copy).",
     "secondManualTestImportedDraft": "2026-05-20 — Telegram only control-plane; per-item Get dropped missing keys (fixed by load-all).",
     "firstManualTestImportedDraft": "2026-05-20 — Prepare 1 item; item propagation bug.",
     "nextGate": "Re-import draft with sequential state-load fix (inactive). Manual Trigger: Load all → gate → Emit 3 → Decide 3 → Telegram dev-method 5ce0a25 if new. Active v4 unchanged.",

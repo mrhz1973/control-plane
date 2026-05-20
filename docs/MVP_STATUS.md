@@ -85,9 +85,9 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 3: v4 multirepo runtime extension
+### Option A — Criterion 3: re-import multirepo draft + Manual Trigger
 
-Multirepo draft: **sequential state load** fix in export (`c43da22`+); third UI test: Decide failed (Load all not on execution path). **Next gate:** re-import → Manual Trigger full chain → dev-method Telegram `5ce0a25`. Criterion 3 **1/3 PASS**; Cycle 2 **blocked**. Runtime v4 unchanged.
+Sequential export on `main`: `Trigger → Load all state rows → Emit (3) → … → Decide`. Third UI test: Prepare **3** (dev-method `5ce0a25` visible); Decide failed (Load all not on path). `control_plane_state` has **no** dev-method key — `5ce0a25` should notify after fix. **No new dev-method commit.** Criterion 1 remains **PARTIAL** (SLA best effort 1–5 min). Criterion 3 **1/3 PASS** until Cycle 2 Telegram.
 
 ### Option B — Criterion 1 latency measurement
 

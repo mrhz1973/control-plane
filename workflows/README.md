@@ -37,7 +37,7 @@ Example: `2026-05-20_push-notify.redacted.json`
 - **Redaction:** same rules as v4 — `__CONFIGURE_CHAT_ID_IN_N8N_UI__`, `__REDACTED_N8N_CREDENTIAL_ID__`, no tokens in JSON
 - **Item propagation (2026-05-20):** `runOnceForEachItem` + `.item` on Prepare/Format; Decide uses `Prepare.all()` + full state snapshot.
 - **Missing state rows:** load-all snapshot + Decide join (no per-repo Get).
-- **Execution order (2026-05-20):** must be **sequential** `Trigger → Load all state rows → State load gate → Emit (3) → …` — parallel trigger branches break `$('Load all state rows').all()`.
+- **Execution order (2026-05-20):** **sequential** `Trigger → Data Table - Load all state rows → Emit watched repos (3) → …` — no parallel `Trigger → Emit`; required for `$('Data Table - Load all state rows').all()` in Decide.
 - **Next:** re-import latest draft (inactive); full chain → Decide **3** → Telegram dev-method `5ce0a25`
 
 ## Do not commit

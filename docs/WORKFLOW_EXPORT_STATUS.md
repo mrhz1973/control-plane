@@ -48,15 +48,19 @@ Runtime match status: **PASS** — the active n8n v4 workflow was visually check
 | **Purpose** | Enable criterion 3 cycles on dev-method and GIS with v4-style deduped Telegram |
 | **Runtime** | Unchanged until explicit import/update gate — **do not** import or activate in docs-only tasks |
 
-**Design:** Schedule/Manual → emit 3 repo items → per-repo GitHub latest commit → per-repo dedupe → Telegram with `Repo:` line in message. Same `control_plane_state` table; separate keys per repo.
+**Design:** `Trigger → Data Table - Load all state rows → Emit watched repos (3) → GitHub → Prepare → Decide` (sequential, no parallel Trigger→Emit). Decide joins `Prepare.all()` + `Load all state rows.all()`; missing row → `storedValue ''`, `hadStateRow: false`, `isNew: true`.
 
-**Next gate:** Re-import or update imported draft in n8n UI to match corrected export → manual test inactive → expect **3 items** through Prepare → per-repo Telegram or duplicate_skip.
+**Next gate:** Re-import export from `main` → reconnect credential/chat_id → **Manual Trigger once** (inactive) → Decide **3 items**, no Load-all error → Telegram for dev-method `5ce0a25` if key still absent.
 
-**First manual test (imported draft, 2026-05-20):** Item propagation bug — Prepare **1** item. Fixed in `f5cd992` export (`runOnceForEachItem`, `.item`).
+| Manual test | Result |
+|-------------|--------|
+| 1 — item propagation | Prepare **1** item — fixed `f5cd992` |
+| 2 — missing state rows | Telegram only control-plane — fixed load-all + Decide join `c43da22` |
+| 3 — state load order | Prepare **3** (incl. dev-method `5ce0a25`); **Decide failed** — `Data Table - Load all state rows hasn't been executed` |
 
-**Second manual test (after item fix, 2026-05-20):** Telegram **only** control-plane `f5cd992`; dev-method missing — per-item Get dropped missing keys (fixed by load-all).
+**Third test UI detail (2026-05-20):** `control_plane_state` contains **only** `github:mrhz1973/control-plane:last_commit_sha` — **not** `github:mrhz1973/dev-method:last_commit_sha`. Commit `5ce0a25` is new for dedupe after sequential fix. **No new dev-method commit** required.
 
-**Third manual test (missing-row fix, 2026-05-20):** Prepare **3** items; **Decide failed** — `Node 'Data Table - Load all state rows' hasn't been executed`. **Cause:** state load wired **in parallel** with Emit from trigger (not on main execution path). **Draft corrected:** sequential `Trigger → Load all → State load gate → Emit → … → Decide`. Runtime v4 **unchanged**.
+**Root cause test 3:** Load all not guaranteed on execution path before Decide (parallel Trigger→Emit in imported copy). **Fix in export:** `Trigger → Load all state rows → Emit watched repos (3) → …` (direct sequential link). Runtime v4 **unchanged**.
 
 ---
 
