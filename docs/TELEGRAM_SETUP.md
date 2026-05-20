@@ -95,7 +95,7 @@ Persistent state table creata nella UI n8n per sostituire la deduplica basata su
 - **Scope:** control-plane workflows only.
 - **Existing Alina workflows:** not touched.
 
-## n8n GitHub Data Table dedupe notify v3 — first run PASS
+## n8n GitHub Data Table dedupe notify v3 — PASS
 
 Workflow n8n control-plane v3 importato e testato manualmente con stato persistente in Data Table.
 
@@ -103,14 +103,16 @@ Workflow n8n control-plane v3 importato e testato manualmente con stato persiste
 - **State table:** `control_plane_state`
 - **Source:** latest public commit from `mrhz1973/control-plane` via GitHub REST public read.
 - **Credential used:** `CONTROL PLANE - Telegram Bot`.
-- **Execution mode:** manual first run only.
+- **Execution mode:** manual validation only.
 - **First-run result:** Telegram message received on the user's phone.
+- **Second-run note:** a second Telegram was expected because a GitHub documentation commit had been created between runs.
+- **Third-run result:** PASS — duplicate-skip worked with no additional Telegram when no GitHub commit occurred between executions.
+- **Dedupe result:** validated with Data Table persistent state.
 - **GitHub token:** not used.
 - **Telegram token:** not committed.
 - **chat_id:** not committed.
 - **GitHub webhook:** not configured in this gate.
 - **Schedule:** not enabled in this gate.
 - **Existing Alina workflows:** not touched.
-- **Still pending:** second manual run must duplicate-skip without sending a second Telegram.
 
-**Prossimo gate (non in questo task):** eseguire una seconda volta il workflow v3 per validare duplicate-skip tramite Data Table. Do not activate schedule/webhook until duplicate-skip is proven.
+**Prossimo gate (non in questo task):** prepare a schedule-capable variant or activate controlled polling as a separate runtime gate. Do not activate schedule/webhook without an explicit gate.
