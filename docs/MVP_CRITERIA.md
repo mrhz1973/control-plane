@@ -10,9 +10,11 @@ Automation MVP is **closed** only when all five criteria below are true.
 
 **Criterion:** Push su GIS Tool o dev-method → notifica Telegram al telefono utente entro 30 secondi
 
-- **Status:** PENDING
-- **Prerequisite PASS:** local Telegram bot `sendMessage` verified (see [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md)). Full push-triggered notification remains PENDING.
-- **Still PENDING for this criterion:** GitHub webhook, n8n Telegram credential, n8n workflow, push-triggered notification, schedule trigger.
+- **Status:** PARTIAL PASS / PENDING FINAL 30s WEBHOOK
+- **Validated:** Telegram bot, n8n Telegram credential, manual Telegram workflow, GitHub latest-commit read, Data Table dedupe, and v4 one-minute controlled polling are working.
+- **MVP provisional path:** `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` is active and prevents duplicate Telegram notifications with `control_plane_state`.
+- **Still PENDING for strict criterion:** sub-30-second delivery from GIS Tool or dev-method push. One-minute polling does not satisfy the strict 30-second requirement.
+- **Next likely gate:** GitHub webhook as a separate controlled runtime gate, if strict sub-30-second notification is required.
 - **Verification method:** Push a commit to `dev-method` or `cursor-coordinate-converter`, then confirm Telegram message arrives on the user's phone within 30 seconds.
 
 ---
@@ -39,7 +41,9 @@ Automation MVP is **closed** only when all five criteria below are true.
 
 **Criterion:** Workflow n8n esportato come JSON committato nel repo control-plane
 
-- **Status:** PENDING
+- **Status:** PARTIAL PASS
+- **Validated exports:** redacted Telegram manual test, GitHub latest commit manual notify, Data Table dedupe v3, and schedule-capable Data Table dedupe v4 exist under `workflows/exports/`.
+- **Still PENDING for closure:** final production workflow export must match the runtime workflow after activation/configuration and be redacted before commit.
 - **Verification method:** A redacted workflow JSON file exists under `workflows/exports/` following the naming convention in [workflows/README.md](../workflows/README.md).
 
 ---
