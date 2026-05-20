@@ -33,8 +33,8 @@ Automation MVP is **closed** only when all five criteria below are true.
 
 **Criterion:** handoff-generate.mjs può essere invocato da n8n (manuale o webhook) e il risultato Prompt ready: yes/no arriva su Telegram
 
-- **Status:** LOCAL + CONTAINER CLI PASS / EXECUTE COMMAND CONFIG FIX APPLIED / PENDING UI CHECK + TELEGRAM
-- **Execute Command config fix applied** 2026-05-20 (`NODES_EXCLUDE=[]`); UI check and manual Telegram test still pending.
+- **Status:** LOCAL + CONTAINER CLI PASS / RUNTIME REPOS FIXED / PENDING MANUAL TRIGGER + TELEGRAM
+- **Runtime fix:** root `git safe.directory` for handoff-runtime paths; first Manual Trigger failed on dubious ownership, not missing clone.
 - **Validated (CLI only):** local and n8n-container dry-runs → **`Prompt ready: yes`**, exit code 0; no Telegram yet.
 - **Still PENDING for closure:** n8n **workflow** manual trigger invokes the generator and Telegram delivers `Prompt ready: yes` or `Prompt ready: no` on the user's phone.
 - **Verification method:** Trigger the n8n workflow (manual or webhook), invoke `handoff-generate.mjs`, and confirm a Telegram message shows `Prompt ready: yes` or `Prompt ready: no`.

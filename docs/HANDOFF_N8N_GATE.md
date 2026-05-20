@@ -300,6 +300,76 @@ Runtime config gate applied on VPS `ionos-n8n`. **No** handoff workflow executio
 
 ---
 
+## Manual Trigger failed: runtime repo path not git repo
+
+**Date:** 2026-05-20 (after Execute Command UI recognized + one Manual Trigger attempt)
+
+| Field | Value |
+|-------|--------|
+| **Workflow** | `CONTROL PLANE - Handoff generate manual Telegram v1` (inactive) |
+| **Failed node** | `Execute Command - handoff dry-run` |
+| **Error observed** | `ERROR: --repo is not a git repository: /files/handoff-runtime/cursor-coordinate-converter` |
+| **Telegram** | **Not sent** — criterion 2 **not** PASS |
+| **Second workflow run** | **Not performed** (per gate rules) |
+
+### Root cause (verified)
+
+Runtime directories **are** valid Git clones (`.git` present on host and in container). Failure was **not** missing clone.
+
+**Actual cause:** n8n **Execute Command** runs the shell command as **`root`** inside the container. `root` had **no** `git config safe.directory` for root-owned repos under `/files/handoff-runtime/`. Git reported **dubious ownership** → `handoff-generate.mjs` treated `--repo` as non-git → same user-visible error.
+
+Earlier container CLI tests used **`docker exec -u node`**, which had `safe.directory` configured — those passed and masked this gap.
+
+### Corrective action (applied)
+
+| Action | Detail |
+|--------|--------|
+| **Clone/recreate** | **Not required** — repos already present |
+| **Fix applied** | `git config --global --add safe.directory` for **root** in container `root-n8n-1` on both runtime paths |
+| **Also verified** | `node` user `safe.directory` (from prior gate) |
+| **`git pull`** | Attempted as root — `.git/FETCH_HEAD` permission denied (non-blocking; read-only dry-run OK at current SHAs) |
+
+**Runtime commits (unchanged, valid):**
+
+| Repo | `git log -1` |
+|------|----------------|
+| **dev-method** | `bef41cc` — fix: complete embedded handoff hardening |
+| **cursor-coordinate-converter** | `dc83c21` — docs: freeze GIS pending automation MVP |
+
+**Note:** After future `docker compose` recreate of n8n, re-apply **root** `safe.directory` in container (or automate via entrypoint) — not persisted in compose yet.
+
+---
+
+## Runtime repos repaired / verified
+
+**Date:** 2026-05-20
+
+Post-fix verification **inside container as root** (same user class as Execute Command):
+
+```text
+Embedded format:    structured
+Prompt ready:       yes
+Dry-run mode:       YES — no execution was performed
+HANDOFF_EXIT=0
+```
+
+| Check | Result |
+|-------|--------|
+| Both paths have `.git` | **Yes** |
+| `handoff-generate.mjs` dry-run as root | **PASS** |
+| n8n workflow re-run | **Not done** in this task |
+| Telegram | **Not sent** |
+
+**Criterion 2:** still **open** — needs **one new** Manual Trigger + Telegram `Prompt ready: yes/no` on phone (user gate; not executed here).
+
+### Next gate
+
+1. **Manual Trigger once** on handoff workflow v1 (inactive OK for manual).
+2. Confirm Telegram message on phone.
+3. Do **not** batch with v5/webhook activation.
+
+---
+
 ## Docs-only path (now)
 
 | Step | Status |
@@ -310,7 +380,9 @@ Runtime config gate applied on VPS `ionos-n8n`. **No** handoff workflow executio
 | Manual n8n workflow v1 export | **Prepared** — [Manual n8n workflow v1 prepared](#manual-n8n-workflow-v1-prepared) |
 | Execute Command availability diagnosis | **Done** — conclusion **A** |
 | Execute Command config fix (`NODES_EXCLUDE=[]`) | **Applied** — [Execute Command enabled](#execute-command-enabled-via-nodes_exclude-config) |
-| UI check + handoff Manual Trigger + Telegram | **Pending** |
+| Manual Trigger (first attempt) | **FAIL** — [dubious ownership / root safe.directory](#manual-trigger-failed-runtime-repo-path-not-git-repo) |
+| Runtime repo fix (root `safe.directory`) | **Applied** — [Runtime repos verified](#runtime-repos-repaired--verified) |
+| Manual Trigger retry + Telegram | **Pending** — user gate |
 | MVP criterion 2 closure | **PENDING** |
 
 Updating this file does **not** satisfy criterion 2. Closure requires a real n8n run and a Telegram message on the user's phone.
