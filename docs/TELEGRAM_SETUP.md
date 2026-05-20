@@ -85,4 +85,15 @@ Workflow n8n control-plane v2 importato e testato manualmente con deduplica su u
 - **Schedule:** not enabled in this gate.
 - **Existing Alina workflows:** not touched.
 
-**Prossimo gate (non in questo task):** replace static-data dedupe with a persistent state mechanism that can be validated manually, preferably an n8n Data Table or another explicit state store. Do not activate schedule/webhook until duplicate-skip is proven.
+## n8n Data Table state store — PASS
+
+Persistent state table creata nella UI n8n per sostituire la deduplica basata su workflow static data.
+
+- **Data table name:** `control_plane_state`
+- **Columns:** `key`, `value`, `updated_at`, `note`
+- **Purpose:** store last-seen event keys for duplicate-skip validation.
+- **Scope:** control-plane workflows only.
+- **Existing Alina workflows:** not touched.
+- **Still pending:** v3 workflow using this table must be imported and validated manually before schedule/webhook activation.
+
+**Prossimo gate (non in questo task):** importare un workflow v3 che usa `control_plane_state` come stato persistente, poi validare first-send e duplicate-skip. Do not activate schedule/webhook until duplicate-skip is proven.
