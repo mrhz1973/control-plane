@@ -74,7 +74,8 @@
     },
     {
       "parameters": {
-        "jsCode": "const target = $('Emit watched repos (3)').item.json;\nconst resp = $input.first().json;\nconst commit = Array.isArray(resp) ? resp[0] : resp;\nconst sha = commit?.sha || '';\nconst rawMessage = commit?.commit?.message || 'no commit message';\nconst message = rawMessage.split('\\n')[0];\nconst url = commit?.html_url || 'no URL';\nreturn [{ json: {\n  stateKey: target.stateKey,\n  currentSha: sha,\n  shortSha: sha ? sha.substring(0, 7) : '',\n  message,\n  url,\n  sourceRepo: target.sourceRepo,\n  ownerRepo: target.ownerRepo\n} }];"
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Pair by item index: Emit (3) + HTTP response for same repo.\nconst target = $('Emit watched repos (3)').item.json;\nconst resp = $input.item.json;\nconst commit = Array.isArray(resp) ? resp[0] : resp;\nconst sha = commit?.sha || '';\nconst rawMessage = commit?.commit?.message || 'no commit message';\nconst message = rawMessage.split('\\n')[0];\nconst url = commit?.html_url || 'no URL';\nreturn {\n  json: {\n    stateKey: target.stateKey,\n    currentSha: sha,\n    shortSha: sha ? sha.substring(0, 7) : '',\n    message,\n    url,\n    sourceRepo: target.sourceRepo,\n    ownerRepo: target.ownerRepo\n  }\n};"
       },
       "id": "prepare-latest-event-multirepo-draft",
       "name": "Prepare latest commit event",
@@ -119,7 +120,8 @@
     },
     {
       "parameters": {
-        "jsCode": "const latest = $('Prepare latest commit event').first().json;\nconst storedValue = $json.value || '';\nconst isNew = Boolean(latest.currentSha && latest.currentSha !== storedValue);\nreturn [{ json: { ...latest, previousSha: storedValue || '', isNew } }];"
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Per-repo dedupe: Prepare.item matches Data Table Get.item index.\nconst latest = $('Prepare latest commit event').item.json;\nconst storedValue = $json.value || '';\nconst isNew = Boolean(latest.currentSha && latest.currentSha !== storedValue);\nreturn {\n  json: {\n    ...latest,\n    previousSha: storedValue || '',\n    isNew\n  }\n};"
       },
       "id": "decide-dedupe-multirepo-draft",
       "name": "Decide Data Table dedupe",
@@ -240,7 +242,8 @@
     },
     {
       "parameters": {
-        "jsCode": "const latest = $('Decide Data Table dedupe').first().json;\nconst previous = latest.previousSha ? latest.previousSha.substring(0, 7) : 'none';\nconst title = latest.message || 'no commit message';\nreturn [{ json: { text: `CONTROL PLANE scheduled poll commit notification\\nRepo: ${latest.sourceRepo}\\nNew commit: ${latest.shortSha}\\nPrevious: ${previous}\\nMessage: ${title}\\nURL: ${latest.url}` } }];"
+        "mode": "runOnceForEachItem",
+        "jsCode": "const latest = $('Decide Data Table dedupe').item.json;\nconst previous = latest.previousSha ? latest.previousSha.substring(0, 7) : 'none';\nconst title = latest.message || 'no commit message';\nreturn {\n  json: {\n    text: `CONTROL PLANE scheduled poll commit notification\\nRepo: ${latest.sourceRepo}\\nNew commit: ${latest.shortSha}\\nPrevious: ${previous}\\nMessage: ${title}\\nURL: ${latest.url}`\n  }\n};"
       },
       "id": "format-datatable-telegram-message-multirepo-draft",
       "name": "Format Data Table Telegram message",
@@ -274,7 +277,8 @@
     },
     {
       "parameters": {
-        "jsCode": "return [{ json: { status: 'duplicate_skip', reason: 'Latest commit already stored in control_plane_state for this repo key', stateKey: $json.stateKey, sourceRepo: $json.sourceRepo, currentSha: $json.currentSha, previousSha: $json.previousSha } }];"
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  json: {\n    status: 'duplicate_skip',\n    reason: 'Latest commit already stored in control_plane_state for this repo key',\n    stateKey: $json.stateKey,\n    sourceRepo: $json.sourceRepo,\n    currentSha: $json.currentSha,\n    previousSha: $json.previousSha\n  }\n};"
       },
       "id": "duplicate-skip-multirepo-draft",
       "name": "Duplicate skip - no Telegram",
@@ -449,7 +453,7 @@
     }
   ],
   "meta": {
-    "status": "DRAFT — NOT IMPORTED — NOT ACTIVE",
+    "status": "DRAFT — NOT ACTIVE (may be imported in UI; re-import after item-propagation fix)",
     "basedOn": "2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json",
     "purpose": "Extend provisional v4 polling to mrhz1973/control-plane, mrhz1973/dev-method, and mrhz1973/cursor-coordinate-converter with separate Data Table keys per repo. Enables criterion 3 end-to-end notifica on product repos (Cycle 2 dev-method 5ce0a25 currently missing Telegram because runtime v4 polls control-plane only).",
     "redaction": "No token, no operational chat_id, no credential id, no workflow id, no webhook secret are committed.",
@@ -463,7 +467,9 @@
     "dedupe": "Per-repo SHA compare; Telegram only when latest SHA differs from stored value for that repo key; upsert after send path.",
     "firstRunBehavior": "On first import, seed Data Table rows or expect one Telegram per repo whose latest SHA differs from empty stored value — plan manual test inactive before enabling schedule to avoid surprise spam.",
     "polling": "1 minute schedule (same as v4). Does not satisfy strict 30s SLA; webhook remains separate gate.",
-    "nextGate": "Runtime: import/update existing v4 workflow in n8n UI (prefer in-place edit of active v4 to match this draft, or replace after backup). Manual trigger once inactive. Verify Telegram for each repo with a known-new commit. Seed dedupe keys for 5ce0a25 / 34d543d if retro-notify not desired. Then activate schedule. Re-export redacted JSON when runtime matches. Do not create a separate production workflow unless justified.",
+    "itemPropagationFix": "2026-05-20 — Code nodes Prepare/Decide/Format/Duplicate skip use mode runOnceForEachItem; use .item not .first() so 3 repos stay 3 items.",
+    "firstManualTestImportedDraft": "2026-05-20 — Manual Trigger: Emit 3 items, GitHub 3 items, Prepare 1 item only; IF → Duplicate skip; no Telegram. Root cause: Prepare used $input.first() + default run-once-for-all-items; Decide used Prepare.first().",
+    "nextGate": "Re-import or paste-update corrected draft in n8n (inactive). Manual Trigger: expect Prepare 3 items, then per-repo IF/Telegram or duplicate_skip. Seed Data Table keys if avoiding retro-spam for 5ce0a25/34d543d. Active v4 (control-plane only) unchanged.",
     "replacesOrExtends": "Intended to extend/replace active v4 only after UI validation — not a second parallel production workflow."
   }
 }

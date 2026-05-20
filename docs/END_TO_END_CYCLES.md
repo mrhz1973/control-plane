@@ -220,7 +220,9 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 
 **Prepared fix (docs only):** draft export `workflows/exports/2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` — **DRAFT / NOT IMPORTED / NOT ACTIVE**. See [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md).
 
-**Single recommended next runtime gate:** import/update **existing** active v4 to multirepo draft design → manual test → confirm Telegram for `dev-method` (e.g. `5ce0a25` or seed dedupe) → then record Cycle 2 PASS. **Do not** mark Cycle 2 PASS until notifica received.
+**Single recommended next runtime gate:** re-import **corrected** multirepo draft ([item propagation fix](../workflows/exports/2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json) meta `itemPropagationFix`) → Manual Trigger → expect Prepare **3 items** → confirm Telegram per repo (seed dedupe for `5ce0a25` if no retro-spam) → Cycle 2 PASS. **First draft manual test failed:** 3→1 item collapse; dev-method not validated.
+
+**Do not** mark Cycle 2 PASS until notifica received. Active v4 unchanged.
 
 ---
 

@@ -50,7 +50,9 @@ Runtime match status: **PASS** — the active n8n v4 workflow was visually check
 
 **Design:** Schedule/Manual → emit 3 repo items → per-repo GitHub latest commit → per-repo dedupe → Telegram with `Repo:` line in message. Same `control_plane_state` table; separate keys per repo.
 
-**Next gate:** In-place update of active v4 in n8n UI to match draft (or replace after backup) → manual test inactive → seed dedupe if retro-spam undesired → activate schedule → re-export when runtime matches.
+**Next gate:** Re-import or update imported draft in n8n UI to match corrected export → manual test inactive → expect **3 items** through Prepare → per-repo Telegram or duplicate_skip.
+
+**First manual test (imported draft, 2026-05-20):** No Telegram — execution routed to **Duplicate skip**. Emit **3** items, GitHub **3** items, Prepare **1** item only. **Probable cause:** item propagation bug (`$input.first()`, `$('Prepare …').first()`, Code nodes default run-once-for-all-items). **Draft export corrected** in repo; runtime v4 (control-plane only) **unchanged**.
 
 ---
 

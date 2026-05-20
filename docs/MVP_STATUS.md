@@ -87,7 +87,7 @@ Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested pr
 
 ### Option A — Criterion 3: v4 multirepo runtime extension
 
-Draft ready: `workflows/exports/2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` (**NOT imported**). **Single next gate:** update active v4 in n8n UI to match draft (3 repos, 3 Data Table keys) → manual test inactive → Telegram for `dev-method` → Cycle 2 PASS. Cycle 1 GIS `34d543d` notifica: audit after multirepo proven. **No new workflow** unless UI gate justifies separate import.
+Multirepo draft **corrected** (item propagation: `runOnceForEachItem`, `.item` not `.first()`). First UI manual test: no Telegram (Prepare 1 item). **Next gate:** re-import corrected draft → Manual Trigger → 3 items through Prepare → Telegram for `dev-method` → Cycle 2 PASS. Criterion 3 **1/3 PASS**; Cycle 2 **blocked**. Runtime v4 unchanged.
 
 ### Option B — Criterion 1 latency measurement
 
