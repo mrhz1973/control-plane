@@ -213,18 +213,30 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 
 ---
 
-### Cycle 3 — PENDING (planned, after Cycle 2 PASS)
+### Cycle 3 — PASS
+
+**Status:** **PASS** (2026-05-20) — full pipeline: handoff → implementer → commit → Telegram notifica (closed via multirepo **draft** manual test).
 
 | Field | Value |
 |-------|--------|
-| data/ora | _pending_ |
-| repo | `mrhz1973/dev-method` **or** `mrhz1973/cursor-coordinate-converter` |
-| handoff source | _pending — `handoff-generate.mjs` via n8n manual or local; full four-step evidence_ |
-| implementer | _pending_ |
-| commit hash | _pending_ |
-| Telegram notification | _pending — v4 commit notify on phone_ |
-| esito | **PENDING** (not PASS) |
-| note | Third distinct real cycle; third `PASS` closes criterion 3. |
+| data/ora | 2026-05-20 23:51 (local) — Telegram received |
+| repo | `mrhz1973/dev-method` |
+| **task** | **DEV-METHOD — Control Plane Cycle 3 marker (docs-only)** |
+| handoff source | CONTROL PLANE Cycle 3 gate after Cycle 2 **PASS** (criterion 2 n8n manual + prior cycles in [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md)) |
+| implementer | **Cursor DEV** |
+| commit hash | `0be529d` (`0be529d94dd949bc5815fe273cfe5fa903912d62`) |
+| commit message | `docs: add control-plane cycle 3 marker` |
+| files changed | `docs/control-plane-cycle3-note.md` |
+| Telegram notification | **received** — multirepo **draft** manual workflow (`CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4 multirepo (DRAFT)`), **inactive**; `Previous: 5ce0a25` |
+| **workflow execution** | Manual Trigger success; Decide **3** items; IF **1** new + **2** duplicate-skip; **1** Telegram send; **2** duplicate-skip branches (no Telegram) |
+| **Data Table dedupe** | **1** new notifica (`dev-method` `0be529d`); **2** duplicate-skip (control-plane + GIS — expected) |
+| esito | **PASS** |
+
+**Steps evidenced:** (1) handoff documented for Cycle 3; (2) Cursor DEV docs-only commit `0be529d` on `main`; (3) push on GitHub; (4) Telegram on phone from draft multirepo Manual Trigger (single replay; no re-run required).
+
+**Notifica path:** Draft v4 multirepo (not active production v4). Production v4 unchanged — still control-plane-only polling.
+
+**Prior commit chain:** `Previous: 5ce0a25` confirms dedupe against Cycle 2 Data Table state; no retro-notify for already-seen repos in this run.
 
 ---
 
@@ -444,7 +456,7 @@ FINAL REPORT (required):
 4. No token, chat_id, webhook URL, or secret appears in committed records;
 5. [MVP_CRITERIA.md](MVP_CRITERIA.md) §3 status updated to **PASS** after review.
 
-**Current tracker status:** **2 / 3 PASS** — Cycle 1 **PASS** (GIS `34d543d`); Cycle 2 **PASS** (dev-method `5ce0a25`, multirepo draft notifica); Cycle 3 **PENDING**; criterion 3 **not** fully closed.
+**Current tracker status:** **3 / 3 PASS** — Cycle 1 **PASS** (GIS `34d543d`); Cycle 2 **PASS** (dev-method `5ce0a25`); Cycle 3 **PASS** (dev-method `0be529d`); **criterion 3 closed** (see [MVP_STATUS.md](MVP_STATUS.md)).
 
 ---
 
@@ -453,13 +465,14 @@ FINAL REPORT (required):
 | Action | Status |
 |--------|--------|
 | Define valid / invalid cycle | Done in this file |
-| Pre-fill cycle log template | Done — Cycle 1 **PASS**; Cycle 2 **PASS**; Cycle 3 **PENDING** |
-| Cycle 1 (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d`; notifica re-confirmed multirepo draft replay |
-| Cycle 2 (dev-method handoff docs) | **PASS** 2026-05-20 — commit `5ce0a25`; Telegram via multirepo **draft** manual test |
-| v4 multirepo draft manual test | **PASS** 2026-05-20 — sequential state-load fix; dev-method + GIS Telegram; Data Table keys written |
-| v4 multirepo draft export | **DRAFT / validated manually / inactive** — [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md); active v4 **unchanged** |
-| Extend v4 repo scope (runtime) | **Separate gate** — Cycle 3 or promote draft; not this docs task |
-| Close criterion 3 | **PENDING** (**2 / 3 PASS**) |
+| Pre-fill cycle log template | Done — Cycles 1–3 **PASS** |
+| Cycle 1 (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d` |
+| Cycle 2 (dev-method handoff docs) | **PASS** 2026-05-20 — commit `5ce0a25` |
+| Cycle 3 (dev-method cycle marker) | **PASS** 2026-05-20 — commit `0be529d`; Telegram `Previous: 5ce0a25`; dedupe 1 new + 2 skip |
+| v4 multirepo draft manual test | **PASS** — Cycle 2 replay + Cycle 3 dedupe replay (draft **inactive**) |
+| v4 multirepo draft export | **DRAFT / validated manually / inactive** — active v4 **unchanged** |
+| Extend v4 repo scope (runtime) | **Separate gate** — promote draft or extend active v4; not this docs task |
+| Close criterion 3 | **Done** (**3 / 3 PASS**) |
 
 ---
 
@@ -476,6 +489,6 @@ FINAL REPORT (required):
 
 ## After three PASS cycles
 
-1. Replace `_pending_` fields with real values (hashes and timestamps only — no secrets).
-2. Set [MVP_CRITERIA.md](MVP_CRITERIA.md) §3 to **PASS**.
+1. ~~Replace `_pending_` fields~~ — **Done** (Cycles 1–3 logged).
+2. Set [MVP_CRITERIA.md](MVP_CRITERIA.md) §3 to **PASS** when consolidating canonical criteria (see [MVP_STATUS.md](MVP_STATUS.md) — criterion 3 **3/3 PASS** recorded 2026-05-20).
 3. Optional: add one line in [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) noting criterion 3 closure date.

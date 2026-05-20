@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after v4 multirepo draft manual test PASS and Cycle 2 registered (2026-05-20; runtime v4 unchanged). Update this file when a criterion changes.
+**Last consolidated:** after Cycle 3 registered and criterion 3 closed **3/3 PASS** (2026-05-20; runtime v4 unchanged). Update this file when a criterion changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -27,7 +27,7 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 |---|-----------|--------|------------|
 | 1 | Push → Telegram &lt;30s | **PARTIAL** — v4 polling provisional; sub-30s pending | [MVP_CRITERIA.md](MVP_CRITERIA.md) §1, [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
 | 2 | handoff-generate.mjs via n8n → `Prompt ready: yes/no` | **PASS** — handoff manual workflow → Telegram `Prompt ready: yes` | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
-| 3 | 3 real cycles handoff → implementer → commit → notifica | **2 / 3 PASS** (Cycle 1 + Cycle 2 **PASS**; Cycle 3 pending) | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
+| 3 | 3 real cycles handoff → implementer → commit → notifica | **PASS** — **3 / 3** (Cycles 1–3 closed) | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
 | 4 | Workflow JSON redacted in repo | **PASS** — runtime v4 visual match | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
 | 5 | Rebuild from zero if VPS dies | **PARTIAL / DOCUMENTED** — pending field validation | [N8N_REBUILD.md](N8N_REBUILD.md) |
 
@@ -61,12 +61,12 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 - **2026-05-20:** `CONTROL PLANE - Handoff generate manual Telegram v1` — Manual Trigger → `handoff-generate.mjs` → Telegram **`Prompt ready: yes`**, exit code 0, on phone.
 - Workflow remained **inactive**; no webhook; v4/v5 unchanged.
 
-### 3 — Three end-to-end cycles (2 / 3)
+### 3 — Three end-to-end cycles (PASS — 3 / 3)
 
-- **Cycle 1:** **PASS** (2026-05-20) — `cursor-coordinate-converter`, commit **`34d543d`**; audit note: GIS notifica re-confirmed via multirepo **draft** manual replay (`Previous: none`).
-- **Cycle 2:** **PASS** (2026-05-20) — `dev-method`, commit **`5ce0a25`**; Telegram via multirepo **draft** Manual Trigger after sequential state-load fix; Data Table key `github:mrhz1973/dev-method:last_commit_sha` written. No new dev-method commit required.
-- **Cycle 3:** **PENDING** — third distinct cycle; repo/task chosen in a separate gate.
-- Criterion 3 not closed until **3 / 3 PASS**.
+- **Cycle 1:** **PASS** (2026-05-20) — `cursor-coordinate-converter`, commit **`34d543d`**.
+- **Cycle 2:** **PASS** (2026-05-20) — `dev-method`, commit **`5ce0a25`**; multirepo **draft** notifica (`Previous: none`).
+- **Cycle 3:** **PASS** (2026-05-20) — `dev-method`, commit **`0be529d`**; multirepo **draft** notifica (`Previous: 5ce0a25`); dedupe **1** new + **2** duplicate-skip. File `docs/control-plane-cycle3-note.md`.
+- **Criterion 3 closed** — all three cycles evidenced; MVP still open until criteria 1 and 5 reach **PASS** (and full 5/5 closure).
 
 ### 4 — Workflow export (PASS)
 
@@ -85,13 +85,17 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 3: Cycle 3 end-to-end
+### Option A — Criterion 5: rebuild field validation
 
-Third full cycle on a watched repo (`dev-method` or `cursor-coordinate-converter`) with handoff → implementer → commit → notifica. Repo and task chosen in a **separate gate** — not assumed here. May use multirepo **draft** (inactive) or extended runtime when agreed. Criterion 1 remains **PARTIAL** (SLA best effort 1–5 min). Criterion 3 **2/3 PASS** until Cycle 3 closes.
+Validate [N8N_REBUILD.md](N8N_REBUILD.md) on a clean VPS or documented recovery drill. Criterion 5 moves from **PARTIAL** toward **PASS** when field-tested.
 
 ### Option B — Criterion 1 latency measurement
 
 Three timed commits on a watched repo; record push vs Telegram timestamps. See [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md). Expect **PARTIAL** if interval remains 1 minute.
+
+### Option C — Runtime scope (separate decision)
+
+Promote multirepo **draft** to replace or extend active v4 — **not** part of Cycle 3 docs registration; requires its own gate per [RUNTIME_GATES.md](RUNTIME_GATES.md).
 
 Do **not** in the same session: enable v5, configure GitHub webhook, or create new n8n workflows ([workflow freeze rule](RUNTIME_GATES.md#workflow-freeze-rule-mvp)).
 
@@ -103,7 +107,7 @@ Do **not** in the same session: enable v5, configure GitHub webhook, or create n
 |-------|------|-----|
 | A | ~~v4 runtime ↔ export match~~ | **Done** — criterion 4 PASS |
 | B | ~~Handoff n8n manual + Telegram~~ | **Done** — criterion 2 PASS |
-| C | End-to-end cycle 1 → 3 | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
+| C | ~~End-to-end cycle 1 → 3~~ | **Done** — criterion 3 **PASS** (3/3) |
 | D | v4 latency measurement (3 commits) | [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md) |
 | E | Rebuild field validation | [N8N_REBUILD.md](N8N_REBUILD.md) |
 | F | Public HTTPS → webhook → v5 (optional strict &lt;30s) | [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |

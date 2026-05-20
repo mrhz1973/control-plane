@@ -58,10 +58,11 @@ Runtime match status: **PASS** — the active n8n v4 workflow was visually check
 | 2 — missing state rows | Telegram only control-plane — fixed load-all + Decide join `c43da22` |
 | 3 — state load order | Prepare **3**; Decide failed (Load all not on path) — fixed `0684942` / `ca8a5db` |
 | 4 — sequential fix replay | **PASS** — Telegram dev-method `5ce0a25` (`Previous: none`); Telegram GIS `34d543d` retro (`Previous: none`, key absent); no control-plane retro-notify (key present) |
+| 5 — Cycle 3 dedupe replay | **PASS** — Telegram dev-method `0be529d` (`Previous: 5ce0a25`); **2** duplicate-skip (control-plane + GIS); Decide **3** → IF **1** true |
 
-**Post-test Data Table (verified):** `github:mrhz1973/dev-method:last_commit_sha` → `5ce0a25bd6ebb230a538d0ebc01b707d74b90ad3`; `github:mrhz1973/cursor-coordinate-converter:last_commit_sha` → `34d543dcb8a26933b3d5f2c27fc0bdc2df85e1e5`; control-plane `last_commit_sha` unchanged for this run. **Duplicate risk closed** for commits `5ce0a25` and `34d543d` on next draft replay.
+**Post-test Data Table (Cycle 2 replay):** dev-method and GIS keys written; control-plane key present (no retro-notify). **Cycle 3 replay:** dedupe confirmed — only `0be529d` notified; prior SHAs skipped.
 
-**Runtime:** Active production v4 **unchanged** (control-plane only). Draft remains **DRAFT / validated manually / inactive**. v5 **off**. Next gate: Cycle 3 or runtime scope decision — separate session.
+**Runtime:** Active production v4 **unchanged** (control-plane only). Draft remains **DRAFT / validated manually / inactive** — **not** declared active runtime replacement. v5 **off**. Next gate: criterion 5 rebuild validation or separate runtime promotion decision.
 
 ---
 

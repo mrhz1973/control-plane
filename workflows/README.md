@@ -38,8 +38,9 @@ Example: `2026-05-20_push-notify.redacted.json`
 - **Item propagation (2026-05-20):** `runOnceForEachItem` + `.item` on Prepare/Format; Decide uses `Prepare.all()` + full state snapshot.
 - **Missing state rows:** load-all snapshot + Decide join (no per-repo Get).
 - **Execution order (2026-05-20):** **sequential** `Trigger → Data Table - Load all state rows → Emit watched repos (3) → …` — no parallel `Trigger → Emit`; required for `$('Data Table - Load all state rows').all()` in Decide.
-- **Manual test (2026-05-20):** sequential state-load fix replay **PASS** — Telegram dev-method `5ce0a25` + retro GIS `34d543d`; Data Table keys for dev-method and GIS written; draft still **inactive**; active v4 unchanged
-- **Next:** Cycle 3 end-to-end or separate runtime gate to promote multirepo scope
+- **Manual test (2026-05-20):** Cycle 2 replay **PASS** (`5ce0a25`, retro GIS `34d543d`); Cycle 3 replay **PASS** (`0be529d`, `Previous: 5ce0a25`, 2 duplicate-skip); draft still **inactive**; active v4 unchanged
+- **Criterion 3:** closed (3/3) via draft notifica path — see [END_TO_END_CYCLES.md](../docs/END_TO_END_CYCLES.md)
+- **Next:** criterion 5 rebuild validation or separate runtime promotion gate (not in docs-only registration)
 
 ## Do not commit
 

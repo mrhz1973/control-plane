@@ -66,11 +66,19 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 | Draft manual tests (iterations 1–3) | **Resolved** — sequential `Trigger → Load all → Emit (3) → … → Decide` |
 | Gate: re-import draft + sequential fix + Manual Trigger | **PASS** 2026-05-20 — workflow **inactive**; **no** schedule activation; active v4 **unchanged**; v5 **off** |
 
-**Recorded in this gate (user-confirmed):** Telegram for `mrhz1973/dev-method` (`5ce0a25`, `Previous: none`) and retro GIS `mrhz1973/cursor-coordinate-converter` (`34d543d`, `Previous: none` — key absent). No Telegram for control-plane in that run (key already present — expected dedupe). Data Table keys written for dev-method and GIS.
+**Recorded in Cycle 2 gate (user-confirmed):** Telegram for `mrhz1973/dev-method` (`5ce0a25`, `Previous: none`) and retro GIS `mrhz1973/cursor-coordinate-converter` (`34d543d`, `Previous: none` — key absent). No Telegram for control-plane in that run (key already present — expected dedupe). Data Table keys written for dev-method and GIS.
 
-**Next runtime gate (separate session):** Cycle 3 end-to-end **or** decision to promote/extend multirepo draft to replace active v4 — **not** in the Cycle 2 docs registration task.
+| Cycle 3 gate (multirepo draft, inactive) | **PASS** 2026-05-20 |
+| Cycle 3 commit (dev-method) | **Done** — `0be529d` (`docs: add control-plane cycle 3 marker`) |
+| Cycle 3 Telegram | **received** — `Previous: 5ce0a25`; timestamp 2026-05-20 23:51 |
+| Cycle 3 workflow dedupe | **1** IF true (new) + **2** duplicate-skip (expected for control-plane + GIS) |
+| Cycle 3 schedule / active v4 / v5 | **No** schedule activation; active v4 **unchanged**; v5 **off** |
 
-**Other gates (separate sessions):** criterion 1 latency measurement; criterion 5 rebuild field validation.
+**Criterion 3:** **closed** (3/3 PASS) — see [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md).
+
+**Next runtime gate (separate session):** criterion **5** rebuild field validation ([N8N_REBUILD.md](N8N_REBUILD.md)) **or** separate decision to promote/extend multirepo draft — **not** in Cycle 3 docs registration.
+
+**Other gates (separate sessions):** criterion 1 latency measurement.
 
 ### Not exceptions (defer until after 5/5 PASS)
 
