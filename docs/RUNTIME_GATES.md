@@ -76,9 +76,12 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 
 **Criterion 3:** **closed** (3/3 PASS) — see [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md).
 
-**Next runtime gate (separate session):** criterion **5** rebuild field validation ([N8N_REBUILD.md](N8N_REBUILD.md)) **or** separate decision to promote/extend multirepo draft — **not** in Cycle 3 docs registration.
+| Criterion 5 — DRY prep (checklist in runbook) | **Done** (docs-only) — [N8N_REBUILD.md § Field validation](N8N_REBUILD.md#field-validation-checklist-criterion-5); criterion 5 remains **PARTIAL** |
+| Criterion 5 — FIELD validation | **PENDING** — future session; requires VPS/SSH/n8n UI per runbook; **not** executed in docs-only prep |
 
-**Other gates (separate sessions):** criterion 1 latency measurement.
+**Next runtime gate (separate session):** criterion **5** FIELD validation — follow [N8N_REBUILD.md](N8N_REBUILD.md) FIELD checklist (clean VPS or documented recovery drill). One gate per session. **This docs-only task does not run SSH, Docker, n8n, or Telegram.**
+
+**Other gates (separate sessions):** criterion 1 latency measurement; multirepo draft promotion (explicit decision only).
 
 ### Not exceptions (defer until after 5/5 PASS)
 

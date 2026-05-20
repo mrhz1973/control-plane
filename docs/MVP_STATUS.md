@@ -75,9 +75,10 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 - **Runtime match:** PASS — visual operational match recorded; see [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) for verified vs not-verified perimeter.
 - **Still pending outside §4:** optional handoff workflow re-export if runtime differs from template.
 
-### 5 — Rebuild runbook (partial)
+### 5 — Rebuild runbook (partial / documented)
 
-- [N8N_REBUILD.md](N8N_REBUILD.md) is operational; not yet validated on a clean VPS.
+- [N8N_REBUILD.md](N8N_REBUILD.md) runbook + [Field validation checklist](N8N_REBUILD.md#field-validation-checklist-criterion-5) prepared (DRY complete).
+- **FIELD validation pending** — controlled rebuild or recovery drill on VPS/n8n; criterion 5 stays **PARTIAL** until checklist PASS and docs updated.
 
 ---
 
@@ -85,9 +86,9 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 5: rebuild field validation
+### Option A — Criterion 5: rebuild field validation (FIELD mode)
 
-Validate [N8N_REBUILD.md](N8N_REBUILD.md) on a clean VPS or documented recovery drill. Criterion 5 moves from **PARTIAL** toward **PASS** when field-tested.
+Execute [N8N_REBUILD.md § Field validation](N8N_REBUILD.md#field-validation-checklist-criterion-5) on a clean VPS or documented recovery drill. DRY prep is done; runtime (SSH, n8n UI, import, smoke test) is **only** in the future manual gate. Criterion 5 → **PASS** after evidence recorded and [MVP_CRITERIA.md](MVP_CRITERIA.md) §5 updated in a follow-up docs commit.
 
 ### Option B — Criterion 1 latency measurement
 
@@ -109,7 +110,7 @@ Do **not** in the same session: enable v5, configure GitHub webhook, or create n
 | B | ~~Handoff n8n manual + Telegram~~ | **Done** — criterion 2 PASS |
 | C | ~~End-to-end cycle 1 → 3~~ | **Done** — criterion 3 **PASS** (3/3) |
 | D | v4 latency measurement (3 commits) | [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md) |
-| E | Rebuild field validation | [N8N_REBUILD.md](N8N_REBUILD.md) |
+| E | Rebuild field validation (FIELD) | [N8N_REBUILD.md#field-validation-checklist-criterion-5](N8N_REBUILD.md#field-validation-checklist-criterion-5) — DRY prep done |
 | F | Public HTTPS → webhook → v5 (optional strict &lt;30s) | [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
 
 ---

@@ -4,7 +4,83 @@
 
 **Docs-only note:** Following this guide is a **runtime gate**. Do not execute steps during a docs-only review task.
 
-**Related docs:** [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) (PASS history), [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) (webhook blocked until public HTTPS), [RUNTIME_GATES.md](RUNTIME_GATES.md) (one step at a time), [workflows/README.md](../workflows/README.md) (export rules).
+**Related docs:** [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) (PASS history), [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) (webhook blocked until public HTTPS), [RUNTIME_GATES.md](RUNTIME_GATES.md) (one step at a time), [workflows/README.md](../workflows/README.md) (export rules), [MVP_CRITERIA.md](MVP_CRITERIA.md) §5, [MVP_STATUS.md](MVP_STATUS.md).
+
+**Criterion 5 status:** runbook **documented** — **PARTIAL** until [field validation](#field-validation-checklist-criterion-5) **FIELD** mode completes. Preparing the checklist (docs-only) does **not** close criterion 5.
+
+---
+
+## Field validation checklist (criterion 5)
+
+Use this section to close [MVP_CRITERIA.md](MVP_CRITERIA.md) §5 after a controlled test. Steps 1–7 below remain the operational runbook; this section defines **how** to validate without duplicating every command.
+
+### DRY validation (docs-only — no runtime)
+
+**When:** Before any VPS/SSH/n8n UI session (including this repo’s docs-only prep tasks).
+
+**Do:**
+
+- Read Steps 1–7 and [Recovery scenarios](#recovery-scenarios); confirm prerequisites list matches what you keep locally (SSH, token, chat_id, compose path).
+- Confirm canonical export exists: `workflows/exports/2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json` ([WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md)).
+- Confirm redaction rules: no token, chat_id, credential ID, or webhook URL in committed JSON or docs.
+- Confirm [RUNTIME_GATES.md](RUNTIME_GATES.md): one gate per session; v5 and GitHub webhook stay off unless separate gates.
+
+**Do not:** SSH, Docker, n8n UI, workflow import, Manual Trigger, schedule activation, or Telegram sends.
+
+**Outcome:** Runbook deemed **ready for FIELD** — criterion 5 remains **PARTIAL**.
+
+### FIELD validation (future manual gate — runtime)
+
+**When:** One dedicated session; owner executes [RUNTIME_GATES.md](RUNTIME_GATES.md) gates in order. Requires VPS access, n8n UI, and secrets **outside git**.
+
+**Environment (pick one — document which in closure notes):**
+
+| Mode | Use when |
+|------|----------|
+| **Clean VPS / empty n8n** | Strongest proof — full Steps 1–7 |
+| **Recovery drill** | Production n8n intact — simulate loss: re-import v4, verify Data Table + credential, manual smoke only; **no** destructive `docker compose down -v`, `git clean`, `reset`, or volume wipe on production without an **explicit** written decision |
+
+**Future checklist (execute in order; check when done):**
+
+- [ ] Prerequisites documented locally (VPS SSH, bot token, chat_id, install method) — not in repo
+- [ ] n8n reachable; container/volume persists workflows + credentials + Data Tables
+- [ ] Data Table `control_plane_state` exists (`key`, `value`, `updated_at`, `note`)
+- [ ] Credential `CONTROL PLANE - Telegram Bot` in n8n UI only
+- [ ] chat_id set in Telegram node UI only — never committed
+- [ ] v4 redacted export imported; credential re-linked; workflow **inactive** until smoke tests pass
+- [ ] Manual Trigger: one Telegram for new/missing SHA; Data Table row updated
+- [ ] Manual Trigger repeat: duplicate skip — **no** second Telegram
+- [ ] v4 schedule enabled **only after** duplicate skip passes (optional for criterion 5 closure if smoke proves rebuild path)
+- [ ] v5 **off**; no GitHub webhook configured
+- [ ] Multirepo **draft** import — **optional separate gate**; not required for criterion 5 unless you explicitly extend scope
+- [ ] No secrets in `git diff` after any doc updates from the session
+
+**PASS criteria (criterion 5 → PASS):**
+
+1. FIELD validation completed on **clean VPS** or **documented recovery drill**.
+2. Steps 2–5 (or equivalent recovery path B in [Recovery scenarios](#recovery-scenarios)) succeeded: credential, Data Table, v4 import, manual dedupe smoke **PASS**.
+3. Evidence recorded (date, environment mode, PASS/FAIL per checklist row) in control-plane docs — e.g. short note in this file or [MVP_STATUS.md](MVP_STATUS.md); update [MVP_CRITERIA.md](MVP_CRITERIA.md) §5 status only after review.
+4. No criterion 1/3/4 regression claimed from this gate alone.
+
+**Stop conditions (abort FIELD session):**
+
+- Second Telegram on duplicate manual re-run → fix dedupe before schedule or closure.
+- Token, chat_id, or webhook URL about to be pasted into a file → stop; use n8n UI only.
+- Temptation to enable v5, configure GitHub webhook, or activate multirepo draft schedule in the same session → stop; separate gates.
+- Production rebuild would require volume delete, `docker compose down -v`, or workflow mass-delete → stop unless explicitly approved.
+- SSH or n8n unreachable → stop; do not patch runbook under pressure without recording FAIL.
+
+**Do not (FIELD gate):**
+
+- `git add .` / commit secrets from the VPS session
+- Force push, `git reset --hard`, `git clean`, stash as part of “recovery”
+- Enable v5 or production webhook
+- Activate schedule before manual dedupe PASS
+- Touch Alina workflows or non–control-plane repos
+
+### After FIELD PASS (docs follow-up)
+
+Update [MVP_CRITERIA.md](MVP_CRITERIA.md) §5 and [MVP_STATUS.md](MVP_STATUS.md) in a **separate docs-only** commit. Re-export redacted v4 only if runtime diverged from `workflows/exports/`.
 
 ---
 
@@ -154,7 +230,7 @@ Only after 5a–5b pass:
 
 ## Step 7 — Smoke test checklist
 
-After rebuild, confirm:
+Operational detail for FIELD validation — see [Field validation checklist](#field-validation-checklist-criterion-5). After rebuild, confirm:
 
 - [ ] n8n UI reachable (your access path only)
 - [ ] Credential `CONTROL PLANE - Telegram Bot` saved in n8n
