@@ -43,6 +43,17 @@ handoff → implementer → commit → notifica (Telegram)
 
 ---
 
+## Repo eligibility for end-to-end cycles
+
+- **Eligible:**
+  - `mrhz1973/dev-method`
+  - `mrhz1973/cursor-coordinate-converter`
+- **Not eligible:**
+  - `mrhz1973/control-plane`
+- **Rationale:** control-plane is the observer/orchestrator system, not the observed product repo. Its commits may still trigger Telegram via v4, but they **do not count** toward MVP criterion 3.
+
+---
+
 ## Notification paths (step 4)
 
 Until [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) is satisfied, Telegram may arrive via:
@@ -104,48 +115,46 @@ Add one section per cycle below (or append rows in your local log). **Never** pu
 
 ## Cycle log (fill at runtime)
 
-Record **real** cycles here when they happen. Until three `PASS` rows exist, criterion 3 stays open.
-
-**Important:** Docs-only commits to **control-plane** do **not** count toward criterion 3 (see “What does NOT count” above). The first **valid** cycle must be on **`dev-method`** or **`cursor-coordinate-converter`** with handoff → implementer → push → Telegram.
+Record **real** cycles here when they happen. Until three `PASS` rows exist, criterion 3 stays open. See [Repo eligibility](#repo-eligibility-for-end-to-end-cycles) above.
 
 ### Cycle 1 — PENDING (planned)
 
 | Field | Value |
 |-------|--------|
 | data/ora | _pending_ |
-| repo | _pending — optional smoke: `mrhz1973/control-plane` docs-only push (Telegram via v4 only; **does not count** toward criterion 3 PASS). **First valid cycle:** `mrhz1973/dev-method` or `mrhz1973/cursor-coordinate-converter`_ |
-| handoff source | _pending — real task handoff for valid cycle; N/A for control-plane docs smoke_ |
-| implementer | _pending — e.g. Cursor on watched repo_ |
+| repo | `mrhz1973/dev-method` |
+| handoff source | _pending_ |
+| implementer | _pending_ |
 | commit hash | _pending_ |
 | Telegram notification | _pending — expected via v4 polling after push_ |
 | esito | **PENDING** (not PASS) |
-| note | Control-plane docs-only commits **never** count as criterion 3 PASS. Use them only to observe v4 notify if desired. First **valid** cycle must be handoff → implementer → push on **dev-method** or **cursor-coordinate-converter**. |
+| note | First real cycle on **dev-method**: handoff → implementer → push → Telegram via v4. |
 
 ### Cycle 2 — PENDING (planned)
 
 | Field | Value |
 |-------|--------|
 | data/ora | _pending_ |
-| repo | `mrhz1973/dev-method` or `mrhz1973/cursor-coordinate-converter` (distinct task from Cycle 1) |
+| repo | `mrhz1973/cursor-coordinate-converter` |
 | handoff source | _pending_ |
 | implementer | _pending_ |
 | commit hash | _pending_ |
 | Telegram notification | _pending — expected via v4 polling_ |
 | esito | **PENDING** (not PASS) |
-| note | Second real push on watched repo; confirm dedupe (no duplicate Telegram for same SHA). |
+| note | Second cycle on **GIS** (frozen) — only if a real authorized task exists; otherwise use **dev-method** with a distinct task. Must differ from Cycle 1 repo. **Never** use control-plane. |
 
 ### Cycle 3 — PENDING (planned)
 
 | Field | Value |
 |-------|--------|
 | data/ora | _pending_ |
-| repo | `mrhz1973/dev-method` (preferred if Cycle 3 includes handoff gate) |
-| handoff source | _pending — `handoff-generate.mjs` via n8n manual when criterion 2 runtime tested; expect `Prompt ready: yes/no` on Telegram before or as part of cycle_ |
+| repo | `mrhz1973/dev-method` |
+| handoff source | _pending — `handoff-generate.mjs` via n8n manual when criterion 2 runtime tested; expect `Prompt ready: yes/no` on Telegram_ |
 | implementer | _pending_ |
 | commit hash | _pending_ |
-| Telegram notification | _pending — commit notify via v4 and/or handoff result message_ |
+| Telegram notification | _pending — `Prompt ready: yes/no` plus commit notification via v4 if applicable_ |
 | esito | **PENDING** (not PASS) |
-| note | Full pipeline including criterion 2 handoff path when ready: handoff → implementer → commit → notifica. |
+| note | Handoff-generate / criterion 2 validation cycle: full pipeline handoff → implementer → commit → notifica. |
 
 ---
 
