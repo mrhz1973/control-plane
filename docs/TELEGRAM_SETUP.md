@@ -26,4 +26,13 @@ Bot dedicato control-plane creato tramite BotFather.
 - **Token:** caricato solo in variabile d'ambiente temporanea durante il test — **non** in questo repo.
 - **chat_id:** recuperato localmente — **non** committato (valore operativo completo fuori repo; da configurare in credential n8n al gate dedicato).
 
-**Prossimo gate (non in questo task):** configurare la credential Telegram in n8n. Webhook GitHub, workflow n8n e notifica push-triggered restano PENDING.
+## n8n Telegram credential — PASS
+
+Credential Telegram dedicata al control-plane salvata in n8n.
+
+- **Credential name:** `CONTROL PLANE - Telegram Bot`
+- **Token:** inserito solo nella credential n8n — **non** in questo repo.
+- **chat_id:** non committato; resta fuori repo e verrà usato solo nel workflow/runtime quando serve.
+- **Scope:** credential disponibile per workflow control-plane futuri; i workflow Alina esistenti non devono essere toccati.
+
+**Prossimo gate (non in questo task):** creare o importare un workflow n8n control-plane separato per test manuale Telegram. Webhook GitHub, schedule e notifica push-triggered restano PENDING.
