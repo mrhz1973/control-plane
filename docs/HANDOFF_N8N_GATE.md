@@ -212,7 +212,7 @@ Dry-run executed **inside the n8n container** against mounted runtime repos. **N
 
 ## Self-hosted n8n Execute Command availability diagnosis
 
-**Date:** 2026-05-20  
+**Date:** 2026-05-20
 **Method:** read-only SSH + `docker inspect` / `docker exec` (no n8n UI, no workflow run, no container restart, no config changes).
 
 ### Runtime observed
