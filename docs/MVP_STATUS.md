@@ -87,7 +87,7 @@ Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested pr
 
 ### Option A — Criterion 3: v4 multirepo runtime extension
 
-Multirepo draft: item propagation fixed; **missing state row** fix pending UI test (load-all + Decide join). Second UI test: Telegram only control-plane; **dev-method `5ce0a25` still missing**. **Next gate:** re-import latest draft → Manual Trigger → Decide **3 items** → dev-method Telegram → Cycle 2 PASS. Criterion 3 **1/3 PASS**; Cycle 2 **blocked**. Runtime v4 unchanged.
+Multirepo draft: **sequential state load** fix in export (`c43da22`+); third UI test: Decide failed (Load all not on execution path). **Next gate:** re-import → Manual Trigger full chain → dev-method Telegram `5ce0a25`. Criterion 3 **1/3 PASS**; Cycle 2 **blocked**. Runtime v4 unchanged.
 
 ### Option B — Criterion 1 latency measurement
 

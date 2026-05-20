@@ -220,9 +220,9 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 
 **Prepared fix (docs only):** draft export `workflows/exports/2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` — **DRAFT / NOT IMPORTED / NOT ACTIVE**. See [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md).
 
-**Single recommended next runtime gate:** re-import multirepo draft with **missing state row fix** (`missingStateRowFix` in export meta) → Manual Trigger → Prepare **3** + Decide **3** → Telegram for `dev-method` `5ce0a25` if key absent or SHA differs → Cycle 2 PASS.
+**Single recommended next runtime gate:** re-import draft with **sequential state load** (`stateLoadExecutionOrderFix` in export meta): `Trigger → Load all → State load gate → Emit → … → Decide` → Manual Trigger → Decide **3 items** → Telegram `dev-method` `5ce0a25` → Cycle 2 PASS.
 
-**Second draft manual test (2026-05-20):** 3-item Prepare OK; Telegram only control-plane `f5cd992`; dev-method not validated. **Do not** mark Cycle 2 PASS. Active v4 unchanged.
+**Third draft manual test (2026-05-20):** Decide failed — Load all state rows not executed (parallel wiring). **Do not** mark Cycle 2 PASS. Active v4 unchanged.
 
 ---
 

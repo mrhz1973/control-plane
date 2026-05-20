@@ -64,9 +64,11 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 | v4 multirepo draft export | **Corrected** 2026-05-20 — item propagation fix; runtime v4 unchanged |
 | First imported draft manual test | **FAIL** — item propagation |
 | Second imported draft manual test | **PARTIAL** — Prepare 3; Telegram only control-plane; dev-method missing (Data Table Get dropped missing keys) |
-| Missing state row fix in export | **Prepared** — load-all state + Decide join |
+| Missing state row fix in export | **Prepared** — load-all + Decide join |
+| Sequential state load fix | **Prepared** — Trigger → Load all → gate → Emit (not parallel) |
+| Third draft manual test | **FAIL** — Decide: Load all not executed |
 
-**Allowed next runtime gate:** **re-import** multirepo draft with missing-row fix → Manual Trigger → Decide **3 items** → Telegram for dev-method `5ce0a25`. **Do not** modify active v4 or v5 in same session.
+**Allowed next runtime gate:** **re-import** draft with sequential state-load order → Manual Trigger → Decide **3** → Telegram dev-method `5ce0a25`. **Do not** modify active v4 or v5.
 
 **Other gates (separate sessions):** Cycle 2 close after notifica; criterion 1 latency; criterion 5 rebuild.
 
