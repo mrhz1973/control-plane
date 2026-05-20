@@ -45,9 +45,10 @@ Automation MVP is **closed** only when all five criteria below are true.
 
 **Criterion:** Workflow n8n esportato come JSON committato nel repo control-plane
 
-- **Status:** PARTIAL PASS
-- **Validated exports:** redacted Telegram manual test, GitHub latest commit manual notify, Data Table dedupe v3, and schedule-capable Data Table dedupe v4 exist under `workflows/exports/`.
-- **Still PENDING for closure:** final production workflow export must match the runtime workflow after activation/configuration and be redacted before commit.
+- **Status:** PARTIAL PASS / DOCUMENTED — PENDING RUNTIME MATCH
+- **Documented:** [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) — full inventory, canonical v4, inactive v5, historical v2 (failed dedupe), v3 manual PASS, redaction rules, runtime-vs-commit pending check.
+- **Validated exports:** seven redacted JSON files under `workflows/exports/`; canonical provisional MVP export is v4 scheduled Data Table dedupe.
+- **Still PENDING for closure:** confirm runtime n8n v4 workflow matches committed redacted export; re-export and commit if diverged. Handoff workflow export pending criterion 2 runtime.
 - **Verification method:** A redacted workflow JSON file exists under `workflows/exports/` following the naming convention in [workflows/README.md](../workflows/README.md).
 
 ---
