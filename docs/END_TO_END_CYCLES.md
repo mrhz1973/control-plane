@@ -4,7 +4,9 @@
 
 **Criterion (Italian):** Utente ha completato almeno 3 cicli reali end-to-end: handoff → implementer → commit → notifica.
 
-**Related:** [MVP_CRITERIA.md](MVP_CRITERIA.md) §3, [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) §2, [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md), [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md).
+**Related:** [MVP_CRITERIA.md](MVP_CRITERIA.md) §3, [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) (criterion 2 **PASS** 2026-05-20), [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md), [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md).
+
+**Criterion 2 vs criterion 3:** MVP criterion 2 PASS (handoff via n8n + Telegram `Prompt ready: yes`) is a **prerequisite** for credible handoff steps in cycles, but the 2026-05-20 handoff manual test **alone** does **not** count as a Cycle PASS — no implementer work, no commit pushed to a watched repo, no push-triggered notifica cycle completed.
 
 ---
 
@@ -18,7 +20,7 @@ handoff → implementer → commit → notifica (Telegram)
 
 | Step | Requirement |
 |------|-------------|
-| **1. Handoff** | A handoff was produced for a real task — via `handoff-generate.mjs` (n8n or local) **or** an equivalent handoff explicitly documented (source, repo, prompt-ready outcome). Criterion 2 PASS is the preferred proof; until then, document the handoff source clearly. |
+| **1. Handoff** | A handoff was produced for a real task — via `handoff-generate.mjs` (n8n or local) **or** an equivalent handoff explicitly documented (source, repo, prompt-ready outcome). **Criterion 2 PASS** (2026-05-20) satisfies handoff-via-n8n proof; each cycle still needs its own implementer → commit → notifica evidence. |
 | **2. Implementer** | User ran an implementer (e.g. Cursor) on that handoff and performed real work — not a dry run or empty prompt. |
 | **3. Commit** | A commit was **pushed** to the target watched repo on GitHub (hash recorded). |
 | **4. Notifica** | User received a **Telegram** message on their phone tied to that push (see notification paths below). |

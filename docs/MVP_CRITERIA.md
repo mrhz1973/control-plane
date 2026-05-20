@@ -33,10 +33,9 @@ Automation MVP is **closed** only when all five criteria below are true.
 
 **Criterion:** handoff-generate.mjs può essere invocato da n8n (manuale o webhook) e il risultato Prompt ready: yes/no arriva su Telegram
 
-- **Status:** LOCAL + CONTAINER CLI PASS / RUNTIME REPOS FIXED / PENDING MANUAL TRIGGER + TELEGRAM
-- **Runtime fix:** root `git safe.directory` for handoff-runtime paths; first Manual Trigger failed on dubious ownership, not missing clone.
-- **Validated (CLI only):** local and n8n-container dry-runs → **`Prompt ready: yes`**, exit code 0; no Telegram yet.
-- **Still PENDING for closure:** n8n **workflow** manual trigger invokes the generator and Telegram delivers `Prompt ready: yes` or `Prompt ready: no` on the user's phone.
+- **Status:** PASS
+- **Validated:** n8n manual workflow `CONTROL PLANE - Handoff generate manual Telegram v1` invoked `handoff-generate.mjs`; Telegram delivered **`Prompt ready: yes`** on user's phone; exit code **0** (2026-05-20). See [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md).
+- **Prerequisites documented:** local CLI PASS, container CLI PASS, `NODES_EXCLUDE=[]`, root `safe.directory` runtime fix.
 - **Verification method:** Trigger the n8n workflow (manual or webhook), invoke `handoff-generate.mjs`, and confirm a Telegram message shows `Prompt ready: yes` or `Prompt ready: no`.
 
 ---
@@ -60,7 +59,7 @@ Automation MVP is **closed** only when all five criteria below are true.
 - **Documented:** [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) — full inventory, canonical v4, inactive v5, historical v2 (failed dedupe), v3 manual PASS, redaction rules, runtime-vs-commit status.
 - **Validated exports:** seven redacted JSON files under `workflows/exports/`; canonical provisional MVP export is v4 scheduled Data Table dedupe.
 - **Runtime match:** PASS — active n8n workflow visually checked against committed redacted v4 export; see [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) for verified vs not-verified perimeter.
-- **Still pending outside criterion 4:** handoff workflow export after criterion 2 runtime exists.
+- **Handoff export:** `workflows/exports/2026-05-20_handoff-generate-manual-telegram-v1.redacted.json` (optional re-export if runtime differs).
 - **Verification method:** A redacted workflow JSON file exists under `workflows/exports/` following the naming convention in [workflows/README.md](../workflows/README.md), and active runtime v4 matches the committed redacted export.
 
 ---

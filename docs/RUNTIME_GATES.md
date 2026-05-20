@@ -55,10 +55,10 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 
 | Gate | Status |
 |------|--------|
-| Execute Command config fix (`NODES_EXCLUDE=[]`) | **Applied** 2026-05-20 — see [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
-| n8n UI check + Manual Trigger + Telegram | **Pending** — separate gate; criterion 2 not PASS |
+| Execute Command config fix (`NODES_EXCLUDE=[]`) | **Applied** 2026-05-20 |
+| n8n manual workflow + Telegram | **PASS** 2026-05-20 — criterion 2 closed |
 
-Next step for MVP criterion 2 is **UI verification** then **manual workflow execution** (Telegram delivery). Config fix alone does not close criterion 2.
+**Next gates (separate):** criterion 3 end-to-end cycles; criterion 1 latency; criterion 5 rebuild field validation.
 
 ### Not exceptions (defer until after 5/5 PASS)
 

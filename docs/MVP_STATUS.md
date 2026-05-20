@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after n8n container CLI handoff dry-run PASS (2026-05-20). Update this file when a criterion changes.
+**Last consolidated:** after MVP criterion 2 PASS (2026-05-20 handoff manual + Telegram). Update this file when a criterion changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -26,7 +26,7 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 | # | Criterion | Status | Detail doc |
 |---|-----------|--------|------------|
 | 1 | Push → Telegram &lt;30s | **PARTIAL** — v4 polling provisional; sub-30s pending | [MVP_CRITERIA.md](MVP_CRITERIA.md) §1, [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
-| 2 | handoff-generate.mjs via n8n → `Prompt ready: yes/no` | **LOCAL + CONTAINER CLI PASS / RUNTIME REPOS FIXED / PENDING MANUAL TRIGGER + TELEGRAM** | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
+| 2 | handoff-generate.mjs via n8n → `Prompt ready: yes/no` | **PASS** — handoff manual workflow → Telegram `Prompt ready: yes` | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
 | 3 | 3 real cycles handoff → implementer → commit → notifica | **DOCUMENTED** — **0 / 3 PASS** | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
 | 4 | Workflow JSON redacted in repo | **PASS** — runtime v4 visual match | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
 | 5 | Rebuild from zero if VPS dies | **PARTIAL / DOCUMENTED** — pending field validation | [N8N_REBUILD.md](N8N_REBUILD.md) |
@@ -56,13 +56,10 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 - **Provisional:** v4 satisfies “notify on new commit” but **not** strict sub-30-second delivery.
 - **Pending:** sub-30s path needs webhook + public HTTPS, or measured latency per [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md).
 
-### 2 — Handoff via n8n (runtime fix applied / Manual Trigger retry pending)
+### 2 — Handoff via n8n (PASS)
 
-- **CLI:** local + container PASS; Execute Command enabled via `NODES_EXCLUDE=[]`.
-- **First Manual Trigger:** FAIL — root lacked `safe.directory` (repos were valid Git clones).
-- **Fix (2026-05-20):** root `safe.directory` in container; dry-run as root **PASS** again.
-- **Still open:** one **new** Manual Trigger + Telegram on phone.
-- **Not PASS.**
+- **2026-05-20:** `CONTROL PLANE - Handoff generate manual Telegram v1` — Manual Trigger → `handoff-generate.mjs` → Telegram **`Prompt ready: yes`**, exit code 0, on phone.
+- Workflow remained **inactive**; no webhook; v4/v5 unchanged.
 
 ### 3 — Three end-to-end cycles (0 / 3)
 
@@ -74,7 +71,7 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 - **7** redacted exports in `workflows/exports/`.
 - **Canonical:** `2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json`
 - **Runtime match:** PASS — visual operational match recorded; see [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) for verified vs not-verified perimeter.
-- **Still pending outside §4:** handoff workflow export after criterion 2 runtime.
+- **Still pending outside §4:** optional handoff workflow re-export if runtime differs from template.
 
 ### 5 — Rebuild runbook (partial)
 
@@ -86,9 +83,9 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 2: Manual Trigger retry + Telegram
+### Option A — Criterion 3: End-to-end cycle 1
 
-Runtime repos verified ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)). **Next gate:** run Manual Trigger **once** on handoff v1 → confirm `Prompt ready: yes/no` on phone. Do not re-run for this docs task.
+Criterion 2 **PASS**. Next: real cycle on `dev-method` or `cursor-coordinate-converter` — handoff → implementer → commit → notifica ([END_TO_END_CYCLES.md](END_TO_END_CYCLES.md)).
 
 ### Option B — Criterion 1 latency measurement
 
@@ -103,9 +100,9 @@ Do **not** in the same session: enable v5, configure GitHub webhook, or create n
 | Order | Gate | Doc |
 |-------|------|-----|
 | A | ~~v4 runtime ↔ export match~~ | **Done** — criterion 4 PASS |
-| B | Handoff script + n8n manual test | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
-| C | v4 latency measurement (3 commits) | [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md) |
-| D | End-to-end cycle 1 → 3 | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
+| B | ~~Handoff n8n manual + Telegram~~ | **Done** — criterion 2 PASS |
+| C | End-to-end cycle 1 → 3 | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
+| D | v4 latency measurement (3 commits) | [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md) |
 | E | Rebuild field validation | [N8N_REBUILD.md](N8N_REBUILD.md) |
 | F | Public HTTPS → webhook → v5 (optional strict &lt;30s) | [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
 

@@ -206,7 +206,7 @@ Dry-run executed **inside the n8n container** against mounted runtime repos. **N
 6. Confirm Telegram message contains **`Prompt ready: yes`** or **`Prompt ready: no`**.
 7. If PASS and runtime differs from export → re-export redacted JSON and update this doc.
 
-**Criterion 2:** still **open** until step 6 PASS on user's phone.
+**Criterion 2:** **PASS** (2026-05-20) — step 6 confirmed on phone; see [Manual n8n workflow + Telegram PASS](#manual-n8n-workflow--telegram-pass).
 
 ---
 
@@ -360,13 +360,33 @@ HANDOFF_EXIT=0
 | n8n workflow re-run | **Not done** in this task |
 | Telegram | **Not sent** |
 
-**Criterion 2:** still **open** — needs **one new** Manual Trigger + Telegram `Prompt ready: yes/no` on phone (user gate; not executed here).
+**Criterion 2:** ~~still **open**~~ **PASS** — see [Manual n8n workflow + Telegram PASS](#manual-n8n-workflow--telegram-pass).
 
-### Next gate
+---
 
-1. **Manual Trigger once** on handoff workflow v1 (inactive OK for manual).
-2. Confirm Telegram message on phone.
-3. Do **not** batch with v5/webhook activation.
+## Manual n8n workflow + Telegram PASS
+
+**Date:** 2026-05-20
+
+| Field | Value |
+|-------|--------|
+| **Workflow** | `CONTROL PLANE - Handoff generate manual Telegram v1` |
+| **Trigger** | Manual Trigger (single retry after runtime fix) |
+| **Workflow active flag** | **Inactive** — manual run only; not activated for schedule/webhook |
+| **Status** | **PASS** |
+| **Telegram** | Message **arrived on user's phone** |
+| **Prompt ready** | **yes** |
+| **Exit code** | **0** |
+| **GitHub webhook** | **Not configured** |
+| **v4 / v5** | **Not modified** |
+
+**Path:** Manual Trigger → Execute Command (`handoff-generate.mjs` dry-run) → Parse stdout → Telegram send.
+
+**Prior failure:** first Manual Trigger failed ([root `safe.directory`](#manual-trigger-failed-runtime-repo-path-not-git-repo)); fixed before this PASS.
+
+**Conclusion:** **MVP criterion 2 — PASS.** Does **not** close full MVP (criteria 1, 3, 5 still open). Does **not** count as [criterion 3](END_TO_END_CYCLES.md) cycle PASS (no implementer → commit → watched-repo notifica).
+
+**Optional follow-up:** re-export redacted handoff JSON if runtime workflow differs from [template](../workflows/exports/2026-05-20_handoff-generate-manual-telegram-v1.redacted.json).
 
 ---
 
@@ -382,10 +402,10 @@ HANDOFF_EXIT=0
 | Execute Command config fix (`NODES_EXCLUDE=[]`) | **Applied** — [Execute Command enabled](#execute-command-enabled-via-nodes_exclude-config) |
 | Manual Trigger (first attempt) | **FAIL** — [dubious ownership / root safe.directory](#manual-trigger-failed-runtime-repo-path-not-git-repo) |
 | Runtime repo fix (root `safe.directory`) | **Applied** — [Runtime repos verified](#runtime-repos-repaired--verified) |
-| Manual Trigger retry + Telegram | **Pending** — user gate |
-| MVP criterion 2 closure | **PENDING** |
+| Manual Trigger retry + Telegram | **PASS** — [Manual n8n workflow + Telegram PASS](#manual-n8n-workflow--telegram-pass) |
+| MVP criterion 2 closure | **PASS** |
 
-Updating this file does **not** satisfy criterion 2. Closure requires a real n8n run and a Telegram message on the user's phone.
+Criterion 2 closure recorded from real n8n manual workflow + Telegram on phone.
 
 ---
 
@@ -396,9 +416,8 @@ Follow [RUNTIME_GATES.md](RUNTIME_GATES.md). Suggested order for criterion 2 onl
 1. ~~Confirm `handoff-generate.mjs` runs locally~~ — **PASS** (2026-05-20 local CLI; [Local CLI dry-run PASS](#local-cli-dry-run-pass)).
 2. ~~Confirm generator runs inside n8n container~~ — **PASS** (2026-05-20 container CLI; [n8n container CLI dry-run PASS](#n8n-container-cli-dry-run-pass)).
 3. ~~Execute Command config fix~~ — **Applied** 2026-05-20 ([Execute Command enabled](#execute-command-enabled-via-nodes_exclude-config)).
-4. **UI check:** open handoff v1; confirm Execute Command recognized.
-5. n8n **manual** trigger → verify Telegram `Prompt ready: yes/no`.
-6. Re-export redacted JSON if runtime differs.
+4. ~~UI check + Manual Trigger + Telegram~~ — **PASS** (2026-05-20; [Manual n8n workflow + Telegram PASS](#manual-n8n-workflow--telegram-pass)).
+5. Re-export redacted JSON if runtime differs (optional).
 
 Do **not** combine: import + execute + activate webhook + schedule in one session.
 
@@ -435,6 +454,6 @@ When runtime is allowed:
 | Telegram bot + credential | PASS ([TELEGRAM_SETUP.md](TELEGRAM_SETUP.md)) |
 | v4 commit polling | Active provisional path — independent of criterion 2 |
 | Public HTTPS for GitHub webhook | Not required for **manual** criterion 2 test |
-| dev-method script contract | Local CLI PASS + container CLI PASS (2026-05-20) — n8n workflow + Telegram still pending |
+| dev-method script contract | Local + container CLI PASS; n8n manual workflow + Telegram PASS (2026-05-20) |
 
 Criterion 3 (three full cycles) builds on criterion 2 but is a **separate** closure item.
