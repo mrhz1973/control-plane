@@ -1,0 +1,269 @@
+{
+  "name": "CONTROL PLANE - GitHub commit poll dedupe notify v2",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-redacted-v2",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        160,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-redacted-v2-disabled-until-workflow-active",
+      "name": "Schedule Trigger - disabled until workflow is activated",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/mrhz1973/control-plane/commits?per_page=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "control-plane-n8n-poll-test"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "github-fetch-latest-commit-redacted-v2",
+      "name": "GitHub - Fetch latest control-plane commit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $getWorkflowStaticData('global');\nconst commit = $json;\nconst sha = commit.sha || '';\nconst previousSha = data.lastSeenControlPlaneSha || '';\nconst isNew = Boolean(sha && sha !== previousSha);\nif (isNew) {\n  data.lastSeenControlPlaneSha = sha;\n}\nreturn [{ json: { ...commit, controlPlaneDedupe: { previousSha, currentSha: sha, isNew } } }];"
+      },
+      "id": "dedupe-latest-commit-redacted-v2",
+      "name": "Dedupe latest commit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is-new-commit-condition-redacted-v2",
+              "leftValue": "={{ $json.controlPlaneDedupe.isNew }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-new-commit-redacted-v2",
+      "name": "IF - New commit?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const sha = $json.sha || 'unknown';\nconst shortSha = sha.substring(0, 7);\nconst message = $json.commit?.message || 'no commit message';\nconst url = $json.html_url || 'no URL';\nconst previousSha = $json.controlPlaneDedupe?.previousSha || 'none';\nreturn [{ json: { text: `CONTROL PLANE commit notification\\nRepo: mrhz1973/control-plane\\nNew commit: ${shortSha}\\nPrevious: ${previousSha ? previousSha.substring(0, 7) : 'none'}\\nMessage: ${message}\\nURL: ${url}` } }];"
+      },
+      "id": "format-new-commit-message-redacted-v2",
+      "name": "Format new commit Telegram message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "__CONFIGURE_CHAT_ID_IN_N8N_UI__",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-send-dedupe-message-redacted-v2",
+      "name": "Telegram - Send deduped commit message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1560,
+        220
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "__REDACTED_N8N_CREDENTIAL_ID__",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { status: 'duplicate_skip', reason: 'Latest commit already seen by workflow static data', currentSha: $json.controlPlaneDedupe?.currentSha || '' } }];"
+      },
+      "id": "duplicate-skip-redacted-v2",
+      "name": "Duplicate skip - no Telegram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "GitHub - Fetch latest control-plane commit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger - disabled until workflow is activated": {
+      "main": [
+        [
+          {
+            "node": "GitHub - Fetch latest control-plane commit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub - Fetch latest control-plane commit": {
+      "main": [
+        [
+          {
+            "node": "Dedupe latest commit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dedupe latest commit": {
+      "main": [
+        [
+          {
+            "node": "IF - New commit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - New commit?": {
+      "main": [
+        [
+          {
+            "node": "Format new commit Telegram message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Duplicate skip - no Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format new commit Telegram message": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send deduped commit message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "__REDACTED_VERSION_ID__",
+  "triggerCount": 0,
+  "tags": [
+    {
+      "name": "control-plane"
+    },
+    {
+      "name": "github"
+    },
+    {
+      "name": "telegram"
+    },
+    {
+      "name": "dedupe"
+    },
+    {
+      "name": "poll"
+    },
+    {
+      "name": "redacted"
+    },
+    {
+      "name": "v2"
+    }
+  ],
+  "meta": {
+    "redaction": "No token, no operational chat_id, no credential id, no workflow id, no webhook secret are committed.",
+    "runtimeStatus": "Template/export record only. Not imported or executed by this commit. Workflow active=false; Schedule Trigger does not run unless the imported workflow is explicitly activated later.",
+    "fix": "v2 replaces this.getWorkflowStaticData with $getWorkflowStaticData for n8n Code node compatibility.",
+    "source": "Manual Trigger or inactive Schedule Trigger fetches latest public commit from mrhz1973/control-plane via GitHub REST API. No GitHub token required for this public read test.",
+    "dedupe": "Workflow static data stores lastSeenControlPlaneSha and sends Telegram only when the latest SHA changes.",
+    "nextGate": "Import this v2 workflow in n8n, configure chatId locally in the UI, then execute manual test twice: first run should send Telegram, second run should duplicate-skip. Do not activate schedule yet."
+  }
+}
