@@ -67,6 +67,8 @@ Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the
 
 **PM-02 promotion (recorded):** Scheduled notify **PASS** — dev-method `7f4316e`; GIS `66fe6b5` (`Previous: 34d543d`); dedupe **PASS** (no repeat Telegram for `66fe6b5`). v5 **off**; webhook **not configured**.
 
+**Automatic GIS handoff (recorded):** Watcher `02` on GIS `2a2ff31` → handoff **`Prompt ready: yes`** + commit notify (`Previous: 8c72f48`) — [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md). Runtime may include IF/handoff branch fixes **not** in committed redacted export — refresh export only on **material** drift ([OBSERVABILITY.md](OBSERVABILITY.md)).
+
 ---
 
 ## v4 runtime match perimeter (visual operational PASS)

@@ -90,7 +90,8 @@ When a real gate is reached, give exactly one concrete action and wait for the u
 
 **No runtime authorized by D-C1-A.** Webhook / v5 / public HTTPS = **post-MVP optional** only — not the next automatic gate. Reopen strict C1 only via explicit new decision (former D-C1-B path).
 
-| PM-02 multirepo watcher promotion | **PASS** — `02 - CP v4 multirepo polling - TARGET ON` active; `01 - CP v4 single-repo polling - LEGACY OFF`; dev-method `7f4316e` + GIS `66fe6b5` notify; GIS dedupe no duplicate |
+| PM-02 multirepo watcher promotion | **PASS** — `02` active; `01` legacy **off**; dev-method `7f4316e` + GIS `66fe6b5` notify; GIS dedupe no duplicate |
+| Automatic GIS handoff (`02` → handoff branch) | **PASS** — GIS `2a2ff31`; **`Prompt ready: yes`**; exit 0; commit notify `Previous: 8c72f48` |
 
 **Post-MVP optional:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook — explicit gate only; PM-02 **done**.
 

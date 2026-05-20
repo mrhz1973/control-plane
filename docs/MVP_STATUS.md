@@ -30,7 +30,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
 - **Runtime:** multirepo watcher **active** (`02 - CP v4 multirepo polling - TARGET ON`); single-repo legacy **off** · v5 **off** · webhook **not configured**
-- **Post-MVP:** PM-02 **PASS** — [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md); optional: strict &lt;30s, new workflows, dev-method
+- **Post-MVP:** PM-02 + PM-06 (automatic GIS handoff) **PASS** — [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
 
@@ -52,7 +52,9 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **Active workflow** | `02 - CP v4 multirepo polling - TARGET ON` — 1 min schedule; watches control-plane, dev-method, cursor-coordinate-converter |
 | **Legacy workflow** | `01 - CP v4 single-repo polling - LEGACY OFF` — **inactive** |
 | **GitHub read** | Authenticated GitHub API credential in n8n UI (not anonymous HTTP) |
-| **Flow** | GitHub → Data Table `control_plane_state` → dedupe → Telegram |
+| **Flow** | GitHub → Data Table `control_plane_state` → dedupe → Telegram; GIS commit can trigger **automatic handoff** branch → `Prompt ready: yes` |
+| **Automatic GIS handoff** | **PASS** — commit `2a2ff31` via watcher `02` ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
+| **Handoff manual fallback** | `03` handoff manual workflow — inactive; manual test path |
 | **v5 webhook workflow** | Imported, manually tested (placeholder), **inactive / disabled** |
 | **GitHub production webhook** | **Not configured** — localhost / tunnel not reachable by GitHub |
 | **Public HTTPS gate** | Documented, not done — [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
@@ -71,8 +73,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 ### 2 — Handoff via n8n (PASS)
 
-- **2026-05-20:** `CONTROL PLANE - Handoff generate manual Telegram v1` — Manual Trigger → `handoff-generate.mjs` → Telegram **`Prompt ready: yes`**, exit code 0, on phone.
-- Workflow remained **inactive**; no webhook; v4/v5 unchanged.
+- **2026-05-20:** Manual workflow — Manual Trigger → **`Prompt ready: yes`**, exit 0 ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)).
+- **Post-MVP:** Automatic GIS handoff **PASS** — watcher `02` on commit `2a2ff31` → **`Prompt ready: yes`**, exit 0; commit notify `Previous: 8c72f48`. UX: handoff Telegram before commit notify (parallel branches).
 
 ### 3 — Three end-to-end cycles (PASS — 3 / 3)
 

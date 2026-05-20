@@ -54,6 +54,20 @@
 
 ---
 
+### PM-06 — Automatic GIS handoff (multirepo watcher)
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PASS** (technical base) — commit `2a2ff31` → watcher `02` → handoff Telegram **`Prompt ready: yes`** |
+| **Why** | Prove handoff branch fires on real GIS commit without Manual Trigger |
+| **Evidence** | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) — automatic GIS handoff section |
+| **UX gap** | Same-minute messages; handoff arrived **before** commit notification (parallel n8n branches) — **PASS** technically |
+| **Next improvement** | Telegram handoff should include **prompt / path / next action**, not only `Prompt ready: yes` |
+| **Next improvement (optional)** | Order commit notification before handoff result |
+| **Runtime** | No change required for PASS record; v5 **off**; webhook **not configured** |
+
+---
+
 ### PM-03 — New n8n workflows
 
 | Field | Value |

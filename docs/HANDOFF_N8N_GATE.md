@@ -390,6 +390,25 @@ HANDOFF_EXIT=0
 
 ---
 
+## Automatic GIS handoff from multirepo watcher PASS
+
+**Trigger:** `02 - CP v4 multirepo polling - TARGET ON` (scheduled poll) — **not** Manual Trigger on `03` handoff manual workflow.
+
+| Field | Value |
+|-------|--------|
+| **Repo** | `mrhz1973/cursor-coordinate-converter` |
+| **Commit** | `2a2ff31` (`2a2ff310a9e7b0fa985e15d6fd44536ad3a36952`) |
+| **Message** | `docs: retest automatic handoff after IF fix` |
+| **Handoff Telegram** | **PASS** — `Prompt ready: yes`; exit code **0**; embedded format structured; task status pending; operation type plan; risk medium; target cursor-coordinate-converter; mode manual dry-run |
+| **Commit notify Telegram** | **PASS** — New `2a2ff31`; Previous `8c72f48`; same message |
+| **Technical result** | **PASS** — automatic handoff path works end-to-end from GIS commit via multirepo watcher |
+
+**UX note (non-blocking):** Handoff and commit Telegram arrived in the **same minute**; **handoff message arrived before** commit notification because n8n branches run **in parallel**. Technical **PASS**; future improvement: prefer commit notification before handoff result, or enrich handoff message (see [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) PM-06).
+
+**Posture unchanged:** v5 **off**; webhook **not configured**; `01` single-repo legacy **off**; `03` handoff manual remains manual/test fallback.
+
+---
+
 ## Docs-only path (now)
 
 | Step | Status |
@@ -403,7 +422,8 @@ HANDOFF_EXIT=0
 | Manual Trigger (first attempt) | **FAIL** — [dubious ownership / root safe.directory](#manual-trigger-failed-runtime-repo-path-not-git-repo) |
 | Runtime repo fix (root `safe.directory`) | **Applied** — [Runtime repos verified](#runtime-repos-repaired--verified) |
 | Manual Trigger retry + Telegram | **PASS** — [Manual n8n workflow + Telegram PASS](#manual-n8n-workflow--telegram-pass) |
-| MVP criterion 2 closure | **PASS** |
+| Automatic GIS handoff (multirepo `02`) | **PASS** — [Automatic GIS handoff](#automatic-gis-handoff-from-multirepo-watcher-pass) |
+| MVP criterion 2 closure | **PASS** (manual + automatic GIS path evidenced) |
 
 Criterion 2 closure recorded from real n8n manual workflow + Telegram on phone.
 
