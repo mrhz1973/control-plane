@@ -132,15 +132,15 @@ Workflow n8n control-plane v4 importato e testato manualmente.
 - **GitHub webhook:** not configured in this gate.
 - **Existing Alina workflows:** not touched.
 
-## n8n GitHub Data Table scheduled v4 — controlled polling PASS
+## n8n GitHub Data Table scheduled v4 — controlled polling PASS then paused
 
-Workflow n8n control-plane v4 attivato per polling controllato.
+Workflow n8n control-plane v4 attivato per polling controllato, validato e poi spento temporaneamente.
 
 - **Workflow name:** `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4`
 - **State table:** `control_plane_state`
 - **Source:** latest public commit from `mrhz1973/control-plane` via GitHub REST public read.
 - **Credential used:** `CONTROL PLANE - Telegram Bot`.
-- **Schedule:** active, one-minute controlled polling.
+- **Schedule:** one-minute controlled polling validated, then turned off to avoid Telegram messages for documentation commits while webhook v5 is prepared.
 - **Validation:** after activation, no duplicate Telegram was received during the observation window when no new GitHub commit occurred.
 - **Dedupe result:** PASS — Data Table state prevented duplicate Telegram notifications.
 - **GitHub token:** not used.
@@ -149,4 +149,22 @@ Workflow n8n control-plane v4 attivato per polling controllato.
 - **GitHub webhook:** not configured in this gate.
 - **Existing Alina workflows:** not touched.
 
-**Prossimo gate (non in questo task):** decide whether to keep one-minute controlled polling as the MVP automation path or add a GitHub webhook as a separate future gate for sub-30-second notifications.
+## n8n GitHub push webhook Data Table dedupe notify v5 — manual PASS
+
+Workflow n8n control-plane v5 importato e testato manualmente con payload placeholder.
+
+- **Workflow name:** `CONTROL PLANE - GitHub push webhook Data Table dedupe notify v5`
+- **State table:** `control_plane_state`
+- **Source:** GitHub push webhook payload shape; manual trigger used only for local placeholder validation.
+- **Credential used:** `CONTROL PLANE - Telegram Bot`.
+- **Execution mode:** manual placeholder test only.
+- **Manual result:** OK.
+- **Production GitHub webhook:** not configured in this gate.
+- **Workflow activation:** not enabled in this gate.
+- **Webhook URL/secret:** not committed.
+- **GitHub token:** not used.
+- **Telegram token:** not committed.
+- **chat_id:** not committed.
+- **Existing Alina workflows:** not touched.
+
+**Prossimo gate (non in questo task):** configure a real GitHub webhook delivery to v5 as a separate runtime gate, then validate sub-30-second notification behavior.
