@@ -265,25 +265,52 @@ When **`NODES_EXCLUDE` is not set**, workflows using Execute Command are flagged
 
 **Not chosen yet:** Code node rewrite (B fallback) or bridge — only if config fix fails after controlled runtime gate.
 
-### FASE 2 prerequisite (not executed in this task)
+### FASE 2 config fix — **applied** (see also [Execute Command enabled via NODES_EXCLUDE config](#execute-command-enabled-via-nodes_exclude-config))
 
-1. Set `NODES_EXCLUDE=[]` (or equivalent documented enablement) on n8n container via compose/env — **separate runtime gate**.
-2. Restart n8n container — **separate runtime gate** (not done here).
-3. Re-import or open handoff workflow v1; confirm Execute Command node appears/enabled.
-4. Then proceed with manual trigger + Telegram test.
-
-**FASE 2 is blocked** until step 1–3 are validated.
+~~**FASE 2 is blocked** until step 1–3 are validated.~~ Steps 1–2 done 2026-05-20; step 3 (UI check) pending.
 
 ---
+
+## Execute Command enabled via NODES_EXCLUDE config
+
+**Date:** 2026-05-20
+
+Runtime config gate applied on VPS `ionos-n8n`. **No** handoff workflow execution, **no** Telegram, **no** workflow activation.
+
+| Field | Value |
+|-------|--------|
+| **Config changed** | `NODES_EXCLUDE=[]` added to `n8n` service `environment` in `/root/docker-compose.yaml` |
+| **Backup path** | `/root/docker-compose.yaml.bak.20260520_175750` (on VPS — not in git) |
+| **Apply method** | `docker compose up -d n8n` from `/root` (container recreated, volumes preserved) |
+| **Container after restart** | `root-n8n-1` (`cb7273d622aa`) — Up, image `docker.n8n.io/n8nio/n8n` |
+| **n8n version** | `2.19.5` |
+| **`NODES_EXCLUDE` in container** | `[]` (verified via `printenv`) |
+| **Execute Command on disk** | Present — `ExecuteCommand.node.js` |
+| **Policy check (CLI)** | `NODES_EXCLUDE` set → n8n v2 `disabled-nodes.rule.js` skips default ExecuteCommand disable |
+| **Handoff workflow** | **Not executed** |
+| **Telegram** | **Not sent** |
+| **v4 / v5** | Not modified in compose; v4 schedule should resume after n8n recreate |
+
+### Next gate (separate)
+
+1. **n8n UI:** open imported handoff workflow v1; confirm Execute Command node is recognized (not “disabled/unavailable”).
+2. Link credential + chat_id in UI if needed.
+3. **Manual Trigger once** → confirm Telegram `Prompt ready: yes/no`.
+4. Record PASS in docs if criterion 2 closes.
+
+---
+
+## Docs-only path (now)
 
 | Step | Status |
 |------|--------|
 | Design document (this file) | **Done** |
 | Local CLI dry-run (`Prompt ready: yes`) | **PASS** — [Local CLI dry-run PASS](#local-cli-dry-run-pass) |
 | Container CLI dry-run inside n8n | **PASS** — [n8n container CLI dry-run PASS](#n8n-container-cli-dry-run-pass) |
-| Manual n8n workflow v1 export | **Prepared / import blocked by Execute Command policy** — [diagnosis](#self-hosted-n8n-execute-command-availability-diagnosis) |
-| Execute Command availability diagnosis | **Done** — conclusion **A** (v2 default disable; config fix needed) |
-| n8n handoff workflow import + Telegram test | **Blocked** — pending FASE 2 config gate |
+| Manual n8n workflow v1 export | **Prepared** — [Manual n8n workflow v1 prepared](#manual-n8n-workflow-v1-prepared) |
+| Execute Command availability diagnosis | **Done** — conclusion **A** |
+| Execute Command config fix (`NODES_EXCLUDE=[]`) | **Applied** — [Execute Command enabled](#execute-command-enabled-via-nodes_exclude-config) |
+| UI check + handoff Manual Trigger + Telegram | **Pending** |
 | MVP criterion 2 closure | **PENDING** |
 
 Updating this file does **not** satisfy criterion 2. Closure requires a real n8n run and a Telegram message on the user's phone.
@@ -296,8 +323,8 @@ Follow [RUNTIME_GATES.md](RUNTIME_GATES.md). Suggested order for criterion 2 onl
 
 1. ~~Confirm `handoff-generate.mjs` runs locally~~ — **PASS** (2026-05-20 local CLI; [Local CLI dry-run PASS](#local-cli-dry-run-pass)).
 2. ~~Confirm generator runs inside n8n container~~ — **PASS** (2026-05-20 container CLI; [n8n container CLI dry-run PASS](#n8n-container-cli-dry-run-pass)).
-3. ~~Import handoff workflow v1~~ — **blocked** until [Execute Command diagnosis](#self-hosted-n8n-execute-command-availability-diagnosis) FASE 2 config fix (`NODES_EXCLUDE=[]` + container restart gate).
-4. Import handoff workflow v1 **inactive**; link credential; set chat_id in UI.
+3. ~~Execute Command config fix~~ — **Applied** 2026-05-20 ([Execute Command enabled](#execute-command-enabled-via-nodes_exclude-config)).
+4. **UI check:** open handoff v1; confirm Execute Command recognized.
 5. n8n **manual** trigger → verify Telegram `Prompt ready: yes/no`.
 6. Re-export redacted JSON if runtime differs.
 
