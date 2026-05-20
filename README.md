@@ -17,7 +17,7 @@ This repo holds documentation, workflow exports, and rebuild instructions for a 
 
 ## Current status
 
-See **[docs/MVP_STATUS.md](docs/MVP_STATUS.md)** — **operational MVP accepted** with C1 latency exception (**D-C1-A**, 2026-05-21); C1 **PARTIAL** (not strict PASS); v4 active, v5 off; strict &lt;30s = post-MVP optional.
+See **[docs/MVP_STATUS.md](docs/MVP_STATUS.md)** — operational MVP accepted (**D-C1-A**); C1 **PARTIAL**; **multirepo watcher active**, single-repo legacy off; v5 off; webhook not configured.
 
 ## MVP deadline
 

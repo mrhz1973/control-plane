@@ -14,10 +14,10 @@
 | **Decision** | **D-C1-A** (2026-05-21) — **not** strict **5/5 PASS** |
 | **C1** | **PARTIAL** accepted — SLA best-effort **1–5 min** (v4 polling) |
 | **C2–C5** | **PASS** |
-| **v4** | **Active** (control-plane poll) |
+| **v4 multirepo watcher** | **Active** — `02 - CP v4 multirepo polling - TARGET ON` (1 min schedule) |
+| **v4 single-repo legacy** | **Off** — `01 - CP v4 single-repo polling - LEGACY OFF` |
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
-| **Multirepo draft** | Validated manually; **inactive** — not production replacement |
 | **Next runtime** | **None mandatory** — every item below is **optional** and **gated** |
 
 ---
@@ -38,18 +38,19 @@
 
 ---
 
-### PM-02 — Multirepo draft promotion
+### PM-02 — Multirepo watcher promotion
 
 | Field | Value |
 |-------|--------|
-| **Status** | Optional — **separate gate** |
-| **Why** | Product-repo notify (dev-method, GIS) validated on **inactive** draft; active v4 still **control-plane only** |
-| **Current** | `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4 multirepo (DRAFT)` — manual-test PASS; **not** active runtime replacement |
-| **Docs** | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
-| **Runtime** | **Yes** — import/update/possible schedule; one gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) |
-| **Risk** | Duplicate Telegram, scope widening, Data Table key drift |
-| **Prerequisite** | Explicit decision packet or runtime gate record |
-| **Next trigger** | User chooses product-repo polling on active path |
+| **Status** | **PASS** — runtime promotion recorded (post-MVP) |
+| **Active** | `02 - CP v4 multirepo polling - TARGET ON` — schedule **1 min**; GitHub node uses **authenticated API credential** in n8n UI (not anonymous HTTP) |
+| **Legacy off** | `01 - CP v4 single-repo polling - LEGACY OFF` — **inactive** |
+| **dev-method notify** | **PASS** — `7f4316e` — `docs: deduplicate core 07 indexing notes` |
+| **GIS notify** | **PASS** — `66fe6b5` (`Previous: 34d543d`) — `docs: trigger control-plane multirepo watcher test` |
+| **Dedupe** | **PASS** — no duplicate Telegram for `66fe6b5` on follow-up poll |
+| **Limits** | v5 **off**; webhook **not configured**; **no** new workflows created |
+| **Export** | Committed redacted JSON may **diverge** (rename, auth GitHub) — refresh only if material drift ([WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [OBSERVABILITY.md](OBSERVABILITY.md)) |
+| **Next trigger** | Re-export redacted multirepo if audit requires match; otherwise stabilize |
 
 ---
 

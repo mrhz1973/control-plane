@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after **D-C1-A** — operational MVP accepted with C1 latency exception (2026-05-21; no runtime). Update this file when a criterion or acceptance state changes.
+**Last consolidated:** after **PM-02** multirepo watcher promotion **PASS** (docs registration; runtime already done by user). MVP still **accepted-with-exception** (D-C1-A). Update when criterion or runtime posture changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -29,8 +29,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
-- **Runtime:** v4 **active** · v5 **off** · webhook **not configured** · **no mandatory next gate**
-- **Post-MVP optional:** [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) — strict &lt;30s, multirepo, new workflows, observability, dev-method (one gate each)
+- **Runtime:** multirepo watcher **active** (`02 - CP v4 multirepo polling - TARGET ON`); single-repo legacy **off** · v5 **off** · webhook **not configured**
+- **Post-MVP:** PM-02 **PASS** — [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md); optional: strict &lt;30s, new workflows, dev-method
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
 
@@ -48,9 +48,11 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 | Component | State |
 |-----------|--------|
-| **Provisional MVP path** | v4 one-minute polling — **active and stable** |
-| **v4 workflow** | `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` |
-| **v4 flow** | GitHub public read → Data Table `control_plane_state` → dedupe → Telegram |
+| **Active path** | Multirepo v4 polling — **active** (PM-02 **PASS**) |
+| **Active workflow** | `02 - CP v4 multirepo polling - TARGET ON` — 1 min schedule; watches control-plane, dev-method, cursor-coordinate-converter |
+| **Legacy workflow** | `01 - CP v4 single-repo polling - LEGACY OFF` — **inactive** |
+| **GitHub read** | Authenticated GitHub API credential in n8n UI (not anonymous HTTP) |
+| **Flow** | GitHub → Data Table `control_plane_state` → dedupe → Telegram |
 | **v5 webhook workflow** | Imported, manually tested (placeholder), **inactive / disabled** |
 | **GitHub production webhook** | **Not configured** — localhost / tunnel not reachable by GitHub |
 | **Public HTTPS gate** | Documented, not done — [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |

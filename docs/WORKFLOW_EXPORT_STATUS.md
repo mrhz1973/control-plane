@@ -23,29 +23,28 @@
 
 | File | Workflow name | Role |
 |------|---------------|------|
-| `2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json` | `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` | **Active provisional path (runtime)** — polls **`mrhz1973/control-plane` only** → `control_plane_state` dedupe → Telegram; one-minute schedule |
+| `2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json` | `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` | **Legacy export** — single-repo; runtime instance `01 - CP v4 single-repo polling - LEGACY OFF` (**inactive**) |
 
-Use this file for [N8N_REBUILD.md](N8N_REBUILD.md) import of the **current** runtime workflow. Runtime v4 is **active and stable** per [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md).
+Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the active production watcher after PM-02.
 
-Runtime match status: **PASS** — the active n8n v4 workflow was visually checked against this committed redacted export. UI-only credential/chat_id linkage differs as expected and must not be committed.
+**Post-MVP runtime posture (PM-02 PASS):** Multirepo watcher **active** (`02 - CP v4 multirepo polling - TARGET ON`); legacy single-repo **off**; v5 **off**; webhook **not configured** ([MVP_STATUS.md](MVP_STATUS.md)).
 
-**Post-MVP runtime posture:** Active v4 **unchanged**; multirepo draft **inactive** (not production replacement); v5 **off**; webhook **not configured**; no automatic post-acceptance runtime ([MVP_STATUS.md](MVP_STATUS.md)).
+**Criterion 5 recovery drill (2026-05-20):** Duplicate-skip smoke on then-active single-repo v4 — historical; see [N8N_REBUILD.md](N8N_REBUILD.md).
 
-**Criterion 5 recovery drill (2026-05-20):** Active v4 duplicate-skip Manual Trigger smoke **PASS** (no new Telegram) — part of [N8N_REBUILD.md](N8N_REBUILD.md) FIELD validation; no new export; no runtime replacement declared.
-
-**Scope gap (2026-05-20):** Single-repo active v4 does not poll product repos. Cycle 2 notifica closed via multirepo **draft** manual test — see [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md). Runtime promotion remains a separate gate.
+**Export refresh:** Required **only** if runtime diverges materially from committed redacted JSON (renames, authenticated GitHub node, schedule) — see [OBSERVABILITY.md](OBSERVABILITY.md). **No** export commit in PM-02 registration task.
 
 ---
 
-## Draft export — v4 multirepo (NOT imported)
+## Multirepo export — v4 watcher (runtime active; committed export may lag)
 
 | File | Workflow name | Role |
 |------|---------------|------|
-| `2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` | `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4 multirepo (DRAFT)` | **DRAFT — NOT IMPORTED — NOT ACTIVE** — preparatory export to extend/replace v4 after UI gate |
+| `2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` | `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4 multirepo (DRAFT)` | **Basis export** — manual tests + PM-02 promotion; runtime renamed **`02 - CP v4 multirepo polling - TARGET ON`** |
 
 | Property | Value |
 |----------|--------|
-| **Status** | DRAFT / validated manually / **inactive** (not promoted to active runtime) |
+| **Runtime status** | **Active** — PM-02 promotion **PASS** (scheduled multirepo poll) |
+| **Committed export status** | Redacted JSON **not** auto-updated in PM-02 docs task — refresh if material drift |
 | **Based on** | v4 redacted export |
 | **Watched repos** | `mrhz1973/control-plane`, `mrhz1973/dev-method`, `mrhz1973/cursor-coordinate-converter` |
 | **Data Table keys** | `github:mrhz1973/control-plane:last_commit_sha`, `github:mrhz1973/dev-method:last_commit_sha`, `github:mrhz1973/cursor-coordinate-converter:last_commit_sha` |
@@ -66,7 +65,7 @@ Runtime match status: **PASS** — the active n8n v4 workflow was visually check
 
 **Post-test Data Table (Cycle 2 replay):** dev-method and GIS keys written; control-plane key present (no retro-notify). **Cycle 3 replay:** dedupe confirmed — only `0be529d` notified; prior SHAs skipped.
 
-**Runtime (post-MVP):** Active v4 **unchanged** and **active** (control-plane poll). Multirepo **draft** **inactive** — not production replacement. v5 **off**; webhook **not configured**. **No automatic runtime gate** after operational MVP ([MVP_STATUS.md](MVP_STATUS.md)). Optional: strict &lt;30s, multirepo promotion — **separate explicit gates** only.
+**PM-02 promotion (recorded):** Scheduled notify **PASS** — dev-method `7f4316e`; GIS `66fe6b5` (`Previous: 34d543d`); dedupe **PASS** (no repeat Telegram for `66fe6b5`). v5 **off**; webhook **not configured**.
 
 ---
 
@@ -132,8 +131,8 @@ workflows/exports/
 ├── 2026-05-20_github-commit-poll-dedupe-notify.redacted.json          # historical
 ├── 2026-05-20_github-commit-poll-dedupe-notify-v2.redacted.json        # failed dedupe — do not use
 ├── 2026-05-20_github-commit-datatable-dedupe-notify-v3.redacted.json    # Data Table manual PASS
-├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json # canonical MVP runtime (control-plane only)
-├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json  # DRAFT — not imported
+├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json # legacy single-repo export (runtime LEGACY OFF)
+├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json  # multirepo basis — runtime TARGET ON (export may lag)
 └── 2026-05-20_github-push-webhook-datatable-dedupe-notify-v5.redacted.json  # inactive future
 ```
 

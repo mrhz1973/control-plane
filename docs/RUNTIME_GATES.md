@@ -42,7 +42,7 @@ When a real gate is reached, give exactly one concrete action and wait for the u
 
 **Bootstrap (historical):** Until operational MVP acceptance, do **not** create new n8n workflows except [allowed exceptions](#allowed-exceptions) below.
 
-**Post-MVP (2026-05-21, D-C1-A):** Operational MVP **accepted with C1 latency exception** — **not** strict **5/5 PASS**. **No mandatory next runtime gate.** v4 **active**; v5 **off**; webhook **not configured**. New workflows, webhook/v5, or multirepo draft promotion: **one explicit gate each** — never batched.
+**Post-MVP (2026-05-21, D-C1-A):** Operational MVP **accepted with C1 latency exception** — **not** strict **5/5 PASS**. **No mandatory next runtime gate.** Multirepo watcher **active**; legacy single-repo **off**; v5 **off**; webhook **not configured**. Further changes: **one explicit gate each** — never batched.
 
 ### Allowed exceptions (bootstrap)
 
@@ -90,7 +90,9 @@ When a real gate is reached, give exactly one concrete action and wait for the u
 
 **No runtime authorized by D-C1-A.** Webhook / v5 / public HTTPS = **post-MVP optional** only — not the next automatic gate. Reopen strict C1 only via explicit new decision (former D-C1-B path).
 
-**Post-MVP optional:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook; multirepo draft promotion — each requires its own explicit gate.
+| PM-02 multirepo watcher promotion | **PASS** — `02 - CP v4 multirepo polling - TARGET ON` active; `01 - CP v4 single-repo polling - LEGACY OFF`; dev-method `7f4316e` + GIS `66fe6b5` notify; GIS dedupe no duplicate |
+
+**Post-MVP optional:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook — explicit gate only; PM-02 **done**.
 
 ### Not exceptions (post-MVP — workflow freeze relaxed for new scope)
 
