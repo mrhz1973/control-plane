@@ -109,10 +109,12 @@ Cons:
 
 ## Recommended next gate
 
-Recommended immediate path:
+**Post-MVP (D-C1-A, 2026-05-21):** **Not** the next automatic gate. Operational MVP accepted with v4 polling (C1 **PARTIAL**, SLA 1–5 min). Pursue this path only if user **explicitly reopens** strict &lt;30s (former D-C1-B) — [decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md).
+
+If reopened, recommended path:
 
 ```text
-Keep v4 polling active as provisional MVP. Prepare Cloudflare Tunnel or reverse proxy as a separate security gate before enabling v5.
+Keep v4 active. Prepare public HTTPS (e.g. Cloudflare Tunnel or reverse proxy) as a separate security gate before enabling v5.
 ```
 
 Do not configure a GitHub webhook again until one of these is true:

@@ -29,6 +29,8 @@ Use this file for [N8N_REBUILD.md](N8N_REBUILD.md) import of the **current** run
 
 Runtime match status: **PASS** — the active n8n v4 workflow was visually checked against this committed redacted export. UI-only credential/chat_id linkage differs as expected and must not be committed.
 
+**Post-MVP runtime posture:** Active v4 **unchanged**; multirepo draft **inactive** (not production replacement); v5 **off**; webhook **not configured**; no automatic post-acceptance runtime ([MVP_STATUS.md](MVP_STATUS.md)).
+
 **Criterion 5 recovery drill (2026-05-20):** Active v4 duplicate-skip Manual Trigger smoke **PASS** (no new Telegram) — part of [N8N_REBUILD.md](N8N_REBUILD.md) FIELD validation; no new export; no runtime replacement declared.
 
 **Scope gap (2026-05-20):** Single-repo active v4 does not poll product repos. Cycle 2 notifica closed via multirepo **draft** manual test — see [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md). Runtime promotion remains a separate gate.
@@ -64,7 +66,7 @@ Runtime match status: **PASS** — the active n8n v4 workflow was visually check
 
 **Post-test Data Table (Cycle 2 replay):** dev-method and GIS keys written; control-plane key present (no retro-notify). **Cycle 3 replay:** dedupe confirmed — only `0be529d` notified; prior SHAs skipped.
 
-**Runtime:** Active production v4 **unchanged** (control-plane only). Draft remains **DRAFT / validated manually / inactive** — **not** declared active runtime replacement. v5 **off**. Next gate: criterion 1 latency / MVP 5/5 decision or separate runtime promotion.
+**Runtime (post-MVP):** Active v4 **unchanged** and **active** (control-plane poll). Multirepo **draft** **inactive** — not production replacement. v5 **off**; webhook **not configured**. **No automatic runtime gate** after operational MVP ([MVP_STATUS.md](MVP_STATUS.md)). Optional: strict &lt;30s, multirepo promotion — **separate explicit gates** only.
 
 ---
 

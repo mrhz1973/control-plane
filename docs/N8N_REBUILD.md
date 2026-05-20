@@ -6,7 +6,7 @@
 
 **Related docs:** [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) (PASS history), [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) (webhook blocked until public HTTPS), [RUNTIME_GATES.md](RUNTIME_GATES.md) (one step at a time), [workflows/README.md](../workflows/README.md) (export rules), [MVP_CRITERIA.md](MVP_CRITERIA.md) §5, [MVP_STATUS.md](MVP_STATUS.md).
 
-**Criterion 5 status:** **PASS** (2026-05-20) — [FIELD validation](#field-validation-checklist-criterion-5) completed as **non-destructive recovery drill** (not clean VPS rebuild). Evidence below; MVP overall **not** 5/5 — criterion 1 remains **PARTIAL** ([MVP_STATUS.md](MVP_STATUS.md)).
+**Criterion 5 status:** **PASS** (2026-05-20) — [FIELD validation](#field-validation-checklist-criterion-5) recovery drill. **MVP:** operationally **accepted** with C1 exception (**D-C1-A**, 2026-05-21); C1 **PARTIAL** (not strict 5/5 PASS) — [MVP_STATUS.md](MVP_STATUS.md).
 
 ---
 

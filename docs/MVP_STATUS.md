@@ -25,6 +25,13 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 **Scorecard:** C1 **PARTIAL** (accepted final operational exception) · C2–C5 **PASS**
 
+## Orchestrator handoff snapshot (post-MVP)
+
+- **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
+- **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
+- **Runtime:** v4 **active** · v5 **off** · webhook **not configured** · **no mandatory next gate**
+- **Post-MVP optional:** strict &lt;30s (reopen D-C1-B path); multirepo draft promotion; new n8n workflows (one gate each)
+
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
 
 | # | Criterion | Status | Detail doc |

@@ -78,5 +78,5 @@ Automation MVP is **strictly closed** only when all five criteria below are **PA
 - **Status:** **PASS** (2026-05-20)
 - **Validated:** Non-destructive **recovery drill** per [N8N_REBUILD.md](N8N_REBUILD.md) FIELD result — n8n UI, workflows present, `control_plane_state`, Telegram credential operational evidence, **active v4** duplicate-skip Manual Trigger smoke **PASS** (no second Telegram). **Clean VPS rebuild not performed** — accepted for MVP criterion 5 closure.
 - **Documented:** [N8N_REBUILD.md](N8N_REBUILD.md) runbook + field validation checklist + 2026-05-20 evidence table.
-- **Still PENDING:** None for criterion 5. **Overall MVP not 5/5** — criterion 1 remains **PARTIAL** ([MVP_STATUS.md](MVP_STATUS.md)).
+- **Still PENDING:** None for criterion 5. **Operational MVP accepted** (D-C1-A); **not** strict **5/5 PASS** — criterion 1 remains **PARTIAL** ([MVP_STATUS.md](MVP_STATUS.md)).
 - **Verification method:** Follow [N8N_REBUILD.md](N8N_REBUILD.md) FIELD checklist on clean VPS **or** documented recovery drill; record PASS evidence. Satisfied by 2026-05-20 recovery drill.

@@ -135,7 +135,7 @@ Add one section per cycle below (or append rows in your local log). **Never** pu
 
 ## Cycle log (fill at runtime)
 
-Record **real** cycles here when they happen. Until three `PASS` rows exist, criterion 3 stays open. See [Repo eligibility](#repo-eligibility-for-end-to-end-cycles) above.
+Record **real** cycles here when they happen. **Criterion 3 closed** — Cycles 1–3 **PASS** (3/3); operational MVP accepted with C1 exception ([MVP_STATUS.md](MVP_STATUS.md)). See [Repo eligibility](#repo-eligibility-for-end-to-end-cycles) above.
 
 ### Cycle 1 — PASS
 
@@ -490,5 +490,5 @@ FINAL REPORT (required):
 ## After three PASS cycles
 
 1. ~~Replace `_pending_` fields~~ — **Done** (Cycles 1–3 logged).
-2. Set [MVP_CRITERIA.md](MVP_CRITERIA.md) §3 to **PASS** when consolidating canonical criteria (see [MVP_STATUS.md](MVP_STATUS.md) — criterion 3 **3/3 PASS** recorded 2026-05-20).
+2. ~~Set [MVP_CRITERIA.md](MVP_CRITERIA.md) §3 to **PASS**~~ — **Done** (2026-05-20); operational MVP **D-C1-A** (2026-05-21).
 3. Optional: add one line in [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) noting criterion 3 closure date.

@@ -31,7 +31,7 @@ Average case is roughly half the interval if poll timing is uniform. v4 **cannot
 | **PARTIAL** | Notifications arrive reliably via v4 but measured latency **> 30s** (expected with 1-minute polling) |
 | **FAIL** | Latency **> 60s** consistently, duplicate Telegram spam, or no notification after push |
 
-Current documented state: **PARTIAL** — v4 stable with dedupe; strict sub-30s pending webhook/public HTTPS path.
+Current documented state: **PARTIAL** — accepted as operational exception (**D-C1-A**, 2026-05-21); SLA 1–5 min via v4. Strict sub-30s measurement / webhook path = **post-MVP optional** only ([decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md)).
 
 ---
 

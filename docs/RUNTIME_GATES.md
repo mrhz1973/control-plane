@@ -38,11 +38,13 @@ When a real gate is reached, give exactly one concrete action and wait for the u
 
 ---
 
-## Workflow freeze rule (MVP)
+## Workflow freeze rule (MVP / post-MVP)
 
-Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
+**Bootstrap (historical):** Until operational MVP acceptance, do **not** create new n8n workflows except [allowed exceptions](#allowed-exceptions) below.
 
-### Allowed exceptions
+**Post-MVP (2026-05-21, D-C1-A):** Operational MVP **accepted with C1 latency exception** — **not** strict **5/5 PASS**. **No mandatory next runtime gate.** v4 **active**; v5 **off**; webhook **not configured**. New workflows, webhook/v5, or multirepo draft promotion: **one explicit gate each** — never batched.
+
+### Allowed exceptions (bootstrap)
 
 | Exception | Examples |
 |-----------|----------|
@@ -100,4 +102,4 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 | Data Table backup workflow | Ops extras — not MVP |
 | CI/CD workflow in n8n | Not MVP closure |
 
-After **5/5 PASS**, add **one** new capability at a time with an explicit friction/cost note in docs.
+**Post-MVP:** Add **one** new capability at a time with an explicit friction/cost note in docs (webhook/v5/multirepo each = separate gate).
