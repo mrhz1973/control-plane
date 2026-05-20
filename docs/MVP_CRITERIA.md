@@ -47,11 +47,12 @@ Automation MVP is **closed** only when all five criteria below are true.
 
 **Criterion:** Workflow n8n esportato come JSON committato nel repo control-plane
 
-- **Status:** PARTIAL PASS / DOCUMENTED — PENDING RUNTIME MATCH
-- **Documented:** [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) — full inventory, canonical v4, inactive v5, historical v2 (failed dedupe), v3 manual PASS, redaction rules, runtime-vs-commit pending check.
+- **Status:** PASS
+- **Documented:** [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) — full inventory, canonical v4, inactive v5, historical v2 (failed dedupe), v3 manual PASS, redaction rules, runtime-vs-commit status.
 - **Validated exports:** seven redacted JSON files under `workflows/exports/`; canonical provisional MVP export is v4 scheduled Data Table dedupe.
-- **Still PENDING for closure:** confirm runtime n8n v4 workflow matches committed redacted export; re-export and commit if diverged. Handoff workflow export pending criterion 2 runtime.
-- **Verification method:** A redacted workflow JSON file exists under `workflows/exports/` following the naming convention in [workflows/README.md](../workflows/README.md).
+- **Runtime match:** PASS — active n8n workflow `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` was visually checked against the committed redacted v4 export; expected UI-only chat_id/credential linkage differences do not require committing secrets.
+- **Still pending outside criterion 4:** handoff workflow export after criterion 2 runtime exists.
+- **Verification method:** A redacted workflow JSON file exists under `workflows/exports/` following the naming convention in [workflows/README.md](../workflows/README.md), and active runtime v4 matches the committed redacted export.
 
 ---
 
