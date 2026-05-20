@@ -29,7 +29,7 @@ Use this file for [N8N_REBUILD.md](N8N_REBUILD.md) import of the **current** run
 
 Runtime match status: **PASS** — the active n8n v4 workflow was visually checked against this committed redacted export. UI-only credential/chat_id linkage differs as expected and must not be committed.
 
-**Scope gap (2026-05-20):** Single-repo v4 caused Cycle 2 missing Telegram on `dev-method` commit `5ce0a25` — see [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md). Product-repo notifica for criterion 3 requires scope extension below.
+**Scope gap (2026-05-20):** Single-repo active v4 does not poll product repos. Cycle 2 notifica closed via multirepo **draft** manual test — see [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md). Runtime promotion remains a separate gate.
 
 ---
 
@@ -41,7 +41,7 @@ Runtime match status: **PASS** — the active n8n v4 workflow was visually check
 
 | Property | Value |
 |----------|--------|
-| **Status** | DRAFT / NOT IMPORTED / NOT ACTIVE |
+| **Status** | DRAFT / validated manually / **inactive** (not promoted to active runtime) |
 | **Based on** | v4 redacted export |
 | **Watched repos** | `mrhz1973/control-plane`, `mrhz1973/dev-method`, `mrhz1973/cursor-coordinate-converter` |
 | **Data Table keys** | `github:mrhz1973/control-plane:last_commit_sha`, `github:mrhz1973/dev-method:last_commit_sha`, `github:mrhz1973/cursor-coordinate-converter:last_commit_sha` |
@@ -50,17 +50,18 @@ Runtime match status: **PASS** — the active n8n v4 workflow was visually check
 
 **Design:** `Trigger → Data Table - Load all state rows → Emit watched repos (3) → GitHub → Prepare → Decide` (sequential, no parallel Trigger→Emit). Decide joins `Prepare.all()` + `Load all state rows.all()`; missing row → `storedValue ''`, `hadStateRow: false`, `isNew: true`.
 
-**Next gate:** Re-import export from `main` → reconnect credential/chat_id → **Manual Trigger once** (inactive) → Decide **3 items**, no Load-all error → Telegram for dev-method `5ce0a25` if key still absent.
+**Manual validation gate (2026-05-20):** Re-import draft with sequential state-load fix (`ca8a5db`) → credential/chat_id in UI → **Manual Trigger once** (workflow **inactive**) → **PASS**.
 
 | Manual test | Result |
 |-------------|--------|
 | 1 — item propagation | Prepare **1** item — fixed `f5cd992` |
 | 2 — missing state rows | Telegram only control-plane — fixed load-all + Decide join `c43da22` |
-| 3 — state load order | Prepare **3** (incl. dev-method `5ce0a25`); **Decide failed** — `Data Table - Load all state rows hasn't been executed` |
+| 3 — state load order | Prepare **3**; Decide failed (Load all not on path) — fixed `0684942` / `ca8a5db` |
+| 4 — sequential fix replay | **PASS** — Telegram dev-method `5ce0a25` (`Previous: none`); Telegram GIS `34d543d` retro (`Previous: none`, key absent); no control-plane retro-notify (key present) |
 
-**Third test UI detail (2026-05-20):** `control_plane_state` contains **only** `github:mrhz1973/control-plane:last_commit_sha` — **not** `github:mrhz1973/dev-method:last_commit_sha`. Commit `5ce0a25` is new for dedupe after sequential fix. **No new dev-method commit** required.
+**Post-test Data Table (verified):** `github:mrhz1973/dev-method:last_commit_sha` → `5ce0a25bd6ebb230a538d0ebc01b707d74b90ad3`; `github:mrhz1973/cursor-coordinate-converter:last_commit_sha` → `34d543dcb8a26933b3d5f2c27fc0bdc2df85e1e5`; control-plane `last_commit_sha` unchanged for this run. **Duplicate risk closed** for commits `5ce0a25` and `34d543d` on next draft replay.
 
-**Root cause test 3:** Load all not guaranteed on execution path before Decide (parallel Trigger→Emit in imported copy). **Fix in export:** `Trigger → Load all state rows → Emit watched repos (3) → …` (direct sequential link). Runtime v4 **unchanged**.
+**Runtime:** Active production v4 **unchanged** (control-plane only). Draft remains **DRAFT / validated manually / inactive**. v5 **off**. Next gate: Cycle 3 or runtime scope decision — separate session.
 
 ---
 

@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after v4 multirepo draft export prepared (2026-05-20; runtime v4 unchanged). Update this file when a criterion changes.
+**Last consolidated:** after v4 multirepo draft manual test PASS and Cycle 2 registered (2026-05-20; runtime v4 unchanged). Update this file when a criterion changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -27,7 +27,7 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 |---|-----------|--------|------------|
 | 1 | Push → Telegram &lt;30s | **PARTIAL** — v4 polling provisional; sub-30s pending | [MVP_CRITERIA.md](MVP_CRITERIA.md) §1, [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
 | 2 | handoff-generate.mjs via n8n → `Prompt ready: yes/no` | **PASS** — handoff manual workflow → Telegram `Prompt ready: yes` | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
-| 3 | 3 real cycles handoff → implementer → commit → notifica | **1 / 3 PASS** (Cycle 2 **blocked** — `5ce0a25` commit OK, v4 Telegram missing) | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
+| 3 | 3 real cycles handoff → implementer → commit → notifica | **2 / 3 PASS** (Cycle 1 + Cycle 2 **PASS**; Cycle 3 pending) | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
 | 4 | Workflow JSON redacted in repo | **PASS** — runtime v4 visual match | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
 | 5 | Rebuild from zero if VPS dies | **PARTIAL / DOCUMENTED** — pending field validation | [N8N_REBUILD.md](N8N_REBUILD.md) |
 
@@ -61,11 +61,11 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 - **2026-05-20:** `CONTROL PLANE - Handoff generate manual Telegram v1` — Manual Trigger → `handoff-generate.mjs` → Telegram **`Prompt ready: yes`**, exit code 0, on phone.
 - Workflow remained **inactive**; no webhook; v4/v5 unchanged.
 
-### 3 — Three end-to-end cycles (1 / 3)
+### 3 — Three end-to-end cycles (2 / 3)
 
-- **Cycle 1:** **PASS** (2026-05-20) — `cursor-coordinate-converter`, commit **`34d543d`**, v4 Telegram.
-- **Cycle 2:** **BLOCKED** — commit **`5ce0a25`** on `dev-method` OK; **v4 Telegram missing** (diagnosis: v4 polls **control-plane only**, not dev-method). See [END_TO_END_CYCLES.md § Cycle 2](END_TO_END_CYCLES.md#cycle-2--commit-done--telegram-missing-not-pass).
-- **Cycle 3:** **PENDING** — after Cycle 2 PASS.
+- **Cycle 1:** **PASS** (2026-05-20) — `cursor-coordinate-converter`, commit **`34d543d`**; audit note: GIS notifica re-confirmed via multirepo **draft** manual replay (`Previous: none`).
+- **Cycle 2:** **PASS** (2026-05-20) — `dev-method`, commit **`5ce0a25`**; Telegram via multirepo **draft** Manual Trigger after sequential state-load fix; Data Table key `github:mrhz1973/dev-method:last_commit_sha` written. No new dev-method commit required.
+- **Cycle 3:** **PENDING** — third distinct cycle; repo/task chosen in a separate gate.
 - Criterion 3 not closed until **3 / 3 PASS**.
 
 ### 4 — Workflow export (PASS)
@@ -85,9 +85,9 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 3: re-import multirepo draft + Manual Trigger
+### Option A — Criterion 3: Cycle 3 end-to-end
 
-Sequential export on `main`: `Trigger → Load all state rows → Emit (3) → … → Decide`. Third UI test: Prepare **3** (dev-method `5ce0a25` visible); Decide failed (Load all not on path). `control_plane_state` has **no** dev-method key — `5ce0a25` should notify after fix. **No new dev-method commit.** Criterion 1 remains **PARTIAL** (SLA best effort 1–5 min). Criterion 3 **1/3 PASS** until Cycle 2 Telegram.
+Third full cycle on a watched repo (`dev-method` or `cursor-coordinate-converter`) with handoff → implementer → commit → notifica. Repo and task chosen in a **separate gate** — not assumed here. May use multirepo **draft** (inactive) or extended runtime when agreed. Criterion 1 remains **PARTIAL** (SLA best effort 1–5 min). Criterion 3 **2/3 PASS** until Cycle 3 closes.
 
 ### Option B — Criterion 1 latency measurement
 

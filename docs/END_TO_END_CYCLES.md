@@ -151,56 +151,45 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 | commit hash | `34d543d` |
 | commit message | `docs: T1.3 OGC layer gate decision packet` |
 | files changed | `docs/orchestrator/latest.md`, `docs/orchestrator/inbox/2026-05-20_0130_t1-3-pcn-geoportale-ogc-gate-decision.md` |
-| Telegram notification | **received** — v4 polling for commit `34d543d` (on user's phone) |
-| **final evidence** | Docs-only GIS commit; no `coordinate_converter Claude.html`, no `package.json`, no deploy/code; v4 Telegram for pushed commit |
+| Telegram notification | **received** — on user's phone for commit `34d543d` |
+| **final evidence** | Docs-only GIS commit; no monolite/code changes |
 | esito | **PASS** |
 
-**Steps evidenced:** (1) handoff via criterion 2 n8n manual + validated generator output; (2) Cursor GIS verde executed docs-only gate packet; (3) commit `34d543d` pushed to `main`; (4) v4 Telegram notifica received for that commit.
+**Notifica attribution (audit 2026-05-20):** Cycle 1 implementer → commit was closed earlier. GIS Telegram for `34d543d` was **re-confirmed** by multirepo **draft** manual replay (`Previous: none`, key was absent). Active production v4 polls **control-plane only** — see [v4 repo scope](#v4-repo-scope-commit-notifications). Cycle 1 remains **PASS** for full four-step evidence on GIS repo.
+
+**Steps evidenced:** (1) handoff via criterion 2 n8n manual; (2) Cursor GIS verde; (3) commit `34d543d` pushed; (4) Telegram notifica received (validated including 2026-05-20 multirepo draft replay).
 
 **Reference:** execution prompt used — [Cycle 1 execution prompt source](#cycle-1-execution-prompt-source) (archived for audit; cycle closed).
 
 ---
 
-### Cycle 2 — COMMIT DONE / TELEGRAM MISSING (not PASS)
+### Cycle 2 — PASS
 
-**Status:** Implementer + commit **done**; v4 Telegram **not received** for dev-method push — Cycle 2 **not PASS**.
+**Status:** **PASS** (2026-05-20) — full pipeline: handoff → implementer → commit → Telegram notifica (closed via multirepo **draft** manual test).
 
 | Field | Value |
 |-------|--------|
-| data/ora | 2026-05-20 (commit); notifica _missing_ |
+| data/ora | 2026-05-20 |
 | repo | `mrhz1973/dev-method` |
 | **task** | **DEV-METHOD — Document n8n handoff runtime compatibility lessons** |
-| handoff source | CONTROL PLANE prepared handoff after Cycle 1 **PASS** (criterion 2 n8n manual + [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) lessons) |
-| implementer | **Cursor DEV** — executed |
-| commit hash | **`5ce0a25`** |
+| handoff source | CONTROL PLANE prepared handoff after Cycle 1 **PASS** (criterion 2 n8n manual + [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
+| implementer | **Cursor DEV** |
+| commit hash | `5ce0a25` (`5ce0a25bd6ebb230a538d0ebc01b707d74b90ad3`) |
 | commit message | `docs: document n8n handoff runtime compatibility` |
-| files changed | `patterns/local-handoff-generator.md`, `CHANGELOG.md`, `ROADMAP.md` (per GitHub) |
-| Telegram notification | **not received** — expected v4 for pushed commit; none on phone |
-| esito | **NOT PASS** (commit done; notifica missing) |
+| files changed | `patterns/local-handoff-generator.md`, `CHANGELOG.md`, `ROADMAP.md` |
+| Telegram notification | **received** — multirepo **draft** manual workflow (`CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4 multirepo (DRAFT)`), **inactive**; `Previous: none` |
+| **Data Table key written** | `github:mrhz1973/dev-method:last_commit_sha` → `5ce0a25bd6ebb230a538d0ebc01b707d74b90ad3` |
+| esito | **PASS** |
 
-**Diagnosis (2026-05-20, read-only):** **Cause B — v4 does not monitor `dev-method`.** See [Cycle 2 missing Telegram diagnosis](#cycle-2-missing-telegram-diagnosis-2026-05-20). Not A (commit at 19:20 UTC; container up 2h+; schedule active). Not C/D in logs (no GitHub/Telegram workflow errors; dev-method never polled). **Do not** mark PASS until notifica path matches an agreed criterion-3 proof.
+**Steps evidenced:** (1) handoff documented; (2) Cursor DEV docs-only commit `5ce0a25` (no new commit required for closure); (3) push on `main`; (4) Telegram on phone from draft multirepo Manual Trigger after sequential state-load fix (`ca8a5db` export).
 
-**Prior READY state:** execution prompt in [Cycle 2 execution prompt source](#cycle-2-execution-prompt-source) — steps 2–3 of four-step cycle remain open for notifica only if scope is fixed.
+**Notifica path:** Draft v4 multirepo (not active production v4). Production v4 unchanged — still control-plane-only polling.
 
-**Type:** docs-only / method documentation — consolidate operational lessons from n8n handoff gate (Execute Command, `NODES_EXCLUDE`, root `safe.directory`, gate ladder).
+**Same manual replay (expected):** Telegram also received for `mrhz1973/cursor-coordinate-converter` commit `34d543d` (`Previous: none`) because GIS Data Table key was absent — retro-notifica consistent with dedupe design; **does not** replace Cycle 1 record but confirms multirepo draft behavior.
 
-**Forbidden in implementer session:**
+**Prior blockers resolved:** [Cycle 2 missing Telegram diagnosis](#cycle-2-missing-telegram-diagnosis-2026-05-20) (cause B + sequential load fix).
 
-| Forbidden | Reason |
-|-----------|--------|
-| `mrhz1973/control-plane` | Observer repo — not cycle target |
-| `cursor-coordinate-converter`, `alina-lavoro` | Out of scope |
-| n8n UI, workflow execution, runtime on VPS | Docs-only in dev-method |
-| token, chat_id, credential ID, webhook URL, secrets | Security |
-| `git add .` | Stage only intentional docs |
-
-**Completion proof required (all three before esito → PASS):**
-
-1. **Commit hash** on `dev-method` `main` with message `docs: document n8n handoff runtime compatibility`.
-2. **Telegram notification** from active v4 workflow for that pushed commit (on user's phone).
-3. **Final `git status --short`** clean in dev-method repo.
-
-**Execution prompt:** copy from [Cycle 2 execution prompt source](#cycle-2-execution-prompt-source) in a **separate** Cursor DEV session — do **not** run from control-plane docs-only tasks.
+**Reference:** [Cycle 2 execution prompt source](#cycle-2-execution-prompt-source) (archived).
 
 ---
 
@@ -220,19 +209,7 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 
 **Prepared fix (docs only):** draft export `workflows/exports/2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` — **DRAFT / NOT IMPORTED / NOT ACTIVE**. See [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md).
 
-**Single recommended next runtime gate:** re-import corrected multirepo draft → **Manual Trigger** (inactive) → Decide **3 items** → Telegram `dev-method` `5ce0a25` → Cycle 2 PASS.
-
-**Cycle 2 — multirepo draft test notes (2026-05-20):**
-
-| Item | Status |
-|------|--------|
-| Commit `5ce0a25` on dev-method | **Exists** — visible in Prepare (3 items) |
-| Telegram for dev-method | **Not received** |
-| `control_plane_state` key dev-method | **Absent** — only control-plane key present in UI |
-| Third Manual Trigger | Decide **failed** — Load all not executed on path |
-| After sequential JSON fix | **No new dev-method commit** — re-import draft + Manual Trigger |
-
-**Do not** mark Cycle 2 PASS until dev-method Telegram received. Active v4 unchanged.
+**Resolution (2026-05-20):** Multirepo draft re-imported (`ca8a5db` sequential fix) → Manual Trigger **PASS** → dev-method + GIS Telegram; Data Table keys written for dev-method and GIS. Cycle 2 **PASS**.
 
 ---
 
@@ -467,7 +444,7 @@ FINAL REPORT (required):
 4. No token, chat_id, webhook URL, or secret appears in committed records;
 5. [MVP_CRITERIA.md](MVP_CRITERIA.md) §3 status updated to **PASS** after review.
 
-**Current tracker status:** **1 / 3 PASS** — Cycle 1 **PASS** (`34d543d`, notifica path audit recommended); Cycle 2 **COMMIT DONE / TELEGRAM MISSING** (`5ce0a25`, cause **B**); Cycle 3 **PENDING**; criterion 3 **not** fully closed.
+**Current tracker status:** **2 / 3 PASS** — Cycle 1 **PASS** (GIS `34d543d`); Cycle 2 **PASS** (dev-method `5ce0a25`, multirepo draft notifica); Cycle 3 **PENDING**; criterion 3 **not** fully closed.
 
 ---
 
@@ -476,13 +453,13 @@ FINAL REPORT (required):
 | Action | Status |
 |--------|--------|
 | Define valid / invalid cycle | Done in this file |
-| Pre-fill cycle log template | Done — Cycle 1 **PASS**; Cycle 2 **READY**; Cycle 3 **PENDING** |
-| Cycle 1 (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d`, v4 Telegram |
-| Cycle 2 implementer + commit | **Done** — `5ce0a25` on dev-method |
-| Cycle 2 v4 Telegram | **Missing** — diagnosis **B** (v4 scope) |
-| v4 multirepo draft export | **Prepared** — [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md); runtime v4 **unchanged** |
-| Extend v4 repo scope (runtime) | **Next runtime gate** — import/update per draft; not in docs-only tasks |
-| Close criterion 3 | **PENDING** (**1 / 3 PASS**) |
+| Pre-fill cycle log template | Done — Cycle 1 **PASS**; Cycle 2 **PASS**; Cycle 3 **PENDING** |
+| Cycle 1 (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d`; notifica re-confirmed multirepo draft replay |
+| Cycle 2 (dev-method handoff docs) | **PASS** 2026-05-20 — commit `5ce0a25`; Telegram via multirepo **draft** manual test |
+| v4 multirepo draft manual test | **PASS** 2026-05-20 — sequential state-load fix; dev-method + GIS Telegram; Data Table keys written |
+| v4 multirepo draft export | **DRAFT / validated manually / inactive** — [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md); active v4 **unchanged** |
+| Extend v4 repo scope (runtime) | **Separate gate** — Cycle 3 or promote draft; not this docs task |
+| Close criterion 3 | **PENDING** (**2 / 3 PASS**) |
 
 ---
 

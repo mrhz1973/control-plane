@@ -29,7 +29,7 @@ Example: `2026-05-20_push-notify.redacted.json`
 ## v4 multirepo draft (criterion 3 notifica path)
 
 - **File:** `2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json`
-- **Status:** **DRAFT — NOT IMPORTED — NOT ACTIVE**
+- **Status:** **DRAFT — validated manually (2026-05-20) — inactive** (not active runtime)
 - **Based on:** canonical v4 export; extends polling to `control-plane`, `dev-method`, `cursor-coordinate-converter`
 - **Data Table keys (per repo):** `github:mrhz1973/control-plane:last_commit_sha`, `github:mrhz1973/dev-method:last_commit_sha`, `github:mrhz1973/cursor-coordinate-converter:last_commit_sha`
 - **Runtime:** active v4 on VPS still **control-plane only** until UI import/update gate
@@ -38,7 +38,8 @@ Example: `2026-05-20_push-notify.redacted.json`
 - **Item propagation (2026-05-20):** `runOnceForEachItem` + `.item` on Prepare/Format; Decide uses `Prepare.all()` + full state snapshot.
 - **Missing state rows:** load-all snapshot + Decide join (no per-repo Get).
 - **Execution order (2026-05-20):** **sequential** `Trigger → Data Table - Load all state rows → Emit watched repos (3) → …` — no parallel `Trigger → Emit`; required for `$('Data Table - Load all state rows').all()` in Decide.
-- **Next:** re-import latest draft (inactive); full chain → Decide **3** → Telegram dev-method `5ce0a25`
+- **Manual test (2026-05-20):** sequential state-load fix replay **PASS** — Telegram dev-method `5ce0a25` + retro GIS `34d543d`; Data Table keys for dev-method and GIS written; draft still **inactive**; active v4 unchanged
+- **Next:** Cycle 3 end-to-end or separate runtime gate to promote multirepo scope
 
 ## Do not commit
 

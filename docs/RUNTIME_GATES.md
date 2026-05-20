@@ -59,18 +59,18 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 | n8n manual workflow + Telegram | **PASS** 2026-05-20 — criterion 2 closed |
 
 | Cycle 1 end-to-end (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d` (re-audit notifica vs v4 scope if needed) |
-| Cycle 2 commit (dev-method) | **Done** — `5ce0a25`; Telegram **missing** |
-| Missing-notification diagnosis | **Done** 2026-05-20 — cause **B**: v4 does not poll `dev-method` |
-| v4 multirepo draft export | **Corrected** 2026-05-20 — item propagation fix; runtime v4 unchanged |
-| First imported draft manual test | **FAIL** — item propagation |
-| Second imported draft manual test | **PARTIAL** — Prepare 3; Telegram only control-plane; dev-method missing (Data Table Get dropped missing keys) |
-| Missing state row fix in export | **Prepared** — load-all + Decide join |
-| Sequential state load fix | **Prepared** — Trigger → Load all → gate → Emit (not parallel) |
-| Third draft manual test | **FAIL** — Decide: Load all not executed |
+| Cycle 2 commit (dev-method) | **Done** — `5ce0a25` |
+| Cycle 2 notifica (multirepo draft) | **PASS** 2026-05-20 — Telegram dev-method `5ce0a25`; Cycle 2 closed in [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
+| Missing-notification diagnosis | **Done** 2026-05-20 — cause **B**: active v4 does not poll `dev-method` |
+| v4 multirepo draft export | **Corrected** — item propagation, missing state rows, sequential state load (`ca8a5db`); active v4 **unchanged** |
+| Draft manual tests (iterations 1–3) | **Resolved** — sequential `Trigger → Load all → Emit (3) → … → Decide` |
+| Gate: re-import draft + sequential fix + Manual Trigger | **PASS** 2026-05-20 — workflow **inactive**; **no** schedule activation; active v4 **unchanged**; v5 **off** |
 
-**Allowed next runtime gate:** re-import multirepo draft from `main` → reconnect credential/chat_id in UI → **Manual Trigger once** (workflow **inactive**) → verify Decide **3 items** + Telegram dev-method `5ce0a25`. **No** schedule activation in this gate. **Do not** modify active v4 or v5.
+**Recorded in this gate (user-confirmed):** Telegram for `mrhz1973/dev-method` (`5ce0a25`, `Previous: none`) and retro GIS `mrhz1973/cursor-coordinate-converter` (`34d543d`, `Previous: none` — key absent). No Telegram for control-plane in that run (key already present — expected dedupe). Data Table keys written for dev-method and GIS.
 
-**Other gates (separate sessions):** Cycle 2 close after notifica; criterion 1 latency; criterion 5 rebuild.
+**Next runtime gate (separate session):** Cycle 3 end-to-end **or** decision to promote/extend multirepo draft to replace active v4 — **not** in the Cycle 2 docs registration task.
+
+**Other gates (separate sessions):** criterion 1 latency measurement; criterion 5 rebuild field validation.
 
 ### Not exceptions (defer until after 5/5 PASS)
 
