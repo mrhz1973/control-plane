@@ -1,0 +1,469 @@
+{
+  "name": "CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4 multirepo (DRAFT)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-multirepo-draft",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        120,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-multirepo-draft",
+      "name": "Schedule Trigger - controlled polling",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        120,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// DRAFT — one item per watched repo; per-repo Data Table keys.\nconst repos = [\n  { ownerRepo: 'mrhz1973/control-plane', stateKey: 'github:mrhz1973/control-plane:last_commit_sha', sourceRepo: 'mrhz1973/control-plane' },\n  { ownerRepo: 'mrhz1973/dev-method', stateKey: 'github:mrhz1973/dev-method:last_commit_sha', sourceRepo: 'mrhz1973/dev-method' },\n  { ownerRepo: 'mrhz1973/cursor-coordinate-converter', stateKey: 'github:mrhz1973/cursor-coordinate-converter:last_commit_sha', sourceRepo: 'mrhz1973/cursor-coordinate-converter' }\n];\nreturn repos.map((r) => ({ json: r }));"
+      },
+      "id": "emit-watched-repos-multirepo-draft",
+      "name": "Emit watched repos (3)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.ownerRepo }}/commits?per_page=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "control-plane-n8n-datatable-dedupe-scheduled-multirepo-draft"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "github-fetch-latest-commit-multirepo-draft",
+      "name": "GitHub - Fetch latest commit (per repo)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const target = $('Emit watched repos (3)').item.json;\nconst resp = $input.first().json;\nconst commit = Array.isArray(resp) ? resp[0] : resp;\nconst sha = commit?.sha || '';\nconst rawMessage = commit?.commit?.message || 'no commit message';\nconst message = rawMessage.split('\\n')[0];\nconst url = commit?.html_url || 'no URL';\nreturn [{ json: {\n  stateKey: target.stateKey,\n  currentSha: sha,\n  shortSha: sha ? sha.substring(0, 7) : '',\n  message,\n  url,\n  sourceRepo: target.sourceRepo,\n  ownerRepo: target.ownerRepo\n} }];"
+      },
+      "id": "prepare-latest-event-multirepo-draft",
+      "name": "Prepare latest commit event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "condition": "eq",
+              "keyValue": "={{ $json.stateKey }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "id": "datatable-get-state-multirepo-draft",
+      "name": "Data Table - Get last seen commit",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1240,
+        320
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const latest = $('Prepare latest commit event').first().json;\nconst storedValue = $json.value || '';\nconst isNew = Boolean(latest.currentSha && latest.currentSha !== storedValue);\nreturn [{ json: { ...latest, previousSha: storedValue || '', isNew } }];"
+      },
+      "id": "decide-dedupe-multirepo-draft",
+      "name": "Decide Data Table dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is-new-commit-condition-multirepo-draft",
+              "leftValue": "={{ $json.isNew }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-new-commit-multirepo-draft",
+      "name": "IF - New commit?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "condition": "eq",
+              "keyValue": "={{ $json.stateKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ $json.stateKey }}",
+            "value": "={{ $json.currentSha }}",
+            "updated_at": "={{ $now.toISO() }}",
+            "note": "={{ 'Latest notified commit SHA for scheduled poll: ' + $json.sourceRepo }}"
+          },
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "note",
+              "displayName": "note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ]
+        }
+      },
+      "id": "datatable-upsert-state-multirepo-draft",
+      "name": "Data Table - Upsert last seen commit",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2080,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const latest = $('Decide Data Table dedupe').first().json;\nconst previous = latest.previousSha ? latest.previousSha.substring(0, 7) : 'none';\nconst title = latest.message || 'no commit message';\nreturn [{ json: { text: `CONTROL PLANE scheduled poll commit notification\\nRepo: ${latest.sourceRepo}\\nNew commit: ${latest.shortSha}\\nPrevious: ${previous}\\nMessage: ${title}\\nURL: ${latest.url}` } }];"
+      },
+      "id": "format-datatable-telegram-message-multirepo-draft",
+      "name": "Format Data Table Telegram message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "__CONFIGURE_CHAT_ID_IN_N8N_UI__",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-send-datatable-dedupe-multirepo-draft",
+      "name": "Telegram - Send Data Table deduped message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        220
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "__REDACTED_N8N_CREDENTIAL_ID__",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { status: 'duplicate_skip', reason: 'Latest commit already stored in control_plane_state for this repo key', stateKey: $json.stateKey, sourceRepo: $json.sourceRepo, currentSha: $json.currentSha, previousSha: $json.previousSha } }];"
+      },
+      "id": "duplicate-skip-multirepo-draft",
+      "name": "Duplicate skip - no Telegram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Emit watched repos (3)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger - controlled polling": {
+      "main": [
+        [
+          {
+            "node": "Emit watched repos (3)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Emit watched repos (3)": {
+      "main": [
+        [
+          {
+            "node": "GitHub - Fetch latest commit (per repo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub - Fetch latest commit (per repo)": {
+      "main": [
+        [
+          {
+            "node": "Prepare latest commit event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare latest commit event": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Get last seen commit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Get last seen commit": {
+      "main": [
+        [
+          {
+            "node": "Decide Data Table dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Data Table dedupe": {
+      "main": [
+        [
+          {
+            "node": "IF - New commit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - New commit?": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Upsert last seen commit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Duplicate skip - no Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Upsert last seen commit": {
+      "main": [
+        [
+          {
+            "node": "Format Data Table Telegram message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Data Table Telegram message": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send Data Table deduped message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "__REDACTED_VERSION_ID__",
+  "triggerCount": 0,
+  "tags": [
+    {
+      "name": "control-plane"
+    },
+    {
+      "name": "github"
+    },
+    {
+      "name": "telegram"
+    },
+    {
+      "name": "datatable"
+    },
+    {
+      "name": "dedupe"
+    },
+    {
+      "name": "schedule-capable"
+    },
+    {
+      "name": "redacted"
+    },
+    {
+      "name": "v4"
+    },
+    {
+      "name": "multirepo"
+    },
+    {
+      "name": "draft"
+    },
+    {
+      "name": "not-imported"
+    }
+  ],
+  "meta": {
+    "status": "DRAFT — NOT IMPORTED — NOT ACTIVE",
+    "basedOn": "2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json",
+    "purpose": "Extend provisional v4 polling to mrhz1973/control-plane, mrhz1973/dev-method, and mrhz1973/cursor-coordinate-converter with separate Data Table keys per repo. Enables criterion 3 end-to-end notifica on product repos (Cycle 2 dev-method 5ce0a25 currently missing Telegram because runtime v4 polls control-plane only).",
+    "redaction": "No token, no operational chat_id, no credential id, no workflow id, no webhook secret are committed.",
+    "runtimeStatus": "Template/export record only. NOT imported into n8n. NOT executed. active=false. Do not activate until UI gate: manual test all three repos, then schedule.",
+    "stateStore": "Uses n8n Data Table control_plane_state with per-repo keys: github:mrhz1973/control-plane:last_commit_sha, github:mrhz1973/dev-method:last_commit_sha, github:mrhz1973/cursor-coordinate-converter:last_commit_sha.",
+    "watchedRepos": [
+      "mrhz1973/control-plane",
+      "mrhz1973/dev-method",
+      "mrhz1973/cursor-coordinate-converter"
+    ],
+    "dedupe": "Per-repo SHA compare; Telegram only when latest SHA differs from stored value for that repo key; upsert after send path.",
+    "firstRunBehavior": "On first import, seed Data Table rows or expect one Telegram per repo whose latest SHA differs from empty stored value — plan manual test inactive before enabling schedule to avoid surprise spam.",
+    "polling": "1 minute schedule (same as v4). Does not satisfy strict 30s SLA; webhook remains separate gate.",
+    "nextGate": "Runtime: import/update existing v4 workflow in n8n UI (prefer in-place edit of active v4 to match this draft, or replace after backup). Manual trigger once inactive. Verify Telegram for each repo with a known-new commit. Seed dedupe keys for 5ce0a25 / 34d543d if retro-notify not desired. Then activate schedule. Re-export redacted JSON when runtime matches. Do not create a separate production workflow unless justified.",
+    "replacesOrExtends": "Intended to extend/replace active v4 only after UI validation — not a second parallel production workflow."
+  }
+}

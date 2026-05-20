@@ -23,11 +23,34 @@
 
 | File | Workflow name | Role |
 |------|---------------|------|
-| `2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json` | `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` | **Active provisional path** — GitHub public read → `control_plane_state` dedupe → Telegram; one-minute schedule |
+| `2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json` | `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4` | **Active provisional path (runtime)** — polls **`mrhz1973/control-plane` only** → `control_plane_state` dedupe → Telegram; one-minute schedule |
 
-Use this file for [N8N_REBUILD.md](N8N_REBUILD.md) import. Runtime v4 is **active and stable** per [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md).
+Use this file for [N8N_REBUILD.md](N8N_REBUILD.md) import of the **current** runtime workflow. Runtime v4 is **active and stable** per [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md).
 
 Runtime match status: **PASS** — the active n8n v4 workflow was visually checked against this committed redacted export. UI-only credential/chat_id linkage differs as expected and must not be committed.
+
+**Scope gap (2026-05-20):** Single-repo v4 caused Cycle 2 missing Telegram on `dev-method` commit `5ce0a25` — see [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md). Product-repo notifica for criterion 3 requires scope extension below.
+
+---
+
+## Draft export — v4 multirepo (NOT imported)
+
+| File | Workflow name | Role |
+|------|---------------|------|
+| `2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` | `CONTROL PLANE - GitHub commit Data Table dedupe scheduled v4 multirepo (DRAFT)` | **DRAFT — NOT IMPORTED — NOT ACTIVE** — preparatory export to extend/replace v4 after UI gate |
+
+| Property | Value |
+|----------|--------|
+| **Status** | DRAFT / NOT IMPORTED / NOT ACTIVE |
+| **Based on** | v4 redacted export |
+| **Watched repos** | `mrhz1973/control-plane`, `mrhz1973/dev-method`, `mrhz1973/cursor-coordinate-converter` |
+| **Data Table keys** | `github:mrhz1973/control-plane:last_commit_sha`, `github:mrhz1973/dev-method:last_commit_sha`, `github:mrhz1973/cursor-coordinate-converter:last_commit_sha` |
+| **Purpose** | Enable criterion 3 cycles on dev-method and GIS with v4-style deduped Telegram |
+| **Runtime** | Unchanged until explicit import/update gate — **do not** import or activate in docs-only tasks |
+
+**Design:** Schedule/Manual → emit 3 repo items → per-repo GitHub latest commit → per-repo dedupe → Telegram with `Repo:` line in message. Same `control_plane_state` table; separate keys per repo.
+
+**Next gate:** In-place update of active v4 in n8n UI to match draft (or replace after backup) → manual test inactive → seed dedupe if retro-spam undesired → activate schedule → re-export when runtime matches.
 
 ---
 
@@ -84,7 +107,7 @@ Criterion 4 remains **PASS** for operational visual match. A future export/diff 
 
 ## Inventory summary
 
-All committed exports (7 files):
+All committed exports (8 files):
 
 ```text
 workflows/exports/
@@ -93,7 +116,8 @@ workflows/exports/
 ├── 2026-05-20_github-commit-poll-dedupe-notify.redacted.json          # historical
 ├── 2026-05-20_github-commit-poll-dedupe-notify-v2.redacted.json        # failed dedupe — do not use
 ├── 2026-05-20_github-commit-datatable-dedupe-notify-v3.redacted.json    # Data Table manual PASS
-├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json # canonical MVP
+├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json # canonical MVP runtime (control-plane only)
+├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json  # DRAFT — not imported
 └── 2026-05-20_github-push-webhook-datatable-dedupe-notify-v5.redacted.json  # inactive future
 ```
 

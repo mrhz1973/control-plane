@@ -26,6 +26,17 @@ Example: `2026-05-20_push-notify.redacted.json`
 - **n8n 2.x:** Execute Command disabled when `NODES_EXCLUDE` unset — see HANDOFF_N8N_GATE diagnosis section
 - **No secrets** in committed export
 
+## v4 multirepo draft (criterion 3 notifica path)
+
+- **File:** `2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json`
+- **Status:** **DRAFT — NOT IMPORTED — NOT ACTIVE**
+- **Based on:** canonical v4 export; extends polling to `control-plane`, `dev-method`, `cursor-coordinate-converter`
+- **Data Table keys (per repo):** `github:mrhz1973/control-plane:last_commit_sha`, `github:mrhz1973/dev-method:last_commit_sha`, `github:mrhz1973/cursor-coordinate-converter:last_commit_sha`
+- **Runtime:** active v4 on VPS still **control-plane only** until UI import/update gate
+- **Purpose:** fix Cycle 2 missing Telegram (`5ce0a25`) and support criterion 3 on product repos
+- **Redaction:** same rules as v4 — `__CONFIGURE_CHAT_ID_IN_N8N_UI__`, `__REDACTED_N8N_CREDENTIAL_ID__`, no tokens in JSON
+- **Next:** manual test in n8n (inactive) before schedule; re-export when runtime matches
+
 ## Do not commit
 
 - `*.unredacted.json` (listed in [.gitignore](../.gitignore))

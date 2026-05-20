@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after Cycle 2 missing Telegram diagnosis (2026-05-20, dev-method `5ce0a25`, v4 scope cause B). Update this file when a criterion changes.
+**Last consolidated:** after v4 multirepo draft export prepared (2026-05-20; runtime v4 unchanged). Update this file when a criterion changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -27,7 +27,7 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 |---|-----------|--------|------------|
 | 1 | Push → Telegram &lt;30s | **PARTIAL** — v4 polling provisional; sub-30s pending | [MVP_CRITERIA.md](MVP_CRITERIA.md) §1, [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
 | 2 | handoff-generate.mjs via n8n → `Prompt ready: yes/no` | **PASS** — handoff manual workflow → Telegram `Prompt ready: yes` | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
-| 3 | 3 real cycles handoff → implementer → commit → notifica | **1 / 3 PASS** — Cycle 1 GIS `34d543d` + v4 Telegram | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
+| 3 | 3 real cycles handoff → implementer → commit → notifica | **1 / 3 PASS** (Cycle 2 **blocked** — `5ce0a25` commit OK, v4 Telegram missing) | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
 | 4 | Workflow JSON redacted in repo | **PASS** — runtime v4 visual match | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
 | 5 | Rebuild from zero if VPS dies | **PARTIAL / DOCUMENTED** — pending field validation | [N8N_REBUILD.md](N8N_REBUILD.md) |
 
@@ -85,9 +85,9 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 3: Fix notifica path then close Cycle 2
+### Option A — Criterion 3: v4 multirepo runtime extension
 
-Cycle 2 commit **`5ce0a25`** done; **Telegram missing** because v4 scope is **`control-plane` only** ([END_TO_END_CYCLES.md § v4 repo scope](END_TO_END_CYCLES.md#v4-repo-scope-commit-notifications)). **Single next gate:** extend v4 polling to `dev-method` (and GIS if needed) + re-export, **or** document agreed alternate notifica — then confirm phone message for `5ce0a25` or re-push proof commit. **Do not** mark Cycle 2 PASS without notifica. Audit Cycle 1 GIS `34d543d` notifica attribution if needed.
+Draft ready: `workflows/exports/2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` (**NOT imported**). **Single next gate:** update active v4 in n8n UI to match draft (3 repos, 3 Data Table keys) → manual test inactive → Telegram for `dev-method` → Cycle 2 PASS. Cycle 1 GIS `34d543d` notifica: audit after multirepo proven. **No new workflow** unless UI gate justifies separate import.
 
 ### Option B — Criterion 1 latency measurement
 

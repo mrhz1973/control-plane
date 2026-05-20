@@ -61,8 +61,11 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 | Cycle 1 end-to-end (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d` (re-audit notifica vs v4 scope if needed) |
 | Cycle 2 commit (dev-method) | **Done** — `5ce0a25`; Telegram **missing** |
 | Missing-notification diagnosis | **Done** 2026-05-20 — cause **B**: v4 does not poll `dev-method` |
+| v4 multirepo draft export | **Prepared** 2026-05-20 — NOT imported; runtime v4 unchanged |
 
-**Next gates (separate, one per session):** **extend v4 repo scope** (dev-method + GIS) or agreed alternate notifica for Cycle 2 close; criterion 1 latency; criterion 5 rebuild. **No new workflows** until MVP 5/5 unless scope extension is the one chosen change to existing v4.
+**Allowed next runtime gate:** **extend existing v4 repo scope** in n8n UI using [multirepo draft](../workflows/exports/2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json) — import/update **one** workflow, manual test, then schedule. **No new production workflow** beyond draft/export unless UI gate requires it. **No** v5, webhook, or Telegram send in prep task.
+
+**Other gates (separate sessions):** Cycle 2 close after notifica; criterion 1 latency; criterion 5 rebuild.
 
 ### Not exceptions (defer until after 5/5 PASS)
 

@@ -82,6 +82,8 @@ Note: v4 is **one-minute** polling; criterion 1 strict &lt;30s is separate. Crit
 
 **Implication:** A push to **dev-method** or **GIS** does **not** produce a v4 “scheduled poll commit notification” unless runtime was extended beyond the committed export (not evidenced in this diagnosis). Criterion 3 cycles on product repos need either **v4 scope extension** (separate runtime gate), **v5 webhook** when public HTTPS exists, or an agreed alternate notifica path documented at cycle close.
 
+**Draft fix (2026-05-20, not runtime):** `2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` — polls all three repos with separate Data Table keys; **DRAFT / NOT IMPORTED / NOT ACTIVE**.
+
 **Cycle 1 audit note (2026-05-20):** GIS commit `34d543d` (18:58 UTC) was recorded with “v4 Telegram received.” Control-plane commits `f2bbc51` / `b97aec3` (18:52 / 19:04 UTC) align with v4 scope. Re-verify whether Cycle 1 notifica was a **control-plane** poll message vs **handoff** Telegram (`Prompt ready: yes`) before treating GIS-only v4 as proven.
 
 ---
@@ -216,7 +218,9 @@ Record **real** cycles here when they happen. Until three `PASS` rows exist, cri
 
 **Assumption error:** Cycle 2 prep assumed v4 polling on **watched product repos** (`dev-method`, GIS). MVP provisional v4 was built and validated for **control-plane** commit notify only ([WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md)).
 
-**Single recommended next gate (pick one):** extend v4 (or successor) to poll `dev-method` + GIS with separate Data Table keys per repo — **one** runtime change + re-export; **or** close Cycle 2 with an explicitly documented alternate notifica path (not done in this task).
+**Prepared fix (docs only):** draft export `workflows/exports/2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` — **DRAFT / NOT IMPORTED / NOT ACTIVE**. See [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md).
+
+**Single recommended next runtime gate:** import/update **existing** active v4 to multirepo draft design → manual test → confirm Telegram for `dev-method` (e.g. `5ce0a25` or seed dedupe) → then record Cycle 2 PASS. **Do not** mark Cycle 2 PASS until notifica received.
 
 ---
 
@@ -464,7 +468,8 @@ FINAL REPORT (required):
 | Cycle 1 (GIS T1.3) | **PASS** 2026-05-20 — commit `34d543d`, v4 Telegram |
 | Cycle 2 implementer + commit | **Done** — `5ce0a25` on dev-method |
 | Cycle 2 v4 Telegram | **Missing** — diagnosis **B** (v4 scope) |
-| Extend v4 repo scope / alternate notifica | **Next runtime gate** — not in this docs task |
+| v4 multirepo draft export | **Prepared** — [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md); runtime v4 **unchanged** |
+| Extend v4 repo scope (runtime) | **Next runtime gate** — import/update per draft; not in docs-only tasks |
 | Close criterion 3 | **PENDING** (**1 / 3 PASS**) |
 
 ---
