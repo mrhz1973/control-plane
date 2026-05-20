@@ -1,0 +1,142 @@
+{
+  "name": "CONTROL PLANE - GitHub latest commit manual notify",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-redacted",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/mrhz1973/control-plane/commits?per_page=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "control-plane-n8n-manual-test"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "github-fetch-latest-commit-redacted",
+      "name": "GitHub - Fetch latest control-plane commit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const commit = Array.isArray($json) ? $json[0] : $json;\nconst sha = commit?.sha || 'unknown';\nconst shortSha = sha.substring(0, 7);\nconst message = commit?.commit?.message || 'no commit message';\nconst url = commit?.html_url || 'no URL';\nreturn [{ json: { text: `CONTROL PLANE GitHub manual test\\nRepo: mrhz1973/control-plane\\nLatest commit: ${shortSha}\\nMessage: ${message}\\nURL: ${url}` } }];"
+      },
+      "id": "format-telegram-message-redacted",
+      "name": "Format Telegram message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "__CONFIGURE_CHAT_ID_IN_N8N_UI__",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-send-github-message-redacted",
+      "name": "Telegram - Send GitHub manual test message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "__REDACTED_N8N_CREDENTIAL_ID__",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "GitHub - Fetch latest control-plane commit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub - Fetch latest control-plane commit": {
+      "main": [
+        [
+          {
+            "node": "Format Telegram message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Telegram message": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send GitHub manual test message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "__REDACTED_VERSION_ID__",
+  "triggerCount": 0,
+  "tags": [
+    {
+      "name": "control-plane"
+    },
+    {
+      "name": "github"
+    },
+    {
+      "name": "telegram"
+    },
+    {
+      "name": "manual-test"
+    },
+    {
+      "name": "redacted"
+    }
+  ],
+  "meta": {
+    "redaction": "No token, no operational chat_id, no credential id, no workflow id, and no webhook secret are committed.",
+    "runtimeStatus": "Template/export record only. Not imported or executed by this commit.",
+    "source": "Manual Trigger fetches latest public commit from mrhz1973/control-plane via GitHub REST API. No GitHub token required for this public read test.",
+    "nextGate": "Import/create this workflow in n8n, configure chatId locally in the UI, then execute one manual test. Do not enable schedule or webhook."
+  }
+}
