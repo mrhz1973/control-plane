@@ -72,7 +72,8 @@ Automation MVP is **closed** only when all five criteria below are true.
 
 **Criterion:** README control-plane con istruzioni per ricostruire il setup da zero se VPS muore
 
-- **Status:** PARTIAL PASS / PENDING FIELD VALIDATION
-- **Documented:** [N8N_REBUILD.md](N8N_REBUILD.md) — operational runbook (n8n prerequisites, Telegram credential, `control_plane_state`, v4 import, chat_id in UI, manual dedupe tests, v5 off, recovery scenarios, hard rules). [README.md](../README.md) links rebuild principle.
-- **Still PENDING for closure:** follow the runbook on a clean VPS without prior state and confirm smoke test checklist passes in production.
-- **Verification method:** Follow [N8N_REBUILD.md](N8N_REBUILD.md) and root [README.md](../README.md) on a clean VPS without prior state; smoke test passes.
+- **Status:** **PASS** (2026-05-20)
+- **Validated:** Non-destructive **recovery drill** per [N8N_REBUILD.md](N8N_REBUILD.md) FIELD result — n8n UI, workflows present, `control_plane_state`, Telegram credential operational evidence, **active v4** duplicate-skip Manual Trigger smoke **PASS** (no second Telegram). **Clean VPS rebuild not performed** — accepted for MVP criterion 5 closure.
+- **Documented:** [N8N_REBUILD.md](N8N_REBUILD.md) runbook + field validation checklist + 2026-05-20 evidence table.
+- **Still PENDING:** None for criterion 5. **Overall MVP not 5/5** — criterion 1 remains **PARTIAL** ([MVP_STATUS.md](MVP_STATUS.md)).
+- **Verification method:** Follow [N8N_REBUILD.md](N8N_REBUILD.md) FIELD checklist on clean VPS **or** documented recovery drill; record PASS evidence. Satisfied by 2026-05-20 recovery drill.

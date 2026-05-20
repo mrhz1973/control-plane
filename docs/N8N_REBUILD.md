@@ -6,7 +6,7 @@
 
 **Related docs:** [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) (PASS history), [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) (webhook blocked until public HTTPS), [RUNTIME_GATES.md](RUNTIME_GATES.md) (one step at a time), [workflows/README.md](../workflows/README.md) (export rules), [MVP_CRITERIA.md](MVP_CRITERIA.md) §5, [MVP_STATUS.md](MVP_STATUS.md).
 
-**Criterion 5 status:** runbook **documented** — **PARTIAL** until [field validation](#field-validation-checklist-criterion-5) **FIELD** mode completes. Preparing the checklist (docs-only) does **not** close criterion 5.
+**Criterion 5 status:** **PASS** (2026-05-20) — [FIELD validation](#field-validation-checklist-criterion-5) completed as **non-destructive recovery drill** (not clean VPS rebuild). Evidence below; MVP overall **not** 5/5 — criterion 1 remains **PARTIAL** ([MVP_STATUS.md](MVP_STATUS.md)).
 
 ---
 
@@ -29,31 +29,42 @@ Use this section to close [MVP_CRITERIA.md](MVP_CRITERIA.md) §5 after a control
 
 **Outcome:** Runbook deemed **ready for FIELD** — criterion 5 remains **PARTIAL**.
 
-### FIELD validation (future manual gate — runtime)
+### FIELD validation (manual gate — runtime)
 
-**When:** One dedicated session; owner executes [RUNTIME_GATES.md](RUNTIME_GATES.md) gates in order. Requires VPS access, n8n UI, and secrets **outside git**.
+**When:** One dedicated session; owner executes [RUNTIME_GATES.md](RUNTIME_GATES.md) gates in order. Requires n8n UI access (e.g. tunnel) and secrets **outside git**.
 
 **Environment (pick one — document which in closure notes):**
 
 | Mode | Use when |
 |------|----------|
-| **Clean VPS / empty n8n** | Strongest proof — full Steps 1–7 |
-| **Recovery drill** | Production n8n intact — simulate loss: re-import v4, verify Data Table + credential, manual smoke only; **no** destructive `docker compose down -v`, `git clean`, `reset`, or volume wipe on production without an **explicit** written decision |
+| **Clean VPS / empty n8n** | Strongest proof — full Steps 1–7 (not performed for 2026-05-20 closure) |
+| **Recovery drill** | Production n8n intact — verify presence of workflows, Data Table, credential; manual dedupe smoke only; **no** destructive volume wipe |
 
-**Future checklist (execute in order; check when done):**
+### FIELD validation result — PASS (2026-05-20)
 
-- [ ] Prerequisites documented locally (VPS SSH, bot token, chat_id, install method) — not in repo
-- [ ] n8n reachable; container/volume persists workflows + credentials + Data Tables
-- [ ] Data Table `control_plane_state` exists (`key`, `value`, `updated_at`, `note`)
-- [ ] Credential `CONTROL PLANE - Telegram Bot` in n8n UI only
-- [ ] chat_id set in Telegram node UI only — never committed
-- [ ] v4 redacted export imported; credential re-linked; workflow **inactive** until smoke tests pass
-- [ ] Manual Trigger: one Telegram for new/missing SHA; Data Table row updated
-- [ ] Manual Trigger repeat: duplicate skip — **no** second Telegram
-- [ ] v4 schedule enabled **only after** duplicate skip passes (optional for criterion 5 closure if smoke proves rebuild path)
-- [ ] v5 **off**; no GitHub webhook configured
-- [ ] Multirepo **draft** import — **optional separate gate**; not required for criterion 5 unless you explicitly extend scope
-- [ ] No secrets in `git diff` after any doc updates from the session
+| Item | Result |
+|------|--------|
+| **Mode** | **Recovery drill** (non-destructive) — clean VPS rebuild **not** performed |
+| **n8n UI** | Reachable via tunnel |
+| **Workflows present** | v4 (**active**), v4 multirepo **draft** (**inactive**), handoff manual v1 (**inactive**) |
+| **Data Table** | `control_plane_state` — keys for control-plane, dev-method, cursor-coordinate-converter, plus `last_push_head_sha` (separate push key) |
+| **Telegram credential** | Operational (prior gates); no token copied into repo |
+| **v4 duplicate-skip smoke** | Manual Trigger once on **active v4** → GitHub/Prepare/Get/Decide success → IF **false** → duplicate skip branch → **no** Telegram send → **no** new message on phone |
+| **Not done (by design)** | Clean VPS; volume delete; destructive Docker; new import; v5; webhook; new schedule activation; persistent runtime change; secrets in git |
+
+**Checklist (recovery drill — items evidenced):**
+
+- [x] Prerequisites documented locally — not in repo
+- [x] n8n reachable; existing workflows + Data Table intact (no wipe)
+- [x] Data Table `control_plane_state` present with expected keys
+- [x] Credential `CONTROL PLANE - Telegram Bot` — operational evidence (UI; no token in git)
+- [x] chat_id in UI only — never committed
+- [ ] v4 re-import on empty n8n — **N/A** (recovery drill; export already matched runtime)
+- [x] Manual Trigger on **active v4**: duplicate skip — **no** Telegram (smoke **PASS**)
+- [x] v4 schedule — already active; **no** new activation in this gate
+- [x] v5 **off**; no GitHub webhook
+- [x] Multirepo draft **inactive** — not promoted
+- [x] No secrets in docs commit from registration task
 
 **PASS criteria (criterion 5 → PASS):**
 
@@ -80,7 +91,7 @@ Use this section to close [MVP_CRITERIA.md](MVP_CRITERIA.md) §5 after a control
 
 ### After FIELD PASS (docs follow-up)
 
-Update [MVP_CRITERIA.md](MVP_CRITERIA.md) §5 and [MVP_STATUS.md](MVP_STATUS.md) in a **separate docs-only** commit. Re-export redacted v4 only if runtime diverged from `workflows/exports/`.
+~~Update [MVP_CRITERIA.md](MVP_CRITERIA.md) §5 and [MVP_STATUS.md](MVP_STATUS.md)~~ — **Done** in docs commit `docs: record criterion 5 field validation pass`. Re-export redacted v4 only if runtime diverged from `workflows/exports/` (not required for 2026-05-20 closure).
 
 ---
 

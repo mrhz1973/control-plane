@@ -17,7 +17,7 @@ This repo holds documentation, workflow exports, and rebuild instructions for a 
 
 ## Current status
 
-See **[docs/MVP_STATUS.md](docs/MVP_STATUS.md)** for consolidated MVP progress (v4 polling active, v5 off, criterion tracker).
+See **[docs/MVP_STATUS.md](docs/MVP_STATUS.md)** for consolidated MVP progress — **4 PASS + 1 PARTIAL** (criterion 1); v4 active, v5 off.
 
 ## MVP deadline
 

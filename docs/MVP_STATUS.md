@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after Cycle 3 registered and criterion 3 closed **3/3 PASS** (2026-05-20; runtime v4 unchanged). Update this file when a criterion changes.
+**Last consolidated:** after criterion 5 FIELD validation **PASS** (2026-05-20 recovery drill; runtime unchanged). Update this file when a criterion changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -21,15 +21,17 @@ Single-page snapshot of Automation MVP progress. Details live in linked docs; th
 
 MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.md) are fully **PASS**.
 
+**Current scorecard:** **4 PASS + 1 PARTIAL** — MVP **not** fully closed (criterion 1 sub-30s path pending).
+
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
 
 | # | Criterion | Status | Detail doc |
 |---|-----------|--------|------------|
 | 1 | Push → Telegram &lt;30s | **PARTIAL** — v4 polling provisional; sub-30s pending | [MVP_CRITERIA.md](MVP_CRITERIA.md) §1, [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
-| 2 | handoff-generate.mjs via n8n → `Prompt ready: yes/no` | **PASS** — handoff manual workflow → Telegram `Prompt ready: yes` | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
-| 3 | 3 real cycles handoff → implementer → commit → notifica | **PASS** — **3 / 3** (Cycles 1–3 closed) | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
-| 4 | Workflow JSON redacted in repo | **PASS** — runtime v4 visual match | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
-| 5 | Rebuild from zero if VPS dies | **PARTIAL / DOCUMENTED** — pending field validation | [N8N_REBUILD.md](N8N_REBUILD.md) |
+| 2 | handoff-generate.mjs via n8n → `Prompt ready: yes/no` | **PASS** | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) |
+| 3 | 3 real cycles handoff → implementer → commit → notifica | **PASS** — **3 / 3** | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) |
+| 4 | Workflow JSON redacted in repo | **PASS** | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
+| 5 | Rebuild from zero if VPS dies | **PASS** — recovery drill 2026-05-20 ([N8N_REBUILD.md](N8N_REBUILD.md)) | [N8N_REBUILD.md](N8N_REBUILD.md) |
 
 ---
 
@@ -66,7 +68,7 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 - **Cycle 1:** **PASS** (2026-05-20) — `cursor-coordinate-converter`, commit **`34d543d`**.
 - **Cycle 2:** **PASS** (2026-05-20) — `dev-method`, commit **`5ce0a25`**; multirepo **draft** notifica (`Previous: none`).
 - **Cycle 3:** **PASS** (2026-05-20) — `dev-method`, commit **`0be529d`**; multirepo **draft** notifica (`Previous: 5ce0a25`); dedupe **1** new + **2** duplicate-skip. File `docs/control-plane-cycle3-note.md`.
-- **Criterion 3 closed** — all three cycles evidenced; MVP still open until criteria 1 and 5 reach **PASS** (and full 5/5 closure).
+- **Criterion 3 closed** — all three cycles evidenced; MVP **not** 5/5 until criterion 1 reaches **PASS** or accepted **PARTIAL**.
 
 ### 4 — Workflow export (PASS)
 
@@ -75,10 +77,11 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 - **Runtime match:** PASS — visual operational match recorded; see [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) for verified vs not-verified perimeter.
 - **Still pending outside §4:** optional handoff workflow re-export if runtime differs from template.
 
-### 5 — Rebuild runbook (partial / documented)
+### 5 — Rebuild runbook (PASS)
 
-- [N8N_REBUILD.md](N8N_REBUILD.md) runbook + [Field validation checklist](N8N_REBUILD.md#field-validation-checklist-criterion-5) prepared (DRY complete).
-- **FIELD validation pending** — controlled rebuild or recovery drill on VPS/n8n; criterion 5 stays **PARTIAL** until checklist PASS and docs updated.
+- **2026-05-20:** FIELD validation **PASS** — non-destructive **recovery drill** ([N8N_REBUILD.md § FIELD result](N8N_REBUILD.md#field-validation-checklist-criterion-5)): workflows + Data Table + credential evidenced; **active v4** duplicate-skip smoke **PASS** (no new Telegram).
+- Clean VPS full rebuild **not** performed — documented and accepted for criterion 5.
+- No v5, webhook, volume wipe, or new import in this gate.
 
 ---
 
@@ -86,13 +89,13 @@ MVP is **closed** only when all five criteria in [MVP_CRITERIA.md](MVP_CRITERIA.
 
 Pick **one** gate per [RUNTIME_GATES.md](RUNTIME_GATES.md) session. Suggested priorities:
 
-### Option A — Criterion 5: rebuild field validation (FIELD mode)
+### Option A — Criterion 1: latency measurement or closure decision
 
-Execute [N8N_REBUILD.md § Field validation](N8N_REBUILD.md#field-validation-checklist-criterion-5) on a clean VPS or documented recovery drill. DRY prep is done; runtime (SSH, n8n UI, import, smoke test) is **only** in the future manual gate. Criterion 5 → **PASS** after evidence recorded and [MVP_CRITERIA.md](MVP_CRITERIA.md) §5 updated in a follow-up docs commit.
+Measure v4 push → Telegram latency ([V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md)) **or** document explicit acceptance of **PARTIAL** for criterion 1 (best-effort 1–5 min polling). Required for **5/5 MVP** closure.
 
-### Option B — Criterion 1 latency measurement
+### Option B — Public HTTPS / webhook path (optional strict &lt;30s)
 
-Three timed commits on a watched repo; record push vs Telegram timestamps. See [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md). Expect **PARTIAL** if interval remains 1 minute.
+See [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) — separate from criterion 5; v5 stays off until gate satisfied.
 
 ### Option C — Runtime scope (separate decision)
 
@@ -110,7 +113,7 @@ Do **not** in the same session: enable v5, configure GitHub webhook, or create n
 | B | ~~Handoff n8n manual + Telegram~~ | **Done** — criterion 2 PASS |
 | C | ~~End-to-end cycle 1 → 3~~ | **Done** — criterion 3 **PASS** (3/3) |
 | D | v4 latency measurement (3 commits) | [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md) |
-| E | Rebuild field validation (FIELD) | [N8N_REBUILD.md#field-validation-checklist-criterion-5](N8N_REBUILD.md#field-validation-checklist-criterion-5) — DRY prep done |
+| E | ~~Rebuild field validation~~ | **Done** — criterion 5 **PASS** (recovery drill 2026-05-20) |
 | F | Public HTTPS → webhook → v5 (optional strict &lt;30s) | [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
 
 ---

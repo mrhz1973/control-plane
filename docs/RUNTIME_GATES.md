@@ -76,12 +76,16 @@ Until MVP is **5/5 PASS**, do **not** create new n8n workflows.
 
 **Criterion 3:** **closed** (3/3 PASS) — see [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md).
 
-| Criterion 5 — DRY prep (checklist in runbook) | **Done** (docs-only) — [N8N_REBUILD.md § Field validation](N8N_REBUILD.md#field-validation-checklist-criterion-5); criterion 5 remains **PARTIAL** |
-| Criterion 5 — FIELD validation | **PENDING** — future session; requires VPS/SSH/n8n UI per runbook; **not** executed in docs-only prep |
+| Criterion 5 — DRY prep (checklist in runbook) | **Done** (docs-only) |
+| Criterion 5 — FIELD validation | **PASS** 2026-05-20 — **recovery drill** (non-destructive); clean VPS rebuild **not** done |
+| Criterion 5 — v4 duplicate-skip smoke | **PASS** — active v4 Manual Trigger; IF false → duplicate skip; **no** new Telegram |
+| Criterion 5 — scope limits | No v5, webhook, volume wipe, new import, schedule activation, or persistent runtime change in this gate |
 
-**Next runtime gate (separate session):** criterion **5** FIELD validation — follow [N8N_REBUILD.md](N8N_REBUILD.md) FIELD checklist (clean VPS or documented recovery drill). One gate per session. **This docs-only task does not run SSH, Docker, n8n, or Telegram.**
+**Criterion 5:** **closed** — see [N8N_REBUILD.md § FIELD result](N8N_REBUILD.md#field-validation-checklist-criterion-5).
 
-**Other gates (separate sessions):** criterion 1 latency measurement; multirepo draft promotion (explicit decision only).
+**Next runtime gate (separate session):** criterion **1** — v4 latency measurement ([V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md)) and/or explicit **PARTIAL** acceptance for MVP 5/5 decision; optional [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) for strict sub-30s. **This docs-only registration task does not run SSH, Docker, n8n, or Telegram.**
+
+**Other gates (separate sessions):** multirepo draft promotion (explicit decision only).
 
 ### Not exceptions (defer until after 5/5 PASS)
 
