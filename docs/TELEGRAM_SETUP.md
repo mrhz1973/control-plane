@@ -94,6 +94,23 @@ Persistent state table creata nella UI n8n per sostituire la deduplica basata su
 - **Purpose:** store last-seen event keys for duplicate-skip validation.
 - **Scope:** control-plane workflows only.
 - **Existing Alina workflows:** not touched.
-- **Still pending:** v3 workflow using this table must be imported and validated manually before schedule/webhook activation.
 
-**Prossimo gate (non in questo task):** importare un workflow v3 che usa `control_plane_state` come stato persistente, poi validare first-send e duplicate-skip. Do not activate schedule/webhook until duplicate-skip is proven.
+## n8n GitHub Data Table dedupe notify v3 — first run PASS
+
+Workflow n8n control-plane v3 importato e testato manualmente con stato persistente in Data Table.
+
+- **Workflow name:** `CONTROL PLANE - GitHub commit Data Table dedupe notify v3`
+- **State table:** `control_plane_state`
+- **Source:** latest public commit from `mrhz1973/control-plane` via GitHub REST public read.
+- **Credential used:** `CONTROL PLANE - Telegram Bot`.
+- **Execution mode:** manual first run only.
+- **First-run result:** Telegram message received on the user's phone.
+- **GitHub token:** not used.
+- **Telegram token:** not committed.
+- **chat_id:** not committed.
+- **GitHub webhook:** not configured in this gate.
+- **Schedule:** not enabled in this gate.
+- **Existing Alina workflows:** not touched.
+- **Still pending:** second manual run must duplicate-skip without sending a second Telegram.
+
+**Prossimo gate (non in questo task):** eseguire una seconda volta il workflow v3 per validare duplicate-skip tramite Data Table. Do not activate schedule/webhook until duplicate-skip is proven.
