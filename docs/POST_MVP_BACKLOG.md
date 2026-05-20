@@ -71,12 +71,12 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | Optional — **docs-first**; **no runtime by default** |
+| **Status** | **Docs delivered** — [OBSERVABILITY.md](OBSERVABILITY.md); **no runtime by default** |
 | **Why** | Improve traceability without expanding attack surface |
-| **Candidates** | Execution run log conventions; Data Table backup **notes** (not table dump in git); workflow export refresh policy when runtime diverges |
-| **Risk** | Accidental secret commit if logs/exports mishandled |
-| **Runtime** | **No** unless a later item explicitly gates it |
-| **Next trigger** | Audit pain or rebuild friction observed in use |
+| **Delivered** | Runtime evidence rules; Data Table audit notes; export refresh policy; manual test template |
+| **Risk** | Accidental secret commit if logs/exports mishandled — mitigated by forbidden-fields list in guide |
+| **Runtime** | **No** unless a later backlog item explicitly gates it (e.g. real Data Table backup) |
+| **Next trigger** | Use template after a gated manual test; refresh export only on material runtime drift |
 
 ---
 
