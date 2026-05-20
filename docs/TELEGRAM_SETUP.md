@@ -35,4 +35,18 @@ Credential Telegram dedicata al control-plane salvata in n8n.
 - **chat_id:** non committato; resta fuori repo e verrà usato solo nel workflow/runtime quando serve.
 - **Scope:** credential disponibile per workflow control-plane futuri; i workflow Alina esistenti non devono essere toccati.
 
-**Prossimo gate (non in questo task):** creare o importare un workflow n8n control-plane separato per test manuale Telegram. Webhook GitHub, schedule e notifica push-triggered restano PENDING.
+## n8n manual Telegram workflow — PASS
+
+Workflow n8n control-plane importato e testato manualmente.
+
+- **Workflow name:** `CONTROL PLANE - Telegram manual notification test`
+- **Credential used:** `CONTROL PLANE - Telegram Bot`
+- **Execution mode:** manual test only.
+- **Result:** Telegram message received on the user's phone.
+- **Token:** not committed.
+- **chat_id:** not committed.
+- **GitHub webhook:** not configured in this gate.
+- **Schedule:** not enabled in this gate.
+- **Existing Alina workflows:** not touched.
+
+**Prossimo gate (non in questo task):** collegare una sorgente reale separata al workflow control-plane, mantenendo webhook e schedule come gate separati.
