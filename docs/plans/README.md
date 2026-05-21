@@ -2,7 +2,7 @@
 
 Structured **Cursor Plan** outputs saved for future orchestrator ingestion via GitHub (and eventually n8n → Telegram).
 
-**PM-09 Gate B** — [PLAN_OUTPUT_INGESTION.md](../PLAN_OUTPUT_INGESTION.md). **Docs-only.** No runtime in this folder by itself.
+**PM-09 Gate B** — [PLAN_OUTPUT_INGESTION.md](../PLAN_OUTPUT_INGESTION.md). **Gate C watcher design** — [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md). **Docs-only.** No runtime in this folder by itself.
 
 ---
 

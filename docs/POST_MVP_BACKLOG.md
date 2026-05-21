@@ -20,7 +20,7 @@
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
 | **02F redacted export** | **PASS** — [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) PM-08 |
-| **PM-09 plan ingestion** | Gate **A** + **B** **PASS** (docs-only); Gate **C** pending — [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [plans/](plans/) |
+| **PM-09 plan ingestion** | Gate **A**+**B**+**C design** **PASS** (docs-only); Gate **C runtime** + **D** pending — [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
 | **Next runtime** | **None mandatory** — every item below is **optional** and **gated** |
 
 ---
@@ -100,17 +100,19 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | Gate **A** + **B** **PASS** (docs-only); Gate **C** / **D** pending |
+| **Status** | Gate **A** + **B** + **C design** **PASS** (docs-only); Gate **C runtime** + **D** pending |
 | **Why** | Avoid manual copy-paste of Cursor Plan text into handoff/Telegram; make plans readable by orchestrator via GitHub |
-| **Desired flow** | Cursor Plan → structured file in `docs/plans/` → n8n detects file/commit (gate C) → Telegram summary/file/link (gate D) → orchestrator reads via GitHub |
-| **Design doc** | [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md) |
-| **Gate B delivered** | Path `docs/plans/`; naming `YYYY-MM-DD_HHMM_<repo-short>_<task-slug>.plan.md`; YAML front matter + 5 body sections; [plans/README.md](plans/README.md) + [example](plans/example-control-plane-plan.plan.md) |
-| **Runtime now** | **No** — Gate B does **not** authorize n8n UI, new workflow, import, or Telegram send |
-| **New n8n workflow** | **Not authorized** — Gate **C** requires separate PM-03 or **02F** modification gate |
+| **Desired flow** | Cursor Plan → `docs/plans/` → n8n watcher (gate C) → `plan_detected` → Telegram (gate D) → orchestrator reads GitHub |
+| **Design docs** | [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
+| **Gate B delivered** | Path, naming, schema — [plans/README.md](plans/README.md) |
+| **Gate C design delivered** | Watcher scope, `plan_detected` event, dedupe, error handling, arch A/B — **no runtime** |
+| **Gate C runtime** | **Not authorized** — **02F** extension (recommended) or PM-03 workflow; explicit gate required |
+| **Gate D Telegram** | **Not authorized** — after Gate C runtime PASS |
+| **Runtime now** | **No** — this task does **not** authorize n8n UI, **02F** edit, import, or Telegram send |
 | **v5 / webhook** | **Not reopened** |
-| **C1** | Stays **PARTIAL** (D-C1-A); does not reopen strict &lt;30s |
-| **Out of scope** | ALINA LAVORO; dev-method; GIS; Cursor provider API; runtime in gates A/B |
-| **Next trigger** | Gate **C** — n8n watcher design/runtime (explicit [RUNTIME_GATES.md](RUNTIME_GATES.md) session; **not authorized** now) |
+| **C1** | Stays **PARTIAL** (D-C1-A) |
+| **Out of scope** | ALINA LAVORO; dev-method; GIS; Cursor provider API |
+| **Next trigger** | Gate **C runtime** — choose **02F** extension (recommended) or new PM-03 workflow; [RUNTIME_GATES.md](RUNTIME_GATES.md) |
 
 ---
 

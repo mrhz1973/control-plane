@@ -2,9 +2,9 @@
 
 **PM-09** — [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md). **Docs-only design.** No runtime, n8n workflow, Telegram API, or provider integration from this document.
 
-**Related:** [MVP_STATUS.md](MVP_STATUS.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [OBSERVABILITY.md](OBSERVABILITY.md), [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [plans/README.md](plans/README.md).
+**Related:** [MVP_STATUS.md](MVP_STATUS.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [OBSERVABILITY.md](OBSERVABILITY.md), [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [plans/README.md](plans/README.md), [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md).
 
-**Gate status:** **A** delivered · **B** delivered (file convention) · **C** / **D** not authorized
+**Gate status:** **A** delivered · **B** delivered · **C** design delivered (runtime not authorized) · **D** not authorized
 
 ---
 
@@ -179,14 +179,53 @@ Follow [OBSERVABILITY.md](OBSERVABILITY.md) evidence conventions when recording 
 
 ---
 
+## Gate C — plan watcher design (delivered)
+
+**Full design:** [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md). **This section does not authorize runtime.**
+
+### Objective
+
+Detect commits that add or change files under `docs/plans/*.plan.md`, validate Gate B front matter, dedupe, and emit a normalized **`plan_detected`** event for Gate D. **No Telegram in Gate C.**
+
+### Watcher scope
+
+| Item | Detail |
+|------|--------|
+| **Path filter** | `docs/plans/*.plan.md` (Gate B naming) |
+| **Primary repo (v1)** | `mrhz1973/control-plane` |
+| **Input** | Markdown + YAML front matter |
+| **Output** | `plan_detected` event (repo, path, commit SHA, summary, next_step, dedupe_key, github_file_url) |
+| **Sample skip** | Files with `sample: true` in front matter → no event |
+| **Dedupe** | Data Table key `plan:<repo>:<path>:<blob_or_commit_sha>` — skip on repeat poll |
+
+### Architecture choice (deferred to runtime session)
+
+| Option | Summary |
+|--------|---------|
+| **A — Extend 02F** | **Recommended** — isolated branch on control-plane commits; reuses sole active poll workflow ([PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md)) |
+| **B — New PM-03 workflow** | Fallback — separate inactive workflow for manual test; avoids **02F** touch but duplicates poll |
+
+**Not authorized now:** **02F** modification, new workflow, import, execution.
+
+### Risks (summary)
+
+02F regression on GIS handoff/commit notify; duplicate events without dedupe; invalid plans causing workflow failure; sample files misfiring. Mitigations in [PLAN_WATCHER_GATE_C.md § Risks](PLAN_WATCHER_GATE_C.md#risks-and-mitigations).
+
+### Gate C runtime PASS (future)
+
+Non-sample plan committed → watcher emits `plan_detected` once → sample skipped → duplicate poll skipped → no Telegram → **02F** smoke PASS if option A. See [PLAN_WATCHER_GATE_C.md § PASS criteria](PLAN_WATCHER_GATE_C.md#gate-c-runtime-pass-criteria-future).
+
+---
+
 ## Future gates (one at a time)
 
 | Gate | Scope | Runtime | Status |
 |------|--------|---------|--------|
 | **A — Docs / design** | This file + PM-09 backlog entry | **No** | **Delivered** |
 | **B — Local file convention** | Path, naming, schema, `docs/plans/` + sample | **No** | **Delivered** |
-| **C — n8n watcher** | Extend **02F** or **new workflow** (PM-03) to match `docs/plans/*.plan.md` on commit poll | **Yes** — explicit [RUNTIME_GATES.md](RUNTIME_GATES.md) session; **not authorized** by gate B | Pending |
-| **D — Telegram notification** | Send summary/file after gate C detects new plan file | **Yes** — separate gate after C | Pending |
+| **C — n8n watcher design** | [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) — algorithm, dedupe, `plan_detected` | **No** (design only) | **Delivered** |
+| **C — n8n watcher runtime** | Implement A or B in n8n | **Yes** — explicit gate; **not authorized** by this task | Pending |
+| **D — Telegram notification** | Send summary/file after `plan_detected` | **Yes** — separate gate after C runtime PASS | Pending |
 
 **Default posture unchanged:** **`02F`** remains sole active CP poll+handoff; v5 **off**; webhook **not configured**; C1 stays **PARTIAL** (D-C1-A).
 
