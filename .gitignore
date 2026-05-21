@@ -11,3 +11,4 @@ tmp/
 .DS_Store
 Thumbs.db
 workflows/exports/*.unredacted.json
+.n8n-credential-ids.local.json
