@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after **n8n numeric workflow rename** recorded (docs-only). MVP **accepted-with-exception** (D-C1-A).
+**Last consolidated:** after **PM-09 Gate C runtime PASS**. MVP **accepted-with-exception** (D-C1-A).
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -29,8 +29,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
-- **Runtime:** **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (formerly **`02F`**) — sole CP poll+handoff; **`01`** / **`20`** / **`30`** off · **`55`** reserved (PM-09, not created) · v5 **off** · webhook **not configured**
-- **Post-MVP:** PM-09 Gate **C** pending — target runtime **`40`**; JSON draft still uses historical **`02F`** name until export refresh — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)
+- **Runtime:** **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (formerly **`02F`**) — sole CP poll+handoff; **`01`** / **`20`** / **`30`** off · backup `40` off · **`55`** reserved (PM-09, not created) · v5 **off** · webhook **not configured**
+- **Post-MVP:** PM-09 Gate **C runtime PASS** in active `40`; Gate **D** pending / not authorized — [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md)
 - **ALINA LAVORO:** out of scope / not touched
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
@@ -49,13 +49,14 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 | Component | State |
 |-----------|--------|
-| **Active path** | Multirepo v4 polling + handoff — **active** (**`40`**, formerly **`02F`**) |
+| **Active path** | Multirepo v4 polling + handoff + PM-09 Gate C detection — **active** (**`40`**, formerly **`02F`**) |
 | **Active workflow** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — **published**, 1 min; sole CP polling target |
+| **PM-09 Gate C** | **Runtime PASS** — active branch detects `docs/plans/*.plan.md` and ends at `Code - Gate C output no Telegram`; Gate D not wired ([runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md)) |
 | **Cleanup** | **PASS** — removed `02`, `02B`–`02E`, `90`–`93` from CONTROL PLANE list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) PM-07) |
-| **Retained (not active poll)** | `01` legacy **off**; `30` handoff manual **off** (formerly `03`); `20` v5 webhook **off** |
-| **Reserved** | `55` — PM-09 plan watcher — **not created** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
+| **Retained (not active poll)** | `01` legacy **off**; `30` handoff manual **off** (formerly `03`); `20` v5 webhook **off**; backup `40` **off** |
+| **Reserved** | `55` — PM-09 future/alternate plan watcher — **not created** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **GitHub read** | Authenticated GitHub API credential in n8n UI |
-| **Flow** | GitHub → dedupe → Telegram; GIS commit → safe-text handoff preview + **`latest-gis-handoff.md`** document |
+| **Flow** | GitHub → dedupe → Telegram; GIS commit → safe-text handoff preview + **`latest-gis-handoff.md`** document; control-plane plan commit → Gate C internal output only |
 | **GIS handoff (`40` / ex-02F)** | **PASS** — `58c5c46`; safe text + file attachment ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
 | **Handoff manual fallback** | `30 - CP handoff manual Telegram v1 - OFF` — inactive; manual test path |
 | **v5 webhook workflow** | Imported, manually tested (placeholder), **inactive / disabled** |
@@ -77,7 +78,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 ### 2 — Handoff via n8n (PASS)
 
 - **2026-05-20:** Manual workflow — Manual Trigger → **`Prompt ready: yes`**, exit 0 ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)).
-- **Post-MVP:** **02F** GIS handoff **PASS** — `58c5c46`; safe-text Telegram + **`latest-gis-handoff.md`** document; exit 0. Prior: `2a2ff31` via experimental `02` path ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)).
+- **Post-MVP:** **40** / historical **02F** GIS handoff **PASS** — `58c5c46`; safe-text Telegram + **`latest-gis-handoff.md`** document; exit 0. Prior: `2a2ff31` via experimental `02` path ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)).
 
 ### 3 — Three end-to-end cycles (PASS — 3 / 3)
 
@@ -88,10 +89,10 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 ### 4 — Workflow export (PASS)
 
-- **9** redacted exports in `workflows/exports/` (includes **02F**).
-- **Canonical:** `2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json`
-- **Runtime match:** PASS — visual operational match recorded; see [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) for verified vs not-verified perimeter.
-- **02F export:** `2026-05-21_…-02f-handoff-safe-text.redacted.json` committed (PM-08); `active=false` in repo; runtime **not** imported ([WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md)). Criterion 4 **not** reopened; C1 **not** relabeled PASS.
+- Redacted exports live in `workflows/exports/` and include historical `02F` plus `40` Gate C candidates.
+- **Runtime match:** PASS for criterion 4 visual operational match; see [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) for verified vs not-verified perimeter.
+- **Gate C candidate imported as active 40:** `workflows/exports/2026-05-21_40-plan-watcher-dropin-candidate-gate-c.redacted.json` ([runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md)).
+- Criterion 4 **not** reopened; C1 **not** relabeled PASS.
 
 ### 5 — Rebuild runbook (PASS)
 
@@ -101,9 +102,26 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 ---
 
+## PM-09 status
+
+PM-09 Gate **A** + **B** + **C design** + **C runtime** are **PASS**. Gate **D** is **pending / not authorized / not wired**.
+
+Gate C active branch in `40`:
+
+```text
+Code - Plan watcher repo gate stub
+→ GitHub - Fetch commit details (plan files)
+→ Code - Detect real docs/plans plan files
+→ Code - Gate C output no Telegram
+```
+
+Evidence: [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md).
+
+---
+
 ## Post-MVP (no immediate runtime gate)
 
-**D-C1-A recorded (2026-05-21):** Operational MVP **accepted** — [decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) (**DECIDED**). No mandatory next gate. Ordered optional work: **[POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)** (PM-01 … PM-05).
+**D-C1-A recorded (2026-05-21):** Operational MVP **accepted** — [decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) (**DECIDED**). No mandatory next gate. Ordered optional work: **[POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)** (PM-01 … PM-09).
 
 **Default:** Keep v4 active, v5 off, no webhook. Stabilize; do not batch runtime changes.
 
@@ -118,7 +136,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | C | ~~End-to-end cycle 1 → 3~~ | **Done** — criterion 3 **PASS** (3/3) |
 | D | ~~C1 closure decision~~ | **Done** — **D-C1-A** operational acceptance 2026-05-21 |
 | E | ~~Rebuild field validation~~ | **Done** — criterion 5 **PASS** (recovery drill 2026-05-20) |
-| F | Public HTTPS → webhook → v5 | **Post-MVP optional** — not next automatic gate |
+| F | ~~PM-09 Gate C runtime~~ | **Done** — active `40` emits internal Gate C output, no Gate D Telegram |
+| G | Public HTTPS → webhook → v5 | **Post-MVP optional** — not next automatic gate |
 
 ---
 
@@ -131,6 +150,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 - Edit `workflows/exports/*.json` in docs-only tasks
 - Open n8n UI or run runtime as part of a docs-only batch
 - Touch GIS repo automation beyond normal watched scope
+- Wire Gate D Telegram without a separate explicit gate
 
 ---
 
@@ -142,9 +162,10 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | [MVP_STATUS.md](MVP_STATUS.md) | This consolidated index |
 | [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) | Post-MVP optional backlog (PM-01 … PM-09) |
 | [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md) | PM-09 design — Cursor Plan → GitHub/Telegram |
-| [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) | PM-09 Gate C design — architecture **A** selected |
-| [runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) | PM-09 Gate C runtime packet |
-| [runtime-packets/pm-09-gate-c-02f-json-draft.md](runtime-packets/pm-09-gate-c-02f-json-draft.md) | PM-09 Gate C 02F JSON import draft |
+| [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) | PM-09 Gate C design/runtime status |
+| [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md) | PM-09 Gate C runtime PASS evidence |
+| [runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) | PM-09 Gate C runtime packet (historical filename) |
+| [runtime-packets/pm-09-gate-c-02f-json-draft.md](runtime-packets/pm-09-gate-c-02f-json-draft.md) | PM-09 historical 02F JSON import draft |
 | [plans/README.md](plans/README.md) | PM-09 plan file directory and schema |
 | [RUNTIME_GATES.md](RUNTIME_GATES.md) | One-step runtime gates |
 | [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) | Telegram / n8n PASS history |
