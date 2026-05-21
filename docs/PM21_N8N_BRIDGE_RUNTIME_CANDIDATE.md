@@ -1,6 +1,6 @@
 # PM-21 — n8n bridge runtime candidate
 
-**Status:** **Prepared** — import bundle committed; **runtime NOT executed**.
+**Status:** **Runtime PASS** (PM-21C) — commit `1f46c64`; see [session](sessions/2026-05-22-control-plane-pm21c-bridge-runtime-pass.md).
 
 **Related:** [runtime packet](runtime-packets/pm-21-n8n-bridge-runtime-candidate-import-gate.md) · [PM20](PM20_N8N_BRIDGE_PACKET.md) · [session](sessions/2026-05-22-control-plane-pm21-n8n-bridge-runtime-candidate.md)
 
