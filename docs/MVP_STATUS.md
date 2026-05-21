@@ -58,6 +58,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-17 Ollama classifier** | **Dry-run PASS** — local/mock decision JSON; **no** n8n/`40` change — [PM17](PM17_OLLAMA_CLASSIFIER_DRY_RUN.md) |
 | **PM-18 Codex OAuth feasibility** | **PENDING** — CLI not in PATH; feasibility JSON committed — [PM18](PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) |
 | **PM-19 implementer bridge** | **Dry-run PASS** — mock worker; `dry_run_pass` — [PM19](PM19_IMPLEMENTER_BRIDGE_DRY_RUN.md) |
+| **PM-20 n8n bridge packet** | **PREPARED** — classifier→bridge→Telegram contract; **no** runtime PASS — [PM20](PM20_N8N_BRIDGE_PACKET.md) |
 | **CONTROL PLANE n8n list** | **4 workflows** — `40` **ACTIVE** · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |

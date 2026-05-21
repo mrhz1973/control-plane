@@ -106,3 +106,5 @@ Commit `8b3a468` regenerated ready-import with **name-only** credentials. That o
 **PM-18 Codex OAuth feasibility:** `pm18-codex-oauth-feasibility-v1` — [sample](examples/pm18-codex-feasibility-output.sample.json); tool `tools/codex-oauth-feasibility-check.mjs`. **No** OAuth tokens in git. Codex = future implementer worker only, after classifier + manual gate.
 
 **PM-19 implementer bridge:** `pm19-implementer-bridge-request-v1` / `pm19-implementer-bridge-result-v1` — [request](examples/pm19-implementer-bridge-request.sample.json) · [result](examples/pm19-implementer-bridge-result.sample.json); tool `tools/implementer-bridge-dry-run.mjs`. Mock worker only until PM-18 unblocks Codex.
+
+**PM-20 n8n bridge packet:** [PM20_N8N_BRIDGE_PACKET.md](PM20_N8N_BRIDGE_PACKET.md) · [runtime packet](runtime-packets/pm-20-n8n-classifier-bridge-gate-packet.md) · [flow sample](examples/pm20-n8n-bridge-flow.sample.json). **No** real worker in first runtime; PM-18 PENDING blocks Codex only, not mock bridge. Successor workflow for PM-21 — do not silently edit published `40`.

@@ -92,6 +92,7 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-17 Ollama classifier dry-run | [docs/PM17_OLLAMA_CLASSIFIER_DRY_RUN.md](docs/PM17_OLLAMA_CLASSIFIER_DRY_RUN.md) |
 | PM-18 Codex OAuth feasibility | [docs/PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md](docs/PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) |
 | PM-19 implementer bridge dry-run | [docs/PM19_IMPLEMENTER_BRIDGE_DRY_RUN.md](docs/PM19_IMPLEMENTER_BRIDGE_DRY_RUN.md) |
+| PM-20 n8n bridge packet (prepared) | [docs/PM20_N8N_BRIDGE_PACKET.md](docs/PM20_N8N_BRIDGE_PACKET.md) |
 | Fast-track runtime sequence (runbook) | [docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md](docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md) |
 | PM-16 `40` post-PM15 export snapshot | [session](docs/sessions/2026-05-22-control-plane-40-post-pm15-export-snapshot.md) — **PENDING** |
 | Plan file schema | [docs/plans/README.md](docs/plans/README.md) |

@@ -220,6 +220,21 @@
 
 ---
 
+### PM-20 — n8n classifier/bridge packet
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PREPARED** (2026-05-22) — **NOT EXECUTED** — [session](sessions/2026-05-22-control-plane-pm20-n8n-bridge-packet.md) |
+| **Why** | Operational contract for future n8n: `plan_detected` → classifier → bridge → Telegram gate/worker preview |
+| **Doc** | [PM20_N8N_BRIDGE_PACKET.md](PM20_N8N_BRIDGE_PACKET.md) · [runtime packet](runtime-packets/pm-20-n8n-classifier-bridge-gate-packet.md) |
+| **Samples** | [flow](examples/pm20-n8n-bridge-flow.sample.json) · [Telegram templates](examples/pm20-telegram-gate-message.sample.md) |
+| **PM-18** | **PENDING** — no auto-Codex in first bridge runtime |
+| **PM-16 export** | **PENDING** — non-blocking |
+| **Next** | **PM-21** n8n bridge runtime candidate |
+| **Out of scope** | Edit published `40`; provider API; GIS/DEV/ALINA |
+
+---
+
 ### PM-19 — Implementer bridge dry-run
 
 | Field | Value |
@@ -231,7 +246,7 @@
 | **Doc** | [PM19_IMPLEMENTER_BRIDGE_DRY_RUN.md](PM19_IMPLEMENTER_BRIDGE_DRY_RUN.md) |
 | **Result** | `dry_run_pass` · `mock-worker` (PM-17 sample input) |
 | **PM-18** | **PENDING** — Codex CLI not in PATH; **not** blocking PM-19 |
-| **Next** | **PM-20** n8n bridge packet **or** local Codex CLI setup |
+| **Next** | **PM-20** (done) → **PM-21** runtime |
 | **Out of scope** | Real implementer; production `40`; GIS/DEV/ALINA |
 
 ---
