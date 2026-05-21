@@ -118,6 +118,17 @@ Add JSON metadata `redaction` note listing what was stripped (same pattern as ex
 
 Naming: [workflows/README.md](../workflows/README.md).
 
+### PM-09 Gate C+D+FILE candidate (2026-05-21)
+
+| Field | Value |
+|-------|--------|
+| **Committed export** | `workflows/exports/2026-05-21_40-plan-watcher-dropin-candidate-gate-c-gate-d-file.redacted.json` |
+| **Validation** | Gate C detection + Gate D Telegram text + Gate D `.md` file attachment — **PASS** in active **`40`** |
+| **Evidence** | [Gate D file attachment PASS](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md) |
+| **Runtime** | Candidate validated and promoted/used in production **`40`**; **no** export JSON edit in docs-only tasks |
+
+Prior Gate C-only candidate: `2026-05-21_40-plan-watcher-dropin-candidate-gate-c.redacted.json` ([Gate C runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md)).
+
 ---
 
 ## v4 runtime match perimeter (visual operational PASS)

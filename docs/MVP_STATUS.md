@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after **PM-09 Gate C runtime PASS**. MVP **accepted-with-exception** (D-C1-A).
+**Last consolidated:** after **PM-09 Gate C + D + FILE PASS**. MVP **accepted-with-exception** (D-C1-A).
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -29,8 +29,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
-- **Runtime:** **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (formerly **`02F`**) — sole CP poll+handoff; **`01`** / **`20`** / **`30`** off · backup `40` off · **`55`** reserved (PM-09, not created) · v5 **off** · webhook **not configured**
-- **Post-MVP:** PM-09 Gate **C runtime PASS** in active `40`; Gate **D** pending / not authorized — [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md)
+- **Runtime:** **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (formerly **`02F`**) — sole CP poll+handoff, **published**, 1 min; **`01`** / **`20`** / **`30`** off · backup `40` off · **`55`** test-safe only (not production) · v5 **off** · webhook **not configured**
+- **Post-MVP:** PM-09 Gate **C + D + FILE PASS** in active `40` — [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md), [Gate D file attachment](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md)
 - **ALINA LAVORO:** out of scope / not touched
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
@@ -49,12 +49,13 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 | Component | State |
 |-----------|--------|
-| **Active path** | Multirepo v4 polling + handoff + PM-09 Gate C detection — **active** (**`40`**, formerly **`02F`**) |
-| **Active workflow** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — **published**, 1 min; sole CP polling target |
-| **PM-09 Gate C** | **Runtime PASS** — active branch detects `docs/plans/*.plan.md` and ends at `Code - Gate C output no Telegram`; Gate D not wired ([runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md)) |
+| **Active path** | Multirepo v4 polling + handoff + PM-09 Gate C detection + Gate D Telegram — **active** (**`40`**, formerly **`02F`**) |
+| **Active workflow** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — **published**, 1 min; sole CP production polling target |
+| **PM-09 Gate C** | **Runtime PASS** — detects `docs/plans/*.plan.md` ([runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md)) |
+| **PM-09 Gate D** | **Runtime PASS** — `plan_detected` Telegram text ([Gate D live](sessions/2026-05-21-control-plane-40-gate-d-live-pass.md)) + `.md` file attachment ([Gate D file](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md)) |
 | **Cleanup** | **PASS** — removed `02`, `02B`–`02E`, `90`–`93` from CONTROL PLANE list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) PM-07) |
 | **Retained (not active poll)** | `01` legacy **off**; `30` handoff manual **off** (formerly `03`); `20` v5 webhook **off**; backup `40` **off** |
-| **Reserved** | `55` — PM-09 future/alternate plan watcher — **not created** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
+| **Test-safe only** | `55` — PM-09 isolated/test-safe family — **not** production ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **GitHub read** | Authenticated GitHub API credential in n8n UI |
 | **Flow** | GitHub → dedupe → Telegram; GIS commit → safe-text handoff preview + **`latest-gis-handoff.md`** document; control-plane plan commit → Gate C internal output only |
 | **GIS handoff (`40` / ex-02F)** | **PASS** — `58c5c46`; safe text + file attachment ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
@@ -89,9 +90,9 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 ### 4 — Workflow export (PASS)
 
-- Redacted exports live in `workflows/exports/` and include historical `02F` plus `40` Gate C candidates.
+- Redacted exports live in `workflows/exports/` and include historical `02F` plus `40` Gate C+D+FILE candidates.
 - **Runtime match:** PASS for criterion 4 visual operational match; see [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) for verified vs not-verified perimeter.
-- **Gate C candidate imported as active 40:** `workflows/exports/2026-05-21_40-plan-watcher-dropin-candidate-gate-c.redacted.json` ([runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md)).
+- **Gate C+D+FILE candidate validated in active 40:** `workflows/exports/2026-05-21_40-plan-watcher-dropin-candidate-gate-c-gate-d-file.redacted.json` ([Gate D file PASS](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md)); prior Gate C-only: `2026-05-21_40-plan-watcher-dropin-candidate-gate-c.redacted.json` ([runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md)).
 - Criterion 4 **not** reopened; C1 **not** relabeled PASS.
 
 ### 5 — Rebuild runbook (PASS)
@@ -104,18 +105,23 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 ## PM-09 status
 
-PM-09 Gate **A** + **B** + **C design** + **C runtime** are **PASS**. Gate **D** is **pending / not authorized / not wired**.
+PM-09 Gate **A** + **B** + **C design** + **C runtime** + **D live text** + **D .md file attachment** are **PASS**.
 
-Gate C active branch in `40`:
+Active production workflow **`40`** is **published** and scheduled (1 min). **`55`** remains test-safe only — not production. **`01`** / **`20`** / **`30`** off; backup `40` off; v5 **off**; webhook **not configured**. **ALINA LAVORO**, **GIS**, and **dev-method** were **not** touched by PM-09 closure.
+
+Gate C + D branch in active `40`:
 
 ```text
 Code - Plan watcher repo gate stub
 → GitHub - Fetch commit details (plan files)
 → Code - Detect real docs/plans plan files
-→ Code - Gate C output no Telegram
+→ IF - plan_detected?
+→ Format Gate D Telegram plan_detected message
+→ Telegram - Send Gate D plan_detected
+→ (file path) HTTP fetch → disk write → Telegram - Send Gate D plan file
 ```
 
-Evidence: [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md).
+Evidence: [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md) · [Gate D live](sessions/2026-05-21-control-plane-40-gate-d-live-pass.md) · [Gate D file attachment](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md).
 
 ---
 
@@ -136,7 +142,7 @@ Evidence: [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-g
 | C | ~~End-to-end cycle 1 → 3~~ | **Done** — criterion 3 **PASS** (3/3) |
 | D | ~~C1 closure decision~~ | **Done** — **D-C1-A** operational acceptance 2026-05-21 |
 | E | ~~Rebuild field validation~~ | **Done** — criterion 5 **PASS** (recovery drill 2026-05-20) |
-| F | ~~PM-09 Gate C runtime~~ | **Done** — active `40` emits internal Gate C output, no Gate D Telegram |
+| F | ~~PM-09 Gate C + D + FILE~~ | **Done** — active `40`: Gate C detect + Gate D Telegram text + `.md` file attachment |
 | G | Public HTTPS → webhook → v5 | **Post-MVP optional** — not next automatic gate |
 
 ---
@@ -150,7 +156,7 @@ Evidence: [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-g
 - Edit `workflows/exports/*.json` in docs-only tasks
 - Open n8n UI or run runtime as part of a docs-only batch
 - Touch GIS repo automation beyond normal watched scope
-- Wire Gate D Telegram without a separate explicit gate
+- Reopen PM-09 Gate D without an explicit new runtime gate
 
 ---
 
@@ -162,7 +168,7 @@ Evidence: [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-g
 | [MVP_STATUS.md](MVP_STATUS.md) | This consolidated index |
 | [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) | Post-MVP optional backlog (PM-01 … PM-09) |
 | [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md) | PM-09 design — Cursor Plan → GitHub/Telegram |
-| [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) | PM-09 Gate C design/runtime status |
+| [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) | PM-09 Gate C + D status |
 | [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md) | PM-09 Gate C runtime PASS evidence |
 | [runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) | PM-09 Gate C runtime packet (historical filename) |
 | [runtime-packets/pm-09-gate-c-02f-json-draft.md](runtime-packets/pm-09-gate-c-02f-json-draft.md) | PM-09 historical 02F JSON import draft |

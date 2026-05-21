@@ -15,13 +15,13 @@
 | **C1** | **PARTIAL** accepted — SLA best-effort **1–5 min** (v4 polling) |
 | **C2–C5** | **PASS** |
 | **v4 multirepo watcher** | **Active** — `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` (1 min; formerly **`02F`**) |
-| **CONTROL PLANE n8n list** | **01** / **20** / **30** off · **`40`** active/published · backup `40` off · **`55`** reserved (not created) — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) |
+| **CONTROL PLANE n8n list** | **01** / **20** / **30** off · **`40`** active/published (production) · backup `40` off · **`55`** test-safe only — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) |
 | **v4 single-repo legacy** | **Off** — `01 - CP v4 single-repo polling - LEGACY OFF` |
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
 | **02F redacted export** | **PASS** — [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) PM-08 |
-| **PM-09 plan ingestion** | Gate **A** + **B** + **C design** + **C runtime** **PASS**; Gate **D** pending / not authorized — [Gate C runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md) |
-| **Next runtime** | **Gate D only if explicitly opened** — no automatic Telegram/orchestrator ingestion step |
+| **PM-09 plan ingestion** | Gate **A** + **B** + **C design** + **C runtime** + **D live** + **D file** **PASS** — [Gate C runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md), [Gate D file attachment](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md) |
+| **Next runtime** | **No new runtime required** for PM-09 closure |
 
 ---
 
@@ -100,9 +100,9 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | Gate **A** + **B** + **C design** + **C runtime** **PASS**; Gate **D** pending / not authorized |
+| **Status** | Gate **A** + **B** + **C design** + **C runtime** + **D live text** + **D .md file attachment** **PASS** |
 | **Why** | Avoid manual copy-paste of Cursor Plan text into handoff/Telegram; make plans readable by orchestrator via GitHub |
-| **Desired flow** | Cursor Plan → `docs/plans/` → n8n watcher (gate C) → `plan_detected` → Telegram (gate D) → orchestrator reads GitHub |
+| **Desired flow** | Cursor Plan → `docs/plans/` → n8n watcher (gate C) → `plan_detected` → Telegram text + `.md` file (gate D) → orchestrator reads GitHub |
 | **Design docs** | [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
 | **Gate B delivered** | Path, naming, schema — [plans/README.md](plans/README.md) |
 | **Gate C design delivered** | Watcher scope, `plan_detected`, dedupe — [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
@@ -110,13 +110,13 @@
 | **Runtime target** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` |
 | **Gate C runtime PASS** | [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md) |
 | **Runtime evidence** | Branch-hit PASS, logic test PASS, real GitHub API detect PASS, scheduled active runtime PASS |
-| **Gate C active branch** | `Code - Plan watcher repo gate stub` → `GitHub - Fetch commit details (plan files)` → `Code - Detect real docs/plans plan files` → `Code - Gate C output no Telegram` |
-| **Gate D Telegram** | **Pending / not authorized / not wired** |
-| **Runtime now** | **No new runtime** from this document; Gate C already active in `40`; Gate D requires a new explicit gate |
+| **Gate C active branch** | `Code - Plan watcher repo gate stub` → `GitHub - Fetch commit details (plan files)` → `Code - Detect real docs/plans plan files` |
+| **Gate D Telegram** | **PASS** — `plan_detected` text ([live PASS](sessions/2026-05-21-control-plane-40-gate-d-live-pass.md)) + `.md` file attachment ([file PASS](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md)) |
+| **Runtime now** | **No new runtime required** — Gate C+D+FILE validated in active `40`; `55` test-safe only |
 | **v5 / webhook** | **Not reopened** |
 | **C1** | Stays **PARTIAL** (D-C1-A) |
 | **Out of scope** | ALINA LAVORO; dev-method; GIS; Cursor provider API |
-| **Next trigger** | Gate **D** design/runtime packet only if explicitly opened; no automatic Telegram plan summary |
+| **Next trigger** | None for PM-09 closure; future plan-watcher changes use candidate IDs **41** / **42** / **43** per [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) |
 
 ---
 

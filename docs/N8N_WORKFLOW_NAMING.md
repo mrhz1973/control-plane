@@ -57,7 +57,7 @@ Operational rule:
 | **41** | Next production-candidate/import-test workflow | Reserved |
 | **42** | Next production-candidate/import-test workflow | Reserved |
 | **43** | Next production-candidate/import-test workflow | Reserved |
-| **55** | PM-09 isolated/test-safe workflow family | Reserved/optional |
+| **55** | PM-09 isolated/test-safe workflow family | Test-safe only — **not** production (PM-09 closed in **`40`**) |
 
 ---
 

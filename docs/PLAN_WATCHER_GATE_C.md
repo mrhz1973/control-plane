@@ -1,6 +1,6 @@
-# Plan watcher — Gate C design (PM-09)
+# Plan watcher — Gate C + D status (PM-09)
 
-**Docs-only design.** **Runtime not authorized** by this document. No n8n UI, no **02F** modification, no workflow import/export, no Telegram send.
+**Docs index.** Records PM-09 final runtime state in active **`40`**. Still **v4 polling** — not v5/webhook. No new runtime authorized by this document alone.
 
 **Related:** [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [OBSERVABILITY.md](OBSERVABILITY.md), [plans/README.md](plans/README.md).
 
@@ -8,9 +8,9 @@
 
 ## Purpose
 
-Define how a future n8n **watcher** detects new or changed Cursor Plan files under `docs/plans/*.plan.md` after a GitHub commit, validates Gate B schema, dedupes events, and emits a normalized **`plan_detected`** event for Gate D (Telegram summary / orchestrator ingestion).
+Define how the n8n **watcher** in active **`40`** detects new or changed Cursor Plan files under `docs/plans/*.plan.md` after a GitHub commit, validates Gate B schema, dedupes events, emits **`plan_detected`**, and delivers Gate D (Telegram summary + `.md` file attachment).
 
-Gate C covers **detection and normalization only** — not Telegram delivery.
+Gate C covers **detection and normalization**. Gate D covers **Telegram delivery** (text + file).
 
 ---
 
@@ -19,12 +19,15 @@ Gate C covers **detection and normalization only** — not Telegram delivery.
 | Item | State |
 |------|--------|
 | **Gate C design** | **Delivered** (this document) |
-| **Gate C runtime direction** | **Architecture A selected** (2026-05-21) — extend **`40`** (formerly **02F**) — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) |
-| **Gate C runtime** | **Not authorized** — [runtime packet](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md); explicit session required |
-| **Gate D Telegram** | **Not authorized** |
-| **02F modification** | **Not authorized** by this task |
+| **Gate C runtime** | **PASS** — detection in active **`40`** — [runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md) |
+| **Gate D Telegram text** | **PASS** — live scheduled path — [Gate D live](sessions/2026-05-21-control-plane-40-gate-d-live-pass.md) |
+| **Gate D .md file attachment** | **PASS** — [Gate D file](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md) |
+| **Active production workflow** | **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** — published, 1 min |
+| **`55`** | Test-safe only — **not** production |
+| **`01` / `20` / `30`** | **Off** |
 | **v5 / webhook** | **Off** / not configured |
-| **C1** | **PARTIAL** (D-C1-A) — unchanged |
+| **C1** | **PARTIAL** (D-C1-A) — unchanged; **not** strict PASS |
+| **ALINA / GIS / dev-method** | **Not touched** by PM-09 closure |
 
 ---
 
@@ -60,7 +63,7 @@ Optional field used for filtering: `sample: true` → **ignore** (no event).
 
 ## Output (Gate C → Gate D handoff)
 
-Normalized event **`plan_detected`** — internal shape for n8n Code node / IF branch; **not** sent to Telegram in Gate C.
+Normalized event **`plan_detected`** — internal shape for n8n Code node / IF branch; consumed by Gate D for Telegram text + file send.
 
 ```json
 {
@@ -83,7 +86,7 @@ Normalized event **`plan_detected`** — internal shape for n8n Code node / IF b
 
 Gate D consumes `plan_detected` to build Telegram payload per [PLAN_OUTPUT_INGESTION.md § Desired Telegram payload](PLAN_OUTPUT_INGESTION.md#desired-telegram-payload-brief).
 
-**Gate C does not send Telegram.**
+**Gate C** emits `plan_detected`; **Gate D** sends Telegram (validated 2026-05-21).
 
 ---
 
@@ -231,27 +234,22 @@ Never put raw file content or secrets in error logs committed to git.
 
 ---
 
-## Gate C runtime PASS criteria (future)
+## Gate C + D runtime PASS (recorded 2026-05-21)
 
-Record PASS in docs after an explicit runtime session when **all** are true:
+| Gate | Result | Evidence |
+|------|--------|----------|
+| **C detection** | **PASS** | [runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md) |
+| **D Telegram text** | **PASS** | [Gate D live](sessions/2026-05-21-control-plane-40-gate-d-live-pass.md) |
+| **D .md file attachment** | **PASS** | [Gate D file](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md) |
 
-1. A **non-sample** plan file committed under `docs/plans/` per Gate B convention.
-2. Watcher (**02F** extension per architecture A) runs via Manual Trigger or schedule poll.
-3. Watcher emits **`plan_detected`** with correct fields and public `github_file_url`.
-4. **`sample: true`** file in same commit does **not** emit `plan_detected`.
-5. Second poll with unchanged plan → **duplicate skip** (no second event).
-6. Invalid front matter file → **no** `plan_detected`; workflow does not fail fatally.
-7. **No Telegram sent** during Gate C-only test (Gate D branch disabled or disconnected).
-8. GIS handoff + commit notify paths on **02F** still **PASS** smoke (if architecture A).
-9. No secrets in execution logs committed to repo.
+Active **`40`** path (v4 schedule, not webhook): plan detect → `plan_detected` IF → Gate D message → fetch/write plan file → Telegram document. GIS handoff + commit notify paths unchanged. No secrets in committed session logs.
 
 ---
 
-## Out of scope (this design)
+## Out of scope (future changes)
 
-- Gate D Telegram send (real message)
-- **02F** runtime modification (authorized only in separate gate)
-- New workflow import/activation
+- New workflow import/activation without explicit gate
+- Candidate workflows named **`41`** / **`42`** / **`43`** per [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) — not multiple `40` candidates
 - v5 / GitHub production webhook / public HTTPS
 - Strict C1 &lt;30s reopen (PM-01)
 - **ALINA LAVORO**, **dev-method**, **cursor-coordinate-converter**
@@ -261,11 +259,6 @@ Record PASS in docs after an explicit runtime session when **all** are true:
 
 ## Next trigger
 
-**Gate C runtime** — follow [runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md):
+**None** for PM-09 closure — Gate C + D + FILE are **PASS** in active **`40`**.
 
-1. Open explicit n8n session (user gate).
-2. Modify **`02F`** per packet — isolated plan branch for `mrhz1973/control-plane` only.
-3. Manual Trigger test → **`plan_detected`**, no Telegram.
-4. Record PASS or STOP per packet criteria.
-
-Gate D remains a **separate** session after Gate C runtime PASS. Architecture B only if A fails + explicit new decision.
+Future plan-watcher changes: import/test candidates as **`41`**, **`42`**, or **`43`** (pre-bind known credential names; placeholders only for values that cannot be committed). Promote winner to **`40 - ... - ACTIVE`** per [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md). Architecture B (`55` test-safe) only with explicit new decision.
