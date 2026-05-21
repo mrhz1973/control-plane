@@ -134,6 +134,19 @@
 
 ---
 
+### PM-11 — Candidate `41` full handoff/prompt file generation
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Design package committed** — [PM11_CANDIDATE_41_HANDOFF_FILE.md](PM11_CANDIDATE_41_HANDOFF_FILE.md) |
+| **Why** | After PM-10 `plan_detected`, define **`41`** path: plan file → full handoff markdown on n8n disk → Telegram short text + document (GIS-style, CONTROL PLANE plans) |
+| **Runtime** | **No** in this task — no import, execute, activation, or `40`→`41` switch |
+| **Next gate** | Candidate **`41`** runtime packet / import gate — **one step only** ([RUNTIME_GATES.md](RUNTIME_GATES.md)) |
+| **Depends on** | PM-09 PASS in **`40`**; PM-10 plan direction |
+| **Out of scope** | GIS, dev-method, ALINA LAVORO; v5/webhook; implementer auto-send; provider API; secrets in git |
+
+---
+
 ### PM-03 — New n8n workflows
 
 | Field | Value |

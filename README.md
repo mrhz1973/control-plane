@@ -80,6 +80,7 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | Workflow IDs + candidate policy | [docs/N8N_WORKFLOW_NAMING.md](docs/N8N_WORKFLOW_NAMING.md) |
 | Committed export inventory | [docs/WORKFLOW_EXPORT_STATUS.md](docs/WORKFLOW_EXPORT_STATUS.md) |
 | PM-09 plan watcher (Gate C+D) | [docs/PLAN_WATCHER_GATE_C.md](docs/PLAN_WATCHER_GATE_C.md) |
+| PM-11 candidate `41` handoff file (design) | [docs/PM11_CANDIDATE_41_HANDOFF_FILE.md](docs/PM11_CANDIDATE_41_HANDOFF_FILE.md) |
 | Plan file schema | [docs/plans/README.md](docs/plans/README.md) |
 | VPS rebuild | [docs/N8N_REBUILD.md](docs/N8N_REBUILD.md) |
 | Runtime gate discipline | [docs/RUNTIME_GATES.md](docs/RUNTIME_GATES.md) |
