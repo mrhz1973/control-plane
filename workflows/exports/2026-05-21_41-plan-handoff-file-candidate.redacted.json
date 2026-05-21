@@ -919,10 +919,6 @@
     "binaryMode": "separate"
   },
   "versionId": "__REDACTED_VERSION_ID__",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "0319381fab885f639cbac060718f520c2525cb985f8057b47d0fc6aff7016641"
-  },
   "id": "__REDACTED_WORKFLOW_ID__",
   "tags": [
     {
