@@ -107,14 +107,14 @@
 | **Gate B delivered** | Path, naming, schema — [plans/README.md](plans/README.md) |
 | **Gate C design delivered** | Watcher scope, `plan_detected`, dedupe — [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
 | **Gate C runtime direction** | **A selected** — extend **02F** (2026-05-21); B = fallback only |
-| **Gate C runtime packet** | [runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) — **not executed** |
-| **Gate C runtime** | **Pending / not authorized** — packet prepares next n8n session only |
+| **Gate C runtime packet** | [extend-02f](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) + [first edit plan](runtime-packets/pm-09-gate-c-02f-first-edit-plan.md) |
+| **Gate C runtime edit** | **Pending** — read-only verification done; first IF node not added |
 | **Gate D Telegram** | **Pending / not authorized** |
 | **Runtime now** | **No** — this task does **not** authorize n8n UI, **02F** edit, import, or Telegram send |
 | **v5 / webhook** | **Not reopened** |
 | **C1** | Stays **PARTIAL** (D-C1-A) |
 | **Out of scope** | ALINA LAVORO; dev-method; GIS; Cursor provider API |
-| **Next trigger** | Gate **C runtime** — [runtime packet](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md); modify **02F** one step per [RUNTIME_GATES.md](RUNTIME_GATES.md) |
+| **Next trigger** | Gate **C runtime step 1** — add IF control-plane plan branch per [first edit plan](runtime-packets/pm-09-gate-c-02f-first-edit-plan.md) |
 
 ---
 

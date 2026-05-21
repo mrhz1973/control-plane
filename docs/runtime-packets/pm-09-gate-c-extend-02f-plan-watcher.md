@@ -8,6 +8,8 @@
 
 **Architecture decision:** **A — extend 02F** (user-selected 2026-05-21). Architecture B (PM-03 separate workflow) is **fallback only** if A fails or regression risk is unacceptable.
 
+**First edit plan:** [pm-09-gate-c-02f-first-edit-plan.md](pm-09-gate-c-02f-first-edit-plan.md) — read-only **02F** verification recorded; first runtime edit step defined (**not executed**).
+
 ---
 
 ## Purpose
@@ -33,7 +35,7 @@ Gate D (Telegram summary) is a **separate** future session.
 | 3 | PM-09 Gate C design PASS — [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md) | Done |
 | 4 | Architecture **A** decision recorded | Done (2026-05-21) |
 | 5 | User opens explicit Gate C runtime session | **Pending** |
-| 6 | n8n UI access to **02F** (read first, edit one step) | Required at runtime |
+| 6 | n8n UI access to **02F** (read first, edit one step) | **Read-only done** (2026-05-21) — [first edit plan](pm-09-gate-c-02f-first-edit-plan.md); edit **pending** |
 | 7 | Test plan file ready (non-sample) for commit before Manual Trigger | Required at runtime |
 | 8 | Gate D Telegram branch **disconnected or disabled** during Gate C test | Required at runtime |
 
