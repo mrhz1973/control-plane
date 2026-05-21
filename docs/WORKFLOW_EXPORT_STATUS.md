@@ -27,7 +27,9 @@
 
 Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the active production watcher after PM-02.
 
-**Post-cleanup runtime (PM-07 PASS):** Sole active CONTROL PLANE poll+handoff: **`02F`**; `01`/`03`/`20` retained **off**; v5 **off**; webhook **not configured** ([MVP_STATUS.md](MVP_STATUS.md)). ALINA LAVORO **out of scope**.
+**Post-cleanup runtime (PM-07 PASS):** Sole active CONTROL PLANE poll+handoff was **`02F`**; **2026-05-21** user rename in n8n UI → **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`**. Retained off: **`01`** / **`20`** / **`30`** (formerly `03`). **`55`** reserved — not created. See [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md). v5 **off**; webhook **not configured**. ALINA LAVORO **out of scope**.
+
+**Export hygiene (pending):** Committed redacted JSON below may still show workflow name **`02F`** — historical until deliberate re-export (PM-08 pattern) after runtime rename alignment.
 
 **Criterion 5 recovery drill (2026-05-20):** Duplicate-skip smoke on then-active single-repo v4 — historical; see [N8N_REBUILD.md](N8N_REBUILD.md).
 
@@ -73,11 +75,13 @@ Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the
 
 ---
 
-## 02F redacted export status
+## 02F redacted export status (runtime renamed to **40** — 2026-05-21)
 
 | Field | Value |
 |-------|--------|
-| **Runtime workflow** | `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` — **active/published** (sole CONTROL PLANE polling target) |
+| **Runtime workflow (current)** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — **active/published** (formerly **`02F`**) |
+| **Rename** | User manual rename in n8n UI — docs recorded only; **no** export refresh in rename task |
+| **Pending hygiene** | Re-export redacted JSON with **`40`** name when material drift audit requires match |
 | **Committed 02F export** | **`workflows/exports/2026-05-21_github-commit-datatable-dedupe-scheduled-v4-multirepo-02f-handoff-safe-text.redacted.json`** |
 | **Status** | **Committed** — PM-08 **PASS** (2026-05-21); `active=false` in repo (import-safe) |
 | **Runtime on VPS** | **`02F` remains active/published** — **no** n8n import/export or execution in this commit |

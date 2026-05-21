@@ -12,7 +12,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Name** | `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` |
+| **Name (runtime)** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` (formerly **`02F`**) — [N8N_WORKFLOW_NAMING.md](../N8N_WORKFLOW_NAMING.md) |
 | **State after read-only session** | **Active/published** — unchanged |
 | **User action in read-only session** | Opened workflow in n8n UI; **no** Execute, **no** Save, **no** node edits |
 

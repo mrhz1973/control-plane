@@ -16,7 +16,7 @@
 
 ## Purpose
 
-Execute a **controlled modification** of **`02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT`** to add an **isolated branch** that:
+Execute a **controlled modification** of **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (runtime target; formerly **`02F`**) to add an **isolated branch** that:
 
 1. Activates only for repo `mrhz1973/control-plane`
 2. Detects changed files under `docs/plans/*.plan.md`
@@ -49,7 +49,7 @@ Gate D (Telegram summary) is a **separate** future session.
 
 | Field | Value |
 |-------|--------|
-| **Workflow name** | `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` |
+| **Workflow name (runtime)** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` (formerly **`02F`**) — [N8N_WORKFLOW_NAMING.md](../N8N_WORKFLOW_NAMING.md) |
 | **Role** | Sole active CONTROL PLANE poll + handoff (PM-07) |
 | **Schedule** | 1 min (unchanged unless explicitly gated) |
 | **Watched repos** | `mrhz1973/control-plane`, `mrhz1973/dev-method`, `mrhz1973/cursor-coordinate-converter` |

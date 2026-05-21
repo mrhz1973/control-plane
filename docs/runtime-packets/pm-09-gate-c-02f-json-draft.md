@@ -12,11 +12,13 @@
 workflows/exports/2026-05-21_02f-plan-watcher-first-if-draft.redacted.json
 ```
 
-**Workflow name in JSON:**
+**Workflow name in JSON (historical — pre-rename):**
 
 ```text
 02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT + PLAN WATCHER FIRST IF DRAFT
 ```
+
+**Runtime target after import/rename alignment:** `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — see [N8N_WORKFLOW_NAMING.md](../N8N_WORKFLOW_NAMING.md). Future JSON should use **`40`** / **`55`** naming when possible.
 
 **Source (unchanged canonical):**
 

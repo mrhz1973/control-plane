@@ -14,8 +14,8 @@
 | **Decision** | **D-C1-A** (2026-05-21) — **not** strict **5/5 PASS** |
 | **C1** | **PARTIAL** accepted — SLA best-effort **1–5 min** (v4 polling) |
 | **C2–C5** | **PASS** |
-| **v4 multirepo watcher** | **Active** — `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` (1 min) |
-| **CONTROL PLANE n8n list** | **Cleaned** — only **`02F`** active/published for polling+handoff; `01`/`03`/`20` retained off |
+| **v4 multirepo watcher** | **Active** — `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` (1 min; formerly **`02F`**) |
+| **CONTROL PLANE n8n list** | **01** / **20** / **30** off · **`40`** active/published · **`55`** reserved (not created) — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) |
 | **v4 single-repo legacy** | **Off** — `01 - CP v4 single-repo polling - LEGACY OFF` |
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
@@ -75,8 +75,8 @@
 | Field | Value |
 |-------|--------|
 | **Status** | **PASS** — manual cleanup completed (post-02F) |
-| **Active (published)** | **`02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT`** — sole CONTROL PLANE polling+handoff workflow |
-| **Retained (intentional)** | `01` legacy **off**; `03` handoff manual fallback; `20` v5 webhook **off** |
+| **Active (published)** | **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (formerly **`02F`**) — sole CONTROL PLANE polling+handoff |
+| **Retained (intentional)** | `01` / `20` / `30` **off**; `55` reserved — not created |
 | **Removed from CONTROL PLANE list** | `02`, `02B`, `02C`, `02D`, `02E`, `90`, `91`, `92`, `93` |
 | **Out of scope** | **ALINA LAVORO** folder/workflows (9) — **not** touched |
 | **Next (optional)** | UX: commit notify before handoff/file (PM-06) |
@@ -106,9 +106,10 @@
 | **Design docs** | [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
 | **Gate B delivered** | Path, naming, schema — [plans/README.md](plans/README.md) |
 | **Gate C design delivered** | Watcher scope, `plan_detected`, dedupe — [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
-| **Gate C runtime direction** | **A selected** — extend **02F** (2026-05-21); B = fallback only |
-| **Gate C runtime packet** | [extend-02f](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) + [first edit plan](runtime-packets/pm-09-gate-c-02f-first-edit-plan.md) |
-| **Gate C runtime edit** | **Pending** — [JSON draft import candidate](runtime-packets/pm-09-gate-c-02f-json-draft.md) prepared; VPS **02F** unchanged |
+| **Gate C runtime direction** | **A selected** — extend **`40`** (formerly **02F**); B = fallback only |
+| **Runtime target** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` |
+| **Gate C runtime packet** | [extend-02f](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) (historical filename) + [first edit plan](runtime-packets/pm-09-gate-c-02f-first-edit-plan.md) |
+| **Gate C runtime edit** | **Pending** — JSON draft uses historical **02F** name; import targets **`40`** after review |
 | **Gate D Telegram** | **Pending / not authorized** |
 | **Runtime now** | **No** — this task does **not** authorize n8n UI, **02F** edit, import, or Telegram send |
 | **v5 / webhook** | **Not reopened** |

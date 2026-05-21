@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after **PM-09 Gate C** 02F JSON draft (file-only). MVP **accepted-with-exception** (D-C1-A).
+**Last consolidated:** after **n8n numeric workflow rename** recorded (docs-only). MVP **accepted-with-exception** (D-C1-A).
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -29,8 +29,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
-- **Runtime:** **`02F`** active/published (sole CP poll+handoff); cleanup **PASS**; `01`/`03`/`20` retained off · v5 **off** · webhook **not configured**
-- **Post-MVP:** PM-09 Gate **C** JSON draft — import via [raw GitHub URL](runtime-packets/pm-09-gate-c-02f-json-draft.md#raw-github-url-import); VPS **02F** not modified
+- **Runtime:** **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (formerly **`02F`**) — sole CP poll+handoff; **`01`** / **`20`** / **`30`** off · **`55`** reserved (PM-09, not created) · v5 **off** · webhook **not configured**
+- **Post-MVP:** PM-09 Gate **C** pending — target runtime **`40`**; JSON draft still uses historical **`02F`** name until export refresh — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)
 - **ALINA LAVORO:** out of scope / not touched
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
@@ -49,14 +49,15 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 | Component | State |
 |-----------|--------|
-| **Active path** | Multirepo v4 polling + handoff — **active** (`02F` **PASS**) |
-| **Active workflow** | `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` — **published**, 1 min; sole CP polling target |
+| **Active path** | Multirepo v4 polling + handoff — **active** (**`40`**, formerly **`02F`**) |
+| **Active workflow** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — **published**, 1 min; sole CP polling target |
 | **Cleanup** | **PASS** — removed `02`, `02B`–`02E`, `90`–`93` from CONTROL PLANE list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) PM-07) |
-| **Retained (not active poll)** | `01` legacy **off**; `03` handoff manual fallback; `20` v5 webhook **off** |
+| **Retained (not active poll)** | `01` legacy **off**; `30` handoff manual **off** (formerly `03`); `20` v5 webhook **off** |
+| **Reserved** | `55` — PM-09 plan watcher — **not created** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **GitHub read** | Authenticated GitHub API credential in n8n UI |
 | **Flow** | GitHub → dedupe → Telegram; GIS commit → safe-text handoff preview + **`latest-gis-handoff.md`** document |
-| **GIS handoff (02F)** | **PASS** — `58c5c46`; safe text + file attachment ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
-| **Handoff manual fallback** | `03` handoff manual workflow — inactive; manual test path |
+| **GIS handoff (`40` / ex-02F)** | **PASS** — `58c5c46`; safe text + file attachment ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
+| **Handoff manual fallback** | `30 - CP handoff manual Telegram v1 - OFF` — inactive; manual test path |
 | **v5 webhook workflow** | Imported, manually tested (placeholder), **inactive / disabled** |
 | **GitHub production webhook** | **Not configured** — localhost / tunnel not reachable by GitHub |
 | **Public HTTPS gate** | Documented, not done — [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) |
@@ -152,4 +153,5 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) | Criterion 2 design |
 | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) | Criterion 3 tracker |
 | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) | Criterion 4 inventory + v4 match perimeter |
+| [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) | n8n numeric workflow naming (`40` active; `55` reserved) |
 | [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md) | Criterion 1 latency measurement plan |

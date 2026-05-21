@@ -19,7 +19,7 @@ Gate C covers **detection and normalization only** — not Telegram delivery.
 | Item | State |
 |------|--------|
 | **Gate C design** | **Delivered** (this document) |
-| **Gate C runtime direction** | **Architecture A selected** (2026-05-21) — extend **02F** |
+| **Gate C runtime direction** | **Architecture A selected** (2026-05-21) — extend **`40`** (formerly **02F**) — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) |
 | **Gate C runtime** | **Not authorized** — [runtime packet](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md); explicit session required |
 | **Gate D Telegram** | **Not authorized** |
 | **02F modification** | **Not authorized** by this task |
