@@ -68,6 +68,24 @@ Gate D (Telegram summary) is a **separate** future session.
 
 ---
 
+## Operational preference — n8n JSON delivery (user, 2026-05-21)
+
+For **future** CONTROL PLANE n8n workflow changes (including Gate C **02F** extension and any PM-03 workflow):
+
+| Preference | Detail |
+|------------|--------|
+| **Default delivery** | Orchestrator prepares **redacted, importable n8n workflow JSON** and provides it as **file / GitHub link / URL** when possible |
+| **Avoid** | Manual node-by-node reconstruction in n8n UI as the primary path |
+| **Redaction** | Same rules as [WORKFLOW_EXPORT_STATUS.md](../WORKFLOW_EXPORT_STATUS.md) — no token, chat_id, credential ID, webhook URL in git |
+| **Runtime gate** | User imports or merges JSON in n8n UI **one step per gate** — import alone does not authorize Execute or Telegram |
+| **Export refresh** | After material runtime change, commit updated `.redacted.json` under `workflows/exports/` (PM-08 pattern) |
+
+**Gate C note:** [first edit plan](pm-09-gate-c-02f-first-edit-plan.md) step 1 (single IF in UI) was drafted before this preference. **Before Gate C runtime edit**, orchestrator should prefer delivering an **02F delta or full redacted JSON** with the plan branch; manual canvas edit is **fallback only** if JSON is unavailable or rejected on import review.
+
+**This preference does not authorize runtime or export commit in a docs-only task.**
+
+---
+
 ## Desired modification (future runtime)
 
 Add an **isolated parallel branch** on **02F** (do not replace existing GIS handoff or commit-notify paths):

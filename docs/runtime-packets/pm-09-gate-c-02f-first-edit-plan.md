@@ -58,6 +58,7 @@ User opened **02F** in n8n UI for visual inspection only. Screenshot / visual ch
 | **No v5 / webhook** | Unchanged |
 | **Do not touch** | `01`, `03`, `20`, ALINA LAVORO, dev-method, GIS repos |
 | **One edit per gate** | [RUNTIME_GATES.md](../RUNTIME_GATES.md) |
+| **JSON-first (orchestrator)** | Prefer redacted importable n8n JSON (file/link/URL) over manual node-by-node UI build — see [parent packet § JSON delivery](pm-09-gate-c-extend-02f-plan-watcher.md#operational-preference--n8n-json-delivery-user-2026-05-21) |
 
 ---
 
@@ -81,7 +82,9 @@ IF - New commit? (true)
 
 ## First runtime edit (recommended — single session step)
 
-Add **only one** isolated entry node — do **not** wire the full chain yet:
+**Preferred path (orchestrator):** deliver **redacted 02F JSON** (full workflow or documented delta) for import — user reviews → import **one gate** → credential/chat_id in UI only. See [JSON delivery preference](pm-09-gate-c-extend-02f-plan-watcher.md#operational-preference--n8n-json-delivery-user-2026-05-21).
+
+**Fallback path (manual UI):** if JSON is not yet available, add **only one** isolated entry node — do **not** wire the full chain yet:
 
 | Node | Type | Purpose |
 |------|------|---------|
@@ -173,4 +176,6 @@ Full `plan_detected` test requires nodes 2–6 (separate gates).
 
 ## Next real gate
 
-**Gate C runtime step 1:** In n8n UI, add **`IF - Control-plane repo for plan watcher?`** only → Save → Manual Trigger smoke (no Telegram) → record result in session log.
+**Gate C runtime step 1 (preferred):** Orchestrator provides **redacted importable 02F JSON** with plan-branch entry (IF control-plane) → user import/review in n8n → Save → Manual Trigger smoke (no Telegram) → session log.
+
+**Fallback:** manual add of **`IF - Control-plane repo for plan watcher?`** only in UI if JSON not ready.
