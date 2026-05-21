@@ -4,7 +4,7 @@
 
 **Related:** [MVP_STATUS.md](MVP_STATUS.md), [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [final n8n cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md).
 
-**Last updated:** 2026-05-21 — final CONTROL PLANE list = **4 workflows**; PM-09 in **`40`**; **`41`/`42`/`43`** future candidates.
+**Last updated:** 2026-05-22 — PM-22 promotion naming prepared; **`42`** candidate OFF; promotion **not executed**.
 
 ---
 
@@ -66,6 +66,35 @@ Operational rule:
 | `55 - CP plan detected Telegram Gate D TEST SAFE` | Test-safe validation complete — not production |
 
 **Not in current list:** reserved IDs **`41`**, **`42`**, **`43`** (future candidates only).
+
+---
+
+## PM-22 promotion naming (PREPARED — not executed)
+
+**Rule:** **No duplicate numeric IDs** visible in the n8n list after rename.
+
+### Before promotion
+
+| ID | Workflow name (n8n UI) | State |
+|----|------------------------|--------|
+| **40** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` | **ON** |
+| **42** | `42 - CP v4 multirepo + classifier bridge - CANDIDATE OFF` | **OFF** |
+
+### After successful PM-22 + PM-23
+
+| ID | Workflow name (n8n UI) | State |
+|----|------------------------|--------|
+| **40** | `40 - CP v4 multirepo + classifier bridge - ACTIVE` | **ON** (promoted from `42`) |
+| **41** | `41 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - BACKUP OFF` | **OFF** (former production `40`) |
+
+### After PM-24 rollback (failure)
+
+| ID | Workflow name (n8n UI) | State |
+|----|------------------------|--------|
+| **40** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` | **ON** (restored from `41`) |
+| **42** | `42 - CP v4 multirepo + classifier bridge - FAILED OFF` | **OFF** (failed promotion) |
+
+**Packets:** [pm-22](runtime-packets/pm-22-promote-42-to-40-bridge-gate.md) · [pm-23](runtime-packets/pm-23-post-promotion-smoke-gate.md) · [pm-24](runtime-packets/pm-24-rollback-recovery-gate.md) · [pm-25](runtime-packets/pm-25-fast-track-runtime-operator-checklist.md)
 
 ---
 

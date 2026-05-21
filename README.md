@@ -94,6 +94,10 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-19 implementer bridge dry-run | [docs/PM19_IMPLEMENTER_BRIDGE_DRY_RUN.md](docs/PM19_IMPLEMENTER_BRIDGE_DRY_RUN.md) |
 | PM-20 n8n bridge packet (prepared) | [docs/PM20_N8N_BRIDGE_PACKET.md](docs/PM20_N8N_BRIDGE_PACKET.md) |
 | PM-21 bridge candidate `42` (import bundle) | [docs/PM21_N8N_BRIDGE_RUNTIME_CANDIDATE.md](docs/PM21_N8N_BRIDGE_RUNTIME_CANDIDATE.md) |
+| PM-22 promotion `42` → `40` (packet) | [docs/runtime-packets/pm-22-promote-42-to-40-bridge-gate.md](docs/runtime-packets/pm-22-promote-42-to-40-bridge-gate.md) |
+| PM-23 post-promotion smoke (packet) | [docs/runtime-packets/pm-23-post-promotion-smoke-gate.md](docs/runtime-packets/pm-23-post-promotion-smoke-gate.md) |
+| PM-24 rollback / recovery (packet) | [docs/runtime-packets/pm-24-rollback-recovery-gate.md](docs/runtime-packets/pm-24-rollback-recovery-gate.md) |
+| PM-25 fast-track operator checklist | [docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md](docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |
 | Fast-track runtime sequence (runbook) | [docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md](docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md) |
 | PM-16 `40` post-PM15 export snapshot | [session](docs/sessions/2026-05-22-control-plane-40-post-pm15-export-snapshot.md) — **PENDING** |
 | Plan file schema | [docs/plans/README.md](docs/plans/README.md) |

@@ -231,10 +231,60 @@
 | **Doc** | [PM21_N8N_BRIDGE_RUNTIME_CANDIDATE.md](PM21_N8N_BRIDGE_RUNTIME_CANDIDATE.md) |
 | **Evidence** | Commit `1f46c64` — commit notify + `plan_detected` + Gate D file + **PM-21 bridge decision** (`dry_run_pass`, mock-worker) |
 | **Note** | Prior `.first()` error fixed in `d85afc2` |
-| **Next** | Promotion **`42`→`40`** only via explicit gate — or PM-18/PM-20 integration on successor |
+| **Next** | **PM-22→PM-23** one-window runtime — see PM-22–PM-25 packets |
 | **PM-18** | **PENDING** |
 | **PM-16 export** | **PENDING** — non-blocking |
 | **Out of scope** | Edit published `40`; Codex runtime; GIS/DEV/ALINA |
+
+---
+
+### PM-22 — Promotion `42` → `40` gate
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Why** | Promote PM-21C-tested **`42`** to production **`40`**; old `40` → **`41` BACKUP OFF** |
+| **Prerequisites** | PM-15 PASS; PM-21C PASS; `42` imported OFF; credentials green |
+| **Packet** | [pm-22-promote-42-to-40-bridge-gate.md](runtime-packets/pm-22-promote-42-to-40-bridge-gate.md) |
+| **Out of scope** | Auto promotion; Codex; provider API; GIS/DEV/ALINA |
+
+---
+
+### PM-23 — Post-promotion smoke gate
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Why** | One smoke after PM-22 — plan commit + Telegram set including PM-21 bridge |
+| **Packet** | [pm-23-post-promotion-smoke-gate.md](runtime-packets/pm-23-post-promotion-smoke-gate.md) |
+| **Out of scope** | Repeated smoke without failure evidence; real worker; Codex |
+
+---
+
+### PM-24 — Rollback / recovery gate
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Why** | Restore pre-promotion **`40`** if PM-23 fails |
+| **Packet** | [pm-24-rollback-recovery-gate.md](runtime-packets/pm-24-rollback-recovery-gate.md) |
+| **Recovery** | `41` backup preferred; `READY_IMPORT_40` only if backup missing |
+| **Out of scope** | Deleting backup before evidence; token edits |
+
+---
+
+### PM-25 — Fast-track operator checklist
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Why** | One-window PM-22 + PM-23 + PM-24 guard |
+| **Packet** | [pm-25-fast-track-runtime-operator-checklist.md](runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |
+| **Session** | [pm22-pm25 batch](sessions/2026-05-22-control-plane-pm22-pm25-promotion-readiness-batch.md) |
+| **Next runtime** | Execute **PM-22→PM-23** with **PM-24** rollback guard in one window |
+| **PM-18** | **PENDING** |
+| **PM-16 export** | **PENDING** — non-blocking |
+| **Out of scope** | C1 strict PASS; GIS/DEV/ALINA |
 
 ---
 
