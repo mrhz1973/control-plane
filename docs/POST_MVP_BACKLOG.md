@@ -20,6 +20,7 @@
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
 | **02F redacted export** | **PASS** — [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) PM-08 |
+| **PM-09 plan ingestion** | **Proposed** — docs-only design; [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md) |
 | **Next runtime** | **None mandatory** — every item below is **optional** and **gated** |
 
 ---
@@ -92,6 +93,23 @@
 | **Unredacted** | `02F-unredacted-export-local-only.json` — **not** in git |
 | **Not in scope** | v5/webhook; C1 &lt;30s reopen; ALINA LAVORO; deleting `01`/`03`/`20` |
 | **Docs** | [WORKFLOW_EXPORT_STATUS.md § 02F](WORKFLOW_EXPORT_STATUS.md#02f-redacted-export-status), [OBSERVABILITY.md](OBSERVABILITY.md) |
+
+---
+
+### PM-09 — Cursor Plan output → Telegram / orchestrator ingestion
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Proposed** — docs-only design pending; gate **A** delivered |
+| **Why** | Avoid manual copy-paste of Cursor Plan text into handoff/Telegram; make plans readable by orchestrator via GitHub |
+| **Desired flow** | Cursor Plan → structured file in repo → n8n detects file/commit (future gate C) → Telegram summary/file/link (gate D) → orchestrator reads via GitHub |
+| **Design doc** | [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md) |
+| **Runtime now** | **No** — this backlog entry does **not** authorize n8n UI, new workflow, import, or Telegram send |
+| **New n8n workflow** | **Not authorized** — future watcher change requires separate PM-03 or **02F** modification gate |
+| **v5 / webhook** | **Not reopened** |
+| **C1** | Stays **PARTIAL** (D-C1-A); does not reopen strict &lt;30s |
+| **Out of scope** | ALINA LAVORO; dev-method; GIS; Cursor provider API; runtime in gate A |
+| **Next trigger** | Gate **B** — adopt local file path + schema convention (docs-only) |
 
 ---
 
