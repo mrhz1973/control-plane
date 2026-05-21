@@ -98,3 +98,5 @@ Commit `8b3a468` regenerated ready-import with **name-only** credentials. That o
 | **CP list** | `40` ACTIVE · `01` / `20` / `30` OFF — no `41`/`42` in use |
 
 **Recovery:** If production **`40`** is missing again, import from **`READY_IMPORT_40-control-plane-active-with-credentials.json`**, **not** old candidate `41`/`42` redacted exports or name-only bundles.
+
+**Post-PM15 runtime snapshot (pending):** `workflows/exports/2026-05-22_40-production-post-pm15-smoke.redacted.json` — **not yet in git**; export current published `40` from n8n UI when snapshot is required ([session](sessions/2026-05-22-control-plane-40-post-pm15-export-snapshot.md)).

@@ -207,6 +207,19 @@
 
 ---
 
+### PM-16 export — Production `40` post-PM15 runtime snapshot
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PENDING** (2026-05-22) — [session](sessions/2026-05-22-control-plane-40-post-pm15-export-snapshot.md) |
+| **Why** | Git record of **published** `40` after PM-15 smoke; distinct from `READY_IMPORT_40` |
+| **Target** | `workflows/exports/2026-05-22_40-production-post-pm15-smoke.redacted.json` |
+| **Blocker** | Runtime export not found in Downloads; n8n API unavailable without local key |
+| **Next** | User export from n8n UI → redact → commit; then **PM-17** Ollama classifier dry-run |
+| **Out of scope** | Using `READY_IMPORT` as runtime snapshot; GIS/DEV/ALINA |
+
+---
+
 ### PM-16 — Automation router layer (design)
 
 | Field | Value |

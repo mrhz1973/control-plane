@@ -156,6 +156,20 @@ Prior Gate C-only candidate: `2026-05-21_40-plan-watcher-dropin-candidate-gate-c
 
 ---
 
+### PM-16 export — Production `40` post-PM15 runtime snapshot (**PENDING** 2026-05-22)
+
+| Field | Value |
+|-------|--------|
+| **Target file** | `workflows/exports/2026-05-22_40-production-post-pm15-smoke.redacted.json` — **not committed** |
+| **Workflow** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — **Published** (runtime) |
+| **Purpose** | Post-publish runtime evidence after PM-15 smoke — **not** candidate `41`, **not** `READY_IMPORT_40` |
+| **READY_IMPORT_40** | Rebuild/import bundle (`1f62ebd` real credential ids) — [OPERATING_MEMORY.md](OPERATING_MEMORY.md) |
+| **Session** | [2026-05-22 export snapshot PENDING](sessions/2026-05-22-control-plane-40-post-pm15-export-snapshot.md) |
+| **Blocker** | No local/API export of current `40` in agent session |
+| **Next** | User exports `40` from n8n UI → redact → commit snapshot |
+
+---
+
 ### PM-15 — New production `40` smoke (**PASS** 2026-05-22)
 
 | Field | Value |
