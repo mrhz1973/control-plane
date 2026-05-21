@@ -30,7 +30,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
 - **Runtime:** **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** — sole CP poll+handoff, **published**, 1 min; final n8n list = **4 workflows** (`40` ACTIVE · `30` / `20` / `01` OFF) — [final n8n cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md); backup `40` and **`55`** test-safe **deleted** from UI after PM-09 PASS · v5 **off** · webhook **not configured**
-- **Post-MVP:** PM-09 Gate **C + D + FILE PASS** in active `40` — [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md), [Gate D file attachment](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md); PM-12 candidate **`41`** handoff-file test **PASS** recorded — [session](sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md) (`40` still production)
+- **Post-MVP:** PM-09 Gate **C + D + FILE PASS** in active `40` — [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md), [Gate D file attachment](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md); PM-12 candidate **`41`** handoff-file test **PASS** recorded — [session](sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md); **new production `40` published** and **PM-15 smoke PASS** on `c0ea042` — [session](sessions/2026-05-22-control-plane-pm15-new-40-smoke-pass.md) (C1 **PARTIAL** unchanged; `latest-control-plane-handoff.md` not observed in smoke)
 - **ALINA LAVORO:** out of scope / not touched
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
@@ -53,7 +53,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **Active workflow** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — **published**, 1 min; sole CP production polling target |
 | **PM-09 Gate C** | **Runtime PASS** — detects `docs/plans/*.plan.md` ([runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md)) |
 | **PM-09 Gate D** | **Runtime PASS** — `plan_detected` Telegram text ([Gate D live](sessions/2026-05-21-control-plane-40-gate-d-live-pass.md)) + `.md` file attachment ([Gate D file](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md)) |
-| **PM-12 candidate `41`** | **Runtime PASS recorded** — handoff file + Telegram (candidate only; **`40`** unchanged) — [session](sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md) |
+| **PM-12 candidate `41`** | **Runtime PASS recorded** — handoff file + Telegram (candidate only; superseded by rebuilt **`40`**) — [session](sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md) |
+| **PM-15 smoke (new `40`)** | **PASS** — commit notify + `plan_detected` + Gate D plan file on `c0ea042` / exec `#6708` — [session](sessions/2026-05-22-control-plane-pm15-new-40-smoke-pass.md); handoff-file path **not** observed in smoke |
 | **CONTROL PLANE n8n list** | **4 workflows** — `40` **ACTIVE** · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |

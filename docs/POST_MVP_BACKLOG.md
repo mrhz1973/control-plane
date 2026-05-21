@@ -196,11 +196,13 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **Packet prepared** (2026-05-21) — runtime smoke **not executed** |
-| **Why** | Verify PM-06 / PM-09 / PM-12 behavior on new `40` after PM-14 promotion |
-| **Prerequisites** | PM-14 promotion PASS |
+| **Status** | **Smoke PASS recorded** (2026-05-22) — [session](sessions/2026-05-22-control-plane-pm15-new-40-smoke-pass.md) |
+| **Why** | Verify PM-06 / PM-09 behavior on published production **`40`** |
+| **Evidence** | Commit `c0ea042` · n8n execution `#6708` (1.709s) · Telegram commit notification · `plan_detected` · Gate D plan file attachment |
+| **Production** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — **Published**; `01`/`20`/`30` OFF |
+| **Note** | `latest-control-plane-handoff.md` **not observed** in this smoke — track separately if required |
 | **Packet** | [pm-15-post-promotion-regression-gate.md](runtime-packets/pm-15-post-promotion-regression-gate.md) |
-| **Checks** | Commit notify · dedupe · `plan_detected` · plan `.md` attachment · `latest-control-plane-handoff.md` · GIS handoff + dedupe · list integrity · ALINA untouched · C1 stays PARTIAL |
+| **Next** | Re-export current production **`40`** as redacted snapshot · **PM-17** Ollama classifier dry-run |
 | **Out of scope** | v5/webhook; strict C1; implementer auto-send; provider API; GIS/DEV/ALINA edits |
 
 ---

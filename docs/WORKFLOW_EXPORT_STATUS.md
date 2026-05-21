@@ -145,6 +145,31 @@ Prior Gate C-only candidate: `2026-05-21_40-plan-watcher-dropin-candidate-gate-c
 
 ---
 
+### READY_IMPORT_40 — production import bundle
+
+| Field | Value |
+|-------|--------|
+| **File** | `workflows/exports/READY_IMPORT_40-control-plane-active-with-credentials.json` |
+| **Credential ids** | **Real n8n ids** as of commit `1f62ebd` — see [OPERATING_MEMORY.md](OPERATING_MEMORY.md) |
+| **Purpose** | Zero-touch import of published production **`40`** |
+| **Re-export** | **Recommended** — export current runtime **`40`** from n8n → redact → commit after publish/smoke |
+
+---
+
+### PM-15 — New production `40` smoke (**PASS** 2026-05-22)
+
+| Field | Value |
+|-------|--------|
+| **Production workflow** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — **Published** |
+| **Trigger commit** | `c0ea042` — [plan](plans/2026-05-21_2330_pm15-new-40-smoke.plan.md) |
+| **n8n execution** | `#6708` — Succeeded in 1.709s |
+| **Telegram** | Commit notification · `plan_detected` · Gate D plan file — **PASS** |
+| **Session** | [2026-05-22 PM-15 smoke PASS](sessions/2026-05-22-control-plane-pm15-new-40-smoke-pass.md) |
+| **Open** | `latest-control-plane-handoff.md` not observed in this smoke |
+| **C1** | **PARTIAL** — not relabeled |
+
+---
+
 ### n8n UI cleanup after Gate C+D+FILE PASS (2026-05-21)
 
 | Item | Detail |

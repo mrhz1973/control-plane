@@ -95,7 +95,7 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | Runtime gate discipline | [docs/RUNTIME_GATES.md](docs/RUNTIME_GATES.md) |
 | Evidence / export hygiene | [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) |
 
-**Session closes:** [PM-09 docs close](docs/sessions/2026-05-21-control-plane-pm09-final-docs-close.md) · [final n8n list cleanup](docs/sessions/2026-05-21-control-plane-final-n8n-cleanup.md)
+**Session closes:** [PM-09 docs close](docs/sessions/2026-05-21-control-plane-pm09-final-docs-close.md) · [final n8n list cleanup](docs/sessions/2026-05-21-control-plane-final-n8n-cleanup.md) · [PM-15 new 40 smoke PASS](docs/sessions/2026-05-22-control-plane-pm15-new-40-smoke-pass.md)
 
 **Criteria & decisions:** [docs/MVP_CRITERIA.md](docs/MVP_CRITERIA.md) · [D-C1-A packet](docs/decision-packets/2026-05-21-criterion-1-latency-closure-decision.md)
 

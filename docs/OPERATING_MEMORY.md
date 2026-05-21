@@ -85,3 +85,16 @@ Example local file (create at repo root, never commit):
 ## Historical note (2026-05-21)
 
 Commit `8b3a468` regenerated ready-import with **name-only** credentials. That output is **invalid** for zero-touch import until rebuilt with real ids via the script above.
+
+---
+
+## Current production state (2026-05-22)
+
+| Item | State |
+|------|--------|
+| **Production workflow** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — **Published** |
+| **Rebuild source** | `workflows/exports/READY_IMPORT_40-control-plane-active-with-credentials.json` with **real credential ids** (`1f62ebd`) |
+| **PM-15 smoke** | **PASS** on commit `c0ea042` — [session](sessions/2026-05-22-control-plane-pm15-new-40-smoke-pass.md) |
+| **CP list** | `40` ACTIVE · `01` / `20` / `30` OFF — no `41`/`42` in use |
+
+**Recovery:** If production **`40`** is missing again, import from **`READY_IMPORT_40-control-plane-active-with-credentials.json`**, **not** old candidate `41`/`42` redacted exports or name-only bundles.
