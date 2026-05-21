@@ -2,7 +2,9 @@
 
 **Packet ID:** `pm-23-post-promotion-smoke-gate`  
 **Date:** 2026-05-22  
-**Status:** **PREPARED / NOT EXECUTED**
+**Status:** **PASS** (2026-05-22)
+
+**Evidence:** Commit `bfa4710` · plan `docs/plans/2026-05-22_pm23-post-promotion-smoke.plan.md` · Telegram four-message set · PM-21 bridge `dryrunpass` / mock-worker — [session](../sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md)
 
 **Related:** [pm-22 promotion](pm-22-promote-42-to-40-bridge-gate.md) · [pm-24 rollback](pm-24-rollback-recovery-gate.md) · [PM-21C PASS](../sessions/2026-05-22-control-plane-pm21c-bridge-runtime-pass.md) · [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md)
 
@@ -76,6 +78,6 @@ Smoke test **after** PM-22 promotion — new production
 
 ---
 
-## Not executed
+## Runtime result (2026-05-22)
 
-This packet does **not** run smoke — prepare only.
+**PASS** — see [session](../sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md).

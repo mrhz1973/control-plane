@@ -2,9 +2,9 @@
 
 **Packet ID:** `pm-24-rollback-recovery-gate`  
 **Date:** 2026-05-22  
-**Status:** **PREPARED / NOT EXECUTED**
+**Status:** **NOT NEEDED** after PM-23 PASS (2026-05-22) — recovery instructions retained
 
-**Related:** [pm-22 promotion](pm-22-promote-42-to-40-bridge-gate.md) · [pm-23 smoke](pm-23-post-promotion-smoke-gate.md) · [pm-25 checklist](pm-25-fast-track-runtime-operator-checklist.md) · [READY_IMPORT_40](../../workflows/exports/READY_IMPORT_40-control-plane-active-with-credentials.json)
+**Related:** [PM-22/23 PASS](../sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) · [pm-22 promotion](pm-22-promote-42-to-40-bridge-gate.md) · [pm-23 smoke](pm-23-post-promotion-smoke-gate.md) · [pm-25 checklist](pm-25-fast-track-runtime-operator-checklist.md) · [READY_IMPORT_40](../../workflows/exports/READY_IMPORT_40-control-plane-active-with-credentials.json)
 
 ---
 

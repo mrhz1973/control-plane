@@ -14,7 +14,7 @@ Personal Automation MVP — **documentation**, redacted n8n workflow exports, an
 | **C1** | **PARTIAL** (SLA best-effort 1–5 min via v4 polling) |
 | **C2–C5** | **PASS** |
 | **PM-09** | Gate **C + D + FILE PASS** — plan detect + Telegram text + `.md` file in production **`40`** |
-| **Production n8n** | **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (1 min schedule) |
+| **Production n8n** | **`40 - CP v4 multirepo + classifier bridge - ACTIVE`** (1 min; PM-22/23 PASS) |
 | **CONTROL PLANE n8n list** | **4 workflows** — see [naming registry](docs/N8N_WORKFLOW_NAMING.md) |
 | **v5 / GitHub webhook** | **Off** / not configured |
 | **ALINA LAVORO** | Out of scope — not touched |
@@ -23,7 +23,8 @@ Personal Automation MVP — **documentation**, redacted n8n workflow exports, an
 
 | ID | Name | State |
 |----|------|--------|
-| **40** | CP v4 multirepo polling — FILE HANDOFF SAFE TEXT | **ACTIVE** (sole production poll+handoff + PM-09) |
+| **40** | CP v4 multirepo + classifier bridge | **ACTIVE** (sole production; PM-21 bridge) |
+| **41** | CP v4 multirepo polling — FILE HANDOFF SAFE TEXT | **BACKUP OFF** |
 | **30** | CP handoff manual Telegram v1 | OFF |
 | **20** | CP v5 push webhook | OFF |
 | **01** | CP v4 single-repo polling | LEGACY OFF |
@@ -96,6 +97,7 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-21 bridge candidate `42` (import bundle) | [docs/PM21_N8N_BRIDGE_RUNTIME_CANDIDATE.md](docs/PM21_N8N_BRIDGE_RUNTIME_CANDIDATE.md) |
 | PM-22 promotion `42` → `40` (packet) | [docs/runtime-packets/pm-22-promote-42-to-40-bridge-gate.md](docs/runtime-packets/pm-22-promote-42-to-40-bridge-gate.md) |
 | PM-23 post-promotion smoke (packet) | [docs/runtime-packets/pm-23-post-promotion-smoke-gate.md](docs/runtime-packets/pm-23-post-promotion-smoke-gate.md) |
+| PM-22/23 promotion + smoke PASS | [docs/sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md](docs/sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) |
 | PM-24 rollback / recovery (packet) | [docs/runtime-packets/pm-24-rollback-recovery-gate.md](docs/runtime-packets/pm-24-rollback-recovery-gate.md) |
 | PM-25 fast-track operator checklist | [docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md](docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |
 | Fast-track runtime sequence (runbook) | [docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md](docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md) |

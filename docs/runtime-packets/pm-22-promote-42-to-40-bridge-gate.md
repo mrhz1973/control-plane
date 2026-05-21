@@ -2,7 +2,9 @@
 
 **Packet ID:** `pm-22-promote-42-to-40-bridge-gate`  
 **Date:** 2026-05-22  
-**Status:** **PREPARED / NOT EXECUTED**
+**Status:** **PASS / EXECUTED** (2026-05-22)
+
+**Evidence:** PM-23 smoke commit `bfa4710` — [PM-22/23 PASS session](../sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md)
 
 **Related:** [PM-21C PASS](../sessions/2026-05-22-control-plane-pm21c-bridge-runtime-pass.md) · [pm-23 smoke](pm-23-post-promotion-smoke-gate.md) · [pm-24 rollback](pm-24-rollback-recovery-gate.md) · [pm-25 checklist](pm-25-fast-track-runtime-operator-checklist.md) · [N8N_WORKFLOW_NAMING.md](../N8N_WORKFLOW_NAMING.md)
 

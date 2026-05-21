@@ -29,7 +29,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
-- **Runtime:** **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** — sole CP poll+handoff, **published**, 1 min; final n8n list = **4 workflows** (`40` ACTIVE · `30` / `20` / `01` OFF) — [final n8n cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md); backup `40` and **`55`** test-safe **deleted** from UI after PM-09 PASS · v5 **off** · webhook **not configured**
+- **Runtime:** **`40 - CP v4 multirepo + classifier bridge - ACTIVE`** — sole CP production, **published**, 1 min; **`41` BACKUP OFF** · `30` / `20` / `01` OFF — [PM-22/23 PASS](sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) · v5 **off** · webhook **not configured**
 - **Post-MVP:** PM-09 Gate **C + D + FILE PASS** in active `40` — [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md), [Gate D file attachment](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md); PM-12 candidate **`41`** handoff-file test **PASS** recorded — [session](sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md); **new production `40` published** and **PM-15 smoke PASS** on `c0ea042` — [session](sessions/2026-05-22-control-plane-pm15-new-40-smoke-pass.md) (C1 **PARTIAL** unchanged; `latest-control-plane-handoff.md` not observed in smoke)
 - **ALINA LAVORO:** out of scope / not touched
 
@@ -50,7 +50,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | Component | State |
 |-----------|--------|
 | **Active path** | Multirepo v4 polling + handoff + PM-09 Gate C detection + Gate D Telegram — **active** (**`40`**, formerly **`02F`**) |
-| **Active workflow** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — **published**, 1 min; sole CP production polling target |
+| **Active workflow** | `40 - CP v4 multirepo + classifier bridge - ACTIVE` — **published**, 1 min; sole CP production (PM-22 promoted from `42`) |
 | **PM-09 Gate C** | **Runtime PASS** — detects `docs/plans/*.plan.md` ([runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md)) |
 | **PM-09 Gate D** | **Runtime PASS** — `plan_detected` Telegram text ([Gate D live](sessions/2026-05-21-control-plane-40-gate-d-live-pass.md)) + `.md` file attachment ([Gate D file](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md)) |
 | **PM-12 candidate `41`** | **Runtime PASS recorded** — handoff file + Telegram (candidate only; superseded by rebuilt **`40`**) — [session](sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md) |
@@ -60,8 +60,10 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-19 implementer bridge** | **Dry-run PASS** — mock worker; `dry_run_pass` — [PM19](PM19_IMPLEMENTER_BRIDGE_DRY_RUN.md) |
 | **PM-20 n8n bridge packet** | **PREPARED** — classifier→bridge→Telegram contract; **no** runtime PASS — [PM20](PM20_N8N_BRIDGE_PACKET.md) |
 | **PM-21 bridge candidate `42`** | **Runtime PASS** (PM-21C) — `1f46c64`; PM-21 Telegram + `dry_run_pass` mock-worker — [session](sessions/2026-05-22-control-plane-pm21c-bridge-runtime-pass.md) |
-| **PM-22/23/24/25 promotion readiness** | **Packets PREPARED** — promotion **not** executed; production **`40` unchanged** — [batch](sessions/2026-05-22-control-plane-pm22-pm25-promotion-readiness-batch.md) |
-| **CONTROL PLANE n8n list** | **4 workflows** — `40` **ACTIVE** · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
+| **PM-22 promotion `42`→`40`** | **PASS / EXECUTED** — [session](sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) |
+| **PM-23 post-promotion smoke** | **PASS** — `bfa4710`; four Telegram messages + PM-21 bridge `dryrunpass` mock-worker |
+| **PM-24 rollback** | **NOT NEEDED** |
+| **CONTROL PLANE n8n list** | `40` **ACTIVE** · `41` **BACKUP OFF** · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |
 | **GitHub read** | Authenticated GitHub API credential in n8n UI |

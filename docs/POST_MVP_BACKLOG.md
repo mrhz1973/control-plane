@@ -14,8 +14,8 @@
 | **Decision** | **D-C1-A** (2026-05-21) — **not** strict **5/5 PASS** |
 | **C1** | **PARTIAL** accepted — SLA best-effort **1–5 min** (v4 polling) |
 | **C2–C5** | **PASS** |
-| **v4 multirepo watcher** | **Active** — `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` (1 min; formerly **`02F`**) |
-| **CONTROL PLANE n8n list** | **4 workflows** — **`40` ACTIVE** · **`30` / `20` / `01` OFF** — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md), [final n8n cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
+| **v4 multirepo watcher** | **Active** — `40 - CP v4 multirepo + classifier bridge - ACTIVE` (1 min; PM-22 promoted from **`42`**) |
+| **CONTROL PLANE n8n list** | **`40` ACTIVE** · **`41` BACKUP OFF** · **`30` / `20` / `01` OFF** — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) · [PM-22/23 PASS](sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) |
 | **v4 single-repo legacy** | **Off** — `01 - CP v4 single-repo polling - LEGACY OFF` |
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
@@ -231,7 +231,7 @@
 | **Doc** | [PM21_N8N_BRIDGE_RUNTIME_CANDIDATE.md](PM21_N8N_BRIDGE_RUNTIME_CANDIDATE.md) |
 | **Evidence** | Commit `1f46c64` — commit notify + `plan_detected` + Gate D file + **PM-21 bridge decision** (`dry_run_pass`, mock-worker) |
 | **Note** | Prior `.first()` error fixed in `d85afc2` |
-| **Next** | **PM-22→PM-23** one-window runtime — see PM-22–PM-25 packets |
+| **Next** | Optional post-promotion snapshot · PM-18 Codex CLI · stabilize |
 | **PM-18** | **PENDING** |
 | **PM-16 export** | **PENDING** — non-blocking |
 | **Out of scope** | Edit published `40`; Codex runtime; GIS/DEV/ALINA |
@@ -242,11 +242,11 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Status** | **PASS / EXECUTED** (2026-05-22) — [session](sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) |
 | **Why** | Promote PM-21C-tested **`42`** to production **`40`**; old `40` → **`41` BACKUP OFF** |
-| **Prerequisites** | PM-15 PASS; PM-21C PASS; `42` imported OFF; credentials green |
+| **Evidence** | PM-23 smoke `bfa4710` confirms promoted **`40`** active |
 | **Packet** | [pm-22-promote-42-to-40-bridge-gate.md](runtime-packets/pm-22-promote-42-to-40-bridge-gate.md) |
-| **Out of scope** | Auto promotion; Codex; provider API; GIS/DEV/ALINA |
+| **Out of scope** | Codex; provider API; GIS/DEV/ALINA |
 
 ---
 
@@ -254,10 +254,11 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
-| **Why** | One smoke after PM-22 — plan commit + Telegram set including PM-21 bridge |
+| **Status** | **PASS** (2026-05-22) — [session](sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) |
+| **Evidence** | Commit `bfa4710` · Telegram four-message set · PM-21 bridge `dryrunpass` / mock-worker |
+| **Plan** | `docs/plans/2026-05-22_pm23-post-promotion-smoke.plan.md` |
 | **Packet** | [pm-23-post-promotion-smoke-gate.md](runtime-packets/pm-23-post-promotion-smoke-gate.md) |
-| **Out of scope** | Repeated smoke without failure evidence; real worker; Codex |
+| **Out of scope** | Real worker; Codex |
 
 ---
 
@@ -265,10 +266,10 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
-| **Why** | Restore pre-promotion **`40`** if PM-23 fails |
+| **Status** | **NOT NEEDED** after PM-23 PASS (2026-05-22) |
+| **Why** | Restore pre-promotion **`40`** if PM-23 fails — smoke passed |
 | **Packet** | [pm-24-rollback-recovery-gate.md](runtime-packets/pm-24-rollback-recovery-gate.md) |
-| **Recovery** | `41` backup preferred; `READY_IMPORT_40` only if backup missing |
+| **Recovery** | Instructions retained for future failure |
 | **Out of scope** | Deleting backup before evidence; token edits |
 
 ---
@@ -277,11 +278,11 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Status** | **COMPLETED** — one-window promotion + smoke (2026-05-22) |
 | **Why** | One-window PM-22 + PM-23 + PM-24 guard |
 | **Packet** | [pm-25-fast-track-runtime-operator-checklist.md](runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |
-| **Session** | [pm22-pm25 batch](sessions/2026-05-22-control-plane-pm22-pm25-promotion-readiness-batch.md) |
-| **Next runtime** | Execute **PM-22→PM-23** with **PM-24** rollback guard in one window |
+| **Session** | [PM-22/23 PASS](sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) |
+| **Next** | Optional post-promotion snapshot export **or** PM-18 Codex CLI setup **or** stabilization |
 | **PM-18** | **PENDING** |
 | **PM-16 export** | **PENDING** — non-blocking |
 | **Out of scope** | C1 strict PASS; GIS/DEV/ALINA |

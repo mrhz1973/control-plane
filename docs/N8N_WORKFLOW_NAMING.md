@@ -4,7 +4,7 @@
 
 **Related:** [MVP_STATUS.md](MVP_STATUS.md), [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [final n8n cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md).
 
-**Last updated:** 2026-05-22 — PM-22 promotion naming prepared; **`42`** candidate OFF; promotion **not executed**.
+**Last updated:** 2026-05-22 — PM-22/PM-23 **PASS**; production **`40` classifier bridge ACTIVE**; **`41` BACKUP OFF**.
 
 ---
 
@@ -13,7 +13,7 @@
 | Rule | Detail |
 |------|--------|
 | **Numeric prefix** | Use numeric prefixes only; avoid letter suffixes like `02F` in **new** runtime names |
-| **Production (`40`)** | **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** — sole published CP poll+handoff (PM-09 Gate C+D+FILE). Do **not** create multiple visible workflows all named `40` |
+| **Production (`40`)** | **`40 - CP v4 multirepo + classifier bridge - ACTIVE`** — sole published CP poll+handoff + PM-21 bridge (PM-22 promoted). Do **not** create multiple visible workflows all named `40` |
 | **Candidates (`41`–`43`)** | Next import/test/replacement candidates only — e.g. `41 - … CANDIDATE`, then `42`, `43` |
 | **Retained off (`01`/`20`/`30`)** | Legacy / v5 / manual handoff — stay **OFF**, not deleted |
 | **Backup / test-safe** | Delete from n8n UI after PASS when no longer needed — do not leave duplicate `40` or stale test workflows in the list |
@@ -47,47 +47,36 @@ Operational rule:
 
 ---
 
-## Current CONTROL PLANE list (runtime — final 2026-05-21)
-
-**Exactly 4 workflows** in the n8n CONTROL PLANE folder:
+## Current CONTROL PLANE list (runtime — 2026-05-22 post PM-22/23)
 
 | ID | Workflow name (n8n UI) | State |
 |----|------------------------|--------|
-| **40** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` | **Active/published** — sole CP poll+handoff + PM-09 (formerly **`02F`**) |
-| **30** | `30 - CP handoff manual Telegram v1 - OFF` | **Off** (formerly `03`) |
+| **40** | `40 - CP v4 multirepo + classifier bridge - ACTIVE` | **Active/published** — sole CP production (PM-22 promoted from `42`) |
+| **41** | `41 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - BACKUP OFF` | **Off** — rollback source; **do not delete** until explicit cleanup gate |
+| **30** | `30 - CP handoff manual Telegram v1 - OFF` | **Off** |
 | **20** | `20 - CP v5 push webhook - OFF` | **Off** |
 | **01** | `01 - CP v4 single-repo polling - LEGACY OFF` | **Off** |
 
-**Deleted from n8n UI** after PM-09 Gate C+D+FILE PASS ([session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md)):
+**No `42` in use** after PM-22 PASS. **No duplicate numeric IDs.**
 
-| Was | Reason |
-|-----|--------|
-| `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - BACKUP BEFORE GATE D FILE - OFF` | Promotion complete — backup no longer needed |
-| `55 - CP plan detected Telegram Gate D TEST SAFE` | Test-safe validation complete — not production |
+**Evidence:** [PM-22/23 PASS session](sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md)
 
-**Not in current list:** reserved IDs **`41`**, **`42`**, **`43`** (future candidates only).
+**Deleted from n8n UI** (historical — PM-09): backup `40` before Gate D file; `55` test-safe.
 
 ---
 
-## PM-22 promotion naming (PREPARED — not executed)
+## PM-22 promotion naming (PASS — current)
 
-**Rule:** **No duplicate numeric IDs** visible in the n8n list after rename.
+**Rule:** **No duplicate numeric IDs** visible in the n8n list.
 
-### Before promotion
-
-| ID | Workflow name (n8n UI) | State |
-|----|------------------------|--------|
-| **40** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` | **ON** |
-| **42** | `42 - CP v4 multirepo + classifier bridge - CANDIDATE OFF` | **OFF** |
-
-### After successful PM-22 + PM-23
+### Current (after PM-22 + PM-23 PASS)
 
 | ID | Workflow name (n8n UI) | State |
 |----|------------------------|--------|
-| **40** | `40 - CP v4 multirepo + classifier bridge - ACTIVE` | **ON** (promoted from `42`) |
-| **41** | `41 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - BACKUP OFF` | **OFF** (former production `40`) |
+| **40** | `40 - CP v4 multirepo + classifier bridge - ACTIVE` | **ON** |
+| **41** | `41 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - BACKUP OFF` | **OFF** |
 
-### After PM-24 rollback (failure)
+### After PM-24 rollback (failure — not needed 2026-05-22)
 
 | ID | Workflow name (n8n UI) | State |
 |----|------------------------|--------|
