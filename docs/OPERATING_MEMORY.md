@@ -108,3 +108,5 @@ Commit `8b3a468` regenerated ready-import with **name-only** credentials. That o
 **PM-19 implementer bridge:** `pm19-implementer-bridge-request-v1` / `pm19-implementer-bridge-result-v1` — [request](examples/pm19-implementer-bridge-request.sample.json) · [result](examples/pm19-implementer-bridge-result.sample.json); tool `tools/implementer-bridge-dry-run.mjs`. Mock worker only until PM-18 unblocks Codex.
 
 **PM-20 n8n bridge packet:** [PM20_N8N_BRIDGE_PACKET.md](PM20_N8N_BRIDGE_PACKET.md) · [runtime packet](runtime-packets/pm-20-n8n-classifier-bridge-gate-packet.md) · [flow sample](examples/pm20-n8n-bridge-flow.sample.json). **No** real worker in first runtime; PM-18 PENDING blocks Codex only, not mock bridge. Successor workflow for PM-21 — do not silently edit published `40`.
+
+**PM-21 candidate import:** `workflows/exports/READY_IMPORT_42-classifier-bridge-candidate.json` — name `42 - CP v4 multirepo + classifier bridge - CANDIDATE OFF` · **active false**. Build: `tools/build-ready-import-42-bridge-candidate.mjs` from READY_IMPORT_40. **Never** silently edit published `40`.

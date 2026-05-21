@@ -1,0 +1,1066 @@
+{
+  "name": "42 - CP v4 multirepo + classifier bridge - CANDIDATE OFF",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "55826a47-6145-47aa-ad66-9b3941639620",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2400,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "64a9e805-741e-4ce2-836c-1aa513539fcc",
+      "name": "Schedule Trigger - controlled polling",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2400,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "returnAll": true
+      },
+      "id": "f9742dc5-1cfb-4d1e-9b04-dc4478213890",
+      "name": "Data Table - Load all state rows",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -2160,
+        320
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const repos=[{ownerRepo:'mrhz1973/control-plane',stateKey:'github:mrhz1973/control-plane:last_commit_sha',sourceRepo:'mrhz1973/control-plane'},{ownerRepo:'mrhz1973/dev-method',stateKey:'github:mrhz1973/dev-method:last_commit_sha',sourceRepo:'mrhz1973/dev-method'},{ownerRepo:'mrhz1973/cursor-coordinate-converter',stateKey:'github:mrhz1973/cursor-coordinate-converter:last_commit_sha',sourceRepo:'mrhz1973/cursor-coordinate-converter'}];return repos.map(json=>({json}));"
+      },
+      "id": "7bfcc37d-5332-43f3-b279-0b5f8656b61d",
+      "name": "Emit watched repos (3)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1920,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.ownerRepo }}/commits?per_page=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "control-plane-n8n-40-gate-cd-candidate"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ac5a484b-8586-406f-84f6-63484cc999a2",
+      "name": "GitHub - Fetch latest commit (per repo)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1680,
+        320
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "7u1QOkEiYcdKncmd",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const target=$('Emit watched repos (3)').item.json;const resp=$input.item.json;const commit=Array.isArray(resp)?resp[0]:resp;const sha=commit?.sha||'';const message=String(commit?.commit?.message||'no commit message').split('\\n')[0];return {json:{stateKey:target.stateKey,currentSha:sha,shortSha:sha?sha.substring(0,7):'',message,url:commit?.html_url||'',sourceRepo:target.sourceRepo,ownerRepo:target.ownerRepo}};"
+      },
+      "id": "d0e49a15-6e9f-4b44-9889-e4d0dac76ddf",
+      "name": "Prepare latest commit event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1440,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items=$('Prepare latest commit event').all();const rows=$('Data Table - Load all state rows').all().map(i=>i.json);return items.map(item=>{const latest=item.json;const row=rows.find(r=>r.key===latest.stateKey);const previousSha=row?.value||'';return {json:{...latest,previousSha,isNew:Boolean(latest.currentSha&&latest.currentSha!==previousSha),hadStateRow:Boolean(row?.key)}}});"
+      },
+      "id": "e809cda9-d724-4af9-86e0-431cdefca7b7",
+      "name": "Decide Data Table dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "is-new-40-cd",
+              "leftValue": "={{ $json.isNew }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7ff47559-56f2-42ad-8f7d-5a043000e1ab",
+      "name": "IF - New commit?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ $json.stateKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ $json.stateKey }}",
+            "value": "={{ $json.currentSha }}",
+            "updated_at": "={{ $now.toISO() }}",
+            "note": "={{ 'Latest notified commit SHA for scheduled poll: ' + $json.sourceRepo }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "73a09140-2974-4081-b531-aaeb027b70e5",
+      "name": "Data Table - Upsert last seen commit",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -720,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const latest=$('Decide Data Table dedupe').item.json;const previous=latest.previousSha?latest.previousSha.substring(0,7):'none';return {json:{text:`CONTROL PLANE scheduled poll commit notification\\nRepo: ${latest.sourceRepo}\\nNew commit: ${latest.shortSha}\\nPrevious: ${previous}\\nMessage: ${latest.message}\\nURL: ${latest.url}`}};"
+      },
+      "id": "41f767b6-f655-4fbb-95dd-46578a55b16c",
+      "name": "Format Data Table Telegram message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "472599368",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "8e1f3d7c-9c84-4ed4-99b1-84696a065d87",
+      "name": "Telegram - Send Data Table deduped message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -240,
+        320
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "t7zNsQdsOXmXbmgw",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {json:{status:'duplicate_skip',reason:'Latest commit already stored in control_plane_state for this repo key',stateKey:$json.stateKey,sourceRepo:$json.sourceRepo,currentSha:$json.currentSha,previousSha:$json.previousSha}};"
+      },
+      "id": "51c4445b-2a0c-4ace-a160-861e43879f0b",
+      "name": "Duplicate skip - no Telegram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "gis-branch-40-cd",
+              "leftValue": "={{ $json.ownerRepo || $json.sourceRepo }}",
+              "rightValue": "mrhz1973/cursor-coordinate-converter",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b1337508-0e79-43bf-814a-3e6973612b57",
+      "name": "IF - GIS repo for handoff?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -720,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "command": "mkdir -p /home/node/.n8n-files && node /files/handoff-runtime/dev-method/tools/handoff-generate.mjs --repo /files/handoff-runtime/cursor-coordinate-converter --method /files/handoff-runtime/dev-method --implementer cursor --out /home/node/.n8n-files/latest-gis-handoff.md --strict-format --require-ready && cat /home/node/.n8n-files/latest-gis-handoff.md"
+      },
+      "id": "57bbf97f-ecfa-42cd-8e9a-629dc3b91181",
+      "name": "Execute Command - handoff dry-run",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item=$input.first().json;const stdout=String(item.stdout||item.data||item.output||'');const exitCode=item.exitCode??item.code??0;const file='/home/node/.n8n-files/latest-gis-handoff.md';const text=['CONTROL PLANE handoff','Prompt ready: '+(stdout.includes('Prompt ready: yes')?'yes':'see attachment'),'Target: cursor-coordinate-converter','Exit code: '+exitCode,'','Full prompt file: latest-gis-handoff.md','Path in n8n: '+file,'Prompt preview omitted intentionally. Full prompt is attached as a .md file.'].join('\\n');return [{json:{telegramText:text,fullPromptPath:file,attachedFileName:'latest-gis-handoff.md'}}];"
+      },
+      "id": "fd3c438a-a5ca-49bb-ba1d-25195a2b2e6e",
+      "name": "Parse handoff stdout",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "472599368",
+        "text": "={{ $json.telegramText }}",
+        "additionalFields": {}
+      },
+      "id": "0fc30da3-a7f2-4bfd-81f5-94ef6f8ab7ae",
+      "name": "Telegram - Send handoff result",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "t7zNsQdsOXmXbmgw",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/latest-gis-handoff.md",
+        "options": {}
+      },
+      "id": "bbd11c51-504c-4c0d-8236-7a859c098d11",
+      "name": "Read/Write Files from Disk",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "472599368",
+        "binaryData": true,
+        "additionalFields": {
+          "caption": "CONTROL PLANE handoff file\nTarget: cursor-coordinate-converter\nFull prompt attached: latest-gis-handoff.md"
+        }
+      },
+      "id": "b555aa0e-1896-491c-9edb-6b49fc4ae0fe",
+      "name": "Telegram - Send handoff file",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        144
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "t7zNsQdsOXmXbmgw",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const repo=String($json.ownerRepo||$json.sourceRepo||'').trim();return {json:{event:repo==='mrhz1973/control-plane'?'plan_branch_entered':'plan_branch_skipped',repo,stateKey:$json.stateKey,currentSha:$json.currentSha,shortSha:$json.shortSha,latestCommitUrl:$json.url,latestCommitMessage:$json.message,previousSha:$json.previousSha,gate:'C+D-dropin-candidate'}};"
+      },
+      "id": "47db468a-11f6-42e1-9936-a212296dc75d",
+      "name": "Code - Plan watcher repo gate stub",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.repo }}/commits/{{ $json.currentSha }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "control-plane-n8n-40-gate-cd-candidate"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "53dddcc6-629b-4c94-bf91-201a685c2dd0",
+      "name": "GitHub - Fetch commit details (plan files)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        752
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "7u1QOkEiYcdKncmd",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const commit=$input.first().json;const gate=$('Code - Plan watcher repo gate stub').first().json;const files=Array.isArray(commit.files)?commit.files:[];const planFiles=files.filter(f=>/^docs\\/plans\\/[^/]+\\.plan\\.md$/.test(String(f.filename||'')));if(!planFiles.length){return [{json:{event:'no_plan_detected',repo:gate.repo,commitSha:gate.currentSha,shortSha:gate.shortSha,changedFileCount:files.length,changedFiles:files.map(f=>f.filename).slice(0,30),gate:'C+D-dropin-candidate'}}];}return planFiles.map(f=>({json:{event:'plan_detected',repo:gate.repo,commitSha:gate.currentSha,shortSha:gate.shortSha,latestCommitUrl:gate.latestCommitUrl,latestCommitMessage:gate.latestCommitMessage,planPath:f.filename,fileStatus:f.status||'',additions:f.additions??null,deletions:f.deletions??null,changes:f.changes??null,gate:'C+D-dropin-candidate'}}));"
+      },
+      "id": "c3f4c5b3-e2e9-4df4-b646-3d0a037d7ad7",
+      "name": "Code - Detect real docs/plans plan files",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "is-plan-detected-40-cd",
+              "leftValue": "={{ $json.event }}",
+              "rightValue": "plan_detected",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5cf66839-1060-4cb8-969d-60c1ed212e4a",
+      "name": "IF - plan_detected?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        0,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const j=$json;\nconst localPlanPath='/home/node/.n8n-files/gate-d-plan.md';\nconst attachedFileName='gate-d-plan.md';\nconst lines=[\n'CONTROL PLANE plan_detected',\n`Repo: ${j.repo}`,\n`Plan: ${j.planPath}`,\n`Commit: ${j.shortSha}`,\n`Status: ${j.fileStatus}`,\n`Changes: +${j.additions ?? '?'} / -${j.deletions ?? '?'}`,\n'',\n`Message: ${j.latestCommitMessage || ''}`,\n`URL: https://github.com/${j.repo}/blob/${j.commitSha}/${j.planPath}`,\n'',\n'Gate D LIVE. Review the plan in GitHub before execution.',\n'Plan file attachment follows on parallel branch.'\n];\nreturn {json:{text:lines.join('\\n'),event:j.event,planPath:j.planPath,repo:j.repo,commitSha:j.commitSha,shortSha:j.shortSha,localPlanPath,attachedFileName,rawPlanUrl:`https://raw.githubusercontent.com/${j.repo}/${j.commitSha}/${j.planPath}`}};"
+      },
+      "id": "2ae35b23-50c2-4ca8-ac09-59205a4ffa6e",
+      "name": "Format Gate D Telegram plan_detected message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "472599368",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "1188a032-7f09-49f0-9377-d2cbb8a4ea29",
+      "name": "Telegram - Send Gate D plan_detected",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        688
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "t7zNsQdsOXmXbmgw",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {json:{status:'gate_c_no_plan_detected',event:$json.event,repo:$json.repo,commitSha:$json.commitSha,shortSha:$json.shortSha,gate:'C+D-dropin-candidate',note:'No plan file in this commit; no Gate D Telegram sent.'}};"
+      },
+      "id": "577c1758-b605-4688-8ee3-fe5abccdce28",
+      "name": "Code - no_plan_detected output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.rawPlanUrl }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "text/plain"
+            },
+            {
+              "name": "User-Agent",
+              "value": "control-plane-n8n-40-gate-cd-file-candidate"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "33567ee7-c1cc-49c6-b913-ca5cd2815038",
+      "name": "HTTP Request - Fetch raw Gate D plan file",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        848
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "7u1QOkEiYcdKncmd",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const fmt=$('Format Gate D Telegram plan_detected message').item.json;\nconst body=String($json.data ?? $json.body ?? $json ?? '');\nconst localPlanPath=fmt.localPlanPath || '/home/node/.n8n-files/gate-d-plan.md';\nconst attachedFileName=fmt.attachedFileName || 'gate-d-plan.md';\nconst buf=Buffer.from(body, 'utf8');\nreturn {\n  json: {\n    repo: fmt.repo,\n    planPath: fmt.planPath,\n    commitSha: fmt.commitSha,\n    shortSha: fmt.shortSha,\n    localPlanPath,\n    attachedFileName,\n    rawPlanUrl: fmt.rawPlanUrl,\n    planBytes: buf.length,\n  },\n  binary: {\n    data: {\n      data: buf.toString('base64'),\n      mimeType: 'text/markdown',\n      fileName: attachedFileName,\n    },\n  },\n};"
+      },
+      "id": "bb469459-c007-4426-9f89-08b724e0c5bb",
+      "name": "Code - Prepare Gate D plan file for disk",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "={{ $json.localPlanPath }}",
+        "options": {}
+      },
+      "id": "d1bbe7bf-ad57-4768-9e59-df6a40aa9473",
+      "name": "Read/Write Files from Disk - Gate D plan file write",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/home/node/.n8n-files/gate-d-plan.md",
+        "options": {}
+      },
+      "id": "044d830a-ed88-435c-a7b2-18e5fd4b968f",
+      "name": "Read/Write Files from Disk - Gate D plan file",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "472599368",
+        "binaryData": true,
+        "additionalFields": {
+          "caption": "=CONTROL PLANE Gate D plan file\nPlan: {{ $('Format Gate D Telegram plan_detected message').item.json.planPath }}\nCommit: {{ $('Format Gate D Telegram plan_detected message').item.json.shortSha }}"
+        }
+      },
+      "id": "027da4ee-3363-474d-891e-e8a1ccc68958",
+      "name": "Telegram - Send Gate D plan file",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        848
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "t7zNsQdsOXmXbmgw",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const j=$input.first().json;\nreturn [{json:{\n  schema_version:'pm17-classifier-v1',\n  source:'n8n-deterministic-code',\n  task_type:'docs-only',\n  risk:'low',\n  route:'cursor-control-plane',\n  approval_required:false,\n  allowed_next_step:'prepare handoff preview',\n  blocked_reason:null,\n  notes:['PM-21 deterministic classifier candidate','No Ollama runtime used in this candidate'],\n  input:{repo:j.repo,plan_path:j.planPath,commit:j.commitSha,short_sha:j.shortSha}\n}}];"
+      },
+      "id": "832c2a0a-5e1f-4f77-b335-96a7d04aff41",
+      "name": "Code - PM21 classifier decision",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        1000
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const c=$input.first().json;\nconst low=c.risk==='low'&&!c.approval_required&&c.route==='cursor-control-plane';\nif(low){return [{json:{\n  schema_version:'pm19-implementer-bridge-result-v1',\n  source:'n8n-pm21-candidate',\n  status:'dry_run_pass',\n  worker:'mock-worker',\n  would_send_to_worker:true,\n  would_require_telegram_gate:false,\n  blocked_reason:null,\n  classifier_route:c.route,\n  classifier_risk:c.risk,\n  mock_worker_action:'prepare handoff preview only — no Codex execution',\n  notes:['PM-21 candidate bridge branch','No real worker invoked']\n}}];}\nreturn [{json:{\n  schema_version:'pm19-implementer-bridge-result-v1',\n  source:'n8n-pm21-candidate',\n  status:'gate_required',\n  worker:'mock-worker',\n  would_send_to_worker:false,\n  would_require_telegram_gate:true,\n  blocked_reason:c.blocked_reason||'gate required by classifier',\n  classifier_route:c.route,\n  classifier_risk:c.risk,\n  notes:['PM-21 candidate bridge branch','Telegram gate required']\n}}];"
+      },
+      "id": "8e67006c-30ea-4795-bfce-191a84c827fe",
+      "name": "Code - PM21 bridge result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        1000
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const bridge=$input.first().json;\nconst c=$('Code - PM21 classifier decision').first().json;\nconst inp=c.input||{};\nconst text=[\n'CONTROL PLANE PM-21 bridge decision',\n`Repo: ${inp.repo||''}`,\n`Plan: ${inp.plan_path||''}`,\n`Commit: ${inp.short_sha||''}`,\n`Risk: ${c.risk}`,\n`Route: ${c.route}`,\n`Approval required: ${c.approval_required?'yes':'no'}`,\n`Bridge result: ${bridge.status}`,\n`Worker: ${bridge.worker}`,\n'Action: preview only, no Codex execution'\n].join('\\n');\nreturn {json:{text,bridge,classifier:c}};"
+      },
+      "id": "417f2424-1e92-46e2-af47-faed77db35af",
+      "name": "Code - PM21 format Telegram bridge summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        1000
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "472599368",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "ca666d4a-9510-47f4-ba28-5469a0ed53bb",
+      "name": "Telegram - Send PM21 bridge summary",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        960,
+        1000
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "t7zNsQdsOXmXbmgw",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Load all state rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger - controlled polling": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Load all state rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Load all state rows": {
+      "main": [
+        [
+          {
+            "node": "Emit watched repos (3)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Emit watched repos (3)": {
+      "main": [
+        [
+          {
+            "node": "GitHub - Fetch latest commit (per repo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub - Fetch latest commit (per repo)": {
+      "main": [
+        [
+          {
+            "node": "Prepare latest commit event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare latest commit event": {
+      "main": [
+        [
+          {
+            "node": "Decide Data Table dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Data Table dedupe": {
+      "main": [
+        [
+          {
+            "node": "IF - New commit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - New commit?": {
+      "main": [
+        [
+          {
+            "node": "IF - GIS repo for handoff?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Data Table - Upsert last seen commit",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code - Plan watcher repo gate stub",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Duplicate skip - no Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - GIS repo for handoff?": {
+      "main": [
+        [
+          {
+            "node": "Execute Command - handoff dry-run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command - handoff dry-run": {
+      "main": [
+        [
+          {
+            "node": "Parse handoff stdout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse handoff stdout": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send handoff result",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send handoff file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Upsert last seen commit": {
+      "main": [
+        [
+          {
+            "node": "Format Data Table Telegram message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Data Table Telegram message": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send Data Table deduped message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Plan watcher repo gate stub": {
+      "main": [
+        [
+          {
+            "node": "GitHub - Fetch commit details (plan files)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub - Fetch commit details (plan files)": {
+      "main": [
+        [
+          {
+            "node": "Code - Detect real docs/plans plan files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Detect real docs/plans plan files": {
+      "main": [
+        [
+          {
+            "node": "IF - plan_detected?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - plan_detected?": {
+      "main": [
+        [
+          {
+            "node": "Format Gate D Telegram plan_detected message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code - PM21 classifier decision",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code - no_plan_detected output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Gate D Telegram plan_detected message": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send Gate D plan_detected",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request - Fetch raw Gate D plan file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Fetch raw Gate D plan file": {
+      "main": [
+        [
+          {
+            "node": "Code - Prepare Gate D plan file for disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Prepare Gate D plan file for disk": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk - Gate D plan file write",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk - Gate D plan file write": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk - Gate D plan file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk - Gate D plan file": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send Gate D plan file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - PM21 classifier decision": {
+      "main": [
+        [
+          {
+            "node": "Code - PM21 bridge result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - PM21 bridge result": {
+      "main": [
+        [
+          {
+            "node": "Code - PM21 format Telegram bridge summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - PM21 format Telegram bridge summary": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send PM21 bridge summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Send PM21 bridge summary": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-05-20T19:48:17.412Z",
+      "createdAt": "2026-05-20T19:48:17.412Z",
+      "id": "3kPaIeoizvySyE1B",
+      "name": "not-imported"
+    },
+    {
+      "updatedAt": "2026-05-21T11:40:16.218Z",
+      "createdAt": "2026-05-21T11:40:16.218Z",
+      "id": "3uAlGWSAHhkdbXgK",
+      "name": "40"
+    },
+    {
+      "updatedAt": "2026-05-21T12:16:21.633Z",
+      "createdAt": "2026-05-21T12:16:21.633Z",
+      "id": "E18oH1OyNX2suZfu",
+      "name": "dropin-candidate"
+    },
+    {
+      "updatedAt": "2026-05-20T00:52:54.177Z",
+      "createdAt": "2026-05-20T00:52:54.177Z",
+      "id": "KsNCwdt2zpxFnYlS",
+      "name": "redacted"
+    },
+    {
+      "updatedAt": "2026-05-20T00:52:54.133Z",
+      "createdAt": "2026-05-20T00:52:54.133Z",
+      "id": "LP84ub7M6cViHUPU",
+      "name": "control-plane"
+    },
+    {
+      "updatedAt": "2026-05-21T13:06:09.618Z",
+      "createdAt": "2026-05-21T13:06:09.618Z",
+      "id": "gCoK0IXniXhk7wyj",
+      "name": "gate-d-file"
+    },
+    {
+      "updatedAt": "2026-05-21T12:42:15.164Z",
+      "createdAt": "2026-05-21T12:42:15.164Z",
+      "id": "n8Y2bqq01rnpx4Kv",
+      "name": "pm-09-gate-d"
+    }
+  ]
+}

@@ -220,6 +220,22 @@
 
 ---
 
+### PM-21 — n8n bridge runtime candidate
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) — [session](sessions/2026-05-22-control-plane-pm21-n8n-bridge-runtime-candidate.md) |
+| **Candidate** | `workflows/exports/READY_IMPORT_42-classifier-bridge-candidate.json` |
+| **Import name** | `42 - CP v4 multirepo + classifier bridge - CANDIDATE OFF` |
+| **Tool** | `tools/build-ready-import-42-bridge-candidate.mjs` |
+| **Doc** | [PM21_N8N_BRIDGE_RUNTIME_CANDIDATE.md](PM21_N8N_BRIDGE_RUNTIME_CANDIDATE.md) |
+| **Next** | Import inactive **`42`** + one smoke — [packet](runtime-packets/pm-21-n8n-bridge-runtime-candidate-import-gate.md) |
+| **PM-18** | **PENDING** |
+| **PM-16 export** | **PENDING** — non-blocking |
+| **Out of scope** | Edit published `40`; Codex runtime; GIS/DEV/ALINA |
+
+---
+
 ### PM-20 — n8n classifier/bridge packet
 
 | Field | Value |
@@ -230,7 +246,7 @@
 | **Samples** | [flow](examples/pm20-n8n-bridge-flow.sample.json) · [Telegram templates](examples/pm20-telegram-gate-message.sample.md) |
 | **PM-18** | **PENDING** — no auto-Codex in first bridge runtime |
 | **PM-16 export** | **PENDING** — non-blocking |
-| **Next** | **PM-21** n8n bridge runtime candidate |
+| **Next** | **PM-21** import smoke (candidate `42`) |
 | **Out of scope** | Edit published `40`; provider API; GIS/DEV/ALINA |
 
 ---
