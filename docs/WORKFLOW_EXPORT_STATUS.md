@@ -131,17 +131,17 @@ Naming: [workflows/README.md](../workflows/README.md).
 
 Prior Gate C-only candidate: `2026-05-21_40-plan-watcher-dropin-candidate-gate-c.redacted.json` ([Gate C runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md)).
 
-### PM-13 — Candidate `41` redacted export (**pending**)
+### PM-13 — Candidate `41` redacted export (**committed** 2026-05-21)
 
 | Field | Value |
 |-------|--------|
 | **Workflow (runtime)** | `41 - CP v4 multirepo + plan handoff file - CANDIDATE` — **inactive**; PM-12 runtime **PASS** |
-| **Committed export** | **Not yet in repo** — gate prepared only |
-| **Expected path** | `workflows/exports/2026-05-21_41-plan-handoff-file-candidate.redacted.json` |
-| **JSON requirements** | `name` = workflow above · `active: false` · redaction per [workflows/README.md](../workflows/README.md) |
+| **Committed export** | `workflows/exports/2026-05-21_41-plan-handoff-file-candidate.redacted.json` |
+| **Validation** | Pre-commit checklist **PASS** — [export commit session](sessions/2026-05-21-control-plane-41-redacted-export-commit.md) |
+| **JSON** | `name` exact · `active: false` · placeholders only (no real chat_id / credential IDs) |
 | **Packet** | [pm-13-candidate-41-redacted-export-gate.md](runtime-packets/pm-13-candidate-41-redacted-export-gate.md) |
-| **Production** | **`40`** remains ACTIVE — export does **not** imply promotion |
-| **Status** | **PENDING** — do **not** record PASS until file is committed and checklist passes |
+| **Production** | **`40`** remains ACTIVE — **promotion not authorized** |
+| **Status** | **PASS** (Gate H) — criterion 4 rebuild record strengthened; C1 **not** relabeled |
 
 ---
 

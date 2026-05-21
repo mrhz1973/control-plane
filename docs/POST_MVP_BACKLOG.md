@@ -157,7 +157,7 @@
 | **Production** | **`40`** remains **ACTIVE** — not switched |
 | **Gate results** | A import inactive **PASS** · B credentials **PASS** · C Manual Trigger **PASS** · D file write **PASS** · E Telegram **PASS** · F regression/all OK **PASS** (user) |
 | **Not done** | Gate **H** redacted export · Gate **I** promotion `41`→`40` — **not authorized** |
-| **Next gate** | **[PM-13](runtime-packets/pm-13-candidate-41-redacted-export-gate.md)** — export `41` from n8n UI, redact, commit |
+| **Next gate** | Promotion packet **or** PM-14 — see PM-13 |
 | **Packet** | [pm-12-candidate-41-handoff-file-import-gate.md](runtime-packets/pm-12-candidate-41-handoff-file-import-gate.md) |
 | **Out of scope** | Auto promotion; implementer auto-send; v5/webhook; GIS; DEV; ALINA LAVORO |
 
@@ -167,13 +167,13 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **Export gate prepared** — [pm-13-candidate-41-redacted-export-gate.md](runtime-packets/pm-13-candidate-41-redacted-export-gate.md) |
+| **Status** | **Redacted export committed / PASS** (2026-05-21) — [session](sessions/2026-05-21-control-plane-41-redacted-export-commit.md) |
 | **Why** | Freeze tested **`41`** as redacted JSON in git before any promotion to **`40`** |
-| **Target file** | `workflows/exports/2026-05-21_41-plan-handoff-file-candidate.redacted.json` — **not yet committed** |
-| **Runtime** | **No** in this docs task; next gate requires **n8n UI export** (one step) |
-| **Next gate** | Export **`41`** from n8n → redact → pre-commit checklist → selective commit |
-| **Depends on** | PM-12 runtime PASS |
-| **Not authorized** | Promotion **`41`→`40`**; activate schedule on **`41`**; modify production **`40`** |
+| **Deliverable** | `workflows/exports/2026-05-21_41-plan-handoff-file-candidate.redacted.json` |
+| **Runtime** | Export source remained **outside repo** (Downloads); **no** n8n re-run in commit task |
+| **Next gate** | **Promotion `41`→`40`** only via **separate explicit packet** — **or** PM-14 automation layer; **not** automatic |
+| **Not authorized** | Promotion done; **`41`** schedule on; production **`40`** replace |
+| **Packet** | [pm-13-candidate-41-redacted-export-gate.md](runtime-packets/pm-13-candidate-41-redacted-export-gate.md) |
 | **Out of scope** | v5/webhook; implementer auto-send; provider API; GIS; DEV; ALINA LAVORO |
 
 ---
