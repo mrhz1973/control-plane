@@ -40,7 +40,8 @@ Documentation in this repo must be sufficient to recreate the full automation se
 | [docs/decision-packets/2026-05-21-criterion-1-latency-closure-decision.md](docs/decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) | Criterion 1 decision **D-C1-A** (**DECIDED**) |
 | [docs/MVP_CRITERIA.md](docs/MVP_CRITERIA.md) | Five closure criteria for Automation MVP |
 | [docs/RUNTIME_GATES.md](docs/RUNTIME_GATES.md) | One-step runtime gates (never batched) |
-| [docs/PLAN_OUTPUT_INGESTION.md](docs/PLAN_OUTPUT_INGESTION.md) | PM-09 design — Cursor Plan output ingestion (docs-only) |
+| [docs/PLAN_OUTPUT_INGESTION.md](docs/PLAN_OUTPUT_INGESTION.md) | PM-09 design — Cursor Plan output ingestion (Gate B convention) |
+| [docs/plans/README.md](docs/plans/README.md) | Structured plan files for future orchestrator ingestion |
 | [docs/TELEGRAM_SETUP.md](docs/TELEGRAM_SETUP.md) | Telegram bot setup (Day 2+) |
 | [docs/N8N_REBUILD.md](docs/N8N_REBUILD.md) | VPS / n8n rebuild; [field validation checklist](docs/N8N_REBUILD.md#field-validation-checklist-criterion-5) (criterion 5) |
 | [examples/watched-repos.md](examples/watched-repos.md) | Watched repo rationale |

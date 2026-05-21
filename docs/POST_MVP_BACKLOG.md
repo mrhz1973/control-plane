@@ -20,7 +20,7 @@
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
 | **02F redacted export** | **PASS** — [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) PM-08 |
-| **PM-09 plan ingestion** | **Proposed** — docs-only design; [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md) |
+| **PM-09 plan ingestion** | Gate **A** + **B** **PASS** (docs-only); Gate **C** pending — [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [plans/](plans/) |
 | **Next runtime** | **None mandatory** — every item below is **optional** and **gated** |
 
 ---
@@ -100,16 +100,17 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **Proposed** — docs-only design pending; gate **A** delivered |
+| **Status** | Gate **A** + **B** **PASS** (docs-only); Gate **C** / **D** pending |
 | **Why** | Avoid manual copy-paste of Cursor Plan text into handoff/Telegram; make plans readable by orchestrator via GitHub |
-| **Desired flow** | Cursor Plan → structured file in repo → n8n detects file/commit (future gate C) → Telegram summary/file/link (gate D) → orchestrator reads via GitHub |
+| **Desired flow** | Cursor Plan → structured file in `docs/plans/` → n8n detects file/commit (gate C) → Telegram summary/file/link (gate D) → orchestrator reads via GitHub |
 | **Design doc** | [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md) |
-| **Runtime now** | **No** — this backlog entry does **not** authorize n8n UI, new workflow, import, or Telegram send |
-| **New n8n workflow** | **Not authorized** — future watcher change requires separate PM-03 or **02F** modification gate |
+| **Gate B delivered** | Path `docs/plans/`; naming `YYYY-MM-DD_HHMM_<repo-short>_<task-slug>.plan.md`; YAML front matter + 5 body sections; [plans/README.md](plans/README.md) + [example](plans/example-control-plane-plan.plan.md) |
+| **Runtime now** | **No** — Gate B does **not** authorize n8n UI, new workflow, import, or Telegram send |
+| **New n8n workflow** | **Not authorized** — Gate **C** requires separate PM-03 or **02F** modification gate |
 | **v5 / webhook** | **Not reopened** |
 | **C1** | Stays **PARTIAL** (D-C1-A); does not reopen strict &lt;30s |
-| **Out of scope** | ALINA LAVORO; dev-method; GIS; Cursor provider API; runtime in gate A |
-| **Next trigger** | Gate **B** — adopt local file path + schema convention (docs-only) |
+| **Out of scope** | ALINA LAVORO; dev-method; GIS; Cursor provider API; runtime in gates A/B |
+| **Next trigger** | Gate **C** — n8n watcher design/runtime (explicit [RUNTIME_GATES.md](RUNTIME_GATES.md) session; **not authorized** now) |
 
 ---
 

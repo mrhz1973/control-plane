@@ -2,7 +2,9 @@
 
 **PM-09** — [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md). **Docs-only design.** No runtime, n8n workflow, Telegram API, or provider integration from this document.
 
-**Related:** [MVP_STATUS.md](MVP_STATUS.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [OBSERVABILITY.md](OBSERVABILITY.md), [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md).
+**Related:** [MVP_STATUS.md](MVP_STATUS.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [OBSERVABILITY.md](OBSERVABILITY.md), [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [plans/README.md](plans/README.md).
+
+**Gate status:** **A** delivered · **B** delivered (file convention) · **C** / **D** not authorized
 
 ---
 
@@ -24,7 +26,7 @@ Define a future automation where **Cursor Plan output** is saved as a **structur
 
 ```text
 Cursor Plan (user session)
-  → structured plan file committed in repo (control-plane or watched repo — TBD at gate B)
+  → structured plan file committed under docs/plans/ (gate B — convention defined)
   → GitHub push / commit visible to existing multirepo watcher (02F or successor)
   → n8n detects new/changed plan file (path convention — gate C)
   → Telegram: brief summary + optional document or GitHub link (gate D)
@@ -35,42 +37,110 @@ Cursor Plan (user session)
 
 ---
 
-## Desired saved Plan format
+## Gate B — file convention (delivered)
 
-One file per plan event (exact path convention = **gate B**). Suggested fields:
+**Format:** Markdown with **YAML front matter** only — no parallel JSON for the same plan event.
 
-| Field | Purpose |
-|-------|---------|
-| **repo** | Target or context repo slug (e.g. `mrhz1973/control-plane`) |
-| **task** | Short task title or backlog ID |
-| **mode** | Cursor mode (e.g. `plan`, `agent`, `ask`) |
-| **model** | Model name used for the plan (no API keys) |
-| **effort** | Effort setting if applicable (e.g. `fast`, `medium`) |
-| **risk** | `low` / `medium` / `high` — orchestrator routing hint |
-| **next_step** | One concrete next action sentence |
-| **requires_runtime** | `yes` / `no` — whether next step needs n8n/VPS/SSH |
-| **requires_human_gate** | `yes` / `no` — whether user confirmation is required before execution |
-| **summary** | Plain-text plan summary (bounded length; no secrets) |
+**Directory:** `docs/plans/` in the repo where the plan applies (default: `mrhz1973/control-plane`).
 
-**Format preference:** Markdown with YAML front matter **or** JSON — choose one at gate B; do not commit both for the same event.
+**Naming pattern:**
 
-**Example shape (illustrative only — not a live path):**
+```text
+docs/plans/YYYY-MM-DD_HHMM_<repo-short>_<task-slug>.plan.md
+```
+
+| Segment | Rule | Example |
+|---------|------|---------|
+| `YYYY-MM-DD` | UTC or local date of plan creation | `2026-05-21` |
+| `HHMM` | 24h time of plan creation | `1230` |
+| `<repo-short>` | Short repo slug, lowercase, hyphens | `control-plane`, `dev-method`, `gis` |
+| `<task-slug>` | Lowercase kebab-case, max ~40 chars | `pm-09-gate-b` |
+
+**Canonical example path:**
+
+```text
+docs/plans/2026-05-21_1230_control-plane_pm-09-gate-b.plan.md
+```
+
+**Non-operational sample:** [plans/example-control-plane-plan.plan.md](plans/example-control-plane-plan.plan.md) — clearly marked sample; not for Telegram or runtime.
+
+---
+
+## Required YAML front matter
+
+All fields are **mandatory** unless noted. Values are plain strings unless specified.
+
+| Field | Type / values | Purpose |
+|-------|----------------|---------|
+| **repo** | GitHub slug | Target or context repo (e.g. `mrhz1973/control-plane`) |
+| **task** | string | Short task title or backlog ID |
+| **mode** | `plan` / `agent` / `ask` | Cursor mode |
+| **model** | string | Model name — **no API keys** |
+| **effort** | `fast` / `medium` / `high` / `none` | Effort setting |
+| **risk** | `low` / `medium` / `high` | Orchestrator routing hint |
+| **next_step** | string (one sentence) | Concrete next action |
+| **requires_runtime** | `yes` / `no` | Next step needs n8n/VPS/SSH |
+| **requires_human_gate** | `yes` / `no` | User confirmation required before execution |
+| **target_window** | `control-plane` / `dev-method` / `gis` / `other` | Which Cursor window owns follow-up work |
+| **created_at** | ISO 8601 datetime | Plan file creation time (e.g. `2026-05-21T12:30:00+02:00`) |
+| **source** | `cursor-plan` | Fixed value for v1 convention |
+| **summary** | string (≤500 chars) | Plain-text plan summary — **no secrets** |
+
+**Duplicate rule:** `summary` in front matter is the Telegram-safe one-liner; the body `## Summary` section may expand with more detail (still no secrets).
+
+---
+
+## Required Markdown sections
+
+Every plan file **must** include these headings in order (content may be brief):
+
+1. **`## Summary`** — expanded summary for orchestrator reading on GitHub
+2. **`## Proposed next step`** — same intent as `next_step` front matter, may add bullets
+3. **`## Gates`** — which runtime or human gates apply before execution
+4. **`## Out of scope`** — explicit exclusions for this plan
+5. **`## Notes for orchestrator`** — routing hints, window color, backlog IDs, dependencies
+
+---
+
+## Template (copy for new plans)
 
 ```markdown
 ---
 repo: mrhz1973/control-plane
-task: PM-09 plan output ingestion
+task: PM-09 example
 mode: plan
 model: composer-2.5
 effort: fast
 risk: low
-next_step: "Adopt file convention under docs/plans/ and document in POST_MVP_BACKLOG."
+next_step: "Review plan file on GitHub before opening any runtime gate."
 requires_runtime: no
 requires_human_gate: yes
+target_window: control-plane
+created_at: 2026-05-21T12:30:00+02:00
+source: cursor-plan
+summary: "One-line summary for future Telegram ingestion (max 500 chars, no secrets)."
 ---
 
 ## Summary
-Design-only backlog for structured Plan saves and future Telegram/GitHub orchestration.
+
+Expanded plan context for GitHub readers.
+
+## Proposed next step
+
+Single concrete action the orchestrator or implementer should take next.
+
+## Gates
+
+- Gate C (n8n watcher): not authorized until explicit runtime session
+- Gate D (Telegram): not authorized until after Gate C
+
+## Out of scope
+
+Runtime, n8n, v5/webhook, ALINA LAVORO, other repos unless listed in repo field.
+
+## Notes for orchestrator
+
+Window: CONTROL PLANE (arancione). Backlog: PM-09.
 ```
 
 ---
@@ -91,6 +161,8 @@ Runtime gate: <yes/no>
 
 Optional: attach a small Markdown file (same pattern as **`latest-gis-handoff.md`** on 02F) if length exceeds Telegram safe-text limits.
 
+**Gate B does not send Telegram.** Payload shape is design-only until gate D.
+
 ---
 
 ## Anti-secrets rules
@@ -109,12 +181,12 @@ Follow [OBSERVABILITY.md](OBSERVABILITY.md) evidence conventions when recording 
 
 ## Future gates (one at a time)
 
-| Gate | Scope | Runtime |
-|------|--------|---------|
-| **A — Docs / design** | This file + PM-09 backlog entry | **No** |
-| **B — Local file convention** | Path, naming, front-matter schema, example under `docs/plans/` or agreed dir | **No** — docs + optional sample file only |
-| **C — n8n watcher** | Extend **02F** or **new workflow** (PM-03) to match plan path on commit poll | **Yes** — explicit [RUNTIME_GATES.md](RUNTIME_GATES.md) session; **does not authorize** creation in gate A |
-| **D — Telegram notification** | Send summary/file after gate C detects new plan file | **Yes** — separate gate after C |
+| Gate | Scope | Runtime | Status |
+|------|--------|---------|--------|
+| **A — Docs / design** | This file + PM-09 backlog entry | **No** | **Delivered** |
+| **B — Local file convention** | Path, naming, schema, `docs/plans/` + sample | **No** | **Delivered** |
+| **C — n8n watcher** | Extend **02F** or **new workflow** (PM-03) to match `docs/plans/*.plan.md` on commit poll | **Yes** — explicit [RUNTIME_GATES.md](RUNTIME_GATES.md) session; **not authorized** by gate B | Pending |
+| **D — Telegram notification** | Send summary/file after gate C detects new plan file | **Yes** — separate gate after C | Pending |
 
 **Default posture unchanged:** **`02F`** remains sole active CP poll+handoff; v5 **off**; webhook **not configured**; C1 stays **PARTIAL** (D-C1-A).
 
