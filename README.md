@@ -102,7 +102,7 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-27 backup `41` retention gate | [docs/runtime-packets/pm-27-backup-41-retention-cleanup-gate.md](docs/runtime-packets/pm-27-backup-41-retention-cleanup-gate.md) |
 | PM-28 next-track decision (B then C) | [docs/decision-packets/pm-28-next-track-decision.md](docs/decision-packets/pm-28-next-track-decision.md) |
 | PM-29 post-promotion snapshot (PENDING) | [docs/PM29_POST_PROMOTION_SNAPSHOT.md](docs/PM29_POST_PROMOTION_SNAPSHOT.md) |
-| PM-30 Codex CLI setup gate (prepared) | [docs/runtime-packets/pm-30-codex-cli-local-setup-gate.md](docs/runtime-packets/pm-30-codex-cli-local-setup-gate.md) |
+| PM-30 Codex CLI setup (PASS) | [docs/runtime-packets/pm-30-codex-cli-local-setup-gate.md](docs/runtime-packets/pm-30-codex-cli-local-setup-gate.md) · [session](docs/sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) |
 | PM-24 rollback / recovery (packet) | [docs/runtime-packets/pm-24-rollback-recovery-gate.md](docs/runtime-packets/pm-24-rollback-recovery-gate.md) |
 | PM-25 fast-track operator checklist | [docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md](docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |
 | Fast-track runtime sequence (runbook) | [docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md](docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md) |

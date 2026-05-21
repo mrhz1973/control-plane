@@ -1,8 +1,8 @@
 # PM-18 — Codex OAuth feasibility dry-run
 
-**Status:** Feasibility only — **no** OAuth login, **no** implementer automation, **no** production change.
+**Status:** **CLI AVAILABLE / NOT WORKER ENABLED** (2026-05-22) — PM-30 installed/verified Codex CLI locally; **no** OAuth login, **no** worker, **no** production change.
 
-**Related:** [PM16_AUTOMATION_ROUTER_LAYER.md](PM16_AUTOMATION_ROUTER_LAYER.md) · [PM17_OLLAMA_CLASSIFIER_DRY_RUN.md](PM17_OLLAMA_CLASSIFIER_DRY_RUN.md) · [session](sessions/2026-05-22-control-plane-pm18-codex-oauth-feasibility-dry-run.md)
+**Related:** [PM-30 session](sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) · [pm30 output](examples/pm30-codex-cli-local-setup-output.sample.json) · [PM16](PM16_AUTOMATION_ROUTER_LAYER.md) · [PM17](PM17_OLLAMA_CLASSIFIER_DRY_RUN.md) · [PM-18 session](sessions/2026-05-22-control-plane-pm18-codex-oauth-feasibility-dry-run.md)
 
 ---
 
@@ -51,9 +51,9 @@ node tools/codex-oauth-feasibility-check.mjs \
 
 | Result | Meaning |
 |--------|---------|
-| **PASS** | Check completed; JSON sample committed; feasibility documented |
-| **PENDING** | Codex CLI not on host — documented blocker, **not** a production failure |
+| **CLI AVAILABLE / NOT WORKER ENABLED** | PM-30: `codex` in PATH · `codex-cli 0.133.0` · help OK · login **not** run |
+| **PENDING (historical)** | Pre-PM-30: Codex CLI not on host — superseded by PM-30 PASS |
 
-**Not blocking:** PM-16 production `40` export snapshot (PENDING).
+**Not blocking:** PM-29 post-promotion snapshot (PENDING).
 
-**Next:** **PM-19** — implementer bridge design/dry-run (only if PM-18 is not a hard blocker for your environment).
+**Next:** **PM-31** — Codex worker contract dry-run (docs-only / mock first). OAuth `codex login` remains a **manual** future gate — never auto-dump tokens.

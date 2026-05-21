@@ -1,0 +1,24 @@
+{
+  "schema_version": "pm30-codex-cli-local-setup-v1",
+  "source": "local-check",
+  "codex_cli_found": true,
+  "codex_cli_installed_by_task": true,
+  "version_checked": true,
+  "help_checked": true,
+  "oauth_login_performed": false,
+  "oauth_secret_dumped": false,
+  "provider_api_key_used": false,
+  "worker_enabled": false,
+  "n8n_touched": false,
+  "workflow_40_touched": false,
+  "workflow_41_touched": false,
+  "status": "pass",
+  "blocked_reason": null,
+  "notes": [
+    "codex was not in PATH before PM-30; installed via npm.cmd install -g @openai/codex",
+    "codex --version returned codex-cli 0.133.0",
+    "codex --help lists login subcommand; login not run in this gate",
+    "Interactive CLI and exec/review subcommands exist; no prompt or OAuth session dumped",
+    "PM-18 moves to CLI AVAILABLE / NOT WORKER ENABLED; n8n production 40 unchanged"
+  ]
+}

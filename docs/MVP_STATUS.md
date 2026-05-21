@@ -56,7 +56,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-12 candidate `41`** | **Runtime PASS recorded** — handoff file + Telegram (candidate only; superseded by rebuilt **`40`**) — [session](sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md) |
 | **PM-15 smoke (new `40`)** | **PASS** — commit notify + `plan_detected` + Gate D plan file on `c0ea042` / exec `#6708` — [session](sessions/2026-05-22-control-plane-pm15-new-40-smoke-pass.md); handoff-file path **not** observed in smoke |
 | **PM-17 Ollama classifier** | **Dry-run PASS** — local/mock decision JSON; **no** n8n/`40` change — [PM17](PM17_OLLAMA_CLASSIFIER_DRY_RUN.md) |
-| **PM-18 Codex OAuth feasibility** | **PENDING** — CLI not in PATH; feasibility JSON committed — [PM18](PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) |
+| **PM-18 Codex OAuth feasibility** | **CLI AVAILABLE / NOT WORKER ENABLED** — PM-30 `codex-cli 0.133.0`; no OAuth login — [PM18](PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) · [PM-30](sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) |
 | **PM-19 implementer bridge** | **Dry-run PASS** — mock worker; `dry_run_pass` — [PM19](PM19_IMPLEMENTER_BRIDGE_DRY_RUN.md) |
 | **PM-20 n8n bridge packet** | **PREPARED** — classifier→bridge→Telegram contract; **no** runtime PASS — [PM20](PM20_N8N_BRIDGE_PACKET.md) |
 | **PM-21 bridge candidate `42`** | **Runtime PASS** (PM-21C) — `1f46c64`; PM-21 Telegram + `dry_run_pass` mock-worker — [session](sessions/2026-05-22-control-plane-pm21c-bridge-runtime-pass.md) |
@@ -66,7 +66,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-26/27/28 stabilization** | **PREPARED** — post-promotion docs — [batch](sessions/2026-05-22-control-plane-pm26-pm28-post-promotion-stabilization-batch.md) |
 | **PM-28 decision** | **B then C** — [decision](decision-packets/pm-28-next-track-decision.md) · [session](sessions/2026-05-22-control-plane-pm29-snapshot-decision-b-then-c.md) |
 | **PM-29 post-promotion snapshot** | **PENDING** — no local export/API — [PM29](PM29_POST_PROMOTION_SNAPSHOT.md) |
-| **PM-30 Codex CLI setup** | **PREPARED / NOT EXECUTED** — [packet](runtime-packets/pm-30-codex-cli-local-setup-gate.md) |
+| **PM-30 Codex CLI setup** | **PASS** — installed `@openai/codex`; version/help OK; worker **not** enabled — [session](sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) |
 | **CONTROL PLANE n8n list** | `40` **ACTIVE** · `41` **BACKUP OFF** (retained) · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |

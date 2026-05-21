@@ -2,7 +2,7 @@
 
 **Packet ID:** `pm-30-codex-cli-local-setup-gate`  
 **Date:** 2026-05-22  
-**Status:** **PREPARED / NOT EXECUTED**
+**Status:** **PASS / CLI AVAILABLE / WORKER NOT ENABLED** (2026-05-22)
 
 **Related:** [PM-18 feasibility](../PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) · [PM-28 decision](../decision-packets/pm-28-next-track-decision.md) · [PM-29 snapshot](../PM29_POST_PROMOTION_SNAPSHOT.md) · [pm29 session](../sessions/2026-05-22-control-plane-pm29-snapshot-decision-b-then-c.md)
 
@@ -64,6 +64,13 @@ Does **not** enable automatic Codex worker in n8n.
 
 ---
 
-## Not executed
+## Runtime result (2026-05-22)
 
-This packet does **not** install or run Codex in the prep task.
+| Check | Result |
+|-------|--------|
+| Install | `npm.cmd install -g @openai/codex` |
+| Version | `codex-cli 0.133.0` |
+| Login | **Not** run |
+| Worker | **Not** enabled |
+
+**Evidence:** [PM-30 session](../sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) · [output sample](../examples/pm30-codex-cli-local-setup-output.sample.json)

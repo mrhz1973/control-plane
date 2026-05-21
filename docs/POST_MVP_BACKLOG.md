@@ -340,12 +340,25 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
-| **Why** | Unblock PM-18 after PM-28 **C** track |
+| **Status** | **PASS** (2026-05-22) — [session](sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) |
+| **Install** | `npm.cmd install -g @openai/codex` · `codex-cli 0.133.0` |
 | **Packet** | [pm-30-codex-cli-local-setup-gate.md](runtime-packets/pm-30-codex-cli-local-setup-gate.md) |
-| **PM-18** | **PENDING** until PM-30 runtime runs |
+| **PM-18** | **CLI AVAILABLE / NOT WORKER ENABLED** |
+| **PM-29** | **PENDING** — non-blocking |
 | **PM-27** | **`41` backup retained** |
-| **Out of scope** | n8n/workflow edits; auto worker; token commit |
+| **Next** | **PM-31** Codex worker contract dry-run (docs-only / mock first) |
+| **Out of scope** | OAuth login dump; n8n; auto worker |
+
+---
+
+### PM-31 — Codex worker contract dry-run (planned)
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Not started** — docs-only / mock first |
+| **Why** | Define implementer worker contract after PM-30 CLI available |
+| **Prerequisite** | PM-30 PASS |
+| **Out of scope** | Real Codex prompts in n8n; auto worker enable |
 
 ---
 
@@ -384,13 +397,13 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **PENDING** (2026-05-22) — check **completed**; Codex CLI **not** in PATH on agent host — [session](sessions/2026-05-22-control-plane-pm18-codex-oauth-feasibility-dry-run.md) |
-| **Why** | Feasibility only for future **implementer worker** — not classifier, not n8n change |
-| **Tool** | `tools/codex-oauth-feasibility-check.mjs` |
-| **Sample** | [docs/examples/pm18-codex-feasibility-output.sample.json](examples/pm18-codex-feasibility-output.sample.json) |
+| **Status** | **CLI AVAILABLE / NOT WORKER ENABLED** (2026-05-22) — [PM-30 PASS](sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) |
+| **Why** | Feasibility for future **implementer worker** — not classifier, not n8n change |
+| **Tool** | `tools/codex-oauth-feasibility-check.mjs` · PM-30 install verify |
+| **Samples** | [pm18](examples/pm18-codex-feasibility-output.sample.json) · [pm30](examples/pm30-codex-cli-local-setup-output.sample.json) |
 | **Doc** | [PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md](PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) |
-| **Hygiene** | No OAuth login, no token commit, no provider API |
-| **Next** | **PM-19** implementer bridge design/dry-run (when Codex CLI available) |
+| **OAuth login** | **Not** performed — `codex login` manual future gate |
+| **Next** | **PM-31** worker contract dry-run (docs/mock) |
 | **Out of scope** | Auto implementer; production `40`; GIS/DEV/ALINA |
 
 ---
