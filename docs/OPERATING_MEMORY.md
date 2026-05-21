@@ -102,3 +102,5 @@ Commit `8b3a468` regenerated ready-import with **name-only** credentials. That o
 **Post-PM15 runtime snapshot (pending):** `workflows/exports/2026-05-22_40-production-post-pm15-smoke.redacted.json` — **not yet in git**; export current published `40` from n8n UI when snapshot is required ([session](sessions/2026-05-22-control-plane-40-post-pm15-export-snapshot.md)). **Non-blocking** for PM-17.
 
 **PM-17 classifier output schema:** `pm17-classifier-v1` — sample [docs/examples/pm17-classifier-output.sample.json](examples/pm17-classifier-output.sample.json); tool `tools/ollama-classifier-dry-run.mjs`. Ollama = classifier only, not implementer.
+
+**PM-18 Codex OAuth feasibility:** `pm18-codex-oauth-feasibility-v1` — [sample](examples/pm18-codex-feasibility-output.sample.json); tool `tools/codex-oauth-feasibility-check.mjs`. **No** OAuth tokens in git. Codex = future implementer worker only, after classifier + manual gate.

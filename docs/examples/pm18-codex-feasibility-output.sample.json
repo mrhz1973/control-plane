@@ -1,0 +1,14 @@
+﻿{
+  "schema_version": "pm18-codex-oauth-feasibility-v1",
+  "source": "local-check",
+  "codex_cli_found": false,
+  "oauth_session_detected": "not_checked",
+  "can_run_noninteractive": false,
+  "safe_for_future_worker": false,
+  "requires_manual_gate": true,
+  "blocked_reason": "codex CLI not found in PATH",
+  "notes": [
+    "PM-18 feasibility documented; Codex OAuth worker not enabled on this host.",
+    "Install/configure Codex CLI locally before a future PM-19 bridge dry-run."
+  ]
+}

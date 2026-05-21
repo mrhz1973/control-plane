@@ -220,6 +220,21 @@
 
 ---
 
+### PM-18 — Codex OAuth feasibility dry-run
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PENDING** (2026-05-22) — check **completed**; Codex CLI **not** in PATH on agent host — [session](sessions/2026-05-22-control-plane-pm18-codex-oauth-feasibility-dry-run.md) |
+| **Why** | Feasibility only for future **implementer worker** — not classifier, not n8n change |
+| **Tool** | `tools/codex-oauth-feasibility-check.mjs` |
+| **Sample** | [docs/examples/pm18-codex-feasibility-output.sample.json](examples/pm18-codex-feasibility-output.sample.json) |
+| **Doc** | [PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md](PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) |
+| **Hygiene** | No OAuth login, no token commit, no provider API |
+| **Next** | **PM-19** implementer bridge design/dry-run (when Codex CLI available) |
+| **Out of scope** | Auto implementer; production `40`; GIS/DEV/ALINA |
+
+---
+
 ### PM-17 — Ollama classifier dry-run
 
 | Field | Value |
