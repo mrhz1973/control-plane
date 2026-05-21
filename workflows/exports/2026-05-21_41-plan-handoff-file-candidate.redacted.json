@@ -921,14 +921,8 @@
   },
   "versionId": "__REDACTED_VERSION_ID__",
   "meta": {
-    "status": "PM-12 CANDIDATE / NOT ACTIVE / IMPORT-SAFE",
-    "runtimeName": "41 - CP v4 multirepo + plan handoff file - CANDIDATE",
-    "productionUnchanged": "40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE",
-    "purpose": "PM-13 redacted export of tested candidate 41 (PM-12 runtime PASS).",
-    "redaction": "no token; chat_id placeholder; credential and webhook IDs redacted",
-    "exportCommittedAt": "2026-05-21",
-    "promotionNote": "Gate I promotion 41->40 not authorized by this commit",
-    "nodeSummary": "30 nodes; plan_branch=True; gis_handoff=True"
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0319381fab885f639cbac060718f520c2525cb985f8057b47d0fc6aff7016641"
   },
   "id": "__REDACTED_WORKFLOW_ID__",
   "tags": [
