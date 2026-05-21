@@ -4,7 +4,7 @@
 
 **Related:** [MVP_STATUS.md](MVP_STATUS.md), [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [RUNTIME_GATES.md](RUNTIME_GATES.md).
 
-**Last updated:** 2026-05-21 — candidate numbering clarified after user readability request.
+**Last updated:** 2026-05-21 — candidate numbering and pre-bound credential policy clarified.
 
 ---
 
@@ -17,8 +17,32 @@
 | **Candidate IDs** | New candidate/import-test workflows should use the next readable number: `41`, `42`, `43`, … |
 | **Backup IDs** | Backups may keep the production number plus a clear backup suffix only while needed, e.g. `40 - ... BACKUP BEFORE ... - OFF` |
 | **Status suffix** | `- ACTIVE`, `- OFF`, `- LEGACY OFF`, `- CANDIDATE`, or `- TEST SAFE` in workflow **display name** where helpful |
+| **Pre-bound credentials** | New candidate JSON should include existing n8n credential bindings by credential name where safe, so imported nodes are not empty by default |
+| **Private values** | Do not commit private runtime values. If a value cannot be safely stored in JSON, use a clear placeholder |
 | **Exports** | Committed `.redacted.json` may keep **historical** names until a deliberate export refresh; new exports should use the readable target name in the JSON `name` field |
 | **JSON / raw URL** | When orchestrator delivers import JSON, prefer a unique readable runtime name, e.g. `41 - ... CANDIDATE`, not another `40 - ... CANDIDATE` |
+
+---
+
+## Credential policy for future JSON candidates
+
+Goal: reduce manual n8n setup friction.
+
+Future candidate exports should arrive as close as possible to ready-to-run:
+
+| Node type | Required default in candidate JSON |
+|----------|-------------------------------------|
+| GitHub HTTP/API nodes | Include known credential binding name where applicable |
+| Telegram nodes | Include known credential binding name where applicable |
+| Telegram Chat ID | Prefer a safe placeholder or n8n-side expression when the value should not be stored in GitHub |
+| Data Table nodes | Preserve table reference by name, e.g. `control_plane_state` |
+| File nodes | Preserve safe container paths under `/home/node/.n8n-files/` |
+
+Operational rule:
+
+- For known GitHub/Telegram credentials, candidates should not arrive with empty credential selectors.
+- If a field cannot be safely committed, the candidate must make the missing value obvious with a clear placeholder such as `__CONFIGURE_CHAT_ID_IN_N8N_UI__`.
+- Prefer a future one-time n8n-side lookup so common Telegram destination data does not need to be retyped in every imported workflow.
 
 ---
 
