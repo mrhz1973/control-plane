@@ -1,0 +1,44 @@
+{
+  "schema_version": "pm31-codex-worker-request-v1",
+  "source": "control-plane",
+  "mode": "mock-contract-only",
+  "target_worker": "codex-cli-future",
+  "repo": "mrhz1973/control-plane",
+  "branch_policy": "main-only-unless-future-gate",
+  "task_type": "docs-only",
+  "risk": "low",
+  "approval_required": false,
+  "input_artifacts": {
+    "bridge_request": "docs/examples/pm19-implementer-bridge-request.sample.json",
+    "bridge_result": "docs/examples/pm19-implementer-bridge-result.sample.json"
+  },
+  "allowed_paths": [
+    "docs/**",
+    "tools/**"
+  ],
+  "forbidden_paths": [
+    "workflows/exports/**",
+    ".github/workflows/**",
+    "package.json",
+    "n8n runtime",
+    "workflow 40",
+    "workflow 41",
+    "GIS",
+    "DEV",
+    "Alina"
+  ],
+  "forbidden_actions": [
+    "codex login",
+    "OAuth token dump",
+    "provider API key",
+    "n8n edit",
+    "automatic worker enable",
+    "deploy",
+    "rollback",
+    "delete backup 41"
+  ],
+  "prompt_preview": "Status: smoke trigger only. Purpose: Verify that the newly published production workflow reacts to a CONTROL PLANE plan file commit. Expected n8n behavior: [PM-31 contract preview — not executed.]",
+  "worker_enabled": false,
+  "bridge_route": "cursor-control-plane",
+  "bridge_status": "dry_run_pass"
+}

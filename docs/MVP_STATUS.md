@@ -67,6 +67,10 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-28 decision** | **B then C** — [decision](decision-packets/pm-28-next-track-decision.md) · [session](sessions/2026-05-22-control-plane-pm29-snapshot-decision-b-then-c.md) |
 | **PM-29 post-promotion snapshot** | **PENDING** — no local export/API — [PM29](PM29_POST_PROMOTION_SNAPSHOT.md) |
 | **PM-30 Codex CLI setup** | **PASS** — installed `@openai/codex`; version/help OK; worker **not** enabled — [session](sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) |
+| **PM-31 Codex worker contract** | **PASS** (mock) — no Codex invoked — [PM31](PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md) |
+| **PM-32 worker samples** | **Created** — [request](examples/pm31-codex-worker-request.sample.json) · [result](examples/pm31-codex-worker-result.sample.json) |
+| **PM-33 OAuth login gate** | **PREPARED / NOT EXECUTED** — [packet](runtime-packets/pm-33-codex-oauth-manual-login-gate.md) |
+| **PM-34 n8n Codex integration** | **PREPARED / NOT EXECUTED** — [packet](runtime-packets/pm-34-n8n-codex-worker-integration-gate.md) |
 | **CONTROL PLANE n8n list** | `40` **ACTIVE** · `41` **BACKUP OFF** (retained) · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |

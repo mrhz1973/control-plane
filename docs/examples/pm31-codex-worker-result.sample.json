@@ -1,0 +1,18 @@
+{
+  "schema_version": "pm31-codex-worker-result-v1",
+  "source": "mock-worker",
+  "status": "contract_dry_run_pass",
+  "codex_invoked": false,
+  "oauth_login_performed": false,
+  "provider_api_key_used": false,
+  "worker_enabled": false,
+  "n8n_touched": false,
+  "workflow_40_touched": false,
+  "workflow_41_touched": false,
+  "would_require_future_gate": true,
+  "next_gate": "PM-33 OAuth/manual login gate before any real Codex invocation",
+  "notes": [
+    "Codex CLI is available from PM-30, but no real prompt executed.",
+    "This validates only request/result contract shape."
+  ]
+}

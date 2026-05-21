@@ -346,19 +346,52 @@
 | **PM-18** | **CLI AVAILABLE / NOT WORKER ENABLED** |
 | **PM-29** | **PENDING** — non-blocking |
 | **PM-27** | **`41` backup retained** |
-| **Next** | **PM-31** Codex worker contract dry-run (docs-only / mock first) |
+| **Next** | **PM-33** manual login gate **or** stabilize (worker disabled) |
 | **Out of scope** | OAuth login dump; n8n; auto worker |
 
 ---
 
-### PM-31 — Codex worker contract dry-run (planned)
+### PM-31 — Codex worker contract dry-run
 
 | Field | Value |
 |-------|--------|
-| **Status** | **Not started** — docs-only / mock first |
-| **Why** | Define implementer worker contract after PM-30 CLI available |
-| **Prerequisite** | PM-30 PASS |
-| **Out of scope** | Real Codex prompts in n8n; auto worker enable |
+| **Status** | **PASS** (2026-05-22) — mock contract only — [batch](sessions/2026-05-22-control-plane-pm31-pm34-codex-worker-contract-batch.md) |
+| **Tool** | `tools/codex-worker-contract-dry-run.mjs` |
+| **Doc** | [PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md](PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md) |
+| **Input** | PM-19 bridge samples |
+| **Out of scope** | `codex exec`; `codex login`; n8n |
+
+---
+
+### PM-32 — Codex worker schema samples
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Created** (2026-05-22) |
+| **Samples** | [request](examples/pm31-codex-worker-request.sample.json) · [result](examples/pm31-codex-worker-result.sample.json) |
+| **Why** | Frozen PM-31 request/result contract |
+
+---
+
+### PM-33 — Codex OAuth / manual login gate
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Packet** | [pm-33-codex-oauth-manual-login-gate.md](runtime-packets/pm-33-codex-oauth-manual-login-gate.md) |
+| **PM-18** | Stays **CLI AVAILABLE / NOT WORKER ENABLED** until PASS |
+| **Out of scope** | Token commit; auto worker after login |
+
+---
+
+### PM-34 — n8n Codex worker integration gate
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Packet** | [pm-34-n8n-codex-worker-integration-gate.md](runtime-packets/pm-34-n8n-codex-worker-integration-gate.md) |
+| **Prerequisites** | PM-31 PASS; PM-33 if OAuth needed; stable `40`; `41` retained |
+| **Out of scope** | Real Codex from prod `40`; delete `41` |
 
 ---
 

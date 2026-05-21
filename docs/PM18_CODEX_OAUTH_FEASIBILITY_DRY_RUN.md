@@ -56,4 +56,6 @@ node tools/codex-oauth-feasibility-check.mjs \
 
 **Not blocking:** PM-29 post-promotion snapshot (PENDING).
 
-**Next:** **PM-31** — Codex worker contract dry-run (docs-only / mock first). OAuth `codex login` remains a **manual** future gate — never auto-dump tokens.
+**PM-31 contract:** [PM31](PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md) mock **PASS** — worker contract only; **PM-18 unchanged:** CLI AVAILABLE / NOT WORKER ENABLED until **PM-33** OAuth gate (do **not** mark OAuth available yet).
+
+**Next:** **PM-33** manual login gate **or** stabilize · **PM-34** n8n integration (prepared). OAuth `codex login` remains **manual** future gate — never auto-dump tokens.
