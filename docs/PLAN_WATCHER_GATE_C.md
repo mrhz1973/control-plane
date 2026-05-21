@@ -2,7 +2,7 @@
 
 **Docs index.** Records PM-09 final runtime state in active **`40`**. Still **v4 polling** — not v5/webhook. No new runtime authorized by this document alone.
 
-**Related:** [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [OBSERVABILITY.md](OBSERVABILITY.md), [plans/README.md](plans/README.md).
+**Related:** [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [OBSERVABILITY.md](OBSERVABILITY.md), [plans/README.md](plans/README.md), [PM-09 docs close](sessions/2026-05-21-control-plane-pm09-final-docs-close.md).
 
 ---
 

@@ -57,7 +57,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **Retained (not active poll)** | `01` legacy **off**; `30` handoff manual **off** (formerly `03`); `20` v5 webhook **off**; backup `40` **off** |
 | **Test-safe only** | `55` — PM-09 isolated/test-safe family — **not** production ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **GitHub read** | Authenticated GitHub API credential in n8n UI |
-| **Flow** | GitHub → dedupe → Telegram; GIS commit → safe-text handoff preview + **`latest-gis-handoff.md`** document; control-plane plan commit → Gate C internal output only |
+| **Flow** | GitHub → dedupe → Telegram; GIS commit → safe-text handoff + **`latest-gis-handoff.md`**; control-plane plan commit → Gate C detect → Gate D Telegram text + `.md` file |
 | **GIS handoff (`40` / ex-02F)** | **PASS** — `58c5c46`; safe text + file attachment ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
 | **Handoff manual fallback** | `30 - CP handoff manual Telegram v1 - OFF` — inactive; manual test path |
 | **v5 webhook workflow** | Imported, manually tested (placeholder), **inactive / disabled** |
@@ -129,7 +129,7 @@ Evidence: [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-g
 
 **D-C1-A recorded (2026-05-21):** Operational MVP **accepted** — [decision packet](decision-packets/2026-05-21-criterion-1-latency-closure-decision.md) (**DECIDED**). No mandatory next gate. Ordered optional work: **[POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)** (PM-01 … PM-09).
 
-**Default:** Keep v4 active, v5 off, no webhook. Stabilize; do not batch runtime changes.
+**Default:** Keep v4 active, v5 off, no webhook. Stabilize; **do not batch runtime** changes ([RUNTIME_GATES.md](RUNTIME_GATES.md) — docs-only updates may be batched).
 
 ---
 
@@ -180,5 +180,6 @@ Evidence: [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-g
 | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) | Criterion 2 design |
 | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) | Criterion 3 tracker |
 | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) | Criterion 4 inventory + v4 match perimeter |
-| [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) | n8n numeric workflow naming (`40` active; `55` reserved) |
+| [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) | n8n numeric naming (`40` production; `41`–`43` candidates; `55` test-safe) |
+| [sessions/2026-05-21-control-plane-pm09-final-docs-close.md](sessions/2026-05-21-control-plane-pm09-final-docs-close.md) | PM-09 docs consolidation close (2026-05-21) |
 | [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md) | Criterion 1 latency measurement plan |

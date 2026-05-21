@@ -8,6 +8,8 @@ Do **not** ask the user to say "vai" for docs-only, GitHub-only, export-template
 
 Proceed automatically through safe preparatory work until a real gate is reached.
 
+**Docs-only batching:** Status/index doc updates (e.g. PM-09 close, export inventory notes) may be **batched in one commit** — they do not open n8n. **Runtime** actions (import, switch, Execute, Telegram, webhook, deploy) remain **one gate at a time** — never batched.
+
 Stop only when the next action requires one of these:
 
 - local n8n UI action;
@@ -95,17 +97,17 @@ When a real gate is reached, give exactly one concrete action and wait for the u
 | 02F safe text + file handoff | **PASS** — safe text Telegram; `latest-gis-handoff.md` document; commit notify; n8n executions succeeded |
 | n8n superseded workflow cleanup (PM-07) | **PASS** — `02F` only active CP poll; `01`/`03`/`20` retained; `02`/`02B`–`02E`/`90`–`93` removed |
 
-**Future runtime still requires explicit gate each:** enable v5 / webhook+HTTPS; delete or change `01`; modify `02F`; import/export production workflows; touch ALINA workflows.
+**Future runtime still requires explicit gate each:** enable v5 / webhook+HTTPS; delete or change `01`; modify production **`40`**; import/export/switch workflows; touch ALINA workflows. Test candidates use **`41`/`42`/`43`** per [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md).
 
 **Post-MVP optional:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook.
 
 | PM-08 redacted 02F export | **PASS** — committed `2026-05-21_…-02f-handoff-safe-text.redacted.json`; **no** runtime import; [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md#02f-redacted-export-status) |
 
-| PM-09 Gate C runtime (extend **02F** plan watcher) | **Prepared** — architecture **A** selected; [runtime packet](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md); **not executed** — separate n8n session |
+| PM-09 Gate C + D + FILE (active **`40`**) | **PASS** 2026-05-21 — [docs close](sessions/2026-05-21-control-plane-pm09-final-docs-close.md); historical packet [extend 02F](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) |
 
-**n8n import from GitHub:** use **`raw.githubusercontent.com`** URL in **Import from URL** — separate runtime gate; import does **not** authorize Execute, Save on production **`40`**, activation, or Telegram. See [JSON draft § Raw URL](runtime-packets/pm-09-gate-c-02f-json-draft.md#raw-github-url-import).
+**n8n import from GitHub:** use **`raw.githubusercontent.com`** URL in **Import from URL** — separate runtime gate; import does **not** authorize Execute, Save on production **`40`**, activation, or Telegram.
 
-**CONTROL PLANE workflow IDs (runtime):** `01` / `20` / `30` off · **`40`** active (poll+handoff) · **`55`** reserved PM-09 — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md). Historical docs may say **`02F`** / **`03`**.
+**CONTROL PLANE workflow IDs (runtime):** `01` / `20` / `30` off · **`40`** active (poll+handoff + plan watcher) · **`55`** test-safe only · candidates **`41`/`42`/`43`** — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md). Historical docs may say **`02F`** / **`03`**.
 
 ### Not exceptions (post-MVP — workflow freeze relaxed for new scope)
 

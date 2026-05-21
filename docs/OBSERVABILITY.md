@@ -10,11 +10,11 @@
 
 | Rule | Detail |
 |------|--------|
-| **Mode** | Docs-only conventions — repeatable, safe future verification |
-| **Runtime** | **Not** authorized by this file; each test needs an explicit [RUNTIME_GATES.md](RUNTIME_GATES.md) session |
+| **Mode** | Docs-only conventions — repeatable, safe future verification; **batched doc updates OK** |
+| **Runtime** | **Not** authorized by this file; each n8n/Telegram/webhook action = **one** [RUNTIME_GATES.md](RUNTIME_GATES.md) gate (no runtime batching) |
 | **Secrets** | **Never** in git — no tokens, chat_id, credential IDs, webhook URLs, webhook secrets |
 | **Data Table** | **No** full dumps in git — key names and public SHAs only when needed |
-| **MVP posture** | Operationally **accepted with C1 exception** (D-C1-A); C1 **PARTIAL** (SLA 1–5 min); v4 **active**; v5 **off**; webhook **not configured** |
+| **MVP posture** | Operationally **accepted with C1 exception** (D-C1-A); C1 **PARTIAL** (SLA 1–5 min); **`40`** production v4 **active**; PM-09 **C+D+FILE PASS**; v5 **off**; webhook **not configured** |
 
 **Purpose:** Make post-MVP checks auditable without expanding attack surface or bureaucracy.
 

@@ -4,7 +4,7 @@
 
 **Related:** [MVP_STATUS.md](MVP_STATUS.md), [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [RUNTIME_GATES.md](RUNTIME_GATES.md).
 
-**Last updated:** 2026-05-21 — candidate numbering and pre-bound credential policy clarified.
+**Last updated:** 2026-05-21 — PM-09 closed in **`40`**; **`41`/`42`/`43`** for future candidates; **`55`** test-safe only.
 
 ---
 
@@ -13,8 +13,9 @@
 | Rule | Detail |
 |------|--------|
 | **Numeric prefix** | Use numeric prefixes only; avoid letter suffixes like `02F` in **new** runtime names |
-| **Production ID** | `40` is the production CONTROL PLANE poll+handoff workflow name. Do **not** create multiple visible candidate workflows all named `40` |
-| **Candidate IDs** | New candidate/import-test workflows should use the next readable number: `41`, `42`, `43`, … |
+| **Production (`40`)** | **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** — sole published CP poll+handoff (PM-09 Gate C+D+FILE). Do **not** create multiple visible workflows all named `40` |
+| **Candidates (`41`–`43`)** | Next import/test/replacement candidates only — e.g. `41 - … CANDIDATE`, then `42`, `43` |
+| **Test-safe (`55`)** | Isolated PM-09 test workflows only — **not** production |
 | **Backup IDs** | Backups may keep the production number plus a clear backup suffix only while needed, e.g. `40 - ... BACKUP BEFORE ... - OFF` |
 | **Status suffix** | `- ACTIVE`, `- OFF`, `- LEGACY OFF`, `- CANDIDATE`, or `- TEST SAFE` in workflow **display name** where helpful |
 | **Pre-bound credentials** | New candidate JSON should include existing n8n credential bindings by credential name where safe, so imported nodes are not empty by default |

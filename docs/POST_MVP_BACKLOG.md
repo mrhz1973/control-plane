@@ -20,7 +20,7 @@
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
 | **02F redacted export** | **PASS** — [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) PM-08 |
-| **PM-09 plan ingestion** | Gate **A** + **B** + **C design** + **C runtime** + **D live** + **D file** **PASS** — [Gate C runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md), [Gate D file attachment](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md) |
+| **PM-09 plan ingestion** | Gate **C + D + FILE PASS** (closed) — [Gate C runtime](runtime-packets/pm-09-gate-c-runtime-pass.md), [Gate D live](sessions/2026-05-21-control-plane-40-gate-d-live-pass.md), [Gate D file](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md), [docs close](sessions/2026-05-21-control-plane-pm09-final-docs-close.md) |
 | **Next runtime** | **No new runtime required** for PM-09 closure |
 
 ---
@@ -76,7 +76,7 @@
 |-------|--------|
 | **Status** | **PASS** — manual cleanup completed (post-02F) |
 | **Active (published)** | **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (formerly **`02F`**) — sole CONTROL PLANE polling+handoff |
-| **Retained (intentional)** | `01` / `20` / `30` **off**; backup `40` **off**; `55` reserved — not created |
+| **Retained (intentional)** | `01` / `20` / `30` **off**; backup `40` **off**; `55` test-safe only — not production |
 | **Removed from CONTROL PLANE list** | `02`, `02B`, `02C`, `02D`, `02E`, `90`, `91`, `92`, `93` |
 | **Out of scope** | **ALINA LAVORO** folder/workflows (9) — **not** touched |
 | **Next (optional)** | UX: commit notify before handoff/file (PM-06) |
@@ -100,7 +100,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | Gate **A** + **B** + **C design** + **C runtime** + **D live text** + **D .md file attachment** **PASS** |
+| **Status** | **CLOSED** — Gate **C + D + FILE PASS** (A/B design + C runtime + D Telegram text + D `.md` file) |
 | **Why** | Avoid manual copy-paste of Cursor Plan text into handoff/Telegram; make plans readable by orchestrator via GitHub |
 | **Desired flow** | Cursor Plan → `docs/plans/` → n8n watcher (gate C) → `plan_detected` → Telegram text + `.md` file (gate D) → orchestrator reads GitHub |
 | **Design docs** | [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |

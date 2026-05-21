@@ -4,7 +4,9 @@
 
 **Criterion (Italian):** Workflow n8n esportato come JSON committato nel repo control-plane.
 
-**Related:** [MVP_CRITERIA.md](MVP_CRITERIA.md) §4, [workflows/README.md](../workflows/README.md), [N8N_REBUILD.md](N8N_REBUILD.md), [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md).
+**Related:** [MVP_CRITERIA.md](MVP_CRITERIA.md) §4, [workflows/README.md](../workflows/README.md), [N8N_REBUILD.md](N8N_REBUILD.md), [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md), [PM-09 docs close](sessions/2026-05-21-control-plane-pm09-final-docs-close.md).
+
+**Production alignment (2026-05-21):** Active **`40`** validated with Gate C+D+FILE candidate `2026-05-21_40-plan-watcher-dropin-candidate-gate-c-gate-d-file.redacted.json` — see [§ PM-09 Gate C+D+FILE candidate](#pm-09-gate-cdfile-candidate-2026-05-21).
 
 ---
 
