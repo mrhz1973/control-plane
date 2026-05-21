@@ -1,5 +1,7 @@
 # Session log - 40 Gate D live PASS
 
+> **Runtime list note:** At test time, `55` was still test-safe in UI. **Current** final list (4 workflows; `55` and backup `40` deleted): [final n8n cleanup](2026-05-21-control-plane-final-n8n-cleanup.md).
+
 Date: 2026-05-21
 Repo: mrhz1973/control-plane
 Mode: n8n scheduled runtime validation.

@@ -21,6 +21,10 @@ Mode: **docs-only** — no n8n, VPS, import/export, or workflow JSON edits.
 Gate C+D+FILE candidate validated in active **`40`**:  
 `workflows/exports/2026-05-21_40-plan-watcher-dropin-candidate-gate-c-gate-d-file.redacted.json` (path reference only — JSON not edited in this session).
 
+## Entry point
+
+After later n8n UI cleanup, the repo **README.md** at repo root is the consolidated front door (operational snapshot + flow diagram).
+
 ## Files updated (this consolidation)
 
 - [MVP_STATUS.md](../MVP_STATUS.md)
