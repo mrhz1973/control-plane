@@ -1,0 +1,16 @@
+{
+  "schema_version": "pm19-implementer-bridge-result-v1",
+  "source": "control-plane",
+  "status": "dry_run_pass",
+  "worker": "mock-worker",
+  "would_send_to_worker": true,
+  "would_require_telegram_gate": false,
+  "blocked_reason": null,
+  "classifier_route": "cursor-control-plane",
+  "classifier_risk": "low",
+  "mock_worker_action": "validate handoff contract only — no file writes, no git ops",
+  "notes": [
+    "PM-19 dry-run PASS for PM-17 sample (low risk, cursor-control-plane)",
+    "Real Codex worker deferred until CLI/OAuth gate (PM-18)"
+  ]
+}

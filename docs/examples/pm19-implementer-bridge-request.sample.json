@@ -1,0 +1,26 @@
+{
+  "schema_version": "pm19-implementer-bridge-request-v1",
+  "source": "control-plane",
+  "classifier_schema": "pm17-classifier-v1",
+  "route": "cursor-control-plane",
+  "risk": "low",
+  "approval_required": false,
+  "target_worker": "mock-worker",
+  "repo": "mrhz1973/control-plane",
+  "plan_path": "docs/plans/2026-05-21_2330_pm15-new-40-smoke.plan.md",
+  "allowed_mode": "docs-only",
+  "forbidden": [
+    "n8n runtime",
+    "workflow 40",
+    "GIS",
+    "DEV",
+    "Alina",
+    "provider API",
+    "secrets"
+  ],
+  "prompt_preview": "Status: smoke trigger only. Purpose: Verify that the newly published production workflow reacts to a CONTROL PLANE plan file commit. Expected n8n behavior:",
+  "notes": [
+    "PM-19 dry-run only — no repo mutation, no Codex prompt execution",
+    "Codex CLI not in PATH (PM-18 PENDING)"
+  ]
+}

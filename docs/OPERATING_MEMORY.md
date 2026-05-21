@@ -104,3 +104,5 @@ Commit `8b3a468` regenerated ready-import with **name-only** credentials. That o
 **PM-17 classifier output schema:** `pm17-classifier-v1` — sample [docs/examples/pm17-classifier-output.sample.json](examples/pm17-classifier-output.sample.json); tool `tools/ollama-classifier-dry-run.mjs`. Ollama = classifier only, not implementer.
 
 **PM-18 Codex OAuth feasibility:** `pm18-codex-oauth-feasibility-v1` — [sample](examples/pm18-codex-feasibility-output.sample.json); tool `tools/codex-oauth-feasibility-check.mjs`. **No** OAuth tokens in git. Codex = future implementer worker only, after classifier + manual gate.
+
+**PM-19 implementer bridge:** `pm19-implementer-bridge-request-v1` / `pm19-implementer-bridge-result-v1` — [request](examples/pm19-implementer-bridge-request.sample.json) · [result](examples/pm19-implementer-bridge-result.sample.json); tool `tools/implementer-bridge-dry-run.mjs`. Mock worker only until PM-18 unblocks Codex.

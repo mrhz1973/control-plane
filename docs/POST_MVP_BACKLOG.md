@@ -220,6 +220,22 @@
 
 ---
 
+### PM-19 — Implementer bridge dry-run
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PASS** (2026-05-22) — [session](sessions/2026-05-22-control-plane-pm19-implementer-bridge-dry-run.md) |
+| **Why** | Validate classifier → bridge → mock worker contract without Codex or n8n |
+| **Tool** | `tools/implementer-bridge-dry-run.mjs` |
+| **Samples** | [request](examples/pm19-implementer-bridge-request.sample.json) · [result](examples/pm19-implementer-bridge-result.sample.json) |
+| **Doc** | [PM19_IMPLEMENTER_BRIDGE_DRY_RUN.md](PM19_IMPLEMENTER_BRIDGE_DRY_RUN.md) |
+| **Result** | `dry_run_pass` · `mock-worker` (PM-17 sample input) |
+| **PM-18** | **PENDING** — Codex CLI not in PATH; **not** blocking PM-19 |
+| **Next** | **PM-20** n8n bridge packet **or** local Codex CLI setup |
+| **Out of scope** | Real implementer; production `40`; GIS/DEV/ALINA |
+
+---
+
 ### PM-18 — Codex OAuth feasibility dry-run
 
 | Field | Value |
