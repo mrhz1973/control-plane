@@ -97,7 +97,9 @@ When a real gate is reached, give exactly one concrete action and wait for the u
 
 **Future runtime still requires explicit gate each:** enable v5 / webhook+HTTPS; delete or change `01`; modify `02F`; import/export production workflows; touch ALINA workflows.
 
-**Post-MVP optional:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook; redacted export refresh for `02F`.
+**Post-MVP optional:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook.
+
+| PM-08 redacted 02F export | **Pending** — manual n8n export + redact + commit; [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md#02f-redacted-export-status) |
 
 ### Not exceptions (post-MVP — workflow freeze relaxed for new scope)
 

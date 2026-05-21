@@ -426,6 +426,8 @@ HANDOFF_EXIT=0
 
 **Cleanup (done):** After 02F **PASS**, superseded CONTROL PLANE workflows removed (`02`, `02B`–`02E`, `90`–`93`). **Retained:** `02F` target; `01` legacy off; `03` manual fallback; `20` v5 off. ALINA LAVORO workflows untouched. Details: [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) PM-07.
 
+**Export hygiene (pending):** No committed redacted JSON for **`02F`** yet — manual export gate PM-08 ([WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md#02f-redacted-export-status)).
+
 ---
 
 ## Docs-only path (now)

@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after n8n CONTROL PLANE workflow cleanup **PASS** (post-02F). MVP **accepted-with-exception** (D-C1-A). Update when criterion or runtime posture changes.
+**Last consolidated:** after **02F redacted export hygiene** docs (PM-08 pending). MVP **accepted-with-exception** (D-C1-A). Update when criterion or runtime posture changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -30,7 +30,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
 - **Runtime:** **`02F`** active/published (sole CP poll+handoff); cleanup **PASS**; `01`/`03`/`20` retained off · v5 **off** · webhook **not configured**
-- **Post-MVP:** PM-02 + PM-06 + **02F** handoff file **PASS** — [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)
+- **Post-MVP:** PM-02 + PM-06 + PM-07 **PASS**; PM-08 **02F export pending** — [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)
+- **ALINA LAVORO:** out of scope / not touched
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
 
@@ -89,7 +90,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 - **7** redacted exports in `workflows/exports/`.
 - **Canonical:** `2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json`
 - **Runtime match:** PASS — visual operational match recorded; see [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) for verified vs not-verified perimeter.
-- **Still pending outside §4:** optional handoff workflow re-export if runtime differs from template.
+- **Post-MVP hygiene:** **`02F` redacted export pending** (PM-08) — no `*02F*` JSON in repo; multirepo **draft** lags runtime ([WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md)). Criterion 4 **not** reopened.
 
 ### 5 — Rebuild runbook (PASS)
 

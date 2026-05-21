@@ -27,7 +27,7 @@
 
 Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the active production watcher after PM-02.
 
-**Post-MVP runtime posture (PM-02 PASS):** Multirepo watcher **active** (`02 - CP v4 multirepo polling - TARGET ON`); legacy single-repo **off**; v5 **off**; webhook **not configured** ([MVP_STATUS.md](MVP_STATUS.md)).
+**Post-cleanup runtime (PM-07 PASS):** Sole active CONTROL PLANE poll+handoff: **`02F`**; `01`/`03`/`20` retained **off**; v5 **off**; webhook **not configured** ([MVP_STATUS.md](MVP_STATUS.md)). ALINA LAVORO **out of scope**.
 
 **Criterion 5 recovery drill (2026-05-20):** Duplicate-skip smoke on then-active single-repo v4 — historical; see [N8N_REBUILD.md](N8N_REBUILD.md).
 
@@ -43,8 +43,8 @@ Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the
 
 | Property | Value |
 |----------|--------|
-| **Runtime status** | **Active target:** `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` — handoff safe text + document **PASS** |
-| **Committed export status** | Redacted JSON **lags** stabilized `02F` runtime — **recommended next** hygiene step after PM-07 cleanup; **not** in this docs task |
+| **Runtime status** | **Superseded by `02F`** — draft promoted through PM-02/06; runtime id **`02F`** now canonical |
+| **Committed export status** | Draft only — **02F export pending** ([02F redacted export status](#02f-redacted-export-status)) |
 | **Based on** | v4 redacted export |
 | **Watched repos** | `mrhz1973/control-plane`, `mrhz1973/dev-method`, `mrhz1973/cursor-coordinate-converter` |
 | **Data Table keys** | `github:mrhz1973/control-plane:last_commit_sha`, `github:mrhz1973/dev-method:last_commit_sha`, `github:mrhz1973/cursor-coordinate-converter:last_commit_sha` |
@@ -69,7 +69,51 @@ Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the
 
 **02F handoff (recorded):** GIS `58c5c46` — safe-text handoff + **`latest-gis-handoff.md`** Telegram document + commit notify (`Previous: 7a59bbf`) — [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md). Prior `2a2ff31` / `02` path superseded by `02F`.
 
-**Runtime stabilized (PM-07):** CONTROL PLANE list cleaned around **`02F`**. **Export refresh:** recommended next — re-export redacted multirepo when `02F` nodes match production ([OBSERVABILITY.md](OBSERVABILITY.md)); not done in cleanup docs task.
+**Runtime stabilized (PM-07):** CONTROL PLANE list cleaned around **`02F`**. See [02F redacted export status](#02f-redacted-export-status) below.
+
+---
+
+## 02F redacted export status
+
+| Field | Value |
+|-------|--------|
+| **Runtime workflow** | `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` — **active/published** (sole CONTROL PLANE polling target) |
+| **Committed 02F export** | **None** — no `*02F*.redacted.json` in `workflows/exports/` |
+| **Status** | **Pending** — **manual n8n UI export gate** ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) PM-08) |
+| **Closest committed file (not 02F)** | `2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` — pre-02F multirepo basis; **lags** safe-text handoff, Execute Command, n8n-files document path, GIS branch wiring |
+| **MVP criterion 4** | Remains **PASS** (redacted exports exist; operational match recorded at closure) — **02F hygiene** is post-MVP audit/rebuild alignment, not a claim that 02F is exported |
+
+### What the 02F export must capture (after manual export)
+
+- Workflow name matching runtime: **`02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT`**
+- Schedule trigger (**1 min**) and **three-repo** multirepo list (`control-plane`, `dev-method`, `cursor-coordinate-converter`)
+- Data Table dedupe path on `control_plane_state` (per-repo keys)
+- GIS branch: safe-text Telegram handoff + **`latest-gis-handoff.md`** document send (path documented in [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) — no absolute host paths in git beyond redacted placeholders if needed)
+- Execute Command / handoff-generate integration nodes as present in production **02F**
+- Inactive retained workflows **not** required in this file (`01`, `03`, `20` stay separate exports if ever refreshed)
+
+### Strip / redact before commit (mandatory)
+
+| Remove or placeholder | Never commit |
+|------------------------|--------------|
+| Telegram bot **token** | Plaintext or env |
+| Operational **chat_id** | Use `__CONFIGURE_CHAT_ID_IN_N8N_UI__` or omit |
+| n8n **credential IDs** | Use `__REDACTED_N8N_CREDENTIAL_ID__` or credential **name** only |
+| **Webhook URL** / tunnel URL / webhook secret | n8n / GitHub UI only |
+| URLs embedding secrets (signed, token query params) | — |
+| **Execution data**, pinned execution IDs, last-run payloads | — |
+| **Binary** attachments / base64 blobs | — |
+| **Static data** with tokens, chat_id, or personal data | — |
+| Unnecessary runtime-only parameters (instance URLs with auth, personal notes) | — |
+| `*.unredacted.json` | Local staging only |
+
+Add JSON metadata `redaction` note listing what was stripped (same pattern as existing exports). **Inspect** full file before `git add` — do not trust filename alone.
+
+### Suggested committed path (when gate completes)
+
+`workflows/exports/YYYY-MM-DD_github-commit-datatable-dedupe-scheduled-v4-multirepo-02f-handoff-safe-text.redacted.json`
+
+Naming: [workflows/README.md](../workflows/README.md). **This docs task:** no export file created.
 
 ---
 
@@ -136,8 +180,9 @@ workflows/exports/
 ├── 2026-05-20_github-commit-poll-dedupe-notify-v2.redacted.json        # failed dedupe — do not use
 ├── 2026-05-20_github-commit-datatable-dedupe-notify-v3.redacted.json    # Data Table manual PASS
 ├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json # legacy single-repo export (runtime LEGACY OFF)
-├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json  # multirepo basis — runtime TARGET ON (export may lag)
+├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json  # multirepo basis — lags 02F (no 02F export yet)
 └── 2026-05-20_github-push-webhook-datatable-dedupe-notify-v5.redacted.json  # inactive future
+# pending PM-08: YYYY-MM-DD_...-02f-handoff-safe-text.redacted.json
 ```
 
 Naming convention: `YYYY-MM-DD_name.redacted.json` — see [workflows/README.md](../workflows/README.md).

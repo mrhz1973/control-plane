@@ -19,6 +19,7 @@
 | **v4 single-repo legacy** | **Off** — `01 - CP v4 single-repo polling - LEGACY OFF` |
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
+| **02F redacted export** | **Pending** — manual n8n export gate (PM-08); [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
 | **Next runtime** | **None mandatory** — every item below is **optional** and **gated** |
 
 ---
@@ -77,7 +78,20 @@
 | **Retained (intentional)** | `01` legacy **off**; `03` handoff manual fallback; `20` v5 webhook **off** |
 | **Removed from CONTROL PLANE list** | `02`, `02B`, `02C`, `02D`, `02E`, `90`, `91`, `92`, `93` |
 | **Out of scope** | **ALINA LAVORO** folder/workflows (9) — **not** touched |
-| **Next (optional)** | Redacted export refresh for `02F` ([OBSERVABILITY.md](OBSERVABILITY.md)); UX: commit notify before handoff/file (PM-06) |
+| **Next (optional)** | UX: commit notify before handoff/file (PM-06) |
+
+---
+
+### PM-08 — Redacted 02F workflow export (hygiene)
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Pending** — manual n8n UI export → redact → commit |
+| **Why** | Post-cleanup runtime stabilized on **`02F`**; committed multirepo draft **lags** handoff safe-text + file branches |
+| **Runtime** | **Yes** — export from n8n UI only; workflow stays **active**; **no** import in same gate unless explicitly gated |
+| **Deliverable** | One redacted JSON under `workflows/exports/`; update [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
+| **Not in scope** | v5/webhook; C1 &lt;30s reopen; ALINA LAVORO; deleting `01`/`03`/`20` |
+| **Docs** | [WORKFLOW_EXPORT_STATUS.md § 02F](WORKFLOW_EXPORT_STATUS.md#02f-redacted-export-status), [OBSERVABILITY.md](OBSERVABILITY.md) |
 
 ---
 
