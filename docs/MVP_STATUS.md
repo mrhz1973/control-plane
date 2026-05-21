@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after **PM-02** multirepo watcher promotion **PASS** (docs registration; runtime already done by user). MVP still **accepted-with-exception** (D-C1-A). Update when criterion or runtime posture changes.
+**Last consolidated:** after **02F** handoff safe text + file attachment **PASS** (docs registration). MVP **accepted-with-exception** (D-C1-A). Update when criterion or runtime posture changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -29,8 +29,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
-- **Runtime:** multirepo watcher **active** (`02 - CP v4 multirepo polling - TARGET ON`); single-repo legacy **off** · v5 **off** · webhook **not configured**
-- **Post-MVP:** PM-02 + PM-06 (automatic GIS handoff) **PASS** — [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)
+- **Runtime:** **`02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT`** active; legacy `01` off; superseded `02`/`02B`–`02E` cleanup **pending** · v5 **off** · webhook **not configured**
+- **Post-MVP:** PM-02 + PM-06 + **02F** handoff file **PASS** — [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
 
@@ -48,12 +48,13 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 | Component | State |
 |-----------|--------|
-| **Active path** | Multirepo v4 polling — **active** (PM-02 **PASS**) |
-| **Active workflow** | `02 - CP v4 multirepo polling - TARGET ON` — 1 min schedule; watches control-plane, dev-method, cursor-coordinate-converter |
+| **Active path** | Multirepo v4 polling + handoff — **active** (`02F` **PASS**) |
+| **Active workflow** | `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` — 1 min schedule; control-plane, dev-method, cursor-coordinate-converter |
+| **Superseded (cleanup pending)** | `02`, `02B`, `02C`, `02D`, `02E` (and test ids `90`–`93` if present) — separate runtime cleanup gate |
 | **Legacy workflow** | `01 - CP v4 single-repo polling - LEGACY OFF` — **inactive** |
-| **GitHub read** | Authenticated GitHub API credential in n8n UI (not anonymous HTTP) |
-| **Flow** | GitHub → Data Table `control_plane_state` → dedupe → Telegram; GIS commit can trigger **automatic handoff** branch → `Prompt ready: yes` |
-| **Automatic GIS handoff** | **PASS** — commit `2a2ff31` via watcher `02` ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
+| **GitHub read** | Authenticated GitHub API credential in n8n UI |
+| **Flow** | GitHub → dedupe → Telegram; GIS commit → safe-text handoff preview + **`latest-gis-handoff.md`** document |
+| **GIS handoff (02F)** | **PASS** — `58c5c46`; safe text + file attachment ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
 | **Handoff manual fallback** | `03` handoff manual workflow — inactive; manual test path |
 | **v5 webhook workflow** | Imported, manually tested (placeholder), **inactive / disabled** |
 | **GitHub production webhook** | **Not configured** — localhost / tunnel not reachable by GitHub |
@@ -74,7 +75,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 ### 2 — Handoff via n8n (PASS)
 
 - **2026-05-20:** Manual workflow — Manual Trigger → **`Prompt ready: yes`**, exit 0 ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)).
-- **Post-MVP:** Automatic GIS handoff **PASS** — watcher `02` on commit `2a2ff31` → **`Prompt ready: yes`**, exit 0; commit notify `Previous: 8c72f48`. UX: handoff Telegram before commit notify (parallel branches).
+- **Post-MVP:** **02F** GIS handoff **PASS** — `58c5c46`; safe-text Telegram + **`latest-gis-handoff.md`** document; exit 0. Prior: `2a2ff31` via experimental `02` path ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)).
 
 ### 3 — Three end-to-end cycles (PASS — 3 / 3)
 

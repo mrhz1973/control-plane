@@ -43,8 +43,8 @@ Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the
 
 | Property | Value |
 |----------|--------|
-| **Runtime status** | **Active** — PM-02 promotion **PASS** (scheduled multirepo poll) |
-| **Committed export status** | Redacted JSON **not** auto-updated in PM-02 docs task — refresh if material drift |
+| **Runtime status** | **Active target:** `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` — handoff safe text + document **PASS** |
+| **Committed export status** | Redacted JSON **lags** runtime (`02F`, safe-text branch, n8n-files path) — refresh after cleanup/stabilization; **not** in 02F docs registration task |
 | **Based on** | v4 redacted export |
 | **Watched repos** | `mrhz1973/control-plane`, `mrhz1973/dev-method`, `mrhz1973/cursor-coordinate-converter` |
 | **Data Table keys** | `github:mrhz1973/control-plane:last_commit_sha`, `github:mrhz1973/dev-method:last_commit_sha`, `github:mrhz1973/cursor-coordinate-converter:last_commit_sha` |
@@ -67,7 +67,9 @@ Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the
 
 **PM-02 promotion (recorded):** Scheduled notify **PASS** — dev-method `7f4316e`; GIS `66fe6b5` (`Previous: 34d543d`); dedupe **PASS** (no repeat Telegram for `66fe6b5`). v5 **off**; webhook **not configured**.
 
-**Automatic GIS handoff (recorded):** Watcher `02` on GIS `2a2ff31` → handoff **`Prompt ready: yes`** + commit notify (`Previous: 8c72f48`) — [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md). Runtime may include IF/handoff branch fixes **not** in committed redacted export — refresh export only on **material** drift ([OBSERVABILITY.md](OBSERVABILITY.md)).
+**02F handoff (recorded):** GIS `58c5c46` — safe-text handoff + **`latest-gis-handoff.md`** Telegram document + commit notify (`Previous: 7a59bbf`) — [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md). Prior `2a2ff31` / `02` path superseded by `02F`.
+
+**Export refresh:** Needed when runtime stabilizes after superseded-workflow cleanup — see [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) PM-07; [OBSERVABILITY.md](OBSERVABILITY.md).
 
 ---
 

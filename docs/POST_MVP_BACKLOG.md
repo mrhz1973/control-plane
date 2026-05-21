@@ -14,7 +14,8 @@
 | **Decision** | **D-C1-A** (2026-05-21) — **not** strict **5/5 PASS** |
 | **C1** | **PARTIAL** accepted — SLA best-effort **1–5 min** (v4 polling) |
 | **C2–C5** | **PASS** |
-| **v4 multirepo watcher** | **Active** — `02 - CP v4 multirepo polling - TARGET ON` (1 min schedule) |
+| **v4 multirepo watcher** | **Active** — `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` (1 min) |
+| **Superseded workflows** | `02`, `02B`–`02E`, `90`–`93` — cleanup **pending** (separate gate) |
 | **v4 single-repo legacy** | **Off** — `01 - CP v4 single-repo polling - LEGACY OFF` |
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
@@ -54,17 +55,27 @@
 
 ---
 
-### PM-06 — Automatic GIS handoff (multirepo watcher)
+### PM-06 — Automatic GIS handoff + safe text file (02F)
 
 | Field | Value |
 |-------|--------|
-| **Status** | **PASS** (technical base) — commit `2a2ff31` → watcher `02` → handoff Telegram **`Prompt ready: yes`** |
-| **Why** | Prove handoff branch fires on real GIS commit without Manual Trigger |
-| **Evidence** | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) — automatic GIS handoff section |
-| **UX gap** | Same-minute messages; handoff arrived **before** commit notification (parallel n8n branches) — **PASS** technically |
-| **Next improvement** | Telegram handoff should include **prompt / path / next action**, not only `Prompt ready: yes` |
-| **Next improvement (optional)** | Order commit notification before handoff result |
-| **Runtime** | No change required for PASS record; v5 **off**; webhook **not configured** |
+| **Status** | **PASS** — `02F` on GIS `58c5c46`: safe-text Telegram + **`latest-gis-handoff.md`** attachment + commit notify |
+| **Prior** | `2a2ff31` via `02` — preview-only path ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
+| **Delivered** | Prompt ready **yes**; generated prompt available **yes** (length 2884); no parse error; no long prompt in Telegram body |
+| **UX gap (non-blocking)** | Handoff/file before commit notify (parallel branches) |
+| **Next improvement (optional)** | Order commit notification before handoff/file |
+| **Runtime** | v5 **off**; webhook **not configured** |
+
+---
+
+### PM-07 — n8n superseded workflow cleanup
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Pending** — separate runtime gate |
+| **Why** | `02F` is target; retire experimental `02`, `02B`, `02C`, `02D`, `02E`, `90`, `91`, `92`, `93` |
+| **Runtime** | **Yes** — n8n UI delete/archive only; one gate; **no** docs task |
+| **Not in scope** | Export refresh (follow after stabilization) |
 
 ---
 

@@ -17,7 +17,7 @@ This repo holds documentation, workflow exports, and rebuild instructions for a 
 
 ## Current status
 
-See **[docs/MVP_STATUS.md](docs/MVP_STATUS.md)** — operational MVP accepted (**D-C1-A**); C1 **PARTIAL**; **multirepo watcher active**, single-repo legacy off; v5 off; webhook not configured.
+See **[docs/MVP_STATUS.md](docs/MVP_STATUS.md)** — operational MVP accepted (**D-C1-A**); C1 **PARTIAL**; active **`02F`** multirepo + handoff file; legacy `01` off; v5 off; webhook not configured.
 
 ## MVP deadline
 

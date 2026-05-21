@@ -409,6 +409,25 @@ HANDOFF_EXIT=0
 
 ---
 
+## 02F safe text + Telegram document handoff PASS
+
+**Trigger:** `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` (scheduled poll) — superseded experimental workflows `02` / `02B`–`02E` for this path.
+
+| Field | Value |
+|-------|--------|
+| **GIS commit** | `58c5c46` (`58c5c4650772d21ffd6e8edacf2c536ffd4a4bf0`) — `docs: final retest handoff safe text file attachment` |
+| **Safe text Telegram** | **PASS** — `Prompt ready: yes`; exit **0**; generated prompt available **yes**; length **2884**; task/operation/risk fields present; **no** Markdown/entities parse error; **no** full prompt in message body |
+| **Document Telegram** | **PASS** — `latest-gis-handoff.md` attached (~4.5 KB) |
+| **Prompt file path (n8n)** | `/home/node/.n8n-files/latest-gis-handoff.md` |
+| **Commit notify** | **PASS** — New `58c5c46`; Previous `7a59bbf` |
+| **n8n execution** | `02F` runs **succeeded** — safe text + file + commit branches |
+
+**UX note (non-blocking):** Handoff/file Telegram still arrives **before** commit notification (parallel branches). Technical **PASS**; optional ordering improvement in [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md).
+
+**Cleanup (separate gate):** Delete or archive superseded workflows `02`, `02B`, `02C`, `02D`, `02E`, `90`, `91`, `92`, `93` in n8n UI — **not** done in this docs task.
+
+---
+
 ## Docs-only path (now)
 
 | Step | Status |
@@ -423,7 +442,8 @@ HANDOFF_EXIT=0
 | Runtime repo fix (root `safe.directory`) | **Applied** — [Runtime repos verified](#runtime-repos-repaired--verified) |
 | Manual Trigger retry + Telegram | **PASS** — [Manual n8n workflow + Telegram PASS](#manual-n8n-workflow--telegram-pass) |
 | Automatic GIS handoff (multirepo `02`) | **PASS** — [Automatic GIS handoff](#automatic-gis-handoff-from-multirepo-watcher-pass) |
-| MVP criterion 2 closure | **PASS** (manual + automatic GIS path evidenced) |
+| 02F safe text + file handoff | **PASS** — [02F section](#02f-safe-text--telegram-document-handoff-pass) |
+| MVP criterion 2 closure | **PASS** (manual + automatic GIS + safe text/file handoff evidenced) |
 
 Criterion 2 closure recorded from real n8n manual workflow + Telegram on phone.
 

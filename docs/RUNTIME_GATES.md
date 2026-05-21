@@ -90,10 +90,12 @@ When a real gate is reached, give exactly one concrete action and wait for the u
 
 **No runtime authorized by D-C1-A.** Webhook / v5 / public HTTPS = **post-MVP optional** only — not the next automatic gate. Reopen strict C1 only via explicit new decision (former D-C1-B path).
 
-| PM-02 multirepo watcher promotion | **PASS** — `02` active; `01` legacy **off**; dev-method `7f4316e` + GIS `66fe6b5` notify; GIS dedupe no duplicate |
-| Automatic GIS handoff (`02` → handoff branch) | **PASS** — GIS `2a2ff31`; **`Prompt ready: yes`**; exit 0; commit notify `Previous: 8c72f48` |
+| PM-02 multirepo watcher promotion | **PASS** — historical; target now **02F** |
+| Automatic GIS handoff (`02` / `02F`) | **PASS** — `2a2ff31` then **02F** `58c5c46` safe text + file ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
+| 02F safe text + file handoff | **PASS** — safe text Telegram; `latest-gis-handoff.md` document; commit notify; n8n executions succeeded |
+| n8n superseded workflow cleanup | **Pending** — delete/archive `02`, `02B`–`02E`, `90`–`93`; **separate** runtime gate |
 
-**Post-MVP optional:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook — explicit gate only; PM-02 **done**.
+**Post-MVP optional:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook — explicit gate only.
 
 ### Not exceptions (post-MVP — workflow freeze relaxed for new scope)
 
