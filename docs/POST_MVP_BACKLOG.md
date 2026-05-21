@@ -120,6 +120,20 @@
 
 ---
 
+### PM-10 — Implementer auto-handoff preparation
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Plan committed** — watcher **`40`** should emit `plan_detected` on push |
+| **Plan file** | [docs/plans/2026-05-21_1700_control-plane_pm10-automation-next-step.plan.md](plans/2026-05-21_1700_control-plane_pm10-automation-next-step.plan.md) |
+| **Why** | Reduce manual copy-paste after plan_detected; next step toward generated handoff/prompt **file**, not preview-only |
+| **This task** | Docs-only plan commit — **no** n8n change, **no** implementer auto-send |
+| **Next gate** | Confirm Telegram evidence; then design **candidate `41`** only if explicitly opened |
+| **Runtime** | **No** in plan-commit task |
+| **Out of scope** | GIS, dev-method, ALINA LAVORO; v5/webhook; production **`40`** edit |
+
+---
+
 ### PM-03 — New n8n workflows
 
 | Field | Value |
