@@ -10,7 +10,8 @@ Mode: **redact + commit** — **no** n8n UI, **no** re-execute, **no** promotion
 |------|--------|
 | **Expected path** | `C:\Users\mrhz\Downloads\41-unredacted-export-local-only.json` — **not found** |
 | **Used** | `C:\Users\mrhz\Downloads\41 - CP v4 multirepo + plan handoff file - CANDIDATE.json` |
-| **Verified** | `name` = `41 - CP v4 multirepo + plan handoff file - CANDIDATE` |
+| **Verified** | `name` = `41 - CP v4 multirepo + plan handoff file - CANDIDATE` · 30 nodes · `active: false` in source |
+| **n8n local** | `http://localhost:5678/healthz` **200**; API `/api/v1/workflows` **401** (no local API token — export not fetched via API) |
 | **Left outside repo** | Unredacted file remains in Downloads only |
 
 ## Committed deliverable
@@ -51,4 +52,14 @@ Committed JSON is the **user-downloaded** export. If live **`41`** gained PM-12 
 
 Packet: [pm-13-candidate-41-redacted-export-gate.md](../runtime-packets/pm-13-candidate-41-redacted-export-gate.md)
 
-Aggio control
+## PM-13 controls (re-run)
+
+| Control | Result |
+|---------|--------|
+| JSON valid | **PASS** |
+| `git diff --check` | **PASS** |
+| Unredacted in repo / staged | **none** |
+| Production `40` / GIS / DEV / Alina | **not touched** |
+| Workflow execute / activate `41` | **not done** |
+
+Aggiornato: re-verifica export locale + redaction; `pinData` vuoto rimosso dal JSON committato.
