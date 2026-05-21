@@ -27,7 +27,7 @@
 
 Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the active production watcher after PM-02.
 
-**Post-cleanup runtime (PM-07 PASS):** Sole active CONTROL PLANE poll+handoff was **`02F`**; **2026-05-21** user rename in n8n UI → **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`**. Retained off: **`01`** / **`20`** / **`30`** (formerly `03`). **`55`** reserved — not created. See [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md). v5 **off**; webhook **not configured**. ALINA LAVORO **out of scope**.
+**Post-cleanup runtime (PM-07 PASS):** Sole active CONTROL PLANE poll+handoff was **`02F`**; **2026-05-21** user rename in n8n UI → **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`**. Retained off: **`01`** / **`20`** / **`30`** (formerly `03`). **`55`** test-safe only — not production. See [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md). v5 **off**; webhook **not configured**. ALINA LAVORO **out of scope**.
 
 **Export hygiene (pending):** Committed redacted JSON below may still show workflow name **`02F`** — historical until deliberate re-export (PM-08 pattern) after runtime rename alignment.
 
@@ -184,18 +184,18 @@ Criterion 4 remains **PASS** for operational visual match. A future export/diff 
 
 ## Inventory summary
 
-All committed exports (9 files):
+**`workflows/exports/`** holds **20** committed `.redacted.json` files (bootstrap set, PM-09 plan-watcher test-safe exports, Gate C+D+FILE candidates). The tree below is the **core rebuild / bootstrap set** only — not a full directory listing. Plan-watcher production alignment: [§ PM-09 Gate C+D+FILE candidate](#pm-09-gate-cdfile-candidate-2026-05-21).
 
 ```text
-workflows/exports/
+workflows/exports/   # core set (9) — see note above for full count
 ├── 2026-05-20_telegram-manual-notification-test.redacted.json
 ├── 2026-05-20_github-latest-commit-manual-notify.redacted.json
 ├── 2026-05-20_github-commit-poll-dedupe-notify.redacted.json          # historical
 ├── 2026-05-20_github-commit-poll-dedupe-notify-v2.redacted.json        # failed dedupe — do not use
 ├── 2026-05-20_github-commit-datatable-dedupe-notify-v3.redacted.json    # Data Table manual PASS
 ├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json # legacy single-repo (01 LEGACY OFF)
-├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json  # pre-02F basis
-├── 2026-05-21_github-commit-datatable-dedupe-scheduled-v4-multirepo-02f-handoff-safe-text.redacted.json  # canonical 02F rebuild export
+├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json  # pre-40 basis
+├── 2026-05-21_github-commit-datatable-dedupe-scheduled-v4-multirepo-02f-handoff-safe-text.redacted.json  # canonical handoff rebuild (JSON name 02F)
 └── 2026-05-20_github-push-webhook-datatable-dedupe-notify-v5.redacted.json  # inactive future
 ```
 

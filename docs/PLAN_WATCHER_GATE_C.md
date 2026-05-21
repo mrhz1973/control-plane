@@ -35,8 +35,8 @@ Gate C covers **detection and normalization**. Gate D covers **Telegram delivery
 
 | In scope | Out of scope |
 |----------|--------------|
-| Commits touching `docs/plans/*.plan.md` in watched repos (v1: **control-plane** primary) | GIS handoff branch logic (existing 02F path) |
-| Parse YAML front matter per [Gate B schema](PLAN_OUTPUT_INGESTION.md#required-yaml-front-matter) | Full plan body in Telegram (Gate D) |
+| Commits touching `docs/plans/*.plan.md` in watched repos (v1: **control-plane** primary) | GIS handoff branch logic (separate path in active **`40`**) |
+| Parse YAML front matter per [Gate B schema](PLAN_OUTPUT_INGESTION.md#required-yaml-front-matter) | Full plan body pasted into Telegram message text only (Gate D uses summary + `.md` file) |
 | Emit `plan_detected` normalized event | Cursor IDE provider API |
 | Dedupe by plan path + content/commit identity | v5 webhook, strict C1 reopen |
 | Skip `sample: true` files | ALINA LAVORO, dev-method, GIS repo changes |
@@ -90,85 +90,47 @@ Gate D consumes `plan_detected` to build Telegram payload per [PLAN_OUTPUT_INGES
 
 ---
 
-## Candidate architecture A — extend **02F**
+## Production algorithm (active **40**, v4 polling)
 
-Add an isolated branch on **`02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT`** triggered when the polled repo is `mrhz1973/control-plane` and the latest commit includes changes under `docs/plans/*.plan.md`.
+On each **1 min** schedule poll in **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`**:
 
-| Pros | Cons |
-|------|------|
-| Reuses existing 1 min schedule and multirepo GitHub poll | Increases **02F** complexity — regression risk on GIS handoff + commit notify |
-| Aligns with PM-07 “sole active CP poll+handoff” | Plan logic coupled to handoff workflow |
-| No second active schedule | Requires **02F modification gate** + export refresh (PM-08 pattern) |
-| control-plane already in watched repo list | Harder to test plan path in isolation |
+```text
+1. Poll latest commit for watched repos (v4 schedule; not v5/webhook)
+2. List commit-changed files (GitHub API)
+3. Filter paths matching docs/plans/*.plan.md (control-plane primary)
+4. For each matching file:
+   a. Fetch file content at commit SHA
+   b. Parse YAML front matter
+   c. If sample: true → skip (plan_skip_sample)
+   d. If invalid / missing mandatory fields → plan_skip_invalid (no plan_detected, no Gate D)
+   e. Compute dedupe_key; Data Table duplicate → plan_skip_duplicate
+   f. Upsert dedupe_key; emit plan_detected
+5. IF plan_detected → Gate D: Telegram plan_detected message + fetch/write .md → Telegram document
+```
 
-**Mitigations:** early IF exit (repo ≠ control-plane → skip plan branch); separate Code node module; manual trigger test before publish; duplicate-skip via Data Table key prefix `plan:`.
-
----
-
-## Candidate architecture B — new workflow (PM-03)
-
-Separate n8n workflow (e.g. `03G - CP plan file watcher`) with its own schedule or manual trigger, polling only `mrhz1973/control-plane` commits for `docs/plans/*.plan.md`.
-
-| Pros | Cons |
-|------|------|
-| Isolation — plan watcher testable without touching GIS handoff | Second CONTROL PLANE scheduled workflow — tension with PM-07 cleanup |
-| Smaller blast radius on failure | Duplicates GitHub poll + dedupe infrastructure |
-| Can stay **inactive** until Gate C runtime PASS | Extra operational surface (credentials, schedule, list hygiene) |
-| Easier rollback (delete workflow) | Two workflows may race on same commit |
-
-**Mitigations:** start **inactive** + Manual Trigger only for first runtime gate; merge into **02F** after PASS if PM-07 single-workflow rule is reaffirmed.
+GIS handoff and commit-notify branches run in parallel on the same workflow. **`55`** is test-safe only — not production.
 
 ---
 
-## Recommendation
+## Historical — architecture decision (2026-05-21, pre-closure)
 
-**Primary: extend 02F (architecture A)** with an isolated plan-detection branch for `mrhz1973/control-plane` only.
+**Superseded.** Implemented as architecture A in production **`40`** (formerly **`02F`**). Gate C + D + FILE **PASS** — see [Gate C + D runtime PASS](#gate-c--d-runtime-pass-recorded-2026-05-21) below.
 
-**Rationale:**
+### Candidate architecture A — extend multirepo poll+handoff (selected)
 
-1. **PM-07** established **`02F`** as the sole active CONTROL PLANE polling workflow — a second scheduled poller (B) reopens list hygiene and duplicate-notify concerns.
-2. Plan files v1 live in **control-plane** `docs/plans/`, which **02F** already watches on each poll cycle.
-3. Gate C needs commit visibility, not sub-30s latency — existing 1–5 min SLA (D-C1-A) is sufficient.
-4. Plan branch can **parallel** existing commit-notify path without replacing GIS handoff — same pattern as current parallel branches (see [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) UX note).
+Isolated plan branch on the sole CP polling workflow (then **`02F`**, now **`40`**).
 
-**Fallback:** if **02F** modification gate fails or regression risk is unacceptable, use architecture B as **inactive** manual-test workflow (PM-03 one-off) — **only** with an **explicit new user decision**. Architecture B is **not** the current direction.
+### Candidate architecture B — separate workflow (not selected)
 
----
+Separate scheduled watcher (e.g. PM-03) — fallback only with explicit new decision; production remains **`40`**.
 
-## Runtime direction — Architecture A **selected** (2026-05-21)
+### Decision record
 
 | Item | Detail |
 |------|--------|
-| **Decision** | User selected **Architecture A** — extend **`02F`** with isolated plan-detection branch |
-| **Not selected** | Architecture B (separate PM-03 workflow) — fallback only |
+| **Selected** | Architecture A — extend sole CP poll+handoff workflow |
+| **Not selected** | Architecture B |
 | **Runtime packet** | [runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) |
-| **Next gate** | Controlled **02F** modification in n8n UI — **one step** per [RUNTIME_GATES.md](RUNTIME_GATES.md) |
-| **This decision does NOT authorize** | n8n UI, **02F** edit, import, execution, Telegram, export commit |
-
-Registering decision A prepares the runtime packet only. Opening n8n remains a **separate** user-gated session.
-
----
-
-## Future algorithm (runtime gate)
-
-Execute **one step at a time** per [RUNTIME_GATES.md](RUNTIME_GATES.md).
-
-```text
-1. Poll / receive latest commit for watched repo (02F schedule or manual trigger)
-2. List commit-changed files (GitHub API: compare or commit detail)
-3. Filter paths matching docs/plans/*.plan.md
-4. For each matching file:
-   a. Fetch file content at commit SHA (GitHub API)
-   b. Parse YAML front matter
-   c. If sample: true → skip (log plan_skip_sample)
-   d. Validate all mandatory front-matter fields present and non-empty
-   e. If invalid → log plan_skip_invalid (no Telegram, no plan_detected)
-   f. Compute dedupe_key = plan:<repo_slug>:<plan_path>:<blob_sha or commit_sha>
-   g. Data Table get dedupe_key → if exists → skip (plan_skip_duplicate)
-   h. Upsert dedupe_key
-   i. Emit plan_detected event → hand off to Gate D branch (disabled until Gate D authorized)
-5. Do not send Telegram in Gate C-only session
-```
 
 ---
 
@@ -182,7 +144,7 @@ Execute **one step at a time** per [RUNTIME_GATES.md](RUNTIME_GATES.md).
 | Duplicate (dedupe_key exists) | Log `plan_skip_duplicate`; IF false branch | **No** |
 | Path matches but not `.plan.md` suffix | Ignore (not plan convention) | **No** |
 | GitHub API / n8n runtime unavailable | Workflow error branch; retry on next poll | **No** |
-| Valid new plan | Emit `plan_detected`; upsert dedupe | **No** (Gate D only) |
+| Valid new plan | Emit `plan_detected`; upsert dedupe; Gate D sends text + `.md` file | **Yes** (Gate D) |
 
 Never put raw file content or secrets in error logs committed to git.
 
@@ -195,7 +157,7 @@ Never put raw file content or secrets in error logs committed to git.
 | **Data Table** | Reuse `control_plane_state` or dedicated keys with prefix `plan:` |
 | **Key format** | `plan:<repo_slug>:<plan_path>:<blob_sha>` preferred; fallback `:<commit_sha>` if blob unavailable |
 | **Behavior** | Same path + same content SHA → skip; path changed content → new event |
-| **Goal** | No duplicate `plan_detected` on repeated 1 min polls (same as commit dedupe on 02F) |
+| **Goal** | No duplicate `plan_detected` on repeated 1 min polls (same as commit dedupe on **`40`**) |
 
 ---
 
@@ -225,12 +187,12 @@ Never put raw file content or secrets in error logs committed to git.
 
 | Risk | Mitigation |
 |------|------------|
-| **02F regression** (GIS handoff / commit notify broken) | Isolated IF branch; manual test on inactive copy first; one gate per change |
-| **Duplicate plan notifications** (Gate D) | Dedupe key before emit; test with repeated Manual Trigger |
+| **`40` regression** (GIS handoff / commit notify broken) | Isolated IF branch; test candidates **`41`/`42`/`43`** before promotion |
+| **Duplicate plan notifications** (Gate D) | Dedupe key before emit; repeated poll should skip |
 | **Invalid plan files committed** | Strict front-matter validation; skip silently with observability log |
-| **Sample file triggers production** | Honor `sample: true`; ignore `example-*` in filename optionally |
-| **Workflow sprawl** (architecture B) | Prefer A; if B, keep inactive until PASS |
-| **Export drift** | Re-export redacted JSON after material **02F** change (PM-08 pattern) |
+| **Sample file triggers production** | Honor `sample: true` |
+| **Workflow sprawl** (architecture B) | Not selected; use **`55`** test-safe only if needed |
+| **Export drift** | Re-export redacted JSON after material **`40`** change (PM-08 pattern) |
 
 ---
 
