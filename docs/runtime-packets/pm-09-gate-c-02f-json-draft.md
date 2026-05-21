@@ -68,8 +68,10 @@ Deliver a **redacted, importable n8n JSON** for PM-09 Gate C **first edit** per 
 
 ## Future import gate (manual — separate session)
 
-1. Open n8n UI.
-2. **Import** or **compare** draft JSON — do **not** overwrite production **02F** without review.
+**Preferred:** n8n **Import from URL** using the [raw GitHub URL](#raw-github-url-import) below — not manual file download/upload.
+
+1. Open n8n UI (explicit runtime gate only).
+2. **Import from URL** with raw `raw.githubusercontent.com` link — or compare locally — do **not** overwrite production **02F** without review.
 3. **Do not Execute** in the same step as import.
 4. **Do not send Telegram** — Gate D not authorized.
 5. Verify:
@@ -80,6 +82,26 @@ Deliver a **redacted, importable n8n JSON** for PM-09 Gate C **first edit** per 
    - GIS / commit notify / duplicate skip unchanged
 6. Re-link credentials / chat_id in UI only (never commit).
 7. **Save** only after visual PASS — then optional Manual Trigger in a **next** gate (still no Telegram expectation on stub path).
+
+---
+
+## Raw GitHub URL import
+
+When this draft is committed on **`main`**, prefer **Import from URL** in n8n over manual file download/upload.
+
+| Field | Value |
+|-------|--------|
+| **Repo path** | `workflows/exports/2026-05-21_02f-plan-watcher-first-if-draft.redacted.json` |
+| **Raw URL (use this in n8n)** | `https://raw.githubusercontent.com/mrhz1973/control-plane/main/workflows/exports/2026-05-21_02f-plan-watcher-first-if-draft.redacted.json` |
+| **Do not use** | GitHub blob/HTML page URL (e.g. `github.com/.../blob/main/...`) — n8n needs **raw** JSON |
+
+**Rules:**
+
+- **Import from URL** only in an **explicit runtime gate** — this doc does not authorize import.
+- Import does **not** authorize **Execute**, **Save** over production **02F**, workflow **activation**, or **Telegram**.
+- After import: review nodes/connections → re-link credentials/chat_id in UI → **Save** only in a separate deliberate step.
+
+**Future exports:** same pattern — orchestrator provides `https://raw.githubusercontent.com/mrhz1973/control-plane/<branch>/workflows/exports/<file>.redacted.json`.
 
 ---
 

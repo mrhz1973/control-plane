@@ -77,7 +77,9 @@ For **future** CONTROL PLANE n8n workflow changes (including Gate C **02F** exte
 | Preference | Detail |
 |------------|--------|
 | **Default delivery** | Orchestrator prepares **redacted, importable n8n workflow JSON** and provides it as **file / GitHub link / URL** when possible |
-| **Avoid** | Manual node-by-node reconstruction in n8n UI as the primary path |
+| **GitHub import URL** | When JSON is on GitHub, provide **`raw.githubusercontent.com`** URL for n8n **Import from URL** — **not** the normal GitHub blob/HTML page |
+| **URL pattern** | `https://raw.githubusercontent.com/mrhz1973/control-plane/<branch>/workflows/exports/<filename>.redacted.json` |
+| **Avoid** | Manual node-by-node reconstruction in n8n UI as the primary path; avoid manual download/upload when raw URL works |
 | **Redaction** | Same rules as [WORKFLOW_EXPORT_STATUS.md](../WORKFLOW_EXPORT_STATUS.md) — no token, chat_id, credential ID, webhook URL in git |
 | **Runtime gate** | User imports or merges JSON in n8n UI **one step per gate** — import alone does not authorize Execute or Telegram |
 | **Export refresh** | After material runtime change, commit updated `.redacted.json` under `workflows/exports/` (PM-08 pattern) |

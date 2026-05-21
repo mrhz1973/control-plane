@@ -201,6 +201,8 @@ Naming convention: `YYYY-MM-DD_name.redacted.json` — see [workflows/README.md]
 
 Each export includes a `redaction` note in JSON metadata confirming what was stripped. **Do not modify export JSON in docs-only tasks.**
 
+**Import via GitHub (explicit runtime gate only):** committed `.redacted.json` files may be loaded in n8n via **Import from URL** using the matching **`raw.githubusercontent.com`** link — not the GitHub blob page. Import alone does not authorize Execute or Telegram.
+
 ---
 
 ## Runtime vs committed export

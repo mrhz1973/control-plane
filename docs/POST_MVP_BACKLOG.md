@@ -114,7 +114,7 @@
 | **v5 / webhook** | **Not reopened** |
 | **C1** | Stays **PARTIAL** (D-C1-A) |
 | **Out of scope** | ALINA LAVORO; dev-method; GIS; Cursor provider API |
-| **Next trigger** | Gate **C import** — review/import [JSON draft](runtime-packets/pm-09-gate-c-02f-json-draft.md); no Execute/Telegram in import gate |
+| **Next trigger** | Gate **C import** — [Import from URL](runtime-packets/pm-09-gate-c-02f-json-draft.md#raw-github-url-import) (raw GitHub); no Execute/Telegram in import gate |
 
 ---
 

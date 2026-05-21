@@ -103,6 +103,8 @@ When a real gate is reached, give exactly one concrete action and wait for the u
 
 | PM-09 Gate C runtime (extend **02F** plan watcher) | **Prepared** — architecture **A** selected; [runtime packet](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md); **not executed** — separate n8n session |
 
+**n8n import from GitHub:** use **`raw.githubusercontent.com`** URL in **Import from URL** — separate runtime gate; import does **not** authorize Execute, Save on production **02F**, activation, or Telegram. See [JSON draft § Raw URL](runtime-packets/pm-09-gate-c-02f-json-draft.md#raw-github-url-import).
+
 ### Not exceptions (post-MVP — workflow freeze relaxed for new scope)
 
 | Blocked | Why |

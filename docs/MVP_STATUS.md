@@ -30,7 +30,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
 - **Runtime:** **`02F`** active/published (sole CP poll+handoff); cleanup **PASS**; `01`/`03`/`20` retained off · v5 **off** · webhook **not configured**
-- **Post-MVP:** PM-09 Gate **C** JSON draft ready for import review; VPS **02F** not modified — [JSON draft](runtime-packets/pm-09-gate-c-02f-json-draft.md)
+- **Post-MVP:** PM-09 Gate **C** JSON draft — import via [raw GitHub URL](runtime-packets/pm-09-gate-c-02f-json-draft.md#raw-github-url-import); VPS **02F** not modified
 - **ALINA LAVORO:** out of scope / not touched
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
