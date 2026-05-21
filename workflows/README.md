@@ -42,6 +42,14 @@ Example: `2026-05-20_push-notify.redacted.json`
 - **Criterion 3:** closed (3/3) via draft notifica path — see [END_TO_END_CYCLES.md](../docs/END_TO_END_CYCLES.md)
 - **Next:** criterion 5 rebuild validation or separate runtime promotion gate (not in docs-only registration)
 
+## v4 multirepo 02F — canonical production export (PM-08 PASS)
+
+- **File:** `exports/2026-05-21_github-commit-datatable-dedupe-scheduled-v4-multirepo-02f-handoff-safe-text.redacted.json`
+- **Runtime name:** `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` — **active on VPS**; export in repo has **`active: false`** (import-safe)
+- **Includes:** 1 min schedule; three-repo poll; Data Table dedupe; GIS safe-text handoff + `latest-gis-handoff.md` document branch
+- **Redaction:** same rules as v4 — no token, chat_id, or real credential/workflow/webhook IDs in git
+- **Do not commit:** `02F-unredacted-export-local-only.json` or `*.unredacted.json`
+
 ## Do not commit
 
 - `*.unredacted.json` (listed in [.gitignore](../.gitignore))

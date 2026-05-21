@@ -78,12 +78,13 @@ Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the
 | Field | Value |
 |-------|--------|
 | **Runtime workflow** | `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` — **active/published** (sole CONTROL PLANE polling target) |
-| **Committed 02F export** | **None** — no `*02F*.redacted.json` in `workflows/exports/` |
-| **Status** | **Pending** — **manual n8n UI export gate** ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) PM-08) |
-| **Closest committed file (not 02F)** | `2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` — pre-02F multirepo basis; **lags** safe-text handoff, Execute Command, n8n-files document path, GIS branch wiring |
-| **MVP criterion 4** | Remains **PASS** (redacted exports exist; operational match recorded at closure) — **02F hygiene** is post-MVP audit/rebuild alignment, not a claim that 02F is exported |
+| **Committed 02F export** | **`workflows/exports/2026-05-21_github-commit-datatable-dedupe-scheduled-v4-multirepo-02f-handoff-safe-text.redacted.json`** |
+| **Status** | **Committed** — PM-08 **PASS** (2026-05-21); `active=false` in repo (import-safe) |
+| **Runtime on VPS** | **`02F` remains active/published** — **no** n8n import/export or execution in this commit |
+| **Prior basis (superseded for rebuild)** | `2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` |
+| **MVP criterion 4** | Remains **PASS** — additional 02F export strengthens rebuild record; C1 **not** relabeled PASS |
 
-### What the 02F export must capture (after manual export)
+### What the committed 02F export contains
 
 - Workflow name matching runtime: **`02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT`**
 - Schedule trigger (**1 min**) and **three-repo** multirepo list (`control-plane`, `dev-method`, `cursor-coordinate-converter`)
@@ -109,11 +110,9 @@ Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the
 
 Add JSON metadata `redaction` note listing what was stripped (same pattern as existing exports). **Inspect** full file before `git add` — do not trust filename alone.
 
-### Suggested committed path (when gate completes)
+**Redaction verified before commit:** placeholders only (`__CONFIGURE_CHAT_ID_IN_N8N_UI__`, `__REDACTED_N8N_CREDENTIAL_ID__`, `__REDACTED_VERSION_ID__`); no `*.unredacted.json` in git.
 
-`workflows/exports/YYYY-MM-DD_github-commit-datatable-dedupe-scheduled-v4-multirepo-02f-handoff-safe-text.redacted.json`
-
-Naming: [workflows/README.md](../workflows/README.md). **This docs task:** no export file created.
+Naming: [workflows/README.md](../workflows/README.md).
 
 ---
 
@@ -170,7 +169,7 @@ Criterion 4 remains **PASS** for operational visual match. A future export/diff 
 
 ## Inventory summary
 
-All committed exports (8 files):
+All committed exports (9 files):
 
 ```text
 workflows/exports/
@@ -179,10 +178,10 @@ workflows/exports/
 ├── 2026-05-20_github-commit-poll-dedupe-notify.redacted.json          # historical
 ├── 2026-05-20_github-commit-poll-dedupe-notify-v2.redacted.json        # failed dedupe — do not use
 ├── 2026-05-20_github-commit-datatable-dedupe-notify-v3.redacted.json    # Data Table manual PASS
-├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json # legacy single-repo export (runtime LEGACY OFF)
-├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json  # multirepo basis — lags 02F (no 02F export yet)
+├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4.redacted.json # legacy single-repo (01 LEGACY OFF)
+├── 2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json  # pre-02F basis
+├── 2026-05-21_github-commit-datatable-dedupe-scheduled-v4-multirepo-02f-handoff-safe-text.redacted.json  # canonical 02F rebuild export
 └── 2026-05-20_github-push-webhook-datatable-dedupe-notify-v5.redacted.json  # inactive future
-# pending PM-08: YYYY-MM-DD_...-02f-handoff-safe-text.redacted.json
 ```
 
 Naming convention: `YYYY-MM-DD_name.redacted.json` — see [workflows/README.md](../workflows/README.md).

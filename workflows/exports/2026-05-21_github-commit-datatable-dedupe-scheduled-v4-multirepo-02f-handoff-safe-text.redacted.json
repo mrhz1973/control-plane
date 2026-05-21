@@ -1,0 +1,648 @@
+{
+  "name": "02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-02f-redacted",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2464,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-controlled-polling-02f-redacted",
+      "name": "Schedule Trigger - controlled polling",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2464,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "returnAll": true
+      },
+      "id": "data-table-load-all-state-rows-02f-redacted",
+      "name": "Data Table - Load all state rows",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -2240,
+        368
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// DRAFT — run once for all items from Load all (0..N state rows); always output 3 repo targets.\n// $('Data Table - Load all state rows').all() remains valid for Decide on this execution path.\nconst repos = [\n  { ownerRepo: 'mrhz1973/control-plane', stateKey: 'github:mrhz1973/control-plane:last_commit_sha', sourceRepo: 'mrhz1973/control-plane' },\n  { ownerRepo: 'mrhz1973/dev-method', stateKey: 'github:mrhz1973/dev-method:last_commit_sha', sourceRepo: 'mrhz1973/dev-method' },\n  { ownerRepo: 'mrhz1973/cursor-coordinate-converter', stateKey: 'github:mrhz1973/cursor-coordinate-converter:last_commit_sha', sourceRepo: 'mrhz1973/cursor-coordinate-converter' }\n];\nreturn repos.map((r) => ({ json: r }));"
+      },
+      "id": "emit-watched-repos-3-02f-redacted",
+      "name": "Emit watched repos (3)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2016,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.ownerRepo }}/commits?per_page=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "control-plane-n8n-datatable-dedupe-scheduled-multirepo-draft"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "github-fetch-latest-commit-per-repo-02f-redacted",
+      "name": "GitHub - Fetch latest commit (per repo)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1792,
+        368
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "__REDACTED_N8N_CREDENTIAL_ID__",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Pair by item index: Emit (3) + HTTP response for same repo.\nconst target = $('Emit watched repos (3)').item.json;\nconst resp = $input.item.json;\nconst commit = Array.isArray(resp) ? resp[0] : resp;\nconst sha = commit?.sha || '';\nconst rawMessage = commit?.commit?.message || 'no commit message';\nconst message = rawMessage.split('\\n')[0];\nconst url = commit?.html_url || 'no URL';\nreturn {\n  json: {\n    stateKey: target.stateKey,\n    currentSha: sha,\n    shortSha: sha ? sha.substring(0, 7) : '',\n    message,\n    url,\n    sourceRepo: target.sourceRepo,\n    ownerRepo: target.ownerRepo\n  }\n};"
+      },
+      "id": "prepare-latest-commit-event-02f-redacted",
+      "name": "Prepare latest commit event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1568,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Join all Prepare items (3 repos) with state snapshot; missing Data Table row => storedValue ''.\nconst prepareItems = $('Prepare latest commit event').all();\nconst stateRows = $('Data Table - Load all state rows').all().map((entry) => entry.json);\nreturn prepareItems.map((item) => {\n  const latest = item.json;\n  const row = stateRows.find((r) => r.key === latest.stateKey);\n  const storedValue = row?.value || '';\n  const isNew = Boolean(latest.currentSha && latest.currentSha !== storedValue);\n  return {\n    json: {\n      ...latest,\n      previousSha: storedValue || '',\n      isNew,\n      hadStateRow: Boolean(row?.key)\n    }\n  };\n});"
+      },
+      "id": "decide-data-table-dedupe-02f-redacted",
+      "name": "Decide Data Table dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1344,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "is-new-commit-condition-multirepo-draft",
+              "leftValue": "={{ $json.isNew }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-new-commit-02f-redacted",
+      "name": "IF - New commit?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ $json.stateKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ $json.stateKey }}",
+            "value": "={{ $json.currentSha }}",
+            "updated_at": "={{ $now.toISO() }}",
+            "note": "={{ 'Latest notified commit SHA for scheduled poll: ' + $json.sourceRepo }}"
+          },
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "note",
+              "displayName": "note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "data-table-upsert-last-seen-commit-02f-redacted",
+      "name": "Data Table - Upsert last seen commit",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -896,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const latest = $('Decide Data Table dedupe').item.json;\nconst previous = latest.previousSha ? latest.previousSha.substring(0, 7) : 'none';\nconst title = latest.message || 'no commit message';\nreturn {\n  json: {\n    text: `CONTROL PLANE scheduled poll commit notification\\nRepo: ${latest.sourceRepo}\\nNew commit: ${latest.shortSha}\\nPrevious: ${previous}\\nMessage: ${title}\\nURL: ${latest.url}`\n  }\n};"
+      },
+      "id": "format-data-table-telegram-message-02f-redacted",
+      "name": "Format Data Table Telegram message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "__CONFIGURE_CHAT_ID_IN_N8N_UI__",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-send-data-table-deduped-message-02f-redacted",
+      "name": "Telegram - Send Data Table deduped message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        368
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "__REDACTED_N8N_CREDENTIAL_ID__",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  json: {\n    status: 'duplicate_skip',\n    reason: 'Latest commit already stored in control_plane_state for this repo key',\n    stateKey: $json.stateKey,\n    sourceRepo: $json.sourceRepo,\n    currentSha: $json.currentSha,\n    previousSha: $json.previousSha\n  }\n};"
+      },
+      "id": "duplicate-skip-no-telegram-02f-redacted",
+      "name": "Duplicate skip - no Telegram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "command": "mkdir -p /home/node/.n8n-files && node /files/handoff-runtime/dev-method/tools/handoff-generate.mjs --repo /files/handoff-runtime/cursor-coordinate-converter --method /files/handoff-runtime/dev-method --implementer cursor --out /home/node/.n8n-files/latest-gis-handoff.md --strict-format --require-ready && cat /home/node/.n8n-files/latest-gis-handoff.md"
+      },
+      "id": "execute-command-handoff-dry-run-02f-redacted",
+      "name": "Execute Command - handoff dry-run",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\nconst stdout = String(item.stdout || item.data || item.output || '');\nconst stderr = String(item.stderr || '');\nconst exitCode = item.exitCode ?? item.code ?? item.exit_code ?? 0;\nconst fullPromptPath = '/home/node/.n8n-files/latest-gis-handoff.md';\nconst attachedFileName = 'latest-gis-handoff.md';\n\nfunction extractLine(label, fallback = '[not found]') {\n  const escaped = label.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\n  const re = new RegExp(`^${escaped}:\\\\s*(.*)$`, 'mi');\n  const m = stdout.match(re);\n  return m && m[1] ? m[1].trim() : fallback;\n}\n\nfunction extractGeneratedPrompt() {\n  const marker = '## Generated prompt';\n  const idx = stdout.indexOf(marker);\n  if (idx === -1) return '';\n  let tail = stdout.slice(idx + marker.length);\n  tail = tail.replace(/^\\s+/, '');\n  const safetyIdx = tail.search(/\\n---\\s*\\n\\s*## Safety summary/i);\n  if (safetyIdx !== -1) tail = tail.slice(0, safetyIdx);\n  return tail.trim();\n}\n\nfunction oneLine(value, fallback = '[not found]') {\n  const s = String(value ?? '').replace(/\\r?\\n/g, ' ').replace(/\\s+/g, ' ').trim();\n  return s || fallback;\n}\n\nfunction limit(value, max = 180) {\n  const s = oneLine(value);\n  return s.length > max ? s.slice(0, max - 3).trimEnd() + '...' : s;\n}\n\nconst promptReady = extractLine('Prompt ready', 'no');\nconst embeddedFormat = extractLine('Embedded format', '[not found]');\nconst taskStatus = extractLine('Task status', '[not found]');\nconst operationType = extractLine('Operation type', '[not found]');\nconst riskLevel = extractLine('Risk level', '[not found]');\nconst targetFiles = extractLine('Target files', '[not specified]');\nconst operationalRepo = extractLine('Operational repo', 'cursor-coordinate-converter');\nconst generatedPromptLengthMeta = extractLine('Generated prompt length', '[not found]');\nconst generatedPromptAvailableMeta = extractLine('Generated prompt available', '[not found]');\n\nconst generatedPrompt = extractGeneratedPrompt();\nconst promptLines = generatedPrompt.split(/\\r?\\n/).map(s => s.trim()).filter(Boolean);\nconst taskLine = promptLines.find(l => /^TASK:/i.test(l)) || promptLines[0] || '[prompt title not found]';\n\nconst generatedPromptLength = generatedPrompt.length || Number(generatedPromptLengthMeta) || 0;\nconst generatedPromptAvailable = generatedPrompt ? 'yes' : generatedPromptAvailableMeta;\n\nconst nextAction =\n  promptReady.toLowerCase().startsWith('yes')\n    ? `Open Telegram attachment ${attachedFileName} and use it in Cursor GIS.`\n    : `Do not paste to Cursor yet. Inspect n8n execution and attached ${attachedFileName}.`;\n\n// Keep this Telegram message deliberately short and plain text.\n// Do NOT include generated prompt preview here: Telegram parse_mode/entity parsing can fail on raw markdown/code.\nconst telegramText = [\n  'CONTROL PLANE handoff',\n  `Prompt ready: ${limit(promptReady, 80)}`,\n  `Target: ${limit(operationalRepo, 120)}`,\n  `Task: ${limit(taskLine, 220)}`,\n  `Operation type: ${limit(operationType, 80)}`,\n  `Risk level: ${limit(riskLevel, 80)}`,\n  `Generated prompt available: ${limit(generatedPromptAvailable, 40)}`,\n  `Generated prompt length: ${limit(generatedPromptLength || generatedPromptLengthMeta, 40)}`,\n  `Exit code: ${exitCode}`,\n  '',\n  `Full prompt file: ${attachedFileName}`,\n  `Path in n8n: ${fullPromptPath}`,\n  `Next action: ${nextAction}`,\n  '',\n  'Prompt preview omitted intentionally. Full prompt is attached as a .md file.'\n].join('\\n');\n\nreturn [{\n  json: {\n    promptReady,\n    embeddedFormat,\n    taskStatus,\n    operationType,\n    riskLevel,\n    targetFiles,\n    target: operationalRepo,\n    exitCode,\n    stderr,\n    fullPromptPath,\n    attachedFileName,\n    generatedPromptFound: Boolean(generatedPrompt),\n    generatedPromptAvailable,\n    generatedPromptLength,\n    taskLine,\n    telegramText,\n  }\n}];"
+      },
+      "id": "parse-handoff-stdout-02f-redacted",
+      "name": "Parse handoff stdout",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "__CONFIGURE_CHAT_ID_IN_N8N_UI__",
+        "text": "={{ $json.telegramText }}",
+        "additionalFields": {}
+      },
+      "id": "telegram-send-handoff-result-02f-redacted",
+      "name": "Telegram - Send handoff result",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "__REDACTED_N8N_CREDENTIAL_ID__",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "df54fdf9-284b-40ee-a0fb-e6868d25d3c4",
+              "leftValue": "={{ $json.ownerRepo || $json.sourceRepo }}",
+              "rightValue": "mrhz1973/cursor-coordinate-converter",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -896,
+        176
+      ],
+      "id": "if-gis-repo-for-handoff-02f-redacted",
+      "name": "IF - GIS repo for handoff?"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/latest-gis-handoff.md",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        176
+      ],
+      "id": "read-write-files-from-disk-02f-redacted",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "__CONFIGURE_CHAT_ID_IN_N8N_UI__",
+        "binaryData": true,
+        "additionalFields": {
+          "caption": "CONTROL PLANE handoff file\nTarget: cursor-coordinate-converter\nFull prompt attached: latest-gis-handoff.md"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        176
+      ],
+      "id": "telegram-send-handoff-file-02f-redacted",
+      "name": "Telegram - Send handoff file",
+      "credentials": {
+        "telegramApi": {
+          "id": "__REDACTED_N8N_CREDENTIAL_ID__",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Load all state rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger - controlled polling": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Load all state rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Load all state rows": {
+      "main": [
+        [
+          {
+            "node": "Emit watched repos (3)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Emit watched repos (3)": {
+      "main": [
+        [
+          {
+            "node": "GitHub - Fetch latest commit (per repo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub - Fetch latest commit (per repo)": {
+      "main": [
+        [
+          {
+            "node": "Prepare latest commit event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare latest commit event": {
+      "main": [
+        [
+          {
+            "node": "Decide Data Table dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Data Table dedupe": {
+      "main": [
+        [
+          {
+            "node": "IF - New commit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - New commit?": {
+      "main": [
+        [
+          {
+            "node": "IF - GIS repo for handoff?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Data Table - Upsert last seen commit",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Duplicate skip - no Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Upsert last seen commit": {
+      "main": [
+        [
+          {
+            "node": "Format Data Table Telegram message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Data Table Telegram message": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send Data Table deduped message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command - handoff dry-run": {
+      "main": [
+        [
+          {
+            "node": "Parse handoff stdout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse handoff stdout": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telegram - Send handoff result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - GIS repo for handoff?": {
+      "main": [
+        [
+          {
+            "node": "Execute Command - handoff dry-run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send handoff file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "__REDACTED_VERSION_ID__",
+  "meta": {
+    "status": "02F production export record — redacted for git",
+    "basedOn": "2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json",
+    "runtimeWorkflowName": "02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT",
+    "redaction": "No token, no operational chat_id, no credential id, no workflow id, no version id, no instance id, no webhook id, no execution or binary data committed.",
+    "runtimeStatus": "Export record only. active=false in repo. Production runtime on VPS unchanged; no n8n import/export by this commit.",
+    "watchedRepos": [
+      "mrhz1973/control-plane",
+      "mrhz1973/dev-method",
+      "mrhz1973/cursor-coordinate-converter"
+    ],
+    "handoffFile": "latest-gis-handoff.md (n8n-files path in container)",
+    "gisHandoffPass": "58c5c46",
+    "nextGate": "Import only via explicit gate; configure chat_id and credentials in UI."
+  },
+  "tags": [
+    {
+      "name": "not-imported"
+    },
+    {
+      "name": "github"
+    },
+    {
+      "name": "multirepo"
+    },
+    {
+      "name": "dedupe"
+    },
+    {
+      "name": "redacted"
+    },
+    {
+      "name": "control-plane"
+    },
+    {
+      "name": "schedule-capable"
+    },
+    {
+      "name": "datatable"
+    },
+    {
+      "name": "telegram"
+    },
+    {
+      "name": "v4"
+    },
+    {
+      "name": "draft"
+    },
+    {
+      "name": "02f"
+    },
+    {
+      "name": "handoff"
+    },
+    {
+      "name": "safe-text"
+    }
+  ],
+  "triggerCount": 0,
+  "staticData": null
+}

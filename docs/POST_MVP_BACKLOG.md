@@ -19,7 +19,7 @@
 | **v4 single-repo legacy** | **Off** — `01 - CP v4 single-repo polling - LEGACY OFF` |
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
-| **02F redacted export** | **Pending** — manual n8n export gate (PM-08); [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
+| **02F redacted export** | **PASS** — [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) PM-08 |
 | **Next runtime** | **None mandatory** — every item below is **optional** and **gated** |
 
 ---
@@ -86,10 +86,10 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **Pending** — manual n8n UI export → redact → commit |
-| **Why** | Post-cleanup runtime stabilized on **`02F`**; committed multirepo draft **lags** handoff safe-text + file branches |
-| **Runtime** | **Yes** — export from n8n UI only; workflow stays **active**; **no** import in same gate unless explicitly gated |
-| **Deliverable** | One redacted JSON under `workflows/exports/`; update [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) |
+| **Status** | **PASS** — redacted export committed 2026-05-21 |
+| **Deliverable** | `workflows/exports/2026-05-21_github-commit-datatable-dedupe-scheduled-v4-multirepo-02f-handoff-safe-text.redacted.json` |
+| **Runtime** | **No** import/export/execution in commit task — VPS **`02F` stays active** |
+| **Unredacted** | `02F-unredacted-export-local-only.json` — **not** in git |
 | **Not in scope** | v5/webhook; C1 &lt;30s reopen; ALINA LAVORO; deleting `01`/`03`/`20` |
 | **Docs** | [WORKFLOW_EXPORT_STATUS.md § 02F](WORKFLOW_EXPORT_STATUS.md#02f-redacted-export-status), [OBSERVABILITY.md](OBSERVABILITY.md) |
 
