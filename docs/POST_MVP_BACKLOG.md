@@ -317,13 +317,35 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **OPEN** — decision **not taken** (2026-05-22) |
-| **Why** | Choose next workstream: stabilize / snapshot / Codex CLI / bridge hardening |
+| **Status** | **DECIDED** — **B then C** (2026-05-22) |
 | **Packet** | [pm-28-next-track-decision.md](decision-packets/pm-28-next-track-decision.md) |
-| **Recommended next** | **A** stabilize/stop **or** **B** optional post-promotion snapshot |
-| **PM-18** | **PENDING** |
-| **PM-16 export** | **PENDING** — non-blocking |
-| **Out of scope** | Executing C+D in one window; auto Codex worker |
+| **Session** | [pm29 B then C](sessions/2026-05-22-control-plane-pm29-snapshot-decision-b-then-c.md) |
+| **Order** | B snapshot first · C Codex CLI after B closed or PENDING |
+
+---
+
+### PM-29 — Post-promotion snapshot
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PENDING** (2026-05-22) — no runtime export available locally/API |
+| **Target** | `workflows/exports/2026-05-22_40-classifier-bridge-post-promotion.redacted.json` |
+| **Doc** | [PM29_POST_PROMOTION_SNAPSHOT.md](PM29_POST_PROMOTION_SNAPSHOT.md) |
+| **Blocker** | No Downloads export; `N8N_API_KEY` not set |
+| **Next** | User export from n8n → redact → commit; or proceed to PM-30 |
+
+---
+
+### PM-30 — Codex CLI local setup gate
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Why** | Unblock PM-18 after PM-28 **C** track |
+| **Packet** | [pm-30-codex-cli-local-setup-gate.md](runtime-packets/pm-30-codex-cli-local-setup-gate.md) |
+| **PM-18** | **PENDING** until PM-30 runtime runs |
+| **PM-27** | **`41` backup retained** |
+| **Out of scope** | n8n/workflow edits; auto worker; token commit |
 
 ---
 

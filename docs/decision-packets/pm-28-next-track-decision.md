@@ -2,7 +2,7 @@
 
 **Packet ID:** `pm-28-next-track-decision`  
 **Date:** 2026-05-22  
-**Status:** **OPEN / DECISION NOT TAKEN**
+**Status:** **DECIDED** (2026-05-22)
 
 **Related:** [PM-26 stabilization](../PM26_POST_PROMOTION_STABILIZATION.md) · [pm-27 backup gate](../runtime-packets/pm-27-backup-41-retention-cleanup-gate.md) · [PM-22/23 PASS](../sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md)
 
@@ -64,10 +64,15 @@ Choose the **next workstream** after PM-22 promotion PASS and PM-23 smoke PASS.
 
 ---
 
-## Outcome field (fill when decided)
+## Outcome (decided)
 
 | Field | Value |
 |-------|--------|
-| **Chosen option** | _pending_ |
-| **Date** | _pending_ |
-| **Session** | _pending_ |
+| **Chosen option** | **B then C** |
+| **Date** | 2026-05-22 |
+| **Session** | [pm29 snapshot decision B then C](../sessions/2026-05-22-control-plane-pm29-snapshot-decision-b-then-c.md) |
+
+### Execution order
+
+1. **B** — Post-promotion snapshot (PM-29) — attempted first in [session](../sessions/2026-05-22-control-plane-pm29-snapshot-decision-b-then-c.md); **PENDING** if no local export/API.
+2. **C** — Codex CLI setup (PM-30) — **separate** task; do **not** run in the same task as B closure.
