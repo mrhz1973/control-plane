@@ -171,10 +171,52 @@
 | **Why** | Freeze tested **`41`** as redacted JSON in git before any promotion to **`40`** |
 | **Deliverable** | `workflows/exports/2026-05-21_41-plan-handoff-file-candidate.redacted.json` |
 | **Runtime** | Export source remained **outside repo** (Downloads); **no** n8n re-run in commit task |
-| **Next gate** | **Promotion `41`→`40`** only via **separate explicit packet** — **or** PM-14 automation layer; **not** automatic |
+| **Next gate** | **Promotion `41`→`40`** only via **separate explicit packet** — see PM-14 |
 | **Not authorized** | Promotion done; **`41`** schedule on; production **`40`** replace |
 | **Packet** | [pm-13-candidate-41-redacted-export-gate.md](runtime-packets/pm-13-candidate-41-redacted-export-gate.md) |
 | **Out of scope** | v5/webhook; implementer auto-send; provider API; GIS; DEV; ALINA LAVORO |
+
+---
+
+### PM-14 — Promotion `41` → `40` gate
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Packet prepared** (2026-05-21) — runtime **not authorized** by this packet alone |
+| **Why** | Promote tested **`41`** to production role **`40`**; keep old `40` as `BACKUP OFF` |
+| **Prerequisites** | PM-12 PASS; PM-13 redacted export committed |
+| **Packet** | [pm-14-promote-41-to-40-gate.md](runtime-packets/pm-14-promote-41-to-40-gate.md) |
+| **Runtime** | Future n8n UI session — single-session sequence in [FAST_TRACK_RUNTIME_SEQUENCE.md](runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md) |
+| **PASS criteria** | One active `40`; old `40` kept as `BACKUP OFF`; `30`/`20`/`01` remain OFF; v5/webhook off; C1 stays PARTIAL |
+| **Out of scope** | Auto promotion from Cursor; v5/webhook; GIS; DEV; ALINA LAVORO |
+
+---
+
+### PM-15 — Post-promotion regression gate
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Packet prepared** (2026-05-21) — runtime smoke **not executed** |
+| **Why** | Verify PM-06 / PM-09 / PM-12 behavior on new `40` after PM-14 promotion |
+| **Prerequisites** | PM-14 promotion PASS |
+| **Packet** | [pm-15-post-promotion-regression-gate.md](runtime-packets/pm-15-post-promotion-regression-gate.md) |
+| **Checks** | Commit notify · dedupe · `plan_detected` · plan `.md` attachment · `latest-control-plane-handoff.md` · GIS handoff + dedupe · list integrity · ALINA untouched · C1 stays PARTIAL |
+| **Out of scope** | v5/webhook; strict C1; implementer auto-send; provider API; GIS/DEV/ALINA edits |
+
+---
+
+### PM-16 — Automation router layer (design)
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Design committed** (2026-05-21) — no runtime |
+| **Why** | Define boundary roles: n8n (control-plane), GitHub (source of truth), Ollama (classifier/router), Codex OAuth (future implementer worker) |
+| **Doc** | [PM16_AUTOMATION_ROUTER_LAYER.md](PM16_AUTOMATION_ROUTER_LAYER.md) |
+| **Sequence** | n8n → Ollama decision JSON → Telegram approval → implementer worker (only if authorized) |
+| **Hard limits** | No provider API; no tokens in GitHub; Ollama local-only; Codex never as router |
+| **Next gates** | PM-17 (Ollama classifier dry-run) · PM-18 (Codex OAuth feasibility dry-run) · PM-19 (implementer bridge) — separate packets, in order |
+| **Runbook** | [FAST_TRACK_RUNTIME_SEQUENCE.md](runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md) |
+| **Out of scope** | Runtime install of Ollama/Codex; provider API; v5/webhook; ALINA LAVORO |
 
 ---
 

@@ -85,6 +85,10 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-12 candidate `41` runtime PASS | [docs/sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md](docs/sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md) |
 | PM-13 candidate `41` redacted export (gate) | [docs/runtime-packets/pm-13-candidate-41-redacted-export-gate.md](docs/runtime-packets/pm-13-candidate-41-redacted-export-gate.md) |
 | PM-13 `41` export committed | [workflows/exports/2026-05-21_41-plan-handoff-file-candidate.redacted.json](workflows/exports/2026-05-21_41-plan-handoff-file-candidate.redacted.json) · [session](docs/sessions/2026-05-21-control-plane-41-redacted-export-commit.md) |
+| PM-14 promotion `41` → `40` (packet) | [docs/runtime-packets/pm-14-promote-41-to-40-gate.md](docs/runtime-packets/pm-14-promote-41-to-40-gate.md) |
+| PM-15 post-promotion regression (packet) | [docs/runtime-packets/pm-15-post-promotion-regression-gate.md](docs/runtime-packets/pm-15-post-promotion-regression-gate.md) |
+| PM-16 automation router layer (design) | [docs/PM16_AUTOMATION_ROUTER_LAYER.md](docs/PM16_AUTOMATION_ROUTER_LAYER.md) |
+| Fast-track runtime sequence (runbook) | [docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md](docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md) |
 | Plan file schema | [docs/plans/README.md](docs/plans/README.md) |
 | VPS rebuild | [docs/N8N_REBUILD.md](docs/N8N_REBUILD.md) |
 | Runtime gate discipline | [docs/RUNTIME_GATES.md](docs/RUNTIME_GATES.md) |
