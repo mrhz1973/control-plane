@@ -1,0 +1,87 @@
+# Operating memory
+
+**Status:** active.
+
+Future chats and agents must read this file before changing CONTROL PLANE n8n automation.
+
+---
+
+## Ready-import n8n credential binding
+
+For CONTROL PLANE ready-import workflow JSON, **credential name alone is not enough**.
+
+If a workflow JSON contains only:
+
+```json
+"credentials": {
+  "telegramApi": {
+    "name": "CONTROL PLANE - Telegram Bot"
+  }
+}
+```
+
+n8n may import Telegram nodes as **red / unbound**.
+
+Ready-import JSON must contain **real n8n credential ids** when the goal is zero manual node repair.
+
+**Current ready-import file:**
+
+```text
+workflows/exports/READY_IMPORT_40-control-plane-active-with-credentials.json
+```
+
+**Required:**
+
+| Field | Value |
+|-------|--------|
+| All Telegram nodes `chatId` | `472599368` |
+| All Telegram nodes `credentials.telegramApi.name` | `CONTROL PLANE - Telegram Bot` |
+| All Telegram nodes `credentials.telegramApi.id` | **real** n8n credential id |
+| All GitHub nodes `credentials.githubApi.name` | `GitHub account` |
+| All GitHub nodes `credentials.githubApi.id` | **real** n8n credential id |
+
+**Forbidden in ready-import output:**
+
+- `__CONFIGURE_CHAT_ID_IN_N8N_UI__`
+- `__REDACTED_N8N_CREDENTIAL_ID__`
+- name-only credential blocks (no `id`)
+
+If real credential ids cannot be recovered from n8n API or a **local unredacted export**, **STOP**. Do not generate a fake ready-import file.
+
+**Do not commit:** bot tokens, OAuth secrets, or `.n8n-credential-ids.local.json`.
+
+---
+
+## Build script
+
+```text
+scripts/build-ready-import-40.py
+```
+
+**Inputs (required — script exits with error if missing):**
+
+| Source | Variables / file |
+|--------|------------------|
+| Environment | `TELEGRAM_CREDENTIAL_ID`, `GITHUB_CREDENTIAL_ID` |
+| Local file (gitignored) | `.n8n-credential-ids.local.json` |
+
+Example local file (create at repo root, never commit):
+
+```json
+{
+  "telegramCredentialId": "<from n8n UI or unredacted export>",
+  "githubCredentialId": "<from n8n UI or unredacted export>"
+}
+```
+
+**Recover ids without committing them:**
+
+1. n8n UI → Credentials → open each credential → copy id from URL or export.
+2. Local unredacted workflow export in Downloads (match by credential **name**).
+3. n8n API `GET /api/v1/credentials` with `N8N_API_KEY` (do not print tokens in logs).
+
+---
+
+## Historical note (2026-05-21)
+
+Commit `8b3a468` regenerated ready-import with **name-only** credentials. That output is **invalid** for zero-touch import until rebuilt with real ids via the script above.

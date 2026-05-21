@@ -2,7 +2,7 @@
 
 Personal Automation MVP — **documentation**, redacted n8n workflow exports, and VPS rebuild runbooks. No application runtime code lives in this repo.
 
-**Authoritative snapshot:** [docs/MVP_STATUS.md](docs/MVP_STATUS.md) · **Post-MVP backlog:** [docs/POST_MVP_BACKLOG.md](docs/POST_MVP_BACKLOG.md)
+**Authoritative snapshot:** [docs/MVP_STATUS.md](docs/MVP_STATUS.md) · **Post-MVP backlog:** [docs/POST_MVP_BACKLOG.md](docs/POST_MVP_BACKLOG.md) · **Operating memory (agents):** [docs/OPERATING_MEMORY.md](docs/OPERATING_MEMORY.md)
 
 ---
 
@@ -75,6 +75,7 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 
 | Start here | Doc |
 |------------|-----|
+| Agent operating memory (ready-import rules) | [docs/OPERATING_MEMORY.md](docs/OPERATING_MEMORY.md) |
 | MVP scorecard + runtime table | [docs/MVP_STATUS.md](docs/MVP_STATUS.md) |
 | Optional post-MVP work | [docs/POST_MVP_BACKLOG.md](docs/POST_MVP_BACKLOG.md) |
 | Workflow IDs + candidate policy | [docs/N8N_WORKFLOW_NAMING.md](docs/N8N_WORKFLOW_NAMING.md) |
