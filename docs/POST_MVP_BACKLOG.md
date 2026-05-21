@@ -15,13 +15,13 @@
 | **C1** | **PARTIAL** accepted — SLA best-effort **1–5 min** (v4 polling) |
 | **C2–C5** | **PASS** |
 | **v4 multirepo watcher** | **Active** — `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` (1 min; formerly **`02F`**) |
-| **CONTROL PLANE n8n list** | **01** / **20** / **30** off · **`40`** active/published · **`55`** reserved (not created) — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) |
+| **CONTROL PLANE n8n list** | **01** / **20** / **30** off · **`40`** active/published · backup `40` off · **`55`** reserved (not created) — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) |
 | **v4 single-repo legacy** | **Off** — `01 - CP v4 single-repo polling - LEGACY OFF` |
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
 | **02F redacted export** | **PASS** — [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) PM-08 |
-| **PM-09 plan ingestion** | Gate **A**+**B**+**C design** **PASS**; Gate **C direction A** selected; Gate **C runtime** + **D** pending — [runtime packet](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) |
-| **Next runtime** | **None mandatory** — every item below is **optional** and **gated** |
+| **PM-09 plan ingestion** | Gate **A** + **B** + **C design** + **C runtime** **PASS**; Gate **D** pending / not authorized — [Gate C runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md) |
+| **Next runtime** | **Gate D only if explicitly opened** — no automatic Telegram/orchestrator ingestion step |
 
 ---
 
@@ -76,7 +76,7 @@
 |-------|--------|
 | **Status** | **PASS** — manual cleanup completed (post-02F) |
 | **Active (published)** | **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (formerly **`02F`**) — sole CONTROL PLANE polling+handoff |
-| **Retained (intentional)** | `01` / `20` / `30` **off**; `55` reserved — not created |
+| **Retained (intentional)** | `01` / `20` / `30` **off**; backup `40` **off**; `55` reserved — not created |
 | **Removed from CONTROL PLANE list** | `02`, `02B`, `02C`, `02D`, `02E`, `90`, `91`, `92`, `93` |
 | **Out of scope** | **ALINA LAVORO** folder/workflows (9) — **not** touched |
 | **Next (optional)** | UX: commit notify before handoff/file (PM-06) |
@@ -100,22 +100,23 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | Gate **A** + **B** + **C design** **PASS** (docs-only); Gate **C runtime** + **D** pending |
+| **Status** | Gate **A** + **B** + **C design** + **C runtime** **PASS**; Gate **D** pending / not authorized |
 | **Why** | Avoid manual copy-paste of Cursor Plan text into handoff/Telegram; make plans readable by orchestrator via GitHub |
 | **Desired flow** | Cursor Plan → `docs/plans/` → n8n watcher (gate C) → `plan_detected` → Telegram (gate D) → orchestrator reads GitHub |
 | **Design docs** | [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
 | **Gate B delivered** | Path, naming, schema — [plans/README.md](plans/README.md) |
 | **Gate C design delivered** | Watcher scope, `plan_detected`, dedupe — [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
-| **Gate C runtime direction** | **A selected** — extend **`40`** (formerly **02F**); B = fallback only |
+| **Gate C runtime direction** | **A selected and implemented** — extended **`40`** (formerly **02F**); B = fallback only |
 | **Runtime target** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` |
-| **Gate C runtime packet** | [extend-02f](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) (historical filename) + [first edit plan](runtime-packets/pm-09-gate-c-02f-first-edit-plan.md) |
-| **Gate C runtime edit** | **Pending** — JSON draft uses historical **02F** name; import targets **`40`** after review |
-| **Gate D Telegram** | **Pending / not authorized** |
-| **Runtime now** | **No** — this task does **not** authorize n8n UI, **02F** edit, import, or Telegram send |
+| **Gate C runtime PASS** | [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md) |
+| **Runtime evidence** | Branch-hit PASS, logic test PASS, real GitHub API detect PASS, scheduled active runtime PASS |
+| **Gate C active branch** | `Code - Plan watcher repo gate stub` → `GitHub - Fetch commit details (plan files)` → `Code - Detect real docs/plans plan files` → `Code - Gate C output no Telegram` |
+| **Gate D Telegram** | **Pending / not authorized / not wired** |
+| **Runtime now** | **No new runtime** from this document; Gate C already active in `40`; Gate D requires a new explicit gate |
 | **v5 / webhook** | **Not reopened** |
 | **C1** | Stays **PARTIAL** (D-C1-A) |
 | **Out of scope** | ALINA LAVORO; dev-method; GIS; Cursor provider API |
-| **Next trigger** | Gate **C import** — [Import from URL](runtime-packets/pm-09-gate-c-02f-json-draft.md#raw-github-url-import) (raw GitHub); no Execute/Telegram in import gate |
+| **Next trigger** | Gate **D** design/runtime packet only if explicitly opened; no automatic Telegram plan summary |
 
 ---
 
