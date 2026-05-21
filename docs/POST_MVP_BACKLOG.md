@@ -108,13 +108,13 @@
 | **Gate C design delivered** | Watcher scope, `plan_detected`, dedupe — [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
 | **Gate C runtime direction** | **A selected** — extend **02F** (2026-05-21); B = fallback only |
 | **Gate C runtime packet** | [extend-02f](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) + [first edit plan](runtime-packets/pm-09-gate-c-02f-first-edit-plan.md) |
-| **Gate C runtime edit** | **Pending** — read-only verification done; first IF node not added |
+| **Gate C runtime edit** | **Pending** — [JSON draft import candidate](runtime-packets/pm-09-gate-c-02f-json-draft.md) prepared; VPS **02F** unchanged |
 | **Gate D Telegram** | **Pending / not authorized** |
 | **Runtime now** | **No** — this task does **not** authorize n8n UI, **02F** edit, import, or Telegram send |
 | **v5 / webhook** | **Not reopened** |
 | **C1** | Stays **PARTIAL** (D-C1-A) |
 | **Out of scope** | ALINA LAVORO; dev-method; GIS; Cursor provider API |
-| **Next trigger** | Gate **C runtime step 1** — add IF control-plane plan branch per [first edit plan](runtime-packets/pm-09-gate-c-02f-first-edit-plan.md) |
+| **Next trigger** | Gate **C import** — review/import [JSON draft](runtime-packets/pm-09-gate-c-02f-json-draft.md); no Execute/Telegram in import gate |
 
 ---
 

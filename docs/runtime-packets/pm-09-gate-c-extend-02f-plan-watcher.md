@@ -10,6 +10,8 @@
 
 **First edit plan:** [pm-09-gate-c-02f-first-edit-plan.md](pm-09-gate-c-02f-first-edit-plan.md) — read-only **02F** verification recorded; first runtime edit step defined (**not executed**).
 
+**JSON draft (import candidate):** [pm-09-gate-c-02f-json-draft.md](pm-09-gate-c-02f-json-draft.md) — `workflows/exports/2026-05-21_02f-plan-watcher-first-if-draft.redacted.json` (**not imported**).
+
 ---
 
 ## Purpose

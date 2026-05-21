@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after **PM-09 Gate C** read-only **02F** verification + first edit plan (docs-only). MVP **accepted-with-exception** (D-C1-A).
+**Last consolidated:** after **PM-09 Gate C** 02F JSON draft (file-only). MVP **accepted-with-exception** (D-C1-A).
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -30,7 +30,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
 - **Runtime:** **`02F`** active/published (sole CP poll+handoff); cleanup **PASS**; `01`/`03`/`20` retained off · v5 **off** · webhook **not configured**
-- **Post-MVP:** PM-09 Gate **C** read-only **02F** verified; first edit plan prepared; **02F not modified**; runtime edit pending — [first edit plan](runtime-packets/pm-09-gate-c-02f-first-edit-plan.md)
+- **Post-MVP:** PM-09 Gate **C** JSON draft ready for import review; VPS **02F** not modified — [JSON draft](runtime-packets/pm-09-gate-c-02f-json-draft.md)
 - **ALINA LAVORO:** out of scope / not touched
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
@@ -143,7 +143,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md) | PM-09 design — Cursor Plan → GitHub/Telegram |
 | [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) | PM-09 Gate C design — architecture **A** selected |
 | [runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) | PM-09 Gate C runtime packet |
-| [runtime-packets/pm-09-gate-c-02f-first-edit-plan.md](runtime-packets/pm-09-gate-c-02f-first-edit-plan.md) | PM-09 Gate C first edit plan (02F read-only verified) |
+| [runtime-packets/pm-09-gate-c-02f-json-draft.md](runtime-packets/pm-09-gate-c-02f-json-draft.md) | PM-09 Gate C 02F JSON import draft |
 | [plans/README.md](plans/README.md) | PM-09 plan file directory and schema |
 | [RUNTIME_GATES.md](RUNTIME_GATES.md) | One-step runtime gates |
 | [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) | Telegram / n8n PASS history |

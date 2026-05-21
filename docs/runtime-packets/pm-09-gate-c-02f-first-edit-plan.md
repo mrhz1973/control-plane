@@ -82,7 +82,7 @@ IF - New commit? (true)
 
 ## First runtime edit (recommended — single session step)
 
-**Preferred path (orchestrator):** deliver **redacted 02F JSON** (full workflow or documented delta) for import — user reviews → import **one gate** → credential/chat_id in UI only. See [JSON delivery preference](pm-09-gate-c-extend-02f-plan-watcher.md#operational-preference--n8n-json-delivery-user-2026-05-21).
+**Preferred path (orchestrator):** deliver **redacted 02F JSON** for import — **[JSON draft](../runtime-packets/pm-09-gate-c-02f-json-draft.md)** (`workflows/exports/2026-05-21_02f-plan-watcher-first-if-draft.redacted.json`). User reviews → import **one gate** → credential/chat_id in UI only. See [JSON delivery preference](pm-09-gate-c-extend-02f-plan-watcher.md#operational-preference--n8n-json-delivery-user-2026-05-21).
 
 **Fallback path (manual UI):** if JSON is not yet available, add **only one** isolated entry node — do **not** wire the full chain yet:
 
@@ -176,6 +176,6 @@ Full `plan_detected` test requires nodes 2–6 (separate gates).
 
 ## Next real gate
 
-**Gate C runtime step 1 (preferred):** Orchestrator provides **redacted importable 02F JSON** with plan-branch entry (IF control-plane) → user import/review in n8n → Save → Manual Trigger smoke (no Telegram) → session log.
+**Gate C runtime step 1 (preferred):** Import/review [JSON draft](pm-09-gate-c-02f-json-draft.md) (`2026-05-21_02f-plan-watcher-first-if-draft.redacted.json`) in n8n → verify connections → Save → Manual Trigger smoke in **next** gate (no Telegram).
 
 **Fallback:** manual add of **`IF - Control-plane repo for plan watcher?`** only in UI if JSON not ready.
