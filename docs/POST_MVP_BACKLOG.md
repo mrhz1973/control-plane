@@ -20,7 +20,7 @@
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
 | **02F redacted export** | **PASS** — [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) PM-08 |
-| **PM-09 plan ingestion** | Gate **A**+**B**+**C design** **PASS** (docs-only); Gate **C runtime** + **D** pending — [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
+| **PM-09 plan ingestion** | Gate **A**+**B**+**C design** **PASS**; Gate **C direction A** selected; Gate **C runtime** + **D** pending — [runtime packet](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) |
 | **Next runtime** | **None mandatory** — every item below is **optional** and **gated** |
 
 ---
@@ -105,14 +105,16 @@
 | **Desired flow** | Cursor Plan → `docs/plans/` → n8n watcher (gate C) → `plan_detected` → Telegram (gate D) → orchestrator reads GitHub |
 | **Design docs** | [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
 | **Gate B delivered** | Path, naming, schema — [plans/README.md](plans/README.md) |
-| **Gate C design delivered** | Watcher scope, `plan_detected` event, dedupe, error handling, arch A/B — **no runtime** |
-| **Gate C runtime** | **Not authorized** — **02F** extension (recommended) or PM-03 workflow; explicit gate required |
-| **Gate D Telegram** | **Not authorized** — after Gate C runtime PASS |
+| **Gate C design delivered** | Watcher scope, `plan_detected`, dedupe — [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) |
+| **Gate C runtime direction** | **A selected** — extend **02F** (2026-05-21); B = fallback only |
+| **Gate C runtime packet** | [runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) — **not executed** |
+| **Gate C runtime** | **Pending / not authorized** — packet prepares next n8n session only |
+| **Gate D Telegram** | **Pending / not authorized** |
 | **Runtime now** | **No** — this task does **not** authorize n8n UI, **02F** edit, import, or Telegram send |
 | **v5 / webhook** | **Not reopened** |
 | **C1** | Stays **PARTIAL** (D-C1-A) |
 | **Out of scope** | ALINA LAVORO; dev-method; GIS; Cursor provider API |
-| **Next trigger** | Gate **C runtime** — choose **02F** extension (recommended) or new PM-03 workflow; [RUNTIME_GATES.md](RUNTIME_GATES.md) |
+| **Next trigger** | Gate **C runtime** — [runtime packet](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md); modify **02F** one step per [RUNTIME_GATES.md](RUNTIME_GATES.md) |
 
 ---
 

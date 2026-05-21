@@ -101,6 +101,8 @@ When a real gate is reached, give exactly one concrete action and wait for the u
 
 | PM-08 redacted 02F export | **PASS** — committed `2026-05-21_…-02f-handoff-safe-text.redacted.json`; **no** runtime import; [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md#02f-redacted-export-status) |
 
+| PM-09 Gate C runtime (extend **02F** plan watcher) | **Prepared** — architecture **A** selected; [runtime packet](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md); **not executed** — separate n8n session |
+
 ### Not exceptions (post-MVP — workflow freeze relaxed for new scope)
 
 | Blocked | Why |

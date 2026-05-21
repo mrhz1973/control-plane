@@ -19,7 +19,8 @@ Gate C covers **detection and normalization only** — not Telegram delivery.
 | Item | State |
 |------|--------|
 | **Gate C design** | **Delivered** (this document) |
-| **Gate C runtime** | **Not authorized** — explicit [RUNTIME_GATES.md](RUNTIME_GATES.md) session required |
+| **Gate C runtime direction** | **Architecture A selected** (2026-05-21) — extend **02F** |
+| **Gate C runtime** | **Not authorized** — [runtime packet](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md); explicit session required |
 | **Gate D Telegram** | **Not authorized** |
 | **02F modification** | **Not authorized** by this task |
 | **v5 / webhook** | **Off** / not configured |
@@ -127,9 +128,21 @@ Separate n8n workflow (e.g. `03G - CP plan file watcher`) with its own schedule 
 3. Gate C needs commit visibility, not sub-30s latency — existing 1–5 min SLA (D-C1-A) is sufficient.
 4. Plan branch can **parallel** existing commit-notify path without replacing GIS handoff — same pattern as current parallel branches (see [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) UX note).
 
-**Fallback:** if **02F** modification gate is rejected or regression risk is too high, use architecture B as **inactive** manual-test workflow first (PM-03 one-off), then decide merge vs keep separate.
+**Fallback:** if **02F** modification gate fails or regression risk is unacceptable, use architecture B as **inactive** manual-test workflow (PM-03 one-off) — **only** with an **explicit new user decision**. Architecture B is **not** the current direction.
 
-**Decision deferred to Gate C runtime session** — this design doc does not authorize either path.
+---
+
+## Runtime direction — Architecture A **selected** (2026-05-21)
+
+| Item | Detail |
+|------|--------|
+| **Decision** | User selected **Architecture A** — extend **`02F`** with isolated plan-detection branch |
+| **Not selected** | Architecture B (separate PM-03 workflow) — fallback only |
+| **Runtime packet** | [runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) |
+| **Next gate** | Controlled **02F** modification in n8n UI — **one step** per [RUNTIME_GATES.md](RUNTIME_GATES.md) |
+| **This decision does NOT authorize** | n8n UI, **02F** edit, import, execution, Telegram, export commit |
+
+Registering decision A prepares the runtime packet only. Opening n8n remains a **separate** user-gated session.
 
 ---
 
@@ -223,7 +236,7 @@ Never put raw file content or secrets in error logs committed to git.
 Record PASS in docs after an explicit runtime session when **all** are true:
 
 1. A **non-sample** plan file committed under `docs/plans/` per Gate B convention.
-2. Watcher (02F extension or approved PM-03 workflow) runs via Manual Trigger or schedule poll.
+2. Watcher (**02F** extension per architecture A) runs via Manual Trigger or schedule poll.
 3. Watcher emits **`plan_detected`** with correct fields and public `github_file_url`.
 4. **`sample: true`** file in same commit does **not** emit `plan_detected`.
 5. Second poll with unchanged plan → **duplicate skip** (no second event).
@@ -248,9 +261,11 @@ Record PASS in docs after an explicit runtime session when **all** are true:
 
 ## Next trigger
 
-User/orchestrator opens **Gate C runtime** session and chooses:
+**Gate C runtime** — follow [runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md):
 
-- **A** — extend **02F** (recommended), or  
-- **B** — new PM-03 workflow (inactive manual test first)
+1. Open explicit n8n session (user gate).
+2. Modify **`02F`** per packet — isolated plan branch for `mrhz1973/control-plane` only.
+3. Manual Trigger test → **`plan_detected`**, no Telegram.
+4. Record PASS or STOP per packet criteria.
 
-Then implement **one** runtime step per [RUNTIME_GATES.md](RUNTIME_GATES.md). Gate D remains a **separate** session after Gate C PASS.
+Gate D remains a **separate** session after Gate C runtime PASS. Architecture B only if A fails + explicit new decision.

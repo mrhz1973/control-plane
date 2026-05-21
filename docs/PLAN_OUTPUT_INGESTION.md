@@ -202,8 +202,8 @@ Detect commits that add or change files under `docs/plans/*.plan.md`, validate G
 
 | Option | Summary |
 |--------|---------|
-| **A — Extend 02F** | **Recommended** — isolated branch on control-plane commits; reuses sole active poll workflow ([PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md)) |
-| **B — New PM-03 workflow** | Fallback — separate inactive workflow for manual test; avoids **02F** touch but duplicates poll |
+| **A — Extend 02F** | **Selected** (2026-05-21) — isolated branch on control-plane commits; [runtime packet](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) |
+| **B — New PM-03 workflow** | **Fallback only** — if A fails + explicit new decision |
 
 **Not authorized now:** **02F** modification, new workflow, import, execution.
 
@@ -224,7 +224,7 @@ Non-sample plan committed → watcher emits `plan_detected` once → sample skip
 | **A — Docs / design** | This file + PM-09 backlog entry | **No** | **Delivered** |
 | **B — Local file convention** | Path, naming, schema, `docs/plans/` + sample | **No** | **Delivered** |
 | **C — n8n watcher design** | [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) — algorithm, dedupe, `plan_detected` | **No** (design only) | **Delivered** |
-| **C — n8n watcher runtime** | Implement A or B in n8n | **Yes** — explicit gate; **not authorized** by this task | Pending |
+| **C — n8n watcher runtime** | Implement **02F** extension (architecture **A** selected) | **Yes** — [runtime packet](runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md); **not authorized** by decision task | Pending |
 | **D — Telegram notification** | Send summary/file after `plan_detected` | **Yes** — separate gate after C runtime PASS | Pending |
 
 **Default posture unchanged:** **`02F`** remains sole active CP poll+handoff; v5 **off**; webhook **not configured**; C1 stays **PARTIAL** (D-C1-A).

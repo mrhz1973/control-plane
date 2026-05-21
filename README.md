@@ -41,7 +41,8 @@ Documentation in this repo must be sufficient to recreate the full automation se
 | [docs/MVP_CRITERIA.md](docs/MVP_CRITERIA.md) | Five closure criteria for Automation MVP |
 | [docs/RUNTIME_GATES.md](docs/RUNTIME_GATES.md) | One-step runtime gates (never batched) |
 | [docs/PLAN_OUTPUT_INGESTION.md](docs/PLAN_OUTPUT_INGESTION.md) | PM-09 design — Cursor Plan output ingestion |
-| [docs/PLAN_WATCHER_GATE_C.md](docs/PLAN_WATCHER_GATE_C.md) | PM-09 Gate C plan watcher design (runtime not authorized) |
+| [docs/PLAN_WATCHER_GATE_C.md](docs/PLAN_WATCHER_GATE_C.md) | PM-09 Gate C — architecture **A** selected |
+| [docs/runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](docs/runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) | PM-09 Gate C runtime packet (not executed) |
 | [docs/plans/README.md](docs/plans/README.md) | Structured plan files for future orchestrator ingestion |
 | [docs/TELEGRAM_SETUP.md](docs/TELEGRAM_SETUP.md) | Telegram bot setup (Day 2+) |
 | [docs/N8N_REBUILD.md](docs/N8N_REBUILD.md) | VPS / n8n rebuild; [field validation checklist](docs/N8N_REBUILD.md#field-validation-checklist-criterion-5) (criterion 5) |
