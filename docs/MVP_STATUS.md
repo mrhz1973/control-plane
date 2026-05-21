@@ -59,7 +59,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-18 Codex OAuth feasibility** | **PENDING** — CLI not in PATH; feasibility JSON committed — [PM18](PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) |
 | **PM-19 implementer bridge** | **Dry-run PASS** — mock worker; `dry_run_pass` — [PM19](PM19_IMPLEMENTER_BRIDGE_DRY_RUN.md) |
 | **PM-20 n8n bridge packet** | **PREPARED** — classifier→bridge→Telegram contract; **no** runtime PASS — [PM20](PM20_N8N_BRIDGE_PACKET.md) |
-| **PM-21 bridge candidate `42`** | Bundle **fixed** (Code `$json` not `.first()`); first smoke failed; **no** runtime PASS yet — [fix session](sessions/2026-05-22-control-plane-pm21-first-runtime-error-fix.md) |
+| **PM-21 bridge candidate `42`** | **Runtime PASS** (PM-21C) — `1f46c64`; PM-21 Telegram + `dry_run_pass` mock-worker — [session](sessions/2026-05-22-control-plane-pm21c-bridge-runtime-pass.md) |
 | **CONTROL PLANE n8n list** | **4 workflows** — `40` **ACTIVE** · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |

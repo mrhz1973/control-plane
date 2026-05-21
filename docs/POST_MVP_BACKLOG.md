@@ -224,13 +224,14 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **PREPARED / RUNTIME FIXED / NOT PASS** (2026-05-22) — [prep](sessions/2026-05-22-control-plane-pm21-n8n-bridge-runtime-candidate.md) · [`.first()` fix](sessions/2026-05-22-control-plane-pm21-first-runtime-error-fix.md) |
+| **Status** | **Runtime PASS** (2026-05-22) — [PM-21C PASS](sessions/2026-05-22-control-plane-pm21c-bridge-runtime-pass.md) · [prep](sessions/2026-05-22-control-plane-pm21-n8n-bridge-runtime-candidate.md) · [fix](sessions/2026-05-22-control-plane-pm21-first-runtime-error-fix.md) |
 | **Candidate** | `workflows/exports/READY_IMPORT_42-classifier-bridge-candidate.json` |
 | **Import name** | `42 - CP v4 multirepo + classifier bridge - CANDIDATE OFF` |
 | **Tool** | `tools/build-ready-import-42-bridge-candidate.mjs` |
 | **Doc** | [PM21_N8N_BRIDGE_RUNTIME_CANDIDATE.md](PM21_N8N_BRIDGE_RUNTIME_CANDIDATE.md) |
-| **Note** | First smoke hit Code `.first()` error — bundle fixed; PM-21 Code nodes must use `$json` |
-| **Next** | Re-import fixed **`42`** + one smoke — [packet](runtime-packets/pm-21-n8n-bridge-runtime-candidate-import-gate.md) |
+| **Evidence** | Commit `1f46c64` — commit notify + `plan_detected` + Gate D file + **PM-21 bridge decision** (`dry_run_pass`, mock-worker) |
+| **Note** | Prior `.first()` error fixed in `d85afc2` |
+| **Next** | Promotion **`42`→`40`** only via explicit gate — or PM-18/PM-20 integration on successor |
 | **PM-18** | **PENDING** |
 | **PM-16 export** | **PENDING** — non-blocking |
 | **Out of scope** | Edit published `40`; Codex runtime; GIS/DEV/ALINA |
