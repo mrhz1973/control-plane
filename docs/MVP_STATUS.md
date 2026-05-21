@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after **02F** handoff safe text + file attachment **PASS** (docs registration). MVP **accepted-with-exception** (D-C1-A). Update when criterion or runtime posture changes.
+**Last consolidated:** after n8n CONTROL PLANE workflow cleanup **PASS** (post-02F). MVP **accepted-with-exception** (D-C1-A). Update when criterion or runtime posture changes.
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -29,7 +29,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
-- **Runtime:** **`02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT`** active; legacy `01` off; superseded `02`/`02B`–`02E` cleanup **pending** · v5 **off** · webhook **not configured**
+- **Runtime:** **`02F`** active/published (sole CP poll+handoff); cleanup **PASS**; `01`/`03`/`20` retained off · v5 **off** · webhook **not configured**
 - **Post-MVP:** PM-02 + PM-06 + **02F** handoff file **PASS** — [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)
 
 **Day 5 rule:** If all 5 are not true by Day 5, do **not** add Ollama on Day 6. Stabilize first.
@@ -49,9 +49,9 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | Component | State |
 |-----------|--------|
 | **Active path** | Multirepo v4 polling + handoff — **active** (`02F` **PASS**) |
-| **Active workflow** | `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` — 1 min schedule; control-plane, dev-method, cursor-coordinate-converter |
-| **Superseded (cleanup pending)** | `02`, `02B`, `02C`, `02D`, `02E` (and test ids `90`–`93` if present) — separate runtime cleanup gate |
-| **Legacy workflow** | `01 - CP v4 single-repo polling - LEGACY OFF` — **inactive** |
+| **Active workflow** | `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` — **published**, 1 min; sole CP polling target |
+| **Cleanup** | **PASS** — removed `02`, `02B`–`02E`, `90`–`93` from CONTROL PLANE list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) PM-07) |
+| **Retained (not active poll)** | `01` legacy **off**; `03` handoff manual fallback; `20` v5 webhook **off** |
 | **GitHub read** | Authenticated GitHub API credential in n8n UI |
 | **Flow** | GitHub → dedupe → Telegram; GIS commit → safe-text handoff preview + **`latest-gis-handoff.md`** document |
 | **GIS handoff (02F)** | **PASS** — `58c5c46`; safe text + file attachment ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |

@@ -424,7 +424,7 @@ HANDOFF_EXIT=0
 
 **UX note (non-blocking):** Handoff/file Telegram still arrives **before** commit notification (parallel branches). Technical **PASS**; optional ordering improvement in [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md).
 
-**Cleanup (separate gate):** Delete or archive superseded workflows `02`, `02B`, `02C`, `02D`, `02E`, `90`, `91`, `92`, `93` in n8n UI — **not** done in this docs task.
+**Cleanup (done):** After 02F **PASS**, superseded CONTROL PLANE workflows removed (`02`, `02B`–`02E`, `90`–`93`). **Retained:** `02F` target; `01` legacy off; `03` manual fallback; `20` v5 off. ALINA LAVORO workflows untouched. Details: [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) PM-07.
 
 ---
 
@@ -443,6 +443,7 @@ HANDOFF_EXIT=0
 | Manual Trigger retry + Telegram | **PASS** — [Manual n8n workflow + Telegram PASS](#manual-n8n-workflow--telegram-pass) |
 | Automatic GIS handoff (multirepo `02`) | **PASS** — [Automatic GIS handoff](#automatic-gis-handoff-from-multirepo-watcher-pass) |
 | 02F safe text + file handoff | **PASS** — [02F section](#02f-safe-text--telegram-document-handoff-pass) |
+| n8n CONTROL PLANE cleanup (PM-07) | **PASS** — [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) |
 | MVP criterion 2 closure | **PASS** (manual + automatic GIS + safe text/file handoff evidenced) |
 
 Criterion 2 closure recorded from real n8n manual workflow + Telegram on phone.

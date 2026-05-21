@@ -93,9 +93,11 @@ When a real gate is reached, give exactly one concrete action and wait for the u
 | PM-02 multirepo watcher promotion | **PASS** — historical; target now **02F** |
 | Automatic GIS handoff (`02` / `02F`) | **PASS** — `2a2ff31` then **02F** `58c5c46` safe text + file ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
 | 02F safe text + file handoff | **PASS** — safe text Telegram; `latest-gis-handoff.md` document; commit notify; n8n executions succeeded |
-| n8n superseded workflow cleanup | **Pending** — delete/archive `02`, `02B`–`02E`, `90`–`93`; **separate** runtime gate |
+| n8n superseded workflow cleanup (PM-07) | **PASS** — `02F` only active CP poll; `01`/`03`/`20` retained; `02`/`02B`–`02E`/`90`–`93` removed |
 
-**Post-MVP optional:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook — explicit gate only.
+**Future runtime still requires explicit gate each:** enable v5 / webhook+HTTPS; delete or change `01`; modify `02F`; import/export production workflows; touch ALINA workflows.
+
+**Post-MVP optional:** [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md) → v5 → webhook; redacted export refresh for `02F`.
 
 ### Not exceptions (post-MVP — workflow freeze relaxed for new scope)
 

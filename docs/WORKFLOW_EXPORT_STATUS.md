@@ -44,7 +44,7 @@ Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the
 | Property | Value |
 |----------|--------|
 | **Runtime status** | **Active target:** `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` — handoff safe text + document **PASS** |
-| **Committed export status** | Redacted JSON **lags** runtime (`02F`, safe-text branch, n8n-files path) — refresh after cleanup/stabilization; **not** in 02F docs registration task |
+| **Committed export status** | Redacted JSON **lags** stabilized `02F` runtime — **recommended next** hygiene step after PM-07 cleanup; **not** in this docs task |
 | **Based on** | v4 redacted export |
 | **Watched repos** | `mrhz1973/control-plane`, `mrhz1973/dev-method`, `mrhz1973/cursor-coordinate-converter` |
 | **Data Table keys** | `github:mrhz1973/control-plane:last_commit_sha`, `github:mrhz1973/dev-method:last_commit_sha`, `github:mrhz1973/cursor-coordinate-converter:last_commit_sha` |
@@ -69,7 +69,7 @@ Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the
 
 **02F handoff (recorded):** GIS `58c5c46` — safe-text handoff + **`latest-gis-handoff.md`** Telegram document + commit notify (`Previous: 7a59bbf`) — [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md). Prior `2a2ff31` / `02` path superseded by `02F`.
 
-**Export refresh:** Needed when runtime stabilizes after superseded-workflow cleanup — see [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) PM-07; [OBSERVABILITY.md](OBSERVABILITY.md).
+**Runtime stabilized (PM-07):** CONTROL PLANE list cleaned around **`02F`**. **Export refresh:** recommended next — re-export redacted multirepo when `02F` nodes match production ([OBSERVABILITY.md](OBSERVABILITY.md)); not done in cleanup docs task.
 
 ---
 

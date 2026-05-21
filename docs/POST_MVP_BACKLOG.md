@@ -15,7 +15,7 @@
 | **C1** | **PARTIAL** accepted — SLA best-effort **1–5 min** (v4 polling) |
 | **C2–C5** | **PASS** |
 | **v4 multirepo watcher** | **Active** — `02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT` (1 min) |
-| **Superseded workflows** | `02`, `02B`–`02E`, `90`–`93` — cleanup **pending** (separate gate) |
+| **CONTROL PLANE n8n list** | **Cleaned** — only **`02F`** active/published for polling+handoff; `01`/`03`/`20` retained off |
 | **v4 single-repo legacy** | **Off** — `01 - CP v4 single-repo polling - LEGACY OFF` |
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
@@ -72,10 +72,12 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **Pending** — separate runtime gate |
-| **Why** | `02F` is target; retire experimental `02`, `02B`, `02C`, `02D`, `02E`, `90`, `91`, `92`, `93` |
-| **Runtime** | **Yes** — n8n UI delete/archive only; one gate; **no** docs task |
-| **Not in scope** | Export refresh (follow after stabilization) |
+| **Status** | **PASS** — manual cleanup completed (post-02F) |
+| **Active (published)** | **`02F - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT`** — sole CONTROL PLANE polling+handoff workflow |
+| **Retained (intentional)** | `01` legacy **off**; `03` handoff manual fallback; `20` v5 webhook **off** |
+| **Removed from CONTROL PLANE list** | `02`, `02B`, `02C`, `02D`, `02E`, `90`, `91`, `92`, `93` |
+| **Out of scope** | **ALINA LAVORO** folder/workflows (9) — **not** touched |
+| **Next (optional)** | Redacted export refresh for `02F` ([OBSERVABILITY.md](OBSERVABILITY.md)); UX: commit notify before handoff/file (PM-06) |
 
 ---
 
