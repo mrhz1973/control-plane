@@ -83,6 +83,7 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-11 candidate `41` handoff file (design) | [docs/PM11_CANDIDATE_41_HANDOFF_FILE.md](docs/PM11_CANDIDATE_41_HANDOFF_FILE.md) |
 | PM-12 candidate `41` import gate (packet) | [docs/runtime-packets/pm-12-candidate-41-handoff-file-import-gate.md](docs/runtime-packets/pm-12-candidate-41-handoff-file-import-gate.md) |
 | PM-12 candidate `41` runtime PASS | [docs/sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md](docs/sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md) |
+| PM-13 candidate `41` redacted export (gate) | [docs/runtime-packets/pm-13-candidate-41-redacted-export-gate.md](docs/runtime-packets/pm-13-candidate-41-redacted-export-gate.md) |
 | Plan file schema | [docs/plans/README.md](docs/plans/README.md) |
 | VPS rebuild | [docs/N8N_REBUILD.md](docs/N8N_REBUILD.md) |
 | Runtime gate discipline | [docs/RUNTIME_GATES.md](docs/RUNTIME_GATES.md) |
