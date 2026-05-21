@@ -12,7 +12,7 @@ Mode: **docs-only** — no n8n, VPS, import/export, or workflow JSON edits.
 | **PM-09 Gate D** | Telegram **`plan_detected` text** **PASS** — [live pass](2026-05-21-control-plane-40-gate-d-live-pass.md) |
 | **PM-09 Gate D file** | **`.md` file attachment** **PASS** — [file pass](2026-05-21-control-plane-40-gate-d-file-attachment-pass.md) |
 | **Production workflow** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — published, 1 min, v4 polling |
-| **`55`** | Test-safe only — **not** production |
+| **`55` / backup `40`** | Were test-safe/backup during PM-09; **deleted** from n8n UI in [final n8n cleanup](2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **`01` / `20` / `30`** | Off |
 | **v5 / webhook** | Off / not configured |
 | **C1** | **PARTIAL** (D-C1-A) — **not** strict PASS |

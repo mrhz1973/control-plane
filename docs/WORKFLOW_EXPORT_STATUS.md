@@ -29,7 +29,7 @@
 
 Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the active production watcher after PM-02.
 
-**Post-cleanup runtime (PM-07 PASS):** Sole active CONTROL PLANE poll+handoff was **`02F`**; **2026-05-21** user rename in n8n UI → **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`**. Retained off: **`01`** / **`20`** / **`30`** (formerly `03`). **`55`** test-safe only — not production. See [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md). v5 **off**; webhook **not configured**. ALINA LAVORO **out of scope**.
+**Post-cleanup runtime (PM-07 + final list 2026-05-21):** Production **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (formerly **`02F`**). Final n8n list = **4 workflows** (`40` ACTIVE · `30` / `20` / `01` OFF). Backup `40` and **`55`** test-safe **deleted** from UI after PM-09 PASS — [final n8n cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md). v5 **off**; webhook **not configured**. ALINA **out of scope**.
 
 **Export hygiene (pending):** Committed redacted JSON below may still show workflow name **`02F`** — historical until deliberate re-export (PM-08 pattern) after runtime rename alignment.
 
@@ -86,7 +86,7 @@ Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the
 | **Pending hygiene** | Re-export redacted JSON with **`40`** name when material drift audit requires match |
 | **Committed 02F export** | **`workflows/exports/2026-05-21_github-commit-datatable-dedupe-scheduled-v4-multirepo-02f-handoff-safe-text.redacted.json`** |
 | **Status** | **Committed** — PM-08 **PASS** (2026-05-21); `active=false` in repo (import-safe) |
-| **Runtime on VPS** | **`02F` remains active/published** — **no** n8n import/export or execution in this commit |
+| **Runtime on VPS** | Production **`40`** active/published (historical note: was **`02F`** at PM-08 commit time) |
 | **Prior basis (superseded for rebuild)** | `2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` |
 | **MVP criterion 4** | Remains **PASS** — additional 02F export strengthens rebuild record; C1 **not** relabeled PASS |
 
@@ -130,6 +130,15 @@ Naming: [workflows/README.md](../workflows/README.md).
 | **Runtime** | Candidate validated and promoted/used in production **`40`**; **no** export JSON edit in docs-only tasks |
 
 Prior Gate C-only candidate: `2026-05-21_40-plan-watcher-dropin-candidate-gate-c.redacted.json` ([Gate C runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md)).
+
+### n8n UI cleanup after Gate C+D+FILE PASS (2026-05-21)
+
+| Item | Detail |
+|------|--------|
+| **UI action** | User deleted backup `40` and `55` test-safe workflows from n8n after PM-09 PASS |
+| **Committed exports** | Unchanged — redacted JSON under `workflows/exports/` remains historical/import-safe |
+| **Criterion 4** | Remains **PASS** — export history is not invalidated by deleting runtime test/backup copies |
+| **Docs** | [final n8n cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 
 ---
 

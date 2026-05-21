@@ -8,7 +8,7 @@ Do **not** ask the user to say "vai" for docs-only, GitHub-only, export-template
 
 Proceed automatically through safe preparatory work until a real gate is reached.
 
-**Docs-only batching:** Status/index doc updates (e.g. PM-09 close, export inventory notes) may be **batched in one commit** — they do not open n8n. **Runtime** actions (import, switch, Execute, Telegram, webhook, deploy) remain **one gate at a time** — never batched.
+**Docs-only batching:** Status/index doc updates (e.g. PM-09 close, final n8n list alignment) may be **batched in one commit** — they do not open n8n. **Runtime** actions (import, switch, Execute, Telegram, webhook, deploy, **workflow delete**) remain **one gate at a time** — never batched. After a UI delete/rename, record it in a session note; docs follow-up may be batched.
 
 Stop only when the next action requires one of these:
 
@@ -107,7 +107,7 @@ When a real gate is reached, give exactly one concrete action and wait for the u
 
 **n8n import from GitHub:** use **`raw.githubusercontent.com`** URL in **Import from URL** — separate runtime gate; import does **not** authorize Execute, Save on production **`40`**, activation, or Telegram.
 
-**CONTROL PLANE workflow IDs (runtime):** `01` / `20` / `30` off · **`40`** active (poll+handoff + plan watcher) · **`55`** test-safe only · candidates **`41`/`42`/`43`** — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md). Historical docs may say **`02F`** / **`03`**.
+**CONTROL PLANE workflow IDs (runtime, final list):** **`40` ACTIVE** · **`30` / `20` / `01` OFF** (4 workflows) — backup `40` + **`55`** test-safe **deleted** 2026-05-21 — [final n8n cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md). Future candidates **`41`/`42`/`43`** — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md). Historical docs may say **`02F`** / **`03`** / retained `55`.
 
 ### Not exceptions (post-MVP — workflow freeze relaxed for new scope)
 

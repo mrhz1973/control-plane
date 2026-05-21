@@ -15,7 +15,7 @@
 | **C1** | **PARTIAL** accepted — SLA best-effort **1–5 min** (v4 polling) |
 | **C2–C5** | **PASS** |
 | **v4 multirepo watcher** | **Active** — `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` (1 min; formerly **`02F`**) |
-| **CONTROL PLANE n8n list** | **01** / **20** / **30** off · **`40`** active/published (production) · backup `40` off · **`55`** test-safe only — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) |
+| **CONTROL PLANE n8n list** | **4 workflows** — **`40` ACTIVE** · **`30` / `20` / `01` OFF** — [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md), [final n8n cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **v4 single-repo legacy** | **Off** — `01 - CP v4 single-repo polling - LEGACY OFF` |
 | **v5** | **Off** |
 | **Webhook** | **Not configured** |
@@ -76,7 +76,7 @@
 |-------|--------|
 | **Status** | **PASS** — manual cleanup completed (post-02F) |
 | **Active (published)** | **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (formerly **`02F`**) — sole CONTROL PLANE polling+handoff |
-| **Retained (intentional)** | `01` / `20` / `30` **off**; backup `40` **off**; `55` test-safe only — not production |
+| **Final list (2026-05-21)** | `40` **ACTIVE** · `30` / `20` / `01` **OFF** — backup `40` and `55` test-safe **deleted** from UI after PM-09 PASS |
 | **Removed from CONTROL PLANE list** | `02`, `02B`, `02C`, `02D`, `02E`, `90`, `91`, `92`, `93` |
 | **Out of scope** | **ALINA LAVORO** folder/workflows (9) — **not** touched |
 | **Next (optional)** | UX: commit notify before handoff/file (PM-06) |
@@ -112,7 +112,7 @@
 | **Runtime evidence** | Branch-hit PASS, logic test PASS, real GitHub API detect PASS, scheduled active runtime PASS |
 | **Gate C active branch** | `Code - Plan watcher repo gate stub` → `GitHub - Fetch commit details (plan files)` → `Code - Detect real docs/plans plan files` |
 | **Gate D Telegram** | **PASS** — `plan_detected` text ([live PASS](sessions/2026-05-21-control-plane-40-gate-d-live-pass.md)) + `.md` file attachment ([file PASS](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md)) |
-| **Runtime now** | **No new runtime required** — Gate C+D+FILE validated in active `40`; `55` test-safe only |
+| **Runtime now** | **No new runtime required** — PM-09 closed; n8n list trimmed to 4 workflows ([final cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md)) |
 | **v5 / webhook** | **Not reopened** |
 | **C1** | Stays **PARTIAL** (D-C1-A) |
 | **Out of scope** | ALINA LAVORO; dev-method; GIS; Cursor provider API |

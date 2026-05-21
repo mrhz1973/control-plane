@@ -11,7 +11,7 @@
 
 Single-page snapshot of Automation MVP progress. Details live in linked docs; this file is the index.
 
-**Last consolidated:** after **PM-09 Gate C + D + FILE PASS**. MVP **accepted-with-exception** (D-C1-A).
+**Last consolidated:** after **PM-09 Gate C + D + FILE PASS** and **final CONTROL PLANE n8n list cleanup** (4 workflows). MVP **accepted-with-exception** (D-C1-A).
 
 **Docs-only:** reading or editing this file does not run n8n, open tunnels, or configure webhooks.
 
@@ -29,7 +29,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 - **MVP:** operationally accepted / closed — C1 latency exception (**D-C1-A**); **not** strict 5/5 PASS
 - **Criteria:** C1 PARTIAL (accepted SLA 1–5 min) · C2–C5 PASS
-- **Runtime:** **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** (formerly **`02F`**) — sole CP poll+handoff, **published**, 1 min; **`01`** / **`20`** / **`30`** off · backup `40` off · **`55`** test-safe only (not production) · v5 **off** · webhook **not configured**
+- **Runtime:** **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** — sole CP poll+handoff, **published**, 1 min; final n8n list = **4 workflows** (`40` ACTIVE · `30` / `20` / `01` OFF) — [final n8n cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md); backup `40` and **`55`** test-safe **deleted** from UI after PM-09 PASS · v5 **off** · webhook **not configured**
 - **Post-MVP:** PM-09 Gate **C + D + FILE PASS** in active `40` — [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-gate-c-runtime-pass.md), [Gate D file attachment](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md)
 - **ALINA LAVORO:** out of scope / not touched
 
@@ -53,9 +53,9 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **Active workflow** | `40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE` — **published**, 1 min; sole CP production polling target |
 | **PM-09 Gate C** | **Runtime PASS** — detects `docs/plans/*.plan.md` ([runtime PASS](runtime-packets/pm-09-gate-c-runtime-pass.md)) |
 | **PM-09 Gate D** | **Runtime PASS** — `plan_detected` Telegram text ([Gate D live](sessions/2026-05-21-control-plane-40-gate-d-live-pass.md)) + `.md` file attachment ([Gate D file](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md)) |
-| **Cleanup** | **PASS** — removed `02`, `02B`–`02E`, `90`–`93` from CONTROL PLANE list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) PM-07) |
-| **Retained (not active poll)** | `01` legacy **off**; `30` handoff manual **off** (formerly `03`); `20` v5 webhook **off**; backup `40` **off** |
-| **Test-safe only** | `55` — PM-09 isolated/test-safe family — **not** production ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
+| **CONTROL PLANE n8n list** | **4 workflows** — `40` **ACTIVE** · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
+| **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
+| **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |
 | **GitHub read** | Authenticated GitHub API credential in n8n UI |
 | **Flow** | GitHub → dedupe → Telegram; GIS commit → safe-text handoff + **`latest-gis-handoff.md`**; control-plane plan commit → Gate C detect → Gate D Telegram text + `.md` file |
 | **GIS handoff (`40` / ex-02F)** | **PASS** — `58c5c46`; safe text + file attachment ([HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md)) |
@@ -107,7 +107,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 
 PM-09 Gate **A** + **B** + **C design** + **C runtime** + **D live text** + **D .md file attachment** are **PASS**.
 
-Active production workflow **`40`** is **published** and scheduled (1 min). **`55`** remains test-safe only — not production. **`01`** / **`20`** / **`30`** off; backup `40` off; v5 **off**; webhook **not configured**. **ALINA LAVORO**, **GIS**, and **dev-method** were **not** touched by PM-09 closure.
+Active production workflow **`40`** is **published** and scheduled (1 min). Final n8n list: **`40` ACTIVE** · **`30` / `20` / `01` OFF** (4 workflows). Backup `40` and **`55`** test-safe workflow **deleted** from n8n UI after Gate C+D+FILE PASS (reduce list confusion). v5 **off**; webhook **not configured**. **ALINA LAVORO**, **GIS**, and **dev-method** **not** touched.
 
 Gate C + D branch in active `40`:
 
@@ -180,6 +180,7 @@ Evidence: [runtime-packets/pm-09-gate-c-runtime-pass.md](runtime-packets/pm-09-g
 | [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) | Criterion 2 design |
 | [END_TO_END_CYCLES.md](END_TO_END_CYCLES.md) | Criterion 3 tracker |
 | [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md) | Criterion 4 inventory + v4 match perimeter |
-| [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) | n8n numeric naming (`40` production; `41`–`43` candidates; `55` test-safe) |
+| [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) | n8n numeric naming (`40` production; `41`–`43` candidates; final 4-workflow list) |
 | [sessions/2026-05-21-control-plane-pm09-final-docs-close.md](sessions/2026-05-21-control-plane-pm09-final-docs-close.md) | PM-09 docs consolidation close (2026-05-21) |
+| [sessions/2026-05-21-control-plane-final-n8n-cleanup.md](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) | Final n8n UI list cleanup — backup `40` + `55` deleted (2026-05-21) |
 | [V4_POLLING_LATENCY.md](V4_POLLING_LATENCY.md) | Criterion 1 latency measurement plan |

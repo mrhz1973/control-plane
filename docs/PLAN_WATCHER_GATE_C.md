@@ -23,7 +23,7 @@ Gate C covers **detection and normalization**. Gate D covers **Telegram delivery
 | **Gate D Telegram text** | **PASS** — live scheduled path — [Gate D live](sessions/2026-05-21-control-plane-40-gate-d-live-pass.md) |
 | **Gate D .md file attachment** | **PASS** — [Gate D file](sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md) |
 | **Active production workflow** | **`40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE`** — published, 1 min |
-| **`55`** | Test-safe only — **not** production |
+| **`55` test-safe** | **Deleted** from n8n UI after Gate D file PASS — not in final list |
 | **`01` / `20` / `30`** | **Off** |
 | **v5 / webhook** | **Off** / not configured |
 | **C1** | **PARTIAL** (D-C1-A) — unchanged; **not** strict PASS |
@@ -108,7 +108,7 @@ On each **1 min** schedule poll in **`40 - CP v4 multirepo polling - FILE HANDOF
 5. IF plan_detected → Gate D: Telegram plan_detected message + fetch/write .md → Telegram document
 ```
 
-GIS handoff and commit-notify branches run in parallel on the same workflow. **`55`** is test-safe only — not production.
+GIS handoff and commit-notify branches run in parallel on active **`40`**. Final CONTROL PLANE list = **4 workflows** ([final n8n cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md)).
 
 ---
 
@@ -191,7 +191,7 @@ Never put raw file content or secrets in error logs committed to git.
 | **Duplicate plan notifications** (Gate D) | Dedupe key before emit; repeated poll should skip |
 | **Invalid plan files committed** | Strict front-matter validation; skip silently with observability log |
 | **Sample file triggers production** | Honor `sample: true` |
-| **Workflow sprawl** (architecture B) | Not selected; use **`55`** test-safe only if needed |
+| **Workflow sprawl** (architecture B) | Not selected; historical **`55`** test-safe was deleted after PASS |
 | **Export drift** | Re-export redacted JSON after material **`40`** change (PM-08 pattern) |
 
 ---
@@ -223,4 +223,4 @@ Active **`40`** path (v4 schedule, not webhook): plan detect → `plan_detected`
 
 **None** for PM-09 closure — Gate C + D + FILE are **PASS** in active **`40`**.
 
-Future plan-watcher changes: import/test candidates as **`41`**, **`42`**, or **`43`** (pre-bind known credential names; placeholders only for values that cannot be committed). Promote winner to **`40 - ... - ACTIVE`** per [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md). Architecture B (`55` test-safe) only with explicit new decision.
+Future plan-watcher changes: import/test candidates as **`41`**, **`42`**, or **`43`** (pre-bind known credential names; placeholders only for values that cannot be committed). Promote winner to **`40 - ... - ACTIVE`** per [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md). Separate test-safe workflow only if explicitly gated (historical **`55`** prefix; not in current n8n list).

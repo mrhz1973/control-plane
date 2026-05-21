@@ -17,7 +17,7 @@ This repo holds documentation, workflow exports, and rebuild instructions for a 
 
 ## Current status
 
-See **[docs/MVP_STATUS.md](docs/MVP_STATUS.md)** — operational MVP accepted (**D-C1-A**); C1 **PARTIAL**; **`40`** sole active CP workflow (formerly **`02F`**); v5/webhook not configured — [N8N_WORKFLOW_NAMING.md](docs/N8N_WORKFLOW_NAMING.md).
+See **[docs/MVP_STATUS.md](docs/MVP_STATUS.md)** — operational MVP accepted (**D-C1-A**); C1 **PARTIAL**; **`40`** sole ACTIVE CP workflow; final n8n list = **4** workflows (`40` + `30`/`20`/`01` off); PM-09 Gate C+D+FILE PASS — [N8N_WORKFLOW_NAMING.md](docs/N8N_WORKFLOW_NAMING.md).
 
 ## MVP deadline
 
@@ -46,5 +46,5 @@ Documentation in this repo must be sufficient to recreate the full automation se
 | [docs/plans/README.md](docs/plans/README.md) | Structured plan files for future orchestrator ingestion |
 | [docs/TELEGRAM_SETUP.md](docs/TELEGRAM_SETUP.md) | Telegram bot setup (Day 2+) |
 | [docs/N8N_REBUILD.md](docs/N8N_REBUILD.md) | VPS / n8n rebuild; [field validation checklist](docs/N8N_REBUILD.md#field-validation-checklist-criterion-5) (criterion 5) |
-| [docs/N8N_WORKFLOW_NAMING.md](docs/N8N_WORKFLOW_NAMING.md) | CONTROL PLANE numeric workflow IDs (`01`/`20`/`30`/`40`/`55`) |
+| [docs/N8N_WORKFLOW_NAMING.md](docs/N8N_WORKFLOW_NAMING.md) | CONTROL PLANE workflow IDs — final list `40` ACTIVE + `30`/`20`/`01` OFF |
 | [examples/watched-repos.md](examples/watched-repos.md) | Watched repo rationale |
