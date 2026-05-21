@@ -147,6 +147,19 @@
 
 ---
 
+### PM-12 — Candidate `41` runtime / import gate
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Runtime/import packet committed** — [pm-12-candidate-41-handoff-file-import-gate.md](runtime-packets/pm-12-candidate-41-handoff-file-import-gate.md) |
+| **Why** | Operational checklist for import/test of **`41`** — full handoff file from plan, GIS-style Telegram delivery |
+| **Runtime** | **No** in this docs task; **yes** in next session — **one gate only** (start: import `41` inactive) |
+| **Next gate** | **Gate A** — import `41 - CP v4 multirepo + plan handoff file - CANDIDATE` **inactive** in n8n UI |
+| **Depends on** | PM-11 design; PM-09 **`40`** PASS |
+| **Out of scope** | Production **`40`** switch; v5/webhook; implementer auto-send; provider API; GIS; DEV; ALINA LAVORO |
+
+---
+
 ### PM-03 — New n8n workflows
 
 | Field | Value |
