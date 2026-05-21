@@ -151,12 +151,15 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **Runtime/import packet committed** — [pm-12-candidate-41-handoff-file-import-gate.md](runtime-packets/pm-12-candidate-41-handoff-file-import-gate.md) |
-| **Why** | Operational checklist for import/test of **`41`** — full handoff file from plan, GIS-style Telegram delivery |
-| **Runtime** | **No** in this docs task; **yes** in next session — **one gate only** (start: import `41` inactive) |
-| **Next gate** | **Gate A** — import `41 - CP v4 multirepo + plan handoff file - CANDIDATE` **inactive** in n8n UI |
-| **Depends on** | PM-11 design; PM-09 **`40`** PASS |
-| **Out of scope** | Production **`40`** switch; v5/webhook; implementer auto-send; provider API; GIS; DEV; ALINA LAVORO |
+| **Status** | **Runtime PASS recorded** (2026-05-21) — Gates **A–F PASS** — [session PASS](sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md) |
+| **Why** | Import/test **`41`** — full handoff file from plan → safe path → Telegram short text + document |
+| **Workflow tested** | `41 - CP v4 multirepo + plan handoff file - CANDIDATE` (**inactive** candidate) |
+| **Production** | **`40`** remains **ACTIVE** — not switched |
+| **Gate results** | A import inactive **PASS** · B credentials **PASS** · C Manual Trigger **PASS** · D file write **PASS** · E Telegram **PASS** · F regression/all OK **PASS** (user) |
+| **Not done** | Gate **H** redacted export · Gate **I** promotion `41`→`40` — **not authorized** |
+| **Next gate** | **PM-13** redacted export of **`41`** **or** separate promotion gate — explicit choice only |
+| **Packet** | [pm-12-candidate-41-handoff-file-import-gate.md](runtime-packets/pm-12-candidate-41-handoff-file-import-gate.md) |
+| **Out of scope** | Auto promotion; implementer auto-send; v5/webhook; GIS; DEV; ALINA LAVORO |
 
 ---
 
