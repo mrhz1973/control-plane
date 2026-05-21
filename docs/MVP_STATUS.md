@@ -63,7 +63,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-22 promotion `42`→`40`** | **PASS / EXECUTED** — [session](sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) |
 | **PM-23 post-promotion smoke** | **PASS** — `bfa4710`; four Telegram messages + PM-21 bridge `dryrunpass` mock-worker |
 | **PM-24 rollback** | **NOT NEEDED** |
-| **CONTROL PLANE n8n list** | `40` **ACTIVE** · `41` **BACKUP OFF** · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
+| **PM-26/27/28 stabilization** | **PREPARED** — post-promotion docs; **no** new runtime PASS — [batch](sessions/2026-05-22-control-plane-pm26-pm28-post-promotion-stabilization-batch.md) |
+| **CONTROL PLANE n8n list** | `40` **ACTIVE** · `41` **BACKUP OFF** (retained) · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |
 | **GitHub read** | Authenticated GitHub API credential in n8n UI |

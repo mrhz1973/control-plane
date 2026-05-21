@@ -52,12 +52,14 @@ Operational rule:
 | ID | Workflow name (n8n UI) | State |
 |----|------------------------|--------|
 | **40** | `40 - CP v4 multirepo + classifier bridge - ACTIVE` | **Active/published** — sole CP production (PM-22 promoted from `42`) |
-| **41** | `41 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - BACKUP OFF` | **Off** — rollback source; **do not delete** until explicit cleanup gate |
+| **41** | `41 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - BACKUP OFF` | **Off** — rollback source; **intentionally retained** after PM-22/23 PASS — [PM-27 gate](runtime-packets/pm-27-backup-41-retention-cleanup-gate.md) |
 | **30** | `30 - CP handoff manual Telegram v1 - OFF` | **Off** |
 | **20** | `20 - CP v5 push webhook - OFF` | **Off** |
 | **01** | `01 - CP v4 single-repo polling - LEGACY OFF` | **Off** |
 
 **No `42` in use** after PM-22 PASS. **No duplicate numeric IDs.**
+
+**Retention:** Do **not** delete **`41`** until [PM-27 cleanup gate](runtime-packets/pm-27-backup-41-retention-cleanup-gate.md) authorizes removal.
 
 **Evidence:** [PM-22/23 PASS session](sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md)
 

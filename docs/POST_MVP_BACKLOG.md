@@ -282,10 +282,48 @@
 | **Why** | One-window PM-22 + PM-23 + PM-24 guard |
 | **Packet** | [pm-25-fast-track-runtime-operator-checklist.md](runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |
 | **Session** | [PM-22/23 PASS](sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) |
-| **Next** | Optional post-promotion snapshot export **or** PM-18 Codex CLI setup **or** stabilization |
+| **Next** | PM-26/27/28 stabilization batch — see PM-28 decision |
 | **PM-18** | **PENDING** |
 | **PM-16 export** | **PENDING** — non-blocking |
 | **Out of scope** | C1 strict PASS; GIS/DEV/ALINA |
+
+---
+
+### PM-26 — Post-promotion stabilization state
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PREPARED / DOCS ONLY** (2026-05-22) |
+| **Why** | Document steady-state after PM-22/23 PASS; avoid unnecessary smoke |
+| **Doc** | [PM26_POST_PROMOTION_STABILIZATION.md](PM26_POST_PROMOTION_STABILIZATION.md) |
+| **Session** | [pm26-pm28 batch](sessions/2026-05-22-control-plane-pm26-pm28-post-promotion-stabilization-batch.md) |
+| **Out of scope** | Runtime; C1 strict PASS; delete `41` |
+
+---
+
+### PM-27 — Backup `41` retention / cleanup gate
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Why** | Policy for when to delete `41 - … BACKUP OFF` |
+| **Packet** | [pm-27-backup-41-retention-cleanup-gate.md](runtime-packets/pm-27-backup-41-retention-cleanup-gate.md) |
+| **Policy** | Keep `41` until explicit cleanup gate; READY_IMPORT_40 as fallback |
+| **Out of scope** | Delete without session; GIS/DEV/ALINA |
+
+---
+
+### PM-28 — Next-track decision
+
+| Field | Value |
+|-------|--------|
+| **Status** | **OPEN** — decision **not taken** (2026-05-22) |
+| **Why** | Choose next workstream: stabilize / snapshot / Codex CLI / bridge hardening |
+| **Packet** | [pm-28-next-track-decision.md](decision-packets/pm-28-next-track-decision.md) |
+| **Recommended next** | **A** stabilize/stop **or** **B** optional post-promotion snapshot |
+| **PM-18** | **PENDING** |
+| **PM-16 export** | **PENDING** — non-blocking |
+| **Out of scope** | Executing C+D in one window; auto Codex worker |
 
 ---
 

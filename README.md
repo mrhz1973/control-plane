@@ -98,6 +98,9 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-22 promotion `42` → `40` (packet) | [docs/runtime-packets/pm-22-promote-42-to-40-bridge-gate.md](docs/runtime-packets/pm-22-promote-42-to-40-bridge-gate.md) |
 | PM-23 post-promotion smoke (packet) | [docs/runtime-packets/pm-23-post-promotion-smoke-gate.md](docs/runtime-packets/pm-23-post-promotion-smoke-gate.md) |
 | PM-22/23 promotion + smoke PASS | [docs/sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md](docs/sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) |
+| PM-26 post-promotion stabilization | [docs/PM26_POST_PROMOTION_STABILIZATION.md](docs/PM26_POST_PROMOTION_STABILIZATION.md) |
+| PM-27 backup `41` retention gate | [docs/runtime-packets/pm-27-backup-41-retention-cleanup-gate.md](docs/runtime-packets/pm-27-backup-41-retention-cleanup-gate.md) |
+| PM-28 next-track decision (OPEN) | [docs/decision-packets/pm-28-next-track-decision.md](docs/decision-packets/pm-28-next-track-decision.md) |
 | PM-24 rollback / recovery (packet) | [docs/runtime-packets/pm-24-rollback-recovery-gate.md](docs/runtime-packets/pm-24-rollback-recovery-gate.md) |
 | PM-25 fast-track operator checklist | [docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md](docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |
 | Fast-track runtime sequence (runbook) | [docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md](docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md) |
