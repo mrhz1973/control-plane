@@ -621,9 +621,9 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const j=$input.first().json;\nreturn [{json:{\n  schema_version:'pm17-classifier-v1',\n  source:'n8n-deterministic-code',\n  task_type:'docs-only',\n  risk:'low',\n  route:'cursor-control-plane',\n  approval_required:false,\n  allowed_next_step:'prepare handoff preview',\n  blocked_reason:null,\n  notes:['PM-21 deterministic classifier candidate','No Ollama runtime used in this candidate'],\n  input:{repo:j.repo,plan_path:j.planPath,commit:j.commitSha,short_sha:j.shortSha}\n}}];"
+        "jsCode": "const j=$json;\nconst commit=j.commitSha||j.currentSha||'';\nconst short=j.shortSha||(commit?commit.slice(0,7):'');\nreturn {json:{\n  schema_version:'pm17-classifier-v1',\n  source:'n8n-deterministic-code',\n  task_type:'docs-only',\n  risk:'low',\n  route:'cursor-control-plane',\n  approval_required:false,\n  allowed_next_step:'prepare handoff preview',\n  blocked_reason:null,\n  notes:['PM-21 deterministic classifier candidate','No Ollama runtime used in this candidate'],\n  input:{\n    repo:j.repo||j.ownerRepo||j.sourceRepo||'',\n    plan_path:j.planPath||j.plan_path||j.path||j.filename||'',\n    commit,\n    short_sha:short\n  }\n}};"
       },
-      "id": "832c2a0a-5e1f-4f77-b335-96a7d04aff41",
+      "id": "2d61c2a7-4986-4375-9237-3c6961ab3f00",
       "name": "Code - PM21 classifier decision",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -635,9 +635,9 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const c=$input.first().json;\nconst low=c.risk==='low'&&!c.approval_required&&c.route==='cursor-control-plane';\nif(low){return [{json:{\n  schema_version:'pm19-implementer-bridge-result-v1',\n  source:'n8n-pm21-candidate',\n  status:'dry_run_pass',\n  worker:'mock-worker',\n  would_send_to_worker:true,\n  would_require_telegram_gate:false,\n  blocked_reason:null,\n  classifier_route:c.route,\n  classifier_risk:c.risk,\n  mock_worker_action:'prepare handoff preview only — no Codex execution',\n  notes:['PM-21 candidate bridge branch','No real worker invoked']\n}}];}\nreturn [{json:{\n  schema_version:'pm19-implementer-bridge-result-v1',\n  source:'n8n-pm21-candidate',\n  status:'gate_required',\n  worker:'mock-worker',\n  would_send_to_worker:false,\n  would_require_telegram_gate:true,\n  blocked_reason:c.blocked_reason||'gate required by classifier',\n  classifier_route:c.route,\n  classifier_risk:c.risk,\n  notes:['PM-21 candidate bridge branch','Telegram gate required']\n}}];"
+        "jsCode": "const c=$json;\nconst low=c.risk==='low'&&!c.approval_required&&c.route==='cursor-control-plane';\nif(low){return {json:{\n  schema_version:'pm19-implementer-bridge-result-v1',\n  source:'n8n-pm21-candidate',\n  status:'dry_run_pass',\n  worker:'mock-worker',\n  would_send_to_worker:true,\n  would_require_telegram_gate:false,\n  blocked_reason:null,\n  classifier_route:c.route,\n  classifier_risk:c.risk,\n  classifier:c,\n  mock_worker_action:'prepare handoff preview only — no Codex execution',\n  notes:['PM-21 candidate bridge branch','No real worker invoked']\n}};}\nreturn {json:{\n  schema_version:'pm19-implementer-bridge-result-v1',\n  source:'n8n-pm21-candidate',\n  status:'gate_required',\n  worker:'mock-worker',\n  would_send_to_worker:false,\n  would_require_telegram_gate:true,\n  blocked_reason:c.blocked_reason||'gate required by classifier',\n  classifier_route:c.route,\n  classifier_risk:c.risk,\n  classifier:c,\n  notes:['PM-21 candidate bridge branch','Telegram gate required']\n}};"
       },
-      "id": "8e67006c-30ea-4795-bfce-191a84c827fe",
+      "id": "7817848f-5a2c-48a8-bc9f-be2be876949f",
       "name": "Code - PM21 bridge result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -649,9 +649,9 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const bridge=$input.first().json;\nconst c=$('Code - PM21 classifier decision').first().json;\nconst inp=c.input||{};\nconst text=[\n'CONTROL PLANE PM-21 bridge decision',\n`Repo: ${inp.repo||''}`,\n`Plan: ${inp.plan_path||''}`,\n`Commit: ${inp.short_sha||''}`,\n`Risk: ${c.risk}`,\n`Route: ${c.route}`,\n`Approval required: ${c.approval_required?'yes':'no'}`,\n`Bridge result: ${bridge.status}`,\n`Worker: ${bridge.worker}`,\n'Action: preview only, no Codex execution'\n].join('\\n');\nreturn {json:{text,bridge,classifier:c}};"
+        "jsCode": "const bridge=$json;\nconst c=bridge.classifier||{};\nconst inp=c.input||{};\nconst text=[\n'CONTROL PLANE PM-21 bridge decision',\n`Repo: ${inp.repo||''}`,\n`Plan: ${inp.plan_path||''}`,\n`Commit: ${inp.short_sha||''}`,\n`Risk: ${c.risk}`,\n`Route: ${c.route}`,\n`Approval required: ${c.approval_required?'yes':'no'}`,\n`Bridge result: ${bridge.status}`,\n`Worker: ${bridge.worker}`,\n'Action: preview only, no Codex execution'\n].join('\\n');\nreturn {json:{text,bridge,classifier:c}};"
       },
-      "id": "417f2424-1e92-46e2-af47-faed77db35af",
+      "id": "641de0ec-802c-426f-9e56-c3a71a6e74ce",
       "name": "Code - PM21 format Telegram bridge summary",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -666,7 +666,7 @@
         "text": "={{ $json.text }}",
         "additionalFields": {}
       },
-      "id": "ca666d4a-9510-47f4-ba28-5469a0ed53bb",
+      "id": "8c1a37d3-82db-41df-bb22-d6dc64b4015b",
       "name": "Telegram - Send PM21 bridge summary",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,

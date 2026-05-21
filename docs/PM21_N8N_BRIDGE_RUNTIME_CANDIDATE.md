@@ -44,6 +44,12 @@ Code - PM21 classifier decision  (deterministic pm17 JSON)
 
 ---
 
+## Code node note (2026-05-22 fix)
+
+PM-21 nodes use **`$json`** (not `$input.first()`) because `runOnceForEachItem` mode rejects `.first()`. Regenerate bundle after script changes: `node tools/build-ready-import-42-bridge-candidate.mjs`.
+
+---
+
 ## First future test (one session)
 
 1. Import **`42`** in n8n — keep **inactive**.

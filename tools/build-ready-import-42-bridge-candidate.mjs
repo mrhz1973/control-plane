@@ -29,8 +29,10 @@ const FORBIDDEN = [
   /sk-[A-Za-z0-9]/,
 ];
 
-const CLASSIFIER_JS = `const j=$input.first().json;
-return [{json:{
+const CLASSIFIER_JS = `const j=$json;
+const commit=j.commitSha||j.currentSha||'';
+const short=j.shortSha||(commit?commit.slice(0,7):'');
+return {json:{
   schema_version:'pm17-classifier-v1',
   source:'n8n-deterministic-code',
   task_type:'docs-only',
@@ -40,12 +42,17 @@ return [{json:{
   allowed_next_step:'prepare handoff preview',
   blocked_reason:null,
   notes:['PM-21 deterministic classifier candidate','No Ollama runtime used in this candidate'],
-  input:{repo:j.repo,plan_path:j.planPath,commit:j.commitSha,short_sha:j.shortSha}
-}}];`;
+  input:{
+    repo:j.repo||j.ownerRepo||j.sourceRepo||'',
+    plan_path:j.planPath||j.plan_path||j.path||j.filename||'',
+    commit,
+    short_sha:short
+  }
+}};`;
 
-const BRIDGE_JS = `const c=$input.first().json;
+const BRIDGE_JS = `const c=$json;
 const low=c.risk==='low'&&!c.approval_required&&c.route==='cursor-control-plane';
-if(low){return [{json:{
+if(low){return {json:{
   schema_version:'pm19-implementer-bridge-result-v1',
   source:'n8n-pm21-candidate',
   status:'dry_run_pass',
@@ -55,10 +62,11 @@ if(low){return [{json:{
   blocked_reason:null,
   classifier_route:c.route,
   classifier_risk:c.risk,
+  classifier:c,
   mock_worker_action:'prepare handoff preview only — no Codex execution',
   notes:['PM-21 candidate bridge branch','No real worker invoked']
-}}];}
-return [{json:{
+}};}
+return {json:{
   schema_version:'pm19-implementer-bridge-result-v1',
   source:'n8n-pm21-candidate',
   status:'gate_required',
@@ -68,11 +76,12 @@ return [{json:{
   blocked_reason:c.blocked_reason||'gate required by classifier',
   classifier_route:c.route,
   classifier_risk:c.risk,
+  classifier:c,
   notes:['PM-21 candidate bridge branch','Telegram gate required']
-}}];`;
+}};`;
 
-const FORMAT_JS = `const bridge=$input.first().json;
-const c=$('Code - PM21 classifier decision').first().json;
+const FORMAT_JS = `const bridge=$json;
+const c=bridge.classifier||{};
 const inp=c.input||{};
 const text=[
 'CONTROL PLANE PM-21 bridge decision',
@@ -112,6 +121,11 @@ function validate(wf, text) {
       const g = n.credentials.githubApi;
       if (!g?.id || !g?.name) throw new Error(`bad github cred on ${n.name}`);
     }
+  }
+  for (const n of wf.nodes.filter((x) => x.name?.includes("PM21"))) {
+    const code = n.parameters?.jsCode || "";
+    if (code.includes(".first()") || code.includes("$input.first"))
+      throw new Error(`PM21 node ${n.name} must not use .first()`);
   }
   for (const pat of FORBIDDEN) {
     if (typeof pat === "string" && text.includes(pat))
