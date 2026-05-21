@@ -1,0 +1,19 @@
+﻿{
+  "schema_version": "pm17-classifier-v1",
+  "source": "mock",
+  "task_type": "docs-only",
+  "risk": "low",
+  "route": "cursor-control-plane",
+  "approval_required": false,
+  "allowed_next_step": "record or continue",
+  "blocked_reason": null,
+  "notes": [
+    "mock deterministic classifier (Ollama unavailable or timeout)",
+    "matched PM-15 smoke plan pattern"
+  ],
+  "input": {
+    "repo": "mrhz1973/control-plane",
+    "plan_path": "docs/plans/2026-05-21_2330_pm15-new-40-smoke.plan.md",
+    "plan_file": "2026-05-21_2330_pm15-new-40-smoke.plan.md"
+  }
+}

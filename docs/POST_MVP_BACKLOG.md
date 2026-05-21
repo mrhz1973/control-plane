@@ -220,6 +220,22 @@
 
 ---
 
+### PM-17 — Ollama classifier dry-run
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PASS** (2026-05-22) — [session](sessions/2026-05-22-control-plane-pm17-ollama-classifier-dry-run.md) |
+| **Why** | First local classifier/router dry-run without touching production `40` or n8n |
+| **Tool** | `tools/ollama-classifier-dry-run.mjs` |
+| **Sample output** | [docs/examples/pm17-classifier-output.sample.json](examples/pm17-classifier-output.sample.json) |
+| **Doc** | [PM17_OLLAMA_CLASSIFIER_DRY_RUN.md](PM17_OLLAMA_CLASSIFIER_DRY_RUN.md) |
+| **Ollama** | Mock fallback used if local Ollama unreachable — schema still valid |
+| **PM-16 export** | **PENDING** — non-blocking |
+| **Next** | **PM-18** — Codex OAuth feasibility dry-run |
+| **Out of scope** | n8n runtime; workflow `40`; provider API; GIS/DEV/ALINA |
+
+---
+
 ### PM-16 — Automation router layer (design)
 
 | Field | Value |
