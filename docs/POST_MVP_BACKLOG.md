@@ -346,7 +346,7 @@
 | **PM-18** | **OAUTH AVAILABLE / WORKER NOT ENABLED** |
 | **PM-29** | **PENDING** — non-blocking |
 | **PM-27** | **`41` backup retained** |
-| **Next** | **PM-48** one-shot runner v3 **or** stabilize |
+| **Next** | **PM-50** OpenClaw install/onboard **or** PM-48 runner v3 **or** stabilize |
 | **Out of scope** | OAuth login dump; n8n; auto worker |
 
 ---
@@ -393,7 +393,7 @@
 | **Doc** | [PM35_CODEX_NOOP_PROBE.md](PM35_CODEX_NOOP_PROBE.md) |
 | **Sample** | [pm35-codex-noop-probe-output.sample.json](examples/pm35-codex-noop-probe-output.sample.json) |
 | **PM-18** | **OAUTH AVAILABLE / WORKER NOT ENABLED** |
-| **Next** | **PM-48** one-shot runner v3 **or** stabilize |
+| **Next** | **PM-50** OpenClaw install/onboard **or** PM-48 runner v3 **or** stabilize |
 | **Out of scope** | Auto worker; session id in git; n8n prod `40` edit |
 
 ---
@@ -406,7 +406,7 @@
 | **Doc** | [PM36_CODEX_REPO_READ_PROBE.md](PM36_CODEX_REPO_READ_PROBE.md) |
 | **Functional** | Repo-read **PASS** — read `docs/PM35_CODEX_NOOP_PROBE.md`; PM35 status **PASS** found |
 | **Format** | Final output `CODEX_NOOP_OK` vs expected `CODEX_REPO_READ_OK` + `PM35_STATUS=PASS` |
-| **Next** | **PM-48** one-shot runner v3 **or** stabilize |
+| **Next** | **PM-50** OpenClaw install/onboard **or** PM-48 runner v3 **or** stabilize |
 | **Out of scope** | Re-test for format only; worker enable |
 
 ---
@@ -432,7 +432,7 @@
 | **Functional** | Repo-read **PASS**; JSON-like output **yes** |
 | **Strict** | PM-37 markers/schema **FAIL** (`<<<JSON>>>` vs `CONTROL_PLANE_JSON_*`) |
 | **PM-34** | **Blocked** from runtime |
-| **Next** | **PM-48** one-shot runner v3 **or** stabilize |
+| **Next** | **PM-50** OpenClaw install/onboard **or** PM-48 runner v3 **or** stabilize |
 | **Out of scope** | n8n integration on this output |
 
 ---
@@ -446,7 +446,7 @@
 | **Tool** | `tools/codex-structured-output-hardening-dry-run.mjs` |
 | **PM-38 classified** | `recoverable_partial` — **not** n8n-usable |
 | **PM-34** | **Blocked** |
-| **Next** | **PM-48** one-shot runner v3 **or** stabilize |
+| **Next** | **PM-50** OpenClaw install/onboard **or** PM-48 runner v3 **or** stabilize |
 
 ---
 
@@ -458,7 +458,7 @@
 | **Doc** | [PM40_CODEX_STRICT_RETRY_BLOCKED.md](PM40_CODEX_STRICT_RETRY_BLOCKED.md) |
 | **Blocker** | `codex.cmd` rejected before runtime (nested self-invocation) |
 | **PM-34** | **Still blocked** |
-| **Next** | **PM-48** one-shot runner v3 **or** stabilize |
+| **Next** | **PM-50** OpenClaw install/onboard **or** PM-48 runner v3 **or** stabilize |
 
 ---
 
@@ -491,7 +491,7 @@
 | **Doc** | [PM43_CODEX_ADAPTER_RUNNER_DRY_RUN.md](PM43_CODEX_ADAPTER_RUNNER_DRY_RUN.md) |
 | **Tool** | `tools/codex-adapter-runner-dry-run.mjs` |
 | **PM-34** | **Blocked** |
-| **Next** | **PM-48** one-shot runner v3 |
+| **Next** | **PM-50** OpenClaw install/onboard **or** PM-48 |
 
 ---
 
@@ -504,7 +504,7 @@
 | **Tool** | `tools/codex-local-runner-probe.mjs` |
 | **Classification** | **fail** — exit code 2; no strict markers |
 | **PM-34** | **Blocked** |
-| **Next** | **PM-48** one-shot runner v3 |
+| **Next** | **PM-50** OpenClaw install/onboard **or** PM-48 |
 
 ---
 
@@ -516,7 +516,7 @@
 | **Doc** | [PM45_CODEX_RUNNER_HARDENING.md](PM45_CODEX_RUNNER_HARDENING.md) |
 | **Tools** | `tools/codex-runner-classify.mjs` · `tools/codex-local-runner-hardening-dry-run.mjs` |
 | **PM-34** | **Blocked** |
-| **Next** | **PM-48** one-shot runner v3 |
+| **Next** | **PM-50** OpenClaw install/onboard **or** PM-48 |
 
 ---
 
@@ -541,7 +541,7 @@
 | **Doc** | [PM47_CODEX_RUNNER_CLI_DIAGNOSIS.md](PM47_CODEX_RUNNER_CLI_DIAGNOSIS.md) |
 | **Hypothesis** | CLI argv differs from manual known-good; PM-46 `--approval` likely invalid |
 | **PM-34** | **Blocked** |
-| **Next** | **PM-48** one-shot runner v3 |
+| **Next** | **PM-50** OpenClaw install/onboard **or** PM-48 |
 
 ---
 
@@ -549,10 +549,33 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) — **fallback** track |
 | **Packet** | [pm-48-real-local-codex-runner-v3-gate.md](runtime-packets/pm-48-real-local-codex-runner-v3-gate.md) |
 | **Config** | [pm47-codex-runner-v3-config.sample.json](examples/pm47-codex-runner-v3-config.sample.json) |
 | **Why** | Known-good argv without `--approval`; one-shot only |
+
+---
+
+### PM-49 — OpenClaw OAuth bridge feasibility
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PASS / FEASIBILITY ONLY** (2026-05-22) — [session](sessions/2026-05-22-control-plane-pm49-openclaw-oauth-bridge-feasibility.md) |
+| **Doc** | [PM49_OPENCLAW_OAUTH_BRIDGE_FEASIBILITY.md](PM49_OPENCLAW_OAUTH_BRIDGE_FEASIBILITY.md) |
+| **PM-34** | **Blocked** |
+| **Provider fallback** | OpenRouter/Gemini **blocked** — separate gate required |
+| **Next** | **PM-50** if OpenClaw track chosen |
+
+---
+
+### PM-50 — OpenClaw local install/onboard gate
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Doc** | [PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_GATE.md](PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_GATE.md) |
+| **Packet** | [pm-50-openclaw-local-install-onboard-gate.md](runtime-packets/pm-50-openclaw-local-install-onboard-gate.md) |
+| **Why** | Manual `openclaw update` / `onboard` — user-driven only |
 
 ---
 
@@ -607,7 +630,7 @@
 | **Samples** | [pm18](examples/pm18-codex-feasibility-output.sample.json) · [pm30](examples/pm30-codex-cli-local-setup-output.sample.json) · [pm33](examples/pm33-codex-oauth-login-output.sample.json) |
 | **Doc** | [PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md](PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) |
 | **Worker** | **Not** enabled · **PM-34** not executed |
-| **Next** | **PM-48** one-shot runner v3 **or** stabilize |
+| **Next** | **PM-50** OpenClaw install/onboard **or** PM-48 runner v3 **or** stabilize |
 | **Out of scope** | Auto implementer; production `40`; GIS/DEV/ALINA |
 
 ---

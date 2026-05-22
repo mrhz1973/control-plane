@@ -34,12 +34,14 @@ Future wiring: n8n classifier/bridge path → **Codex worker preview** (Telegram
 | **PM-45** | Runner hardening **PASS** (dry-run) — PM-34 still blocked |
 | **PM-46** | Runner v2 probe **FAIL** — exit 2, no strict artifact |
 | **PM-47** | CLI diagnosis **PASS** — PM-34 still blocked |
-| **PM-48+** | **strict_pass** artifact + separate gate before PM-34 runtime |
+| **PM-48** | Codex CLI v3 probe **prepared** (fallback track) |
+| **PM-49** | OpenClaw bridge feasibility **PASS** — does **not** unblock PM-34 |
+| **PM-50+** | **strict_pass** safe artifact + separate gate; **never** raw OpenClaw/ChatGPT or Codex stdout |
 | **Production `40`** | Stable — classifier bridge ACTIVE |
 
 **Blocker (PM-38):** Codex used `<<<JSON>>>` markers and drifted schema — do **not** parse this output in n8n.
 
-**Rule:** PM-34 must consume **validated strict_pass artifact** from runner — **never** raw Codex stdout. PM-44 fail does not unblock; separate gate required even after future strict_pass.
+**Rule:** PM-34 must consume **validated strict_pass artifact** from runner or confined OpenClaw bridge — **never** raw Codex or OpenClaw/ChatGPT output. PM-49 does not unblock; separate gate required even after future strict_pass.
 | **`41` backup** | Retained **or** PM-27 cleanup completed |
 
 ---
