@@ -38,6 +38,12 @@ OpenClaw / gateway / n8n / workflow 40/41 / worker **not** used · `n8n_ready` *
 
 ---
 
+## PM-74→78 hardening
+
+Transition rules per state — [PM74](PM74_OPENCLAW_LIFECYCLE_TRANSITION_RULES_DESIGN.md) · [PM75](PM75_OPENCLAW_LIFECYCLE_VALIDATOR_TRANSITION_HARDENING.md) · fixtures [PM76](PM76_OPENCLAW_LIFECYCLE_TRANSITION_FIXTURES.md)
+
+---
+
 ## Next
 
-**PM-61** — lifecycle fixture review.
+**PM-78** checkpoint — [PM78](PM78_OPENCLAW_LIFECYCLE_HARDENING_CHECKPOINT.md)
