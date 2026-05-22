@@ -2,7 +2,9 @@
 
 **Packet ID:** `pm-46-real-local-codex-runner-probe-v2-gate`  
 **Date:** 2026-05-22  
-**Status:** **PREPARED / NOT EXECUTED**
+**Status:** **FAIL** (2026-05-22)
+
+**Evidence:** [PM-46 doc](../PM46_CODEX_LOCAL_RUNNER_PROBE_V2.md) · [session](../sessions/2026-05-22-control-plane-pm46-codex-local-runner-v2.md) · [artifact](../examples/pm46-codex-local-runner-v2-result.sample.json)
 
 **Related:** [PM-45 hardening](../PM45_CODEX_RUNNER_HARDENING.md) · [PM-44 fail](../PM44_CODEX_LOCAL_RUNNER_PROBE.md) · [pm-34](pm-34-n8n-codex-worker-integration-gate.md) · [classify module](../../tools/codex-runner-classify.mjs)
 
@@ -62,6 +64,14 @@ PM-34 remains **PREPARED / NOT EXECUTED** until PM-46 **strict_pass** artifact *
 
 ---
 
-## Not executed
+## Runtime result (2026-05-22)
 
-This packet does **not** run `codex` in the prep task.
+| Check | Result |
+|-------|--------|
+| **codex_invoked** | **true** (count **1**) |
+| **exit_code** | **2** |
+| **strict_pass** | **false** |
+| **failure_mode** | **cli_exit_nonzero** |
+| **PM-34** | **Blocked** (separate gate still required) |
+
+**Next:** PM-47 runner/CLI diagnosis.

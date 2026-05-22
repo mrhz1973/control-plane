@@ -129,6 +129,11 @@ function inferFailureMode({
   return FAILURE_MODES.OUTPUT_NONCONFORMANT;
 }
 
+/** Alias for PM-46 runner v2 and external callers. */
+export function classifyCodexRunnerOutput(input) {
+  return classifyRun(input);
+}
+
 /**
  * Classify captured stdout/stderr (never persist raw in git).
  */
@@ -181,6 +186,10 @@ export function classifyRun({
     markers_found && json_valid && exactStrictSchema(parsed);
 
   if (schema_contract_pass) {
+    const exitNote =
+      exitCode != null && exitCode !== 0
+        ? `Strict artifact valid despite CLI exit code ${exitCode}.`
+        : null;
     const base = {
       classification: "strict_pass",
       strict_pass: true,
@@ -191,6 +200,7 @@ export function classifyRun({
       notes: [
         "Strict marker block present with PM-37 schema.",
         "PM-34 remains blocked pending separate gate.",
+        ...(exitNote ? [exitNote] : []),
       ],
     };
     return {
