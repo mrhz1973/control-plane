@@ -114,7 +114,7 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-41 external strict retry (fail) | [docs/PM41_CODEX_EXTERNAL_STRICT_RETRY_FAIL.md](docs/PM41_CODEX_EXTERNAL_STRICT_RETRY_FAIL.md) · [session](docs/sessions/2026-05-22-control-plane-pm41-fail-pm42-pm43-adapter-design.md) |
 | PM-42 Codex adapter runner (design) | [docs/PM42_CODEX_ADAPTER_RUNNER_DESIGN.md](docs/PM42_CODEX_ADAPTER_RUNNER_DESIGN.md) |
 | PM-43 adapter dry-run (PASS) | [docs/PM43_CODEX_ADAPTER_RUNNER_DRY_RUN.md](docs/PM43_CODEX_ADAPTER_RUNNER_DRY_RUN.md) · [session](docs/sessions/2026-05-22-control-plane-pm43-codex-adapter-runner-dry-run.md) |
-| PM-44 real runner probe (prepared) | [docs/runtime-packets/pm-44-real-local-codex-runner-probe-gate.md](docs/runtime-packets/pm-44-real-local-codex-runner-probe-gate.md) |
+| PM-44 local runner probe (fail) | [docs/PM44_CODEX_LOCAL_RUNNER_PROBE.md](docs/PM44_CODEX_LOCAL_RUNNER_PROBE.md) · [session](docs/sessions/2026-05-22-control-plane-pm44-codex-local-runner-probe.md) |
 | PM-34 n8n Codex integration (prepared) | [docs/runtime-packets/pm-34-n8n-codex-worker-integration-gate.md](docs/runtime-packets/pm-34-n8n-codex-worker-integration-gate.md) |
 | PM-24 rollback / recovery (packet) | [docs/runtime-packets/pm-24-rollback-recovery-gate.md](docs/runtime-packets/pm-24-rollback-recovery-gate.md) |
 | PM-25 fast-track operator checklist | [docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md](docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |

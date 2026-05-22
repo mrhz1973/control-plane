@@ -2,7 +2,9 @@
 
 **Packet ID:** `pm-44-real-local-codex-runner-probe-gate`  
 **Date:** 2026-05-22  
-**Status:** **PREPARED / NOT EXECUTED**
+**Status:** **FAIL** (2026-05-22)
+
+**Evidence:** [PM-44 doc](../PM44_CODEX_LOCAL_RUNNER_PROBE.md) · [session](../sessions/2026-05-22-control-plane-pm44-codex-local-runner-probe.md) · [artifact](../examples/pm44-codex-local-runner-probe-result.sample.json)
 
 **Related:** [PM-43 dry-run](../PM43_CODEX_ADAPTER_RUNNER_DRY_RUN.md) · [PM-42 design](../PM42_CODEX_ADAPTER_RUNNER_DESIGN.md) · [pm-34](pm-34-n8n-codex-worker-integration-gate.md)
 
@@ -59,6 +61,14 @@ Raw Codex stdout must **never** be routed into n8n.
 
 ---
 
-## Not executed
+## Runtime result (2026-05-22)
 
-This packet does **not** run `codex` in the prep task.
+| Check | Result |
+|-------|--------|
+| **codex_invoked** | **true** |
+| **strict_pass** | **false** |
+| **classification** | **fail** |
+| **raw committed** | **false** |
+| **PM-34** | **Blocked** (separate gate still required even if future strict_pass) |
+
+**Next:** PM-45 runner hardening / stabilize.

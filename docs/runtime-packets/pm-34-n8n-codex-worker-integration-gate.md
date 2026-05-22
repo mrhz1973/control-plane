@@ -30,12 +30,13 @@ Future wiring: n8n classifier/bridge path → **Codex worker preview** (Telegram
 | **PM-40** | Strict retry **BLOCKED** — no strict pass |
 | **PM-41** | Direct strict output **FAIL** |
 | **PM-43** | Adapter dry-run **PASS** — parser validated on fixtures |
-| **PM-44** | Real runner **strict_pass** artifact required before PM-34 runtime |
+| **PM-44** | Real probe **FAIL** — no strict_pass artifact |
+| **PM-45+** | **strict_pass** artifact + separate gate before PM-34 runtime |
 | **Production `40`** | Stable — classifier bridge ACTIVE |
 
 **Blocker (PM-38):** Codex used `<<<JSON>>>` markers and drifted schema — do **not** parse this output in n8n.
 
-**Rule:** PM-34 must consume **validated strict_pass artifact** from runner — **never** raw Codex stdout. PM-40/41 do not unblock.
+**Rule:** PM-34 must consume **validated strict_pass artifact** from runner — **never** raw Codex stdout. PM-44 fail does not unblock; separate gate required even after future strict_pass.
 | **`41` backup** | Retained **or** PM-27 cleanup completed |
 
 ---
