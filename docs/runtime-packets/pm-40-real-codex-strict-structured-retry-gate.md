@@ -2,9 +2,11 @@
 
 **Packet ID:** `pm-40-real-codex-strict-structured-retry-gate`  
 **Date:** 2026-05-22  
-**Status:** **PREPARED / NOT EXECUTED**
+**Status:** **BLOCKED_BY_TOOL_POLICY / NOT EXECUTED** (2026-05-22)
 
-**Related:** [PM-39 hardening](../PM39_CODEX_STRICT_HARNESS_HARDENING.md) · [PM-38](../PM38_CODEX_STRUCTURED_OUTPUT_PROBE.md) · [PM-37](../PM37_CODEX_EXACT_OUTPUT_HARNESS.md) · [pm-34](pm-34-n8n-codex-worker-integration-gate.md)
+**Evidence:** [PM-40 blocked session](../sessions/2026-05-22-control-plane-pm40-codex-strict-retry-blocked.md) · [PM40 doc](../PM40_CODEX_STRICT_RETRY_BLOCKED.md) · [output sample](../examples/pm40-codex-strict-retry-blocked-output.sample.json)
+
+**Related:** [PM-41 external gate](pm-41-external-terminal-codex-strict-retry-gate.md) · [PM-39 hardening](../PM39_CODEX_STRICT_HARNESS_HARDENING.md) · [pm-34](pm-34-n8n-codex-worker-integration-gate.md)
 
 ---
 
@@ -56,10 +58,16 @@ Marker drift · schema drift · alias fields · prose without markers · safety 
 
 ## PM-34 blocker
 
-**PM-34** runtime remains **blocked** until **PM-40 strict PASS** (or documented successor).
+**PM-34** remains **blocked** — no strict pass from PM-40.
 
 ---
 
-## Not executed
+## Runtime result (2026-05-22)
 
-This packet does **not** run `codex exec` in the prep task.
+| Check | Result |
+|-------|--------|
+| **strict_pass** | **false** |
+| **runtime_executed** | **false** |
+| **Blocker** | `codex.cmd` rejected before runtime (nested self-invocation / tool policy) |
+
+**Do not** retry PM-40 from inside Codex self-invocation. Use **PM-41** user PowerShell direct gate.
