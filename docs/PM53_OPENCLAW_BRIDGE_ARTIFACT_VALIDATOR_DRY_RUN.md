@@ -46,7 +46,7 @@ node tools/validate-openclaw-bridge-artifact.mjs examples/pm53-openclaw-bridge-a
 | Sample | Exit | `valid` |
 |--------|------|---------|
 | **valid** | **0** | **true** |
-| **invalid-secret** | **1** | **false** |
+| **invalid-secret** (`*-secret*` gitignored name; force-added) | **1** | **false** |
 | **invalid-forbidden** | **1** | **false** |
 | **invalid-schema** | **1** | **false** |
 
