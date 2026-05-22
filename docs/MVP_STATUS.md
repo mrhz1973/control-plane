@@ -75,6 +75,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-36 Codex repo-read probe** | **PASS WITH OUTPUT-FORMAT DEVIATION** — functional read PASS; final text `CODEX_NOOP_OK` — [PM36](PM36_CODEX_REPO_READ_PROBE.md) |
 | **PM-37 exact-output harness** | **PASS** (mock) — marker + JSON validator — [PM37](PM37_CODEX_EXACT_OUTPUT_HARNESS.md) |
 | **PM-38 structured Codex probe** | **STRICT FORMAT FAIL / FUNCTIONAL JSON PARTIAL** — PM-34 **blocked** — [PM38](PM38_CODEX_STRUCTURED_OUTPUT_PROBE.md) |
+| **PM-39 harness hardening** | **PASS** (mock) — PM-38 `recoverable_partial`; n8n consumption **blocked** — [PM39](PM39_CODEX_STRICT_HARNESS_HARDENING.md) |
+| **PM-40 strict structured retry** | **PREPARED / NOT EXECUTED** — [packet](runtime-packets/pm-40-real-codex-strict-structured-retry-gate.md) |
 | **CONTROL PLANE n8n list** | `40` **ACTIVE** · `41` **BACKUP OFF** (retained) · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |

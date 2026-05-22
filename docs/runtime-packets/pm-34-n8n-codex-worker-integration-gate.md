@@ -26,7 +26,8 @@ Future wiring: n8n classifier/bridge path → **Codex worker preview** (Telegram
 | **PM-36** | Repo-read functional **PASS** — output-format deviation |
 | **PM-37** | Exact-output harness **PASS** (mock) — **required** before parsing Codex output in n8n |
 | **PM-38** | Real probe **STRICT FAIL** / functional partial — **blocks** PM-34 |
-| **PM-39/40** | Strict structured output **PASS** required before PM-34 runtime |
+| **PM-39** | Hardening **PASS** — PM-38 `recoverable_partial` **not** sufficient |
+| **PM-40** | Strict structured retry **PASS** required before PM-34 runtime |
 | **Production `40`** | Stable — classifier bridge ACTIVE |
 
 **Blocker (PM-38):** Codex used `<<<JSON>>>` markers and drifted schema — do **not** parse this output in n8n.

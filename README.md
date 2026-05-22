@@ -109,6 +109,8 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-36 Codex repo-read probe (PASS w/ format deviation) | [docs/PM36_CODEX_REPO_READ_PROBE.md](docs/PM36_CODEX_REPO_READ_PROBE.md) · [session](docs/sessions/2026-05-22-control-plane-pm36-codex-repo-read-probe-pass.md) |
 | PM-37 exact-output harness (mock PASS) | [docs/PM37_CODEX_EXACT_OUTPUT_HARNESS.md](docs/PM37_CODEX_EXACT_OUTPUT_HARNESS.md) |
 | PM-38 structured Codex probe (strict fail) | [docs/PM38_CODEX_STRUCTURED_OUTPUT_PROBE.md](docs/PM38_CODEX_STRUCTURED_OUTPUT_PROBE.md) · [session](docs/sessions/2026-05-22-control-plane-pm38-codex-structured-output-probe-strict-fail.md) |
+| PM-39 strict harness hardening (PASS) | [docs/PM39_CODEX_STRICT_HARNESS_HARDENING.md](docs/PM39_CODEX_STRICT_HARNESS_HARDENING.md) |
+| PM-40 strict structured retry (prepared) | [docs/runtime-packets/pm-40-real-codex-strict-structured-retry-gate.md](docs/runtime-packets/pm-40-real-codex-strict-structured-retry-gate.md) |
 | PM-34 n8n Codex integration (prepared) | [docs/runtime-packets/pm-34-n8n-codex-worker-integration-gate.md](docs/runtime-packets/pm-34-n8n-codex-worker-integration-gate.md) |
 | PM-24 rollback / recovery (packet) | [docs/runtime-packets/pm-24-rollback-recovery-gate.md](docs/runtime-packets/pm-24-rollback-recovery-gate.md) |
 | PM-25 fast-track operator checklist | [docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md](docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |

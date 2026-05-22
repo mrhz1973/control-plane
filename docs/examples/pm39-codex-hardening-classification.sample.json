@@ -1,0 +1,28 @@
+{
+  "schema_version": "pm39-codex-hardening-classification-v1",
+  "source": "mock-hardening-validator",
+  "input_sample": "docs/examples/pm38-codex-structured-output-probe-output.sample.json",
+  "strict_pass": false,
+  "classification": "recoverable_partial",
+  "functional_repo_read_pass": true,
+  "json_like_output_present": true,
+  "marker_contract_pass": false,
+  "schema_contract_pass": false,
+  "safety_semantics_recovered": true,
+  "pm34_blocked": true,
+  "future_n8n_consumption_allowed": false,
+  "requires_pm40_retry": true,
+  "recovery_notes": [
+    "PM-38 used non-contract markers.",
+    "PM-38 schema drifted but safety semantics were recoverable.",
+    "worker_enabled missing; defaulted false (no worker signal).",
+    "alias: modified_files -> file_modified",
+    "alias: git_commands -> git_command_used",
+    "alias: secrets_accessed -> secret_accessed",
+    "alias: file_read -> target_file",
+    "Recovered output must not be consumed by n8n automatically.",
+    "A strict PM-40 pass is required before PM-34 runtime."
+  ],
+  "worker_enabled": false,
+  "n8n_touched": false
+}

@@ -69,7 +69,9 @@ CONTROL_PLANE_JSON_END
 | Strict PM-37 markers/schema | **FAIL** — `<<<JSON>>>` markers; field drift |
 | **PM-34** runtime | **Blocked** until strict PASS or **PM-39**/**PM-40** successor |
 
-Retry must meet **Future PASS criteria** above — unchanged.
+Retry must meet **Future PASS criteria** above — see **PM-40** gate.
+
+**PM-39:** Classified this probe as `recoverable_partial` — [PM39](../PM39_CODEX_STRICT_HARNESS_HARDENING.md). Strict fail remains; **PM-40** prepared as successor retry.
 
 ## Not a strict PASS
 

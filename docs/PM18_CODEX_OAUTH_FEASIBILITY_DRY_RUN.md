@@ -55,8 +55,8 @@ node tools/codex-oauth-feasibility-check.mjs \
 | **CLI AVAILABLE (historical)** | PM-30 only — before PM-33 login |
 | **PENDING (historical)** | Pre-PM-30: Codex CLI not on host |
 
-**Evidence:** PM-30–PM-37 + [PM-38](sessions/2026-05-22-control-plane-pm38-codex-structured-output-probe-strict-fail.md) — JSON-like output but **strict contract FAIL**. **Not:** worker enabled · PM-34 runtime · secrets in git.
+**Evidence:** PM-30–PM-38 + [PM-39](sessions/2026-05-22-control-plane-pm39-codex-strict-harness-hardening.md) — OAuth works; output **not automation-ready** until strict pass. **Not:** worker enabled · PM-34 runtime · secrets in git.
 
 **Not blocking:** PM-29 post-promotion snapshot (PENDING).
 
-**Next:** **PM-39** harness hardening. Worker still requires explicit future gates.
+**Next:** **PM-40** strict structured retry. Worker still requires explicit future gates.

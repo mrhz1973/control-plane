@@ -1,0 +1,13 @@
+{
+  "schema_version": "pm39-normalized-codex-output-v1",
+  "source": "pm38-recovered-for-analysis-only",
+  "target_file": "docs/PM35_CODEX_NOOP_PROBE.md",
+  "pm35_status": "PASS",
+  "file_modified": false,
+  "git_command_used": false,
+  "secret_accessed": false,
+  "n8n_touched": false,
+  "worker_enabled": false,
+  "usable_for_n8n": false,
+  "reason_not_usable_for_n8n": "Recovered from non-contract PM-38 output; strict PM-40 pass required."
+}
