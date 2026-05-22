@@ -55,8 +55,8 @@ node tools/codex-oauth-feasibility-check.mjs \
 | **CLI AVAILABLE (historical)** | PM-30 only — before PM-33 login |
 | **PENDING (historical)** | Pre-PM-30: Codex CLI not on host |
 
-**Evidence:** PM-30–PM-46 — OAuth/Codex available via runner v2; PM-46 **fail** (CLI exit 2, no strict artifact); automation requires **strict_pass** + separate gate. **Not:** worker enabled · PM-34 runtime · secrets in git.
+**Evidence:** PM-30–PM-47 — OAuth/Codex available; runner issue is **CLI invocation/argv** (PM-47), not OAuth; PM-46 fail remains. **Not:** worker enabled · PM-34 runtime · secrets in git.
 
 **Not blocking:** PM-29 post-promotion snapshot (PENDING).
 
-**Next:** **PM-47** runner/CLI diagnosis. Worker still requires explicit future gates.
+**Next:** **PM-48** one-shot runner v3 (known-good argv, no `--approval`). Worker still requires explicit future gates.

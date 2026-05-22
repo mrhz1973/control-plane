@@ -74,4 +74,6 @@ PM-34 remains **PREPARED / NOT EXECUTED** until PM-46 **strict_pass** artifact *
 | **failure_mode** | **cli_exit_nonzero** |
 | **PM-34** | **Blocked** (separate gate still required) |
 
-**Next:** PM-47 runner/CLI diagnosis.
+**Follow-up:** [PM-47 diagnosis](../PM47_CODEX_RUNNER_CLI_DIAGNOSIS.md) — PM-46 FAIL likely CLI args (`--approval`); [PM-48 v3 gate](pm-48-real-local-codex-runner-v3-gate.md) prepared without approval flag.
+
+**Next:** PM-48 one-shot runner v3.

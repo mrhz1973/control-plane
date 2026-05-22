@@ -1,0 +1,30 @@
+{
+  "schema_version": "pm47-codex-runner-v3-config-v1",
+  "source": "dry-run-config",
+  "codex_invoked": false,
+  "shell_invoked": false,
+  "runner_version": "v3",
+  "args_pattern": [
+    "exec",
+    "--sandbox",
+    "read-only",
+    "--cd",
+    "<repo>",
+    "<prompt>"
+  ],
+  "removed_flags": [
+    "--approval"
+  ],
+  "forbidden_flags_absent": true,
+  "prompt_delivery": "single_argument_known_good_pattern",
+  "fallback_future_option": "prompt_file_or_stdin_if_v3_still_exit_2",
+  "one_shot_only": true,
+  "n8n_touched": false,
+  "worker_enabled": false,
+  "pm34_unblocked": false,
+  "notes": [
+    "Matches PM-35/36/38 known-good manual argv order.",
+    "Does not pass approval CLI flag; approval never observed in metadata only.",
+    "PM-48 must be one Codex invocation with no retry."
+  ]
+}

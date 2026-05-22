@@ -1,0 +1,48 @@
+{
+  "schema_version": "pm47-codex-runner-cli-diagnosis-v1",
+  "source": "dry-run-static-analysis",
+  "codex_invoked": false,
+  "shell_invoked": false,
+  "n8n_touched": false,
+  "worker_enabled": false,
+  "known_good_manual_pattern": {
+    "uses_codex_cmd_exec": true,
+    "uses_sandbox_read_only": true,
+    "uses_cd": true,
+    "uses_approval_flag": false,
+    "observed_successes": [
+      "PM-35",
+      "PM-36",
+      "PM-38"
+    ]
+  },
+  "pm46_runner_findings": {
+    "uses_approval_flag": true,
+    "uses_cmd_exe_c": true,
+    "uses_prompt_as_single_arg": true,
+    "likely_exit_2_cause": "invalid_cli_option_or_argv_quoting"
+  },
+  "diagnosis": {
+    "primary_hypothesis": "runner_cli_args_differ_from_known_good_manual_invocation",
+    "likely_bad_arg": "--approval",
+    "pm44_note": "PM-44 exit 2 without approval flag; shell:true=true; differs from manual PowerShell.",
+    "exit_code_2_interpretation": "CLI usage/argument parse failure before strict artifact",
+    "model_output_problem": false,
+    "parser_problem": false
+  },
+  "recommended_pm48_runner_change": {
+    "remove_approval_flag": true,
+    "use_known_good_arg_order": true,
+    "avoid_nested_codex": true,
+    "consider_prompt_file_or_stdin": true,
+    "still_one_shot": true,
+    "prefer_direct_codex_spawn_or_manual_parity": "match PM-35/36/38 PowerShell argv; avoid experimental cmd.exe /c unless required"
+  },
+  "pm34_unblocked": false,
+  "future_pm48_required": true,
+  "notes": [
+    "PM-35/36/38 manual: codex.cmd exec --sandbox read-only --cd <repo> <prompt> (no --approval CLI flag).",
+    "PM-46 v2 added --approval never; PM-44 used shell:true; both failed exit 2 without strict markers.",
+    "PM-47 does not invoke Codex."
+  ]
+}
