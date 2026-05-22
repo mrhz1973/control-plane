@@ -124,6 +124,7 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-51 OpenClaw gateway no-op (PASS) | [docs/sessions/2026-05-22-control-plane-pm51-openclaw-confined-gateway-noop-probe-pass.md](docs/sessions/2026-05-22-control-plane-pm51-openclaw-confined-gateway-noop-probe-pass.md) · [PM51](docs/PM51_OPENCLAW_CONFINED_GATEWAY_NOOP_PROBE_GATE.md) |
 | PM-52 OpenClaw confined bridge (design) | [docs/PM52_OPENCLAW_CONFINED_BRIDGE_DESIGN.md](docs/PM52_OPENCLAW_CONFINED_BRIDGE_DESIGN.md) · [session](docs/sessions/2026-05-22-control-plane-pm52-openclaw-confined-bridge-design.md) |
 | PM-53 bridge artifact validator (PASS) | [docs/PM53_OPENCLAW_BRIDGE_ARTIFACT_VALIDATOR_DRY_RUN.md](docs/PM53_OPENCLAW_BRIDGE_ARTIFACT_VALIDATOR_DRY_RUN.md) · [tool](tools/validate-openclaw-bridge-artifact.mjs) |
+| PM-54 OpenClaw bridge adapter (design) | [docs/PM54_OPENCLAW_BRIDGE_ADAPTER_DESIGN.md](docs/PM54_OPENCLAW_BRIDGE_ADAPTER_DESIGN.md) · [session](docs/sessions/2026-05-22-control-plane-pm54-openclaw-bridge-adapter-design.md) |
 | PM-34 n8n Codex integration (prepared) | [docs/runtime-packets/pm-34-n8n-codex-worker-integration-gate.md](docs/runtime-packets/pm-34-n8n-codex-worker-integration-gate.md) |
 | PM-24 rollback / recovery (packet) | [docs/runtime-packets/pm-24-rollback-recovery-gate.md](docs/runtime-packets/pm-24-rollback-recovery-gate.md) |
 | PM-25 fast-track operator checklist | [docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md](docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |
