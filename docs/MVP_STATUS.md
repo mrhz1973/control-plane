@@ -100,6 +100,11 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-61 lifecycle fixture review** | **PASS** — [PM61](PM61_OPENCLAW_LIFECYCLE_FIXTURE_REVIEW.md) |
 | **PM-62 integration readiness checklist** | **PREPARED / DESIGN ONLY** — [PM62](PM62_OPENCLAW_INTEGRATION_READINESS_CHECKLIST_DESIGN.md) |
 | **PM-63 governance checkpoint** | **PASS / HANDOFF** — [PM63](PM63_OPENCLAW_GOVERNANCE_CHECKPOINT_HANDOFF.md) · PM-34 **blocked** |
+| **PM-64 governance map cleanup** | **PASS** (docs-only) — [PM64](PM64_OPENCLAW_GOVERNANCE_MAP_CLEANUP.md) |
+| **PM-65 decision boundary review** | **PASS** (docs-only) — [PM65](PM65_OPENCLAW_DECISION_BOUNDARY_REVIEW.md) |
+| **PM-66 residual risk register** | **PASS** (docs-only) — [PM66](PM66_OPENCLAW_RESIDUAL_RISK_REGISTER.md) |
+| **PM-67 next phase options** | **PASS** — [PM67](PM67_OPENCLAW_NEXT_PHASE_OPTIONS_PACKET.md) |
+| **PM-68 compact handoff** | **PASS** — [PM68](PM68_OPENCLAW_NEW_CHAT_COMPACT_HANDOFF.md) · PM-34 **blocked** · `n8n_ready` **false** |
 | **CONTROL PLANE n8n list** | `40` **ACTIVE** · `41` **BACKUP OFF** (retained) · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |
