@@ -346,7 +346,7 @@
 | **PM-18** | **OAUTH AVAILABLE / WORKER NOT ENABLED** |
 | **PM-29** | **PENDING** — non-blocking |
 | **PM-27** | **`41` backup retained** |
-| **Next** | **PM-41** external terminal retry **or** stabilize |
+| **Next** | **PM-43** adapter dry-run **or** stabilize |
 | **Out of scope** | OAuth login dump; n8n; auto worker |
 
 ---
@@ -393,7 +393,7 @@
 | **Doc** | [PM35_CODEX_NOOP_PROBE.md](PM35_CODEX_NOOP_PROBE.md) |
 | **Sample** | [pm35-codex-noop-probe-output.sample.json](examples/pm35-codex-noop-probe-output.sample.json) |
 | **PM-18** | **OAUTH AVAILABLE / WORKER NOT ENABLED** |
-| **Next** | **PM-41** external terminal retry **or** stabilize |
+| **Next** | **PM-43** adapter dry-run **or** stabilize |
 | **Out of scope** | Auto worker; session id in git; n8n prod `40` edit |
 
 ---
@@ -406,7 +406,7 @@
 | **Doc** | [PM36_CODEX_REPO_READ_PROBE.md](PM36_CODEX_REPO_READ_PROBE.md) |
 | **Functional** | Repo-read **PASS** — read `docs/PM35_CODEX_NOOP_PROBE.md`; PM35 status **PASS** found |
 | **Format** | Final output `CODEX_NOOP_OK` vs expected `CODEX_REPO_READ_OK` + `PM35_STATUS=PASS` |
-| **Next** | **PM-41** external terminal retry **or** stabilize |
+| **Next** | **PM-43** adapter dry-run **or** stabilize |
 | **Out of scope** | Re-test for format only; worker enable |
 
 ---
@@ -432,7 +432,7 @@
 | **Functional** | Repo-read **PASS**; JSON-like output **yes** |
 | **Strict** | PM-37 markers/schema **FAIL** (`<<<JSON>>>` vs `CONTROL_PLANE_JSON_*`) |
 | **PM-34** | **Blocked** from runtime |
-| **Next** | **PM-41** external terminal retry **or** stabilize |
+| **Next** | **PM-43** adapter dry-run **or** stabilize |
 | **Out of scope** | n8n integration on this output |
 
 ---
@@ -446,7 +446,7 @@
 | **Tool** | `tools/codex-structured-output-hardening-dry-run.mjs` |
 | **PM-38 classified** | `recoverable_partial` — **not** n8n-usable |
 | **PM-34** | **Blocked** |
-| **Next** | **PM-41** external terminal retry **or** stabilize |
+| **Next** | **PM-43** adapter dry-run **or** stabilize |
 
 ---
 
@@ -458,7 +458,7 @@
 | **Doc** | [PM40_CODEX_STRICT_RETRY_BLOCKED.md](PM40_CODEX_STRICT_RETRY_BLOCKED.md) |
 | **Blocker** | `codex.cmd` rejected before runtime (nested self-invocation) |
 | **PM-34** | **Still blocked** |
-| **Next** | **PM-41** external terminal retry **or** stabilize |
+| **Next** | **PM-43** adapter dry-run **or** stabilize |
 
 ---
 
@@ -466,10 +466,30 @@
 
 | Field | Value |
 |-------|--------|
+| **Status** | **STRICT OUTPUT FAIL / SCOPE DRIFT** (2026-05-22) — [session](sessions/2026-05-22-control-plane-pm41-fail-pm42-pm43-adapter-design.md) |
+| **Doc** | [PM41_CODEX_EXTERNAL_STRICT_RETRY_FAIL.md](PM41_CODEX_EXTERNAL_STRICT_RETRY_FAIL.md) |
+| **PM-34** | **Blocked** |
+| **Next** | **PM-43** adapter dry-run |
+
+---
+
+### PM-42 — Codex adapter runner design
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PASS / DESIGN ONLY** (2026-05-22) |
+| **Doc** | [PM42_CODEX_ADAPTER_RUNNER_DESIGN.md](PM42_CODEX_ADAPTER_RUNNER_DESIGN.md) |
+| **Why** | External runner validates stdout; n8n never consumes raw Codex text |
+
+---
+
+### PM-43 — Codex adapter runner dry-run
+
+| Field | Value |
+|-------|--------|
 | **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
-| **Packet** | [pm-41-external-terminal-codex-strict-retry-gate.md](runtime-packets/pm-41-external-terminal-codex-strict-retry-gate.md) |
-| **Why** | PM-40 blocked — run strict retry from user PowerShell only |
-| **Out of scope** | Nested Codex invoking `codex.cmd`; PM-34 until PM-41 strict PASS |
+| **Packet** | [pm-43-codex-adapter-runner-dry-run-gate.md](runtime-packets/pm-43-codex-adapter-runner-dry-run-gate.md) |
+| **Next** | Parser mock on PM-37/38/41 fixtures |
 
 ---
 
@@ -479,7 +499,7 @@
 |-------|--------|
 | **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
 | **Packet** | [pm-34-n8n-codex-worker-integration-gate.md](runtime-packets/pm-34-n8n-codex-worker-integration-gate.md) |
-| **Prerequisites** | PM-37/39 PASS; **PM-41 strict PASS** before runtime; stable `40`; `41` retained — **PM-40 blocked does not unblock** |
+| **Prerequisites** | PM-42/43 runner **strict_pass** artifact before runtime; stable `40`; `41` retained — **PM-41 fail does not unblock** |
 | **Out of scope** | Real Codex from prod `40`; delete `41` |
 
 ---
@@ -524,7 +544,7 @@
 | **Samples** | [pm18](examples/pm18-codex-feasibility-output.sample.json) · [pm30](examples/pm30-codex-cli-local-setup-output.sample.json) · [pm33](examples/pm33-codex-oauth-login-output.sample.json) |
 | **Doc** | [PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md](PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) |
 | **Worker** | **Not** enabled · **PM-34** not executed |
-| **Next** | **PM-41** external terminal retry **or** stabilize |
+| **Next** | **PM-43** adapter dry-run **or** stabilize |
 | **Out of scope** | Auto implementer; production `40`; GIS/DEV/ALINA |
 
 ---

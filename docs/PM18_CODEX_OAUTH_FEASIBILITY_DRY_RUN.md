@@ -55,8 +55,8 @@ node tools/codex-oauth-feasibility-check.mjs \
 | **CLI AVAILABLE (historical)** | PM-30 only — before PM-33 login |
 | **PENDING (historical)** | Pre-PM-30: Codex CLI not on host |
 
-**Evidence:** PM-30–PM-39 + [PM-40 blocked](sessions/2026-05-22-control-plane-pm40-codex-strict-retry-blocked.md) — OAuth/Codex available; nested `codex.cmd` blocked by tool policy; output **not automation-ready**. **Not:** worker enabled · PM-34 runtime · secrets in git.
+**Evidence:** PM-30–PM-41 — OAuth/Codex available; direct strict output **unreliable** (PM-41 scope drift); use external runner (PM-42/43). **Not:** worker enabled · PM-34 runtime · secrets in git.
 
 **Not blocking:** PM-29 post-promotion snapshot (PENDING).
 
-**Next:** **PM-41** external terminal strict retry (user PowerShell). Worker still requires explicit future gates.
+**Next:** **PM-43** adapter runner dry-run. Worker still requires explicit future gates.

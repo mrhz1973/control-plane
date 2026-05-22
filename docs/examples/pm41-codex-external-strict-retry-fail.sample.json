@@ -1,0 +1,33 @@
+{
+  "schema_version": "pm41-codex-external-strict-retry-fail-v1",
+  "source": "manual-user-powershell-codex-exec",
+  "command_family": "codex.cmd exec",
+  "sandbox": "read-only",
+  "target_file": "docs/PM35_CODEX_NOOP_PROBE.md",
+  "status": "strict_output_fail_scope_drift",
+  "runtime_executed": true,
+  "strict_pass": false,
+  "pm34_unblocked": false,
+  "expected_markers_present": false,
+  "expected_schema_present": false,
+  "scope_drift_observed": true,
+  "read_only_requested": true,
+  "read_only_scope_violated": true,
+  "git_command_observed": true,
+  "multiple_repo_files_read": true,
+  "n8n_touched": false,
+  "workflow_40_touched": false,
+  "workflow_41_touched": false,
+  "worker_enabled": false,
+  "oauth_secret_dumped": false,
+  "oauth_url_recorded": false,
+  "provider_api_key_used": false,
+  "notes": [
+    "PM-41 was run directly from user PowerShell, unlike PM-40.",
+    "Codex executed but did not return the required marker-delimited JSON.",
+    "Codex inspected repo files and ran git status despite scope limits.",
+    "No n8n/workflow/worker action was observed.",
+    "PM-34 remains blocked.",
+    "Do not solve by repeating longer prompts; use an external runner/adapter."
+  ]
+}

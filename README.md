@@ -111,7 +111,9 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-38 structured Codex probe (strict fail) | [docs/PM38_CODEX_STRUCTURED_OUTPUT_PROBE.md](docs/PM38_CODEX_STRUCTURED_OUTPUT_PROBE.md) · [session](docs/sessions/2026-05-22-control-plane-pm38-codex-structured-output-probe-strict-fail.md) |
 | PM-39 strict harness hardening (PASS) | [docs/PM39_CODEX_STRICT_HARNESS_HARDENING.md](docs/PM39_CODEX_STRICT_HARNESS_HARDENING.md) |
 | PM-40 strict retry (blocked) | [docs/PM40_CODEX_STRICT_RETRY_BLOCKED.md](docs/PM40_CODEX_STRICT_RETRY_BLOCKED.md) · [session](docs/sessions/2026-05-22-control-plane-pm40-codex-strict-retry-blocked.md) |
-| PM-41 external terminal strict retry (prepared) | [docs/runtime-packets/pm-41-external-terminal-codex-strict-retry-gate.md](docs/runtime-packets/pm-41-external-terminal-codex-strict-retry-gate.md) |
+| PM-41 external strict retry (fail) | [docs/PM41_CODEX_EXTERNAL_STRICT_RETRY_FAIL.md](docs/PM41_CODEX_EXTERNAL_STRICT_RETRY_FAIL.md) · [session](docs/sessions/2026-05-22-control-plane-pm41-fail-pm42-pm43-adapter-design.md) |
+| PM-42 Codex adapter runner (design) | [docs/PM42_CODEX_ADAPTER_RUNNER_DESIGN.md](docs/PM42_CODEX_ADAPTER_RUNNER_DESIGN.md) |
+| PM-43 adapter dry-run (prepared) | [docs/runtime-packets/pm-43-codex-adapter-runner-dry-run-gate.md](docs/runtime-packets/pm-43-codex-adapter-runner-dry-run-gate.md) |
 | PM-34 n8n Codex integration (prepared) | [docs/runtime-packets/pm-34-n8n-codex-worker-integration-gate.md](docs/runtime-packets/pm-34-n8n-codex-worker-integration-gate.md) |
 | PM-24 rollback / recovery (packet) | [docs/runtime-packets/pm-24-rollback-recovery-gate.md](docs/runtime-packets/pm-24-rollback-recovery-gate.md) |
 | PM-25 fast-track operator checklist | [docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md](docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |

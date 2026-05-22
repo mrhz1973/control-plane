@@ -2,9 +2,11 @@
 
 **Packet ID:** `pm-41-external-terminal-codex-strict-retry-gate`  
 **Date:** 2026-05-22  
-**Status:** **PREPARED / NOT EXECUTED**
+**Status:** **STRICT OUTPUT FAIL / SCOPE DRIFT** (2026-05-22)
 
-**Related:** [PM-40 blocked](../PM40_CODEX_STRICT_RETRY_BLOCKED.md) · [PM-39 hardening](../PM39_CODEX_STRICT_HARNESS_HARDENING.md) · [pm-34](pm-34-n8n-codex-worker-integration-gate.md)
+**Evidence:** [PM-41 fail doc](../PM41_CODEX_EXTERNAL_STRICT_RETRY_FAIL.md) · [session](../sessions/2026-05-22-control-plane-pm41-fail-pm42-pm43-adapter-design.md) · [sample](../examples/pm41-codex-external-strict-retry-fail.sample.json)
+
+**Related:** [PM-42/43 adapter](../PM42_CODEX_ADAPTER_RUNNER_DESIGN.md) · [PM-40 blocked](../PM40_CODEX_STRICT_RETRY_BLOCKED.md) · [pm-34](pm-34-n8n-codex-worker-integration-gate.md)
 
 ---
 
@@ -48,10 +50,19 @@ Policy block · marker drift · schema drift · invalid JSON · nested Codex inv
 
 ## PM-34 blocker
 
-**PM-34** remains **blocked** until **PM-41 strict PASS** or documented successor.
+**PM-34** remains **blocked** — PM-41 did not produce **strict_pass**.
+
+**Successor:** **PM-42/43** external adapter runner — **PM-44** real runner probe (future).
 
 ---
 
-## Not executed
+## Runtime result (2026-05-22)
 
-This packet does **not** run commands in the prep task.
+| Check | Result |
+|-------|--------|
+| **runtime_executed** | **true** (user PowerShell) |
+| **strict_pass** | **false** |
+| **Scope** | Drift — multi-file, `rg`, `git status` |
+| **Markers/schema** | **Not returned** |
+
+Do **not** retry with longer prompts only.
