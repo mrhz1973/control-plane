@@ -1,8 +1,8 @@
 # PM-18 — Codex OAuth feasibility dry-run
 
-**Status:** **CLI AVAILABLE / NOT WORKER ENABLED** (2026-05-22) — PM-30 installed/verified Codex CLI locally; **no** OAuth login, **no** worker, **no** production change.
+**Status:** **OAUTH AVAILABLE / WORKER NOT ENABLED** (2026-05-22) — PM-30 CLI + PM-33 manual login PASS; **no** worker, **no** n8n Codex integration.
 
-**Related:** [PM-30 session](sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) · [pm30 output](examples/pm30-codex-cli-local-setup-output.sample.json) · [PM16](PM16_AUTOMATION_ROUTER_LAYER.md) · [PM17](PM17_OLLAMA_CLASSIFIER_DRY_RUN.md) · [PM-18 session](sessions/2026-05-22-control-plane-pm18-codex-oauth-feasibility-dry-run.md)
+**Related:** [PM-33 session](sessions/2026-05-22-control-plane-pm33-codex-manual-login-pass.md) · [pm33 output](examples/pm33-codex-oauth-login-output.sample.json) · [PM-30 session](sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) · [PM16](PM16_AUTOMATION_ROUTER_LAYER.md) · [PM17](PM17_OLLAMA_CLASSIFIER_DRY_RUN.md)
 
 ---
 
@@ -51,11 +51,12 @@ node tools/codex-oauth-feasibility-check.mjs \
 
 | Result | Meaning |
 |--------|---------|
-| **CLI AVAILABLE / NOT WORKER ENABLED** | PM-30: `codex` in PATH · `codex-cli 0.133.0` · help OK · login **not** run |
-| **PENDING (historical)** | Pre-PM-30: Codex CLI not on host — superseded by PM-30 PASS |
+| **OAUTH AVAILABLE / WORKER NOT ENABLED** | PM-30 CLI PASS · PM-33 `codex.cmd login` PASS · version/help OK · **no** worker · **no** n8n integration |
+| **CLI AVAILABLE (historical)** | PM-30 only — before PM-33 login |
+| **PENDING (historical)** | Pre-PM-30: Codex CLI not on host |
+
+**Evidence:** PM-30 + [PM-33](sessions/2026-05-22-control-plane-pm33-codex-manual-login-pass.md). **Not:** worker enabled · PM-34 active · tokens in git.
 
 **Not blocking:** PM-29 post-promotion snapshot (PENDING).
 
-**PM-31 contract:** [PM31](PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md) mock **PASS** — worker contract only; **PM-18 unchanged:** CLI AVAILABLE / NOT WORKER ENABLED until **PM-33** OAuth gate (do **not** mark OAuth available yet).
-
-**Next:** **PM-33** manual login gate **or** stabilize · **PM-34** n8n integration (prepared). OAuth `codex login` remains **manual** future gate — never auto-dump tokens.
+**Next:** **PM-35** real Codex no-op probe **or** PM-34 planning — separate gates. First real prompt still requires explicit authorization.

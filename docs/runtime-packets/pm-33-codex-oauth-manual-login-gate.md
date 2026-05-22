@@ -2,7 +2,9 @@
 
 **Packet ID:** `pm-33-codex-oauth-manual-login-gate`  
 **Date:** 2026-05-22  
-**Status:** **PREPARED / NOT EXECUTED**
+**Status:** **PASS / OAUTH AVAILABLE / WORKER NOT ENABLED** (2026-05-22)
+
+**Evidence:** [PM-33 session](../sessions/2026-05-22-control-plane-pm33-codex-manual-login-pass.md) · [output sample](../examples/pm33-codex-oauth-login-output.sample.json)
 
 **Related:** [PM-18](../PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) · [PM-31](../PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md) · [PM-30 PASS](../sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md)
 
@@ -52,6 +54,12 @@ Does **not** enable automatic Codex worker after login.
 
 ---
 
-## Not executed
+## Warnings (still in force)
 
-This packet does **not** run `codex login` in the prep task.
+- **Worker not enabled** — PM-33 does not turn on automatic Codex worker
+- **First real Codex prompt** requires a **separate** gate (e.g. PM-35)
+- **Never** dump OAuth tokens or commit session cache to git
+
+## Runtime result (2026-05-22)
+
+Manual `codex.cmd login` **PASS** — user session; Cursor docs-only registration.

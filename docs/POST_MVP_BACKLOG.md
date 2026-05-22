@@ -343,10 +343,10 @@
 | **Status** | **PASS** (2026-05-22) — [session](sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) |
 | **Install** | `npm.cmd install -g @openai/codex` · `codex-cli 0.133.0` |
 | **Packet** | [pm-30-codex-cli-local-setup-gate.md](runtime-packets/pm-30-codex-cli-local-setup-gate.md) |
-| **PM-18** | **CLI AVAILABLE / NOT WORKER ENABLED** |
+| **PM-18** | **OAUTH AVAILABLE / WORKER NOT ENABLED** |
 | **PM-29** | **PENDING** — non-blocking |
 | **PM-27** | **`41` backup retained** |
-| **Next** | **PM-33** manual login gate **or** stabilize (worker disabled) |
+| **Next** | **PM-35** no-op probe **or** stabilize |
 | **Out of scope** | OAuth login dump; n8n; auto worker |
 
 ---
@@ -377,10 +377,21 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
+| **Status** | **PASS** (2026-05-22) — `codex.cmd login` · terminal **Successfully logged in** — [session](sessions/2026-05-22-control-plane-pm33-codex-manual-login-pass.md) |
 | **Packet** | [pm-33-codex-oauth-manual-login-gate.md](runtime-packets/pm-33-codex-oauth-manual-login-gate.md) |
-| **PM-18** | Stays **CLI AVAILABLE / NOT WORKER ENABLED** until PASS |
-| **Out of scope** | Token commit; auto worker after login |
+| **PM-18** | **OAUTH AVAILABLE / WORKER NOT ENABLED** |
+| **Sample** | [pm33-codex-oauth-login-output.sample.json](examples/pm33-codex-oauth-login-output.sample.json) |
+| **Out of scope** | Token commit; `codex exec`; auto worker |
+
+---
+
+### PM-35 — Real Codex no-op probe (planned)
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Not started** |
+| **Why** | Optional read-only Codex probe after PM-33 — separate from PM-34 |
+| **Out of scope** | Auto worker; n8n prod `40` edit |
 
 ---
 
@@ -430,13 +441,12 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **CLI AVAILABLE / NOT WORKER ENABLED** (2026-05-22) — [PM-30 PASS](sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) |
+| **Status** | **OAUTH AVAILABLE / WORKER NOT ENABLED** (2026-05-22) — [PM-30](sessions/2026-05-22-control-plane-pm30-codex-cli-local-setup.md) · [PM-33](sessions/2026-05-22-control-plane-pm33-codex-manual-login-pass.md) |
 | **Why** | Feasibility for future **implementer worker** — not classifier, not n8n change |
-| **Tool** | `tools/codex-oauth-feasibility-check.mjs` · PM-30 install verify |
-| **Samples** | [pm18](examples/pm18-codex-feasibility-output.sample.json) · [pm30](examples/pm30-codex-cli-local-setup-output.sample.json) |
+| **Samples** | [pm18](examples/pm18-codex-feasibility-output.sample.json) · [pm30](examples/pm30-codex-cli-local-setup-output.sample.json) · [pm33](examples/pm33-codex-oauth-login-output.sample.json) |
 | **Doc** | [PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md](PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) |
-| **OAuth login** | **Not** performed — `codex login` manual future gate |
-| **Next** | **PM-31** worker contract dry-run (docs/mock) |
+| **Worker** | **Not** enabled · **PM-34** not executed |
+| **Next** | **PM-35** no-op probe **or** stabilize |
 | **Out of scope** | Auto implementer; production `40`; GIS/DEV/ALINA |
 
 ---

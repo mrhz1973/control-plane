@@ -1,0 +1,29 @@
+{
+  "schema_version": "pm33-codex-oauth-login-v1",
+  "source": "manual-local-login",
+  "login_command": "codex.cmd login",
+  "login_completed": true,
+  "browser_opened": true,
+  "browser_callback_note": "Browser showed localhost refused after callback, but terminal reported Successfully logged in.",
+  "version_checked": true,
+  "version": "codex-cli 0.133.0",
+  "help_checked": true,
+  "oauth_secret_dumped": false,
+  "oauth_url_recorded": false,
+  "provider_api_key_used": false,
+  "codex_prompt_executed": false,
+  "codex_exec_used": false,
+  "codex_review_used": false,
+  "worker_enabled": false,
+  "n8n_touched": false,
+  "workflow_40_touched": false,
+  "workflow_41_touched": false,
+  "status": "pass",
+  "notes": [
+    "Initial codex login hit PowerShell ExecutionPolicy on codex.ps1; codex.cmd login was used instead.",
+    "Terminal reported Successfully logged in.",
+    "Post-login version/help checks passed.",
+    "OAuth/session tokens were not dumped or committed.",
+    "Worker remains disabled."
+  ]
+}
