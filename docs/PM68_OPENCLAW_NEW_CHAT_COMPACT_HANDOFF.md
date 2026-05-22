@@ -76,7 +76,7 @@
 
 | PM | Scope |
 |----|--------|
-| **PM-69** | Docs-only cleanup **or** lifecycle metadata schema extension (dry-run) |
+| **PM-74** | Lifecycle metadata extension dry-run **or** governance docs close |
 
 ---
 
@@ -95,6 +95,8 @@
 
 | Need | Doc |
 |------|-----|
+| **Governance index** | [PM-69](PM69_OPENCLAW_GOVERNANCE_INDEX_CLEANUP.md) |
+| **Cleanup checkpoint** | [PM-73](PM73_OPENCLAW_GOVERNANCE_CLEANUP_CHECKPOINT.md) |
 | Full map | [PM-64](PM64_OPENCLAW_GOVERNANCE_MAP_CLEANUP.md) |
 | Boundaries | [PM-65](PM65_OPENCLAW_DECISION_BOUNDARY_REVIEW.md) |
 | Risks | [PM-66](PM66_OPENCLAW_RESIDUAL_RISK_REGISTER.md) |
