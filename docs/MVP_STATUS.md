@@ -95,6 +95,11 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-56 adapter contract review** | **PASS** (docs-only) — [PM56](PM56_OPENCLAW_ADAPTER_CONTRACT_REVIEW.md) · workflow **40/41** / n8n **untouched** · PM-34 **blocked** |
 | **PM-57 contract fixture review** | **PASS** — [PM57](PM57_OPENCLAW_CONTRACT_FIXTURE_REVIEW.md) · `next_gate` allowlist · PM-34 **blocked** |
 | **PM-58 bridge artifact lifecycle** | **PREPARED / DESIGN ONLY** — [PM58](PM58_OPENCLAW_BRIDGE_ARTIFACT_LIFECYCLE_DESIGN.md) · `n8n_ready` **false** · workflow **40/41** / n8n **untouched** · PM-34 **blocked** |
+| **PM-59 lifecycle metadata schema** | **PASS** — [PM59](PM59_OPENCLAW_LIFECYCLE_METADATA_SCHEMA_DRY_RUN.md) |
+| **PM-60 lifecycle metadata validator** | **PASS** — [PM60](PM60_OPENCLAW_LIFECYCLE_METADATA_VALIDATOR_DRY_RUN.md) |
+| **PM-61 lifecycle fixture review** | **PASS** — [PM61](PM61_OPENCLAW_LIFECYCLE_FIXTURE_REVIEW.md) |
+| **PM-62 integration readiness checklist** | **PREPARED / DESIGN ONLY** — [PM62](PM62_OPENCLAW_INTEGRATION_READINESS_CHECKLIST_DESIGN.md) |
+| **PM-63 governance checkpoint** | **PASS / HANDOFF** — [PM63](PM63_OPENCLAW_GOVERNANCE_CHECKPOINT_HANDOFF.md) · PM-34 **blocked** |
 | **CONTROL PLANE n8n list** | `40` **ACTIVE** · `41` **BACKUP OFF** (retained) · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |

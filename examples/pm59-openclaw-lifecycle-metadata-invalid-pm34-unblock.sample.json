@@ -1,0 +1,19 @@
+{
+  "artifact_id": "pm59-lifecycle-metadata-invalid-pm34-unblock-001",
+  "schema_version": "pm52.openclaw.bridge.v1",
+  "adapter_schema": null,
+  "lifecycle_state": "schema_validated",
+  "created_at": "2026-05-22T14:00:00Z",
+  "source": "openclaw",
+  "machine_scope": "home-local-loopback",
+  "classification": "pass",
+  "n8n_ready": false,
+  "pm34_unblock": true,
+  "redaction_status": "pass",
+  "secret_scan": "pass",
+  "retention": {
+    "policy": "keep",
+    "expires_at": null
+  },
+  "next_gate": "stop"
+}

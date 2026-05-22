@@ -1,0 +1,19 @@
+{
+  "artifact_id": "pm59-lifecycle-metadata-invalid-n8n-ready-001",
+  "schema_version": "pm52.openclaw.bridge.v1",
+  "adapter_schema": "pm54.openclaw.adapter.v1",
+  "lifecycle_state": "adapter_validated",
+  "created_at": "2026-05-22T14:00:00Z",
+  "source": "openclaw",
+  "machine_scope": "home-local-loopback",
+  "classification": "pass",
+  "n8n_ready": true,
+  "pm34_unblock": false,
+  "redaction_status": "pass",
+  "secret_scan": "pass",
+  "retention": {
+    "policy": "keep",
+    "expires_at": null
+  },
+  "next_gate": "stop"
+}
