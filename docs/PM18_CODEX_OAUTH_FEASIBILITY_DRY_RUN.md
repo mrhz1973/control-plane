@@ -55,8 +55,8 @@ node tools/codex-oauth-feasibility-check.mjs \
 | **CLI AVAILABLE (historical)** | PM-30 only — before PM-33 login |
 | **PENDING (historical)** | Pre-PM-30: Codex CLI not on host |
 
-**Evidence:** PM-30 + [PM-33](sessions/2026-05-22-control-plane-pm33-codex-manual-login-pass.md) + [PM-35](sessions/2026-05-22-control-plane-pm35-codex-noop-probe-pass.md) authenticated no-op `CODEX_NOOP_OK`. **Not:** worker enabled · PM-34 active · tokens/session id in git.
+**Evidence:** PM-30 + [PM-33](sessions/2026-05-22-control-plane-pm33-codex-manual-login-pass.md) + [PM-35](sessions/2026-05-22-control-plane-pm35-codex-noop-probe-pass.md) + [PM-36](sessions/2026-05-22-control-plane-pm36-codex-repo-read-probe-pass.md) repo-read functional PASS (output-format deviation). **Not:** worker enabled · PM-34 active · secrets in git.
 
 **Not blocking:** PM-29 post-promotion snapshot (PENDING).
 
-**Next:** **PM-36** repo-read probe **or** PM-34 planning. Worker still requires explicit future gates.
+**Next:** **PM-37** exact-output harness **or** PM-34 planning. Worker still requires explicit future gates.

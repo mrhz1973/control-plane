@@ -106,6 +106,7 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-31 Codex worker contract (mock PASS) | [docs/PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md](docs/PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md) |
 | PM-33 Codex OAuth login gate (PASS) | [docs/runtime-packets/pm-33-codex-oauth-manual-login-gate.md](docs/runtime-packets/pm-33-codex-oauth-manual-login-gate.md) · [session](docs/sessions/2026-05-22-control-plane-pm33-codex-manual-login-pass.md) |
 | PM-35 Codex no-op probe (PASS) | [docs/PM35_CODEX_NOOP_PROBE.md](docs/PM35_CODEX_NOOP_PROBE.md) · [session](docs/sessions/2026-05-22-control-plane-pm35-codex-noop-probe-pass.md) |
+| PM-36 Codex repo-read probe (PASS w/ format deviation) | [docs/PM36_CODEX_REPO_READ_PROBE.md](docs/PM36_CODEX_REPO_READ_PROBE.md) · [session](docs/sessions/2026-05-22-control-plane-pm36-codex-repo-read-probe-pass.md) |
 | PM-34 n8n Codex integration (prepared) | [docs/runtime-packets/pm-34-n8n-codex-worker-integration-gate.md](docs/runtime-packets/pm-34-n8n-codex-worker-integration-gate.md) |
 | PM-24 rollback / recovery (packet) | [docs/runtime-packets/pm-24-rollback-recovery-gate.md](docs/runtime-packets/pm-24-rollback-recovery-gate.md) |
 | PM-25 fast-track operator checklist | [docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md](docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |

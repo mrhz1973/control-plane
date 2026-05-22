@@ -22,8 +22,11 @@ Future wiring: n8n classifier/bridge path → **Codex worker preview** (Telegram
 |------|--------|
 | **PM-31** | Contract **PASS** |
 | **PM-33** | OAuth/manual login **PASS** |
-| **PM-35** | Real Codex no-op response **PASS** (`CODEX_NOOP_OK`) — optional evidence |
+| **PM-35** | Real Codex no-op response **PASS** (`CODEX_NOOP_OK`) |
+| **PM-36** | Repo-read functional **PASS** — output-format deviation (`CODEX_NOOP_OK` vs structured expected) |
 | **Production `40`** | Stable — classifier bridge ACTIVE |
+
+**Warning:** Future n8n integration must **not** rely on unconstrained natural-language final output. Use structured JSON harness first (PM-37).
 | **`41` backup** | Retained **or** PM-27 cleanup completed |
 
 ---
