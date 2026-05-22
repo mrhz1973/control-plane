@@ -121,7 +121,7 @@ v5 webhook path is **not** active. Strict sub-30s push→Telegram (C1) is deferr
 | PM-48 runner probe v3 (prepared, fallback) | [docs/runtime-packets/pm-48-real-local-codex-runner-v3-gate.md](docs/runtime-packets/pm-48-real-local-codex-runner-v3-gate.md) |
 | PM-49 OpenClaw OAuth bridge (feasibility) | [docs/PM49_OPENCLAW_OAUTH_BRIDGE_FEASIBILITY.md](docs/PM49_OPENCLAW_OAUTH_BRIDGE_FEASIBILITY.md) · [session](docs/sessions/2026-05-22-control-plane-pm49-openclaw-oauth-bridge-feasibility.md) |
 | PM-50 OpenClaw install/onboard (PASS) | [docs/PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md](docs/PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md) · [session](docs/sessions/2026-05-22-control-plane-pm50-openclaw-local-onboard-pass.md) |
-| PM-51 OpenClaw gateway no-op (prepared) | [docs/PM51_OPENCLAW_CONFINED_GATEWAY_NOOP_PROBE_GATE.md](docs/PM51_OPENCLAW_CONFINED_GATEWAY_NOOP_PROBE_GATE.md) |
+| PM-51 OpenClaw gateway no-op (prepared) | [docs/PM51_OPENCLAW_CONFINED_GATEWAY_NOOP_PROBE_GATE.md](docs/PM51_OPENCLAW_CONFINED_GATEWAY_NOOP_PROBE_GATE.md) · [new-chat handoff](docs/handoffs/pm-51-openclaw-confined-gateway-noop-probe-new-chat.md) |
 | PM-34 n8n Codex integration (prepared) | [docs/runtime-packets/pm-34-n8n-codex-worker-integration-gate.md](docs/runtime-packets/pm-34-n8n-codex-worker-integration-gate.md) |
 | PM-24 rollback / recovery (packet) | [docs/runtime-packets/pm-24-rollback-recovery-gate.md](docs/runtime-packets/pm-24-rollback-recovery-gate.md) |
 | PM-25 fast-track operator checklist | [docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md](docs/runtime-packets/pm-25-fast-track-runtime-operator-checklist.md) |

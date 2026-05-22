@@ -4,7 +4,7 @@
 **Date:** 2026-05-22  
 **Status:** **PREPARED / NOT EXECUTED**
 
-**Related:** [PM-50 PASS](../PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md) · [PM-51 doc](../PM51_OPENCLAW_CONFINED_GATEWAY_NOOP_PROBE_GATE.md) · [pm-34](pm-34-n8n-codex-worker-integration-gate.md)
+**Related:** [PM-50 PASS](../PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md) · [PM-51 doc](../PM51_OPENCLAW_CONFINED_GATEWAY_NOOP_PROBE_GATE.md) · [operational handoff — new chat](../handoffs/pm-51-openclaw-confined-gateway-noop-probe-new-chat.md) · [pm-34](pm-34-n8n-codex-worker-integration-gate.md)
 
 ---
 

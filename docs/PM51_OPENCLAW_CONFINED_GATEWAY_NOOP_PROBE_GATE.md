@@ -2,7 +2,7 @@
 
 **Status:** **PREPARED / NOT EXECUTED** (2026-05-22)
 
-**Related:** [runtime packet](runtime-packets/pm-51-openclaw-confined-gateway-noop-probe-gate.md) · [PM-50 PASS](PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md)
+**Related:** [operational handoff — new chat](handoffs/pm-51-openclaw-confined-gateway-noop-probe-new-chat.md) · [runtime packet](runtime-packets/pm-51-openclaw-confined-gateway-noop-probe-gate.md) · [PM-50 PASS](PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md)
 
 ---
 
