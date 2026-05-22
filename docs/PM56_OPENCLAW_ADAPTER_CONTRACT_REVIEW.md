@@ -1,6 +1,6 @@
 # PM-56 — OpenClaw adapter contract review
 
-**Status:** **PASS / DOCS-ONLY CONTRACT REVIEW** (2026-05-22)
+**Status:** **PASS / DOCS-ONLY CONTRACT REVIEW** (2026-05-22) · **F-07 remediated by [PM-57](PM57_OPENCLAW_CONTRACT_FIXTURE_REVIEW.md)** (`next_gate` allowlist; historical status unchanged)
 
 **Related:** [runtime packet](runtime-packets/pm-56-openclaw-adapter-contract-review-gate.md) · [session](sessions/2026-05-22-control-plane-pm56-openclaw-adapter-contract-review.md) · [PM-52](PM52_OPENCLAW_CONFINED_BRIDGE_DESIGN.md) · [PM-53](PM53_OPENCLAW_BRIDGE_ARTIFACT_VALIDATOR_DRY_RUN.md) · [PM-54](PM54_OPENCLAW_BRIDGE_ADAPTER_DESIGN.md) · [PM-55](PM55_OPENCLAW_BRIDGE_ADAPTER_DRY_RUN.md) · [pm-34](runtime-packets/pm-34-n8n-codex-worker-integration-gate.md)
 
@@ -60,7 +60,7 @@ PM-52 schema (design)
 | **no n8n direct consumption** | PM-34 + PM-54 | PM-55 output | `n8n_ready: false`; separate gate required | Chain enforces; PM-34 requires strict_pass + separate gate | **OK** |
 | **adapter_schema PM-54** | PM-54 `pm54.openclaw.adapter.v1` | PM-55 `adapter_schema` | Same version string | Sample output matches design | **OK** |
 | **PM-53 before PM-55** | PM-54 input rules | PM-55 subprocess validator | Adapter only after validation PASS | PM-55 calls validator CLI; invalid samples → `adapted: false` | **OK** |
-| **bridge next_gate unconstrained** | PM-52 sample values | PM-53 validator | Optional forward pointer on artifact | PM-53 validates presence only, not enum — sample uses historical `pm-54-bridge-adapter-design` | **LOW** |
+| **bridge next_gate unconstrained** | PM-52 sample values | PM-53 validator | Optional forward pointer on artifact | PM-53 validates presence only, not enum — sample uses historical `pm-54-bridge-adapter-design` | **LOW** → **remediated [PM-57](PM57_OPENCLAW_CONTRACT_FIXTURE_REVIEW.md)** |
 | **PM-55 `adapted` field** | PM-55 CLI output | Not in PM-54 design JSON | Dry-run success flag | Extension for CLI semantics; does not weaken safety | **NOTE** |
 | **reject safety aggregate** | PM-55 fail output | `safety.forbidden_touched: true` on any reject | Conservative fail-safe | Set even for schema errors — intentional, not n8n-facing | **NOTE** |
 
@@ -76,7 +76,7 @@ PM-52 schema (design)
 | F-04 | `n8n_ready` always false in PM-55 implementation and samples | **OK** |
 | F-05 | Raw output never propagated; evidence_refs are index refs only | **OK** |
 | F-06 | PM-34 remains blocked; no doc in chain implies auto-unblock | **OK** |
-| F-07 | Bridge artifact `next_gate` not enum-validated by PM-53 | **LOW** |
+| F-07 | Bridge artifact `next_gate` not enum-validated by PM-53 | **LOW** → **closed in PM-57** |
 | F-08 | PM-55 adds `adapted` / `errors` / `warnings` beyond PM-54 design sketch | **NOTE** |
 | F-09 | PM-55 uses validator subprocess (validator `main()` on import) | **NOTE** |
 | F-10 | PM-55 reject path sets aggregate `safety.forbidden_touched: true` for all failures | **NOTE** |

@@ -21,6 +21,7 @@ Dry-run validator for **PM-52** bridge artifacts — local JSON samples only; **
 | **forbidden_touched** | All keys present; all **false** |
 | **secret_scan** | `status: pass` |
 | **Structure** | Required fields; `evidence` array |
+| **next_gate** | Allowlist: `pm-54-bridge-adapter-design` · `pm-55-adapter-dry-run` · `pm-56-adapter-contract-review` · `pm-57-contract-fixture-review` · `stop` ([PM-57](PM57_OPENCLAW_CONTRACT_FIXTURE_REVIEW.md) closes PM-56 F-07) |
 
 ---
 
@@ -31,6 +32,7 @@ Dry-run validator for **PM-52** bridge artifacts — local JSON samples only; **
 - `forbidden_touched.*` = **true**
 - `secret_scan.status` = **fail**
 - Unknown classification or schema
+- `next_gate` not in allowlist
 
 ---
 
@@ -41,6 +43,7 @@ node tools/validate-openclaw-bridge-artifact.mjs examples/pm53-openclaw-bridge-a
 node tools/validate-openclaw-bridge-artifact.mjs examples/pm53-openclaw-bridge-artifact-invalid-secret.sample.json
 node tools/validate-openclaw-bridge-artifact.mjs examples/pm53-openclaw-bridge-artifact-invalid-forbidden.sample.json
 node tools/validate-openclaw-bridge-artifact.mjs examples/pm53-openclaw-bridge-artifact-invalid-schema.sample.json
+node tools/validate-openclaw-bridge-artifact.mjs examples/pm53-openclaw-bridge-artifact-invalid-next-gate.sample.json
 ```
 
 | Sample | Exit | `valid` |
@@ -49,6 +52,7 @@ node tools/validate-openclaw-bridge-artifact.mjs examples/pm53-openclaw-bridge-a
 | **invalid-secret** (`*-secret*` gitignored name; force-added) | **1** | **false** |
 | **invalid-forbidden** | **1** | **false** |
 | **invalid-schema** | **1** | **false** |
+| **invalid-next-gate** | **1** | **false** |
 
 ---
 

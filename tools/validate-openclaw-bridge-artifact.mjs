@@ -27,6 +27,14 @@ const FORBIDDEN_TOUCHED_KEYS = [
   "lan_exposure",
 ];
 
+const NEXT_GATE_ALLOWLIST = new Set([
+  "pm-54-bridge-adapter-design",
+  "pm-55-adapter-dry-run",
+  "pm-56-adapter-contract-review",
+  "pm-57-contract-fixture-review",
+  "stop",
+]);
+
 const SECRET_PATTERNS = [
   /\baccess_token\b/i,
   /\brefresh_token\b/i,
@@ -198,6 +206,10 @@ export function validateArtifact(obj) {
   }
   if (typeof obj.next_gate !== "string" || !obj.next_gate.trim()) {
     errors.push("next_gate must be a non-empty string");
+  } else if (!NEXT_GATE_ALLOWLIST.has(obj.next_gate.trim())) {
+    errors.push(
+      `next_gate must be one of: ${[...NEXT_GATE_ALLOWLIST].join(", ")}`
+    );
   }
 
   const valid = errors.length === 0;
