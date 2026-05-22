@@ -101,6 +101,17 @@ CONTROL PLANE / GitHub / n8n (orchestration, gates)
 
 ---
 
+## PM-50 execution result
+
+| Item | Value |
+|------|--------|
+| **PM-50** | **PASS** — [install/onboard PASS](PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md) |
+| **Feasibility** | Progressed to **local onboard PASS** |
+| **Architecture** | Remains **confined** loopback gateway |
+| **Forbidden rules** | Unchanged — no OpenRouter/Gemini without gate |
+
+---
+
 ## Next
 
-**PM-50** manual OpenClaw install/onboard gate (**or** PM-48 runner v3 fallback **or** stabilize). User must explicitly choose track.
+**PM-51** confined gateway no-op probe **or** **PM-52** bridge design. **PM-48** remains Codex CLI fallback.

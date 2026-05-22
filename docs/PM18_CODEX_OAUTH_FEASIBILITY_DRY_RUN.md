@@ -55,8 +55,8 @@ node tools/codex-oauth-feasibility-check.mjs \
 | **CLI AVAILABLE (historical)** | PM-30 only — before PM-33 login |
 | **PENDING (historical)** | Pre-PM-30: Codex CLI not on host |
 
-**Evidence:** PM-30–PM-49 — OAuth/Codex available; CLI runner argv issue (PM-47); **OpenClaw OAuth bridge** is a separate feasibility track (PM-49) — does **not** enable worker or PM-34. **Not:** worker enabled · PM-34 runtime · secrets in git.
+**Evidence:** PM-30–PM-50 — OAuth/Codex available; **OpenClaw** OpenAI Codex OAuth **PASS** (PM-50) as separate bridge track — does **not** enable worker or PM-34. CLI runner (PM-44/46) still fail. **Not:** worker enabled · PM-34 runtime · secrets in git.
 
 **Not blocking:** PM-29 post-promotion snapshot (PENDING).
 
-**Next:** **PM-50** OpenClaw install/onboard **or** PM-48 runner v3 fallback. Worker still requires explicit future gates.
+**Next:** **PM-51** OpenClaw gateway no-op **or** PM-48 runner v3 fallback. Worker still requires explicit future gates.

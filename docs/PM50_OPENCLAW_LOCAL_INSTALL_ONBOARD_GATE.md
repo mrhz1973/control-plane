@@ -1,43 +1,27 @@
 # PM-50 — OpenClaw local install/onboard gate
 
-**Status:** **PREPARED / NOT EXECUTED** (2026-05-22)
+**Status:** **PASS / RUNTIME MANUAL CONTROLLED** (2026-05-22)
 
-**Related:** [runtime packet](runtime-packets/pm-50-openclaw-local-install-onboard-gate.md) · [PM-49 feasibility](PM49_OPENCLAW_OAUTH_BRIDGE_FEASIBILITY.md)
+**Related:** [PASS record](PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md) · [session](sessions/2026-05-22-control-plane-pm50-openclaw-local-onboard-pass.md) · [runtime packet](runtime-packets/pm-50-openclaw-local-install-onboard-gate.md) · [PM-49 feasibility](PM49_OPENCLAW_OAUTH_BRIDGE_FEASIBILITY.md)
 
 ---
 
 ## Summary
 
-PM-50 is the **human-readable** gate for future local OpenClaw install/onboard. **Not executed in PM-49.**
-
 | Item | Value |
 |------|--------|
-| **Install/onboard in PM-49** | **No** |
-| **Runtime** | Manual, user-driven, separate session |
+| **Runtime** | Manual controlled — **PASS** |
+| **Secrets in git** | **None** recorded |
 | **Provider fallback** | **No** OpenRouter/Gemini |
 | **n8n** | **Not touched** |
 | **Worker** | **Not enabled** |
 | **Workflow 40 / 41** | **Not touched** |
-| **Secrets in git** | **Forbidden** |
 | **PM-34** | **Blocked** |
 
----
-
-## User actions (future only)
-
-1. `openclaw update`
-2. `openclaw onboard`
-3. Select **OpenAI / OpenAI Codex / browser login** when available
-4. Optional: `/models` check via Telegram **only** if user already operates gateway safely
+See [PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md](PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md) for operational details.
 
 ---
 
-## STOP
+## Next
 
-Stop if asked for API keys, billing, unrestricted access, tokens in repo, or n8n/workflow changes.
-
----
-
-## Next after PM-50
-
-**PM-51** models verification gate · **PM-52** routing design · **PM-53** validator design — each separate, no PM-34 auto-unblock.
+**PM-51** confined gateway no-op probe · **PM-52** bridge design.
