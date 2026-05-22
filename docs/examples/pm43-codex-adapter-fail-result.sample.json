@@ -1,0 +1,22 @@
+{
+  "schema_version": "pm43-codex-adapter-result-v1",
+  "source": "dry-run-fixtures",
+  "fixture": "docs/examples/pm41-codex-external-strict-retry-fail.sample.json",
+  "classification": "fail_scope_drift",
+  "strict_pass": false,
+  "n8n_usable": false,
+  "expected_markers_present": false,
+  "expected_schema_present": false,
+  "scope_drift_observed": true,
+  "git_command_observed": true,
+  "multiple_repo_files_read": true,
+  "read_only_scope_violated": true,
+  "codex_invoked": false,
+  "n8n_touched": false,
+  "worker_enabled": false,
+  "pm34_unblocked": false,
+  "notes": [
+    "PM-41 fixture classified fail_scope_drift — not n8n-usable.",
+    "PM-34 remains blocked."
+  ]
+}

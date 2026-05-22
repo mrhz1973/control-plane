@@ -79,7 +79,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-40 strict structured retry** | **BLOCKED_BY_TOOL_POLICY** — no strict pass; PM-34 **blocked** — [PM40](PM40_CODEX_STRICT_RETRY_BLOCKED.md) |
 | **PM-41 external terminal retry** | **STRICT OUTPUT FAIL / SCOPE DRIFT** — PM-34 **blocked** — [PM41](PM41_CODEX_EXTERNAL_STRICT_RETRY_FAIL.md) |
 | **PM-42 adapter design** | **PASS** (design-only) — [PM42](PM42_CODEX_ADAPTER_RUNNER_DESIGN.md) |
-| **PM-43 adapter dry-run** | **PREPARED / NOT EXECUTED** — [packet](runtime-packets/pm-43-codex-adapter-runner-dry-run-gate.md) |
+| **PM-43 adapter dry-run** | **PASS** (dry-run only) — [PM43](PM43_CODEX_ADAPTER_RUNNER_DRY_RUN.md) |
+| **PM-44 real runner probe** | **PREPARED / NOT EXECUTED** — [packet](runtime-packets/pm-44-real-local-codex-runner-probe-gate.md) |
 | **CONTROL PLANE n8n list** | `40` **ACTIVE** · `41` **BACKUP OFF** (retained) · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |

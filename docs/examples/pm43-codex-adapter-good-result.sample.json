@@ -1,0 +1,19 @@
+{
+  "schema_version": "pm43-codex-adapter-result-v1",
+  "source": "dry-run-fixtures",
+  "fixture": "docs/examples/pm37-codex-exact-output-result.sample.json",
+  "classification": "strict_pass",
+  "strict_pass": true,
+  "n8n_usable": true,
+  "marker_contract_pass": true,
+  "schema_contract_pass": true,
+  "parsed_schema_version": "pm37-codex-structured-output-v1",
+  "codex_invoked": false,
+  "n8n_touched": false,
+  "worker_enabled": false,
+  "pm34_unblocked": false,
+  "notes": [
+    "PM-37 mock_raw_output validated with strict markers and PM-37 schema.",
+    "Classification strict_pass — future n8n may consume only after PM-44 real runner gate."
+  ]
+}

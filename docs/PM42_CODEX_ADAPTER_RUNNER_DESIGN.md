@@ -2,7 +2,7 @@
 
 **Status:** **PASS / DESIGN ONLY** (2026-05-22)
 
-**Related:** [pm-42 gate](runtime-packets/pm-42-codex-adapter-runner-design-gate.md) · [PM-41 fail](PM41_CODEX_EXTERNAL_STRICT_RETRY_FAIL.md) · [PM-39 hardening](PM39_CODEX_STRICT_HARNESS_HARDENING.md) · [session](sessions/2026-05-22-control-plane-pm41-fail-pm42-pm43-adapter-design.md)
+**Related:** [pm-42 gate](runtime-packets/pm-42-codex-adapter-runner-design-gate.md) · [PM-43 implementation](PM43_CODEX_ADAPTER_RUNNER_DRY_RUN.md) · [PM-41 fail](PM41_CODEX_EXTERNAL_STRICT_RETRY_FAIL.md) · [PM-39 hardening](PM39_CODEX_STRICT_HARNESS_HARDENING.md)
 
 ---
 
@@ -57,4 +57,4 @@ PowerShell/Node runner
 
 ## Next
 
-**PM-43** implement parser dry-run on samples (no Codex). **PM-44** real local runner probe (future).
+**PM-43** parser dry-run **PASS** — [PM43](PM43_CODEX_ADAPTER_RUNNER_DRY_RUN.md). **PM-44** real local runner probe (prepared).

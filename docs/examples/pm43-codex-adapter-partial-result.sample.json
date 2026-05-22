@@ -1,0 +1,27 @@
+{
+  "schema_version": "pm43-codex-adapter-result-v1",
+  "source": "dry-run-fixtures",
+  "fixture": "docs/examples/pm38-codex-structured-output-probe-output.sample.json",
+  "classification": "recoverable_partial",
+  "strict_pass": false,
+  "n8n_usable": false,
+  "functional_repo_read_pass": true,
+  "json_like_output_present": true,
+  "marker_contract_pass": false,
+  "schema_contract_pass": false,
+  "safety_semantics_recovered": true,
+  "codex_invoked": false,
+  "n8n_touched": false,
+  "worker_enabled": false,
+  "pm34_unblocked": false,
+  "recovery_notes": [
+    "PM-38 used non-contract markers.",
+    "PM-38 schema drifted but safety semantics were recoverable.",
+    "worker_enabled missing; defaulted false.",
+    "Recovered output must not be consumed by n8n automatically."
+  ],
+  "notes": [
+    "PM-38 fixture classified recoverable_partial — human evidence only.",
+    "Not n8n-usable until PM-44 strict_pass artifact from real runner."
+  ]
+}
