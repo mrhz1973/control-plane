@@ -8,43 +8,32 @@
 
 ## Scopo
 
-Hardening **PM-60** validator con regole PM-74 — local dry-run only.
+Hardening **PM-60** validator con regole PM-74 — local dry-run only · **no** runtime · **no** n8n · **no** workflow · **PM-34 blocked** · **`n8n_ready` false**.
 
 ---
 
-## Hardening aggiunto
+## Validazioni aggiunte / rafforzate
 
 | Rule | Detail |
 |------|--------|
-| **Redaction** | `pass` required from `captured_redacted` onward (incl. expired/archived) |
-| **Secret scan** | `pass` required from `captured_redacted` onward |
-| **adapter_schema null** | Required for `proposed`, `captured_redacted`, `schema_validated` |
-| **adapter_schema required** | Required for `adapter_validated`, `operator_reviewed` |
-| **rejected** | `next_gate` must be **`stop`** |
-| **archived** | `retention.policy` must be **`archive`** |
-| **expired** | `retention.policy` expire/archive + **`expires_at` non-null** |
-| **next_gate** | Allowlist extended PM-74→78 |
-
----
-
-## Regression PM-59 (unchanged pass/fail)
-
-| Sample | Exit |
-|--------|------|
-| valid | **0** |
-| invalid-n8n-ready | **1** |
-| invalid-pm34-unblock | **1** |
-| invalid-secret-scan | **1** |
-| invalid-state | **1** |
+| **lifecycle_state** | Allowlist invariata (8 stati) |
+| **redaction_status pass** | `captured_redacted`, `schema_validated`, `adapter_validated`, `operator_reviewed`, `archived` |
+| **secret_scan pass** | Stessi stati |
+| **adapter_schema** | `null` per `proposed`, `captured_redacted`, `schema_validated` |
+| **adapter_schema** | **pm54.openclaw.adapter.v1** per `adapter_validated`, `operator_reviewed` |
+| **expired** | `retention.policy` **expire** or **archive** |
+| **archived** | `retention.policy` **archive** |
+| **n8n_ready / pm34_unblock** | Sempre **false** (global) |
+| **next_gate** | Allowlist PM-59→PM-63 + **`stop`** only — **no** PM-34 |
 
 ---
 
 ## Explicit negatives
 
-No OpenClaw · no gateway · no n8n · PM-34 **blocked** · `n8n_ready` **false**
+No OpenClaw · no gateway · no n8n · no worker · workflow **40/41** untouched
 
 ---
 
 ## Next
 
-**PM-76** — transition fixtures.
+**PM-76** — transition fixtures (`examples/pm74-*`).

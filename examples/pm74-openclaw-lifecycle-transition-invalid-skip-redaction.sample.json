@@ -1,9 +1,9 @@
 {
-  "artifact_id": "pm76-lifecycle-invalid-captured-redaction-fail-001",
+  "artifact_id": "pm74-lifecycle-invalid-skip-redaction-001",
   "schema_version": "pm52.openclaw.bridge.v1",
-  "adapter_schema": null,
-  "lifecycle_state": "captured_redacted",
-  "created_at": "2026-05-22T15:00:00Z",
+  "adapter_schema": "pm54.openclaw.adapter.v1",
+  "lifecycle_state": "adapter_validated",
+  "created_at": "2026-05-22T16:00:00Z",
   "source": "openclaw",
   "machine_scope": "home-local-loopback",
   "classification": "pass",

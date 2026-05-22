@@ -2,9 +2,15 @@
 
 **Packet ID:** `pm-74-openclaw-lifecycle-transition-rules-design-gate`  
 **Date:** 2026-05-22  
-**Status:** **PREPARED / DESIGN ONLY**
+**Status:** **PASS**
 
 **Evidence:** [PM-74 doc](../PM74_OPENCLAW_LIFECYCLE_TRANSITION_RULES_DESIGN.md)
+
+---
+
+## PASS criteria (met)
+
+Transition rules + forbidden transitions documented · PM-34 **blocked**
 
 ---
 

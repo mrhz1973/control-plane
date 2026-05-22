@@ -40,6 +40,7 @@
 | PM-66 | **RISK REGISTER** |
 | PM-67 | **OPTIONS** |
 | PM-68 | **HANDOFF** (this doc) |
+| PM-74–78 | **PASS** — lifecycle transition hardening — [PM78](PM78_OPENCLAW_LIFECYCLE_HARDENING_CHECKPOINT.md) |
 
 ---
 
@@ -76,7 +77,7 @@
 
 | PM | Scope |
 |----|--------|
-| **PM-74** | Lifecycle metadata extension dry-run **or** governance docs close |
+| **PM-79** | Governance closeout **or** lifecycle transition matrix cleanup (docs-only) |
 
 ---
 
@@ -96,6 +97,7 @@
 | Need | Doc |
 |------|-----|
 | **Governance index** | [PM-69](PM69_OPENCLAW_GOVERNANCE_INDEX_CLEANUP.md) |
+| **Lifecycle hardening** | [PM78](PM78_OPENCLAW_LIFECYCLE_HARDENING_CHECKPOINT.md) · [PM74 transitions](PM74_OPENCLAW_LIFECYCLE_TRANSITION_RULES_DESIGN.md) |
 | **Cleanup checkpoint** | [PM-73](PM73_OPENCLAW_GOVERNANCE_CLEANUP_CHECKPOINT.md) |
 | Full map | [PM-64](PM64_OPENCLAW_GOVERNANCE_MAP_CLEANUP.md) |
 | Boundaries | [PM-65](PM65_OPENCLAW_DECISION_BOUNDARY_REVIEW.md) |

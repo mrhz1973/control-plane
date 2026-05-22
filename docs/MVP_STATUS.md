@@ -110,7 +110,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-71 handoff validation** | **PASS** — [PM71](PM71_OPENCLAW_COMPACT_HANDOFF_VALIDATION_REVIEW.md) |
 | **PM-72 no-runtime mirror** | **PASS** (docs-only) — [PM72](PM72_OPENCLAW_NO_RUNTIME_BOUNDARY_MIRROR.md) |
 | **PM-73 governance checkpoint** | **PASS** — [PM73](PM73_OPENCLAW_GOVERNANCE_CLEANUP_CHECKPOINT.md) |
-| **PM-74 lifecycle transition design** | **PREPARED** — [PM74](PM74_OPENCLAW_LIFECYCLE_TRANSITION_RULES_DESIGN.md) |
+| **PM-74 lifecycle transition design** | **PASS** — [PM74](PM74_OPENCLAW_LIFECYCLE_TRANSITION_RULES_DESIGN.md) |
 | **PM-75 validator hardening** | **PASS** — [PM75](PM75_OPENCLAW_LIFECYCLE_VALIDATOR_TRANSITION_HARDENING.md) |
 | **PM-76 transition fixtures** | **PASS** — [PM76](PM76_OPENCLAW_LIFECYCLE_TRANSITION_FIXTURES.md) |
 | **PM-77 regression review** | **PASS** — [PM77](PM77_OPENCLAW_LIFECYCLE_VALIDATOR_REGRESSION_REVIEW.md) |

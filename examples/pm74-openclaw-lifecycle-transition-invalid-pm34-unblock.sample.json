@@ -1,14 +1,14 @@
 {
-  "artifact_id": "pm76-lifecycle-invalid-schema-with-adapter-001",
+  "artifact_id": "pm74-lifecycle-invalid-pm34-unblock-001",
   "schema_version": "pm52.openclaw.bridge.v1",
-  "adapter_schema": "pm54.openclaw.adapter.v1",
+  "adapter_schema": null,
   "lifecycle_state": "schema_validated",
-  "created_at": "2026-05-22T15:00:00Z",
+  "created_at": "2026-05-22T16:00:00Z",
   "source": "openclaw",
   "machine_scope": "home-local-loopback",
   "classification": "pass",
   "n8n_ready": false,
-  "pm34_unblock": false,
+  "pm34_unblock": true,
   "redaction_status": "pass",
   "secret_scan": "pass",
   "retention": {

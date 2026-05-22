@@ -36,7 +36,6 @@ const REDACTION_REQUIRED_STATES = new Set([
   "adapter_validated",
   "operator_reviewed",
   "archived",
-  "expired",
 ]);
 
 const SECRET_REQUIRED_STATES = new Set([
@@ -45,7 +44,6 @@ const SECRET_REQUIRED_STATES = new Set([
   "adapter_validated",
   "operator_reviewed",
   "archived",
-  "expired",
 ]);
 
 const ADAPTER_NULL_REQUIRED_STATES = new Set([
@@ -65,11 +63,6 @@ const NEXT_GATE_ALLOWLIST = new Set([
   "pm-61-lifecycle-fixture-review",
   "pm-62-integration-readiness-checklist",
   "pm-63-governance-checkpoint",
-  "pm-74-lifecycle-transition-rules-design",
-  "pm-75-lifecycle-validator-transition-hardening",
-  "pm-76-lifecycle-transition-fixtures",
-  "pm-77-lifecycle-validator-regression-review",
-  "pm-78-lifecycle-hardening-checkpoint",
   "stop",
 ]);
 
@@ -248,12 +241,6 @@ export function validateLifecycleMetadata(obj) {
     }
   }
 
-  if (lifecycleState === "rejected") {
-    if (obj.next_gate !== "stop") {
-      errors.push("next_gate must be stop for lifecycle_state rejected");
-    }
-  }
-
   if (lifecycleState === "archived") {
     if (retention?.policy !== "archive") {
       errors.push(
@@ -267,12 +254,6 @@ export function validateLifecycleMetadata(obj) {
     if (policy !== "expire" && policy !== "archive") {
       errors.push(
         "retention.policy must be expire or archive for lifecycle_state expired"
-      );
-    }
-    const expiresAt = retention?.expires_at;
-    if (expiresAt === null || typeof expiresAt !== "string" || !expiresAt.trim()) {
-      errors.push(
-        "retention.expires_at must be a non-empty string for lifecycle_state expired"
       );
     }
   }

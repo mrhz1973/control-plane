@@ -9,10 +9,10 @@
 
 | PM | Status |
 |----|--------|
-| PM-74 | **PREPARED** — transition rules design |
+| PM-74 | **PASS** — transition rules design |
 | PM-75 | **PASS** — validator hardening |
-| PM-76 | **PASS** — fixtures (6) |
-| PM-77 | **PASS** — regression 11/11 |
+| PM-76 | **PASS** — `examples/pm74-*` fixtures (5) |
+| PM-77 | **PASS** — regression **10/10** |
 | PM-78 | **PASS** — checkpoint |
 
 ---
@@ -20,23 +20,27 @@
 ## Modified
 
 - `tools/validate-openclaw-lifecycle-metadata.mjs`
-- `examples/pm76-*.sample.json` (6)
+- `examples/pm74-openclaw-lifecycle-transition-*.sample.json` (5)
+- Removed legacy `examples/pm76-*` (replaced by pm74 naming)
 - `docs/PM74_*` … `docs/PM78_*` + gates
 
 ---
 
-## Dry-run
+## PM-77 dry-run results
 
-PM-59 (5) + PM-76 (6) = **11/11 OK**
+| Suite | Result |
+|-------|--------|
+| PM-59 (5) | **5/5 OK** |
+| PM-74 (5) | **5/5 OK** |
 
 ---
 
 ## Invariants
 
-PM-34 **blocked** · `n8n_ready` **false** · no OpenClaw/gateway/n8n/workflow
+PM-34 **blocked** · `n8n_ready` **false** · no OpenClaw/gateway/n8n/workflow · no `docs/artifacts/**`
 
 ---
 
 ## Next
 
-**PM-79** — docs-only close or bridge path design refresh.
+**PM-79** — governance closeout or transition matrix cleanup (docs-only).

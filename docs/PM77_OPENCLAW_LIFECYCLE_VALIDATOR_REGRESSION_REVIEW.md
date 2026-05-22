@@ -6,42 +6,46 @@
 
 ---
 
-## Scopo
-
-Conferma che PM-75 hardening **non** ha rotto PM-59 e che PM-76 fixtures passano.
-
----
-
 ## PM-59 regression
 
-| Sample | Result |
-|--------|--------|
-| valid | **PASS** (0) |
-| invalid-n8n-ready | **PASS** (1) |
-| invalid-pm34-unblock | **PASS** (1) |
-| invalid-secret-scan | **PASS** (1) |
-| invalid-state | **PASS** (1) |
+| Sample | Exit | `valid` |
+|--------|------|---------|
+| `pm59-openclaw-lifecycle-metadata-valid.sample.json` | **0** | true |
+| `pm59-openclaw-lifecycle-metadata-invalid-n8n-ready.sample.json` | **1** | false |
+| `pm59-openclaw-lifecycle-metadata-invalid-pm34-unblock.sample.json` | **1** | false |
+| `pm59-openclaw-lifecycle-metadata-invalid-secret-scan.sample.json` | **1** | false |
+| `pm59-openclaw-lifecycle-metadata-invalid-state.sample.json` | **1** | false |
 
 ---
 
-## PM-76 transition fixtures
+## PM-74 transition fixtures
 
-| Sample | Result |
-|--------|--------|
-| valid-captured-redacted | **PASS** (0) |
-| invalid-schema-with-adapter | **PASS** (1) |
-| invalid-adapter-null | **PASS** (1) |
-| invalid-captured-redaction-fail | **PASS** (1) |
-| invalid-rejected-next-gate | **PASS** (1) |
-| invalid-expired-no-expires | **PASS** (1) |
+| Sample | Exit | `valid` |
+|--------|------|---------|
+| `pm74-…-valid-schema-to-adapter.sample.json` | **0** | true |
+| `pm74-…-invalid-skip-redaction.sample.json` | **1** | false |
+| `pm74-…-invalid-n8n-ready.sample.json` | **1** | false |
+| `pm74-…-invalid-pm34-unblock.sample.json` | **1** | false |
+| `pm74-…-invalid-expired-promoted.sample.json` | **1** | false |
 
-**Total:** 11/11 expected exits match.
+**Total:** **10/10** expected exits.
+
+---
+
+## Confirmations
+
+| Item | State |
+|------|--------|
+| OpenClaw / gateway / n8n | **Not** invoked |
+| Workflow 40 / 41 / worker | **Untouched** |
+| PM-34 | **Blocked** |
+| `n8n_ready` | **false** |
 
 ---
 
 ## Decisione
 
-**PASS** — regression OK · PM-34 **blocked** · `n8n_ready` **false**
+**PASS**
 
 ---
 

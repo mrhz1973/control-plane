@@ -1,21 +1,20 @@
 # PM-76 — OpenClaw lifecycle transition fixtures
 
-**Status:** **PASS / FIXTURE REVIEW** (2026-05-22)
+**Status:** **PASS** (2026-05-22)
 
-**Related:** [runtime packet](runtime-packets/pm-76-openclaw-lifecycle-transition-fixtures-gate.md) · [PM-75](PM75_OPENCLAW_LIFECYCLE_VALIDATOR_TRANSITION_HARDENING.md)
+**Related:** [runtime packet](runtime-packets/pm-76-openclaw-lifecycle-transition-fixtures-gate.md) · [PM-74](PM74_OPENCLAW_LIFECYCLE_TRANSITION_RULES_DESIGN.md) · [PM-75](PM75_OPENCLAW_LIFECYCLE_VALIDATOR_TRANSITION_HARDENING.md)
 
 ---
 
-## Fixtures
+## Fixtures (`examples/pm74-*`)
 
-| Sample | Expected |
-|--------|----------|
-| `pm76-…-valid-captured-redacted.sample.json` | exit **0** |
-| `pm76-…-invalid-schema-with-adapter.sample.json` | exit **1** |
-| `pm76-…-invalid-adapter-null.sample.json` | exit **1** |
-| `pm76-…-invalid-captured-redaction-fail.sample.json` | exit **1** |
-| `pm76-…-invalid-rejected-next-gate.sample.json` | exit **1** |
-| `pm76-…-invalid-expired-no-expires.sample.json` | exit **1** |
+| Sample | Expected | Tests |
+|--------|----------|-------|
+| `pm74-openclaw-lifecycle-transition-valid-schema-to-adapter.sample.json` | exit **0** | `adapter_validated` + adapter schema |
+| `pm74-openclaw-lifecycle-transition-invalid-skip-redaction.sample.json` | exit **1** | `redaction_status: fail` on promoted state |
+| `pm74-openclaw-lifecycle-transition-invalid-n8n-ready.sample.json` | exit **1** | `n8n_ready: true` |
+| `pm74-openclaw-lifecycle-transition-invalid-pm34-unblock.sample.json` | exit **1** | `pm34_unblock: true` |
+| `pm74-openclaw-lifecycle-transition-invalid-expired-promoted.sample.json` | exit **1** | `expired` + `retention.policy: keep` |
 
 All fixtures are fake — **no** real secrets.
 
@@ -24,12 +23,11 @@ All fixtures are fake — **no** real secrets.
 ## Commands
 
 ```bash
-node tools/validate-openclaw-lifecycle-metadata.mjs examples/pm76-openclaw-lifecycle-metadata-valid-captured-redacted.sample.json
-node tools/validate-openclaw-lifecycle-metadata.mjs examples/pm76-openclaw-lifecycle-metadata-invalid-schema-with-adapter.sample.json
-node tools/validate-openclaw-lifecycle-metadata.mjs examples/pm76-openclaw-lifecycle-metadata-invalid-adapter-null.sample.json
-node tools/validate-openclaw-lifecycle-metadata.mjs examples/pm76-openclaw-lifecycle-metadata-invalid-captured-redaction-fail.sample.json
-node tools/validate-openclaw-lifecycle-metadata.mjs examples/pm76-openclaw-lifecycle-metadata-invalid-rejected-next-gate.sample.json
-node tools/validate-openclaw-lifecycle-metadata.mjs examples/pm76-openclaw-lifecycle-metadata-invalid-expired-no-expires.sample.json
+node tools/validate-openclaw-lifecycle-metadata.mjs examples/pm74-openclaw-lifecycle-transition-valid-schema-to-adapter.sample.json
+node tools/validate-openclaw-lifecycle-metadata.mjs examples/pm74-openclaw-lifecycle-transition-invalid-skip-redaction.sample.json
+node tools/validate-openclaw-lifecycle-metadata.mjs examples/pm74-openclaw-lifecycle-transition-invalid-n8n-ready.sample.json
+node tools/validate-openclaw-lifecycle-metadata.mjs examples/pm74-openclaw-lifecycle-transition-invalid-pm34-unblock.sample.json
+node tools/validate-openclaw-lifecycle-metadata.mjs examples/pm74-openclaw-lifecycle-transition-invalid-expired-promoted.sample.json
 ```
 
 ---
