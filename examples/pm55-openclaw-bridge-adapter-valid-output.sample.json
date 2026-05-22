@@ -1,0 +1,23 @@
+{
+  "adapted": true,
+  "adapter_schema": "pm54.openclaw.adapter.v1",
+  "source_artifact_schema": "pm52.openclaw.bridge.v1",
+  "adapter_run_id": "adapter-pm53-dry-run-valid-001",
+  "created_at": "2026-05-22T12:00:00Z",
+  "classification": "pass",
+  "normalized_summary": "Gateway health validated; redacted bridge artifact for PM-53 dry-run",
+  "decision_relevance": "operator_review",
+  "evidence_refs": [
+    "pm53-dry-run-valid-001:evidence:0",
+    "pm53-dry-run-valid-001:evidence:1"
+  ],
+  "safety": {
+    "secret_scan": "pass",
+    "forbidden_touched": false,
+    "raw_output_included": false,
+    "n8n_ready": false
+  },
+  "next_gate": "pm-56-adapter-contract-review",
+  "errors": [],
+  "warnings": []
+}

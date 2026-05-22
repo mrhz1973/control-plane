@@ -90,7 +90,8 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-51 OpenClaw gateway no-op** | **PASS** (manual, casa) — [session](sessions/2026-05-22-control-plane-pm51-openclaw-confined-gateway-noop-probe-pass.md) |
 | **PM-52 OpenClaw bridge design** | **PREPARED / DESIGN ONLY** — [PM52](PM52_OPENCLAW_CONFINED_BRIDGE_DESIGN.md) |
 | **PM-53 bridge artifact validator** | **PASS** (dry-run) — [PM53](PM53_OPENCLAW_BRIDGE_ARTIFACT_VALIDATOR_DRY_RUN.md) |
-| **PM-54 bridge adapter design** | **PREPARED / DESIGN ONLY** — [PM54](PM54_OPENCLAW_BRIDGE_ADAPTER_DESIGN.md) · PM-34 **blocked** · workflow **40/41** / n8n **untouched** |
+| **PM-54 bridge adapter design** | **PREPARED / DESIGN ONLY** — [PM54](PM54_OPENCLAW_BRIDGE_ADAPTER_DESIGN.md) |
+| **PM-55 bridge adapter dry-run** | **PASS** — [PM55](PM55_OPENCLAW_BRIDGE_ADAPTER_DRY_RUN.md) · `n8n_ready` **false** · PM-34 **blocked** |
 | **CONTROL PLANE n8n list** | `40` **ACTIVE** · `41` **BACKUP OFF** (retained) · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |
