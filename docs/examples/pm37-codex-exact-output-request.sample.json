@@ -1,0 +1,28 @@
+{
+  "schema_version": "pm37-codex-exact-output-request-v1",
+  "source": "control-plane",
+  "mode": "mock-contract-only",
+  "target_worker": "codex-cli-future",
+  "purpose": "force structured output before any n8n integration",
+  "target_file": "docs/PM35_CODEX_NOOP_PROBE.md",
+  "expected_status": "PASS",
+  "output_contract": {
+    "format": "single_json_object_between_markers",
+    "start_marker": "CONTROL_PLANE_JSON_START",
+    "end_marker": "CONTROL_PLANE_JSON_END",
+    "required_fields": [
+      "schema_version",
+      "status",
+      "target_file",
+      "pm35_status",
+      "file_modified",
+      "git_command_used",
+      "secret_accessed",
+      "n8n_touched",
+      "worker_enabled"
+    ]
+  },
+  "future_prompt_preview": "Read only docs/PM35_CODEX_NOOP_PROBE.md. Return only CONTROL_PLANE_JSON_START, one JSON object, CONTROL_PLANE_JSON_END. No prose.",
+  "worker_enabled": false,
+  "n8n_touched": false
+}
