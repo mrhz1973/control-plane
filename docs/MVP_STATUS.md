@@ -87,7 +87,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-48 runner probe v3** | **PREPARED** (fallback) — [packet](runtime-packets/pm-48-real-local-codex-runner-v3-gate.md) |
 | **PM-49 OpenClaw bridge** | **PASS** (feasibility only) — [PM49](PM49_OPENCLAW_OAUTH_BRIDGE_FEASIBILITY.md) |
 | **PM-50 OpenClaw onboard** | **PASS** (manual) — [PM50 PASS](PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md) |
-| **PM-51 OpenClaw gateway no-op** | **PREPARED / NOT EXECUTED** — [PM51](PM51_OPENCLAW_CONFINED_GATEWAY_NOOP_PROBE_GATE.md) · [handoff new chat](handoffs/pm-51-openclaw-confined-gateway-noop-probe-new-chat.md) |
+| **PM-51 OpenClaw gateway no-op** | **PASS** (manual, casa) — [session](sessions/2026-05-22-control-plane-pm51-openclaw-confined-gateway-noop-probe-pass.md) · PM-34 **blocked** · next **PM-52** design (separate gate) |
 | **CONTROL PLANE n8n list** | `40` **ACTIVE** · `41` **BACKUP OFF** (retained) · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |

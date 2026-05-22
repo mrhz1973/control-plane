@@ -1,32 +1,32 @@
 # PM-51 — OpenClaw confined gateway no-op probe gate
 
-**Status:** **PREPARED / NOT EXECUTED** (2026-05-22)
+**Status:** **PASS / RUNTIME MANUAL CONTROLLED** (2026-05-22)
 
-**Related:** [operational handoff — new chat](handoffs/pm-51-openclaw-confined-gateway-noop-probe-new-chat.md) · [runtime packet](runtime-packets/pm-51-openclaw-confined-gateway-noop-probe-gate.md) · [PM-50 PASS](PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md)
+**Related:** [session PASS](sessions/2026-05-22-control-plane-pm51-openclaw-confined-gateway-noop-probe-pass.md) · [operational handoff — new chat](handoffs/pm-51-openclaw-confined-gateway-noop-probe-new-chat.md) · [runtime packet](runtime-packets/pm-51-openclaw-confined-gateway-noop-probe-gate.md) · [PM-50 PASS](PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md)
 
 ---
 
 ## Summary
 
-PM-51 is the **first real no-op use** of the OpenClaw gateway after PM-50 — **not** executed in this batch.
+PM-51 — first **confined no-op** use of OpenClaw gateway after PM-50 — **PASS** on casa (`mrhz`).
 
 | Item | Value |
 |------|--------|
-| **n8n integration** | **No** |
-| **Worker enablement** | **No** |
-| **Bridge automation** | **No** — design is PM-52+ |
-| **PM-34** | **Blocked** even if PM-51 PASS |
+| **Gateway** | **127.0.0.1:18789** LISTENING · HTTP **/health** **200** (`ok` / `live`) |
+| **Exposure** | Loopback only · Tailscale **off** |
+| **n8n / worker / bridge** | **No** integration |
+| **PM-34** | **Blocked** (PASS does not unblock) |
 
 ---
 
-## Prerequisites
+## Prerequisites (met)
 
-- [PM-50 PASS](PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md) — gateway on **127.0.0.1:18789**
-- Gateway process window **open**
-- Use **`openclaw.cmd --profile control-plane`** on Windows
+- [PM-50 PASS](PM50_OPENCLAW_LOCAL_INSTALL_ONBOARD_PASS.md)
+- Gateway window open: `openclaw.cmd --profile control-plane gateway`
+- **`openclaw.cmd`** on Windows (not bare `openclaw.ps1`)
 
 ---
 
-## Next after PM-51
+## Next
 
-**PM-52** confined bridge design · validated artifact path toward future gates — never raw OpenClaw output into n8n.
+**PM-52** confined bridge design — validated artifact path; never raw OpenClaw output into n8n.
