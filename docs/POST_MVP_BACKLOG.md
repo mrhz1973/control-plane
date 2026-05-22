@@ -346,7 +346,7 @@
 | **PM-18** | **OAUTH AVAILABLE / WORKER NOT ENABLED** |
 | **PM-29** | **PENDING** — non-blocking |
 | **PM-27** | **`41` backup retained** |
-| **Next** | **PM-38** structured probe **or** PM-34 planning **or** stabilize |
+| **Next** | **PM-39** harness hardening **or** stabilize |
 | **Out of scope** | OAuth login dump; n8n; auto worker |
 
 ---
@@ -393,7 +393,7 @@
 | **Doc** | [PM35_CODEX_NOOP_PROBE.md](PM35_CODEX_NOOP_PROBE.md) |
 | **Sample** | [pm35-codex-noop-probe-output.sample.json](examples/pm35-codex-noop-probe-output.sample.json) |
 | **PM-18** | **OAUTH AVAILABLE / WORKER NOT ENABLED** |
-| **Next** | **PM-38** structured probe **or** PM-34 planning **or** stabilize |
+| **Next** | **PM-39** harness hardening **or** stabilize |
 | **Out of scope** | Auto worker; session id in git; n8n prod `40` edit |
 
 ---
@@ -406,7 +406,7 @@
 | **Doc** | [PM36_CODEX_REPO_READ_PROBE.md](PM36_CODEX_REPO_READ_PROBE.md) |
 | **Functional** | Repo-read **PASS** — read `docs/PM35_CODEX_NOOP_PROBE.md`; PM35 status **PASS** found |
 | **Format** | Final output `CODEX_NOOP_OK` vs expected `CODEX_REPO_READ_OK` + `PM35_STATUS=PASS` |
-| **Next** | **PM-38** structured probe **or** PM-34 planning |
+| **Next** | **PM-39** harness hardening **or** stabilize |
 | **Out of scope** | Re-test for format only; worker enable |
 
 ---
@@ -427,11 +427,23 @@
 
 | Field | Value |
 |-------|--------|
-| **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
-| **Packet** | [pm-38-real-codex-structured-output-probe-gate.md](runtime-packets/pm-38-real-codex-structured-output-probe-gate.md) |
-| **Prerequisite** | PM-37 PASS |
-| **Next** | Real `codex.cmd exec` with PM-37 prompt contract |
-| **Out of scope** | n8n integration without PM-38 PASS |
+| **Status** | **STRICT FORMAT FAIL / FUNCTIONAL JSON PARTIAL** (2026-05-22) — [session](sessions/2026-05-22-control-plane-pm38-codex-structured-output-probe-strict-fail.md) |
+| **Doc** | [PM38_CODEX_STRUCTURED_OUTPUT_PROBE.md](PM38_CODEX_STRUCTURED_OUTPUT_PROBE.md) |
+| **Functional** | Repo-read **PASS**; JSON-like output **yes** |
+| **Strict** | PM-37 markers/schema **FAIL** (`<<<JSON>>>` vs `CONTROL_PLANE_JSON_*`) |
+| **PM-34** | **Blocked** from runtime |
+| **Next** | **PM-39** harness hardening **or** stabilize |
+| **Out of scope** | n8n integration on this output |
+
+---
+
+### PM-39 — Strict harness hardening (planned)
+
+| Field | Value |
+|-------|--------|
+| **Status** | **Not started** |
+| **Why** | Recover from PM-38 marker/schema drift before PM-34 |
+| **Out of scope** | n8n runtime until strict structured PASS |
 
 ---
 
@@ -441,7 +453,7 @@
 |-------|--------|
 | **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
 | **Packet** | [pm-34-n8n-codex-worker-integration-gate.md](runtime-packets/pm-34-n8n-codex-worker-integration-gate.md) |
-| **Prerequisites** | PM-31/33/35/36 PASS; PM-37 PASS; **PM-38** required before runtime; stable `40`; `41` retained |
+| **Prerequisites** | PM-37 PASS; **PM-38 strict PASS or PM-39/40 successor** before runtime; stable `40`; `41` retained — **PM-38 strict FAIL blocks** |
 | **Out of scope** | Real Codex from prod `40`; delete `41` |
 
 ---
@@ -486,7 +498,7 @@
 | **Samples** | [pm18](examples/pm18-codex-feasibility-output.sample.json) · [pm30](examples/pm30-codex-cli-local-setup-output.sample.json) · [pm33](examples/pm33-codex-oauth-login-output.sample.json) |
 | **Doc** | [PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md](PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) |
 | **Worker** | **Not** enabled · **PM-34** not executed |
-| **Next** | **PM-38** structured probe **or** PM-34 planning **or** stabilize |
+| **Next** | **PM-39** harness hardening **or** stabilize |
 | **Out of scope** | Auto implementer; production `40`; GIS/DEV/ALINA |
 
 ---

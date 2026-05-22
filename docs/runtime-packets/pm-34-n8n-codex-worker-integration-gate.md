@@ -25,10 +25,13 @@ Future wiring: n8n classifier/bridge path → **Codex worker preview** (Telegram
 | **PM-35** | Real Codex no-op response **PASS** (`CODEX_NOOP_OK`) |
 | **PM-36** | Repo-read functional **PASS** — output-format deviation |
 | **PM-37** | Exact-output harness **PASS** (mock) — **required** before parsing Codex output in n8n |
-| **PM-38** | Real structured probe — **required** before PM-34 runtime |
+| **PM-38** | Real probe **STRICT FAIL** / functional partial — **blocks** PM-34 |
+| **PM-39/40** | Strict structured output **PASS** required before PM-34 runtime |
 | **Production `40`** | Stable — classifier bridge ACTIVE |
 
-**Warning:** Do **not** rely on unconstrained Codex natural-language final output. PM-37 marker+JSON + PM-38 real probe before integration.
+**Blocker (PM-38):** Codex used `<<<JSON>>>` markers and drifted schema — do **not** parse this output in n8n.
+
+**Warning:** PM-37 marker+JSON + **strict** PM-38 (or PM-39/40 successor) PASS before integration.
 | **`41` backup** | Retained **or** PM-27 cleanup completed |
 
 ---

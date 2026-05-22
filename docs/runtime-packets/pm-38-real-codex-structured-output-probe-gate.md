@@ -2,7 +2,9 @@
 
 **Packet ID:** `pm-38-real-codex-structured-output-probe-gate`  
 **Date:** 2026-05-22  
-**Status:** **PREPARED / NOT EXECUTED**
+**Status:** **STRICT FORMAT FAIL / FUNCTIONAL JSON PARTIAL** (2026-05-22)
+
+**Evidence:** [PM-38 session](../sessions/2026-05-22-control-plane-pm38-codex-structured-output-probe-strict-fail.md) · [PM38 doc](../PM38_CODEX_STRUCTURED_OUTPUT_PROBE.md) · [output sample](../examples/pm38-codex-structured-output-probe-output.sample.json)
 
 **Related:** [PM-37 harness](../PM37_CODEX_EXACT_OUTPUT_HARNESS.md) · [PM-36](../PM36_CODEX_REPO_READ_PROBE.md) · [pm-34 integration](pm-34-n8n-codex-worker-integration-gate.md)
 
@@ -59,6 +61,16 @@ CONTROL_PLANE_JSON_END
 
 ---
 
-## Not executed
+## Runtime result (2026-05-22)
 
-This packet does **not** run `codex exec` in the prep task.
+| Check | Result |
+|-------|--------|
+| Functional repo-read | **PASS** |
+| Strict PM-37 markers/schema | **FAIL** — `<<<JSON>>>` markers; field drift |
+| **PM-34** runtime | **Blocked** until strict PASS or **PM-39**/**PM-40** successor |
+
+Retry must meet **Future PASS criteria** above — unchanged.
+
+## Not a strict PASS
+
+First real probe executed manually; strict contract **not** met. Do **not** promote PM-34.
