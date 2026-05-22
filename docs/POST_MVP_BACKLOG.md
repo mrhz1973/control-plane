@@ -346,7 +346,7 @@
 | **PM-18** | **OAUTH AVAILABLE / WORKER NOT ENABLED** |
 | **PM-29** | **PENDING** — non-blocking |
 | **PM-27** | **`41` backup retained** |
-| **Next** | **PM-35** no-op probe **or** stabilize |
+| **Next** | **PM-36** repo-read probe **or** PM-34 planning **or** stabilize |
 | **Out of scope** | OAuth login dump; n8n; auto worker |
 
 ---
@@ -385,13 +385,26 @@
 
 ---
 
-### PM-35 — Real Codex no-op probe (planned)
+### PM-35 — Real Codex no-op probe
+
+| Field | Value |
+|-------|--------|
+| **Status** | **PASS** (2026-05-22) — output `CODEX_NOOP_OK` — [session](sessions/2026-05-22-control-plane-pm35-codex-noop-probe-pass.md) |
+| **Doc** | [PM35_CODEX_NOOP_PROBE.md](PM35_CODEX_NOOP_PROBE.md) |
+| **Sample** | [pm35-codex-noop-probe-output.sample.json](examples/pm35-codex-noop-probe-output.sample.json) |
+| **PM-18** | **OAUTH AVAILABLE / WORKER NOT ENABLED** |
+| **Next** | **PM-36** repo-read probe **or** PM-34 planning |
+| **Out of scope** | Auto worker; session id in git; n8n prod `40` edit |
+
+---
+
+### PM-36 — Controlled repo-read probe (planned)
 
 | Field | Value |
 |-------|--------|
 | **Status** | **Not started** |
-| **Why** | Optional read-only Codex probe after PM-33 — separate from PM-34 |
-| **Out of scope** | Auto worker; n8n prod `40` edit |
+| **Why** | Optional read-only Codex probe beyond PM-35 no-op |
+| **Out of scope** | Worker enable; n8n edit |
 
 ---
 
@@ -401,7 +414,7 @@
 |-------|--------|
 | **Status** | **PREPARED / NOT EXECUTED** (2026-05-22) |
 | **Packet** | [pm-34-n8n-codex-worker-integration-gate.md](runtime-packets/pm-34-n8n-codex-worker-integration-gate.md) |
-| **Prerequisites** | PM-31 PASS; PM-33 if OAuth needed; stable `40`; `41` retained |
+| **Prerequisites** | PM-31 PASS; PM-33 PASS; PM-35 no-op PASS; stable `40`; `41` retained |
 | **Out of scope** | Real Codex from prod `40`; delete `41` |
 
 ---
@@ -446,7 +459,7 @@
 | **Samples** | [pm18](examples/pm18-codex-feasibility-output.sample.json) · [pm30](examples/pm30-codex-cli-local-setup-output.sample.json) · [pm33](examples/pm33-codex-oauth-login-output.sample.json) |
 | **Doc** | [PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md](PM18_CODEX_OAUTH_FEASIBILITY_DRY_RUN.md) |
 | **Worker** | **Not** enabled · **PM-34** not executed |
-| **Next** | **PM-35** no-op probe **or** stabilize |
+| **Next** | **PM-36** repo-read probe **or** PM-34 planning **or** stabilize |
 | **Out of scope** | Auto implementer; production `40`; GIS/DEV/ALINA |
 
 ---

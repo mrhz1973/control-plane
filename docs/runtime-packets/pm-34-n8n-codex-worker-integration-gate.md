@@ -21,7 +21,8 @@ Future wiring: n8n classifier/bridge path → **Codex worker preview** (Telegram
 | Gate | State |
 |------|--------|
 | **PM-31** | Contract **PASS** |
-| **PM-33** | OAuth/manual login **PASS** (if required) |
+| **PM-33** | OAuth/manual login **PASS** |
+| **PM-35** | Real Codex no-op response **PASS** (`CODEX_NOOP_OK`) — optional evidence |
 | **Production `40`** | Stable — classifier bridge ACTIVE |
 | **`41` backup** | Retained **or** PM-27 cleanup completed |
 

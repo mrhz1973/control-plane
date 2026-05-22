@@ -1,0 +1,33 @@
+{
+  "schema_version": "pm35-codex-noop-probe-v1",
+  "source": "manual-local-codex-exec",
+  "command_family": "codex.cmd exec",
+  "sandbox": "read-only",
+  "approval": "never",
+  "model": "gpt-5.5",
+  "provider": "openai",
+  "expected_output": "CODEX_NOOP_OK",
+  "actual_output": "CODEX_NOOP_OK",
+  "status": "pass",
+  "codex_prompt_executed": true,
+  "prompt_type": "no-op read-only",
+  "file_modification_requested": false,
+  "git_command_requested": false,
+  "secret_access_requested": false,
+  "codex_review_used": false,
+  "codex_apply_used": false,
+  "worker_enabled": false,
+  "n8n_touched": false,
+  "workflow_40_touched": false,
+  "workflow_41_touched": false,
+  "oauth_secret_dumped": false,
+  "oauth_url_recorded": false,
+  "provider_api_key_used": false,
+  "notes": [
+    "First real Codex exec probe after PM-33 login.",
+    "Prompt explicitly requested no file modification, no git commands, no secrets.",
+    "Codex returned CODEX_NOOP_OK.",
+    "Codex thread identifier not stored in git.",
+    "Worker remains disabled."
+  ]
+}

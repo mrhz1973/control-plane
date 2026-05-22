@@ -71,6 +71,7 @@ MVP is **strictly closed** only when all five criteria in [MVP_CRITERIA.md](MVP_
 | **PM-32 worker samples** | **Created** — [request](examples/pm31-codex-worker-request.sample.json) · [result](examples/pm31-codex-worker-result.sample.json) |
 | **PM-33 OAuth login gate** | **PASS** — `codex.cmd login`; worker **not** enabled — [session](sessions/2026-05-22-control-plane-pm33-codex-manual-login-pass.md) |
 | **PM-34 n8n Codex integration** | **PREPARED / NOT EXECUTED** — [packet](runtime-packets/pm-34-n8n-codex-worker-integration-gate.md) |
+| **PM-35 Codex no-op probe** | **PASS** — `CODEX_NOOP_OK` read-only exec; worker **not** enabled — [PM35](PM35_CODEX_NOOP_PROBE.md) · [session](sessions/2026-05-22-control-plane-pm35-codex-noop-probe-pass.md) |
 | **CONTROL PLANE n8n list** | `40` **ACTIVE** · `41` **BACKUP OFF** (retained) · `30` / `20` / `01` **OFF** ([N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md)) |
 | **UI cleanup (2026-05-21)** | **Deleted** after PM-09 PASS: backup `40` (`BACKUP BEFORE GATE D FILE`); `55` test-safe (`plan detected Telegram Gate D TEST SAFE`) — [session](sessions/2026-05-21-control-plane-final-n8n-cleanup.md) |
 | **Prior cleanup (PM-07)** | Removed `02`, `02B`–`02E`, `90`–`93` from list ([POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md)) |
