@@ -1,0 +1,30 @@
+{
+  "schema_version": "pm45-runner-hardening-summary-v1",
+  "source": "dry-run-fixtures",
+  "codex_invoked": false,
+  "shell_invoked": false,
+  "n8n_touched": false,
+  "worker_enabled": false,
+  "pm44_observed": {
+    "classification": "fail",
+    "strict_pass": false,
+    "runtime_executed": true,
+    "codex_invoked": true,
+    "exit_code": 2,
+    "failure_mode": "cli_exit_nonzero"
+  },
+  "fixture_results": {
+    "strict_success_raw": "strict_pass",
+    "no_markers_exit_2": "fail",
+    "policy_block": "blocked",
+    "scope_drift": "fail_scope_drift",
+    "malformed_json": "fail"
+  },
+  "pm34_unblocked": false,
+  "future_pm46_required": true,
+  "notes": [
+    "PM-45 does not retry Codex.",
+    "PM-44 fail remains non-n8n-usable.",
+    "Future PM-46 must run one real probe only after hardening."
+  ]
+}

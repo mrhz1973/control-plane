@@ -71,4 +71,6 @@ Raw Codex stdout must **never** be routed into n8n.
 | **raw committed** | **false** |
 | **PM-34** | **Blocked** (separate gate still required even if future strict_pass) |
 
-**Next:** PM-45 runner hardening / stabilize.
+**Follow-up:** [PM-45 hardening](../PM45_CODEX_RUNNER_HARDENING.md) **PASS** — [PM-46 v2 gate](pm-46-real-local-codex-runner-probe-v2-gate.md) prepared. PM-44 **FAIL** remains non-n8n-usable.
+
+**Next:** PM-46 one-shot runner v2.
