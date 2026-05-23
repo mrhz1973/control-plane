@@ -47,4 +47,6 @@
 
 ## Final git (after commit)
 
-_Filled after commit._
+- `git diff --check`: clean  
+- **Commit:** `aa5e9f5` — `docs: add PM-80 OpenClaw runtime evidence capture design`  
+- **Push:** `origin/main` — workspace clean after push
