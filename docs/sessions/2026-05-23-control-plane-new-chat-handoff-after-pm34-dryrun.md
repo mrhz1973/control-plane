@@ -1,7 +1,7 @@
-# Control Plane ? new chat handoff after PM-34 strict_pass dry-run
+# Control Plane - new chat handoff after PM-34 strict_pass dry-run
 
 **Date:** 2026-05-23  
-**Workspace:** Cursor CONTROL PLANE (arancione) ? not DEV/GIS
+**Workspace:** Cursor CONTROL PLANE arancione - not DEV/GIS
 
 ---
 
@@ -11,7 +11,9 @@
 |------|--------|
 | **Repo** | `https://github.com/mrhz1973/control-plane` |
 | **Branch** | `main` |
-| **HEAD** | `2f3f01d` ? docs: record PM-34 strict pass dry-run result |
+| **HEAD** | `f038dd4` - docs: fix handoff HEAD after dry-run result |
+
+Note: the substantive dry-run result was recorded in `2f3f01d`; `f038dd4` only fixed handoff metadata.
 
 ### Prior important commits
 
