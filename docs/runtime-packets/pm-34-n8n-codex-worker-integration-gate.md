@@ -1,10 +1,10 @@
 # Runtime packet — PM-34: n8n Codex worker integration gate
 
 **Packet ID:** `pm-34-n8n-codex-worker-integration-gate`  
-**Date:** 2026-05-22  
-**Status:** **PREPARED / NOT EXECUTED**
+**Date:** 2026-05-22 · **Updated:** 2026-05-23
+**Status:** **BLOCKED / NOT EXECUTED**
 
-**Related:** [PM-31](../PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md) · [pm-33 login gate](pm-33-codex-oauth-manual-login-gate.md) · [PM-20](../PM20_N8N_BRIDGE_PACKET.md) · [PM-22/23 PASS](../sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md)
+**Related:** [PM-31](../PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md) · [pm-33 login gate](pm-33-codex-oauth-manual-login-gate.md) · [PM-20](../PM20_N8N_BRIDGE_PACKET.md) · [PM-22/23 PASS](../sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) · [PM-79](../PM79_OPENCLAW_CONTROLLED_SECOND_GATEWAY_PROBE.md) · [PM-80](../PM80_OPENCLAW_RUNTIME_EVIDENCE_CAPTURE_DESIGN.md)
 
 ---
 
@@ -14,6 +14,8 @@ Future wiring: n8n classifier/bridge path → **Codex worker preview** (Telegram
 
 **Not** production `40` direct edit without a separate candidate workflow gate.
 
+**n8n:** **Never** consume raw Codex, OpenClaw, or ChatGPT output.
+
 ---
 
 ## Future preconditions
@@ -22,28 +24,16 @@ Future wiring: n8n classifier/bridge path → **Codex worker preview** (Telegram
 |------|--------|
 | **PM-31** | Contract **PASS** |
 | **PM-33** | OAuth/manual login **PASS** |
-| **PM-35** | Real Codex no-op response **PASS** (`CODEX_NOOP_OK`) |
-| **PM-36** | Repo-read functional **PASS** — output-format deviation |
-| **PM-37** | Exact-output harness **PASS** (mock) — **required** before parsing Codex output in n8n |
-| **PM-38** | Real probe **STRICT FAIL** / functional partial — **blocks** PM-34 |
-| **PM-39** | Hardening **PASS** — PM-38 `recoverable_partial` **not** sufficient |
-| **PM-40** | Strict retry **BLOCKED** — no strict pass |
-| **PM-41** | Direct strict output **FAIL** |
-| **PM-43** | Adapter dry-run **PASS** — parser validated on fixtures |
-| **PM-44** | Real probe **FAIL** — no strict_pass artifact |
-| **PM-45** | Runner hardening **PASS** (dry-run) — PM-34 still blocked |
-| **PM-46** | Runner v2 probe **FAIL** — exit 2, no strict artifact |
-| **PM-47** | CLI diagnosis **PASS** — PM-34 still blocked |
-| **PM-48** | Codex CLI v3 probe **prepared** (fallback track) |
-| **PM-49** | OpenClaw bridge feasibility **PASS** — does **not** unblock PM-34 |
-| **PM-50** | OpenClaw gateway **operational** (loopback) — PM-34 **still blocked** |
-| **PM-51+** | **strict_pass** safe artifact + separate gate; **never** raw OpenClaw/ChatGPT or Codex stdout |
-| **Production `40`** | Stable — classifier bridge ACTIVE |
+| **PM-35–47** | Codex probes partial/**FAIL** — no validated **strict_pass** artifact |
+| **PM-49–51** | OpenClaw feasibility/install/liveness — **not** integration-ready |
+| **PM-79 / PM-80** | Liveness **PASS** (PM-79) + evidence **DESIGN** (PM-80) — **not** integration-ready |
+| **strict_pass artifact** | **None** validated — PM-34 **blocked** |
+| **Workflow `40`** | **ACTIVE** — **untouched** |
+| **Workflow `41`** | **BACKUP OFF** — retained — **untouched** |
 
-**Blocker (PM-38):** Codex used `<<<JSON>>>` markers and drifted schema — do **not** parse this output in n8n.
+**Blocker (PM-38):** Codex `<<<JSON>>>` drift — do **not** parse in n8n.
 
-**Rule:** PM-34 must consume **validated strict_pass artifact** from runner or confined OpenClaw bridge — **never** raw Codex or OpenClaw/ChatGPT output. PM-49 does not unblock; separate gate required even after future strict_pass.
-| **`41` backup** | Retained **or** PM-27 cleanup completed |
+**Rule:** PM-34 consumes **validated strict_pass** from runner or confined OpenClaw bridge only — separate gate after artifact exists; PM-49/79/80 do **not** unblock.
 
 ---
 
