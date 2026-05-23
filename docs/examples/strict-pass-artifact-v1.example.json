@@ -1,0 +1,33 @@
+{
+  "artifact_version": "strict-pass-v1",
+  "run_id": "strict-pass-dry-run-example-001",
+  "timestamp_local": "2026-05-23T12:00:00Z",
+  "repo": "mrhz1973/control-plane",
+  "branch": "main",
+  "head_sha": "409df43",
+  "workspace_clean_before": true,
+  "workspace_clean_after": true,
+  "gateway_health_before": "not_applicable",
+  "gateway_health_after": "not_applicable",
+  "worker_type": "mock-worker",
+  "action_requested": "strict_pass_dry_run_mock_worker_scoped",
+  "action_executed": "not_executed_example_fixture_only",
+  "files_allowed": [
+    "docs/sessions/",
+    "docs/examples/"
+  ],
+  "files_changed": [],
+  "forbidden_paths_touched": false,
+  "codex_invoked": false,
+  "openclaw_raw_log_committed": false,
+  "secrets_detected": false,
+  "workflow_40_modified": false,
+  "workflow_41_modified": false,
+  "n8n_import_export_performed": false,
+  "exit_code": null,
+  "strict_pass_candidate": false,
+  "pm34_unblocked": false,
+  "n8n_ready": false,
+  "human_gate_required": true,
+  "final_decision": "blocked"
+}
