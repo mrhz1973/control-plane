@@ -2,7 +2,7 @@
 
 **Packet ID:** `pm-34-n8n-codex-worker-integration-gate`  
 **Date:** 2026-05-22 · **Updated:** 2026-05-23
-**Status:** **BLOCKED / NOT EXECUTED**
+**Status:** **BLOCKED FOR REAL WORKER / PREVIEW SMOKE PASS**
 
 **Related:** [PM-31](../PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md) · [pm-33 login gate](pm-33-codex-oauth-manual-login-gate.md) · [PM-20](../PM20_N8N_BRIDGE_PACKET.md) · [PM-22/23 PASS](../sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) · [PM-79](../PM79_OPENCLAW_CONTROLLED_SECOND_GATEWAY_PROBE.md) · [PM-80](../PM80_OPENCLAW_RUNTIME_EVIDENCE_CAPTURE_DESIGN.md)
 
@@ -30,6 +30,7 @@ Future wiring: n8n classifier/bridge path → **Codex worker preview** (Telegram
 | **strict_pass artifact** | **None** validated — PM-34 **blocked** |
 | **Workflow `40`** | **ACTIVE** — **untouched** |
 | **Workflow `41`** | **BACKUP OFF** — retained — **untouched** |
+| **PM-34 preview (`40`)** | **PASS** (mock-worker) — [smoke](../sessions/2026-05-23-control-plane-pm34-runtime-smoke-gate-d-preview-pass.md) · [next gate](../sessions/2026-05-23-control-plane-pm34-next-runtime-gate-preview-pass.md); real worker **gated** |
 
 **Blocker (PM-38):** Codex `<<<JSON>>>` drift — do **not** parse in n8n.
 

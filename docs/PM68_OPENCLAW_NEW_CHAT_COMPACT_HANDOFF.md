@@ -43,6 +43,7 @@
 | PM-74–78 | **PASS** — lifecycle transition hardening — [PM78](PM78_OPENCLAW_LIFECYCLE_HARDENING_CHECKPOINT.md) |
 | PM-79 | **PASS** — second controlled gateway probe (casa) — [PM79](PM79_OPENCLAW_CONTROLLED_SECOND_GATEWAY_PROBE.md) |
 | PM-80 | **DESIGN** — runtime evidence capture contract — [PM80](PM80_OPENCLAW_RUNTIME_EVIDENCE_CAPTURE_DESIGN.md) |
+| PM-34 preview | **PASS** — workflow `40` Gate D / PM21 preview, mock-worker only; real worker **gated** |
 
 ---
 
@@ -79,13 +80,13 @@
 
 | PM | Scope |
 |----|--------|
-| **PM-81** | Sample evidence fixture (docs-only, no secrets) |
+| **Stabilize** | No new PM by default — maintain current state |
 
 ---
 
 ## Vietato come prossimo step
 
-- PM-34 runtime
+- PM-34 real worker execution without explicit gate
 - n8n consumption
 - workflow edit
 - worker enablement
