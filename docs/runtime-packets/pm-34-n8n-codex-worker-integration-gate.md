@@ -4,7 +4,7 @@
 **Date:** 2026-05-22 · **Updated:** 2026-05-23
 **Status:** **BLOCKED FOR REAL WORKER / PREVIEW SMOKE PASS**
 
-**Related:** [PM-31](../PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md) · [pm-33 login gate](pm-33-codex-oauth-manual-login-gate.md) · [PM-20](../PM20_N8N_BRIDGE_PACKET.md) · [PM-22/23 PASS](../sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) · [PM-79](../PM79_OPENCLAW_CONTROLLED_SECOND_GATEWAY_PROBE.md) · [PM-80](../PM80_OPENCLAW_RUNTIME_EVIDENCE_CAPTURE_DESIGN.md)
+**Related:** [PM-31](../PM31_CODEX_WORKER_CONTRACT_DRY_RUN.md) · [pm-33 login gate](pm-33-codex-oauth-manual-login-gate.md) · [PM-20](../PM20_N8N_BRIDGE_PACKET.md) · [PM-22/23 PASS](../sessions/2026-05-22-control-plane-pm22-pm23-promotion-smoke-pass.md) · [PM-79](../PM79_OPENCLAW_CONTROLLED_SECOND_GATEWAY_PROBE.md) · [PM-80](../PM80_OPENCLAW_RUNTIME_EVIDENCE_CAPTURE_DESIGN.md) · [strict_pass contract design](../sessions/2026-05-23-control-plane-strict-pass-artifact-contract-design.md)
 
 ---
 
