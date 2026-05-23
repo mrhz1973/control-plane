@@ -104,6 +104,7 @@ Until a **separate** PM-34 real-worker activation gate explicitly overrides (non
 | `pm34_unblocked` | **false** |
 | `n8n_ready` | **false** |
 | `real_worker_enabled` | **false** (implicit; no real worker in this design task) |
+| `strict_pass_candidate` | **false** unless a future artifact proves otherwise per PASS criteria above |
 
 Preview/mock evidence (e.g. `89d3729`, `985bbe9`) remains `strict_pass_candidate=false`.
 
