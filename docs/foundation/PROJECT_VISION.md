@@ -89,7 +89,7 @@ Questa sezione distingue la visione da ciò che è già vero.
 | **OpenClaw** | Install/onboard e probe locali PASS; non integrato come worker reale |
 | **Codex OAuth/CLI** | Login/setup verificati in track PM-30/33; worker non abilitato |
 | **Ollama classifier** | Dry-run / design; non produzione n8n |
-| **Cursor CLI headless** | Da verificare operativamente per il loop target |
+| **Cursor Agent CLI (Ryzen)** | **PASS** (2026-05-25) — install + auth + models; plan smoke read-only su `PROJECT_VISION.md`; worker/`--force`/`--yolo`/`--print` non usati. [session](../sessions/2026-05-25-control-plane-cursor-agent-cli-install-auth-plan-smoke-pass.md) · headless/n8n loop ancora **non** provato |
 | **Tailscale VPS ↔ Ryzen** | **PASS** — mesh privata operativa (`ubuntu` ↔ `asusdesktop`); ping privato bidirezionale; n8n invariato su loopback; nessun Funnel né porta pubblica. [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md) · [FOUNDATION_STATUS](FOUNDATION_STATUS.md) |
 
 Regola: non confondere documento di visione con runtime già attivo. La visione può descrivere la destinazione, ma ogni attivazione reale resta verificabile da GitHub, n8n e output Telegram.
@@ -454,15 +454,15 @@ Questa sezione contiene tattiche, non la visione. Possono cambiare senza cambiar
 
 1. **Foundation v2.0** — entry point canonico (`PROJECT_VISION.md` + `FOUNDATION_STATUS.md`).
 2. **Tailscale VPS ↔ PC Ryzen** — **COMPLETATO (PASS 2026-05-23)** — mesh privata operativa (`ubuntu` ↔ `asusdesktop`); ping privato bidirezionale; n8n resta su `127.0.0.1:5678`; nessuna porta pubblica / Funnel. Evidenza: [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md).
+3. **Cursor Agent CLI preflight (Ryzen)** — **COMPLETATO (PASS 2026-05-25)** — install (`agent` / `cursor-agent`), login, models discovery, smoke `agent --mode plan` (Composer 2.5 Fast) lettura read-only di questo documento; workspace pulito; worker/`--force`/`--yolo` non usati. Evidenza: [session](../sessions/2026-05-25-control-plane-cursor-agent-cli-install-auth-plan-smoke-pass.md). Gate write/agent-mode commit resta separato.
 
 **Prossimo passo tattico:**
 
-3. **Cursor CLI preflight** — verificare se Cursor CLI può ricevere un prompt, eseguire un task confinato, validare, committare e pushare (gate docs/runtime separato; non implica PM-34 sbloccato).
+4. **Ollama classifier sul Ryzen** — installare/validare modello locale e schema decision JSON per rischio/route/approval.
 
-**Backlog tattico (dopo preflight):**
+**Backlog tattico:**
 
-4. **Ollama classifier sul Ryzen**: installare/validare modello locale e schema decision JSON per rischio/route/approval.
-5. **OpenClaw ↔ Codex ↔ Ollama ↔ Cursor locale**: verificare il passaggio controllato del prompt sul nodo Ryzen, prima manuale poi automatizzabile.
+5. **OpenClaw ↔ Codex ↔ Ollama ↔ Cursor locale** (dopo Ollama): verificare il passaggio controllato del prompt sul nodo Ryzen, prima manuale poi automatizzabile.
 6. **Diff-summary Telegram MVP** (opzionale, prima tattica utile): quando arriva un commit su `dev-method` o `cursor-coordinate-converter`, n8n legge il diff e manda un riepilogo italiano 2–3 righe su Telegram. Primo prodotto utile, non la visione completa.
 7. **Loop end-to-end manuale**: simulare il ciclo completo senza auto-esecuzione permanente.
 8. **Loop automatico minimo**: solo dopo prove reali e confini chiari, collegare i pezzi per task low-risk.
