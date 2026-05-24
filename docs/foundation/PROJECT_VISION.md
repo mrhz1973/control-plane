@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 1.0 — 2026-05-25  
+**Versione:** 2.0 — 2026-05-25  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -32,6 +32,18 @@ La domanda guida ereditata dal low-touch loop è:
 > Quante micro-interazioni umane elimina questo componente?
 
 Un componente che non riduce tempo, ambiguità, errori ripetuti, token o lavoro manuale non appartiene alla strada critica del progetto.
+
+### 1.1 Micro-interazioni eliminate dal target
+
+| Micro-interazione attuale | Come viene eliminata/ridotta | Componente responsabile |
+|---|---|---|
+| Ricostruire contesto a ogni nuova chat | Foundation + handoff + futura memoria LLM Wiki | GitHub / documenti foundation |
+| Scrivere `aggio` per riallineare stato | n8n osserva commit e produce notifiche/stato | n8n |
+| Copiare prompt tra chat e IDE | Codex/OpenClaw genera prompt strutturato verso Cursor CLI | OpenClaw / Cursor CLI |
+| Decidere manualmente il rischio di ogni task | Classificazione `low/medium/high` | Ollama |
+| Aprire GitHub per capire un commit | Notifiche Telegram e, come tattica, diff-summary | n8n / Telegram |
+| Chiedere conferme su azioni recuperabili | Aggressive autonomy controllata | Implementer policy |
+| Cercare decisioni pendenti in chat diverse | Decision Packet strutturati via Telegram | n8n / Telegram |
 
 ---
 
@@ -166,7 +178,7 @@ Il loop target è il seguente.
 [6] Ollama classifica rischio, routing e necessità di approvazione
     ↓
 [7A] Se low-risk e dentro policy: Cursor CLI riceve il prompt ed esegue
-[7B] Se medium/high/ambiguo: Telegram gate all'utente
+[7B] Se medium/high/ambiguo: Telegram gate all'utente tramite Decision Packet
     ↓
 [8] Cursor CLI modifica, valida, committa e pusha
     ↓
@@ -269,7 +281,70 @@ Quando si progetta un workflow n8n:
 - import, execute e schedule activation sono gate separati;
 - workflow export devono essere redatti prima di commit.
 
-### 7.5 Docs ROI Gate
+### 7.5 n8n no provider APIs by default
+
+n8n è workflow orchestration, queue, polling, GitHub, notification, file coordination e gate. Per default **non** deve chiamare provider AI APIs a pagamento: OpenAI API, Anthropic API, OpenRouter, Gemini o equivalenti.
+
+L'uso di API pagate richiede un gate manuale esplicito e una decisione di costo registrata. Per default tutto passa per modelli locali (Ollama) o per OAuth ChatGPT Plus (Codex via OpenClaw).
+
+### 7.6 Fallback graceful
+
+Invariante architetturale derivato dal low-touch loop.
+
+**Principio:** se un componente automatico fallisce, il loop torna sempre alla modalità manuale-supervisionata (livello A) senza perdita di stato. GitHub è la safety net — tutto è recuperabile dai commit.
+
+Esempi pratici:
+
+- Se Ollama classifier non risponde → il task non viene auto-promosso a low-risk; default safe = Telegram gate manuale.
+- Se Tailscale è down → n8n non può raggiungere il nodo locale; default safe = Telegram all'utente "loop runtime offline, gestisci manualmente".
+- Se Codex via OpenClaw esaurisce quota o errori OAuth → default safe = ChatGPT in modalità manuale dall'utente.
+- Se Cursor CLI fallisce un task → il prompt resta su GitHub come plan; default safe = utente apre Cursor IDE manualmente.
+- Se n8n crash sul VPS → polling si ferma; default safe = utente nota dal silenzio Telegram e ripristina.
+
+In tutti i casi: **niente è perso**, perché lo stato vero è su GitHub.
+
+### 7.6.1 Conseguenza progettuale
+
+Ogni nuovo componente automatico che si propone deve rispondere a tre domande:
+
+1. Cosa succede se questo componente fallisce?
+2. Il sistema torna manuale in modo pulito o resta in stato indeterminato?
+3. Lo stato è recuperabile da GitHub o ho introdotto stato fuori da GitHub?
+
+Se risposte non chiare, il componente non è pronto per produzione.
+
+### 7.7 Decision Packet — formato canonico dei gate umani
+
+Quando il loop genera un gate umano (rischio medium/high, ambiguità, decisione strategica), l'interfaccia con l'utente è il **Decision Packet**, non una domanda in prosa libera.
+
+**Regole del Decision Packet:**
+
+- struttura strutturata, non libera;
+- max 2-5 opzioni numerate;
+- raccomandazione esplicita dell'orchestratore;
+- l'utente risponde con **numero o parola corta**, mai prosa;
+- canale: Telegram (notifica e risposta).
+
+**Campi canonici minimi** (versione ridotta del format completo):
+
+| Campo | Contenuto |
+|---|---|
+| **ID** | Identificatore univoco (es. `D-NNNN-X`) |
+| **Kind** | `automation` / `meta` / `runtime` |
+| **Contesto** | 1-2 frasi: cosa è successo |
+| **Perché serve decisione** | Perché il sistema non può procedere da solo |
+| **Opzioni** | 2-5 alternative numerate |
+| **Raccomandazione** | Quale opzione è suggerita e perché |
+| **Rischio principale** | Cosa può andare male con l'opzione raccomandata |
+| **Micro-interazioni eliminate** | Cosa risparmia all'utente |
+| **Scelta richiesta** | "Scrivi: 1 / 2 / 3" |
+| **Cosa NON viene fatto** | Senza decisione, cosa resta fermo |
+
+Il format completo esteso (13 campi) sarà documentato in un file separato `docs/foundation/DECISION_PACKET_FORMAT.md` quando il primo Decision Packet operativo arriverà a Telegram.
+
+**Conseguenza:** il "Telegram gate" della sezione 5 non è una domanda generica. È sempre un Decision Packet strutturato.
+
+### 7.8 Docs ROI Gate
 
 Ogni nuovo documento deve ridurre almeno una di queste cose: token, tempo utente, ambiguità, errori ripetuti, lavoro manuale futuro. Altrimenti è burocrazia.
 
@@ -278,8 +353,6 @@ Ogni nuovo documento deve ridurre almeno una di queste cose: token, tempo utente
 ---
 
 ## 8. Comandi e convenzioni
-
-Questa sezione non deve inventare script non presenti nel repo `control-plane`.
 
 ### 8.1 Comandi Git minimi sempre validi
 
@@ -349,9 +422,11 @@ Regola: non confondere finestre/repo. Prompt destinati a `CONTROL PLANE` non van
 - Workflow `41` è backup off e non si cancella in silenzio.
 - PM-34 real worker resta bloccato finché non esiste una prova reale e un gate esplicito.
 - `pm34_unblocked=false` e `n8n_ready=false` restano default sicuri finché non vengono cambiati da gate reale.
-- Nessun provider API key a consumo per default.
+- **n8n non chiama provider API a pagamento per default** (sezione 7.5).
 - Nessun deploy/tag/rollback senza decisione esplicita.
 - Runtime, VPS, n8n UI/import/export, credenziali, OAuth e runner automatico sono gate reali.
+- **Ogni componente automatico deve avere fallback graceful al manuale** (sezione 7.6).
+- **Gate umani sono Decision Packet, non prose libere** (sezione 7.7).
 - `alina-lavoro` non viene toccato come app/runtime dal control-plane.
 
 ---
@@ -360,13 +435,19 @@ Regola: non confondere finestre/repo. Prompt destinati a `CONTROL PLANE` non van
 
 Il progetto deve sopravvivere alla saturazione delle chat.
 
-### 11.1 Regola manuale
+### 11.1 Politica attuale (priorità 1)
 
-Quando la chat degenera o perde il filo, l'utente può scrivere `handoff ora`. L'orchestratore deve produrre un handoff compatto e chiudere il contesto senza avviare nuovi PM.
+**Kill switch manuale.** Quando vedi che la chat degenera (proposte fuori contesto, ripetizioni, perdita di regole), scrivi `handoff ora`. L'orchestratore deve immediatamente scrivere il documento di handoff e chiudere il contesto senza avviare nuovi PM.
 
-### 11.2 Contenuto minimo handoff
+### 11.2 Politica attuale (priorità 2)
 
-Un handoff utile deve contenere:
+**Handoff automatico ogni N turni.** Default: ogni **20 prompt utente**, l'orchestratore produce un handoff e chiude la chat. Il prossimo prompt deve essere fatto in una nuova chat che parte da questo `PROJECT_VISION.md` + l'ultimo handoff.
+
+### 11.3 Documento di handoff — contenuto minimo
+
+Path canonico: `docs/handoffs/YYYY-MM-DD-HHMM-<topic>-handoff.md`
+
+Contenuto minimo:
 
 - HEAD GitHub osservato;
 - stato reale del workflow/runtime;
@@ -374,11 +455,12 @@ Un handoff utile deve contenere:
 - decisioni recenti non ancora consolidate;
 - gate aperti reali;
 - prossimo passo tattico, se già deciso;
-- riferimento a questo documento come entry point.
+- contatore turni (per la regola dei 20);
+- riferimento a `PROJECT_VISION.md` come entry point della nuova chat.
 
-### 11.3 Futuro Livello 3
+### 11.4 Backlog futuro — handoff via Ollama stimatore
 
-Quando il loop sarà stabile, Ollama/embeddings potranno aiutare a stimare saturazione contesto e generare handoff. Questo resta runtime-gated e non appartiene alla prima chiusura della vision.
+Quando il loop sarà stabile, Ollama potrà essere usato per stimare i token consumati nella chat orchestratore e triggerare handoff automatico al **50%** del context window. Non implementato adesso. Sarà un componente runtime-gated dedicato.
 
 ---
 
@@ -386,12 +468,12 @@ Quando il loop sarà stabile, Ollama/embeddings potranno aiutare a stimare satur
 
 Questa sezione contiene tattiche, non la visione. Possono cambiare senza cambiare l'architettura target.
 
-1. **Consolidare questa foundation**: questo documento diventa entry point canonico.
+1. **Consolidare questa foundation**: questo documento (v2.0) è l'entry point canonico.
 2. **Tailscale VPS ↔ PC Ryzen**: installare/configurare e verificare ping privato. Nessuna esposizione pubblica del nodo locale.
 3. **Cursor CLI preflight**: verificare se Cursor CLI può ricevere un prompt, eseguire un task confinato, validare, committare e pushare.
 4. **Ollama classifier sul Ryzen**: installare/validare modello locale e schema decision JSON per rischio/route/approval.
 5. **OpenClaw ↔ Codex ↔ Ollama ↔ Cursor locale**: verificare il passaggio controllato del prompt sul nodo Ryzen, prima manuale poi automatizzabile.
-6. **Diff-summary Telegram MVP**: tattica utile e vicina al valore reale. Quando arriva un commit su `dev-method` o `cursor-coordinate-converter`, n8n legge il diff e manda un riepilogo italiano 2–3 righe su Telegram. Questo è un primo prodotto utile, non la visione completa.
+6. **Diff-summary Telegram MVP** (opzionale, prima tattica utile): quando arriva un commit su `dev-method` o `cursor-coordinate-converter`, n8n legge il diff e manda un riepilogo italiano 2–3 righe su Telegram. Primo prodotto utile, non la visione completa.
 7. **Loop end-to-end manuale**: simulare il ciclo completo senza auto-esecuzione permanente.
 8. **Loop automatico minimo**: solo dopo prove reali e confini chiari, collegare i pezzi per task low-risk.
 9. **Dell fallback fase 2**: attivare il Dell come nodo always-on/fallback solo dopo che il loop sul Ryzen produce valore reale.
@@ -402,29 +484,58 @@ Nessun passo tattico crea automaticamente un nuovo PM o sblocca PM-34. Le attiva
 
 ## 13. Parte semplice — spiegazione non tecnica
 
-Sto costruendo un piccolo team automatico per i miei progetti.
+Sto costruendo un piccolo **team automatico** per i miei progetti.
 
 Oggi, quando lavoro con AI, devo fare troppe cose a mano: spiegare il contesto, copiare prompt, controllare GitHub, decidere chi deve fare il prossimo passo, incollare istruzioni in un altro strumento, verificare il risultato e ricominciare.
 
 Il sistema che voglio costruire fa questo:
 
-1. GitHub registra cosa è cambiato.
-2. n8n vede il cambiamento e avvia il flusso.
-3. Codex ragiona sul prossimo passo.
-4. Ollama controlla se quel passo è sicuro o rischioso.
-5. Cursor esegue il lavoro tecnico.
-6. Telegram mi chiama solo se serve una decisione vera.
+1. **GitHub** (un servizio online gratuito dove tengo tutto il mio codice, una specie di Google Drive ma fatto apposta per programmatori) registra cosa è cambiato. L'azione di "salvare un pezzo nuovo" si chiama **commit** (un'istantanea del lavoro con un piccolo messaggio che descrive cosa ho cambiato).
+
+2. **n8n** (un servizio che gira 24/7 sul mio server di internet, automatizza flussi di lavoro) vede il cambiamento e avvia il flusso.
+
+3. **Codex** (un'AI orchestratore, è GPT-5.5 di OpenAI che chiamo attraverso il mio abbonamento ChatGPT Plus che pago già) ragiona sul prossimo passo.
+
+4. **Ollama** (un'AI gratuita che gira tutta sul mio computer di casa, gratuita e illimitata) controlla se quel passo è sicuro o rischioso.
+
+5. **Cursor** (un'AI specializzata nello scrivere codice, abbonamento mensile fisso) esegue il lavoro tecnico.
+
+6. **Telegram** mi chiama solo se serve una decisione vera. Quando mi chiama, mi manda una scelta strutturata (Decision Packet) con 2-3 opzioni numerate: io rispondo con un numero, non con prosa.
+
 7. Il risultato torna su GitHub e il ciclo riparte.
 
-Perché più strumenti invece di uno solo?
+### Perché tre AI invece di una sola?
 
-- Codex/GPT è bravo a ragionare.
-- Ollama è locale, gratis e utile per classificare rischio e contesto.
-- Cursor è specializzato nel modificare codice.
-- n8n è affidabile per schedulare, notificare e collegare sistemi.
-- GitHub è la memoria permanente.
+Domanda giusta. Tecnicamente si potrebbe fare con una sola AI grande, ma costerebbe di più e funzionerebbe peggio. Ogni AI è brava in cose diverse:
 
-Non voglio pagare API a consumo. Non voglio esporre il PC di casa su Internet. Non voglio perdere il controllo sulle operazioni critiche. Voglio togliere di mezzo il lavoro ripetitivo.
+- **Codex/GPT** costa tempo e quota di abbonamento ogni volta che la chiamo. È bravissima a ragionare, ma è lenta e ha un limite di messaggi al giorno. La uso solo per il pezzo dove serve "cervello vero": decidere il prossimo passo.
+
+- **Ollama** è un'AI che gira sul mio computer di casa, gratis, illimitata, velocissima. Non è furba come GPT, ma è perfetta per il lavoro semplice di "guarda questa proposta e dimmi se è rischiosa". È come avere un controllo qualità che dice OK/non OK prima che il lavoro vero parta.
+
+- **Cursor** è specializzato nello scrivere codice. Ha un abbonamento mensile fisso e può lavorare quanto vuole senza farmi pagare di più. Se gli chiedo di scrivere codice, lo fa molto meglio di GPT generale.
+
+Mettere tutto su una sola AI sarebbe come avere un meccanico che fa anche da contabile e da architetto: lo può fare, ma fa peggio tutti e tre i lavori, e mi costa di più.
+
+### Cosa non sto facendo
+
+- **Non pago API a uso**: tutto passa attraverso abbonamenti che ho già (ChatGPT Plus, Cursor Pro Plus). API significa "il modo a pagamento di parlare con un'AI dai propri programmi, dove paghi ogni richiesta". Io lo evito usando solo i miei abbonamenti mensili a costo fisso.
+
+- **Non espongo il mio computer a internet**: tutto passa per una rete privata cifrata (**Tailscale** — una specie di tunnel cifrato tra il mio server e il mio computer di casa, così possono parlarsi senza esporre niente su internet). Il mio computer di casa non è raggiungibile da estranei.
+
+- **Non sostituisco il mio cervello**: io decido la rotta e le cose critiche. Le AI fanno solo il lavoro ripetitivo e tecnico.
+
+- **Non rischio di perdere lavoro**: se qualcosa si rompe (Ollama non risponde, internet salta, Tailscale ha problemi), il sistema torna automaticamente al lavoro manuale, e tutto quello che ho fatto resta su GitHub. Niente va perso.
+
+### Cosa serve per partire
+
+- Un VPS (un server affittato online — ne ho già uno) per ospitare n8n.
+- Un computer a casa (PC Ryzen, ne ho già uno), collegato al VPS via Tailscale.
+- Abbonamento Cursor Pro Plus ($65/mese) e ChatGPT Plus ($20/mese), che ho già.
+- Pazienza per scrivere bene le regole una volta, e poi non rifarle più ogni volta. Questo documento serve a questo.
+
+### Perché vale la pena
+
+Perché senza questo, ogni volta che apro una nuova chat con un'AI devo ri-spiegare tutto da capo. Con questo, le AI sanno già chi sono, cosa voglio, come lavoro. Diventa un team che continua il lavoro anche quando io non ci sono. E può essere riutilizzato per progetti nuovi copiando questa stessa foundation.
 
 ---
 
@@ -432,13 +543,24 @@ Non voglio pagare API a consumo. Non voglio esporre il PC di casa su Internet. N
 
 - Dell Latitude come nodo always-on completo.
 - Routing inter-macchina n8n: Ryzen primario, Dell fallback, Telegram se offline.
-- Livello 3: embeddings/indice locale via Ollama.
-- Handoff automatico quando il contesto chat è saturo.
+- Livello 3 di memoria: embeddings/indice locale via Ollama.
+- Handoff automatico quando il contesto chat è saturo (Ollama come stimatore al 50%).
+- Decision Packet Format esteso (13 campi) in documento separato dedicato.
+- ARCHITECTURE.md separato con specifiche hardware complete.
 - Report qualità post-task e metriche su tempo risparmiato.
 - Miglioramento della sintesi commit/diff Telegram con classifier locale o Codex quando utile.
 
 ---
 
+## 15. Changelog
+
+| Versione | Data | Modifiche |
+|---|---|---|
+| 1.0 | 2026-05-25 | Prima foundation. Architettura target Codex+Ollama+Cursor+Tailscale, livelli 0/1/2/3 e A/B/C, decisioni 23 maggio. |
+| 2.0 | 2026-05-25 | Integrato Decision Packet (sezione 7.7), fallback graceful (sezione 7.6), n8n no provider APIs (sezione 7.5), tabella micro-interazioni eliminate (sezione 1.1). Spostati dettagli hardware Dell/Ryzen completi a futuro `ARCHITECTURE.md`. Parte semplice arricchita con menzione Decision Packet e fallback. |
+
+---
+
 **Fine documento.**
 
-_Convenzione: aggiornare questo documento solo quando cambia la visione o un invariante fondativo. Non usarlo come session log._
+_Convenzione: aggiornare questo documento solo quando cambia la visione o un invariante fondativo. Non usarlo come session log. Aggiungere riga al changelog (sezione 15) a ogni revisione significativa._
