@@ -66,3 +66,4 @@ Tailscale private mesh between **VPS** (`ubuntu`) and **Ryzen** (`asusdesktop`) 
 ## Related
 
 - [Foundation status](../foundation/FOUNDATION_STATUS.md)
+- [PROJECT_VISION §3 / §12](../foundation/PROJECT_VISION.md) — operational snapshot and next tactical step (Cursor CLI preflight)

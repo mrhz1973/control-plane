@@ -90,7 +90,7 @@ Questa sezione distingue la visione da ciò che è già vero.
 | **Codex OAuth/CLI** | Login/setup verificati in track PM-30/33; worker non abilitato |
 | **Ollama classifier** | Dry-run / design; non produzione n8n |
 | **Cursor CLI headless** | Da verificare operativamente per il loop target |
-| **Tailscale VPS ↔ casa** | **PASS** (2026-05-23) — [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md) · [FOUNDATION_STATUS](FOUNDATION_STATUS.md) |
+| **Tailscale VPS ↔ Ryzen** | **PASS** — mesh privata operativa (`ubuntu` ↔ `asusdesktop`); ping privato bidirezionale; n8n invariato su loopback; nessun Funnel né porta pubblica. [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md) · [FOUNDATION_STATUS](FOUNDATION_STATUS.md) |
 
 Regola: non confondere documento di visione con runtime già attivo. La visione può descrivere la destinazione, ma ogni attivazione reale resta verificabile da GitHub, n8n e output Telegram.
 
@@ -450,9 +450,17 @@ Quando il loop sarà stabile, Ollama potrà essere usato per stimare i token con
 
 Questa sezione contiene tattiche, non la visione. Possono cambiare senza cambiare l'architettura target.
 
-1. **Consolidare questa foundation**: questo documento (v2.0) è l'entry point canonico.
-2. **Tailscale VPS ↔ PC Ryzen**: **PASS** — mesh privata operativa (`ubuntu` ↔ `asusdesktop`); n8n resta su loopback; nessuna porta pubblica / Funnel. Vedi [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md).
-3. **Cursor CLI preflight**: verificare se Cursor CLI può ricevere un prompt, eseguire un task confinato, validare, committare e pushare.
+**Completati (foundation):**
+
+1. **Foundation v2.0** — entry point canonico (`PROJECT_VISION.md` + `FOUNDATION_STATUS.md`).
+2. **Tailscale VPS ↔ PC Ryzen** — **COMPLETATO (PASS 2026-05-23)** — mesh privata operativa (`ubuntu` ↔ `asusdesktop`); ping privato bidirezionale; n8n resta su `127.0.0.1:5678`; nessuna porta pubblica / Funnel. Evidenza: [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md).
+
+**Prossimo passo tattico:**
+
+3. **Cursor CLI preflight** — verificare se Cursor CLI può ricevere un prompt, eseguire un task confinato, validare, committare e pushare (gate docs/runtime separato; non implica PM-34 sbloccato).
+
+**Backlog tattico (dopo preflight):**
+
 4. **Ollama classifier sul Ryzen**: installare/validare modello locale e schema decision JSON per rischio/route/approval.
 5. **OpenClaw ↔ Codex ↔ Ollama ↔ Cursor locale**: verificare il passaggio controllato del prompt sul nodo Ryzen, prima manuale poi automatizzabile.
 6. **Diff-summary Telegram MVP** (opzionale, prima tattica utile): quando arriva un commit su `dev-method` o `cursor-coordinate-converter`, n8n legge il diff e manda un riepilogo italiano 2–3 righe su Telegram. Primo prodotto utile, non la visione completa.
