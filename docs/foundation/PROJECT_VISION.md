@@ -3,6 +3,7 @@
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
 **Versione:** 2.0 — 2026-05-25  
+**Versione precedente:** 1.0 — 2026-05-25 (sostituita)  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -10,9 +11,9 @@
 
 ## 0. Cos'è questo progetto in una frase
 
-`control-plane` è il sistema personale che deve trasformare il lavoro AI-assisted da una sequenza manuale di chat, prompt, copia/incolla e controlli a un loop semi-autonomo: GitHub resta la fonte di verità, n8n osserva e governa, Codex ragiona sul prossimo passo, Ollama classifica il rischio, Cursor implementa, Telegram chiede intervento umano solo quando serve.
+`control-plane` è il sistema personale che deve trasformare il lavoro AI-assisted da una sequenza manuale di chat, prompt, copia/incolla e controlli a un loop semi-autonomo: GitHub resta la fonte di verità, n8n osserva e governa, Codex ragiona sul prossimo passo, Ollama classifica il rischio, Cursor implementa, Telegram chiede intervento umano solo quando serve davvero.
 
-La destinazione non è una singola notifica Telegram e non è un singolo PM: la destinazione è un **team AI locale e confinato** che lavora su repository selezionati con costi prevedibili, senza provider API key a consumo e con gate umani sulle operazioni realmente rischiose.
+La destinazione non è una singola notifica Telegram e non è un singolo PM: la destinazione è un **team AI locale e confinato** che lavora su repository selezionati con costi prevedibili, senza provider API key a consumo, e con gate umani sulle operazioni realmente rischiose.
 
 ---
 
@@ -29,21 +30,27 @@ Il progetto esiste per eliminare micro-interazioni meccaniche ripetute:
 
 La domanda guida ereditata dal low-touch loop è:
 
-> Quante micro-interazioni umane elimina questo componente?
+> **Quante micro-interazioni umane elimina questo componente?**
 
 Un componente che non riduce tempo, ambiguità, errori ripetuti, token o lavoro manuale non appartiene alla strada critica del progetto.
 
-### 1.1 Micro-interazioni eliminate dal target
+### 1.1 Esempi concreti di micro-interazioni eliminate per fase
 
-| Micro-interazione attuale | Come viene eliminata/ridotta | Componente responsabile |
+La tabella seguente è un riferimento operativo del principio: per ogni componente, quale azione manuale viene tolta.
+
+| Componente | Micro-interazione eliminata | Stato |
 |---|---|---|
-| Ricostruire contesto a ogni nuova chat | Foundation + handoff + futura memoria LLM Wiki | GitHub / documenti foundation |
-| Scrivere `aggio` per riallineare stato | n8n osserva commit e produce notifiche/stato | n8n |
-| Copiare prompt tra chat e IDE | Codex/OpenClaw genera prompt strutturato verso Cursor CLI | OpenClaw / Cursor CLI |
-| Decidere manualmente il rischio di ogni task | Classificazione `low/medium/high` | Ollama |
-| Aprire GitHub per capire un commit | Notifiche Telegram e, come tattica, diff-summary | n8n / Telegram |
-| Chiedere conferme su azioni recuperabili | Aggressive autonomy controllata | Implementer policy |
-| Cercare decisioni pendenti in chat diverse | Decision Packet strutturati via Telegram | n8n / Telegram |
+| Workflow 40 polling | Apertura manuale GitHub per vedere nuovi commit | ATTIVO |
+| Telegram base | Verifica manuale "è arrivato il commit?" | ATTIVO |
+| Diff summary Telegram (futuro) | Apertura GitHub per leggere cosa è cambiato | NON ATTIVO |
+| Codex via OpenClaw | Pensare manualmente il prossimo prompt | NON ATTIVO |
+| Ollama classifier | Decidere manualmente se un task è sicuro | NON ATTIVO |
+| Cursor CLI | Copiare/incollare il prompt nell'IDE | NON ATTIVO |
+| Auto-aggio (futuro) | Scrivere `aggio` per ogni completamento | NON ATTIVO |
+| Decision Packet su Telegram | Decidere a prosa libera, in modo ambiguo | NON ATTIVO |
+| Handoff via N turni | Capire manualmente quando una chat satura | NON ATTIVO |
+
+Ogni nuovo componente che si propone deve aggiungere una riga a questa tabella.
 
 ---
 
@@ -55,10 +62,10 @@ Componenti con ruoli rigidi. Nessun componente deve assorbire silenziosamente il
 |---|---|---|
 | **GitHub** | Source of truth: codice, piani, documenti, stato verificabile | Cloud |
 | **n8n** | Control-plane operativo: scheduler, polling/webhook, gate, Telegram I/O, stato, routing esterno | VPS IONOS |
-| **Codex via OpenClaw** | Orchestratore operativo/tattico: legge contesto e genera il prossimo prompt strutturato | PC Ryzen casa, via OpenClaw confinato |
-| **Ollama** | Classifier / router / risk scorer / prompt compressor locale. Non implementa codice | PC Ryzen primario; Dell fallback futuro |
+| **Codex via OpenClaw** | Orchestratore operativo: legge contesto e genera il prossimo prompt strutturato | PC Ryzen casa, via OpenClaw confinato |
+| **Ollama** | Classifier / risk scorer / prompt compressor locale. Non implementa codice | PC Ryzen primario; Dell fallback futuro |
 | **Cursor CLI** | Implementatore: esegue task, modifica file, valida, committa e pusha | PC Ryzen fase 1; Dell futuro per job headless |
-| **Telegram** | Canale umano: notifica, gate, escalation e decisioni brevi | Bot dedicato gestito da n8n |
+| **Telegram** | Canale umano: notifica, gate, escalation e Decision Packet | Bot dedicato gestito da n8n |
 | **Tailscale** | Trasporto privato VPS ↔ nodo locale | Rete cifrata e autenticata |
 
 ### Confine importante
@@ -89,7 +96,9 @@ Regola: non confondere documento di visione con runtime già attivo. La visione 
 
 ---
 
-## 4. Le macchine
+## 4. Le macchine (visione, non specifiche complete)
+
+Il dettaglio hardware completo vivrà in `docs/foundation/ARCHITECTURE.md` (futuro). Qui solo i ruoli.
 
 ### 4.1 VPS IONOS
 
@@ -110,59 +119,27 @@ Non deve:
 
 ### 4.2 PC Ryzen casa — nodo AI primario fase 1
 
-Hardware noto:
-
-- AMD Ryzen 9 3900X;
-- NVIDIA RTX 3060 12 GB;
-- 32 GB RAM;
-- Windows.
-
 Ruolo target fase 1:
 
 - Ollama primario con modello classifier più ricco (`qwen3:14b` o equivalente sostenibile);
 - OpenClaw confinato su loopback locale;
-- Codex via OAuth ChatGPT/subscription, senza provider API key a consumo;
+- Codex via OAuth ChatGPT Plus, senza provider API key a consumo;
 - Cursor CLI per esecuzione task;
 - Tailscale per raggiungibilità privata da n8n.
 
-Se il Ryzen è offline, n8n non deve inventare esecuzione: deve degradare a Telegram gate o modalità manuale.
+Se il Ryzen è offline, n8n non deve inventare esecuzione: deve applicare il principio di **fallback graceful** (vedi sezione 7.6) e degradare a Telegram gate o modalità manuale.
 
 ### 4.3 Dell Latitude 5430 — nodo always-on/fallback futuro
 
-Hardware noto:
-
-- Dell Latitude 5430;
-- Intel Core i7-1185G7, 4 core / 8 thread;
-- 16 GB RAM;
-- 500 GB SSD;
-- Intel Iris Xe;
-- Windows 11 64 bit;
-- batteria integrata utile come UPS naturale.
-
-Ruolo futuro:
-
-- nodo always-on a basso consumo;
-- fallback Ollama leggero (`llama3.2:3b`, possibile escalation a `qwen3:7b` se sufficiente);
-- OpenClaw bridge confinato;
-- Cursor CLI job worker su workspace isolato;
-- Tailscale e SSH controllato.
-
-Il Dell non sostituisce n8n: resta nodo esecutivo/fallback, non control-plane.
+Ruolo futuro: nodo always-on a basso consumo, fallback Ollama leggero, OpenClaw bridge confinato, Cursor CLI job worker. Non attivato in fase 1.
 
 ### 4.4 PC lavoro
 
-Il PC lavoro è macchina operativa umana, non nodo produzione del loop. È da trattare con cautela:
-
-- può servire per docs-only, controllo GitHub e lavoro supervisionato;
-- non deve diventare nodo runtime automatico;
-- non deve ospitare OpenClaw/Ollama in produzione;
-- non deve ricevere prompt destinati a `GIS`, `DEV` o altri repo quando il flusso è `CONTROL PLANE`.
+Il PC lavoro è macchina operativa umana, non nodo produzione del loop. Può servire per docs-only, controllo GitHub e lavoro supervisionato. Non deve diventare nodo runtime automatico, né ospitare OpenClaw/Ollama in produzione, né ricevere prompt destinati a `GIS`, `DEV` o altri repo quando il flusso è `CONTROL PLANE`.
 
 ---
 
 ## 5. Loop target fase 1
-
-Il loop target è il seguente.
 
 ```text
 [1] Commit su repo osservato
@@ -178,7 +155,7 @@ Il loop target è il seguente.
 [6] Ollama classifica rischio, routing e necessità di approvazione
     ↓
 [7A] Se low-risk e dentro policy: Cursor CLI riceve il prompt ed esegue
-[7B] Se medium/high/ambiguo: Telegram gate all'utente tramite Decision Packet
+[7B] Se medium/high/ambiguo: Decision Packet su Telegram (sezione 7.7)
     ↓
 [8] Cursor CLI modifica, valida, committa e pusha
     ↓
@@ -191,7 +168,7 @@ Il loop target è il seguente.
 - **Codex** ragiona e produce il prossimo prompt operativo.
 - **Ollama** non decide strategia: classifica rischio, ambiguità, route e approvazione richiesta.
 - **Cursor CLI** non decide la rotta: implementa quanto autorizzato.
-- **Telegram** non è archivio: è interfaccia decisionale umana.
+- **Telegram** non è archivio: è interfaccia decisionale umana strutturata via Decision Packet.
 - **GitHub** è il registro verificabile di stato e risultati.
 
 ---
@@ -232,14 +209,12 @@ Derivati dallo schema PM-17/Ollama classifier.
 | Rischio | Significato operativo | Azione target |
 |---|---|---|
 | **low** | Docs-only, metadata, riepiloghi, task confinati e reversibili | Può procedere automaticamente se policy consente |
-| **medium** | Modifiche codice/config/workflow non distruttive ma significative | Telegram gate o human review secondo soglia |
-| **high** | Deploy, rollback, secrets, OAuth, billing, destructive ops, force push, dati sensibili | Sempre gate umano esplicito |
+| **medium** | Modifiche codice/config/workflow non distruttive ma significative | Telegram gate via Decision Packet |
+| **high** | Deploy, rollback, secrets, OAuth, billing, destructive ops, force push, dati sensibili | Sempre gate umano esplicito via Decision Packet |
 
 ---
 
 ## 7. Regole operative ereditate dai documenti reali
-
-Queste regole derivano dalla metodologia consolidata e vanno portate nel control-plane.
 
 ### 7.1 GitHub source of truth
 
@@ -283,7 +258,14 @@ Quando si progetta un workflow n8n:
 
 ### 7.5 n8n no provider APIs by default
 
-n8n è workflow orchestration, queue, polling, GitHub, notification, file coordination e gate. Per default **non** deve chiamare provider AI APIs a pagamento: OpenAI API, Anthropic API, OpenRouter, Gemini o equivalenti.
+Regola architetturale, non solo economica:
+
+n8n è workflow orchestration, queue, polling, GitHub, notification e file coordination. n8n **non deve** chiamare provider AI API a pagamento (OpenAI, Anthropic, OpenRouter, ecc.) come comportamento di default.
+
+Quando il loop ha bisogno di "intelligenza AI", il flusso è: n8n → (via Tailscale) → nodo locale (Ollama / OpenClaw+Codex) → ritorno
+
+Mai:
+n8n → API OpenAI pagata → ritorno
 
 L'uso di API pagate richiede un gate manuale esplicito e una decisione di costo registrata. Per default tutto passa per modelli locali (Ollama) o per OAuth ChatGPT Plus (Codex via OpenClaw).
 
