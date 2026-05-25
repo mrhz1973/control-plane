@@ -1,0 +1,34 @@
+{
+  "request_id": "dry-run-v1-codex-readonly-success-path",
+  "task_type": "codex_readonly_wrapper_reasoning",
+  "runtime_policy": {
+    "allows_runtime": true,
+    "allows_codex_execution": true,
+    "allows_codex_readonly": true,
+    "allows_n8n": false,
+    "allows_repo_mutation": false,
+    "allows_workflow_mutation": false,
+    "allows_pm34": false,
+    "allows_provider_api_key": false,
+    "allows_openclaw_agent_main": false,
+    "allows_cursor_worker_automation": false,
+    "allows_deploy_tag_rollback": false
+  },
+  "human_gate_state": "approved_codex_readonly_wrapper_dry_run_v1",
+  "context_refs": [
+    "docs/contracts/codex-bridge-wrapper-design-v1.md",
+    "docs/contracts/codex-bridge-contract-v1.md",
+    "docs/decision-packets/local-wrapper-success-path-design-packet.md"
+  ],
+  "requested_actions": [
+    "codex_readonly_reasoning"
+  ],
+  "task_question": "Using only the inlined context, confirm whether the next safe gate after this read-only wrapper dry-run should remain explicit and should not authorize n8n, workflow 40/41, PM-34, provider API keys, OpenClaw agent main, Codex resume, Codex repo mutation, Cursor worker automation, deploy, tag, or rollback.",
+  "allowed_paths": [],
+  "forbidden_paths": [
+    "workflows/40",
+    "workflows/41",
+    "PM-34"
+  ],
+  "notes": "Synthetic fixture. No secrets. First v1 Codex-read-only dry-run should invoke Codex only in read-only JSON mode and emit final wrapper JSON without mutation."
+}
