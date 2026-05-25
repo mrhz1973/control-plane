@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-25 (OpenClaw gateway loopback runtime PASS)
+**Updated:** 2026-05-25 (OpenClaw agent Step A blocked — no provider API key)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
@@ -9,11 +9,12 @@
 | **Ollama classifier (Ryzen)** | **PASS** (API only) | `qwen3:14b` via local API; [session](../sessions/2026-05-25-control-plane-ollama-qwen3-classifier-api-smoke-pass.md) |
 | **Classifier wrapper contract** | **DESIGN** | [classifier-wrapper-v1](../contracts/classifier-wrapper-v1.md) — no runtime yet |
 | **Local path preflight (Ryzen)** | **PASS** (read-only) | [session](../sessions/2026-05-25-control-plane-openclaw-codex-local-path-readonly-preflight.md) |
-| **OpenClaw gateway (Ryzen)** | **PASS** (loopback manual) | Foreground `gateway run`, bind loopback, Tailscale off, port 18789; read probe timeout caveat; `auth none` local-only; [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md) |
+| **OpenClaw gateway (Ryzen)** | **PASS** (loopback manual) | Unchanged — [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md) |
+| **OpenClaw agent Step A (main)** | **BLOCKED** | Liveness via gateway failed — pending scope + embedded fallback + **no OpenAI provider API key**; policy: no API key; [session](../sessions/2026-05-25-control-plane-openclaw-agent-step-a-provider-api-key-blocked.md) |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
 | **Public exposure** | none | no Funnel |
 | **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | OpenClaw/Codex **minimal read-only integration** (manual, loopback, no n8n/worker/PM-34) — [PROJECT_VISION §12](PROJECT_VISION.md#12-prossimi-passi-tattici-verso-la-visione) |
+| **Next tactical step** | pending | **No-provider-API bridge** design/discovery (Codex OAuth/CLI or OpenClaw profile without OpenAI API key) — docs-only; no agent retry — [PROJECT_VISION §12](PROJECT_VISION.md#12-prossimi-passi-tattici-verso-la-visione) |
 
 Entry point: [PROJECT_VISION](PROJECT_VISION.md).

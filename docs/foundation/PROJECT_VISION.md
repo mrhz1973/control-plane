@@ -86,7 +86,8 @@ Questa sezione distingue la visione da ciò che è già vero.
 | **C2–C5 MVP** | PASS secondo snapshot MVP |
 | **Webhook v5 pubblico** | Non configurato / non attivo |
 | **PM-34 real worker** | Bloccato: nessun Codex real worker n8n-ready |
-| **OpenClaw gateway (Ryzen)** | **PASS** (2026-05-25) loopback manual runtime — health OK, reachable, device paired; read probe timeout caveat; `auth none` solo locale; non agent/exec/n8n. [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md) |
+| **OpenClaw gateway (Ryzen)** | **PASS** (2026-05-25) loopback manual — [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md) |
+| **OpenClaw agent `main` Step A** | **BLOCKED** (2026-05-25) — liveness via gateway blocked by **no OpenAI provider API key** policy; gateway PASS unchanged. [session](../sessions/2026-05-25-control-plane-openclaw-agent-step-a-provider-api-key-blocked.md) |
 | **Codex OAuth/CLI** | Login/setup verificati in track PM-30/33; worker non abilitato |
 | **Ollama classifier (Ryzen)** | **PASS** (2026-05-25) API smoke; **contract** [classifier-wrapper-v1](../contracts/classifier-wrapper-v1.md) (design only, no runtime). `ollama run` non idoneo; non n8n / non PM-34 unlock |
 | **Cursor Agent CLI (Ryzen)** | **PASS** (2026-05-25) — install + auth + models; plan smoke read-only su `PROJECT_VISION.md`; worker/`--force`/`--yolo`/`--print` non usati. [session](../sessions/2026-05-25-control-plane-cursor-agent-cli-install-auth-plan-smoke-pass.md) · headless/n8n loop ancora **non** provato |
@@ -458,18 +459,19 @@ Questa sezione contiene tattiche, non la visione. Possono cambiare senza cambiar
 4. **Ollama classifier API smoke (Ryzen)** — **COMPLETATO (PASS 2026-05-25)** — `qwen3:14b`; API-only; multi-case low/medium/high. [session](../sessions/2026-05-25-control-plane-ollama-qwen3-classifier-api-smoke-pass.md).
 5. **Classifier wrapper contract** — **COMPLETATO (design 2026-05-25)** — [classifier-wrapper-v1](../contracts/classifier-wrapper-v1.md). [session](../sessions/2026-05-25-control-plane-classifier-wrapper-contract-design.md).
 6. **Local path preflight** — **COMPLETATO (read-only 2026-05-25)** — [session](../sessions/2026-05-25-control-plane-openclaw-codex-local-path-readonly-preflight.md).
-7. **OpenClaw gateway loopback (manual)** — **COMPLETATO (PASS 2026-05-25)** — foreground `gateway run`, loopback, Tailscale off, health/reachable, device paired; caveat read probe timeout + `auth none` solo locale. [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md).
+7. **OpenClaw gateway loopback (manual)** — **COMPLETATO (PASS 2026-05-25)** — [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md).
+8. **OpenClaw agent Step A liveness** — **BLOCKED (2026-05-25)** — read-only ping via gateway; agent `main` did not complete; pending scope + embedded fallback + OpenAI provider API key missing; **policy: no provider API key**. [session](../sessions/2026-05-25-control-plane-openclaw-agent-step-a-provider-api-key-blocked.md).
 
 **Prossimo passo tattico:**
 
-8. **OpenClaw / Codex minimal read-only integration** — manuale, solo loopback, no n8n, no worker, no PM-34, no auto commit/push, no Tailscale exposure sul gateway.
+9. **No-provider-API bridge — design & discovery (docs-only)** — Codex CLI/OAuth/ChatGPT subscription path, or OpenClaw profile without OpenAI API provider, or local bridge; **no** agent Step A retry, **no** n8n/worker/PM-34, **no** Tailscale gateway exposure.
 
 **Backlog tattico:**
 
-9. **Diff-summary Telegram MVP** (opzionale, prima tattica utile): quando arriva un commit su `dev-method` o `cursor-coordinate-converter`, n8n legge il diff e manda un riepilogo italiano 2–3 righe su Telegram. Primo prodotto utile, non la visione completa.
-10. **Loop end-to-end manuale**: simulare il ciclo completo senza auto-esecuzione permanente.
-11. **Loop automatico minimo**: solo dopo prove reali e confini chiari, collegare i pezzi per task low-risk.
-12. **Dell fallback fase 2**: attivare il Dell come nodo always-on/fallback solo dopo che il loop sul Ryzen produce valore reale.
+10. **Diff-summary Telegram MVP** (opzionale, prima tattica utile): quando arriva un commit su `dev-method` o `cursor-coordinate-converter`, n8n legge il diff e manda un riepilogo italiano 2–3 righe su Telegram. Primo prodotto utile, non la visione completa.
+11. **Loop end-to-end manuale**: simulare il ciclo completo senza auto-esecuzione permanente.
+12. **Loop automatico minimo**: solo dopo prove reali e confini chiari, collegare i pezzi per task low-risk.
+13. **Dell fallback fase 2**: attivare il Dell come nodo always-on/fallback solo dopo che il loop sul Ryzen produce valore reale.
 
 Nessun passo tattico crea automaticamente un nuovo PM o sblocca PM-34. Le attivazioni runtime restano gate espliciti.
 

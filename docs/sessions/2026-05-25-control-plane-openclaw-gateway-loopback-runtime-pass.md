@@ -81,7 +81,7 @@ openclaw.cmd gateway run --bind loopback --tailscale off --port 18789 --auth non
 
 ## Next gate (tactical)
 
-**OpenClaw / Codex minimal read-only integration test** — manual, loopback only, no n8n, no worker, no PM-34, no auto commit/push, no Tailscale exposure on gateway.
+**Update (2026-05-25):** Step A agent liveness **BLOCKED** by provider API-key policy — see [Step A blocked session](2026-05-25-control-plane-openclaw-agent-step-a-provider-api-key-blocked.md). Next: **no-provider-API bridge** design/discovery (docs-only).
 
 ---
 
