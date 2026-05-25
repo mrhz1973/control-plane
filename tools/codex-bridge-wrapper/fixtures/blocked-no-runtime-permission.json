@@ -1,0 +1,25 @@
+{
+  "request_id": "dry-run-v0-blocked-no-runtime-permission",
+  "task_type": "docs_only_reasoning",
+  "runtime_policy": {
+    "allows_runtime": false,
+    "allows_codex_execution": false,
+    "allows_n8n": false,
+    "allows_repo_mutation": false
+  },
+  "human_gate_state": "approved_local_dry_run_only",
+  "context_refs": [
+    "docs/contracts/codex-bridge-wrapper-design-v1.md",
+    "docs/decision-packets/bridge-wrapper-runtime-dry-run-preflight.md"
+  ],
+  "requested_actions": [
+    "reason_about_docs_only"
+  ],
+  "allowed_paths": [],
+  "forbidden_paths": [
+    "workflows/40",
+    "workflows/41",
+    "PM-34"
+  ],
+  "notes": "Synthetic fixture. No secrets. First v0 dry-run should emit blocked or needs_human without Codex."
+}

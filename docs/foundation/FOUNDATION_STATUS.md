@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-25 (bridge wrapper dry-run preflight packet — docs-only)
+**Updated:** 2026-05-26 (local bridge wrapper dry-run v0 PASS)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
@@ -17,11 +17,12 @@
 | **Codex bridge manual smoke V2** | **PASS** | Single-turn JSON-only, inlined files, anti-tool-use prompt, `codex exec --ephemeral -s read-only --output-schema`; repo clean; no `codex resume`; [session](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v2-pass.md) |
 | **Codex bridge wrapper design** | **DESIGN COMPLETE** | Local JSON-in / pre-gates / §7 invocation / post-gates / JSON-out — [design](../contracts/codex-bridge-wrapper-design-v1.md) · [session](../sessions/2026-05-25-control-plane-bridge-wrapper-design-docs-only.md) |
 | **Bridge wrapper runtime dry-run preflight** | **DESIGN PACKET COMPLETE** | PASS/FAIL, fixture policy, forbidden scope — [packet](../decision-packets/bridge-wrapper-runtime-dry-run-preflight.md) · [session](../sessions/2026-05-25-control-plane-bridge-wrapper-runtime-dry-run-preflight-docs-only.md) |
+| **Local bridge wrapper dry-run v0** | **PASS** | Fail-closed pre-gates only, no Codex — [wrapper](../../tools/codex-bridge-wrapper/local-bridge-wrapper.mjs) · [fixture](../../tools/codex-bridge-wrapper/fixtures/blocked-no-runtime-permission.json) · [session](../sessions/2026-05-26-control-plane-local-bridge-wrapper-dry-run-v0.md) |
 | **Provider API key policy** | **NO** | No OpenAI (or other) provider API keys for bridge/agent path |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged — not touched by bridge contract |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
 | **Public exposure** | none | no Funnel |
 | **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | **Explicit human gate for local wrapper runtime dry-run** — no implementation/execution until approved; no n8n runtime, no wf 40/41, no PM-34, no provider API key, no OpenClaw `agent main`, no `codex resume`, no Codex repo mutation, no Cursor worker automation, no deploy/tag/rollback |
+| **Next tactical step** | pending | **Local wrapper success-path design packet** or explicit gate for Codex-read-only wrapper dry-run — no n8n runtime, no wf 40/41, no PM-34, no provider API key, no OpenClaw `agent main`, no `codex resume`, no Codex repo mutation, no Cursor worker automation, no deploy/tag/rollback |
 
 Entry point: [PROJECT_VISION](PROJECT_VISION.md) (read-only; not modified by bridge contract task).
