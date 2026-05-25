@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-26 (live Codex repeatability run local max3 — PASS)
+**Updated:** 2026-05-26 (post-live-Codex-repeatability hardening — docs-only)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
@@ -32,11 +32,12 @@
 | **Post-repeatability hardening** | **DOCS COMPLETE** | Repeatability proven vs gaps — [packet](../decision-packets/post-repeatability-hardening.md) · [session](../sessions/2026-05-26-control-plane-post-repeatability-hardening-docs-only.md) |
 | **Live Codex repeatability design packet** | **DESIGN PACKET COMPLETE** | Future 3-run §7 scope, drift policy, PASS/FAIL — [packet](../decision-packets/live-codex-repeatability-design-packet.md) · [session](../sessions/2026-05-26-control-plane-live-codex-repeatability-design-packet-docs-only.md) |
 | **Live Codex repeatability run local max3** | **PASS** | 3× §7 read-only via wrapper; stable `pass` — [session](../sessions/2026-05-26-control-plane-live-codex-repeatability-run-local-max3.md) |
+| **Post-live-Codex-repeatability hardening** | **DOCS COMPLETE** | Cumulative wrapper evidence; integration gaps — [packet](../decision-packets/post-live-codex-repeatability-hardening.md) · [session](../sessions/2026-05-26-control-plane-post-live-codex-repeatability-hardening-docs-only.md) |
 | **Provider API key policy** | **NO** | No OpenAI (or other) provider API keys for bridge/agent path |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged — not touched by bridge contract |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
 | **Public exposure** | none | no Funnel |
 | **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | **Post-live-Codex-repeatability hardening docs-only** — no live Codex negative tests without separate gate; no n8n runtime integration; no workflow 40/41 mutation; no PM-34 unlock; no provider API key; no OpenClaw `agent main`; no `codex resume`; no Codex repo mutation; no Cursor worker automation; no deploy/tag/rollback; no unattended automation |
+| **Next tactical step** | pending | **Local wrapper runtime readiness review (docs-only)** — no live Codex negative tests without separate gate; no n8n runtime integration; no workflow 40/41 mutation; no PM-34 unlock; no provider API key; no OpenClaw `agent main`; no `codex resume`; no Codex repo mutation; no Cursor worker automation; no deploy/tag/rollback; no unattended automation |
 
 Entry point: [PROJECT_VISION](PROJECT_VISION.md) (read-only; not modified by bridge contract task).
