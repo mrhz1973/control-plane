@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-25 (local path read-only preflight PASS)
+**Updated:** 2026-05-25 (OpenClaw gateway loopback runtime PASS)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
@@ -8,11 +8,12 @@
 | **Cursor Agent CLI (Ryzen)** | **PASS** | Install + auth + models + plan smoke read-only; [session](../sessions/2026-05-25-control-plane-cursor-agent-cli-install-auth-plan-smoke-pass.md) |
 | **Ollama classifier (Ryzen)** | **PASS** (API only) | `qwen3:14b` via local API; [session](../sessions/2026-05-25-control-plane-ollama-qwen3-classifier-api-smoke-pass.md) |
 | **Classifier wrapper contract** | **DESIGN** | [classifier-wrapper-v1](../contracts/classifier-wrapper-v1.md) — no runtime yet |
-| **Local path preflight (Ryzen)** | **PASS** (read-only) | OpenClaw/Codex/Ollama/Tailscale inspected; gateway **off**; no Codex exec; [session](../sessions/2026-05-25-control-plane-openclaw-codex-local-path-readonly-preflight.md) |
+| **Local path preflight (Ryzen)** | **PASS** (read-only) | [session](../sessions/2026-05-25-control-plane-openclaw-codex-local-path-readonly-preflight.md) |
+| **OpenClaw gateway (Ryzen)** | **PASS** (loopback manual) | Foreground `gateway run`, bind loopback, Tailscale off, port 18789; read probe timeout caveat; `auth none` local-only; [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md) |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
 | **Public exposure** | none | no Funnel |
 | **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | OpenClaw ↔ Codex ↔ Ollama ↔ Cursor — **manual runtime gate** (gateway liveness / controlled prompt pass); preflight read-only done — [PROJECT_VISION §12](PROJECT_VISION.md#12-prossimi-passi-tattici-verso-la-visione) |
+| **Next tactical step** | pending | OpenClaw/Codex **minimal read-only integration** (manual, loopback, no n8n/worker/PM-34) — [PROJECT_VISION §12](PROJECT_VISION.md#12-prossimi-passi-tattici-verso-la-visione) |
 
 Entry point: [PROJECT_VISION](PROJECT_VISION.md).
