@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-25 (Codex bridge manual smoke V1 partial-blocked)
+**Updated:** 2026-05-25 (Codex bridge contract v1 + smoke V1 partial-blocked registered)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
