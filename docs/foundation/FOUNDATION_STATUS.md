@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-25 (Codex bridge invocation profile §7 formalized — docs-only)
+**Updated:** 2026-05-25 (Codex bridge wrapper design v1 — docs-only)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
@@ -15,11 +15,12 @@
 | **Codex bridge contract v1** | **DESIGN COMPLETE** | §7 invocation profile formalized from V2 — [contract](../contracts/codex-bridge-contract-v1.md) · [profile session](../sessions/2026-05-25-control-plane-bridge-invocation-profile-docs-only.md) |
 | **Codex bridge manual smoke V1** | **PARTIAL-BLOCKED** | NON PASS — agentic tool-use vs JSON-only; repo clean; fallback graceful PASS; no `codex resume`; [session](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v1-partial-blocked.md) |
 | **Codex bridge manual smoke V2** | **PASS** | Single-turn JSON-only, inlined files, anti-tool-use prompt, `codex exec --ephemeral -s read-only --output-schema`; repo clean; no `codex resume`; [session](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v2-pass.md) |
+| **Codex bridge wrapper design** | **DESIGN COMPLETE** | Local JSON-in / pre-gates / §7 invocation / post-gates / JSON-out — [design](../contracts/codex-bridge-wrapper-design-v1.md) · [session](../sessions/2026-05-25-control-plane-bridge-wrapper-design-docs-only.md) |
 | **Provider API key policy** | **NO** | No OpenAI (or other) provider API keys for bridge/agent path |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged — not touched by bridge contract |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
 | **Public exposure** | none | no Funnel |
 | **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | **Bridge wrapper design (docs-only)** — local JSON-in / §7 invocation / bridge-output-JSON-out contract before any n8n runtime integration; no wf 40/41, no PM-34, no provider API key, no OpenClaw `agent main`, no `codex resume`, no Codex repo mutation, no n8n runtime |
+| **Next tactical step** | pending | **Bridge wrapper runtime dry-run preflight / design packet** — explicit human gate required; no n8n runtime, no wf 40/41, no PM-34, no provider API key, no OpenClaw `agent main`, no `codex resume`, no Codex repo mutation, no Cursor worker automation, no deploy/tag/rollback |
 
 Entry point: [PROJECT_VISION](PROJECT_VISION.md) (read-only; not modified by bridge contract task).
