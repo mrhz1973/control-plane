@@ -88,7 +88,7 @@ Questa sezione distingue la visione da ciò che è già vero.
 | **PM-34 real worker** | Bloccato: nessun Codex real worker n8n-ready |
 | **OpenClaw** | Install/onboard e probe locali PASS; non integrato come worker reale |
 | **Codex OAuth/CLI** | Login/setup verificati in track PM-30/33; worker non abilitato |
-| **Ollama classifier** | Dry-run / design; non produzione n8n |
+| **Ollama classifier (Ryzen)** | **PASS** (2026-05-25) — `qwen3:14b` classifier locale **solo** via API Ollama (`think=false`, `format=json`); multi-case low/medium/high OK; **`ollama run` non idoneo**; non produzione n8n / non loop Tailscale. [session](../sessions/2026-05-25-control-plane-ollama-qwen3-classifier-api-smoke-pass.md) |
 | **Cursor Agent CLI (Ryzen)** | **PASS** (2026-05-25) — install + auth + models; plan smoke read-only su `PROJECT_VISION.md`; worker/`--force`/`--yolo`/`--print` non usati. [session](../sessions/2026-05-25-control-plane-cursor-agent-cli-install-auth-plan-smoke-pass.md) · headless/n8n loop ancora **non** provato |
 | **Tailscale VPS ↔ Ryzen** | **PASS** — mesh privata operativa (`ubuntu` ↔ `asusdesktop`); ping privato bidirezionale; n8n invariato su loopback; nessun Funnel né porta pubblica. [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md) · [FOUNDATION_STATUS](FOUNDATION_STATUS.md) |
 
@@ -455,18 +455,19 @@ Questa sezione contiene tattiche, non la visione. Possono cambiare senza cambiar
 1. **Foundation v2.0** — entry point canonico (`PROJECT_VISION.md` + `FOUNDATION_STATUS.md`).
 2. **Tailscale VPS ↔ PC Ryzen** — **COMPLETATO (PASS 2026-05-23)** — mesh privata operativa (`ubuntu` ↔ `asusdesktop`); ping privato bidirezionale; n8n resta su `127.0.0.1:5678`; nessuna porta pubblica / Funnel. Evidenza: [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md).
 3. **Cursor Agent CLI preflight (Ryzen)** — **COMPLETATO (PASS 2026-05-25)** — install (`agent` / `cursor-agent`), login, models discovery, smoke `agent --mode plan` (Composer 2.5 Fast) lettura read-only di questo documento; workspace pulito; worker/`--force`/`--yolo` non usati. Evidenza: [session](../sessions/2026-05-25-control-plane-cursor-agent-cli-install-auth-plan-smoke-pass.md). Gate write/agent-mode commit resta separato.
+4. **Ollama classifier API smoke (Ryzen)** — **COMPLETATO (PASS 2026-05-25)** — `qwen3:14b` (Ollama `0.24.0`); classifier affidabile **solo** via API locale con `think=false` + `format=json`; multi-case low/medium/high; **`ollama run` escluso**. Evidenza: [session](../sessions/2026-05-25-control-plane-ollama-qwen3-classifier-api-smoke-pass.md). Non implica n8n, Tailscale da n8n, né PM-34 sbloccato.
 
 **Prossimo passo tattico:**
 
-4. **Ollama classifier sul Ryzen** — installare/validare modello locale e schema decision JSON per rischio/route/approval.
+5. **Classifier wrapper — design/contract minimale (docs-only)** — contratto JSON input/output, validazione JSON, fallback safe-to-human-gate; **nessuna** chiamata n8n runtime né automazione loop ancora.
 
 **Backlog tattico:**
 
-5. **OpenClaw ↔ Codex ↔ Ollama ↔ Cursor locale** (dopo Ollama): verificare il passaggio controllato del prompt sul nodo Ryzen, prima manuale poi automatizzabile.
-6. **Diff-summary Telegram MVP** (opzionale, prima tattica utile): quando arriva un commit su `dev-method` o `cursor-coordinate-converter`, n8n legge il diff e manda un riepilogo italiano 2–3 righe su Telegram. Primo prodotto utile, non la visione completa.
-7. **Loop end-to-end manuale**: simulare il ciclo completo senza auto-esecuzione permanente.
-8. **Loop automatico minimo**: solo dopo prove reali e confini chiari, collegare i pezzi per task low-risk.
-9. **Dell fallback fase 2**: attivare il Dell come nodo always-on/fallback solo dopo che il loop sul Ryzen produce valore reale.
+6. **OpenClaw ↔ Codex ↔ Ollama ↔ Cursor locale** (dopo wrapper contract): verificare il passaggio controllato del prompt sul nodo Ryzen, prima manuale poi automatizzabile.
+7. **Diff-summary Telegram MVP** (opzionale, prima tattica utile): quando arriva un commit su `dev-method` o `cursor-coordinate-converter`, n8n legge il diff e manda un riepilogo italiano 2–3 righe su Telegram. Primo prodotto utile, non la visione completa.
+8. **Loop end-to-end manuale**: simulare il ciclo completo senza auto-esecuzione permanente.
+9. **Loop automatico minimo**: solo dopo prove reali e confini chiari, collegare i pezzi per task low-risk.
+10. **Dell fallback fase 2**: attivare il Dell come nodo always-on/fallback solo dopo che il loop sul Ryzen produce valore reale.
 
 Nessun passo tattico crea automaticamente un nuovo PM o sblocca PM-34. Le attivazioni runtime restano gate espliciti.
 
