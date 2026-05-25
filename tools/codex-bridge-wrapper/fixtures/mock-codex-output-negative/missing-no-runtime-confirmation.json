@@ -1,0 +1,7 @@
+{
+  "verdict": "pass",
+  "summary": "Synthetic mock missing no_runtime_confirmation",
+  "recommended_next_step": "Continue with docs-only next step",
+  "blocked_actions": [],
+  "risk_notes": "mock negative test — no secrets"
+}

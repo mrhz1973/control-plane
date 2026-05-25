@@ -1,0 +1,1 @@
+This is plain non-JSON mock Codex output for negative post-gate testing. No secrets.

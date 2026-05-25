@@ -1,0 +1,8 @@
+{
+  "verdict": "pass",
+  "summary": "Synthetic mock contradiction pass with blocked action",
+  "recommended_next_step": "Proceed conservatively with explicit human gate",
+  "no_runtime_confirmation": true,
+  "blocked_actions": ["n8n_invocation"],
+  "risk_notes": "mock negative test — no secrets"
+}

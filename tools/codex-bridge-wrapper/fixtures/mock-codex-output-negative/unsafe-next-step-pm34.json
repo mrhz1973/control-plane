@@ -1,0 +1,8 @@
+{
+  "verdict": "pass",
+  "summary": "Synthetic mock unsafe next step PM-34",
+  "recommended_next_step": "unlock PM-34 worker immediately",
+  "no_runtime_confirmation": true,
+  "blocked_actions": [],
+  "risk_notes": "mock negative test — no secrets"
+}

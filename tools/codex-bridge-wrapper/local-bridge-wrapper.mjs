@@ -20,6 +20,9 @@ const FORBIDDEN_SECRET_KEYS = new Set([
   "chat_id",
   "auth_url",
   "tokenized_url",
+  "api_key",
+  "bearer_token",
+  "password",
 ]);
 
 const FORBIDDEN_ACTIONS = new Set([
@@ -125,6 +128,8 @@ function buildOutput(fixture, fixturePath, opts) {
       codex_transport_used: trace.codex_transport_used ?? false,
       codex_workdir_is_temp: trace.codex_workdir_is_temp ?? false,
       codex_resume_used: false,
+      mock_codex_output_used: trace.mock_codex_output_used ?? false,
+      mock_output_path: trace.mock_output_path ?? null,
       fixture_path: fixturePath,
     },
   };
@@ -264,6 +269,31 @@ function validateCodexOutput(codexJson) {
       return { ok: false, reason: `unsafe recommended_next_step: ${action}` };
     }
   }
+  return { ok: true };
+}
+
+function validateCodexOutputExtended(codexJson) {
+  const base = validateCodexOutput(codexJson);
+  if (!base.ok) return base;
+
+  if (!Array.isArray(codexJson.blocked_actions)) {
+    return { ok: false, reason: "blocked_actions must be an array" };
+  }
+
+  const secretKeys = collectSecretKeys(codexJson);
+  if (secretKeys.length > 0) {
+    return { ok: false, reason: `secret-shaped output: ${secretKeys.join(", ")}` };
+  }
+
+  const proposed = codexJson.proposed_prompt_for_cursor;
+  if (proposed !== undefined && proposed !== null && proposed !== "") {
+    return { ok: false, reason: "proposed_prompt_for_cursor must not be set" };
+  }
+
+  if (codexJson.verdict === "pass" && codexJson.blocked_actions.length > 0) {
+    return { ok: false, reason: "contradiction: pass with non-empty blocked_actions" };
+  }
+
   return { ok: true };
 }
 
@@ -485,10 +515,185 @@ function handleV1Path(fixture, fixturePath, requestedActions) {
   }
 }
 
+function parseCliArgs(argv) {
+  const args = argv.slice(2);
+  let fixtureArg = null;
+  let mockCodexOutput = null;
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--mock-codex-output") {
+      mockCodexOutput = args[i + 1];
+      if (!mockCodexOutput) {
+        fail("Usage: --mock-codex-output requires a file path");
+      }
+      i++;
+    } else if (!args[i].startsWith("-") && fixtureArg === null) {
+      fixtureArg = args[i];
+    }
+  }
+  return { fixtureArg, mockCodexOutput };
+}
+
+function handleMockCodexOutputPath(fixture, fixturePath, mockOutputPath, requestedActions) {
+  const mockPath = resolve(mockOutputPath);
+
+  if (process.env.CONTROL_PLANE_ALLOW_MOCK_CODEX_OUTPUT !== "1") {
+    emit(
+      buildOutput(fixture, fixturePath, {
+        status: "needs_human",
+        summary: "CONTROL_PLANE_ALLOW_MOCK_CODEX_OUTPUT not set to 1",
+        recommendedNextStep: "Set env CONTROL_PLANE_ALLOW_MOCK_CODEX_OUTPUT=1 for authorized mock-output test",
+        blockedActions: ["mock_codex_output"],
+        riskNotes: "wrapper:mock:env_gate_missing",
+        humanGateRequired: true,
+        trace: { mock_codex_output_used: false, mock_output_path: mockPath },
+      })
+    );
+    process.exit(0);
+  }
+
+  if (fixture.human_gate_state !== "approved_codex_readonly_wrapper_dry_run_v1") {
+    emit(
+      buildOutput(fixture, fixturePath, {
+        status: "needs_human",
+        summary: "Mock output tests require v1 carrier fixture human gate",
+        recommendedNextStep: "Use approved_codex_readonly_wrapper_dry_run_v1 carrier fixture",
+        blockedActions: ["mock_codex_output"],
+        riskNotes: `wrapper:mock:human_gate_state:${fixture.human_gate_state}`,
+        humanGateRequired: true,
+        trace: { mock_codex_output_used: false, mock_output_path: mockPath },
+      })
+    );
+    process.exit(0);
+  }
+
+  if (!requestedActions.includes("codex_readonly_reasoning")) {
+    emit(
+      buildOutput(fixture, fixturePath, {
+        status: "needs_human",
+        summary: "Mock output carrier must request codex_readonly_reasoning",
+        recommendedNextStep: "Add codex_readonly_reasoning to requested_actions",
+        blockedActions: ["mock_codex_output"],
+        riskNotes: "wrapper:mock:missing_codex_readonly_reasoning",
+        humanGateRequired: true,
+        trace: { mock_codex_output_used: false, mock_output_path: mockPath },
+      })
+    );
+    process.exit(0);
+  }
+
+  let mockRaw;
+  try {
+    mockRaw = readFileSync(mockPath, "utf8");
+  } catch (err) {
+    emit(
+      buildOutput(fixture, fixturePath, {
+        status: "failed",
+        summary: "Cannot read mock Codex output file",
+        recommendedNextStep: "Fix mock output path",
+        blockedActions: ["mock_codex_output"],
+        riskNotes: `wrapper:mock:read_error:${err.message}`,
+        humanGateRequired: true,
+        trace: { mock_codex_output_used: true, mock_output_path: mockPath },
+      })
+    );
+    process.exit(0);
+  }
+
+  let codexJson;
+  try {
+    codexJson = JSON.parse(mockRaw);
+  } catch (err) {
+    emit(
+      buildOutput(fixture, fixturePath, {
+        status: "failed",
+        summary: "Mock Codex output is not valid JSON",
+        recommendedNextStep: "Fix mock output file format",
+        blockedActions: ["mock_codex_output"],
+        riskNotes: `wrapper:mock:parse_error:${err.message}`,
+        humanGateRequired: true,
+        trace: { mock_codex_output_used: true, mock_output_path: mockPath },
+      })
+    );
+    process.exit(0);
+  }
+
+  if (codexJson === null || typeof codexJson !== "object" || Array.isArray(codexJson)) {
+    emit(
+      buildOutput(fixture, fixturePath, {
+        status: "failed",
+        summary: "Mock Codex output must be a JSON object",
+        recommendedNextStep: "Fix mock output structure",
+        blockedActions: ["mock_codex_output"],
+        riskNotes: "wrapper:mock:not_object",
+        humanGateRequired: true,
+        trace: { mock_codex_output_used: true, mock_output_path: mockPath },
+      })
+    );
+    process.exit(0);
+  }
+
+  const postCheck = validateCodexOutputExtended(codexJson);
+  if (!postCheck.ok) {
+    emit(
+      buildOutput(fixture, fixturePath, {
+        status: "needs_human",
+        summary: "Mock Codex output failed post-gate",
+        recommendedNextStep: "Manual review required; unsafe mock output rejected",
+        blockedActions: Array.isArray(codexJson.blocked_actions) ? codexJson.blocked_actions : [],
+        riskNotes: `wrapper:mock:postgate:${postCheck.reason}`,
+        humanGateRequired: true,
+        codexResult: codexJson,
+        trace: {
+          mock_codex_output_used: true,
+          mock_output_path: mockPath,
+        },
+      })
+    );
+    process.exit(0);
+  }
+
+  const status = mapCodexVerdictToStatus(codexJson.verdict);
+  if (status === "pass") {
+    emit(
+      buildOutput(fixture, fixturePath, {
+        status: "needs_human",
+        summary: "Mock Codex output unexpectedly passed post-gate as pass",
+        recommendedNextStep: "Review mock negative fixture; should be unsafe",
+        blockedActions: codexJson.blocked_actions ?? [],
+        riskNotes: "wrapper:mock:unexpected_pass",
+        humanGateRequired: true,
+        codexResult: codexJson,
+        trace: {
+          mock_codex_output_used: true,
+          mock_output_path: mockPath,
+        },
+      })
+    );
+    process.exit(0);
+  }
+
+  emit(
+    buildOutput(fixture, fixturePath, {
+      status,
+      summary: codexJson.summary,
+      recommendedNextStep: codexJson.recommended_next_step,
+      blockedActions: codexJson.blocked_actions,
+      riskNotes: codexJson.risk_notes,
+      humanGateRequired: status !== "blocked",
+      codexResult: codexJson,
+      trace: {
+        mock_codex_output_used: true,
+        mock_output_path: mockPath,
+      },
+    })
+  );
+  process.exit(0);
+}
+
 function main() {
-  const fixtureArg = process.argv[2];
+  const { fixtureArg, mockCodexOutput } = parseCliArgs(process.argv);
   if (!fixtureArg) {
-    fail("Usage: node local-bridge-wrapper.mjs <fixture-path>");
+    fail("Usage: node local-bridge-wrapper.mjs <fixture-path> [--mock-codex-output <mock-output-file>]");
   }
 
   const fixturePath = resolve(fixtureArg);
@@ -554,6 +759,10 @@ function main() {
       })
     );
     process.exit(0);
+  }
+
+  if (mockCodexOutput) {
+    handleMockCodexOutputPath(fixture, fixturePath, mockCodexOutput, requestedActions);
   }
 
   if (fixture.human_gate_state === "approved_codex_readonly_wrapper_dry_run_v1") {

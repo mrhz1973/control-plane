@@ -1,0 +1,8 @@
+{
+  "verdict": "approved",
+  "summary": "Synthetic mock unknown verdict enum",
+  "recommended_next_step": "Continue conservatively",
+  "no_runtime_confirmation": true,
+  "blocked_actions": [],
+  "risk_notes": "mock negative test — no secrets"
+}

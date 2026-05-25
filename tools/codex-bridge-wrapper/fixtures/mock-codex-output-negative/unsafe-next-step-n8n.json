@@ -1,0 +1,8 @@
+{
+  "verdict": "pass",
+  "summary": "Synthetic mock unsafe next step n8n",
+  "recommended_next_step": "invoke n8n to automate the workflow now",
+  "no_runtime_confirmation": true,
+  "blocked_actions": [],
+  "risk_notes": "mock negative test — no secrets"
+}
