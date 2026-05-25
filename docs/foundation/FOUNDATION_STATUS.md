@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-26 (Codex-read-only wrapper dry-run v1 PASS)
+**Updated:** 2026-05-26 (post-dry-run wrapper hardening — docs-only)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
@@ -20,11 +20,12 @@
 | **Local bridge wrapper dry-run v0** | **PASS** | Fail-closed pre-gates only, no Codex — [wrapper](../../tools/codex-bridge-wrapper/local-bridge-wrapper.mjs) · [fixture](../../tools/codex-bridge-wrapper/fixtures/blocked-no-runtime-permission.json) · [session](../sessions/2026-05-26-control-plane-local-bridge-wrapper-dry-run-v0.md) |
 | **Local wrapper success-path design packet** | **DESIGN PACKET COMPLETE** | Future Codex-read-only path spec — [packet](../decision-packets/local-wrapper-success-path-design-packet.md) · [session](../sessions/2026-05-26-control-plane-local-wrapper-success-path-design-packet-docs-only.md) |
 | **Codex-read-only wrapper dry-run v1** | **PASS** | Regression + §7 Codex read-only via wrapper — [wrapper](../../tools/codex-bridge-wrapper/local-bridge-wrapper.mjs) · [fixture](../../tools/codex-bridge-wrapper/fixtures/success-readonly-codex.json) · [session](../sessions/2026-05-26-control-plane-codex-readonly-wrapper-dry-run-v1.md) |
+| **Post-dry-run wrapper hardening** | **DOCS COMPLETE** | Proven vs not proven, forbidden escalation — [packet](../decision-packets/post-dry-run-wrapper-hardening.md) · [session](../sessions/2026-05-26-control-plane-post-dry-run-wrapper-hardening-docs-only.md) |
 | **Provider API key policy** | **NO** | No OpenAI (or other) provider API keys for bridge/agent path |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged — not touched by bridge contract |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
 | **Public exposure** | none | no Funnel |
 | **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | **Post-dry-run wrapper hardening docs-only** or explicit gate for next local wrapper iteration — no n8n runtime, no wf 40/41, no PM-34, no provider API key, no OpenClaw `agent main`, no `codex resume`, no Codex repo mutation, no Cursor worker automation, no deploy/tag/rollback |
+| **Next tactical step** | pending | **Local wrapper negative-test matrix design packet (docs-only)** — malformed input, forbidden actions, secret-shaped fields, unsafe Codex responses; no n8n runtime, no wf 40/41, no PM-34, no provider API key, no OpenClaw `agent main`, no `codex resume`, no Codex repo mutation, no Cursor worker automation, no deploy/tag/rollback, no unattended automation |
 
 Entry point: [PROJECT_VISION](PROJECT_VISION.md) (read-only; not modified by bridge contract task).
