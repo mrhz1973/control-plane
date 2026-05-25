@@ -1,0 +1,18 @@
+{
+  "request_id": "negative-unsafe-context-dotenv",
+  "task_type": "docs_only_reasoning",
+  "runtime_policy": {
+    "allows_runtime": false,
+    "allows_codex_execution": false,
+    "allows_n8n": false,
+    "allows_repo_mutation": false
+  },
+  "human_gate_state": "approved_local_negative_static_no_codex",
+  "context_refs": [
+    ".env"
+  ],
+  "requested_actions": [
+    "reason_about_docs_only"
+  ],
+  "notes": "Synthetic negative fixture. Unsafe context ref. No secrets."
+}

@@ -1,0 +1,13 @@
+{
+  "request_id": "negative-requested-actions-not-array",
+  "task_type": "docs_only_reasoning",
+  "runtime_policy": {
+    "allows_runtime": false,
+    "allows_codex_execution": false,
+    "allows_n8n": false,
+    "allows_repo_mutation": false
+  },
+  "human_gate_state": "approved_local_negative_static_no_codex",
+  "requested_actions": "n8n_invocation",
+  "notes": "Synthetic negative fixture. requested_actions is not an array. No secrets."
+}

@@ -1,0 +1,14 @@
+{
+  "task_type": "docs_only_reasoning",
+  "runtime_policy": {
+    "allows_runtime": false,
+    "allows_codex_execution": false,
+    "allows_n8n": false,
+    "allows_repo_mutation": false
+  },
+  "human_gate_state": "approved_local_negative_static_no_codex",
+  "requested_actions": [
+    "reason_about_docs_only"
+  ],
+  "notes": "Synthetic negative fixture. Missing request_id. No secrets."
+}

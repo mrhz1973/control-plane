@@ -1,0 +1,14 @@
+{
+  "request_id": "negative-missing-human-gate",
+  "task_type": "docs_only_reasoning",
+  "runtime_policy": {
+    "allows_runtime": false,
+    "allows_codex_execution": false,
+    "allows_n8n": false,
+    "allows_repo_mutation": false
+  },
+  "requested_actions": [
+    "reason_about_docs_only"
+  ],
+  "notes": "Synthetic negative fixture. Missing human_gate_state. No secrets."
+}
