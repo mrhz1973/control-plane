@@ -460,7 +460,7 @@ Questa sezione contiene tattiche, non la visione. Possono cambiare senza cambiar
 
 **Prossimo passo tattico:**
 
-6. **OpenClaw ↔ Codex ↔ Ollama ↔ Cursor locale** — passaggio controllato sul nodo Ryzen, prima manuale; wrapper runtime e n8n restano gate separati.
+6. **OpenClaw ↔ Codex ↔ Ollama ↔ Cursor locale** — **preflight read-only PASS** (2026-05-25): tooling presente, gateway OpenClaw **spento**, Codex auth OK senza exec, Ollama idle/API loopback, Tailscale mesh OK. **Prossimo:** gate runtime **manuale** (es. gateway liveness controllata, prompt pass confinato) — [session](../sessions/2026-05-25-control-plane-openclaw-codex-local-path-readonly-preflight.md). Wrapper runtime e n8n restano gate separati.
 
 **Backlog tattico:**
 
