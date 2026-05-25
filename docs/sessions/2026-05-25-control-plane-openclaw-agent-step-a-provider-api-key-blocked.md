@@ -83,11 +83,7 @@ openclaw.cmd agent --agent main --json --thinking minimal --timeout 180 --messag
 
 ## Next tactical gate
 
-**OpenClaw / Codex no-provider-API bridge — design & discovery (docs-only)**
-
-- Document candidate paths (Codex OAuth/CLI, OpenClaw config without OpenAI API provider, local-only bridge).
-- **No** runtime agent retry until policy-aligned path is chosen.
-- **No** n8n, worker, PM-34, Tailscale gateway exposure, or auto commit/push.
+**Resolved (2026-05-25):** [Bridge discovery v1](../contracts/openclaw-codex-bridge-discovery-v1.md) — **Codex-first local bridge** recommended. Next: Codex bridge contract + manual read-only smoke.
 
 ---
 
