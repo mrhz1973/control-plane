@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-26 (local-only integration dry-run — PASS)
+**Updated:** 2026-05-26 (post-local-only integration hardening — docs-only)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
@@ -36,11 +36,12 @@
 | **Local wrapper runtime readiness review** | **DOCS COMPLETE** | Evidence chain, strengths/gaps, min criteria — [review](../decision-packets/local-wrapper-runtime-readiness-review.md) · [session](../sessions/2026-05-26-control-plane-local-wrapper-runtime-readiness-review-docs-only.md) |
 | **Local-only integration preflight design packet** | **DESIGN PACKET COMPLETE** | Local integration scope, exclusions, preflight/abort — [packet](../decision-packets/local-only-integration-preflight-design-packet.md) · [session](../sessions/2026-05-26-control-plane-local-only-integration-preflight-design-packet-docs-only.md) |
 | **Local-only integration dry-run** | **PASS** | 4-run compact suite (v0 + static negative + mock negative + live §7) — [session](../sessions/2026-05-26-control-plane-local-only-integration-dry-run.md) |
+| **Post-local-only integration hardening** | **DOCS COMPLETE** | Proven vs gaps; no n8n/PM-34 authorization — [packet](../decision-packets/post-local-only-integration-hardening.md) · [session](../sessions/2026-05-26-control-plane-post-local-only-integration-hardening-docs-only.md) |
 | **Provider API key policy** | **NO** | No OpenAI (or other) provider API keys for bridge/agent path |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged — not touched by bridge contract |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
 | **Public exposure** | none | no Funnel |
 | **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | **Post-local-only integration hardening (docs-only)** — no n8n; no workflow 40/41; no PM-34; no live Codex negative tests without separate gate; no n8n runtime integration; no workflow 40/41 mutation; no PM-34 unlock; no provider API key; no OpenClaw `agent main`; no `codex resume`; no Codex repo mutation; no Cursor worker automation; no deploy/tag/rollback; no unattended automation |
+| **Next tactical step** | pending | **n8n-free local integration readiness closeout (docs-only)** — no n8n; no workflow 40/41; no PM-34; no live Codex negative tests without separate gate; no n8n runtime integration; no workflow 40/41 mutation; no PM-34 unlock; no provider API key; no OpenClaw `agent main`; no `codex resume`; no Codex repo mutation; no Cursor worker automation; no deploy/tag/rollback; no unattended automation |
 
 Entry point: [PROJECT_VISION](PROJECT_VISION.md) (read-only; not modified by bridge contract task).
