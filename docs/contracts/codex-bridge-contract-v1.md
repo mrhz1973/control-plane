@@ -155,8 +155,9 @@ If Codex is invoked in a later gate, post-process model text to JSON:
 | `status` not in allowed enum | `needs_human` |
 | Proposes **provider API key** or OpenAI billing setup | `blocked` |
 | Proposes **OpenClaw `agent main`** as orchestration path | `blocked` |
-| Proposes **n8n runtime** / wf 40–41 edit before manual smoke PASS | `blocked` |
-| Proposes `codex exec`, Cursor worker, auto commit-push | `blocked` |
+| Proposes **n8n runtime** / wf 40–41 edit | `blocked` |
+| Proposes unauthorized `codex exec` (repo mutation, implementation, or outside §7 profile) | `blocked` |
+| Proposes Cursor worker or auto commit-push | `blocked` |
 | Contradicts `risk_classification` (e.g. auto on high risk) | `needs_human` |
 | Codex timeout / OAuth error | `failed` → treat as `needs_human` for operators |
 
@@ -180,6 +181,7 @@ Manual smoke V2 **PASS** ([session](../sessions/2026-05-25-control-plane-codex-b
 | Output | JSON-only, single-turn, schema-enforced final message |
 | Persistence | Ephemeral session — **no** resume id recorded or reused |
 | Sandbox | Read-only — model-generated commands cannot mutate disk |
+| Approval behavior | Non-interactive `codex exec` does **not** solicit approvals — wrapper safety MUST rely on read-only sandbox plus §5 pre-gates and §6 post-gates, not on a second approval layer inside `codex exec` |
 | Repo mutation | **Forbidden** |
 | Runtime mutation | **Forbidden** |
 | n8n / workflow mutation | **Forbidden** (wf 40 / 41 untouched) |
@@ -240,6 +242,10 @@ Observed V2 implementation for Codex CLI v0.133.0: `codex exec` with read-only s
 | V2 | **PASS** — single-turn JSON, §7 properties | [smoke V2](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v2-pass.md) |
 
 **Fail closed:** any file change, unauthorized exec, or API key prompt → register FAIL session, do not wire n8n.
+
+**Smoke status:** V2 **PASS** complete. V1 remains **PARTIAL-BLOCKED** — do **not** resume interrupted V1 session.
+
+**Next gate:** Bridge wrapper design / local wrapper design (docs-only) — JSON in → §7 invocation → bridge output JSON out. Any future runtime wrapper test requires a **separate explicit gate**. No n8n wiring. No wf 40 / 41 edits. No PM-34 unlock.
 
 ---
 

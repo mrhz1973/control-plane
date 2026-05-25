@@ -13,6 +13,17 @@ Smoke V2 **PASS** proved a safe manual Codex bridge invocation shape (non-intera
 
 ---
 
+## Inputs read
+
+- `docs/foundation/PROJECT_VISION.md`
+- `docs/foundation/FOUNDATION_STATUS.md`
+- `docs/contracts/codex-bridge-contract-v1.md`
+- `docs/sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v2-pass.md`
+- `docs/sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v1-partial-blocked.md`
+- `docs/contracts/openclaw-codex-bridge-discovery-v1.md`
+
+---
+
 ## Editorial decision
 
 **§7 uses stable behavioral properties, not hard-coded CLI flags as normative contract.**
@@ -33,6 +44,12 @@ Rationale: Codex CLI flags may change between versions; the contract must surviv
 
 ---
 
+## Technical caveat — `codex exec` approval behavior
+
+Non-interactive `codex exec` does **not** solicit operator approvals. Future wrapper design must not assume a second approval layer inside `codex exec`. Safety relies on: read-only sandbox, inlined context (no agentic file discovery), §5 pre-gates, §6 post-gates, and ephemeral/no-resume session policy.
+
+---
+
 ## Files changed
 
 | File | Change |
@@ -47,20 +64,35 @@ PROJECT_VISION.md **not** modified.
 
 ## What remains gated
 
-- n8n integration / wf 40 / 41 mutation
+- n8n runtime integration
+- workflow 40 / 41 mutation
 - PM-34 real worker unlock
 - Provider API key configuration
 - OpenClaw `agent main` retry
 - Cursor worker / auto commit-push
 - `codex resume` of interrupted V1 session
 - Codex repo mutation / implementation via bridge
+- deploy / tag / rollback
 - Any runtime wrapper execution (design docs only next)
 
 ---
 
 ## Next gate
 
-**Local bridge wrapper design (docs-only)** — minimal contract: bridge input JSON → §7 invocation properties → bridge output JSON. Separate runtime gate required before n8n wire-up.
+**Bridge wrapper design / local wrapper design (docs-only)** — minimal contract: bridge input JSON → §7 invocation properties → bridge output JSON. Separate explicit runtime gate required before n8n wire-up.
+
+---
+
+## Verification commands run
+
+```text
+git rev-parse --show-toplevel
+git branch --show-current
+git status --short
+git fetch origin main && git pull --ff-only origin main
+git diff --check
+git log -1 --oneline -- <changed-file>   (local + origin/main per file)
+```
 
 ---
 

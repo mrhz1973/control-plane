@@ -20,6 +20,6 @@
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
 | **Public exposure** | none | no Funnel |
 | **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | **Local bridge wrapper design (docs-only)** — minimal JSON-in / §7 invocation / bridge-output-JSON-out contract before any n8n runtime; no wf 40/41, no PM-34, no provider API key, no OpenClaw `agent main`, no `codex resume`, no Codex repo mutation |
+| **Next tactical step** | pending | **Bridge wrapper design (docs-only)** — local JSON-in / §7 invocation / bridge-output-JSON-out contract before any n8n runtime integration; no wf 40/41, no PM-34, no provider API key, no OpenClaw `agent main`, no `codex resume`, no Codex repo mutation, no n8n runtime |
 
 Entry point: [PROJECT_VISION](PROJECT_VISION.md) (read-only; not modified by bridge contract task).
