@@ -164,39 +164,82 @@ If Codex is invoked in a later gate, post-process model text to JSON:
 
 ---
 
-## 7. Codex invocation profile (future runtime — not executed in v1)
+## 7. Codex invocation profile (V2-proven — read-only reasoning only)
 
-When manual smoke or later runtime runs, Codex MUST:
+Manual smoke V2 **PASS** ([session](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v2-pass.md)) proves a safe bridge invocation shape. This section defines the **stable properties** any future runtime wrapper MUST satisfy. It does **not** hard-code Codex CLI flags as normative contract — exact flags for Codex CLI v0.133.0 are an **observed V2 implementation snapshot** in that session only.
 
-| Parameter | v1 value |
-|-----------|----------|
-| Binary | `codex` CLI on Ryzen |
-| Auth | Existing ChatGPT OAuth — **no** `OPENAI_API_KEY` |
-| Mode | Read-only analysis — **no** `codex exec` for repo mutation |
-| OpenClaw | **No** `openclaw agent` |
-| Output | Bridge output JSON or strict JSON block in stdout |
-| Logging | No full prompt persist if contains secrets |
+### 7.1 Required properties
+
+| Property | Requirement |
+|----------|-------------|
+| Command family | Non-interactive Codex execution (single turn; no TUI drift) |
+| Auth | ChatGPT OAuth only — **no** provider API key (`OPENAI_API_KEY` forbidden) |
+| Workspace | Temporary workspace **outside** the target repo |
+| Context | Required files/content **inlined** into the prompt body — Codex must not discover/read repo files |
+| Prompt constraints | Explicit anti-tool-use: no shell, no tool calls, no file reads, no git, no network |
+| Output | JSON-only, single-turn, schema-enforced final message |
+| Persistence | Ephemeral session — **no** resume id recorded or reused |
+| Sandbox | Read-only — model-generated commands cannot mutate disk |
+| Repo mutation | **Forbidden** |
+| Runtime mutation | **Forbidden** |
+| n8n / workflow mutation | **Forbidden** (wf 40 / 41 untouched) |
+| OpenClaw `agent main` | **Forbidden** |
+| Cursor worker / auto commit-push | **Forbidden** |
+| PM-34 unlock | **Forbidden** |
+| Logging | No full prompt persist if secrets detected |
+
+### 7.2 What this profile authorizes
+
+- Read-only bridge **reasoning** only: tactical next-step proposal as JSON per §4.
+- Manual operator invocation under the properties above.
+
+### 7.3 What this profile does NOT authorize
+
+| Action | Status |
+|--------|--------|
+| Codex repo mutation / `codex exec` for implementation | **Not authorized** |
+| n8n integration or wf 40 / 41 edit | **Not authorized** |
+| PM-34 real worker | **Not authorized** |
+| Cursor worker automation | **Not authorized** |
+| OpenClaw `agent main` retry | **Not authorized** |
+| Provider API key configuration | **Not authorized** |
+| `codex resume` of interrupted sessions | **Not authorized** |
+
+### 7.4 V1 vs V2 distinction
+
+V1 was **PARTIAL-BLOCKED** ([session](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v1-partial-blocked.md)) due to agentic tool-use / form shape — **not** repo damage or security failure. V2 confirms inlined context + anti-tool-use prompt + non-interactive schema-enforced JSON satisfies this profile.
+
+### 7.5 Implementation snapshot (non-normative)
+
+Observed V2 implementation for Codex CLI v0.133.0: `codex exec` with read-only sandbox, ephemeral session, schema output, temp workdir — see [smoke V2 session](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v2-pass.md). Future Codex versions may differ in flags while preserving §7.1 properties.
 
 ---
 
-## 8. Manual smoke test definition (next gate — NOT executed here)
+## 8. Manual smoke test definition (V1/V2 — registered)
 
-**Gate name:** `codex-bridge-manual-readonly-smoke-v1`  
-**Host:** Ryzen (`asusdesktop`)  
+**Gate name:** `codex-bridge-manual-readonly-smoke`
+**Host:** Ryzen or operator workstation with Codex CLI + ChatGPT OAuth
 **Prerequisites:** Codex CLI auth OK; classifier API PASS; this contract committed.
 
 | Check | Criterion |
 |-------|-----------|
 | Input | One **low-risk** bridge input (docs-only objective, see §9.1) |
 | Classifier | Run classifier wrapper manually or use canned low `risk_classification` |
-| Codex | Single read-only Codex CLI invocation — **no** `codex exec` |
+| Codex | Single invocation per §7 properties — read-only, non-interactive, JSON-only |
 | OpenClaw | **No** `agent main` retry; gateway optional health-only |
 | Files | **Zero** modifications in `control-plane` workspace |
 | n8n | **Not** touched |
 | Output | Parseable bridge output JSON with `no_runtime_confirmation: true` |
 | Git | `git status --short` empty after test |
 
-**Fail closed:** any file change, exec, or API key prompt → register FAIL session, do not wire n8n.
+**Results registered:**
+
+| Version | Outcome | Session |
+|---------|---------|---------|
+| V1 | PARTIAL-BLOCKED / NON PASS — agentic tool-use | [smoke V1](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v1-partial-blocked.md) |
+| V2 | **PASS** — single-turn JSON, §7 properties | [smoke V2](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v2-pass.md) |
+
+**Fail closed:** any file change, unauthorized exec, or API key prompt → register FAIL session, do not wire n8n.
 
 ---
 
@@ -331,15 +374,15 @@ If Codex output (future) contains "add OPENAI_API_KEY" or "openclaw agent main w
 - [x] Purpose and roles defined  
 - [x] Input / output JSON schemas defined  
 - [x] Pre- and post-Codex deterministic rules defined  
-- [x] Manual smoke test **specified** (not executed)  
-- [x] Examples: low, medium, high, blocked (API key)  
-- [x] Next gate named: manual Codex CLI read-only smoke  
+- [x] Manual smoke test **specified** and **V2 PASS registered**
+- [x] Examples: low, medium, high, blocked (API key)
+- [x] Invocation profile §7 formalized from V2-proven properties
 - [x] Explicit: **design only**, no runtime, no PM-34 unlock  
 
 ---
 
 ## 12. Next gate
 
-**Manual Codex CLI read-only smoke** per §8 — register result in `docs/sessions/`; update FOUNDATION_STATUS only; do **not** edit PROJECT_VISION.md unless a separate vision gate is opened.
+**Local bridge wrapper design (docs-only)** — define a minimal wrapper contract (JSON in → §7 invocation → bridge output JSON out) before any n8n runtime integration. Register in `docs/sessions/`; update FOUNDATION_STATUS only.
 
-**Not authorized until smoke PASS:** n8n integration, PM-34, OpenClaw agent retry, provider API key, Cursor worker, auto loop.
+**Not authorized until wrapper design + separate runtime gate:** n8n integration, PM-34, OpenClaw agent retry, provider API key, Cursor worker, auto loop, Codex repo mutation.
