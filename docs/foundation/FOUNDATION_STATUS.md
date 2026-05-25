@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-25 (Codex bridge contract v1 + smoke V1 partial-blocked registered)
+**Updated:** 2026-05-25 (Codex bridge manual smoke V2 PASS — single-turn JSON, read-only)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
@@ -14,11 +14,12 @@
 | **OpenClaw/Codex bridge discovery** | **COMPLETE** | Codex-first — [discovery v1](../contracts/openclaw-codex-bridge-discovery-v1.md) |
 | **Codex bridge contract v1** | **DESIGN COMPLETE** | [codex-bridge-contract-v1](../contracts/codex-bridge-contract-v1.md) |
 | **Codex bridge manual smoke V1** | **PARTIAL-BLOCKED** | NON PASS — agentic tool-use vs JSON-only; repo clean; fallback graceful PASS; no `codex resume`; [session](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v1-partial-blocked.md) |
+| **Codex bridge manual smoke V2** | **PASS** | Single-turn JSON-only, inlined files, anti-tool-use prompt, `codex exec --ephemeral -s read-only --output-schema`; repo clean; no `codex resume`; [session](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v2-pass.md) |
 | **Provider API key policy** | **NO** | No OpenAI (or other) provider API keys for bridge/agent path |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged — not touched by bridge contract |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
 | **Public exposure** | none | no Funnel |
 | **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | **Codex bridge manual smoke V2** — design/execution: inlined files, anti-tool-use prompt, single-turn JSON in fenced block; read-only sandbox, no runtime escalation, no n8n, no PM-34 (V1 lessons in [smoke V1 session](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v1-partial-blocked.md)) |
+| **Next tactical step** | pending | **Bridge invocation profile (docs-only)** — wrap V2 shape (`codex exec --ephemeral -s read-only --output-schema`, inlined context, single-turn JSON) into contract v1 §7 future runtime profile; still no n8n, no wf 40/41, no PM-34, no provider API key, no OpenClaw `agent main`, no `codex resume` of V1 |
 
 Entry point: [PROJECT_VISION](PROJECT_VISION.md) (read-only; not modified by bridge contract task).
