@@ -86,7 +86,7 @@ JSON parsing after multi-case: **PASS**.
 
 ## Residual risks
 
-- API contract (schema validation, fallback) not yet defined — next tactical step is **docs-only wrapper design**.
+- Wrapper **contract** defined — [classifier-wrapper-v1](../contracts/classifier-wrapper-v1.md); runtime implementation not started.
 - Model drift / prompt sensitivity may change JSON reliability — re-smoke after prompt or model changes.
 - Production path still requires explicit gates before any n8n or unattended automation.
 
