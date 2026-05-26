@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-26 (post-n8n-read-only-inspection hardening — docs-only)
+**Updated:** 2026-05-26 (n8n payload preflight dry-run design packet — docs-only)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
@@ -53,11 +53,12 @@
 | **n8n read-only runtime decision closeout** | **DOCS COMPLETE** | Decision-prep phase closed on paper — [closeout](../decision-packets/n8n-read-only-runtime-decision-closeout.md) · [session](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-decision-batch-docs-only.md) |
 | **n8n read-only runtime inspection Tier A** | **PASS** (manual, list-only) | Operator UI Workflows list `/home/workflows`; count **5**; wf **40** Published/active; wf **41** backup off (no Published badge); n8n version **not visible** from allowed page — [pass](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-inspection-tier-a-pass.md) · [prior BLOCKED](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-inspection-tier-a.md) |
 | **Post-n8n-read-only-inspection hardening** | **HARDENING COMPLETE** | Proven vs not proven; hardening rules; gate matrix — [packet](../decision-packets/post-n8n-read-only-inspection-hardening.md) · [session](../sessions/2026-05-26-control-plane-post-n8n-read-only-inspection-hardening-docs-only.md) |
+| **n8n payload preflight dry-run design packet** | **DESIGN COMPLETE** | Phases 0–4; synthetic shape; PASS/FAIL; evidence model — [packet](../decision-packets/n8n-payload-preflight-dry-run-design-packet.md) · [session](../sessions/2026-05-26-control-plane-n8n-payload-preflight-dry-run-design-packet-docs-only.md) |
 | **Provider API key policy** | **NO** | No OpenAI (or other) provider API keys for bridge/agent path |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged — not touched by bridge contract |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
 | **Public exposure** | none | no Funnel |
 | **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | **n8n payload preflight dry-run design packet — docs-only** — design only; no payload send; no n8n UI/API; no workflow 40/41 mutation; no PM-34 unlock; `n8n_ready=false`; `pm34_unblocked=false`; no provider API key; no OpenClaw `agent main`; no `codex resume`; no Codex repo mutation; no Cursor worker automation; no deploy/tag/rollback; no unattended automation |
+| **Next tactical step** | pending | **n8n payload preflight dry-run examples — docs-only** — pass/fail synthetic JSON; no runtime; no payload send; no n8n UI/API; no workflow 40/41 mutation; no PM-34 unlock; `n8n_ready=false`; `pm34_unblocked=false`; no provider API key; no OpenClaw `agent main`; no `codex resume`; no Codex repo mutation; no Cursor worker automation; no deploy/tag/rollback; no unattended automation |
 
 Entry point: [PROJECT_VISION](PROJECT_VISION.md) (read-only; not modified by bridge contract task).
