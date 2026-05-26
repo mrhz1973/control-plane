@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-26 (operator decision n8n read-only runtime — docs-only)
+**Updated:** 2026-05-26 (n8n read-only runtime decision batch — docs-only closeout)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
@@ -49,6 +49,8 @@
 | **n8n read-only preflight closeout** | **DOCS COMPLETE** | Paper phase closed; runtime not authorized — [closeout](../decision-packets/n8n-read-only-preflight-closeout.md) · [session](../sessions/2026-05-26-control-plane-n8n-read-only-preflight-closeout-docs-only.md) |
 | **n8n read-only runtime gate packet** | **GATE PACKET COMPLETE** | Future Tier A scope, PASS/FAIL, evidence — [packet](../decision-packets/n8n-read-only-runtime-gate-packet.md) · [session](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-gate-packet-docs-only.md) |
 | **Operator decision — n8n read-only runtime** | **DECISION PACKET COMPLETE** | Options A/B/C; no runtime until operator chooses — [packet](../decision-packets/operator-decision-n8n-read-only-runtime-inspection.md) · [session](../sessions/2026-05-26-control-plane-operator-decision-n8n-read-only-runtime-inspection-docs-only.md) |
+| **n8n read-only runtime evidence template** | **DOCS COMPLETE** | Sanitized future session fields + abort markers — [template](../decision-packets/n8n-read-only-runtime-evidence-template.md) |
+| **n8n read-only runtime decision closeout** | **DOCS COMPLETE** | Decision-prep phase closed on paper — [closeout](../decision-packets/n8n-read-only-runtime-decision-closeout.md) · [session](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-decision-batch-docs-only.md) |
 | **Provider API key policy** | **NO** | No OpenAI (or other) provider API keys for bridge/agent path |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged — not touched by bridge contract |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |

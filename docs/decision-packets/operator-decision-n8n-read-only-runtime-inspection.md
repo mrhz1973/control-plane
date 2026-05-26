@@ -16,7 +16,7 @@
 - no automation authorization
 
 **Prerequisites:** [n8n read-only runtime gate packet](n8n-read-only-runtime-gate-packet.md) · [read-only preflight closeout](n8n-read-only-preflight-closeout.md) · [hardening](n8n-read-only-preflight-hardening.md)  
-**Related:** [FOUNDATION_STATUS](../foundation/FOUNDATION_STATUS.md)
+**Related:** [FOUNDATION_STATUS](../foundation/FOUNDATION_STATUS.md) · [evidence template](n8n-read-only-runtime-evidence-template.md) · [decision closeout](n8n-read-only-runtime-decision-closeout.md)
 
 ---
 
@@ -125,7 +125,7 @@ Future runtime session (`docs/sessions/YYYY-MM-DD-…-n8n-read-only-runtime-pass
 | 8 | **Sanitized evidence only** in git |
 | 9 | **Git status before/after** if control-plane docs updated |
 
-PASS/FAIL per [runtime gate packet](n8n-read-only-runtime-gate-packet.md).
+PASS/FAIL per [runtime gate packet](n8n-read-only-runtime-gate-packet.md). Use field structure from [evidence template](n8n-read-only-runtime-evidence-template.md).
 
 ---
 
