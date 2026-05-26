@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.0 — 2026-05-25  
-**Versione precedente:** 1.0 — 2026-05-25 (sostituita)  
+**Versione:** 2.2 — 2026-05-27  
+**Versione precedente:** 2.1 — 2026-05-27 (sostituita)  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -43,7 +43,7 @@ La tabella seguente è un riferimento operativo del principio: per ogni componen
 | Workflow 40 polling | Apertura manuale GitHub per vedere nuovi commit | ATTIVO |
 | Telegram base | Verifica manuale "è arrivato il commit?" | ATTIVO |
 | Diff summary Telegram (workflow 42) | Apertura GitHub per leggere cosa è cambiato | ATTIVO |
-| Codex via OpenClaw | Pensare manualmente il prossimo prompt | NON ATTIVO |
+| Codex CLI (OAuth ChatGPT Plus) | Pensare manualmente il prossimo prompt | NON ATTIVO |
 | Ollama classifier | Decidere manualmente se un task è sicuro | NON ATTIVO |
 | Cursor CLI | Copiare/incollare il prompt nell'IDE | NON ATTIVO |
 | Auto-aggio (futuro) | Scrivere `aggio` per ogni completamento | NON ATTIVO |
@@ -62,7 +62,7 @@ Componenti con ruoli rigidi. Nessun componente deve assorbire silenziosamente il
 |---|---|---|
 | **GitHub** | Source of truth: codice, piani, documenti, stato verificabile | Cloud |
 | **n8n** | Control-plane operativo: scheduler, polling/webhook, gate, Telegram I/O, stato, routing esterno | VPS IONOS |
-| **Codex via OpenClaw** | Orchestratore operativo: legge contesto e genera il prossimo prompt strutturato | PC Ryzen casa, via OpenClaw confinato |
+| **Codex CLI (OAuth ChatGPT Plus, ephemeral)** | Orchestratore operativo: legge contesto e genera il prossimo prompt strutturato | PC Ryzen casa, ephemeral single-shot |
 | **Ollama** | Classifier / risk scorer / prompt compressor locale. Non implementa codice | PC Ryzen primario; Dell fallback futuro |
 | **Cursor CLI** | Implementatore: esegue task, modifica file, valida, committa e pusha | PC Ryzen fase 1; Dell futuro per job headless |
 | **Telegram** | Canale umano: notifica, gate, escalation e Decision Packet | Bot dedicato gestito da n8n |
@@ -70,7 +70,11 @@ Componenti con ruoli rigidi. Nessun componente deve assorbire silenziosamente il
 
 ### Confine importante
 
-Questa foundation descrive la **visione target aggiornata** del progetto `control-plane`: Codex assume il ruolo di orchestratore tattico, Cursor quello di implementatore, Ollama quello di classificatore. Alcuni documenti precedenti descrivevano Codex come implementer futuro o OpenClaw come bridge strettamente passivo; tali documenti restano utili come storico e sicurezza, ma questa foundation prevale come destinazione architetturale.
+Il **model path target ufficiale** è **Codex CLI diretto via OAuth ChatGPT Plus** (ephemeral single-shot sul Ryzen): orchestratore tattico, non implementatore, non worker n8n-ready. La scelta deriva da discovery v1 e dal **Codex bridge V2 PASS** (wrapper locale, fail-closed, senza provider API key a consumo).
+
+**OpenClaw gateway** resta **backlog / transport confinato opzionale** (loopback, browser bridge storico) — **non** è il model path target.
+
+Questa foundation v2.2 prevale come destinazione architetturale: Codex CLI orchestratore, Cursor implementatore, Ollama classificatore. Documenti precedenti che citano «Codex via OpenClaw» come path default restano utili come storico e sicurezza.
 
 ---
 
@@ -123,8 +127,8 @@ Non deve:
 Ruolo target fase 1:
 
 - Ollama primario con modello classifier più ricco (`qwen3:14b` o equivalente sostenibile);
-- OpenClaw confinato su loopback locale;
-- Codex via OAuth ChatGPT Plus, senza provider API key a consumo;
+- Codex CLI via OAuth ChatGPT Plus, ephemeral single-shot, senza provider API key a consumo;
+- OpenClaw confinato su loopback locale solo come transport/backlog opzionale;
 - Cursor CLI per esecuzione task;
 - Tailscale per raggiungibilità privata da n8n.
 
@@ -132,7 +136,7 @@ Se il Ryzen è offline, n8n non deve inventare esecuzione: deve applicare il pri
 
 ### 4.3 Dell Latitude 5430 — nodo always-on/fallback futuro
 
-Ruolo futuro: nodo always-on a basso consumo, fallback Ollama leggero, OpenClaw bridge confinato, Cursor CLI job worker. Non attivato in fase 1.
+Ruolo futuro: nodo always-on a basso consumo, fallback Ollama leggero, OpenClaw come transport/browser bridge opzionale confinato (non model path), Cursor CLI job worker. Non attivato in fase 1.
 
 ### 4.4 PC lavoro
 
@@ -151,7 +155,7 @@ Il PC lavoro è macchina operativa umana, non nodo produzione del loop. Può ser
     ↓
 [4] n8n chiama via Tailscale il nodo Ryzen
     ↓
-[5] OpenClaw/Codex legge il contesto e genera il prossimo prompt operativo
+[5] Codex CLI legge il contesto e genera il prossimo prompt operativo
     ↓
 [6] Ollama classifica rischio, routing e necessità di approvazione
     ↓
@@ -263,12 +267,12 @@ Regola architetturale, non solo economica:
 
 n8n è workflow orchestration, queue, polling, GitHub, notification e file coordination. n8n **non deve** chiamare provider AI API a pagamento (OpenAI, Anthropic, OpenRouter, ecc.) come comportamento di default.
 
-Quando il loop ha bisogno di "intelligenza AI", il flusso è: n8n → (via Tailscale) → nodo locale (Ollama / OpenClaw+Codex) → ritorno
+Quando il loop ha bisogno di "intelligenza AI", il flusso è: n8n → (via Tailscale) → nodo locale (Ollama / Codex CLI diretto) → ritorno
 
 Mai:
 n8n → API OpenAI pagata → ritorno
 
-L'uso di API pagate richiede un gate manuale esplicito e una decisione di costo registrata. Per default tutto passa per modelli locali (Ollama) o per OAuth ChatGPT Plus (Codex via OpenClaw).
+L'uso di API pagate richiede un gate manuale esplicito e una decisione di costo registrata. Per default tutto passa per modelli locali (Ollama) o per OAuth ChatGPT Plus (Codex CLI diretto).
 
 ### 7.6 Fallback graceful
 
@@ -280,7 +284,7 @@ Esempi pratici:
 
 - Se Ollama classifier non risponde → il task non viene auto-promosso a low-risk; default safe = Telegram gate manuale.
 - Se Tailscale è down → n8n non può raggiungere il nodo locale; default safe = Telegram all'utente "loop runtime offline, gestisci manualmente".
-- Se Codex via OpenClaw esaurisce quota o errori OAuth → default safe = ChatGPT in modalità manuale dall'utente.
+- Se Codex CLI esaurisce quota o errori OAuth → default safe = ChatGPT in modalità manuale dall'utente.
 - Se Cursor CLI fallisce un task → il prompt resta su GitHub come plan; default safe = utente apre Cursor IDE manualmente.
 - Se n8n crash sul VPS → polling si ferma; default safe = utente nota dal silenzio Telegram e ripristina.
 
@@ -461,17 +465,17 @@ Questa sezione contiene tattiche, non la visione. Possono cambiare senza cambiar
 6. **Local path preflight** — **COMPLETATO (read-only 2026-05-25)** — [session](../sessions/2026-05-25-control-plane-openclaw-codex-local-path-readonly-preflight.md).
 7. **OpenClaw gateway loopback (manual)** — **COMPLETATO (PASS 2026-05-25)** — [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md).
 8. **OpenClaw agent Step A liveness** — **BLOCKED (2026-05-25)** — read-only ping via gateway; agent `main` did not complete; pending scope + embedded fallback + OpenAI provider API key missing; **policy: no provider API key**. [session](../sessions/2026-05-25-control-plane-openclaw-agent-step-a-provider-api-key-blocked.md).
+9. **Diff-summary Telegram MVP workflow 42** — **COMPLETATO/ATTIVO (PASS 2026-05-27)** — target `cursor-coordinate-converter`, nuovo commit automatico `727db3e`, 1 Telegram, 0 duplicati. [session](../sessions/2026-05-27-control-plane-workflow-42-final-new-commit-automatic-pass.md).
 
 **Prossimo passo tattico:**
 
-9. **No-provider-API bridge — design & discovery (docs-only)** — Codex CLI/OAuth/ChatGPT subscription path, or OpenClaw profile without OpenAI API provider, or local bridge; **no** agent Step A retry, **no** n8n/worker/PM-34, **no** Tailscale gateway exposure.
+**Codex CLI direct path** — real worker discovery/preflight docs+runtime-gated; no provider API key, no PM-34 unlock without proof and explicit gate.
 
 **Backlog tattico:**
 
-10. **Diff-summary Telegram MVP** (opzionale, prima tattica utile): quando arriva un commit su `dev-method` o `cursor-coordinate-converter`, n8n legge il diff e manda un riepilogo italiano 2–3 righe su Telegram. Primo prodotto utile, non la visione completa.
-11. **Loop end-to-end manuale**: simulare il ciclo completo senza auto-esecuzione permanente.
-12. **Loop automatico minimo**: solo dopo prove reali e confini chiari, collegare i pezzi per task low-risk.
-13. **Dell fallback fase 2**: attivare il Dell come nodo always-on/fallback solo dopo che il loop sul Ryzen produce valore reale.
+10. **Loop end-to-end manuale**: simulare il ciclo completo senza auto-esecuzione permanente.
+11. **Loop automatico minimo**: solo dopo prove reali e confini chiari, collegare i pezzi per task low-risk.
+12. **Dell fallback fase 2**: attivare il Dell come nodo always-on/fallback solo dopo che il loop sul Ryzen produce valore reale.
 
 Nessun passo tattico crea automaticamente un nuovo PM o sblocca PM-34. Le attivazioni runtime restano gate espliciti.
 
@@ -544,6 +548,7 @@ Perché senza questo, ogni volta che apro una nuova chat con un'AI devo ri-spieg
 - ARCHITECTURE.md separato con specifiche hardware complete.
 - Report qualità post-task e metriche su tempo risparmiato.
 - Miglioramento della sintesi commit/diff Telegram con classifier locale o Codex quando utile.
+- OpenClaw come transport/browser bridge opzionale confinato, non model path target.
 
 ---
 
@@ -554,6 +559,7 @@ Perché senza questo, ogni volta che apro una nuova chat con un'AI devo ri-spieg
 | 1.0 | 2026-05-25 | Prima foundation. Architettura target Codex+Ollama+Cursor+Tailscale, livelli 0/1/2/3 e A/B/C, decisioni 23 maggio. |
 | 2.0 | 2026-05-25 | Integrato Decision Packet (sezione 7.7), fallback graceful (sezione 7.6), n8n no provider APIs (sezione 7.5), tabella micro-interazioni eliminate (sezione 1.1). Spostati dettagli hardware Dell/Ryzen completi a futuro `ARCHITECTURE.md`. Parte semplice arricchita con menzione Decision Packet e fallback. |
 | 2.1 | 2026-05-27 | Marcato Diff-summary Telegram MVP come ATTIVO dopo workflow 42 PASS su nuovo commit automatico senza duplicati. |
+| 2.2 | 2026-05-27 | Riallineata architettura target a Codex CLI diretto via OAuth ChatGPT Plus; OpenClaw resta transport/backlog opzionale. Corretto header versione dopo v2.1 e spostato Diff-summary Telegram MVP nei completati tattici. |
 
 ---
 
