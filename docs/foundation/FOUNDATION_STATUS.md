@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-26 (n8n payload validation batch — docs-only closeout)
+**Updated:** 2026-05-26 (n8n read-only preflight design packet — docs-only)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
@@ -44,11 +44,12 @@
 | **Synthetic payload validation examples** | **DOCS COMPLETE** | Valid + invalid synthetic deltas — [examples](../decision-packets/synthetic-payload-validation-examples.md) · [session](../sessions/2026-05-26-control-plane-synthetic-payload-validation-examples-docs-only.md) |
 | **n8n payload validation checklist** | **DOCS COMPLETE** | Pre-validation, allowlist, denylist, abort, reviewer result — [checklist](../decision-packets/n8n-payload-validation-checklist.md) |
 | **n8n payload contract closeout** | **DOCS COMPLETE** | Design phase closed on paper — [closeout](../decision-packets/n8n-payload-contract-closeout.md) · [session](../sessions/2026-05-26-control-plane-n8n-payload-validation-batch-docs-only.md) |
+| **n8n read-only preflight design packet** | **DESIGN PACKET COMPLETE** | Future read-only metadata scope, exclusions, abort, evidence — [packet](../decision-packets/n8n-read-only-preflight-design-packet.md) · [session](../sessions/2026-05-26-control-plane-n8n-read-only-preflight-design-packet-docs-only.md) |
 | **Provider API key policy** | **NO** | No OpenAI (or other) provider API keys for bridge/agent path |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged — not touched by bridge contract |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
 | **Public exposure** | none | no Funnel |
 | **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | **n8n read-only preflight design packet (docs-only)** — no n8n runtime; no workflow 40/41 mutation; no PM-34 unlock; no live Codex negative tests without separate gate; no n8n runtime integration; no provider API key; no OpenClaw `agent main`; no `codex resume`; no Codex repo mutation; no Cursor worker automation; no deploy/tag/rollback; no unattended automation |
+| **Next tactical step** | pending | **n8n read-only preflight hardening (docs-only)** — no n8n runtime; no workflow 40/41 mutation; no PM-34 unlock; no live Codex negative tests without separate gate; no n8n runtime integration; no provider API key; no OpenClaw `agent main`; no `codex resume`; no Codex repo mutation; no Cursor worker automation; no deploy/tag/rollback; no unattended automation |
 
 Entry point: [PROJECT_VISION](PROJECT_VISION.md) (read-only; not modified by bridge contract task).
