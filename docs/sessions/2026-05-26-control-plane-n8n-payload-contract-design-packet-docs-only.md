@@ -1,9 +1,10 @@
 # n8n payload contract design packet — docs-only
 
 **Date:** 2026-05-26  
-**Status:** **DESIGN PACKET ONLY** — no runtime, no n8n, no Codex  
-**Packet:** [n8n-payload-contract-design-packet](../decision-packets/n8n-payload-contract-design-packet.md)  
-**Predecessor:** [n8n preflight boundary design](2026-05-26-control-plane-n8n-preflight-boundary-design-packet-docs-only.md)
+**Repo:** `mrhz1973/control-plane`  
+**Branch:** `main`  
+**Status:** **DESIGN PACKET ONLY** — no runtime, no n8n, no credentials  
+**Packet:** [n8n-payload-contract-design-packet](../decision-packets/n8n-payload-contract-design-packet.md)
 
 ---
 
@@ -20,33 +21,34 @@
 
 | File | Change |
 |------|--------|
-| `docs/decision-packets/n8n-payload-contract-design-packet.md` | New contract design |
-| `docs/foundation/FOUNDATION_STATUS.md` | Row + next step |
+| `docs/decision-packets/n8n-payload-contract-design-packet.md` | v1 contract (allowlist, denylist, redaction, example) |
+| `docs/foundation/FOUNDATION_STATUS.md` | DESIGN PACKET COMPLETE row |
 | `docs/sessions/2026-05-26-control-plane-n8n-payload-contract-design-packet-docs-only.md` | This session |
-
-PROJECT_VISION.md, wrapper, fixtures, n8n **not** modified.
 
 ---
 
 ## Summary
 
-Defines n8n-facing payload v1: allowlist, denylist, redaction, abort conditions, synthetic example, and future validation checks. Does not authorize n8n runtime or payload preflight execution.
+Defines n8n-facing payload v1 with explicit `wrapper_trace` booleans (`n8n_invoked`, `codex_invoked`, `wrapper_modified_repo`, `pm34_unblocked`, `provider_api_key_used`), field rules, `REDACTED_*` placeholders, abort conditions, safe synthetic JSON, and manual validation checklist. Paper-only; no n8n required to validate.
 
 ---
 
-## Safety decisions
+## Attestation
 
-| Decision | Rationale |
-|----------|-----------|
-| `n8n_invoked` must stay false | Until separate runtime gate |
-| wf/PM-34 denied in payload | No mutation/unlock signals |
-| Example is synthetic | No live n8n IDs or secrets |
+| Check | Result |
+|-------|--------|
+| No runtime | Yes |
+| No n8n execution/API/UI | Yes |
+| No credentials read/mutate | Yes |
+| No PM-34 unlock | Yes |
+| No wf 40/41 mutation | Yes |
+| No wrapper/fixture changes | Yes |
 
 ---
 
 ## Remaining gates
 
-n8n runtime, payload preflight runtime, wf 40/41, PM-34, live Codex negatives — see packet.
+n8n runtime, payload preflight, wf 40/41, PM-34 — see packet.
 
 ---
 
@@ -56,21 +58,21 @@ n8n runtime, payload preflight runtime, wf 40/41, PM-34, live Codex negatives �
 
 ---
 
-## Verification commands
+## Validation commands run
 
 ```text
+git rev-parse --show-toplevel
+git branch --show-current
 git status --short
 git fetch origin main && git pull --ff-only origin main
 git diff --check
-git diff -- <three allowed paths>
-git commit / git push origin main
-git log -1 --oneline -- <file>  (local + origin/main)
+git diff -- docs/decision-packets/n8n-payload-contract-design-packet.md docs/foundation/FOUNDATION_STATUS.md docs/sessions/2026-05-26-control-plane-n8n-payload-contract-design-packet-docs-only.md
 ```
 
-**Commit:** recorded in final report after push.
+**Commits:** initial `d40db3f`; alignment commit in final report if applied.
 
 ---
 
-## Security / runtime confirmation
+## Security confirmation
 
-No n8n, Codex, secrets, or wrapper/fixture changes.
+No secrets, tokens, chat IDs, webhook URLs, OAuth, PAT, or live n8n execution IDs in committed docs.

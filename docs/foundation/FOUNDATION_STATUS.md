@@ -39,7 +39,7 @@
 | **Post-local-only integration hardening** | **DOCS COMPLETE** | Proven vs gaps; no n8n/PM-34 authorization — [packet](../decision-packets/post-local-only-integration-hardening.md) · [session](../sessions/2026-05-26-control-plane-post-local-only-integration-hardening-docs-only.md) |
 | **n8n-free local integration readiness closeout** | **DOCS COMPLETE** | Local phase closed; n8n not authorized — [closeout](../decision-packets/n8n-free-local-integration-readiness-closeout.md) · [session](../sessions/2026-05-26-control-plane-n8n-free-local-integration-readiness-closeout-docs-only.md) |
 | **n8n preflight boundary design packet** | **DESIGN PACKET COMPLETE** | n8n preflight scope, payload principles, exclusions — [packet](../decision-packets/n8n-preflight-boundary-design-packet.md) · [session](../sessions/2026-05-26-control-plane-n8n-preflight-boundary-design-packet-docs-only.md) |
-| **n8n payload contract design packet** | **DESIGN PACKET COMPLETE** | Allowlist, denylist, redaction, validation — [packet](../decision-packets/n8n-payload-contract-design-packet.md) · [session](../sessions/2026-05-26-control-plane-n8n-payload-contract-design-packet-docs-only.md) |
+| **n8n payload contract design packet** | **DESIGN PACKET COMPLETE** | v1 allowlist/denylist, wrapper_trace booleans, redaction, synthetic example — [packet](../decision-packets/n8n-payload-contract-design-packet.md) · [session](../sessions/2026-05-26-control-plane-n8n-payload-contract-design-packet-docs-only.md) |
 | **Provider API key policy** | **NO** | No OpenAI (or other) provider API keys for bridge/agent path |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged — not touched by bridge contract |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |

@@ -7,14 +7,14 @@
 ## Status
 
 - **DESIGN PACKET ONLY**
-- no runtime executed by this task
+- no runtime executed
 - no n8n execution
 - no n8n UI / API / credential access
 - no workflow 40/41 mutation
+- no workflow import/export
 - no PM-34 unlock
-- no Codex execution by this task
-- no wrapper code changes
-- no fixture changes
+- no Codex runtime
+- no wrapper or fixture changes
 - explicit gate required before any payload runtime / preflight execution
 
 **Related:** [n8n preflight boundary](n8n-preflight-boundary-design-packet.md) · [FOUNDATION_STATUS](../foundation/FOUNDATION_STATUS.md)
@@ -23,177 +23,188 @@
 
 ## Purpose
 
-The [n8n preflight boundary design packet](n8n-preflight-boundary-design-packet.md) defines **what** a future n8n preflight may discuss on paper. This packet defines **how** a future n8n-facing payload would be shaped: allowlist, denylist, redaction, abort rules, and evidence requirements.
+Define a **synthetic/sanitized n8n-facing payload contract** for a future integration handoff from local wrapper evidence.
 
-| Fact | Implication |
-|------|-------------|
-| Preflight boundary defined | Field-level contract can be specified |
-| Payload contract | **Docs-only** — no serializer, no n8n call |
-| n8n runtime | Still **unauthorized** |
-| Workflow 40/41 | **Untouched** |
-| PM-34 | **Gated** |
+| Principle | Rule |
+|-----------|------|
+| Paper-only | Payload contract is validated by **documentation review**, not by calling n8n |
+| No n8n dependency | This document does **not** require n8n to exist or run to be considered complete |
+| Boundary prerequisite | [n8n preflight boundary](n8n-preflight-boundary-design-packet.md) already scoped exclusions |
+| Runtime | **Unauthorized** — n8n, wf 40/41 mutation, PM-34 unlock remain gated |
 
 ---
 
-## Allowed payload fields
+## Allowed payload fields (v1)
 
-Future payloads may include **only** these top-level fields (v1 contract):
-
-| Field | Type | Notes |
-|-------|------|-------|
-| `schema_version` | string | e.g. `"n8n-payload-v1"` |
-| `request_id` | string | From bridge; no PII |
-| `status` | string | `pass` \| `needs_human` \| `blocked` \| `failed` |
-| `summary` | string | Sanitized text; max length TBD in hardening |
-| `recommended_next_step` | string | Must not imply n8n execution (validated) |
+| Field | Type | Role |
+|-------|------|------|
+| `schema_version` | string | Contract version identifier |
+| `request_id` | string | Synthetic / non-secret identifier |
+| `status` | string | Safe enum-like value (see field rules) |
+| `summary` | string | Short sanitized text |
+| `recommended_next_step` | string | Docs / gate-only text only |
 | `human_gate_required` | boolean | |
-| `no_runtime_confirmation` | boolean | Must be `true` until separate runtime gate |
-| `blocked_actions` | string[] | From bridge; enum-like strings only |
-| `risk_notes` | string | Sanitized; no secrets |
-| `wrapper_trace` | object | **Booleans only** — see trace allowlist below |
-| `source_session_path` | string | Repo-relative path under `docs/sessions/` |
-| `source_commit` | string | Short git SHA |
-| `generated_at` | string | ISO-8601 UTC |
-| `payload_mode` | string | `"synthetic"` \| `"sanitized"` only |
+| `no_runtime_confirmation` | boolean | Must remain `true` in this phase |
+| `blocked_actions` | string[] | Forbidden / gated action labels |
+| `risk_notes` | string | Sanitized notes only |
+| `wrapper_trace` | object | Explicit booleans only (see below) |
+| `source_session_path` | string | Repo-relative `docs/sessions/` path |
+| `source_commit` | string | Git SHA only (no secret-bearing URL) |
+| `generated_at` | string | ISO-8601 timestamp |
+| `payload_mode` | string | Safe mode label (see field rules) |
 
-### `wrapper_trace` allowlist (booleans only)
+### `wrapper_trace` (v1 required booleans when object present)
 
-| Key | Required when present |
-|-----|----------------------|
-| `codex_invoked` | optional |
-| `n8n_invoked` | optional — must be `false` until n8n runtime gate |
-| `openclaw_invoked` | optional |
-| `repo_mutation_attempted` | optional |
-| `codex_transport_used` | optional |
-| `codex_workdir_is_temp` | optional |
-| `codex_resume_used` | optional |
-| `mock_codex_output_used` | optional |
+| Key | Phase default |
+|-----|----------------|
+| `n8n_invoked` | **`false`** until future n8n runtime gate |
+| `codex_invoked` | `false` unless explicitly synthetic example |
+| `wrapper_modified_repo` | **`false`** |
+| `pm34_unblocked` | **`false`** |
+| `provider_api_key_used` | **`false`** |
 
-No other keys under `wrapper_trace` without a new schema version and gate.
+Optional bridge-mapped booleans (future hardening may align names): `codex_transport_used`, `codex_resume_used`, `mock_codex_output_used` — only with schema bump and gate.
 
-**Omitted by design:** `proposed_prompt_for_cursor`, `codex_result` body, raw fixture paths, `fixture_path` absolute values.
+**Omitted:** `proposed_prompt_for_cursor`, `codex_result` bodies, live fixture absolute paths.
+
+---
+
+## Field rules
+
+| Field | Rule |
+|-------|------|
+| `schema_version` | Fixed string, e.g. `"n8n-payload-v1"` |
+| `request_id` | Synthetic; no PII; no live n8n execution id |
+| `status` | One of: `design_only`, `blocked`, `ready_for_manual_review` — or bridge-mapped safe class documented in hardening |
+| `summary` | Short sanitized text; no secrets; no executable commands |
+| `recommended_next_step` | Gate/docs language only; **no** executable runtime command |
+| `human_gate_required` | Boolean |
+| `no_runtime_confirmation` | Boolean; **must be `true`** in this phase |
+| `blocked_actions` | Array of enum-like strings; no credential names |
+| `risk_notes` | Sanitized; no tokens |
+| `wrapper_trace` | All listed booleans explicit when object present |
+| `source_session_path` | Repo-relative under `docs/sessions/` only |
+| `source_commit` | Short or full SHA; no tokenized remote URL |
+| `generated_at` | Timestamp only |
+| `payload_mode` | One of: `design_only`, `synthetic_fixture`, `redacted_sample` |
 
 ---
 
 ## Denied payload fields
 
-The following must **never** appear in an n8n-facing payload (key name or value pattern):
+Must **never** appear (key or value):
 
-| Denied | Examples / patterns |
-|--------|---------------------|
-| API keys | `api_key`, `*_api_key`, `secret` |
-| Provider API keys | `openai_api_key`, `provider_api_key` |
-| OAuth tokens / material | `oauth`, `access_token`, `refresh_token` |
-| PATs | `pat`, `personal_access_token` |
-| Webhook URLs | `webhook`, `hooks.slack.com`, n8n webhook paths |
-| Chat IDs | `chat_id`, `telegram_chat_id` |
-| Tokenized URLs | query params `token=`, `sig=` |
-| Auth URLs | login links with embedded secrets |
-| Raw prompts with secrets | full Codex prompt bodies |
-| n8n credential names/values | credential vault fields |
-| Live execution IDs | n8n execution UUIDs from production |
-| Workflow export JSON | wf 40/41 JSON blobs |
-| Local absolute paths | `C:\`, `/home/`, drive letters — use repo-relative or placeholder |
-| Workflow mutation signals | `import_workflow`, `activate_workflow`, wf patch ops |
-| PM-34 unlock signals | `pm34_unlock`, `unlock_pm34` |
-| `proposed_prompt_for_cursor` | non-null values |
+| Category | Denied |
+|----------|--------|
+| Secrets | API keys, provider API keys, OAuth tokens/material, PAT, passwords |
+| Messaging | Webhook URLs, chat IDs |
+| URLs | Tokenized URLs, auth URLs with embedded secrets |
+| Prompts | Raw prompts containing secrets |
+| n8n | Credential names/values, live execution IDs |
+| Workflows | Workflow export JSON; any field implying workflow mutation |
+| PM-34 | Any field implying PM-34 unlock |
+| Paths | Local absolute paths not sanitized |
+| Automation | Fields requiring n8n execution to validate this document |
+| Cursor bridge | `proposed_prompt_for_cursor` (any value) |
 
-**Fail-closed:** Any denied key at any depth → abort payload construction.
+**Fail-closed:** Denied key at any depth → abort payload construction.
 
 ---
 
 ## Redaction rules
 
-| Rule | Behavior |
-|------|----------|
-| Secret-shaped keys | Reject payload if key matches denylist (case-insensitive substring on key) |
-| Raw tokens / URLs | Never include; strip or abort |
-| Absolute paths | Replace with `"<redacted-local-path>"` or repo-relative only |
-| Evidence paths | Repo-relative only, e.g. `docs/sessions/2026-05-26-....md` |
-| `proposed_prompt_for_cursor` | Omit or explicit `null` — prefer omit in n8n payload |
-| `n8n_invoked` | Must be `false` (or omitted with validator default false) until separate n8n runtime gate |
-| `recommended_next_step` | Reject if matches unsafe patterns: `invoke n8n`, `run workflow`, `PM-34 unlock`, `provider API key` |
-| Summaries | Truncate long text; no paste of CLI stderr with tokens |
+| Input pattern | Output placeholder |
+|---------------|-------------------|
+| Secret-like values | `REDACTED` |
+| Tokenized / signed / auth URLs | `REDACTED_URL` |
+| Chat IDs | `REDACTED_CHAT_ID` |
+| Credential names/values | `REDACTED_CREDENTIAL` |
+| Local absolute paths | Repo-relative if safe; else `REDACTED_LOCAL_PATH` |
+| Live n8n execution IDs | `REDACTED_EXECUTION_ID` |
+| Raw prompts with secret-shaped content | **Omit entirely** — do not partial-commit |
+
+Additional rules:
+
+- `n8n_invoked` must remain `false` until separate n8n runtime gate
+- `recommended_next_step` abort if implies: invoke n8n, run workflow, unlock PM-34, configure provider API key
 
 ---
 
 ## Abort conditions
 
-Abort future payload construction if:
+Abort payload construction if:
 
 | Condition | Action |
 |-----------|--------|
 | Any denied field appears | STOP |
+| Payload implies n8n execution | STOP |
+| Payload implies workflow 40/41 mutation | STOP |
+| Payload implies credential access | STOP |
+| Payload implies PM-34 unlock | STOP |
+| Payload requires provider API key | STOP |
+| Payload requires unattended automation | STOP |
 | `no_runtime_confirmation` missing or `false` | STOP |
-| `recommended_next_step` implies n8n execution | STOP |
-| Workflow 40/41 mutation referenced as action | STOP |
-| PM-34 unlock referenced | STOP |
-| Provider API key referenced | STOP |
-| Credential access referenced | STOP |
-| Unattended automation referenced | STOP |
-| `n8n_invoked: true` without explicit n8n runtime gate | STOP |
-| Evidence cannot be verified (dirty workspace, missing session) | STOP |
+| Evidence cannot be verified | STOP |
+| Workspace becomes dirty outside allowed paths | STOP |
 
 ---
 
 ## Example synthetic payload
 
-Safe illustrative JSON (no secrets, no live IDs, `n8n_invoked: false`):
-
 ```json
 {
   "schema_version": "n8n-payload-v1",
-  "request_id": "dry-run-v1-codex-readonly-success-path",
-  "status": "pass",
-  "summary": "Local wrapper integration dry-run: live Codex read-only path passed with fail-closed trace.",
-  "recommended_next_step": "Proceed only under explicit human gate; do not invoke n8n or mutate workflows.",
+  "request_id": "synthetic-integration-closeout-001",
+  "status": "design_only",
+  "summary": "Paper-only payload example for contract review. No n8n call required.",
+  "recommended_next_step": "Proceed to n8n payload contract hardening docs-only under explicit human gate.",
   "human_gate_required": true,
   "no_runtime_confirmation": true,
-  "blocked_actions": ["n8n integration or invocation"],
-  "risk_notes": "Synthetic example for contract review only.",
+  "blocked_actions": ["n8n runtime", "workflow 40/41 mutation", "PM-34 unlock"],
+  "risk_notes": "Synthetic fixture; not derived from live n8n.",
   "wrapper_trace": {
-    "codex_invoked": true,
     "n8n_invoked": false,
-    "openclaw_invoked": false,
-    "repo_mutation_attempted": false,
-    "codex_transport_used": true,
-    "codex_workdir_is_temp": true,
-    "codex_resume_used": false,
-    "mock_codex_output_used": false
+    "codex_invoked": false,
+    "wrapper_modified_repo": false,
+    "pm34_unblocked": false,
+    "provider_api_key_used": false
   },
   "source_session_path": "docs/sessions/2026-05-26-control-plane-local-only-integration-dry-run.md",
   "source_commit": "f17f407",
   "generated_at": "2026-05-26T12:00:00Z",
-  "payload_mode": "synthetic"
+  "payload_mode": "synthetic_fixture"
 }
 ```
 
 ---
 
-## Future validation checks
+## Validation checks (manual checklist)
 
-Before any payload is committed or sent (future gated step):
+Future implementers must confirm before any payload commit or send:
 
-| # | Check |
-|---|--------|
-| 1 | `schema_version` present and recognized |
-| 2 | Only allowlisted top-level fields |
-| 3 | Denied fields absent (recursive key scan) |
-| 4 | `no_runtime_confirmation === true` |
-| 5 | `human_gate_required === true` when `status` is `needs_human` or `blocked` |
-| 6 | `wrapper_trace.n8n_invoked === false` if present |
-| 7 | `source_session_path` repo-relative under `docs/` |
-| 8 | `payload_mode` is `synthetic` or `sanitized` only |
-| 9 | `recommended_next_step` passes unsafe-pattern scan |
-| 10 | No absolute local paths in any string value |
+- [ ] `schema_version` present
+- [ ] Only allowlisted top-level fields
+- [ ] No denied fields (recursive key scan)
+- [ ] `no_runtime_confirmation === true`
+- [ ] `wrapper_trace.n8n_invoked === false`
+- [ ] `wrapper_trace.wrapper_modified_repo === false`
+- [ ] `wrapper_trace.pm34_unblocked === false`
+- [ ] `wrapper_trace.provider_api_key_used === false`
+- [ ] `source_session_path` repo-relative under `docs/sessions/`
+- [ ] `payload_mode` is `design_only`, `synthetic_fixture`, or `redacted_sample`
+- [ ] No runtime executed to produce this packet review artifact
+- [ ] No n8n access (API/UI/credentials)
+- [ ] Workflow 40/41 untouched
+- [ ] PM-34 unchanged
+- [ ] No secrets, tokens, chat IDs, webhook URLs, OAuth, PAT, live execution IDs
 
 ---
 
-## Recommended next step
+## Recommended next gate
 
 **n8n payload contract hardening (docs-only)**
 
-**Rationale:** Before any runtime or n8n-facing preflight, harden field rules, edge cases, and additional safe examples — still docs-only.
+This still does **not** authorize n8n runtime, payload preflight runtime, workflow mutation, or PM-34 unlock.
 
 ---
 
@@ -217,14 +228,3 @@ Before any payload is committed or sent (future gated step):
 | Payload preflight runtime | **Gated** |
 
 This design packet does **NOT** open any gate above.
-
----
-
-## Acceptance criteria (this packet)
-
-- [x] Allowlist and denylist defined
-- [x] Redaction and abort rules specified
-- [x] Safe synthetic example included
-- [x] Future validation checks listed
-- [x] Does not authorize n8n runtime
-- [x] No runtime in this task
