@@ -1,6 +1,6 @@
 # Foundation status (v2.0)
 
-**Updated:** 2026-05-26 (n8n read-only runtime decision batch — docs-only closeout)
+**Updated:** 2026-05-26 (n8n read-only runtime inspection Tier A — BLOCKED)
 
 | Layer | Status | Notes |
 |-------|--------|--------|
@@ -51,11 +51,12 @@
 | **Operator decision — n8n read-only runtime** | **DECISION PACKET COMPLETE** | Options A/B/C; no runtime until operator chooses — [packet](../decision-packets/operator-decision-n8n-read-only-runtime-inspection.md) · [session](../sessions/2026-05-26-control-plane-operator-decision-n8n-read-only-runtime-inspection-docs-only.md) |
 | **n8n read-only runtime evidence template** | **DOCS COMPLETE** | Sanitized future session fields + abort markers — [template](../decision-packets/n8n-read-only-runtime-evidence-template.md) |
 | **n8n read-only runtime decision closeout** | **DOCS COMPLETE** | Decision-prep phase closed on paper — [closeout](../decision-packets/n8n-read-only-runtime-decision-closeout.md) · [session](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-decision-batch-docs-only.md) |
+| **n8n read-only runtime inspection Tier A** | **BLOCKED** | Operator A approved; no UI path on PC lavoro — loopback 5678 refused; no Tier A metadata observed — [session](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-inspection-tier-a.md) |
 | **Provider API key policy** | **NO** | No OpenAI (or other) provider API keys for bridge/agent path |
 | **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged — not touched by bridge contract |
 | **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
 | **Public exposure** | none | no Funnel |
 | **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | **Operator selects A/B/C for n8n read-only runtime inspection** — no n8n runtime until explicit operator approval (Option A); no workflow 40/41 mutation; no PM-34 unlock; no live Codex negative tests without separate gate; no n8n runtime integration; no provider API key; no OpenClaw `agent main`; no `codex resume`; no Codex repo mutation; no Cursor worker automation; no deploy/tag/rollback; no unattended automation |
+| **Next tactical step** | pending | **Resolve n8n read-only inspection access method (docs-only)** — operator must open n8n Workflows list on VPS/Ryzen or provide read-only tunnel; no workflow 40/41 mutation; no PM-34 unlock; no provider API key; no OpenClaw `agent main`; no `codex resume`; no Codex repo mutation; no Cursor worker automation; no deploy/tag/rollback; no unattended automation |
 
 Entry point: [PROJECT_VISION](PROJECT_VISION.md) (read-only; not modified by bridge contract task).
