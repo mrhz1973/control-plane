@@ -153,6 +153,8 @@ Compact rejection cases. Each row is a **delta** against the valid example unles
 
 ---
 
-## Recommended next step
+## Next step
 
-[n8n read-only preflight design packet (docs-only)](n8n-payload-contract-closeout.md#recommended-next-step) — paper scope before any VPS inspection.
+**n8n payload validation checklist (docs-only)** — see [n8n-payload-validation-checklist.md](n8n-payload-validation-checklist.md) (**DOCS COMPLETE** in batch `71e1dc6`).
+
+Foundation current next: [n8n read-only preflight design packet (docs-only)](n8n-payload-contract-closeout.md#recommended-next-step).
