@@ -1,0 +1,459 @@
+{
+  "name": "42 - CP diff summary Telegram MVP - cursor-coordinate-converter - TEMPLATE",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "b4200001-0001-4001-8001-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2200,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 120
+            }
+          ]
+        }
+      },
+      "id": "b4200002-0002-4002-8002-000000000002",
+      "name": "Schedule Trigger - 120s GitHub poll",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2200,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "returnAll": true
+      },
+      "id": "b4200003-0003-4003-8003-000000000003",
+      "name": "Data Table - Load state",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -1960,
+        300
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const ownerRepo = 'mrhz1973/cursor-coordinate-converter';\nconst stateKey = 'github:mrhz1973/cursor-coordinate-converter:wf42_diff_summary_last_sha';\nreturn [{ json: { ownerRepo, sourceRepo: 'cursor-coordinate-converter', stateKey } }];"
+      },
+      "id": "b4200004-0004-4004-8004-000000000004",
+      "name": "Set target repo (wf42 only)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1720,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/mrhz1973/cursor-coordinate-converter/commits?per_page=1",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "control-plane-n8n-42-diff-summary-mvp-template"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "b4200005-0005-4005-8005-000000000005",
+      "name": "GitHub API - List latest commit (unauthenticated)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const target = $('Set target repo (wf42 only)').item.json;\nconst resp = $input.item.json;\nif (resp && resp.message && !Array.isArray(resp)) {\n  return {\n    json: {\n      ...target,\n      status: 'github_error',\n      skipTelegram: true,\n      githubError: String(resp.message).slice(0, 200),\n      currentSha: '',\n      shortSha: '',\n      message: '',\n      url: '',\n      author: '',\n      committedAt: ''\n    }\n  };\n}\nconst commit = Array.isArray(resp) ? resp[0] : resp;\nconst sha = commit?.sha || '';\nconst message = String(commit?.commit?.message || 'no commit message').split('\\n')[0].slice(0, 120);\nconst author = commit?.commit?.author?.name || commit?.author?.login || 'unknown';\nconst committedAt = commit?.commit?.author?.date || '';\nreturn {\n  json: {\n    ...target,\n    status: 'ok',\n    skipTelegram: false,\n    currentSha: sha,\n    shortSha: sha ? sha.substring(0, 7) : '',\n    message,\n    url: commit?.html_url || '',\n    author,\n    committedAt\n  }\n};"
+      },
+      "id": "b4200006-0006-4006-8006-000000000006",
+      "name": "Prepare latest commit metadata",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const latest = $input.item.json;\nif (latest.skipTelegram) {\n  return { json: { ...latest, isNew: false, previousSha: '', dedupeReason: 'github_error' } };\n}\nconst rows = $('Data Table - Load state').all().map((i) => i.json);\nconst row = rows.find((r) => r.key === latest.stateKey);\nconst previousSha = row?.value || '';\nconst isNew = Boolean(latest.currentSha && latest.currentSha !== previousSha);\nreturn {\n  json: {\n    ...latest,\n    previousSha,\n    isNew,\n    dedupeReason: isNew ? 'new_commit' : 'duplicate_sha'\n  }\n};"
+      },
+      "id": "b4200007-0007-4007-8007-000000000007",
+      "name": "Dedupe wf42 state key",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1000,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "wf42-is-new",
+              "leftValue": "={{ $json.isNew }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "b4200008-0008-4008-8008-000000000008",
+      "name": "IF new commit",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -760,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/mrhz1973/cursor-coordinate-converter/commits/{{ $json.currentSha }}",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "control-plane-n8n-42-diff-summary-mvp-template"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "b4200009-0009-4009-8009-000000000009",
+      "name": "GitHub API - Commit detail files (unauthenticated)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -520,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const base = $('Dedupe wf42 state key').item.json;\nconst detail = $input.item.json;\nlet filesLine = 'nessun file elencato';\nif (detail && Array.isArray(detail.files) && detail.files.length) {\n  const names = detail.files.map((f) => f.filename).filter(Boolean).slice(0, 5);\n  filesLine = names.length ? names.join(', ') : filesLine;\n  if (detail.files.length > 5) filesLine += ', ...';\n} else if (detail && detail.message) {\n  filesLine = 'dettaglio commit non disponibile';\n}\nreturn { json: { ...base, filesLine } };"
+      },
+      "id": "b4200010-0010-4010-8010-000000000010",
+      "name": "Extract modified files list",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const j = $input.item.json;\nconst text = [\n  'CONTROL PLANE diff-summary',\n  'Repo: cursor-coordinate-converter',\n  `Nuovo commit: ${j.shortSha} — ${j.message}`,\n  `File: ${j.filesLine}`,\n  `URL: ${j.url}`\n].join('\\n');\nreturn { json: { text, ...j } };"
+      },
+      "id": "b4200011-0011-4011-8011-000000000011",
+      "name": "Format diff-summary Telegram message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "CONFIGURE_SAME_CHAT_ID_AS_WORKFLOW_40",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "b4200012-0012-4012-8012-000000000012",
+      "name": "Telegram - Send diff summary",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        200
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "CONFIGURE_TELEGRAM_CREDENTIAL_ID",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ $json.stateKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ $json.stateKey }}",
+            "value": "={{ $json.currentSha }}",
+            "updated_at": "={{ $now.toISO() }}",
+            "note": "wf42 diff-summary last notified commit SHA"
+          }
+        },
+        "options": {}
+      },
+      "id": "b4200013-0013-4013-8013-000000000013",
+      "name": "Data Table - Upsert wf42 last SHA",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  json: {\n    status: 'duplicate_or_skipped',\n    reason: $json.dedupeReason || $json.status || 'no_send',\n    stateKey: $json.stateKey,\n    currentSha: $json.currentSha,\n    previousSha: $json.previousSha || ''\n  }\n};"
+      },
+      "id": "b4200014-0014-4014-8014-000000000014",
+      "name": "Skip - duplicate or GitHub error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        480
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Load state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger - 120s GitHub poll": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Load state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Load state": {
+      "main": [
+        [
+          {
+            "node": "Set target repo (wf42 only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set target repo (wf42 only)": {
+      "main": [
+        [
+          {
+            "node": "GitHub API - List latest commit (unauthenticated)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub API - List latest commit (unauthenticated)": {
+      "main": [
+        [
+          {
+            "node": "Prepare latest commit metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare latest commit metadata": {
+      "main": [
+        [
+          {
+            "node": "Dedupe wf42 state key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dedupe wf42 state key": {
+      "main": [
+        [
+          {
+            "node": "IF new commit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF new commit": {
+      "main": [
+        [
+          {
+            "node": "GitHub API - Commit detail files (unauthenticated)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip - duplicate or GitHub error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub API - Commit detail files (unauthenticated)": {
+      "main": [
+        [
+          {
+            "node": "Extract modified files list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract modified files list": {
+      "main": [
+        [
+          {
+            "node": "Format diff-summary Telegram message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format diff-summary Telegram message": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send diff summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Send diff summary": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Upsert wf42 last SHA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": [
+    {
+      "name": "42"
+    },
+    {
+      "name": "template-only"
+    },
+    {
+      "name": "not-imported"
+    },
+    {
+      "name": "control-plane"
+    },
+    {
+      "name": "diff-summary-mvp"
+    }
+  ]
+}
