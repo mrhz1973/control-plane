@@ -14,6 +14,21 @@
     },
     {
       "parameters": {
+        "content": "ACTIVATION GATE — Schedule Trigger is DISABLED and DISCONNECTED.\n\nSafe after import/publish: only Manual Trigger runs.\n\nBefore activation:\n1) Re-import this template from GitHub\n2) Single manual test — must get exactly ONE Telegram per commit SHA\n3) Enable Schedule node + connect its output to \"Data Table - Get wf42 row by key\"\n4) Separate explicit gate: activate workflow in n8n UI\n\nDedupe key: github:mrhz1973/cursor-coordinate-converter:wf42_diff_summary_last_sha\nUpsert runs ONLY after Telegram success.",
+        "height": 280,
+        "width": 480
+      },
+      "id": "b4200015-0015-4015-8015-000000000015",
+      "name": "NOTE - Schedule blocked until activation gate",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2280,
+        520
+      ]
+    },
+    {
+      "parameters": {
         "rule": {
           "interval": [
             {
@@ -24,33 +39,14 @@
         }
       },
       "id": "b4200002-0002-4002-8002-000000000002",
-      "name": "Schedule Trigger - 120s GitHub poll",
+      "name": "Schedule Trigger - 120s (DISABLED until activation gate)",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
         -2200,
         400
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "get",
-        "dataTableId": {
-          "__rl": true,
-          "mode": "name",
-          "value": "control_plane_state"
-        },
-        "returnAll": true
-      },
-      "id": "b4200003-0003-4003-8003-000000000003",
-      "name": "Data Table - Load state",
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1.1,
-      "position": [
-        -1960,
-        300
       ],
-      "alwaysOutputData": true
+      "disabled": true
     },
     {
       "parameters": {
@@ -61,7 +57,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1720,
+        -1960,
         300
       ]
     },
@@ -95,7 +91,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1480,
+        -1720,
         300
       ]
     },
@@ -109,13 +105,42 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1240,
+        -1480,
         300
       ]
     },
     {
       "parameters": {
-        "jsCode": "const latest = $input.item.json;\nif (latest.skipTelegram) {\n  return { json: { ...latest, isNew: false, previousSha: '', dedupeReason: 'github_error' } };\n}\nconst rows = $('Data Table - Load state').all().map((i) => i.json);\nconst row = rows.find((r) => r.key === latest.stateKey);\nconst previousSha = row?.value || '';\nconst isNew = Boolean(latest.currentSha && latest.currentSha !== previousSha);\nreturn {\n  json: {\n    ...latest,\n    previousSha,\n    isNew,\n    dedupeReason: isNew ? 'new_commit' : 'duplicate_sha'\n  }\n};"
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ $json.stateKey }}"
+            }
+          ]
+        },
+        "returnAll": false
+      },
+      "id": "b4200016-0016-4016-8016-000000000016",
+      "name": "Data Table - Get wf42 row by key",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -1240,
+        300
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const latest = $('Prepare latest commit metadata').item.json;\nif (latest.skipTelegram) {\n  return {\n    json: {\n      ...latest,\n      isNew: false,\n      previousSha: '',\n      dedupeReason: 'github_error'\n    }\n  };\n}\nconst rows = $('Data Table - Get wf42 row by key').all().map((i) => i.json);\nconst row = rows.find((r) => r && r.key === latest.stateKey);\nconst previousSha = String(row?.value || '').trim();\nconst currentSha = String(latest.currentSha || '').trim();\nconst isNew = Boolean(currentSha && currentSha !== previousSha);\nreturn {\n  json: {\n    ...latest,\n    previousSha,\n    isNew,\n    hadStateRow: Boolean(row?.key),\n    dedupeReason: isNew ? 'new_commit' : (currentSha ? 'duplicate_sha' : 'missing_sha')\n  }\n};"
       },
       "id": "b4200007-0007-4007-8007-000000000007",
       "name": "Dedupe wf42 state key",
@@ -239,7 +264,22 @@
           "id": "CONFIGURE_TELEGRAM_CREDENTIAL_ID",
           "name": "CONTROL PLANE - Telegram Bot"
         }
-      }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const base = $('Format diff-summary Telegram message').item.json;\nconst tg = $input.item.json;\nif (tg && (tg.error || tg.description)) {\n  throw new Error('Telegram send failed — wf42 SHA not persisted');\n}\nreturn { json: { ...base, telegramSent: true } };"
+      },
+      "id": "b4200017-0017-4017-8017-000000000017",
+      "name": "Confirm Telegram success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        200
+      ]
     },
     {
       "parameters": {
@@ -264,7 +304,7 @@
             "key": "={{ $json.stateKey }}",
             "value": "={{ $json.currentSha }}",
             "updated_at": "={{ $now.toISO() }}",
-            "note": "wf42 diff-summary last notified commit SHA"
+            "note": "wf42 diff-summary last notified commit SHA (after Telegram success)"
           }
         },
         "options": {}
@@ -274,14 +314,14 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        440,
+        680,
         200
       ]
     },
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "return {\n  json: {\n    status: 'duplicate_or_skipped',\n    reason: $json.dedupeReason || $json.status || 'no_send',\n    stateKey: $json.stateKey,\n    currentSha: $json.currentSha,\n    previousSha: $json.previousSha || ''\n  }\n};"
+        "jsCode": "return {\n  json: {\n    status: 'duplicate_or_skipped',\n    reason: $json.dedupeReason || $json.status || 'no_send',\n    stateKey: $json.stateKey,\n    currentSha: $json.currentSha,\n    previousSha: $json.previousSha || '',\n    telegramSent: false\n  }\n};"
       },
       "id": "b4200014-0014-4014-8014-000000000014",
       "name": "Skip - duplicate or GitHub error",
@@ -295,28 +335,6 @@
   ],
   "connections": {
     "Manual Trigger": {
-      "main": [
-        [
-          {
-            "node": "Data Table - Load state",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Schedule Trigger - 120s GitHub poll": {
-      "main": [
-        [
-          {
-            "node": "Data Table - Load state",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Data Table - Load state": {
       "main": [
         [
           {
@@ -350,6 +368,17 @@
       ]
     },
     "Prepare latest commit metadata": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Get wf42 row by key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Get wf42 row by key": {
       "main": [
         [
           {
@@ -426,6 +455,17 @@
       "main": [
         [
           {
+            "node": "Confirm Telegram success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm Telegram success": {
+      "main": [
+        [
+          {
             "node": "Data Table - Upsert wf42 last SHA",
             "type": "main",
             "index": 0
@@ -447,7 +487,10 @@
       "name": "template-only"
     },
     {
-      "name": "not-imported"
+      "name": "schedule-disconnected"
+    },
+    {
+      "name": "activation-blocked"
     },
     {
       "name": "control-plane"
