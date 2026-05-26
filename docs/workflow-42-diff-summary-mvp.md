@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Artifact:** `workflows/42-diff-summary-mvp.template.json`  
-**Date:** 2026-05-27 (activation duplicate-skip PASS recorded)  
-**Status:** **activation duplicate-skip PASS** · waiting first new-commit automatic diff-summary · `active=false` in Git template (operator may activate in n8n separately)
+**Date:** 2026-05-27 (final new-commit automatic PASS — Diff-summary ATTIVO)  
+**Status:** **final PASS** · `PROJECT_VISION.md` §1.1 **ATTIVO** · operator n8n active (schedule 120s)
 
 ---
 
@@ -13,12 +13,13 @@
 |------|--------|
 | MVP value (GitHub + files + Telegram) | **Proven** |
 | Manual dedupe | **PASS** |
-| Schedule activation + duplicate skip | **PASS** — 01:10, 01:11 succeeded; 0 Telegram duplicates |
-| First new-commit automatic diff-summary | **NOT YET OBSERVED** |
-| `PROJECT_VISION.md` §1.1 Diff summary | Resta **NON ATTIVO** — fino a nuovo SHA + esattamente 1 Telegram automatico |
+| Activation duplicate-skip | **PASS** |
+| First new-commit automatic diff-summary | **PASS** — SHA `727db3e`, 1 Telegram, no duplicate in 3–5 min |
+| `PROJECT_VISION.md` §1.1 Diff summary | **ATTIVO** |
 
 Sessions:
 
+- [2026-05-27 final new-commit automatic PASS](sessions/2026-05-27-control-plane-workflow-42-final-new-commit-automatic-pass.md)
 - [2026-05-27 activation duplicate-skip PASS](sessions/2026-05-27-control-plane-workflow-42-activation-duplicate-skip-pass.md)
 - [2026-05-27 manual dedupe PASS](sessions/2026-05-27-control-plane-workflow-42-manual-dedupe-pass.md)
 - [2026-05-27 duplicate blocked (storico)](sessions/2026-05-27-control-plane-workflow-42-manual-runtime-partial-pass-duplicate-blocked.md)
@@ -65,21 +66,25 @@ After manual dedupe PASS, operator activated workflow 42 with schedule 120s in n
 
 **Known SHA:** `58c5c46` (already notified manually). Schedule is **active** and does **not** re-send for known SHA.
 
-**Not yet observed:** new real commit on `cursor-coordinate-converter` → first automatic diff-summary.
-
 Vedi [session activation duplicate-skip PASS](sessions/2026-05-27-control-plane-workflow-42-activation-duplicate-skip-pass.md).
 
----
+### Final new-commit automatic PASS
 
-## Waiting for first new-commit automatic diff-summary
+New real commit on `mrhz1973/cursor-coordinate-converter`:
 
-| Rule | Detail |
-|------|--------|
-| Schedule 120s (operator n8n) | **Active** — duplicate-skip verified |
-| `PROJECT_VISION.md` §1.1 | **NON ATTIVO** until new SHA + exactly **1** automatic Telegram |
-| Git template `active` | `false` in repo — operator runtime may differ |
+| Field | Value |
+|-------|--------|
+| SHA | `727db3e` |
+| Message | `test: trigger workflow 42 automatic diff summary` |
+| File | `docs/workflow-42-auto-diff-summary-validation-2026-05-27.md` |
 
-**Prossimo gate:** nuovo commit reale su target repo → verificare 1 solo diff-summary automatico → aggiornare §1.1.
+| Check | Result |
+|-------|--------|
+| Automatic `CONTROL PLANE diff-summary` Telegram | **1** message received |
+| Duplicate within 3–5 minutes | **0** — PASS |
+| `PROJECT_VISION.md` §1.1 | Updated to **ATTIVO** |
+
+Vedi [session final PASS](sessions/2026-05-27-control-plane-workflow-42-final-new-commit-automatic-pass.md).
 
 ---
 
@@ -96,7 +101,7 @@ Il workflow 42 invia su Telegram un riepilogo meccanico breve (2–3 righe opera
 | Sezione | Riferimento |
 |---------|-------------|
 | **§1 Principio di valore** | Riduce micro-interazioni meccaniche ripetute |
-| **§1.1 Diff summary Telegram** | **NON ATTIVO** — activation duplicate-skip PASS; serve nuovo commit + 1 Telegram automatico |
+| **§1.1 Diff summary Telegram** | **ATTIVO** — workflow 42 su `cursor-coordinate-converter` (2026-05-27) |
 | **§7.4 n8n template-first** | Template JSON + doc companion; `active: false`; import/activation gate separati |
 | **§7.5 no provider API by default** | Nessuna chiamata a provider AI/API a pagamento |
 | **§10 Invarianti** | GitHub fonte di verità; no segreti in Git; wf 40/41 intatti; PM-34 gated; `n8n_ready=false` |
@@ -151,9 +156,9 @@ Il workflow 42 invia su Telegram un riepilogo meccanico breve (2–3 righe opera
 
 | Gate | Stato |
 |------|--------|
-| Activation duplicate-skip (schedule 120s) | **PASS** (operator n8n, 2026-05-27) |
-| First new-commit automatic diff-summary | **Pending** |
-| `PROJECT_VISION.md` §1.1 → ATTIVO | **Blocked** until pending gate passes |
+| Activation duplicate-skip (schedule 120s) | **PASS** |
+| First new-commit automatic diff-summary | **PASS** (SHA `727db3e`) |
+| `PROJECT_VISION.md` §1.1 | **ATTIVO** |
 | Import in n8n UI | Operator action only |
 | Modifica workflow 40 | **Forbidden** |
 | Modifica workflow 41 | **Forbidden** |
@@ -175,19 +180,17 @@ Completato post-fix: 1 Telegram su `58c5c46`, secondo Manual Trigger → 0 Teleg
 
 Operator activated workflow + schedule 120s. Runs 01:10 and 01:11 succeeded with **0** duplicate Telegram for SHA `58c5c46`. Vedi [session](sessions/2026-05-27-control-plane-workflow-42-activation-duplicate-skip-pass.md).
 
-### C. First new-commit automatic diff-summary (prossimo gate)
+### C. First new-commit automatic diff-summary — **PASS** (2026-05-27)
 
-1. Attendere nuovo commit reale su `mrhz1973/cursor-coordinate-converter`.
-2. Verificare **esattamente 1** messaggio Telegram automatico (no duplicates).
-3. Se PASS: aggiornare `PROJECT_VISION.md` §1.1 → **ATTIVO** (commit minimal).
+Commit `727db3e` → exactly **1** automatic Telegram; no duplicate in 3–5 min. `PROJECT_VISION.md` §1.1 → **ATTIVO**. Vedi [session](sessions/2026-05-27-control-plane-workflow-42-final-new-commit-automatic-pass.md).
 
 ---
 
 ## 8. Tracciamento valore
 
-**Tracciamento valore (gate futuro, NON raggiunto):** dopo activation **e** primo diff-summary **senza duplicati** verificato su Telegram, aggiornare `docs/foundation/PROJECT_VISION.md` sezione 1.1 spostando `Diff summary Telegram (futuro)` da NON ATTIVO ad ATTIVO con commit minimal di una riga.
+**Tracciamento valore:** **COMPLETATO** 2026-05-27 — `PROJECT_VISION.md` §1.1 `Diff summary Telegram (workflow 42)` → **ATTIVO** dopo workflow 42 PASS su nuovo commit automatico senza duplicati.
 
-**Stato attuale:** activation duplicate-skip PASS; tracciamento §1.1 **non** ancora soddisfatto (serve primo diff-summary automatico su **nuovo** SHA, 1 solo Telegram).
+**Scope:** MVP attivo su repo target `cursor-coordinate-converter` only; estensione ad altri repo resta gate separato.
 
 ---
 
@@ -205,7 +208,7 @@ Operator activated workflow + schedule 120s. Runs 01:10 and 01:11 succeeded with
 ## 10. Dichiarazioni esplicite
 
 - **Workflow 40** e **41** restano **bit-identici** in Git.
-- Activation duplicate-skip documentato; §1.1 ATTIVO **non** ancora autorizzato.
+- Diff-summary Telegram MVP **ATTIVO** in `PROJECT_VISION.md` §1.1 (workflow 42, target repo).
 - **`n8n_ready=true`** non impostato.
 - **PM-34** non sbloccato.
 - Nessun segreto in Git (placeholder Telegram only).

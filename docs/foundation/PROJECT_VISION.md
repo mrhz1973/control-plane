@@ -42,7 +42,7 @@ La tabella seguente è un riferimento operativo del principio: per ogni componen
 |---|---|---|
 | Workflow 40 polling | Apertura manuale GitHub per vedere nuovi commit | ATTIVO |
 | Telegram base | Verifica manuale "è arrivato il commit?" | ATTIVO |
-| Diff summary Telegram (futuro) | Apertura GitHub per leggere cosa è cambiato | NON ATTIVO |
+| Diff summary Telegram (workflow 42) | Apertura GitHub per leggere cosa è cambiato | ATTIVO |
 | Codex via OpenClaw | Pensare manualmente il prossimo prompt | NON ATTIVO |
 | Ollama classifier | Decidere manualmente se un task è sicuro | NON ATTIVO |
 | Cursor CLI | Copiare/incollare il prompt nell'IDE | NON ATTIVO |
@@ -553,6 +553,7 @@ Perché senza questo, ogni volta che apro una nuova chat con un'AI devo ri-spieg
 |---|---|---|
 | 1.0 | 2026-05-25 | Prima foundation. Architettura target Codex+Ollama+Cursor+Tailscale, livelli 0/1/2/3 e A/B/C, decisioni 23 maggio. |
 | 2.0 | 2026-05-25 | Integrato Decision Packet (sezione 7.7), fallback graceful (sezione 7.6), n8n no provider APIs (sezione 7.5), tabella micro-interazioni eliminate (sezione 1.1). Spostati dettagli hardware Dell/Ryzen completi a futuro `ARCHITECTURE.md`. Parte semplice arricchita con menzione Decision Packet e fallback. |
+| 2.1 | 2026-05-27 | Marcato Diff-summary Telegram MVP come ATTIVO dopo workflow 42 PASS su nuovo commit automatico senza duplicati. |
 
 ---
 
