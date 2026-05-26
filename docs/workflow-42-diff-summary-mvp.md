@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Artifact:** `workflows/42-diff-summary-mvp.template.json`  
-**Date:** 2026-05-27 (updated after runtime observation)  
-**Status:** **manual runtime partial PASS** · duplicate blocked · **activation blocked** · `active=false` in Git template
+**Date:** 2026-05-27 (manual dedupe PASS recorded)  
+**Status:** **manual dedupe PASS** · **activation blocked** · `active=false` in Git template
 
 ---
 
@@ -12,19 +12,24 @@
 | Area | Status |
 |------|--------|
 | MVP value (GitHub + files + Telegram) | **Proven** in operator manual runtime |
-| Dedupe / schedule safety | **BLOCKED** — duplicate messages observed for same SHA |
-| Workflow activation | **NOT authorized** — operator deactivated wf42 |
-| `PROJECT_VISION.md` §1.1 Diff summary | Resta **NON ATTIVO** — non aggiornare fino a gate valore |
+| Manual dedupe | **PASS** — 1 Telegram per SHA; immediate re-run → 0 Telegram |
+| Schedule / activation | **BLOCKED** — not authorized |
+| `PROJECT_VISION.md` §1.1 Diff summary | Resta **NON ATTIVO** — fino ad activation PASS + primo automatico senza duplicati |
 
-Session: [2026-05-27 manual runtime partial PASS](sessions/2026-05-27-control-plane-workflow-42-manual-runtime-partial-pass-duplicate-blocked.md)
+Sessions:
+
+- [2026-05-27 manual dedupe PASS](sessions/2026-05-27-control-plane-workflow-42-manual-dedupe-pass.md)
+- [2026-05-27 duplicate blocked (storico)](sessions/2026-05-27-control-plane-workflow-42-manual-runtime-partial-pass-duplicate-blocked.md)
 
 ---
 
 ## Runtime observation 2026-05-27
 
+### Duplicate blocked (storico — prima del fix template)
+
 Operator imported wf42 in n8n UI, configured Telegram (same bot/chat as wf40), published and tested.
 
-**PASS:**
+**PASS (prima iterazione):**
 
 - GitHub API list + commit detail/files for `mrhz1973/cursor-coordinate-converter`
 - Telegram message with commit `58c5c46`, file `docs/control-plane-watch-test.md`, commit URL
@@ -34,7 +39,18 @@ Operator imported wf42 in n8n UI, configured Telegram (same bot/chat as wf40), p
 - Duplicate Telegram messages for the same commit (e.g. 00:19, 00:20) while schedule was active
 - Dedupe key `github:mrhz1973/cursor-coordinate-converter:wf42_diff_summary_last_sha` did not prevent repeats under concurrent/scheduled runs
 
-**Containment:** workflow 42 turned off by operator; no further runs until template re-import and gated manual retest.
+**Containment:** workflow 42 turned off by operator; template fix in Git (`7b486f9`).
+
+### Manual dedupe PASS (post-fix re-import)
+
+After re-import of fixed template (`schedule-disconnected`, `activation-blocked` tags):
+
+| Test | Result |
+|------|--------|
+| First Manual Trigger (~00:30) | **1** Telegram on commit `58c5c46` (correct content) |
+| Second Manual Trigger (same SHA, immediate) | **0** Telegram — duplicate skip **PASS** |
+
+Schedule Trigger remains **disabled / disconnected**; workflow **not** active for automatic polling.
 
 ---
 
@@ -42,12 +58,13 @@ Operator imported wf42 in n8n UI, configured Telegram (same bot/chat as wf40), p
 
 | Rule | Detail |
 |------|--------|
-| Do **not** activate workflow 42 in n8n | Until manual dedupe PASS |
-| Do **not** enable Schedule Trigger | Node is `disabled: true` and **disconnected** in Git template |
-| Import/publish must be safe | Only **Manual Trigger** is wired; schedule cannot fire until operator reconnects after gate |
+| Manual dedupe | **PASS** — recorded 2026-05-27 |
+| Do **not** activate workflow 42 for schedule yet | Separate **activation gate** required |
+| Do **not** enable Schedule Trigger yet | Node remains `disabled: true` and **disconnected** in Git template until activation gate |
 | `active=false` in Git | Template default; activation is separate manual gate in n8n UI |
+| `PROJECT_VISION.md` §1.1 | **NON ATTIVO** until activation + first automatic diff-summary without duplicates |
 
-**Non attivare lo schedule** finché un test manuale singolo non produce **esattamente un** messaggio Telegram per commit SHA.
+**Prossimo gate:** activation schedule 120s (enable Schedule node, reconnect to `Set target repo`, activate workflow) — valutazione esplicita operatore.
 
 ---
 
@@ -64,7 +81,7 @@ Il workflow 42 invia su Telegram un riepilogo meccanico breve (2–3 righe opera
 | Sezione | Riferimento |
 |---------|-------------|
 | **§1 Principio di valore** | Riduce micro-interazioni meccaniche ripetute |
-| **§1.1 Diff summary Telegram** | Ancora **NON ATTIVO** — valore MVP provato ma dedupe/activation non passano |
+| **§1.1 Diff summary Telegram** | **NON ATTIVO** — manual dedupe PASS; activation + automatico senza duplicati ancora richiesti |
 | **§7.4 n8n template-first** | Template JSON + doc companion; `active: false`; import/activation gate separati |
 | **§7.5 no provider API by default** | Nessuna chiamata a provider AI/API a pagamento |
 | **§10 Invarianti** | GitHub fonte di verità; no segreti in Git; wf 40/41 intatti; PM-34 gated; `n8n_ready=false` |
@@ -119,7 +136,7 @@ Il workflow 42 invia su Telegram un riepilogo meccanico breve (2–3 righe opera
 
 | Gate | Stato |
 |------|--------|
-| Activation (workflow active + schedule) | **Blocked** until dedupe manual PASS |
+| Activation (workflow active + schedule 120s) | **Blocked** — next gate; manual dedupe PASS |
 | Import in n8n UI | Operator action only |
 | Modifica workflow 40 | **Forbidden** |
 | Modifica workflow 41 | **Forbidden** |
@@ -133,19 +150,13 @@ Il workflow 42 invia su Telegram un riepilogo meccanico breve (2–3 righe opera
 
 ## 7. Procedura manuale (operator)
 
-### A. Dopo fix template su GitHub (required now)
+### A. Manual dedupe test — **PASS** (2026-05-27)
 
-1. Verificare commit GitHub con template aggiornato + session log.
-2. **Re-import** workflow in n8n UI (sostituisce versione con schedule disconnected).
-3. Configurare Telegram placeholder → stessa credential/chat del wf40.
-4. **Non** attivare workflow.
-5. **Non** abilitare Schedule Trigger.
-6. Eseguire **un solo** test con **Manual Trigger**.
-7. Verificare: **1** messaggio Telegram per SHA; riesecuzione immediata → **0** messaggi (duplicate skip).
+Completato post-fix: 1 Telegram su `58c5c46`, secondo Manual Trigger → 0 Telegram. Vedi [session PASS](sessions/2026-05-27-control-plane-workflow-42-manual-dedupe-pass.md).
 
-### B. Activation (solo dopo A PASS + gate esplicito)
+### B. Activation (prossimo gate — NON autorizzato ora)
 
-1. Confermare dedupe manuale PASS senza duplicati.
+1. Valutazione esplicita operatore per activation schedule 120s.
 2. Abilitare nodo `Schedule Trigger - 120s (DISABLED until activation gate)`.
 3. Collegare output Schedule → `Data Table - Get wf42 row by key` (stesso ingresso del flusso manuale dopo Set repo — operatore collega Schedule → **Set target repo** per parità con Manual).
 4. Gate separato: **Activate** workflow in n8n UI.
@@ -158,7 +169,7 @@ Il workflow 42 invia su Telegram un riepilogo meccanico breve (2–3 righe opera
 
 **Tracciamento valore (gate futuro, NON raggiunto):** dopo activation **e** primo diff-summary **senza duplicati** verificato su Telegram, aggiornare `docs/foundation/PROJECT_VISION.md` sezione 1.1 spostando `Diff summary Telegram (futuro)` da NON ATTIVO ad ATTIVO con commit minimal di una riga.
 
-**Stato attuale:** valore parzialmente provato; tracciamento **non** ancora soddisfatto (dedupe + activation falliscono).
+**Stato attuale:** manual dedupe PASS; tracciamento §1.1 **non** ancora soddisfatto (serve activation + primo diff-summary automatico senza duplicati).
 
 ---
 
