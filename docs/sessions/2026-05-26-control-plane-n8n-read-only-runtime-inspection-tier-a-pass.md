@@ -151,7 +151,7 @@ Reconcile [FOUNDATION_STATUS](../foundation/FOUNDATION_STATUS.md) and continue *
 ?? docs/sessions/2026-05-26-control-plane-n8n-read-only-runtime-inspection-tier-a-pass.md
 ```
 
-**Commit hash after push:** _(filled post-push)_
+**Commit hash after push:** `89c3568`
 
 ---
 
