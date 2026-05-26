@@ -99,7 +99,7 @@ git commit -m "docs: reconcile foundation status after n8n payload preflight des
 git push origin main
 ```
 
-**Commit hash after push:** _(filled post-push)_
+**Commit hash after push:** `85f930e`
 
 ---
 
