@@ -1,64 +1,112 @@
-# Foundation status (v2.0)
+# Foundation status
 
-**Updated:** 2026-05-26 (foundation status reconcile after n8n payload preflight dry-run design)
+**Updated:** 2026-05-28  
+**Aligned to:** [PROJECT_VISION](PROJECT_VISION.md) v2.2 — workflow 42 + Codex CLI direct path  
+**HEAD before this reconcile:** `f482360` (`docs: record codex prompt artifact cursor consumption pass`)
 
-| Layer | Status | Notes |
-|-------|--------|--------|
-| **Tailscale VPS ↔ Ryzen** | **PASS** | Private mesh operational — nodes `ubuntu` / `asusdesktop`; [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md) |
-| **Cursor Agent CLI (Ryzen)** | **PASS** | Install + auth + models + plan smoke read-only; [session](../sessions/2026-05-25-control-plane-cursor-agent-cli-install-auth-plan-smoke-pass.md) |
-| **Ollama classifier (Ryzen)** | **PASS** (API only) | `qwen3:14b` via local API; [session](../sessions/2026-05-25-control-plane-ollama-qwen3-classifier-api-smoke-pass.md) |
-| **Classifier wrapper contract** | **DESIGN** | [classifier-wrapper-v1](../contracts/classifier-wrapper-v1.md) — no runtime yet |
-| **Local path preflight (Ryzen)** | **PASS** (read-only) | [session](../sessions/2026-05-25-control-plane-openclaw-codex-local-path-readonly-preflight.md) |
-| **OpenClaw gateway (Ryzen)** | **PASS** (loopback manual) | [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md) |
-| **OpenClaw agent Step A (main)** | **BLOCKED** | No provider API key path; do not retry; [session](../sessions/2026-05-25-control-plane-openclaw-agent-step-a-provider-api-key-blocked.md) |
-| **OpenClaw/Codex bridge discovery** | **COMPLETE** | Codex-first — [discovery v1](../contracts/openclaw-codex-bridge-discovery-v1.md) |
-| **Codex bridge contract v1** | **DESIGN COMPLETE** | §7 invocation profile formalized from V2 — [contract](../contracts/codex-bridge-contract-v1.md) · [profile session](../sessions/2026-05-25-control-plane-bridge-invocation-profile-docs-only.md) |
-| **Codex bridge manual smoke V1** | **PARTIAL-BLOCKED** | NON PASS — agentic tool-use vs JSON-only; repo clean; fallback graceful PASS; no `codex resume`; [session](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v1-partial-blocked.md) |
-| **Codex bridge manual smoke V2** | **PASS** | Single-turn JSON-only, inlined files, anti-tool-use prompt, `codex exec --ephemeral -s read-only --output-schema`; repo clean; no `codex resume`; [session](../sessions/2026-05-25-control-plane-codex-bridge-manual-smoke-v2-pass.md) |
-| **Codex bridge wrapper design** | **DESIGN COMPLETE** | Local JSON-in / pre-gates / §7 invocation / post-gates / JSON-out — [design](../contracts/codex-bridge-wrapper-design-v1.md) · [session](../sessions/2026-05-25-control-plane-bridge-wrapper-design-docs-only.md) |
-| **Bridge wrapper runtime dry-run preflight** | **DESIGN PACKET COMPLETE** | PASS/FAIL, fixture policy, forbidden scope — [packet](../decision-packets/bridge-wrapper-runtime-dry-run-preflight.md) · [session](../sessions/2026-05-25-control-plane-bridge-wrapper-runtime-dry-run-preflight-docs-only.md) |
-| **Local bridge wrapper dry-run v0** | **PASS** | Fail-closed pre-gates only, no Codex — [wrapper](../../tools/codex-bridge-wrapper/local-bridge-wrapper.mjs) · [fixture](../../tools/codex-bridge-wrapper/fixtures/blocked-no-runtime-permission.json) · [session](../sessions/2026-05-26-control-plane-local-bridge-wrapper-dry-run-v0.md) |
-| **Local wrapper success-path design packet** | **DESIGN PACKET COMPLETE** | Future Codex-read-only path spec — [packet](../decision-packets/local-wrapper-success-path-design-packet.md) · [session](../sessions/2026-05-26-control-plane-local-wrapper-success-path-design-packet-docs-only.md) |
-| **Codex-read-only wrapper dry-run v1** | **PASS** | Regression + §7 Codex read-only via wrapper — [wrapper](../../tools/codex-bridge-wrapper/local-bridge-wrapper.mjs) · [fixture](../../tools/codex-bridge-wrapper/fixtures/success-readonly-codex.json) · [session](../sessions/2026-05-26-control-plane-codex-readonly-wrapper-dry-run-v1.md) |
-| **Post-dry-run wrapper hardening** | **DOCS COMPLETE** | Proven vs not proven, forbidden escalation — [packet](../decision-packets/post-dry-run-wrapper-hardening.md) · [session](../sessions/2026-05-26-control-plane-post-dry-run-wrapper-hardening-docs-only.md) |
-| **Local wrapper negative-test matrix design packet** | **DESIGN PACKET COMPLETE** | Future rejection cases A–H, fixture naming, PASS/FAIL — [packet](../decision-packets/local-wrapper-negative-test-matrix-design-packet.md) · [session](../sessions/2026-05-26-control-plane-local-wrapper-negative-test-matrix-design-packet-docs-only.md) |
-| **Local wrapper negative tests static no-Codex** | **PASS** | Six negative fixtures + v0 regression — [fixtures](../../tools/codex-bridge-wrapper/fixtures/negative/) · [session](../sessions/2026-05-26-control-plane-local-wrapper-negative-tests-static-no-codex.md) |
-| **Local wrapper negative-test hardening** | **DOCS COMPLETE** | Pre-gate proven vs post-Codex gaps — [packet](../decision-packets/local-wrapper-negative-test-hardening.md) · [session](../sessions/2026-05-26-control-plane-local-wrapper-negative-test-hardening-docs-only.md) |
-| **Mock Codex-output negative tests design packet** | **DESIGN PACKET COMPLETE** | Post-gate mock categories, fixture policy, PASS/FAIL — [packet](../decision-packets/mock-codex-output-negative-tests-design-packet.md) · [session](../sessions/2026-05-26-control-plane-mock-codex-output-negative-tests-design-packet-docs-only.md) |
-| **Mock Codex-output negative tests mock-only** | **PASS** | Eight mock outputs + v0 regression; no live Codex — [fixtures](../../tools/codex-bridge-wrapper/fixtures/mock-codex-output-negative/) · [session](../sessions/2026-05-26-control-plane-mock-codex-output-negative-tests-mock-only.md) |
-| **Post-mock-output hardening** | **DOCS COMPLETE** | Pre/post-gate proven vs gaps — [packet](../decision-packets/post-mock-output-hardening.md) · [session](../sessions/2026-05-26-control-plane-post-mock-output-hardening-docs-only.md) |
-| **Local wrapper repeatability/idempotency design packet** | **DESIGN PACKET COMPLETE** | Future 3× repeat groups, stable status class — [packet](../decision-packets/local-wrapper-repeatability-idempotency-design-packet.md) · [session](../sessions/2026-05-26-control-plane-local-wrapper-repeatability-idempotency-design-packet-docs-only.md) |
-| **Local wrapper repeatability/idempotency no-Codex mock-only** | **PASS** | 15 cases × 3 runs; stable classes; workspace clean — [session](../sessions/2026-05-26-control-plane-local-wrapper-repeatability-idempotency-no-codex-mock-only.md) |
-| **Post-repeatability hardening** | **DOCS COMPLETE** | Repeatability proven vs gaps — [packet](../decision-packets/post-repeatability-hardening.md) · [session](../sessions/2026-05-26-control-plane-post-repeatability-hardening-docs-only.md) |
-| **Live Codex repeatability design packet** | **DESIGN PACKET COMPLETE** | Future 3-run §7 scope, drift policy, PASS/FAIL — [packet](../decision-packets/live-codex-repeatability-design-packet.md) · [session](../sessions/2026-05-26-control-plane-live-codex-repeatability-design-packet-docs-only.md) |
-| **Live Codex repeatability run local max3** | **PASS** | 3× §7 read-only via wrapper; stable `pass` — [session](../sessions/2026-05-26-control-plane-live-codex-repeatability-run-local-max3.md) |
-| **Post-live-Codex-repeatability hardening** | **DOCS COMPLETE** | Cumulative wrapper evidence; integration gaps — [packet](../decision-packets/post-live-codex-repeatability-hardening.md) · [session](../sessions/2026-05-26-control-plane-post-live-codex-repeatability-hardening-docs-only.md) |
-| **Local wrapper runtime readiness review** | **DOCS COMPLETE** | Evidence chain, strengths/gaps, min criteria — [review](../decision-packets/local-wrapper-runtime-readiness-review.md) · [session](../sessions/2026-05-26-control-plane-local-wrapper-runtime-readiness-review-docs-only.md) |
-| **Local-only integration preflight design packet** | **DESIGN PACKET COMPLETE** | Local integration scope, exclusions, preflight/abort — [packet](../decision-packets/local-only-integration-preflight-design-packet.md) · [session](../sessions/2026-05-26-control-plane-local-only-integration-preflight-design-packet-docs-only.md) |
-| **Local-only integration dry-run** | **PASS** | 4-run compact suite (v0 + static negative + mock negative + live §7) — [session](../sessions/2026-05-26-control-plane-local-only-integration-dry-run.md) |
-| **Post-local-only integration hardening** | **DOCS COMPLETE** | Proven vs gaps; no n8n/PM-34 authorization — [packet](../decision-packets/post-local-only-integration-hardening.md) · [session](../sessions/2026-05-26-control-plane-post-local-only-integration-hardening-docs-only.md) |
-| **n8n-free local integration readiness closeout** | **DOCS COMPLETE** | Local phase closed; n8n not authorized — [closeout](../decision-packets/n8n-free-local-integration-readiness-closeout.md) · [session](../sessions/2026-05-26-control-plane-n8n-free-local-integration-readiness-closeout-docs-only.md) |
-| **n8n preflight boundary design packet** | **DESIGN PACKET COMPLETE** | n8n preflight scope, payload principles, exclusions — [packet](../decision-packets/n8n-preflight-boundary-design-packet.md) · [session](../sessions/2026-05-26-control-plane-n8n-preflight-boundary-design-packet-docs-only.md) |
-| **n8n payload contract design packet** | **DESIGN PACKET COMPLETE** | v1 allowlist/denylist, wrapper_trace booleans, redaction, synthetic example — [packet](../decision-packets/n8n-payload-contract-design-packet.md) · [session](../sessions/2026-05-26-control-plane-n8n-payload-contract-design-packet-docs-only.md) |
-| **n8n payload contract hardening** | **DOCS COMPLETE** | Invariants, denylist taxonomy, fail-closed validation, safety guarantees — [packet](../decision-packets/n8n-payload-contract-hardening.md) · [session](../sessions/2026-05-26-control-plane-n8n-payload-contract-hardening-docs-only.md) |
-| **Synthetic payload validation examples** | **DOCS COMPLETE** | Valid + invalid synthetic deltas — [examples](../decision-packets/synthetic-payload-validation-examples.md) · [session](../sessions/2026-05-26-control-plane-synthetic-payload-validation-examples-docs-only.md) |
-| **n8n payload validation checklist** | **DOCS COMPLETE** | Pre-validation, allowlist, denylist, abort, reviewer result — [checklist](../decision-packets/n8n-payload-validation-checklist.md) |
-| **n8n payload contract closeout** | **DOCS COMPLETE** | Design phase closed on paper — [closeout](../decision-packets/n8n-payload-contract-closeout.md) · [session](../sessions/2026-05-26-control-plane-n8n-payload-validation-batch-docs-only.md) |
-| **n8n read-only preflight design packet** | **DESIGN PACKET COMPLETE** | Future read-only metadata scope, exclusions, abort, evidence — [packet](../decision-packets/n8n-read-only-preflight-design-packet.md) · [session](../sessions/2026-05-26-control-plane-n8n-read-only-preflight-design-packet-docs-only.md) |
-| **n8n read-only preflight hardening** | **DOCS COMPLETE** | Metadata allowlist, observation tiers A/B/C, redaction, abort matrix — [packet](../decision-packets/n8n-read-only-preflight-hardening.md) · [session](../sessions/2026-05-26-control-plane-n8n-read-only-preflight-hardening-docs-only.md) |
-| **n8n read-only preflight closeout** | **DOCS COMPLETE** | Paper phase closed; runtime not authorized — [closeout](../decision-packets/n8n-read-only-preflight-closeout.md) · [session](../sessions/2026-05-26-control-plane-n8n-read-only-preflight-closeout-docs-only.md) |
-| **n8n read-only runtime gate packet** | **GATE PACKET COMPLETE** | Future Tier A scope, PASS/FAIL, evidence — [packet](../decision-packets/n8n-read-only-runtime-gate-packet.md) · [session](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-gate-packet-docs-only.md) |
-| **Operator decision — n8n read-only runtime** | **DECISION PACKET COMPLETE** | Options A/B/C; no runtime until operator chooses — [packet](../decision-packets/operator-decision-n8n-read-only-runtime-inspection.md) · [session](../sessions/2026-05-26-control-plane-operator-decision-n8n-read-only-runtime-inspection-docs-only.md) |
-| **n8n read-only runtime evidence template** | **DOCS COMPLETE** | Sanitized future session fields + abort markers — [template](../decision-packets/n8n-read-only-runtime-evidence-template.md) |
-| **n8n read-only runtime decision closeout** | **DOCS COMPLETE** | Decision-prep phase closed on paper — [closeout](../decision-packets/n8n-read-only-runtime-decision-closeout.md) · [session](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-decision-batch-docs-only.md) |
-| **n8n read-only runtime inspection Tier A** | **PASS** (manual, list-only) | Operator UI Workflows list `/home/workflows`; count **5**; wf **40** Published/active; wf **41** backup off (no Published badge); n8n version **not visible** from allowed page — [pass](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-inspection-tier-a-pass.md) · [prior BLOCKED](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-inspection-tier-a.md) |
-| **Post-n8n-read-only-inspection hardening** | **HARDENING COMPLETE** | Proven vs not proven; hardening rules; gate matrix — [packet](../decision-packets/post-n8n-read-only-inspection-hardening.md) · [session](../sessions/2026-05-26-control-plane-post-n8n-read-only-inspection-hardening-docs-only.md) |
-| **n8n payload preflight dry-run design packet** | **DESIGN PACKET COMPLETE** (docs-only) | Phase **0** only; no runtime; no payload sent; no n8n UI/API; no wf 40/41 mutation; no PM-34 unlock — [packet](../decision-packets/n8n-payload-preflight-dry-run-design-packet.md) · [session](../sessions/2026-05-26-control-plane-n8n-payload-preflight-dry-run-design-packet-docs-only.md) · [reconcile](../sessions/2026-05-26-control-plane-foundation-status-reconcile-after-n8n-payload-preflight-design-docs-only.md) |
-| **Provider API key policy** | **NO** | No OpenAI (or other) provider API keys for bridge/agent path |
-| **n8n (VPS)** | loopback `127.0.0.1:5678` | unchanged — not touched by bridge contract |
-| **Workflow 40 / 41** | untouched | ACTIVE / BACKUP OFF |
-| **Public exposure** | none | no Funnel |
-| **PM-34 real worker** | gated | unchanged — contract does not unlock |
-| **Next tactical step** | pending | **n8n payload preflight dry-run examples — docs-only** — pass/fail synthetic JSON; no runtime; no payload send; no n8n UI/API; no workflow 40/41 mutation; no PM-34 unlock; `n8n_ready=false`; `pm34_unblocked=false`; no provider API key; no OpenClaw `agent main`; no `codex resume`; no Codex repo mutation; no Cursor worker automation; no deploy/tag/rollback; no unattended automation |
+---
 
-Entry point: [PROJECT_VISION](PROJECT_VISION.md) (read-only; not modified by bridge contract task).
+## Document hierarchy
+
+| Document | Role |
+|----------|------|
+| **[PROJECT_VISION.md](PROJECT_VISION.md)** | Entry point canonico / livello superiore — source of truth per destinazione e invarianti |
+| **FOUNDATION_STATUS.md** (this file) | Stato sintetico operativo — non alternativa alla vision |
+
+Leggere sempre **PROJECT_VISION** prima di interpretare questo file.
+
+---
+
+## Operational snapshot (v2.2)
+
+| Area | Status | Notes |
+|------|--------|--------|
+| **GitHub** | Source of truth | Codice, docs, session log verificabili |
+| **Workflow 40** | **ATTIVO** (produzione) | Polling multirepo; **non modificato** in silenzio |
+| **Workflow 41** | Backup off | **Conservare** — non cancellare senza decisione esplicita |
+| **Workflow 42** (diff-summary Telegram) | **ATTIVO** / PASS | Diff summary su commit osservati |
+| **Telegram base** | **ATTIVO** | Notifiche commit / gate umano |
+| **Codex CLI direct path** | Target model path | OAuth ChatGPT Plus, ephemeral — **non** worker automatico |
+| **Cursor CLI** | **NON** worker automatico | Implementazione sotto supervisione umana |
+| **Ollama classifier** | **NON** nel loop operativo automatico | API smoke / contract design only |
+| **OpenClaw** | Backlog / transport opzionale confinato | **Non** model path target (superseded come default) |
+| **PM-34 real worker** | **BLOCCATO** | Nessun unlock senza prova reale + gate esplicito |
+| **Safe defaults** | Unchanged | `pm34_unblocked=false`, `n8n_ready=false` |
+| **Provider API key path** | **NO** | Nessuna chiave provider in Git o loop default |
+| **n8n runtime / VPS** | Out of scope for ad-hoc tasks | Nessun deploy/tag/rollback da task docs |
+
+---
+
+## Manual supervision evidence (not worker activation)
+
+Questi commit dimostrano pattern **manual-supervised** (wf42 → Codex → Cursor / GitHub bus). **Non** attivano Codex CLI o Cursor CLI in §1.1 PROJECT_VISION.
+
+| Commit | Session / meaning |
+|--------|-------------------|
+| `f17ad1e` | [First wf42 → Codex CLI manual PASS](../sessions/2026-05-27-control-plane-first-wf42-to-codex-cli-manual-pass.md) |
+| `6b5e100` | [First wf42 → Codex → Cursor manual e2e PASS](../sessions/2026-05-27-control-plane-first-wf42-codex-cursor-manual-e2e-pass.md) |
+| `4a539fc` | Codex prompt artifact bus test (`docs/runtime/codex-prompts/…`) |
+| `f482360` | [Codex prompt artifact consumed by Cursor PASS](../sessions/2026-05-27-control-plane-codex-prompt-artifact-consumed-by-cursor-pass.md) |
+
+---
+
+## External benchmark — GIS Tool
+
+**Verification (read-only):** commit `4a98a33` present on `origin/main` of `mrhz1973/cursor-coordinate-converter` after `git fetch origin main` (local clone was behind; not present until fetch).
+
+| Field | Value |
+|-------|--------|
+| Repo | `mrhz1973/cursor-coordinate-converter` |
+| Commit verified | `4a98a33` — `feat: improve offline map download and JPG export` |
+| Cycle observed | ChatGPT prompt → Cursor implementa → commit/push → deploy Firebase quando autorizzato → test browser utente PASS |
+| Firebase PASS (user) | https://gistoolmarty-33cf8.web.app |
+| VPS | Non aggiornato |
+| Value for control-plane | Riduce micro-interazione “utente deve ricordare/eseguire deploy manuale” nel flusso GIS |
+| Does **not** prove | Codex CLI attivo, Cursor CLI headless, n8n worker automatico, PM-34 unlock |
+
+---
+
+## Next tactical step
+
+**Codex CLI direct path preflight — docs+runtime-gated:**
+
+Produrre/validare artifact o prompt operativo via **Codex CLI direct path**, senza:
+
+- n8n runtime
+- workflow 40/41 mutation
+- PM-34 unlock
+- provider API key
+- deploy / tag / rollback
+
+Artifact policy: ASCII-safe, newline at EOF, no JSON wrapper obbligatorio per bus test (vedi `f482360`).
+
+---
+
+## Superseded as active next step (historical only)
+
+| Former next step | Status |
+|------------------|--------|
+| n8n payload synthetic validation / preflight dry-run **examples** as primary forward work | **Superseded** — design phase closed on paper (2026-05-26 batch); non è il passo tattico corrente |
+| OpenClaw/Codex bridge as **default** model path | **Superseded** by PROJECT_VISION v2.2 — Codex CLI direct; OpenClaw = optional transport/backlog |
+
+---
+
+## Design-phase evidence (local bridge + n8n payload — closed on paper)
+
+Compact index; detail in linked sessions. **Does not authorize** n8n runtime, PM-34 unlock, or unattended automation.
+
+| Layer | Status | Pointer |
+|-------|--------|---------|
+| Tailscale VPS ↔ Ryzen | PASS | [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md) |
+| Cursor Agent CLI install/auth smoke | PASS | [session](../sessions/2026-05-25-control-plane-cursor-agent-cli-install-auth-plan-smoke-pass.md) |
+| Ollama classifier API | PASS (API only) | [session](../sessions/2026-05-25-control-plane-ollama-qwen3-classifier-api-smoke-pass.md) |
+| OpenClaw gateway loopback | PASS (manual) | [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md) |
+| OpenClaw agent Step A | BLOCKED (no provider API key) | [session](../sessions/2026-05-25-control-plane-openclaw-agent-step-a-provider-api-key-blocked.md) |
+| Codex bridge V2 + local wrapper integration | PASS (local, n8n-free) | [closeout](../decision-packets/n8n-free-local-integration-readiness-closeout.md) |
+| n8n payload contract + synthetic examples | DOCS COMPLETE | [closeout](../decision-packets/n8n-payload-contract-closeout.md) |
+| n8n read-only runtime inspection Tier A | PASS (list-only) | [pass](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-inspection-tier-a-pass.md) |
+| n8n payload preflight dry-run design | DOCS COMPLETE (superseded as next step) | [packet](../decision-packets/n8n-payload-preflight-dry-run-design-packet.md) |
+
+**Invarianti invariati:** Workflow 40/41 untouched by design tasks; `pm34_unblocked=false`; `n8n_ready=false`; no provider API keys; no public Funnel.
+
+Entry point: [PROJECT_VISION](PROJECT_VISION.md).
