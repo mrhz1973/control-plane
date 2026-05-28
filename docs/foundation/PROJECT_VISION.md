@@ -549,6 +549,7 @@ Perché senza questo, ogni volta che apro una nuova chat con un'AI devo ri-spieg
 - Report qualità post-task e metriche su tempo risparmiato.
 - Miglioramento della sintesi commit/diff Telegram con classifier locale o Codex quando utile.
 - OpenClaw come transport/browser bridge opzionale confinato, non model path target.
+- Triangolo ruoli AI operativo (chiarimento non vincolante): **Claude** = consigliere strategico / reviewer esterno (non implementatore, non worker n8n); **ChatGPT** = orchestratore-B / interfaccia principale con l'utente; **Codex CLI** = orchestratore-A target nel loop locale (ephemeral, ragionamento read-only; non worker automatico finché non gated esplicitamente).
 
 ---
 
