@@ -225,6 +225,8 @@ Derivati dallo schema PM-17/Ollama classifier.
 
 L'orchestratore non deve fidarsi della memoria della chat quando GitHub può essere letto. Lo stato reale è ciò che risulta da repository, commit, documenti e output runtime osservabile.
 
+**Verifica implementatore (Composer 2.5 Fast / modello implementatore):** un SUCCESS dichiarato in chat **non** equivale a PASS. Un task è PASS solo con output verificabile: hash commit, diff reale, `git status` pulito, `git log`, verifica su GitHub. Il SUCCESS testuale da solo è insufficiente; GitHub resta fonte di verità.
+
 ### 7.2 LLMS-first e token efficiency
 
 Ogni agente deve leggere prima l'entry point compatto, poi i documenti specifici:
