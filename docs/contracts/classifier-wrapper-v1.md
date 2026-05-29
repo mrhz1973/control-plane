@@ -4,7 +4,7 @@
 **Document:** `docs/contracts/classifier-wrapper-v1.md`  
 **Version:** `classifier-wrapper-v1`  
 **Date:** 2026-05-25  
-**Status:** **C1a OFFLINE RUNTIME PASS** — Node implementation at `tools/classifier-wrapper-v1.mjs`; **C1b live Ollama smoke PENDING** (separate gate)
+**Status:** **C1a OFFLINE RUNTIME PASS** + **C1b LIVE OLLAMA SMOKE PASS** — Node implementation at `tools/classifier-wrapper-v1.mjs`
 
 **Related:** [Ollama API smoke PASS](../sessions/2026-05-25-control-plane-ollama-qwen3-classifier-api-smoke-pass.md) · [PROJECT_VISION](../foundation/PROJECT_VISION.md) · [FOUNDATION_STATUS](../foundation/FOUNDATION_STATUS.md) · [PM-17 dry-run (historical)](../PM17_OLLAMA_CLASSIFIER_DRY_RUN.md)
 
@@ -16,7 +16,7 @@
 |-----------|--------|
 | This document | **Design / contract** — authoritative schema; runtime at `tools/classifier-wrapper-v1.mjs` |
 | C1a offline runtime | **PASS** — 4 canonical mock cases via `tests/classifier-wrapper/run-offline-tests.mjs` |
-| C1b live Ollama smoke | **PENDING** — separate explicit gate; not run in C1a |
+| C1b live Ollama smoke | **PASS** — qwen3:14b via `tools/classifier-wrapper-v1.mjs` (docs-only input, schema-valid output, no fallback) |
 | Runtime transport | Ollama `/api/generate` with `stream:false`, `think:false`, `format:json` — no chain-of-thought requested, logged, or persisted |
 | n8n workflow 40 / 41 | **Not** modified by this design |
 | Tailscale-from-n8n | **Not** in scope |
@@ -253,7 +253,7 @@ If any check fails → override to safe fallback:
 | Gate | Status |
 |------|--------|
 | C1a Node local runtime + offline mock tests | **PASS** — `tools/classifier-wrapper-v1.mjs`, `tests/classifier-wrapper/run-offline-tests.mjs` |
-| C1b live qwen3:14b Ollama smoke | **PENDING** — separate gate |
+| C1b live qwen3:14b Ollama smoke | **PASS** — live smoke 2026-05-30 |
 | n8n HTTP node to wrapper | **Forbidden** until explicit PM/runtime packet |
 | End-to-end loop | **Backlog** per [PROJECT_VISION §12](../foundation/PROJECT_VISION.md) |
 
@@ -266,4 +266,15 @@ If any check fails → override to safe fallback:
 - `/api/generate` payload explicitly sets `stream:false`, `think:false`, `format:json`.
 - No chain-of-thought is requested, printed, logged, committed, or persisted.
 - Legacy `tools/ollama-classifier-dry-run.mjs` unchanged (PM-17 shaped).
-- n8n integration **not** active; wrapper is local C1a only.
+- n8n integration **not** active; wrapper is local runtime only (C1a+C1b), not n8n-wired.
+
+---
+
+## 11. C1b live smoke notes (2026-05-30)
+
+- Live smoke: `node tools/classifier-wrapper-v1.mjs --input-file <sanitized-docs-only.json> --pretty` against local Ollama qwen3:14b at `http://127.0.0.1:11434`.
+- `/api/generate` payload: `stream:false`, `think:false`, `format:json`.
+- No chain-of-thought requested, output, logged, committed, or persisted.
+- Output schema-valid; no fallback error.
+- n8n HTTP node remains **forbidden** until separate explicit gate.
+- End-to-end loop remains **backlog**.

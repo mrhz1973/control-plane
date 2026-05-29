@@ -8,7 +8,7 @@
 > ricordare o reincollare stato/output: leggilo da qui o da GitHub. I token costano
 > meno della memoria dell'utente.
 
-Ultimo aggiornamento: 2026-05-30 — C1a classifier wrapper v1 Node offline PASS
+Ultimo aggiornamento: 2026-05-30 — C1b live qwen3:14b Ollama smoke PASS
 
 ## PASS confermati (con prova)
 - Foundation completa: Tailscale attivo, 3 AI installate e collaudate, abbonamenti fissi, nessuna API a consumo.
@@ -18,21 +18,21 @@ Ultimo aggiornamento: 2026-05-30 — C1a classifier wrapper v1 Node offline PASS
 - Catena wf42 -> Codex CLI (solo): PASS — trigger 727db3e, Codex decide correttamente che Cursor NON serve (caso "non fare niente").
 - Catena completa wf42 -> Codex -> Cursor MANUALE/SUPERVISIONATA: PASS — trigger reale c64b800 -> commit GIS d04089610958dbb601969c9092665c4d0ad5091b ("docs: clarify README usage and supported formats", co-author cursoragent, docs-only). VERIFICATO su GitHub.
 - C1a classifier wrapper v1 Node local runtime: PASS — `tools/classifier-wrapper-v1.mjs`; 4 canonical offline mock cases PASS (`tests/classifier-wrapper/run-offline-tests.mjs`); `/api/generate` payload guard PASS (`stream:false`, `think:false`, `format:json`); no chain-of-thought requested or persisted.
+- C1b classifier wrapper v1 live qwen3:14b smoke: PASS — docs-only input via wrapper; schema-valid output (`risk:low`, `route:auto_allowed`); no fallback; no chain-of-thought.
 
 ## Frontiera attuale / prossimo gate
-- C1b live qwen3:14b Ollama smoke: PENDING — separate explicit gate (not run in C1a).
+- Primo Decision Packet Telegram: prossimo gate Milestone C.
 - Catena completa AUTOMATIZZATA (nessun filo umano, output Codex auto-instradato a Cursor): NOT RUN. E' Fase 3, gated da PM-34.
-- Milestone C: C1b live smoke + primo Decision Packet Telegram.
 - n8n runtime/wiring to classifier wrapper: NOT RUN.
 - Telegram Decision Packet send: NOT RUN.
 
 ## NON ripetere / bloccato
 - NON marcare Codex CLI o Cursor CLI "ATTIVO" in PROJECT_VISION 1.1: la catena e' manuale/supervisionata, non automatica.
-- NON marcare Ollama classifier fully ATTIVO nel loop: C1a local runtime offline PASS only; not wired to n8n.
+- NON marcare Ollama classifier fully ATTIVO nel loop: C1a+C1b local runtime PASS; not wired to n8n.
 - NON ri-sondare codex --version / --help: noto codex-cli 0.133.0, supporta --ephemeral, --sandbox read-only, --cd, --add-dir, prompt via stdin.
 - PM-34 real worker gate: BLOCCATO.
 - Path B OpenClaw agent main: BLOCCATO (manca provider API key). Backlog Option B con vendor proof.
-- Ollama classifier in automatic loop: NON ATTIVO (C1a offline runtime only).
+- Ollama classifier in automatic loop: NON ATTIVO (C1a+C1b local runtime PASS; not wired).
 
 ## Manutenzione di questo file
 - Aggiornare come EPILOGO di ogni task che cambia lo stato (stesso meccanismo di LAST_CURSOR_REPORT.md): la riga va aggiunta/spostata nello stesso commit che produce il cambiamento.
