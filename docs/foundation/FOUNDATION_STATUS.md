@@ -1,8 +1,8 @@
 # Foundation status
 
 **Updated:** 2026-05-29  
-**Aligned to:** [PROJECT_VISION](PROJECT_VISION.md) v2.6 — rolling Cursor report + Cursor prompt template contract  
-**HEAD before this reconcile:** `840d289` (`docs: update rolling Cursor report`)
+**Aligned to:** [PROJECT_VISION](PROJECT_VISION.md) v2.7 — Cursor prompt preflight + safe local repo update  
+**HEAD before this reconcile:** `c5f5dd8` (`docs: update rolling Cursor report`)
 
 ---
 
@@ -17,7 +17,7 @@ Leggere sempre **PROJECT_VISION** prima di interpretare questo file.
 
 ---
 
-## Operational snapshot (v2.6)
+## Operational snapshot (v2.7)
 
 | Area | Status | Notes |
 |------|--------|--------|
@@ -42,7 +42,7 @@ Leggere sempre **PROJECT_VISION** prima di interpretare questo file.
 | Document | Role |
 |----------|------|
 | **[LAST_CURSOR_REPORT.md](../runtime/LAST_CURSOR_REPORT.md)** | Report rolling post-push su GitHub. `LATEST.real_task_commit` = commit del task reale (commit 1), **non** il commit che aggiorna solo il report (commit 2). Evidenza hash per handoff/verificatore; non sostituisce `git ls-remote`. |
-| **[CURSOR_PROMPT_TEMPLATE.md](CURSOR_PROMPT_TEMPLATE.md)** | Contratto formato prompt Cursor. Metadati di routing (`CURSOR MODE` / `MODEL` / `REPO` / `BRANCH`) restano **fuori** dal corpo copiabile incollato in Cursor. Subordinato a PROJECT_VISION. |
+| **[CURSOR_PROMPT_TEMPLATE.md](CURSOR_PROMPT_TEMPLATE.md)** | Contratto formato prompt Cursor. Metadati di routing (`CURSOR MODE` / `MODEL` / `REPO` / `BRANCH`) e comandi ritorno umano (`aggio control`, `format`, ecc.) restano **fuori** dal corpo copiabile. Preflight implementatore include aggiornamento locale sicuro (fetch/pull `--ff-only`/verifica hash) eseguibile da Cursor; l'umano non fa fetch/pull/status di routine salvo gate diagnostici. Subordinato a PROJECT_VISION. |
 
 Questi contratti **non** attivano runtime, n8n, PM-34, provider API key, deploy, tag o rollback.
 

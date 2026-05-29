@@ -51,14 +51,28 @@ Niente prompt duplicati salvo un vero decision gate.
 
 Il corpo copiabile deve includere, in ordine logico:
 
-1. Verifica repository e branch (comandi git).
-2. Hash `origin/main` atteso, quando rilevante.
+1. **Preflight implementatore — aggiornamento locale sicuro del repository** (comandi eseguibili da Cursor):
+   ```bash
+   git fetch --prune origin
+   git status --short
+   git branch --show-current
+   git remote -v
+   git pull --ff-only origin main
+   git ls-remote origin main
+   git rev-parse HEAD
+   git rev-parse origin/main
+   ```
+   L'umano apre normalmente solo la finestra/repo Cursor corretta. **Non** chiedere all'umano fetch/pull/status di routine prima di ogni task.
+2. Hash `origin/main` atteso, quando rilevante; fermarsi se repo/branch/pull non coincidono.
 3. Goal del task.
 4. Allowed paths e azioni vietate.
 5. Comandi di validazione pre-commit.
 6. Istruzioni di commit selettivo e push.
-7. Contratto di report finale con output git **verbatim**.
-8. Riga finale: `aggio control`
+7. Contratto di report finale con output git **verbatim** e evidenza richiesta.
+
+**Report finale Cursor:** termina con evidenza e output git verbatim richiesti, **non** con comandi di ritorno chat/orchestratore.
+
+**Gate diagnostici umani** (solo se reali): chiedere output locale all'umano solo per workspace dirty inatteso, repo/branch sbagliato, pull rifiutato, auth failure, conflitto, clone mancante, workstation ambigua, sospetta corruzione repo.
 
 ---
 
@@ -68,6 +82,7 @@ Il corpo copiabile deve includere, in ordine logico:
 - `MODEL:`
 - `REPO:`
 - `BRANCH:`
+- Comandi di ritorno umano/orchestratore: `aggio control`, `aggio dev-method`, `format`, `next`, o simili.
 - Tabelle markdown per output git finali.
 - Riassunti al posto di output git verbatim.
 - Prompt alternativi senza un vero decision gate.

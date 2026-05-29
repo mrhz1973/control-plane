@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.6 — 2026-05-29  
-**Versione precedente:** 2.5 — 2026-05-29 (sostituita)  
+**Versione:** 2.7 — 2026-05-29  
+**Versione precedente:** 2.6 — 2026-05-29 (sostituita)  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -408,7 +408,9 @@ Ogni risposta operativa deve terminare con una riga finale:
 
 `WAIT` generico è vietato. `NEXT` non deve proporre nuovi PM se non richiesti.
 
-`docs/foundation/CURSOR_PROMPT_TEMPLATE.md` definisce il formato dei prompt Cursor: metadati di routing (mode/model/repo/branch) restano **fuori** dal corpo copiabile del prompt.
+`docs/foundation/CURSOR_PROMPT_TEMPLATE.md` definisce il formato dei prompt Cursor: metadati di routing (mode/model/repo/branch) restano **fuori** dal corpo copiabile del prompt; comandi di ritorno umano (`aggio control`, `format`, ecc.) restano **fuori** del prompt copiabile.
+
+I prompt Cursor/implementatore includono l'**aggiornamento locale sicuro del repo** nel corpo eseguibile (fetch, status, pull `--ff-only`, verifica hash remoto): l'umano **non** esegue fetch/pull/status di routine prima di ogni task, salvo gate diagnostici reali (workspace dirty, repo/branch errato, pull rifiutato, auth, conflitto, clone mancante).
 
 ---
 
@@ -594,6 +596,7 @@ Perché senza questo, ogni volta che apro una nuova chat con un'AI devo ri-spieg
 | 2.4 | 2026-05-29 | Aggiunta regola verifica hash remoto: PASS post-Cursor sull'hash remoto di `main`, raw GitHub secondario (può essere stale); §8.1 blocco post-push verification; §11.3 handoff con hash remoto; report post-push verbatim. |
 | 2.5 | 2026-05-29 | Introdotto `docs/runtime/LAST_CURSOR_REPORT.md` come report rolling post-push. §8.1: cattura verbatim ls-remote, log, status nel report. §11.3: handoff/verificatore leggono hash dal report remoto o da git ls-remote, non dalla chat. |
 | 2.6 | 2026-05-29 | Aggiunto `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`: contratto formato prompt Cursor; metadati routing fuori dal corpo copiabile. §8.3 puntatore. |
+| 2.7 | 2026-05-29 | §8.3: preflight implementatore con aggiornamento locale sicuro nel prompt Cursor; comandi ritorno umano fuori dal prompt copiabile. Allineato `CURSOR_PROMPT_TEMPLATE.md`. |
 
 ---
 
