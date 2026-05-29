@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.3 — 2026-05-29  
-**Versione precedente:** 2.2 — 2026-05-27 (sostituita)  
+**Versione:** 2.4 — 2026-05-29  
+**Versione precedente:** 2.3 — 2026-05-29 (sostituita)  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -229,6 +229,8 @@ L'orchestratore non deve fidarsi della memoria della chat quando GitHub può ess
 
 **Guardia retry/accesso (operativa, non componente):** un singolo fallimento di fetch/accesso **non** prova che una risorsa sia irraggiungibile (es. GitHub raw, `web_fetch`, API, pagine remote, file o endpoint remoti leggibili). Prima di concludere «non riesco a leggere X» o «X non è raggiungibile», **riprovare almeno una volta**. Non trascinare per tutta la sessione un assunto negativo non riverificato. Riverificare quando: lo stato può essere cambiato; l'utente afferma il contrario; una fonte alternativa suggerisce che la risorsa esiste; la prima richiesta può essere fallita per rete/cache/auth temporanea.
 
+**Guardia hash remoto vince sul raw (operativa):** il PASS post-Cursor richiede l'**hash remoto su `main`**. Fonte primaria: `git ls-remote origin main` oppure `git rev-parse origin/main`. Il **GitHub raw è secondario**, best-effort, e può essere **stale** per cache/CDN. Se l'hash remoto conferma e il raw diverge, **non** declassare il PASS. Nessun PASS senza hash remoto. Solo se il remoto **non** mostra il commit, usare l'output locale per distinguere push mancato, branch sbagliato o commit mai fatto.
+
 ### 7.2 LLMS-first e token efficiency
 
 Ogni agente deve leggere prima l'entry point compatto, poi i documenti specifici:
@@ -376,6 +378,20 @@ git log --oneline -5
 
 Commit sempre selettivo. Mai `git add .`.
 
+**Post-push verification (obbligatoria dopo `git push origin main`):**
+
+```bash
+git log --oneline -5
+git status --short
+git rev-parse HEAD
+git rev-parse origin/main
+git branch --show-current
+git show --stat HEAD
+git ls-remote origin main
+```
+
+Il report finale Cursor deve contenere l'**output testuale verbatim** di questi comandi, non una tabella e non un riassunto. Un SUCCESS senza questi output **non** vale PASS.
+
 ### 8.2 Script npm
 
 I comandi `npm run aggio`, `npm run checkpoint`, `npm run finito`, `npm run deploy` appartengono alla metodologia di altri repo solo se quel repo contiene effettivamente `package.json` e script corrispondenti. Nel `control-plane` non vanno assunti per default: verificare sempre il repository prima di usarli.
@@ -440,7 +456,9 @@ Path canonico: `docs/handoffs/YYYY-MM-DD-HHMM-<topic>-handoff.md`
 
 Contenuto minimo:
 
-- HEAD GitHub osservato;
+- HEAD / hash remoto osservato tramite `git ls-remote origin main` (o equivalente);
+- ultimo commit verificato su `main`;
+- eventuale divergenza raw/hash come nota secondaria, **non** un FAIL se l'hash remoto conferma;
 - stato reale del workflow/runtime;
 - ultimo risultato utile;
 - decisioni recenti non ancora consolidate;
@@ -566,6 +584,7 @@ Perché senza questo, ogni volta che apro una nuova chat con un'AI devo ri-spieg
 | 2.1 | 2026-05-27 | Marcato Diff-summary Telegram MVP come ATTIVO dopo workflow 42 PASS su nuovo commit automatico senza duplicati. |
 | 2.2 | 2026-05-27 | Riallineata architettura target a Codex CLI diretto via OAuth ChatGPT Plus; OpenClaw resta transport/backlog opzionale. Corretto header versione dopo v2.1 e spostato Diff-summary Telegram MVP nei completati tattici. |
 | 2.3 | 2026-05-29 | Aggiunta in §7.1 guardia retry/accesso accanto a SUCCESS testuale != PASS (operativa, non componente). |
+| 2.4 | 2026-05-29 | Aggiunta regola verifica hash remoto: PASS post-Cursor sull'hash remoto di `main`, raw GitHub secondario (può essere stale); §8.1 blocco post-push verification; §11.3 handoff con hash remoto; report post-push verbatim. |
 
 ---
 
