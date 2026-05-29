@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.4 — 2026-05-29  
-**Versione precedente:** 2.3 — 2026-05-29 (sostituita)  
+**Versione:** 2.5 — 2026-05-29  
+**Versione precedente:** 2.4 — 2026-05-29 (sostituita)  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -392,6 +392,8 @@ git ls-remote origin main
 
 Il report finale Cursor deve contenere l'**output testuale verbatim** di questi comandi, non una tabella e non un riassunto. Un SUCCESS senza questi output **non** vale PASS.
 
+**Report rolling Cursor (obbligatorio dopo ogni push di task reale):** dopo il push del commit reale, Cursor deve catturare verbatim `git ls-remote origin main`, `git log --oneline -5` e `git status --short`, e scriverli in `docs/runtime/LAST_CURSOR_REPORT.md`. Il report registra il commit reale (commit 1). Il commit leggero che aggiorna solo il report (commit 2) **non** si ri-registra: `LATEST.real_task_commit` resta lo SHA del commit 1. Il report **non** sostituisce `git ls-remote`, ma rende persistente su GitHub l'evidenza dell'hash per handoff e verificatore.
+
 ### 8.2 Script npm
 
 I comandi `npm run aggio`, `npm run checkpoint`, `npm run finito`, `npm run deploy` appartengono alla metodologia di altri repo solo se quel repo contiene effettivamente `package.json` e script corrispondenti. Nel `control-plane` non vanno assunti per default: verificare sempre il repository prima di usarli.
@@ -465,7 +467,10 @@ Contenuto minimo:
 - gate aperti reali;
 - prossimo passo tattico, se già deciso;
 - contatore turni (per la regola dei 20);
-- riferimento a `PROJECT_VISION.md` come entry point della nuova chat.
+- riferimento a `PROJECT_VISION.md` come entry point della nuova chat;
+- `docs/runtime/LAST_CURSOR_REPORT.md` se esiste, in particolare `LATEST.real_task_commit`;
+- hash remoto da `git ls-remote origin main` diretto quando possibile;
+- **mai** usare report incollati in chat come verifica primaria del PASS.
 
 ### 11.4 Backlog futuro — handoff via Ollama stimatore
 
@@ -585,6 +590,7 @@ Perché senza questo, ogni volta che apro una nuova chat con un'AI devo ri-spieg
 | 2.2 | 2026-05-27 | Riallineata architettura target a Codex CLI diretto via OAuth ChatGPT Plus; OpenClaw resta transport/backlog opzionale. Corretto header versione dopo v2.1 e spostato Diff-summary Telegram MVP nei completati tattici. |
 | 2.3 | 2026-05-29 | Aggiunta in §7.1 guardia retry/accesso accanto a SUCCESS testuale != PASS (operativa, non componente). |
 | 2.4 | 2026-05-29 | Aggiunta regola verifica hash remoto: PASS post-Cursor sull'hash remoto di `main`, raw GitHub secondario (può essere stale); §8.1 blocco post-push verification; §11.3 handoff con hash remoto; report post-push verbatim. |
+| 2.5 | 2026-05-29 | Introdotto `docs/runtime/LAST_CURSOR_REPORT.md` come report rolling post-push. §8.1: cattura verbatim ls-remote, log, status nel report. §11.3: handoff/verificatore leggono hash dal report remoto o da git ls-remote, non dalla chat. |
 
 ---
 
