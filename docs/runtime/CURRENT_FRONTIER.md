@@ -8,7 +8,7 @@
 > ricordare o reincollare stato/output: leggilo da qui o da GitHub. I token costano
 > meno della memoria dell'utente.
 
-Ultimo aggiornamento: 2026-05-30 — D-0002-C guard keyword precision hardening PASS
+Ultimo aggiornamento: 2026-05-30 — primo Decision Packet Telegram inviato manualmente (attestato utente)
 
 ## PASS confermati (con prova)
 - Foundation completa: Tailscale attivo, 3 AI installate e collaudate, abbonamenti fissi, nessuna API a consumo.
@@ -20,12 +20,13 @@ Ultimo aggiornamento: 2026-05-30 — D-0002-C guard keyword precision hardening 
 - C1a classifier wrapper v1 Node local runtime: PASS — `tools/classifier-wrapper-v1.mjs`; 4 canonical offline mock cases PASS (`tests/classifier-wrapper/run-offline-tests.mjs`); `/api/generate` payload guard PASS (`stream:false`, `think:false`, `format:json`); no chain-of-thought requested or persisted.
 - C1b classifier wrapper v1 live qwen3:14b smoke: PASS — docs-only input via wrapper; schema-valid output (`risk:low`, `route:auto_allowed`); no fallback; no chain-of-thought.
 - D-0002-C guard keyword precision hardening: PASS — offline suite A-I (9 cases); negative-context false-positive protection; deploy-path regression (`scripts/deploy.sh` stays high); structured flags authoritative.
+- Primo Decision Packet Telegram (D-0002-C): inviato MANUALMENTE — PASS ATTESTATO UTENTE. Esecuzione singola n8n UI, workflow INATTIVO, credential "CONTROL PLANE - Telegram Bot" esistente, nessun token in git. NON cablato, NON automatico. Evidenza: messaggio Telegram dell'utente (nessun artefatto repo).
 
 ## Frontiera attuale / prossimo gate
-- Primo Decision Packet Telegram: prossimo gate Milestone C.
+- Prossimo gate reale: cablaggio n8n -> classifier wrapper + DECISION_PACKET_FORMAT.md; Telegram Decision Packet automatico/cablato: NOT RUN.
 - Catena completa AUTOMATIZZATA (nessun filo umano, output Codex auto-instradato a Cursor): NOT RUN. E' Fase 3, gated da PM-34.
 - n8n runtime/wiring to classifier wrapper: NOT RUN.
-- Telegram Decision Packet send: NOT RUN.
+- Telegram Decision Packet send AUTOMATICO/cablato: NOT RUN.
 
 ## Asset n8n esistenti (NON riconfigurare da zero)
 
