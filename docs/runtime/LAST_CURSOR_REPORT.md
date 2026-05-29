@@ -16,35 +16,40 @@ Regole:
 
 ## LATEST
 
-- task_ref: cursor-prompt-preflight-v2.7
-- timestamp_utc: 2026-05-29T21:14:02Z
+- task_ref: classifier-wrapper-c1a-offline
+- timestamp_utc: 2026-05-29T22:53:05Z
 - branch: main
-- real_task_commit: 9cb29f8e205c56a70c9b5db42c2e9c970966d920
+- real_task_commit: f2e95e774138e92ef6defa1bf130f73efa21195a
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-9cb29f8e205c56a70c9b5db42c2e9c970966d920	refs/heads/main
+f2e95e774138e92ef6defa1bf130f73efa21195a	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+f2e95e7 feat: add classifier wrapper v1 Node runtime offline C1a
+82fdb4d docs: add CURRENT_FRONTIER.md authoritative state ledger
+75997e8 docs: rewrite section 13 plain-language explanation with current state
+b7453a0 docs: update rolling Cursor report
 9cb29f8 docs: update cursor prompt preflight rules
-c5f5dd8 docs: update rolling Cursor report
-22514ed docs: align foundation status with v2.6
-840d289 docs: update rolling Cursor report
-f2ee6d2 docs: add cursor prompt template contract
 ```
 
 ### git_status_short — `git status --short`
 
 ```text
-
+?? CONTROL
 ```
 
 ## HISTORY
+
+### cursor-prompt-preflight-v2.7 — 2026-05-29T21:14:02Z
+
+- real_task_commit: 9cb29f8e205c56a70c9b5db42c2e9c970966d920
+- result_cursor: PASS
 
 ### foundation-status-v2.6-reconcile — 2026-05-29T20:52:19Z
 
