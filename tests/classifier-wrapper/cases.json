@@ -1,0 +1,139 @@
+{
+  "cases": [
+    {
+      "id": "A",
+      "name": "low docs-only",
+      "input": {
+        "event_id": "evt-offline-a",
+        "event_type": "docs_commit",
+        "summary": "Markdown cleanup under docs/foundation only",
+        "touched_paths": ["docs/foundation/FOUNDATION_STATUS.md"],
+        "runtime_flags": { "touched": false, "detail": "" },
+        "secrets_flags": { "touched": false, "detail": "" },
+        "deploy_flags": { "touched": false, "detail": "" },
+        "n8n_flags": {
+          "touched": false,
+          "workflow_40": false,
+          "workflow_41": false,
+          "import_disabled": false
+        },
+        "automation_flags": {
+          "touched": false,
+          "autonomous_worker": false,
+          "commit_push_loop": false
+        }
+      },
+      "mockModelResponse": {
+        "risk": "low",
+        "route": "auto_allowed",
+        "reason": "docs-only under allowed paths; no runtime or workflow flags",
+        "confidence": "high",
+        "requires_human": false
+      },
+      "expected": {
+        "risk": "low",
+        "route": "auto_allowed",
+        "requires_human": false,
+        "confidence": "high"
+      }
+    },
+    {
+      "id": "B",
+      "name": "medium runtime-adjacent n8n import disabled",
+      "input": {
+        "event_id": "evt-offline-b",
+        "event_type": "plan_import",
+        "summary": "Import n8n workflow template kept disabled",
+        "touched_paths": ["docs/plans/workflow-import-template.json"],
+        "runtime_flags": { "touched": false, "detail": "" },
+        "secrets_flags": { "touched": false, "detail": "" },
+        "deploy_flags": { "touched": false, "detail": "" },
+        "n8n_flags": {
+          "touched": true,
+          "import_disabled": true,
+          "workflow_40": false,
+          "workflow_41": false
+        },
+        "automation_flags": {
+          "touched": false,
+          "autonomous_worker": false,
+          "commit_push_loop": false
+        }
+      },
+      "mockModelResponse": {
+        "risk": "medium",
+        "route": "human_gate",
+        "reason": "runtime-adjacent n8n import; workflow kept disabled",
+        "confidence": "high",
+        "requires_human": true
+      },
+      "expected": {
+        "minRisk": "medium",
+        "route": "human_gate",
+        "requires_human": true
+      }
+    },
+    {
+      "id": "C",
+      "name": "high autonomous worker",
+      "input": {
+        "event_id": "evt-offline-c",
+        "event_type": "automation_request",
+        "summary": "Enable unattended commit-push worker loop",
+        "touched_paths": ["docs/plans/automation-loop.md"],
+        "runtime_flags": { "touched": false, "detail": "" },
+        "secrets_flags": { "touched": false, "detail": "" },
+        "deploy_flags": { "touched": false, "detail": "" },
+        "n8n_flags": {
+          "touched": false,
+          "workflow_40": false,
+          "workflow_41": false
+        },
+        "automation_flags": {
+          "touched": true,
+          "autonomous_worker": true,
+          "commit_push_loop": true
+        }
+      },
+      "mockModelResponse": null,
+      "expected": {
+        "risk": "high",
+        "route": "human_gate",
+        "requires_human": true,
+        "confidence": "high",
+        "reasonIncludes": "guard:autonomous_worker"
+      }
+    },
+    {
+      "id": "D",
+      "name": "invalid model output",
+      "input": {
+        "event_id": "evt-offline-d",
+        "event_type": "docs_commit",
+        "summary": "Docs note under docs/contracts",
+        "touched_paths": ["docs/contracts/classifier-wrapper-v1.md"],
+        "runtime_flags": { "touched": false, "detail": "" },
+        "secrets_flags": { "touched": false, "detail": "" },
+        "deploy_flags": { "touched": false, "detail": "" },
+        "n8n_flags": {
+          "touched": false,
+          "workflow_40": false,
+          "workflow_41": false
+        },
+        "automation_flags": {
+          "touched": false,
+          "autonomous_worker": false,
+          "commit_push_loop": false
+        }
+      },
+      "mockModelResponse": "not json",
+      "expected": {
+        "risk": "high",
+        "route": "human_gate",
+        "requires_human": true,
+        "confidence": "low",
+        "reasonIncludes": "fallback:invalid_json"
+      }
+    }
+  ]
+}

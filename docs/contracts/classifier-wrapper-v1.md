@@ -4,7 +4,7 @@
 **Document:** `docs/contracts/classifier-wrapper-v1.md`  
 **Version:** `classifier-wrapper-v1`  
 **Date:** 2026-05-25  
-**Status:** **DESIGN ONLY** — no runtime implementation in this document
+**Status:** **C1a OFFLINE RUNTIME PASS** — Node implementation at `tools/classifier-wrapper-v1.mjs`; **C1b live Ollama smoke PENDING** (separate gate)
 
 **Related:** [Ollama API smoke PASS](../sessions/2026-05-25-control-plane-ollama-qwen3-classifier-api-smoke-pass.md) · [PROJECT_VISION](../foundation/PROJECT_VISION.md) · [FOUNDATION_STATUS](../foundation/FOUNDATION_STATUS.md) · [PM-17 dry-run (historical)](../PM17_OLLAMA_CLASSIFIER_DRY_RUN.md)
 
@@ -14,8 +14,10 @@
 
 | Statement | Value |
 |-----------|--------|
-| This document | **Design / contract only** — no executable wrapper shipped here |
-| Runtime calls | **None** required to adopt this contract |
+| This document | **Design / contract** — authoritative schema; runtime at `tools/classifier-wrapper-v1.mjs` |
+| C1a offline runtime | **PASS** — 4 canonical mock cases via `tests/classifier-wrapper/run-offline-tests.mjs` |
+| C1b live Ollama smoke | **PENDING** — separate explicit gate; not run in C1a |
+| Runtime transport | Ollama `/api/generate` with `stream:false`, `think:false`, `format:json` — no chain-of-thought requested, logged, or persisted |
 | n8n workflow 40 / 41 | **Not** modified by this design |
 | Tailscale-from-n8n | **Not** in scope |
 | PM-34 real worker | **Not** unlocked |
@@ -250,6 +252,18 @@ If any check fails → override to safe fallback:
 
 | Gate | Status |
 |------|--------|
-| Wrapper runtime implementation | **Not started** |
+| C1a Node local runtime + offline mock tests | **PASS** — `tools/classifier-wrapper-v1.mjs`, `tests/classifier-wrapper/run-offline-tests.mjs` |
+| C1b live qwen3:14b Ollama smoke | **PENDING** — separate gate |
 | n8n HTTP node to wrapper | **Forbidden** until explicit PM/runtime packet |
 | End-to-end loop | **Backlog** per [PROJECT_VISION §12](../foundation/PROJECT_VISION.md) |
+
+---
+
+## 10. C1a runtime notes (2026-05-30)
+
+- Implementation: `tools/classifier-wrapper-v1.mjs` (event-shaped, not PM-17).
+- Offline tests: `tests/classifier-wrapper/cases.json` + `tests/classifier-wrapper/run-offline-tests.mjs` (mock only, no external calls).
+- `/api/generate` payload explicitly sets `stream:false`, `think:false`, `format:json`.
+- No chain-of-thought is requested, printed, logged, committed, or persisted.
+- Legacy `tools/ollama-classifier-dry-run.mjs` unchanged (PM-17 shaped).
+- n8n integration **not** active; wrapper is local C1a only.
