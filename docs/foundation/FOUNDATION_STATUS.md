@@ -47,6 +47,9 @@ Questi commit dimostrano pattern **manual-supervised** (wf42 → Codex → Curso
 | `6b5e100` | [First wf42 → Codex → Cursor manual e2e PASS](../sessions/2026-05-27-control-plane-first-wf42-codex-cursor-manual-e2e-pass.md) |
 | `4a539fc` | Codex prompt artifact bus test (`docs/runtime/codex-prompts/…`) |
 | `f482360` | [Codex prompt artifact consumed by Cursor PASS](../sessions/2026-05-27-control-plane-codex-prompt-artifact-consumed-by-cursor-pass.md) |
+| `becab46` / `c27aadb` | Repeatability run: Codex artifact bus -> Cursor -> real commits (role triangle, verification guard) |
+
+**Codex artifact helper v1 (manual-supervised):** script locale [`scripts/codex-artifact.ps1`](../../scripts/codex-artifact.ps1) — percorso test reale: file prompt input -> `codex.cmd exec --ephemeral --sandbox read-only` -> artifact in `docs/runtime/codex-prompts/` (es. `2026-05-28-helper-v1-status-note.md`). **Valore:** riduce la micro-interazione di ricostruire manualmente il comando Codex artifact. **Stato:** helper manual-supervised only; **non** attiva Codex CLI worker; **non** sblocca PM-34; **non** cambia `pm34_unblocked` / `n8n_ready`; **non** tocca workflow 40/41; no n8n runtime; no provider API key; no deploy/tag/rollback.
 
 ---
 
@@ -68,9 +71,9 @@ Questi commit dimostrano pattern **manual-supervised** (wf42 → Codex → Curso
 
 ## Next tactical step
 
-**Codex CLI direct path preflight — docs+runtime-gated:**
+**Artifact bus helper v1 repeat-use:** usare [`scripts/codex-artifact.ps1`](../../scripts/codex-artifact.ps1) su un **secondo task reale** (input prompt -> artifact -> Cursor) prima di qualunque integrazione n8n/runtime.
 
-Produrre/validare artifact o prompt operativo via **Codex CLI direct path**, senza:
+Vincoli invariati:
 
 - n8n runtime
 - workflow 40/41 mutation
@@ -78,7 +81,7 @@ Produrre/validare artifact o prompt operativo via **Codex CLI direct path**, sen
 - provider API key
 - deploy / tag / rollback
 
-Artifact policy: ASCII-safe, newline at EOF, no JSON wrapper obbligatorio per bus test (vedi `f482360`).
+Artifact policy: ASCII-safe, newline at EOF, no JSON wrapper obbligatorio (vedi `f482360`, helper v1 enforce EOF).
 
 ---
 
