@@ -56,18 +56,33 @@ const SECRET_PATTERNS = [
 
 const DEPLOY_PATTERNS = [/deploy/i, /rollback/i, /production/i];
 
-export function buildGeneratePayload({ model, prompt, baseUrl = DEFAULT_BASE_URL }) {
-  const url = `${baseUrl.replace(/\/$/, "")}/api/generate`;
-  return {
-    url,
-    body: {
-      model,
-      prompt,
-      stream: false,
-      think: false,
-      format: "json",
-    },
-  };
+const NEGATION_BEFORE_PATTERNS = [
+  /\bno\s+$/i,
+  /\bno,\s*$/i,
+  /\bnone\s+$/i,
+  /\bwithout\s+$/i,
+  /\bnot\s+$/i,
+  /\bdoes\s+not\s+$/i,
+  /\bdo\s+not\s+$/i,
+  /\bnon\s+$/i,
+  /\bnessun[aoe]?\s+$/i,
+  /\bnessun\s+$/i,
+  /\bsenza\s+$/i,
+  /\bnot\s+touching\s+$/i,
+  /\bdoes\s+not\s+touch\s+$/i,
+  /\bno\s+change\s+to\s+$/i,
+];
+
+const ACTION_AFTER_PATTERNS = [
+  /\s+to\s+/i,
+  /\s+now\b/i,
+  /\s+after\b/i,
+  /\s+immediately\b/i,
+  /\s+production\b/i,
+];
+
+export function flagExplicitFalse(flags) {
+  return flags != null && flags.touched === false;
 }
 
 function flagTouched(flags) {
@@ -84,8 +99,92 @@ function pathsUnderAllowedDocs(paths) {
   });
 }
 
+export function buildGeneratePayload({ model, prompt, baseUrl = DEFAULT_BASE_URL }) {
+  const url = `${baseUrl.replace(/\/$/, "")}/api/generate`;
+  return {
+    url,
+    body: {
+      model,
+      prompt,
+      stream: false,
+      think: false,
+      format: "json",
+    },
+  };
+}
+
 function textMatchesPatterns(text, patterns) {
   return patterns.some((re) => re.test(text));
+}
+
+function isMatchSuppressedByNegation(text, matchIndex, matchLength) {
+  const windowBefore = 80;
+  const start = Math.max(0, matchIndex - windowBefore);
+  const before = text.slice(start, matchIndex).toLowerCase();
+  const after = text.slice(matchIndex + matchLength, matchIndex + matchLength + 40).toLowerCase();
+
+  const touchPhrase = before.match(
+    /\b(does\s+not\s+touch|do\s+not\s+touch|not\s+touching|without)\b/i,
+  );
+  if (touchPhrase) {
+    const afterTouch = before.slice(touchPhrase.index + touchPhrase[0].length);
+    if (/^[\w\s,orand]*$/i.test(afterTouch)) {
+      return true;
+    }
+  }
+
+  const hasNegation = NEGATION_BEFORE_PATTERNS.some((re) => {
+    const tail = before.slice(-35);
+    return re.test(tail) || re.test(before);
+  });
+
+  if (!hasNegation) {
+    return false;
+  }
+
+  const afterImmediate = text
+    .slice(matchIndex + matchLength, matchIndex + matchLength + 15)
+    .toLowerCase();
+
+  if (ACTION_AFTER_PATTERNS.some((re) => re.test(afterImmediate))) {
+    return false;
+  }
+
+  return true;
+}
+
+function textMatchesPatternsWithSuppression(text, patterns) {
+  for (const re of patterns) {
+    const flags = re.flags.includes("g") ? re.flags : `${re.flags}g`;
+    const clone = new RegExp(re.source, flags);
+    let match;
+    while ((match = clone.exec(text)) !== null) {
+      if (!isMatchSuppressedByNegation(text, match.index, match[0].length)) {
+        return true;
+      }
+      if (match[0].length === 0) {
+        clone.lastIndex += 1;
+      }
+    }
+  }
+  return false;
+}
+
+function evaluateKeywordGuard({ summary, paths, patterns, flagObject, allowSuppression }) {
+  if (flagTouched(flagObject)) {
+    return true;
+  }
+
+  const pathsText = paths.map((p) => String(p).replace(/\\/g, "/")).join(" ");
+  if (textMatchesPatterns(pathsText, patterns)) {
+    return true;
+  }
+
+  if (allowSuppression) {
+    return textMatchesPatternsWithSuppression(summary, patterns);
+  }
+
+  return textMatchesPatterns(summary, patterns);
 }
 
 function guardOutput({ risk, route, reason, confidence = "high", requires_human = true }) {
@@ -95,11 +194,19 @@ function guardOutput({ risk, route, reason, confidence = "high", requires_human 
 export function evaluateGuards(input) {
   const summary = String(input.summary || "");
   const paths = Array.isArray(input.touched_paths) ? input.touched_paths : [];
-  const combined = `${summary} ${paths.join(" ")}`;
+  const safeDocsOnly =
+    pathsUnderAllowedDocs(paths) &&
+    flagExplicitFalse(input.secrets_flags) &&
+    flagExplicitFalse(input.deploy_flags);
 
   if (
-    flagTouched(input.secrets_flags) ||
-    textMatchesPatterns(combined, SECRET_PATTERNS)
+    evaluateKeywordGuard({
+      summary,
+      paths,
+      patterns: SECRET_PATTERNS,
+      flagObject: input.secrets_flags,
+      allowSuppression: safeDocsOnly && flagExplicitFalse(input.secrets_flags),
+    })
   ) {
     return {
       action: "return",
@@ -114,8 +221,13 @@ export function evaluateGuards(input) {
   }
 
   if (
-    flagTouched(input.deploy_flags) ||
-    textMatchesPatterns(combined, DEPLOY_PATTERNS)
+    evaluateKeywordGuard({
+      summary,
+      paths,
+      patterns: DEPLOY_PATTERNS,
+      flagObject: input.deploy_flags,
+      allowSuppression: safeDocsOnly && flagExplicitFalse(input.deploy_flags),
+    })
   ) {
     return {
       action: "return",

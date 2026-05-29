@@ -125,6 +125,8 @@ Evaluate in order. If any rule matches, **skip the model** and return the guard 
 
 Guard output MUST set `confidence: high` and `reason` citing the matched rule id (e.g. `guard:secrets_touched`).
 
+**Keyword precision (D-0002-C):** summary keyword guards suppress obvious negative-context false positives (e.g. "no secrets", "does not touch auth") **only** when the corresponding structured flag is explicitly `touched: false` and paths are safe docs-only. Structured flags, missing/ambiguous flags, and dangerous paths remain authoritative. If uncertain, the guard stays active (default safe). This is precision hardening only — not n8n wiring or automation unlock.
+
 ---
 
 ## 5. Model invocation (when guards do not force exit)
@@ -278,3 +280,12 @@ If any check fails → override to safe fallback:
 - Output schema-valid; no fallback error.
 - n8n HTTP node remains **forbidden** until separate explicit gate.
 - End-to-end loop remains **backlog**.
+
+---
+
+## 12. Guard keyword precision (D-0002-C, 2026-05-30)
+
+- Runtime: `tools/classifier-wrapper-v1.mjs` — negative-context suppression for summary keywords when structured flags are explicitly false and paths are safe docs-only.
+- Offline suite: cases A–I (9 total) including negative-context false-positive protection and deploy-path regression.
+- Structured `*_flags.touched === true`, missing/ambiguous flags, and dangerous paths (e.g. `.env`, `scripts/deploy.sh`) are not weakened by prose.
+- Precision hardening only; not n8n-wired; PM-34 not unlocked.

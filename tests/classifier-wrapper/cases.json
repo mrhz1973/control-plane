@@ -134,6 +134,167 @@
         "confidence": "low",
         "reasonIncludes": "fallback:invalid_json"
       }
+    },
+    {
+      "id": "E",
+      "name": "negative-context docs-only should not guard high",
+      "input": {
+        "event_id": "evt-offline-e",
+        "event_type": "docs_commit",
+        "summary": "Docs-only note: no secrets, no deploy, does not touch auth or production runtime",
+        "touched_paths": ["docs/runtime/CURRENT_FRONTIER.md"],
+        "runtime_flags": { "touched": false, "detail": "" },
+        "secrets_flags": { "touched": false, "detail": "" },
+        "deploy_flags": { "touched": false, "detail": "" },
+        "n8n_flags": {
+          "touched": false,
+          "workflow_40": false,
+          "workflow_41": false,
+          "import_disabled": false
+        },
+        "automation_flags": {
+          "touched": false,
+          "autonomous_worker": false,
+          "commit_push_loop": false
+        }
+      },
+      "mockModelResponse": {
+        "risk": "low",
+        "route": "auto_allowed",
+        "reason": "docs-only negative-context prose; structured flags explicitly false",
+        "confidence": "high",
+        "requires_human": false
+      },
+      "expected": {
+        "risk": "low",
+        "route": "auto_allowed",
+        "requires_human": false,
+        "confidence": "high"
+      }
+    },
+    {
+      "id": "F",
+      "name": "real secret flag still high",
+      "input": {
+        "event_id": "evt-offline-f",
+        "event_type": "docs_commit",
+        "summary": "Docs note with no secrets mentioned in prose",
+        "touched_paths": ["docs/runtime/CURRENT_FRONTIER.md"],
+        "runtime_flags": { "touched": false, "detail": "" },
+        "secrets_flags": { "touched": true, "detail": "credential file referenced" },
+        "deploy_flags": { "touched": false, "detail": "" },
+        "n8n_flags": {
+          "touched": false,
+          "workflow_40": false,
+          "workflow_41": false
+        },
+        "automation_flags": {
+          "touched": false,
+          "autonomous_worker": false,
+          "commit_push_loop": false
+        }
+      },
+      "mockModelResponse": null,
+      "expected": {
+        "risk": "high",
+        "route": "human_gate",
+        "requires_human": true,
+        "confidence": "high",
+        "reasonIncludes": "guard:secrets_touched"
+      }
+    },
+    {
+      "id": "G",
+      "name": "real deploy keyword without negation still high",
+      "input": {
+        "event_id": "evt-offline-g",
+        "event_type": "deploy_request",
+        "summary": "Deploy production runtime after classifier smoke",
+        "touched_paths": ["docs/runtime/CURRENT_FRONTIER.md"],
+        "runtime_flags": { "touched": false, "detail": "" },
+        "secrets_flags": { "touched": false, "detail": "" },
+        "deploy_flags": { "touched": false, "detail": "" },
+        "n8n_flags": {
+          "touched": false,
+          "workflow_40": false,
+          "workflow_41": false
+        },
+        "automation_flags": {
+          "touched": false,
+          "autonomous_worker": false,
+          "commit_push_loop": false
+        }
+      },
+      "mockModelResponse": null,
+      "expected": {
+        "risk": "high",
+        "route": "human_gate",
+        "requires_human": true,
+        "confidence": "high",
+        "reasonIncludes": "guard:deploy_or_rollback"
+      }
+    },
+    {
+      "id": "H",
+      "name": "path-based secret remains high",
+      "input": {
+        "event_id": "evt-offline-h",
+        "event_type": "config_change",
+        "summary": "Update local config files",
+        "touched_paths": [".env", "config/token.txt"],
+        "runtime_flags": { "touched": false, "detail": "" },
+        "secrets_flags": { "touched": false, "detail": "" },
+        "deploy_flags": { "touched": false, "detail": "" },
+        "n8n_flags": {
+          "touched": false,
+          "workflow_40": false,
+          "workflow_41": false
+        },
+        "automation_flags": {
+          "touched": false,
+          "autonomous_worker": false,
+          "commit_push_loop": false
+        }
+      },
+      "mockModelResponse": null,
+      "expected": {
+        "risk": "high",
+        "route": "human_gate",
+        "requires_human": true,
+        "confidence": "high",
+        "reasonIncludes": "guard:secrets_touched"
+      }
+    },
+    {
+      "id": "I",
+      "name": "misleading negative phrase with real deploy path remains high",
+      "input": {
+        "event_id": "evt-offline-i",
+        "event_type": "deploy_request",
+        "summary": "no, deploy to production now",
+        "touched_paths": ["scripts/deploy.sh"],
+        "runtime_flags": { "touched": false, "detail": "" },
+        "secrets_flags": { "touched": false, "detail": "" },
+        "deploy_flags": { "touched": false, "detail": "" },
+        "n8n_flags": {
+          "touched": false,
+          "workflow_40": false,
+          "workflow_41": false
+        },
+        "automation_flags": {
+          "touched": false,
+          "autonomous_worker": false,
+          "commit_push_loop": false
+        }
+      },
+      "mockModelResponse": null,
+      "expected": {
+        "risk": "high",
+        "route": "human_gate",
+        "requires_human": true,
+        "confidence": "high",
+        "reasonIncludes": "guard:deploy_or_rollback"
+      }
     }
   ]
 }
