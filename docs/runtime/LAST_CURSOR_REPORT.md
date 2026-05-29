@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: cursor-prompt-template-v1
-- timestamp_utc: 2026-05-29T20:48:08Z
+- task_ref: foundation-status-v2.6-reconcile
+- timestamp_utc: 2026-05-29T20:52:19Z
 - branch: main
-- real_task_commit: f2ee6d2cfe992465e9e4736d30b1636adad765db
+- real_task_commit: 22514ed320e1ccf12f627f9798fe6f0d20eb11d5
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-f2ee6d2cfe992465e9e4736d30b1636adad765db	refs/heads/main
+22514ed320e1ccf12f627f9798fe6f0d20eb11d5	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+22514ed docs: align foundation status with v2.6
+840d289 docs: update rolling Cursor report
 f2ee6d2 docs: add cursor prompt template contract
 938f0bf docs: update rolling Cursor report
 ef0afe8 docs: add rolling Cursor report
-5087176 docs: add remote hash verification guard
-56b7761 docs: add retry access guard to project vision
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ ef0afe8 docs: add rolling Cursor report
 ```
 
 ## HISTORY
+
+### cursor-prompt-template-v1 — 2026-05-29T20:48:08Z
+
+- real_task_commit: f2ee6d2cfe992465e9e4736d30b1636adad765db
+- result_cursor: PASS
 
 ### rolling-cursor-report-v1 — 2026-05-29T20:44:01Z
 
