@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: classifier-wrapper-c1b-live-smoke
-- timestamp_utc: 2026-05-29T23:02:50Z
+- task_ref: classifier-guard-keyword-hardening-d0002c
+- timestamp_utc: 2026-05-29T23:29:20Z
 - branch: main
-- real_task_commit: d8ff7960653afbb39fc53867d84d1dca0bb85b81
+- real_task_commit: c6a3782270bfe597029628ca0dd5dfb5fd1badd2
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-d8ff7960653afbb39fc53867d84d1dca0bb85b81	refs/heads/main
+c6a3782270bfe597029628ca0dd5dfb5fd1badd2	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+c6a3782 fix: harden classifier keyword guards against negative-context false positives
+6190fa0 docs: update rolling Cursor report
 d8ff796 docs: record classifier wrapper C1b live smoke pass
 7de08fc docs: update rolling Cursor report
 f2e95e7 feat: add classifier wrapper v1 Node runtime offline C1a
-82fdb4d docs: add CURRENT_FRONTIER.md authoritative state ledger
-75997e8 docs: rewrite section 13 plain-language explanation with current state
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ f2e95e7 feat: add classifier wrapper v1 Node runtime offline C1a
 ```
 
 ## HISTORY
+
+### classifier-wrapper-c1b-live-smoke — 2026-05-29T23:02:50Z
+
+- real_task_commit: d8ff7960653afbb39fc53867d84d1dca0bb85b81
+- result_cursor: PASS
 
 ### classifier-wrapper-c1a-offline — 2026-05-29T22:53:05Z
 
