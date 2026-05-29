@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.2 — 2026-05-27  
-**Versione precedente:** 2.1 — 2026-05-27 (sostituita)  
+**Versione:** 2.3 — 2026-05-29  
+**Versione precedente:** 2.2 — 2026-05-27 (sostituita)  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -226,6 +226,8 @@ Derivati dallo schema PM-17/Ollama classifier.
 L'orchestratore non deve fidarsi della memoria della chat quando GitHub può essere letto. Lo stato reale è ciò che risulta da repository, commit, documenti e output runtime osservabile.
 
 **Verifica implementatore (Composer 2.5 Fast / modello implementatore):** un SUCCESS dichiarato in chat **non** equivale a PASS. Un task è PASS solo con output verificabile: hash commit, diff reale, `git status` pulito, `git log`, verifica su GitHub. Il SUCCESS testuale da solo è insufficiente; GitHub resta fonte di verità.
+
+**Guardia retry/accesso (operativa, non componente):** un singolo fallimento di fetch/accesso **non** prova che una risorsa sia irraggiungibile (es. GitHub raw, `web_fetch`, API, pagine remote, file o endpoint remoti leggibili). Prima di concludere «non riesco a leggere X» o «X non è raggiungibile», **riprovare almeno una volta**. Non trascinare per tutta la sessione un assunto negativo non riverificato. Riverificare quando: lo stato può essere cambiato; l'utente afferma il contrario; una fonte alternativa suggerisce che la risorsa esiste; la prima richiesta può essere fallita per rete/cache/auth temporanea.
 
 ### 7.2 LLMS-first e token efficiency
 
@@ -563,6 +565,7 @@ Perché senza questo, ogni volta che apro una nuova chat con un'AI devo ri-spieg
 | 2.0 | 2026-05-25 | Integrato Decision Packet (sezione 7.7), fallback graceful (sezione 7.6), n8n no provider APIs (sezione 7.5), tabella micro-interazioni eliminate (sezione 1.1). Spostati dettagli hardware Dell/Ryzen completi a futuro `ARCHITECTURE.md`. Parte semplice arricchita con menzione Decision Packet e fallback. |
 | 2.1 | 2026-05-27 | Marcato Diff-summary Telegram MVP come ATTIVO dopo workflow 42 PASS su nuovo commit automatico senza duplicati. |
 | 2.2 | 2026-05-27 | Riallineata architettura target a Codex CLI diretto via OAuth ChatGPT Plus; OpenClaw resta transport/backlog opzionale. Corretto header versione dopo v2.1 e spostato Diff-summary Telegram MVP nei completati tattici. |
+| 2.3 | 2026-05-29 | Aggiunta in §7.1 guardia retry/accesso accanto a SUCCESS testuale != PASS (operativa, non componente). |
 
 ---
 
