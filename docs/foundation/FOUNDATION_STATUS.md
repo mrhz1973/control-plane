@@ -1,8 +1,8 @@
 # Foundation status
 
-**Updated:** 2026-05-28  
-**Aligned to:** [PROJECT_VISION](PROJECT_VISION.md) v2.2 — workflow 42 + Codex CLI direct path  
-**HEAD before this reconcile:** `f482360` (`docs: record codex prompt artifact cursor consumption pass`)
+**Updated:** 2026-05-29  
+**Aligned to:** [PROJECT_VISION](PROJECT_VISION.md) v2.6 — rolling Cursor report + Cursor prompt template contract  
+**HEAD before this reconcile:** `840d289` (`docs: update rolling Cursor report`)
 
 ---
 
@@ -17,7 +17,7 @@ Leggere sempre **PROJECT_VISION** prima di interpretare questo file.
 
 ---
 
-## Operational snapshot (v2.2)
+## Operational snapshot (v2.6)
 
 | Area | Status | Notes |
 |------|--------|--------|
@@ -33,13 +33,24 @@ Leggere sempre **PROJECT_VISION** prima di interpretare questo file.
 | **PM-34 real worker** | **BLOCCATO** | Nessun unlock senza prova reale + gate esplicito |
 | **Safe defaults** | Unchanged | `pm34_unblocked=false`, `n8n_ready=false` |
 | **Provider API key path** | **NO** | Nessuna chiave provider in Git o loop default |
-| **n8n runtime / VPS** | Out of scope for ad-hoc tasks | Nessun deploy/tag/rollback da task docs |
+| **n8n runtime / VPS** | Out of scope for docs tasks | Nessun deploy/tag/rollback da task docs |
+
+---
+
+## Docs contracts (current)
+
+| Document | Role |
+|----------|------|
+| **[LAST_CURSOR_REPORT.md](../runtime/LAST_CURSOR_REPORT.md)** | Report rolling post-push su GitHub. `LATEST.real_task_commit` = commit del task reale (commit 1), **non** il commit che aggiorna solo il report (commit 2). Evidenza hash per handoff/verificatore; non sostituisce `git ls-remote`. |
+| **[CURSOR_PROMPT_TEMPLATE.md](CURSOR_PROMPT_TEMPLATE.md)** | Contratto formato prompt Cursor. Metadati di routing (`CURSOR MODE` / `MODEL` / `REPO` / `BRANCH`) restano **fuori** dal corpo copiabile incollato in Cursor. Subordinato a PROJECT_VISION. |
+
+Questi contratti **non** attivano runtime, n8n, PM-34, provider API key, deploy, tag o rollback.
 
 ---
 
 ## Manual supervision evidence (not worker activation)
 
-Questi commit dimostrano pattern **manual-supervised** (wf42 → Codex → Cursor / GitHub bus). **Non** attivano Codex CLI o Cursor CLI in §1.1 PROJECT_VISION.
+Questi commit dimostrano pattern **manual-supervised** (wf42 → Codex → Cursor / GitHub bus / docs foundation). **Non** attivano Codex CLI o Cursor CLI in §1.1 PROJECT_VISION.
 
 | Commit | Session / meaning |
 |--------|-------------------|
@@ -48,6 +59,9 @@ Questi commit dimostrano pattern **manual-supervised** (wf42 → Codex → Curso
 | `4a539fc` | Codex prompt artifact bus test (`docs/runtime/codex-prompts/…`) |
 | `f482360` | [Codex prompt artifact consumed by Cursor PASS](../sessions/2026-05-27-control-plane-codex-prompt-artifact-consumed-by-cursor-pass.md) |
 | `becab46` / `c27aadb` | Repeatability run: Codex artifact bus -> Cursor -> real commits (role triangle, verification guard) |
+| `ef0afe8` | Rolling Cursor report su GitHub (`docs/runtime/LAST_CURSOR_REPORT.md`) + PROJECT_VISION v2.5 |
+| `f2ee6d2` | Contratto formato prompt Cursor (`docs/foundation/CURSOR_PROMPT_TEMPLATE.md`) + PROJECT_VISION v2.6 |
+| `840d289` | Popolamento LATEST nel report rolling (commit report-only; `real_task_commit` resta `f2ee6d2`) |
 
 **Codex artifact helper v1 (manual-supervised):** script locale [`scripts/codex-artifact.ps1`](../../scripts/codex-artifact.ps1) — percorso test reale: file prompt input -> `codex.cmd exec --ephemeral --sandbox read-only` -> artifact in `docs/runtime/codex-prompts/` (es. `2026-05-28-helper-v1-status-note.md`). **Valore:** riduce la micro-interazione di ricostruire manualmente il comando Codex artifact. **Stato:** helper manual-supervised only; **non** attiva Codex CLI worker; **non** sblocca PM-34; **non** cambia `pm34_unblocked` / `n8n_ready`; **non** tocca workflow 40/41; no n8n runtime; no provider API key; no deploy/tag/rollback.
 
@@ -71,7 +85,7 @@ Questi commit dimostrano pattern **manual-supervised** (wf42 → Codex → Curso
 
 ## Next tactical step
 
-**Artifact bus helper v1 repeat-use:** usare [`scripts/codex-artifact.ps1`](../../scripts/codex-artifact.ps1) su un **secondo task reale** (input prompt -> artifact -> Cursor) prima di qualunque integrazione n8n/runtime.
+**Codex CLI direct path discovery/preflight** — solo quando esplicitamente scoped; ancora **no** PM-34 unlock e **no** n8n runtime. Nessun nuovo lavoro runtime da questo reconcile.
 
 Vincoli invariati:
 
@@ -89,8 +103,9 @@ Artifact policy: ASCII-safe, newline at EOF, no JSON wrapper obbligatorio (vedi 
 
 | Former next step | Status |
 |------------------|--------|
-| n8n payload synthetic validation / preflight dry-run **examples** as primary forward work | **Superseded** — design phase closed on paper (2026-05-26 batch); non è il passo tattico corrente |
-| OpenClaw/Codex bridge as **default** model path | **Superseded** by PROJECT_VISION v2.2 — Codex CLI direct; OpenClaw = optional transport/backlog |
+| Artifact bus helper v1 repeat-use as **primary** forward work | **Superseded** — helper v1 resta disponibile; passo tattico corrente = Codex CLI preflight quando scoped |
+| n8n payload synthetic validation / preflight dry-run **examples** as primary forward work | **Superseded** — design phase closed on paper (2026-05-26 batch) |
+| OpenClaw/Codex bridge as **default** model path | **Superseded** by PROJECT_VISION v2.2+ — Codex CLI direct; OpenClaw = optional transport/backlog |
 
 ---
 
