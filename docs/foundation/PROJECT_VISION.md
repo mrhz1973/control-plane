@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.7 — 2026-05-29  
-**Versione precedente:** 2.6 — 2026-05-29 (sostituita)  
+**Versione:** 2.8 — 2026-05-30  
+**Versione precedente:** 2.7 — 2026-05-29 (sostituita)  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -514,58 +514,75 @@ Nessun passo tattico crea automaticamente un nuovo PM o sblocca PM-34. Le attiva
 
 ## 13. Parte semplice — spiegazione non tecnica
 
-Sto costruendo un piccolo **team automatico** per i miei progetti.
+Sto costruendo un piccolo **team automatico** di intelligenze artificiali per i miei progetti di programmazione.
 
-Oggi, quando lavoro con AI, devo fare troppe cose a mano: spiegare il contesto, copiare prompt, controllare GitHub, decidere chi deve fare il prossimo passo, incollare istruzioni in un altro strumento, verificare il risultato e ricominciare.
+Oggi, quando lavoro con AI, devo fare troppe cose a mano: spiegare il contesto da capo a ogni nuova chat, copiare prompt da uno strumento all'altro, controllare GitHub per capire cosa è cambiato, decidere ogni volta chi deve fare il prossimo passo, incollare istruzioni, verificare il risultato e ricominciare.
 
-Il sistema che voglio costruire fa questo:
+Il sistema che voglio costruire toglie via questa fatica meccanica:
 
-1. **GitHub** (un servizio online gratuito dove tengo tutto il mio codice, una specie di Google Drive ma fatto apposta per programmatori) registra cosa è cambiato. L'azione di "salvare un pezzo nuovo" si chiama **commit** (un'istantanea del lavoro con un piccolo messaggio che descrive cosa ho cambiato).
+1. **GitHub** (un servizio online gratuito dove tengo tutto il mio codice, come un Google Drive per programmatori) registra cosa è cambiato. Salvare un pezzo nuovo si chiama **commit**.
 
-2. **n8n** (un servizio che gira 24/7 sul mio server di internet, automatizza flussi di lavoro) vede il cambiamento e avvia il flusso.
+2. **n8n** (un servizio che gira 24/7 sul mio server online, automatizza flussi di lavoro) si accorge del cambiamento e avvia il flusso.
 
-3. **Codex** (un'AI orchestratore, è GPT-5.5 di OpenAI che chiamo attraverso il mio abbonamento ChatGPT Plus che pago già) ragiona sul prossimo passo.
+3. **Codex** (è ChatGPT 5.5 di OpenAI, ci accedo con il mio abbonamento ChatGPT Plus che pago già) ragiona sul prossimo passo da fare.
 
-4. **Ollama** (un'AI gratuita che gira tutta sul mio computer di casa, gratuita e illimitata) controlla se quel passo è sicuro o rischioso.
+4. **Ollama** (un'AI gratuita che gira tutta sul mio computer di casa, illimitata) controlla se quel passo è sicuro o rischioso.
 
 5. **Cursor** (un'AI specializzata nello scrivere codice, abbonamento mensile fisso) esegue il lavoro tecnico.
 
-6. **Telegram** mi chiama solo se serve una decisione vera. Quando mi chiama, mi manda una scelta strutturata (Decision Packet) con 2-3 opzioni numerate: io rispondo con un numero, non con prosa.
+6. **Telegram** mi chiama solo se serve una decisione vera, con una scelta strutturata di 2-3 opzioni numerate: rispondo con un numero, non con prosa.
 
 7. Il risultato torna su GitHub e il ciclo riparte.
 
 ### Perché tre AI invece di una sola?
 
-Domanda giusta. Tecnicamente si potrebbe fare con una sola AI grande, ma costerebbe di più e funzionerebbe peggio. Ogni AI è brava in cose diverse:
+Tecnicamente potrei usare una sola AI grande, ma costerebbe di più e funzionerebbe peggio. Ognuna è specializzata:
 
-- **Codex/GPT** costa tempo e quota di abbonamento ogni volta che la chiamo. È bravissima a ragionare, ma è lenta e ha un limite di messaggi al giorno. La uso solo per il pezzo dove serve "cervello vero": decidere il prossimo passo.
+* **Codex/GPT** ragiona benissimo ma è lenta e ha un limite di messaggi al giorno. La uso solo dove serve vero cervello: decidere il prossimo passo.
 
-- **Ollama** è un'AI che gira sul mio computer di casa, gratis, illimitata, velocissima. Non è furba come GPT, ma è perfetta per il lavoro semplice di "guarda questa proposta e dimmi se è rischiosa". È come avere un controllo qualità che dice OK/non OK prima che il lavoro vero parta.
+* **Ollama** gira sul mio computer di casa, gratis e illimitata. Non è furba come GPT, ma è perfetta per il controllo rapido "questa cosa è rischiosa o no?".
 
-- **Cursor** è specializzato nello scrivere codice. Ha un abbonamento mensile fisso e può lavorare quanto vuole senza farmi pagare di più. Se gli chiedo di scrivere codice, lo fa molto meglio di GPT generale.
+* **Cursor** è specializzata nel programmare, abbonamento fisso, può lavorare quanto vuole senza farmi pagare di più.
 
-Mettere tutto su una sola AI sarebbe come avere un meccanico che fa anche da contabile e da architetto: lo può fare, ma fa peggio tutti e tre i lavori, e mi costa di più.
+Mettere tutto su una sola AI sarebbe come avere un meccanico che fa anche da contabile e da architetto: lo può fare, ma fa peggio tutti e tre i lavori e mi costa di più.
 
-### Cosa non sto facendo
+### Cosa NON sto facendo
 
-- **Non pago API a uso**: tutto passa attraverso abbonamenti che ho già (ChatGPT Plus, Cursor Pro Plus). API significa "il modo a pagamento di parlare con un'AI dai propri programmi, dove paghi ogni richiesta". Io lo evito usando solo i miei abbonamenti mensili a costo fisso.
+* **Non pago AI "a uso"**: tutto passa per abbonamenti fissi che ho già (ChatGPT Plus, Cursor Pro Plus). Evito le "API a consumo" dove paghi ogni richiesta e i costi esplodono.
 
-- **Non espongo il mio computer a internet**: tutto passa per una rete privata cifrata (**Tailscale** — una specie di tunnel cifrato tra il mio server e il mio computer di casa, così possono parlarsi senza esporre niente su internet). Il mio computer di casa non è raggiungibile da estranei.
+* **Non espongo il mio computer a internet**: tutto passa per una rete privata cifrata (Tailscale, un tunnel sicuro tra il mio server e casa). Il mio computer non è raggiungibile da estranei.
 
-- **Non sostituisco il mio cervello**: io decido la rotta e le cose critiche. Le AI fanno solo il lavoro ripetitivo e tecnico.
+* **Non sostituisco il mio cervello**: io decido la rotta e le cose critiche. Le AI fanno il lavoro ripetitivo e tecnico.
 
-- **Non rischio di perdere lavoro**: se qualcosa si rompe (Ollama non risponde, internet salta, Tailscale ha problemi), il sistema torna automaticamente al lavoro manuale, e tutto quello che ho fatto resta su GitHub. Niente va perso.
+* **Non rischio di perdere lavoro**: se qualcosa si rompe, il sistema torna automaticamente al lavoro manuale e tutto resta su GitHub. Niente va perso.
 
-### Cosa serve per partire
+### A che punto sono adesso
 
-- Un VPS (un server affittato online — ne ho già uno) per ospitare n8n.
-- Un computer a casa (PC Ryzen, ne ho già uno), collegato al VPS via Tailscale.
-- Abbonamento Cursor Pro Plus ($65/mese) e ChatGPT Plus ($20/mese), che ho già.
-- Pazienza per scrivere bene le regole una volta, e poi non rifarle più ogni volta. Questo documento serve a questo.
+Ho passato molti mesi a costruire le fondamenta. Tutti i pezzi singoli funzionano: la rete privata è attiva, le tre AI sono installate e collaudate, gli abbonamenti girano senza pagare API a consumo, e il primo "ponte" tra le AI è stato testato su un compito reale.
+
+La prima cosa utile è già arrivata: quando faccio un cambiamento, mi arriva su Telegram un riassunto in italiano di cosa è cambiato. Sembra poco, ma è la prima azione manuale che il sistema mi ha tolto: non devo più aprire GitHub solo per capire cos'è successo.
+
+Ho anche eseguito per la prima volta il giro completo su un caso reale, con me a fare da filo tra i passaggi: è arrivata una richiesta vera (migliorare la documentazione di un mio progetto), Codex ha ragionato sul da farsi e ha deciso che stavolta serviva intervenire, e Cursor ha scritto la modifica. È andato a buon fine. Era un giro manuale-supervisionato: ogni passaggio l'ho innescato io. Il giro che si avvia da solo, senza che io faccia da filo, è la tappa successiva. (In un altro caso, Codex ha invece deciso correttamente che non serviva toccare nulla: anche saper dire "non serve fare niente" è parte del valore.)
+
+### Dove voglio arrivare, in quattro tappe
+
+1. **Oggi**: i pezzi funzionano, ma li collego a mano io. Il sistema mi avvisa e mi assiste, ma il filo conduttore sono io.
+
+2. **Prossima tappa**: il giro completo (cambiamento → Codex ragiona → Ollama controlla → Cursor esegue) gira con me come supervisore, ma con molte meno azioni manuali ripetute.
+
+3. **Più avanti**: per i compiti semplici e sicuri, il sistema procede da solo dentro confini chiari; mi chiama su Telegram solo per le decisioni vere.
+
+4. **In futuro**: un secondo computer sempre acceso fa da riserva, e il sistema continua a lavorare anche quando io non ci sono.
+
+Vado una tappa alla volta, senza saltare passaggi: ogni automazione nuova entra solo dopo che ho la prova che funziona e che è sicura.
 
 ### Perché vale la pena
 
-Perché senza questo, ogni volta che apro una nuova chat con un'AI devo ri-spiegare tutto da capo. Con questo, le AI sanno già chi sono, cosa voglio, come lavoro. Diventa un team che continua il lavoro anche quando io non ci sono. E può essere riutilizzato per progetti nuovi copiando questa stessa foundation.
+Senza questo sistema, ogni ora di lavoro reale costa mezz'ora di amministrazione meccanica: ricaricare il contesto, copiare prompt, controllare a mano. Con questo sistema, scrivo bene le regole una volta sola e poi non le rifaccio più: le AI sanno già chi sono, cosa voglio e come lavoro.
+
+E c'è di più: questa stessa fondazione, una volta funzionante, posso copiarla su un progetto nuovo cambiando solo i dettagli.
+
+In una frase: **sto costruendo una fabbrica, non un singolo prodotto.** La fabbrica produce piccoli sistemi di assistenza AI riutilizzabili per progetti software. Il primo che esce dalla fabbrica sono io, su questo progetto. I prossimi potranno essere altri.
 
 ---
 
@@ -597,6 +614,7 @@ Perché senza questo, ogni volta che apro una nuova chat con un'AI devo ri-spieg
 | 2.5 | 2026-05-29 | Introdotto `docs/runtime/LAST_CURSOR_REPORT.md` come report rolling post-push. §8.1: cattura verbatim ls-remote, log, status nel report. §11.3: handoff/verificatore leggono hash dal report remoto o da git ls-remote, non dalla chat. |
 | 2.6 | 2026-05-29 | Aggiunto `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`: contratto formato prompt Cursor; metadati routing fuori dal corpo copiabile. §8.3 puntatore. |
 | 2.7 | 2026-05-29 | §8.3: preflight implementatore con aggiornamento locale sicuro nel prompt Cursor; comandi ritorno umano fuori dal prompt copiabile. Allineato `CURSOR_PROMPT_TEMPLATE.md`. |
+| 2.8 | 2026-05-30 | Riscritta §13 (parte semplice) per riflettere lo stato reale: foundation completata, workflow 42 attivo, prima catena wf42 → Codex → Cursor eseguita in modalità manuale/supervisionata (PASS, commit d040896 su repo GIS); catena automatizzata senza filo umano resta tappa successiva. Roadmap a 4 tappe, framing "fabbrica non prodotto". Nessun cambiamento di visione o invariante. |
 
 ---
 
