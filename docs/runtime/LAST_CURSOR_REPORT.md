@@ -16,35 +16,40 @@ Regole:
 
 ## LATEST
 
-- task_ref: classifier-wrapper-c1a-offline
-- timestamp_utc: 2026-05-29T22:53:05Z
+- task_ref: classifier-wrapper-c1b-live-smoke
+- timestamp_utc: 2026-05-29T23:02:50Z
 - branch: main
-- real_task_commit: f2e95e774138e92ef6defa1bf130f73efa21195a
+- real_task_commit: d8ff7960653afbb39fc53867d84d1dca0bb85b81
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-f2e95e774138e92ef6defa1bf130f73efa21195a	refs/heads/main
+d8ff7960653afbb39fc53867d84d1dca0bb85b81	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+d8ff796 docs: record classifier wrapper C1b live smoke pass
+7de08fc docs: update rolling Cursor report
 f2e95e7 feat: add classifier wrapper v1 Node runtime offline C1a
 82fdb4d docs: add CURRENT_FRONTIER.md authoritative state ledger
 75997e8 docs: rewrite section 13 plain-language explanation with current state
-b7453a0 docs: update rolling Cursor report
-9cb29f8 docs: update cursor prompt preflight rules
 ```
 
 ### git_status_short — `git status --short`
 
 ```text
-?? CONTROL
+
 ```
 
 ## HISTORY
+
+### classifier-wrapper-c1a-offline — 2026-05-29T22:53:05Z
+
+- real_task_commit: f2e95e774138e92ef6defa1bf130f73efa21195a
+- result_cursor: PASS
 
 ### cursor-prompt-preflight-v2.7 — 2026-05-29T21:14:02Z
 
