@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: foundation-status-v2.6-reconcile
-- timestamp_utc: 2026-05-29T20:52:19Z
+- task_ref: cursor-prompt-preflight-v2.7
+- timestamp_utc: 2026-05-29T21:14:02Z
 - branch: main
-- real_task_commit: 22514ed320e1ccf12f627f9798fe6f0d20eb11d5
+- real_task_commit: 9cb29f8e205c56a70c9b5db42c2e9c970966d920
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-22514ed320e1ccf12f627f9798fe6f0d20eb11d5	refs/heads/main
+9cb29f8e205c56a70c9b5db42c2e9c970966d920	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+9cb29f8 docs: update cursor prompt preflight rules
+c5f5dd8 docs: update rolling Cursor report
 22514ed docs: align foundation status with v2.6
 840d289 docs: update rolling Cursor report
 f2ee6d2 docs: add cursor prompt template contract
-938f0bf docs: update rolling Cursor report
-ef0afe8 docs: add rolling Cursor report
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ ef0afe8 docs: add rolling Cursor report
 ```
 
 ## HISTORY
+
+### foundation-status-v2.6-reconcile — 2026-05-29T20:52:19Z
+
+- real_task_commit: 22514ed320e1ccf12f627f9798fe6f0d20eb11d5
+- result_cursor: PASS
 
 ### cursor-prompt-template-v1 — 2026-05-29T20:48:08Z
 
