@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: classifier-guard-keyword-hardening-d0002c
-- timestamp_utc: 2026-05-29T23:29:20Z
+- task_ref: decision-packet-telegram-manual-attested
+- timestamp_utc: 2026-05-29T23:40:20Z
 - branch: main
-- real_task_commit: c6a3782270bfe597029628ca0dd5dfb5fd1badd2
+- real_task_commit: 789b5eb1281d25a3a5826759881223202e3716cd
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-c6a3782270bfe597029628ca0dd5dfb5fd1badd2	refs/heads/main
+789b5eb1281d25a3a5826759881223202e3716cd	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+789b5eb docs: record first manual Decision Packet Telegram send
+0ec3fd8 docs: update rolling Cursor report
 c6a3782 fix: harden classifier keyword guards against negative-context false positives
 6190fa0 docs: update rolling Cursor report
 d8ff796 docs: record classifier wrapper C1b live smoke pass
-7de08fc docs: update rolling Cursor report
-f2e95e7 feat: add classifier wrapper v1 Node runtime offline C1a
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ f2e95e7 feat: add classifier wrapper v1 Node runtime offline C1a
 ```
 
 ## HISTORY
+
+### classifier-guard-keyword-hardening-d0002c — 2026-05-29T23:29:20Z
+
+- real_task_commit: c6a3782270bfe597029628ca0dd5dfb5fd1badd2
+- result_cursor: PASS
 
 ### classifier-wrapper-c1b-live-smoke — 2026-05-29T23:02:50Z
 
