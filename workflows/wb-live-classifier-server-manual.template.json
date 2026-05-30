@@ -1,0 +1,167 @@
+{
+  "name": "Wb-live - classifier server manual single execution - TEMPLATE",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "wb000001-0001-4001-8001-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "TEMPLATE ONLY — inactive, manual single execution, configure URL/token in n8n UI, no secrets in Git.\n\nWb-live manual test: n8n -> classifier-server via Tailscale.\n\nBefore running:\n1) Start classifier-server-v1.mjs on Ryzen (bind 127.0.0.1 or RYZEN_TAILSCALE_IP, never 0.0.0.0)\n2) Set CLASSIFIER_SERVER_URL in the HTTP Request node (replace **CLASSIFIER_SERVER_URL**)\n3) Optional: set X-Classifier-Token header value in n8n UI only (replace **CLASSIFIER_AUTH_TOKEN_OPTIONAL**)\n4) Keep workflow INACTIVE — run Manual Trigger ONCE\n\nThis template: no Telegram, no Data Table, no GitHub write, no workflow 40/41, no PM-34. Single POST to /classify only.",
+        "height": 320,
+        "width": 520
+      },
+      "id": "wb000005-0005-4005-8005-000000000005",
+      "name": "NOTE - template only inactive manual",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sanitized docs-only test event for Wb-live manual classifier-server test.\n// No secrets, no tokens, no chat_id, no credentials. See docs/runtime/test-events/wb-live-classifier-test-event.json\nconst event = {\n  event_id: 'evt-wb-live-manual-docs-only-001',\n  event_type: 'docs_commit',\n  summary: 'Wb-live manual classifier-server test: docs-only event, no secrets, no deploy, no workflow mutation, no automation loop',\n  touched_paths: [\n    'docs/runtime/CURRENT_FRONTIER.md',\n    'docs/foundation/DECISION_PACKET_FORMAT.md'\n  ],\n  runtime_flags: { touched: false, detail: '' },\n  secrets_flags: { touched: false, detail: '' },\n  deploy_flags: { touched: false, detail: '' },\n  n8n_flags: { touched: false, workflow_40: false, workflow_41: false, import_disabled: false },\n  automation_flags: { touched: false, autonomous_worker: false, commit_push_loop: false }\n};\nreturn [{ json: event }];"
+      },
+      "id": "wb000002-0002-4002-8002-000000000002",
+      "name": "Set sanitized test event (docs-only)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -360,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "**CLASSIFIER_SERVER_URL**/classify",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Classifier-Token",
+              "value": "**CLASSIFIER_AUTH_TOKEN_OPTIONAL**"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "wb000003-0003-4003-8003-000000000003",
+      "name": "HTTP Request - POST classify (CONFIGURE_IN_N8N_UI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -120,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "EXPECTED RESPONSE (PASS):\nHTTP 200 with classifier 5-field output only:\n  risk, route, reason, confidence, requires_human\n\nFor this docs-only event expect: risk=low, route=auto_allowed, requires_human=false.\n\nBLOCKED if: server unreachable, auth failure, non-200, invalid JSON, fallback:model_error / fallback:invalid_json / fallback:missing_keys, schema invalid, any secret/token leakage, or workflow becomes active.\n\nAfter run: copy sanitized evidence to docs/workflow-wb-live-classifier-server.md, then use docs/runtime/WB_LIVE_REGISTRATION_PROMPT.md.",
+        "height": 300,
+        "width": 520
+      },
+      "id": "wb000006-0006-4006-8006-000000000006",
+      "name": "NOTE - expected response and PASS BLOCKED",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Read-only inspection of classifier-server response. No secrets persisted, no chain-of-thought.\nconst resp = $input.item.json;\nconst body = resp && resp.body !== undefined ? resp.body : resp;\nconst statusCode = resp && resp.statusCode !== undefined ? resp.statusCode : null;\nreturn {\n  json: {\n    http_status: statusCode,\n    classifier_output: body,\n    note: 'Wb-live manual single execution result — sanitize before recording'\n  }\n};"
+      },
+      "id": "wb000004-0004-4004-8004-000000000004",
+      "name": "Inspect classifier response (read-only)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set sanitized test event (docs-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set sanitized test event (docs-only)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - POST classify (CONFIGURE_IN_N8N_UI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - POST classify (CONFIGURE_IN_N8N_UI)": {
+      "main": [
+        [
+          {
+            "node": "Inspect classifier response (read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "wb-live"
+    },
+    {
+      "name": "template-only"
+    },
+    {
+      "name": "manual-single-execution"
+    },
+    {
+      "name": "classifier-server"
+    },
+    {
+      "name": "control-plane"
+    }
+  ]
+}

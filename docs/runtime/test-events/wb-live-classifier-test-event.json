@@ -1,0 +1,23 @@
+{
+  "event_id": "evt-wb-live-manual-docs-only-001",
+  "event_type": "docs_commit",
+  "summary": "Wb-live manual classifier-server test: docs-only event, no secrets, no deploy, no workflow mutation, no automation loop",
+  "touched_paths": [
+    "docs/runtime/CURRENT_FRONTIER.md",
+    "docs/foundation/DECISION_PACKET_FORMAT.md"
+  ],
+  "runtime_flags": { "touched": false, "detail": "" },
+  "secrets_flags": { "touched": false, "detail": "" },
+  "deploy_flags": { "touched": false, "detail": "" },
+  "n8n_flags": {
+    "touched": false,
+    "workflow_40": false,
+    "workflow_41": false,
+    "import_disabled": false
+  },
+  "automation_flags": {
+    "touched": false,
+    "autonomous_worker": false,
+    "commit_push_loop": false
+  }
+}
