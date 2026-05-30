@@ -8,7 +8,7 @@
 > ricordare o reincollare stato/output: leggilo da qui o da GitHub. I token costano
 > meno della memoria dell'utente.
 
-Ultimo aggiornamento: 2026-05-30 — Step Wa classifier HTTP server v1 offline PASS
+Ultimo aggiornamento: 2026-05-30 — Wb-docs DECISION_PACKET_FORMAT.md PASS
 
 ## PASS confermati (con prova)
 - Foundation completa: Tailscale attivo, 3 AI installate e collaudate, abbonamenti fissi, nessuna API a consumo.
@@ -22,9 +22,11 @@ Ultimo aggiornamento: 2026-05-30 — Step Wa classifier HTTP server v1 offline P
 - D-0002-C guard keyword precision hardening: PASS — offline suite A-I (9 cases); negative-context false-positive protection; deploy-path regression (`scripts/deploy.sh` stays high); structured flags authoritative.
 - Primo Decision Packet Telegram (D-0002-C): inviato MANUALMENTE — PASS ATTESTATO UTENTE. Esecuzione singola n8n UI, workflow INATTIVO, credential "CONTROL PLANE - Telegram Bot" esistente, nessun token in git. NON cablato, NON automatico. Evidenza: messaggio Telegram dell'utente (nessun artefatto repo).
 - Step Wa classifier HTTP server v1 offline: PASS — tools/classifier-server-v1.mjs; tests/classifier-server/run-offline-tests.mjs T1-T5 PASS; bind default loopback 127.0.0.1; zero external dependencies; no chain-of-thought; wrapper not modified.
+- Wb-docs: docs/foundation/DECISION_PACKET_FORMAT.md definito — estensione canonica di PROJECT_VISION §7.7; ponte classifier->gate umano; regole di redazione Telegram/no-secrets/no-CoT.
 
 ## Frontiera attuale / prossimo gate
-- Prossimo gate reale (Wb): live n8n -> classifier-server esecuzione singola manuale via Tailscale + DECISION_PACKET_FORMAT.md; Telegram Decision Packet automatico/cablato: NOT RUN.
+- Prossimo gate reale (Wb-live): n8n -> classifier-server esecuzione manuale singola via Tailscale; operativo, eseguito dall'utente.
+- Telegram Decision Packet automatico/cablato: NOT RUN.
 - Catena completa AUTOMATIZZATA (nessun filo umano, output Codex auto-instradato a Cursor): NOT RUN. E' Fase 3, gated da PM-34.
 - n8n runtime/wiring to classifier wrapper: NOT RUN.
 - Telegram Decision Packet send AUTOMATICO/cablato: NOT RUN.
