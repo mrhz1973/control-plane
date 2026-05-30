@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: decision-packet-format-wb-docs
-- timestamp_utc: 2026-05-30T00:15:06Z
+- task_ref: wb-live-package-prep
+- timestamp_utc: 2026-05-30T00:25:44Z
 - branch: main
-- real_task_commit: be73a99d0e6698b748d23199855b445ec39d3443
+- real_task_commit: 41f22884759cc20ac1a9aa392aee0780681df8a1
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-be73a99d0e6698b748d23199855b445ec39d3443	refs/heads/main
+41f22884759cc20ac1a9aa392aee0780681df8a1	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+41f2288 docs: prepare Wb-live classifier server package
+c7a5360 docs: update rolling Cursor report
 be73a99 docs: define Decision Packet extended format
 6f669cf docs: update rolling Cursor report
 d6dc623 feat: add classifier HTTP server offline Wa
-901f8fb docs: update rolling Cursor report
-789b5eb docs: record first manual Decision Packet Telegram send
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ d6dc623 feat: add classifier HTTP server offline Wa
 ```
 
 ## HISTORY
+
+### decision-packet-format-wb-docs — 2026-05-30T00:15:06Z
+
+- real_task_commit: be73a99d0e6698b748d23199855b445ec39d3443
+- result_cursor: PASS
 
 ### classifier-http-server-wa-offline — 2026-05-30T00:04:16Z
 
