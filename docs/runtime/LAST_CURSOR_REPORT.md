@@ -16,7 +16,7 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 task_ref: wf47-wg-wh-final-manual-runtime-rehearsal-pass
 result_cursor: PASS
 result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: PENDING_POST_COMMIT
+real_task_commit: 98a3b4ff89d2341a45b01fd9ff2b74c279433946
 branch: main
 verification_rule: PASS is based on deterministic user-attested runtime output plus Git commit evidence
 timestamp_utc: 2026-05-31T18:45:00Z
@@ -26,6 +26,10 @@ timestamp_utc: 2026-05-31T18:45:00Z
 - `rolling_report_commit` = commit leggero che aggiorna solo questo report (commit 2). NON è il commit del task.
 - `remote_hash_verbatim` = `git ls-remote origin main` catturato al push del commit 1.
 - `result_runtime` = evidenza runtime attestata dall'utente (output deterministico sanitizzato).
+
+```text
+98a3b4ff89d2341a45b01fd9ff2b74c279433946	refs/heads/main
+```
 
 ---
 

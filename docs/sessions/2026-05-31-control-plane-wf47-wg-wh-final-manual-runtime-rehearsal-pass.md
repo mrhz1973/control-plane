@@ -142,8 +142,8 @@ git diff -- docs/runtime/CURRENT_FRONTIER.md docs/runtime/LAST_CURSOR_REPORT.md 
 
 ## 9. Commit / remote hash
 
-- Task commit (`docs: record Wf47 Wg Wh final rehearsal pass`): `__TASK_COMMIT__`
-- Remote hash after push: `__REMOTE_HASH__`
+- Task commit (`docs: record Wf47 Wg Wh final rehearsal pass`): `98a3b4ff89d2341a45b01fd9ff2b74c279433946`
+- Remote hash of task commit after push: see final report (`git ls-remote origin main`)
 
 ## 10. Final status
 
