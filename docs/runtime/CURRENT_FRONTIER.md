@@ -8,7 +8,7 @@
 > ricordare o reincollare stato/output: leggilo da qui o da GitHub. I token costano
 > meno della memoria dell'utente.
 
-Ultimo aggiornamento: 2026-05-31 — We Telegram interactive decision buttons package prepared
+Ultimo aggiornamento: 2026-05-31 — We Telegram interactive buttons live BLOCKED/PENDING
 
 ## PASS confermati (con prova)
 - Foundation completa: Tailscale attivo, 3 AI installate e collaudate, abbonamenti fissi, nessuna API a consumo.
@@ -35,10 +35,11 @@ Ultimo aggiornamento: 2026-05-31 — We Telegram interactive decision buttons pa
 - We Telegram interactive decision buttons / inbound response handling package: PREP PASS — inactive workflow template, concise runbook, and registration prompt prepared for future live gate; covers inline buttons 1/2/3, decision_id correlation, duplicate/stale guard, and optional follow-up note design; no runtime executed; no Telegram inbound activated; no Telegram sent; PM-34 remains blocked.
 
 ## Frontiera attuale / prossimo gate
-- Prossimo gate reale: We live — import workflow 46, configure Telegram inbound credential/allowed chat/state placeholders in n8n UI only, test one inbound button/callback for a TEST ONLY Decision Packet, verify sanitized decision receipt, then return evidence for registration. Future live gate may require temporary inbound trigger activation in n8n if manual inactive testing is impossible; perform activation one step at a time.
-- Telegram inbound replies / decision buttons: NOT RUN / NOT ACTIVE until We live is physically tested and recorded (send-only path validated; plain-text replies 1/2/3 remain non-operative).
+- We Telegram interactive decision buttons live: BLOCKED/PENDING — blocker: Telegram Trigger manual test returned "Bad Request: bad webhook: An HTTPS URL must be provided for webhook"; current n8n access is via local tunnel/http://localhost:5678 and does not provide the public HTTPS webhook URL required by Telegram. No callback received; no sanitized inbound receipt produced; workflow 46 remained inactive/off; no PM-34; no workflow 40/41 mutation; no Data Table production mutation; no GitHub write by workflow. NON marcato PASS.
+- Prossimo gate reale: decide We inbound path architecture — (A) configure a safe public HTTPS webhook endpoint for n8n/Telegram; (B) avoid webhook and design polling/getUpdates inbound path; (C) keep Telegram interactive buttons/inbound in backlog. Any public HTTPS webhook, workflow activation, credential/webhook configuration, or inbound receiver activation is a separate runtime/security gate; execute one step at a time.
+- Telegram inbound replies / decision buttons: NOT RUN / NOT ACTIVE (We live blocked on HTTPS webhook requirement; plain-text replies 1/2/3 remain non-operative).
 - Wc formatting fix LIVE plain-text rerun: BLOCKED/PENDING (historical) — updated banner (=== TEST ONLY ===) appeared, but Telegram still rendered event_id/human_gate/requires_human without underscores (workflow 43 reimport). Not recorded as live PASS.
-- Telegram Decision Packet operational automation: NOT RUN unless explicitly decided later.
+- Telegram Decision Packet operational automation: NOT RUN.
 - n8n runtime/wiring to classifier wrapper/server (automatic/cablato): NOT RUN.
 - Telegram Decision Packet automatico/cablato (operational, non-TEST): NOT RUN.
 - Catena completa AUTOMATIZZATA (nessun filo umano, output Codex auto-instradato a Cursor): NOT RUN. E' Fase 3, gated da PM-34.
