@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: wb-live-manual-classifier-server-pass
-- timestamp_utc: 2026-05-31T00:26:12Z
+- task_ref: wc-decision-packet-telegram-package-prep
+- timestamp_utc: 2026-05-31T00:37:44Z
 - branch: main
-- real_task_commit: 7a398d963a67206ec2aa6805711303ff235bdd6b
+- real_task_commit: be16239086014d860af30d6366a0c7ca13280c71
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-7a398d963a67206ec2aa6805711303ff235bdd6b	refs/heads/main
+be16239086014d860af30d6366a0c7ca13280c71	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+be16239 docs: prepare Decision Packet Telegram package
+b7edb5c docs: update rolling Cursor report
 7a398d9 docs: record Wb-live classifier-server manual execution PASS
 c8beb1f docs: update rolling Cursor report
 41f2288 docs: prepare Wb-live classifier server package
-c7a5360 docs: update rolling Cursor report
-be73a99 docs: define Decision Packet extended format
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ be73a99 docs: define Decision Packet extended format
 ```
 
 ## HISTORY
+
+### wb-live-manual-classifier-server-pass — 2026-05-31T00:26:12Z
+
+- real_task_commit: 7a398d963a67206ec2aa6805711303ff235bdd6b
+- result_cursor: PASS
 
 ### wb-live-package-prep — 2026-05-30T00:25:44Z
 
