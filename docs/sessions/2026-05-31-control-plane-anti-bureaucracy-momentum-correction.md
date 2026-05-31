@@ -74,9 +74,9 @@ git diff -- docs/foundation/PROJECT_VISION.md docs/runtime/CURRENT_FRONTIER.md d
 
 ## 8. Commit / remote hash
 
-- Task commit (`docs: reduce Wf47 Wg prep churn`): `__TASK_COMMIT__`
-- Session-log finalization commit (`docs: update rolling Cursor report`): `__REPORT_COMMIT__`
-- Remote hash after final push (`git ls-remote origin main`): `__REMOTE_HASH__`
+- Task commit (`docs: reduce Wf47 Wg prep churn`): `dc8fc7223c5a3e4c1303475504c65116afcf1f4c`
+- Remote hash of task commit after push (`git ls-remote origin main`): `dc8fc7223c5a3e4c1303475504c65116afcf1f4c`
+- Session-log finalization commit (`docs: update rolling Cursor report`): see final report git outputs (`git rev-parse HEAD` / `git ls-remote origin main`); this commit only fills the hashes above and is not the substantive task commit.
 
 (Preserved references from prior task in `LAST_CURSOR_REPORT.md` LATEST: real_task_commit `d410a8f1fb04db1b447574f55ba75ec4e3d8bdd3`, rolling_report_commit `af280519e09eb9bfff2841d9f90cb9f0f0dbb0a7`.)
 
