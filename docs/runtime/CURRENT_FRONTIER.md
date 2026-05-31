@@ -8,7 +8,7 @@
 > ricordare o reincollare stato/output: leggilo da qui o da GitHub. I token costano
 > meno della memoria dell'utente.
 
-Ultimo aggiornamento: 2026-05-31 — Wc Decision Packet Telegram HTML formatting fix offline PASS after plain-text live rerun BLOCKED
+Ultimo aggiornamento: 2026-05-31 — Wc HTML formatting fix LIVE PASS
 
 ## PASS confermati (con prova)
 - Foundation completa: Tailscale attivo, 3 AI installate e collaudate, abbonamenti fissi, nessuna API a consumo.
@@ -29,10 +29,11 @@ Ultimo aggiornamento: 2026-05-31 — Wc Decision Packet Telegram HTML formatting
 - Wc Decision Packet Telegram automatic/cablato manual single execution: PASS ATTESTATO UTENTE — evidence: one Telegram message sent (message_id 669); workflow inactive after run; message matched DECISION_PACKET_FORMAT.md content requirements; TEST ONLY marked; ID D-9999-T; 3 numbered options; "Scrivi: 1 / 2 / 3"; no secrets/token/chat_id/credential/webhook/API key/CoT; no workflow 40/41 mutation or execution; no Data Table mutation; no GitHub write; no PM-34 unlock/touch. Minor formatting issue: Telegram/Markdown removed underscores in event_id/human_gate/requires_human rendering; fix before operational use.
 - Wc Decision Packet Telegram formatting fix: PASS (offline) — Telegram node parse_mode set to plain text (""); banner de-Markdownized (=== TEST ONLY ===); underscores now literal (event_id/human_gate/requires_human); verified by tests/wc-decision-packet/run-offline-tests.mjs (T1-T9 PASS); no n8n run, no Telegram send; template stays active:false; no secrets.
 - Wc Decision Packet Telegram HTML formatting fix: PASS (offline) — after live rerun showed plain-text/remove-parse-mode still rendered event_id/human_gate/requires_human without underscores, template switched to HTML parse mode with escaped dynamic fields; offline tests T1-T11 PASS; workflow remains active:false; no n8n run, no Telegram send, no secrets.
+- Wc HTML formatting fix LIVE: PASS ATTESTATO UTENTE — workflow 44 manual single execution sent one TEST ONLY Telegram message (message_id 674); event_id, human_gate, and requires_human rendered literally with underscores; message retained ID D-9999-T, 3 numbered options, and "Scrivi: 1 / 2 / 3"; workflow remained inactive/off; no workflow 40/41 mutation or execution; no Data Table mutation; no GitHub write by workflow; no PM-34 unlock/touch; no token/chat_id/credential/webhook/API key/CoT visible.
 
 ## Frontiera attuale / prossimo gate
-- Prossimo gate reale: Wc HTML formatting fix LIVE — user reimports updated template, configures Telegram credential/chat_id in UI only, runs Manual Trigger once, confirms one TEST ONLY Telegram message with event_id/human_gate/requires_human rendered literally; then returns sanitized evidence for registration.
-- Wc formatting fix LIVE plain-text rerun: BLOCKED/PENDING — updated banner (=== TEST ONLY ===) appeared, but Telegram still rendered event_id/human_gate/requires_human without underscores (workflow 43 reimport). Not recorded as live PASS.
+- Prossimo gate reale: decide separately whether to proceed toward classifier-server response -> real operational Decision Packet integration. New gate; do not auto-proceed. PM-34 remains separate and blocked.
+- Wc formatting fix LIVE plain-text rerun: BLOCKED/PENDING (historical) — updated banner (=== TEST ONLY ===) appeared, but Telegram still rendered event_id/human_gate/requires_human without underscores (workflow 43 reimport). Not recorded as live PASS.
 - Telegram Decision Packet operational automation: NOT RUN.
 - n8n runtime/wiring to classifier wrapper/server (automatic/cablato): NOT RUN.
 - Telegram Decision Packet automatico/cablato (operational, non-TEST): NOT RUN.
