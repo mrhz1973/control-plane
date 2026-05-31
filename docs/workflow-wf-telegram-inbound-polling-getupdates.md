@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-wf-telegram-inbound-polling-getupdates.md`  
-**Status:** Hardened manual validation **PARTIAL/BLOCKED**. Safe repeated use **not** PASS. No schedule. No inbound automation.
+**Status:** Ready-import Data Table template **PREP** (Git). Prior hardened validation **PARTIAL/BLOCKED** on staticData. Safe repeated use **not** PASS until Data Table gate validated. No schedule. No inbound automation.
 
 ---
 
@@ -41,8 +41,8 @@ Token was configured **only in n8n UI** (HTTP URL corrected there). n8n tunnel w
 
 | Area | Design |
 |------|--------|
-| **State / offset persistence** | `lastUpdateId` = next `getUpdates` offset; `lastHandledUpdateId` = highest fully processed `update_id`; demo uses workflow `staticData` only — replace with **CONFIGURE_OFFSET_STORE_IN_N8N_UI** at live gate. |
-| **Allowed-chat guard** | Defaults **closed** until **CONFIGURE_ALLOWED_CHAT_ID_IN_N8N_UI** is replaced in n8n UI (no raw `chat_id` in Git). Rejection: `allowed_chat_not_configured`. |
+| **State / offset persistence** | Test-only Data Table **`wf47_polling_state_test`** rows: `last_update_id`, `last_handled_update_id`, `handled_keys_json`. Template loads/upserts via Data Table nodes (repo pattern from wf42 / v4 multirepo draft). **No** `staticData` for persistence. |
+| **Allowed-chat guard** | **Set Wf47 UI config** node field `allowed_chat_id` — edit in n8n Set UI only (placeholder `**CONFIGURE_ALLOWED_CHAT_ID_IN_N8N_UI**`). No Code-node edits required. Rejection: `allowed_chat_not_configured`. |
 | **Stale / old update** | Reject when `update_id <= lastHandledUpdateId` → `stale_old_update_id`. |
 | **Duplicate / double-click** | Key: `decision_id` + `selected_option` or `note` + `update_id` in `handledKeys`. Rejection: `duplicate_or_double_click`. |
 | **Open decision correlation** | TEST ONLY list `D-9998-T` only; unknown id → `stale_or_unknown_decision_id`. |
@@ -58,6 +58,9 @@ Token was configured **only in n8n UI** (HTTP URL corrected there). n8n tunnel w
 |--------------|--------|
 | Wf live (first manual poll) | **PASS ATTESTATO UTENTE** |
 | Wf hardening prep | Template + runbook updated in Git; **no runtime** from prep task |
+| Wf hardened validation (staticData) | **PARTIAL/BLOCKED** — duplicate not blocked on second poll |
+| Wf47 Data Table ready-import prep | Template in Git with Data Table nodes; **no runtime** from prep task |
+| n8n Data Table (human-created) | **`wf47_polling_state_test`** with seed rows `last_update_id=0`, `last_handled_update_id=0`, `handled_keys_json={}` |
 | We live | **BLOCKED/PENDING** (HTTPS webhook) |
 | Template | `workflows/wf-telegram-inbound-polling-getupdates.template.json` (workflow **47**) |
 
@@ -109,20 +112,38 @@ Sanitized receipts (no secrets):
 
 ---
 
-## 8. Requirement before repeated use
+## 8. Ready-import path (no manual Code edits)
 
-Before any “safe repeated use” PASS:
+**Deprecated:** editing multiple Code nodes by hand for allowed chat / offset.
 
-1. Choose a **deliberate persistent state store** for offset + idempotency — e.g. test-only n8n Data Table or other approved store, configured **only in n8n UI** (no table id, token, or raw `chat_id` in Git).
-2. Validate in a **separate** manual gate: second poll without new message must yield `duplicate_or_double_click` or `stale_old_update_id` (or equivalent blocked receipt).
-3. No persistent Schedule without explicit runtime/security gate.
-4. Production Data Table activation is **not** prescribed here unless separately gated.
+**Correct path:**
 
-Workflow `staticData` in the template remains **demo-only** and was **not validated** for cross-execution persistence.
+1. Ensure n8n Data Table **`wf47_polling_state_test`** exists with seed rows (see Preconditions).
+2. **Delete or deactivate** any duplicate old workflow 47 in n8n before re-import (avoid two workflows polling the same bot state).
+3. **Import once:** `workflows/wf-telegram-inbound-polling-getupdates.template.json` — keep **inactive/off**.
+4. In n8n UI only:
+   - **Set Wf47 UI config** → replace `allowed_chat_id` placeholder (not Code nodes).
+   - **HTTP Request - getUpdates** → token URL placeholder.
+5. **Manual validation gate** (not yet PASS in frontier):
+   - Run 1: expect `accepted` for valid TEST ONLY update.
+   - Run 2 (no new Telegram message): expect `duplicate_or_stale: true` with `block_reason` `duplicate_or_double_click` or `stale_old_update_id` — **must NOT** repeat `accepted` for same `update_id`.
+
+Data Table node schema inferred from repo: `workflows/42-diff-summary-mvp.template.json` (get by key), `workflows/exports/2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` (`returnAll` load, `upsert` by `key`).
 
 ---
 
-## 9. PASS criteria (future — persistent store gate)
+## 9. Requirement before repeated use PASS
+
+1. **Persistent store:** `wf47_polling_state_test` only (TEST ONLY — not `control_plane_state` production path unless separately gated).
+2. Second manual poll blocks duplicate/stale per inspect contract.
+3. No Schedule without explicit gate.
+4. No production Data Table / PM-34 / wf40/41 from this workflow.
+
+Prior `staticData` template path: **not validated** — superseded by Data Table ready-import template in Git.
+
+---
+
+## 10. PASS criteria (Data Table manual validation gate)
 
 - First poll: accepted TEST ONLY decision as today.
 - Second poll (no new message): blocked with `duplicate_or_stale: true` and explicit `block_reason`.
@@ -130,7 +151,7 @@ Workflow `staticData` in the template remains **demo-only** and was **not valida
 
 ---
 
-## 10. BLOCKED criteria
+## 11. BLOCKED criteria
 
 - Real `chat_id` / token committed to Git.
 - Schedule activated without explicit gate.
@@ -139,7 +160,7 @@ Workflow `staticData` in the template remains **demo-only** and was **not valida
 
 ---
 
-## 11. Related files
+## 12. Related files
 
 - Template: `workflows/wf-telegram-inbound-polling-getupdates.template.json`
 - Registration (live): `docs/runtime/WF_TELEGRAM_INBOUND_POLLING_REGISTRATION_PROMPT.md`
