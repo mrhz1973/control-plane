@@ -35,9 +35,13 @@ if (!telegramNode) {
   process.exit(1);
 }
 
-const $input = { item: { json: testEvent } };
-const fn = new Function("$input", buildNode.parameters.jsCode);
-const result = fn($input);
+function runBuild(event) {
+  const $input = { item: { json: event } };
+  const fn = new Function("$input", buildNode.parameters.jsCode);
+  return fn($input);
+}
+
+const result = runBuild(testEvent);
 const text = result?.json?.decision_packet_text;
 
 if (typeof text !== "string") {
@@ -46,6 +50,13 @@ if (typeof text !== "string") {
 }
 
 const parseMode = telegramNode.parameters?.additionalFields?.parse_mode;
+
+const escapeProbe = {
+  ...testEvent,
+  context: "probe & < > end",
+  classifier_reason: "reason&x<y>z",
+};
+const escapeText = runBuild(escapeProbe)?.json?.decision_packet_text ?? "";
 
 const assertions = [
   ["T1", text.includes("event_id:"), 'text includes literal "event_id:"'],
@@ -62,9 +73,18 @@ const assertions = [
   ["T8", text.includes("Cosa NON viene fatto"), "text includes Cosa NON viene fatto"],
   [
     "T9",
-    parseMode === "" && parseMode !== "Markdown" && parseMode !== "MarkdownV2",
-    'Telegram additionalFields.parse_mode is "" (plain text)',
+    parseMode === "HTML" && parseMode !== "Markdown" && parseMode !== "MarkdownV2",
+    'Telegram additionalFields.parse_mode is HTML',
   ],
+  [
+    "T10",
+    escapeText.includes("&amp;") &&
+      escapeText.includes("&lt;") &&
+      escapeText.includes("&gt;") &&
+      !escapeText.includes("probe & < >"),
+    "dynamic values HTML-escaped for &, <, >",
+  ],
+  ["T11", workflow.active === false, "workflow remains active:false"],
 ];
 
 let failed = 0;
@@ -75,11 +95,6 @@ for (const [id, ok, desc] of assertions) {
     console.log(`${id} FAIL — ${desc}`);
     failed++;
   }
-}
-
-if (workflow.active !== false) {
-  console.log("FAIL — workflow must stay active:false");
-  failed++;
 }
 
 if (failed > 0) {
