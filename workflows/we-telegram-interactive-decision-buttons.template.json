@@ -1,0 +1,331 @@
+{
+  "name": "46 - We Telegram Interactive Decision Buttons TEST ONLY - TEMPLATE",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "callback_query",
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "we000001-0001-4001-8001-000000000001",
+      "name": "Telegram Trigger (CONFIGURE_IN_N8N_UI)",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1200,
+        200
+      ],
+      "webhookId": "**REDACTED_WEBHOOK_ID**",
+      "credentials": {
+        "telegramApi": {
+          "id": "**REDACTED_N8N_CREDENTIAL_ID**",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "TEMPLATE ONLY — active=false. Inbound NOT activated by this commit.\n\nWe: Telegram callback/inbound -> decision_id correlation -> duplicate/stale guard -> sanitized receipt.\n\ncallback_data format:\n  dp:D-9998-T:1 | dp:D-9998-T:2 | dp:D-9998-T:3\nOptional note (design only):\n  note:D-9998-T:<text>\n\nConfigure in n8n UI only:\n- **CONFIGURE_TELEGRAM_CREDENTIAL_IN_N8N_UI**\n- **CONFIGURE_ALLOWED_CHAT_ID_IN_N8N_UI**\n- **CONFIGURE_DECISION_STATE_STORE_IN_N8N_UI**\n\nSTATE STORE PLACEHOLDER — configure later; no real table/id in Git.\n\nFuture live gate may require temporary workflow activation to receive callbacks. One step at a time.",
+        "height": 400,
+        "width": 560
+      },
+      "id": "we000010-0010-4010-8010-000000000010",
+      "name": "NOTE - template only inbound not active",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Normalize inbound Telegram update. No secrets persisted.\nconst raw = $input.item.json || {};\nconst cq = raw.callback_query || {};\nconst msg = cq.message || raw.message || {};\nconst data = String(cq.data || msg.text || '').trim();\nconst inbound_kind = data.startsWith('note:') ? 'note' : (data.startsWith('dp:') ? 'callback' : 'unknown');\nreturn {\n  json: {\n    inbound_kind,\n    callback_data: data,\n    telegram_update_id: raw.update_id ?? null,\n    chat_id_redacted: 'REDACTED_CHAT_ID',\n    user_id_redacted: 'REDACTED_USER_ID',\n    message_id: msg.message_id ?? null,\n    received_at: new Date().toISOString(),\n    test_only: true,\n    note: 'Normalized inbound — configure allowed chat in UI before live gate'\n  }\n};"
+      },
+      "id": "we000002-0002-4002-8002-000000000002",
+      "name": "Normalize inbound decision response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "we-if-note",
+              "leftValue": "={{ $json.inbound_kind }}",
+              "rightValue": "note",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "we000003-0003-4003-8003-000000000003",
+      "name": "IF inbound is optional note",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -720,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Optional free-text note path — design/placeholder only; not active in package.\nconst d = $input.item.json;\nconst noteMatch = String(d.callback_data || '').match(/^note:(D-\\d{4}-[A-Z]):(.+)$/);\nconst decision_id = noteMatch ? noteMatch[1] : null;\nconst note_text = noteMatch ? String(noteMatch[2]).slice(0, 500) : '';\nreturn {\n  json: {\n    status: 'note_placeholder',\n    decision_id,\n    note_present: !!note_text,\n    note_length: note_text.length,\n    note_sanitized_preview: note_text ? '[redacted note text]' : null,\n    duplicate_or_stale: false,\n    test_only: true,\n    receipt: 'NOTE PATH PLACEHOLDER — free-text note does not change selected option; configure in future live gate'\n  }\n};"
+      },
+      "id": "we000004-0004-4004-8004-000000000004",
+      "name": "Build note receipt (placeholder)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Validate allowed chat, decision_id, option 1/2/3; duplicate/stale/idempotency guard.\nconst d = $input.item.json;\nconst ALLOWED_CHAT = '**CONFIGURE_ALLOWED_CHAT_ID_IN_N8N_UI**';\nconst STATE_STORE = '**CONFIGURE_DECISION_STATE_STORE_IN_N8N_UI**';\nconst TTL_SECONDS_PLACEHOLDER = 86400;\nconst OPEN_TEST_DECISIONS = ['D-9998-T'];\nconst seen = $getWorkflowStaticData('global');\nif (!seen.handledDecisionIds) seen.handledDecisionIds = {};\nconst chatConfigured = ALLOWED_CHAT.indexOf('CONFIGURE') === -1;\nconst chatOk = chatConfigured;\nconst m = String(d.callback_data || '').match(/^dp:(D-\\d{4}-[A-Z]):([123])$/);\nlet status = 'blocked';\nlet decision_id = null;\nlet selected_option = null;\nlet duplicate_or_stale = false;\nlet block_reason = 'invalid_callback_data';\nif (!chatOk) block_reason = 'allowed_chat_not_configured';\nif (m && chatOk) {\n  decision_id = m[1];\n  selected_option = m[2];\n  const idKey = decision_id + ':' + selected_option;\n  if (!OPEN_TEST_DECISIONS.includes(decision_id)) {\n    duplicate_or_stale = true;\n    block_reason = 'stale_or_unknown_decision_id';\n  } else if (seen.handledDecisionIds[idKey]) {\n    duplicate_or_stale = true;\n    block_reason = 'duplicate_or_double_click';\n  } else {\n    seen.handledDecisionIds[idKey] = d.received_at;\n    status = 'accepted';\n    block_reason = null;\n  }\n}\nreturn {\n  json: {\n    status,\n    decision_id,\n    selected_option,\n    callback_data: d.callback_data,\n    duplicate_or_stale,\n    block_reason,\n    state_store_placeholder: STATE_STORE,\n    ttl_seconds_placeholder: TTL_SECONDS_PLACEHOLDER,\n    chat_id_redacted: d.chat_id_redacted,\n    user_id_redacted: d.user_id_redacted,\n    message_id: d.message_id,\n    received_at: d.received_at,\n    test_only: true\n  }\n};"
+      },
+      "id": "we000005-0005-4005-8005-000000000005",
+      "name": "Validate and idempotency guard",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "we-if-accepted",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "accepted",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "we000006-0006-4006-8006-000000000006",
+      "name": "IF valid button selection",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Sanitized decision receipt — valid inline button 1/2/3.\nconst d = $input.item.json;\nreturn {\n  json: {\n    status: 'accepted',\n    receipt_type: 'decision_button',\n    decision_id: d.decision_id,\n    selected_option: d.selected_option,\n    callback_data: d.callback_data,\n    duplicate_or_stale: false,\n    note_present: false,\n    test_only: true,\n    message_id: d.message_id,\n    received_at: d.received_at,\n    note: 'Valid TEST ONLY decision receipt — no operational action'\n  }\n};"
+      },
+      "id": "we000007-0007-4007-8007-000000000007",
+      "name": "Build sanitized decision receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Sanitized receipt — invalid, stale, duplicate, or blocked.\nconst d = $input.item.json;\nreturn {\n  json: {\n    status: 'blocked',\n    receipt_type: 'ignored',\n    decision_id: d.decision_id,\n    selected_option: d.selected_option,\n    callback_data: d.callback_data,\n    duplicate_or_stale: d.duplicate_or_stale,\n    block_reason: d.block_reason || 'invalid',\n    note_present: false,\n    test_only: true,\n    message_id: d.message_id,\n    received_at: d.received_at,\n    note: 'Inbound ignored — no operational action'\n  }\n};"
+      },
+      "id": "we000008-0008-4008-8008-000000000008",
+      "name": "Build blocked or ignored receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "content": "STATE STORE PLACEHOLDER — configure **CONFIGURE_DECISION_STATE_STORE_IN_N8N_UI** later.\nNo real Data Table id or rows in Git.\nTemplate uses workflow staticData only for duplicate guard demo; replace with explicit test-only store in live gate.",
+        "height": 200,
+        "width": 480
+      },
+      "id": "we000011-0011-4011-8011-000000000011",
+      "name": "NOTE - state store placeholder",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Read-only inspect inbound result. No secrets.\nconst d = $input.item.json;\nreturn {\n  json: {\n    inspect_status: d.status || d.receipt_type,\n    decision_id: d.decision_id || null,\n    selected_option: d.selected_option || null,\n    duplicate_or_stale: d.duplicate_or_stale || false,\n    note_present: d.note_present || false,\n    test_only: true,\n    note: 'We inbound gate result — sanitize before recording'\n  }\n};"
+      },
+      "id": "we000009-0009-4009-8009-000000000009",
+      "name": "Inspect inbound result (read-only)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        320
+      ]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger (CONFIGURE_IN_N8N_UI)": {
+      "main": [
+        [
+          {
+            "node": "Normalize inbound decision response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize inbound decision response": {
+      "main": [
+        [
+          {
+            "node": "IF inbound is optional note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF inbound is optional note": {
+      "main": [
+        [
+          {
+            "node": "Build note receipt (placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate and idempotency guard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build note receipt (placeholder)": {
+      "main": [
+        [
+          {
+            "node": "Inspect inbound result (read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and idempotency guard": {
+      "main": [
+        [
+          {
+            "node": "IF valid button selection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF valid button selection": {
+      "main": [
+        [
+          {
+            "node": "Build sanitized decision receipt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build blocked or ignored receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build sanitized decision receipt": {
+      "main": [
+        [
+          {
+            "node": "Inspect inbound result (read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build blocked or ignored receipt": {
+      "main": [
+        [
+          {
+            "node": "Inspect inbound result (read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "we-telegram-inbound"
+    },
+    {
+      "name": "template-only"
+    },
+    {
+      "name": "decision-buttons"
+    },
+    {
+      "name": "control-plane"
+    }
+  ]
+}
