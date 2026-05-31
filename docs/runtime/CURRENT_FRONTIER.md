@@ -8,7 +8,7 @@
 > ricordare o reincollare stato/output: leggilo da qui o da GitHub. I token costano
 > meno della memoria dell'utente.
 
-Ultimo aggiornamento: 2026-05-31 — Wc Decision Packet Telegram automatic/cablato package prepared
+Ultimo aggiornamento: 2026-05-31 — Wc Decision Packet Telegram automatic/cablato manual single execution PASS
 
 ## PASS confermati (con prova)
 - Foundation completa: Tailscale attivo, 3 AI installate e collaudate, abbonamenti fissi, nessuna API a consumo.
@@ -26,12 +26,13 @@ Ultimo aggiornamento: 2026-05-31 — Wc Decision Packet Telegram automatic/cabla
 - Wb-live package: PREP PASS — importable inactive n8n template, sanitized classifier test event, manual runbook, and registration prompt prepared; no runtime executed.
 - Wb-live n8n -> classifier-server manual single execution via Tailscale: PASS ATTESTATO UTENTE — evidence: HTTP 200; schema-valid classifier output (risk=low, route=auto_allowed, confidence=high, requires_human=false); no fallback; workflow inactive after run; no Telegram send; no workflow 40/41 mutation or execution; no PM-34 unlock/touch; no secrets/token/chat_id/credential/webhook/API key/chain-of-thought in output.
 - Wc Decision Packet Telegram automatic/cablato package: PREP PASS — importable inactive n8n template, sanitized test event, manual runbook, and registration prompt prepared; no runtime executed.
+- Wc Decision Packet Telegram automatic/cablato manual single execution: PASS ATTESTATO UTENTE — evidence: one Telegram message sent (message_id 669); workflow inactive after run; message matched DECISION_PACKET_FORMAT.md content requirements; TEST ONLY marked; ID D-9999-T; 3 numbered options; "Scrivi: 1 / 2 / 3"; no secrets/token/chat_id/credential/webhook/API key/CoT; no workflow 40/41 mutation or execution; no Data Table mutation; no GitHub write; no PM-34 unlock/touch. Minor formatting issue: Telegram/Markdown removed underscores in event_id/human_gate/requires_human rendering; fix before operational use.
 
 ## Frontiera attuale / prossimo gate
-- Prossimo gate reale (Wc physical): user imports the inactive template in n8n, configures Telegram credential/chat_id in UI only, runs Manual Trigger once, verifies one TEST ONLY Decision Packet Telegram message, then returns sanitized evidence for registration.
-- Telegram Decision Packet automatico/cablato runtime send: NOT RUN until physical execution is attested.
+- Prossimo gate reale: fix Decision Packet Telegram formatting/Markdown escaping before operational use, then decide separately whether to proceed toward classifier-server response -> real operational Decision Packet integration. PM-34 remains separate and blocked.
+- Telegram Decision Packet operational automation: NOT RUN.
 - n8n runtime/wiring to classifier wrapper/server (automatic/cablato): NOT RUN.
-- Telegram Decision Packet automatico/cablato: NOT RUN.
+- Telegram Decision Packet automatico/cablato (operational, non-TEST): NOT RUN.
 - Catena completa AUTOMATIZZATA (nessun filo umano, output Codex auto-instradato a Cursor): NOT RUN. E' Fase 3, gated da PM-34.
 - n8n runtime/wiring to classifier wrapper: NOT RUN.
 - Telegram Decision Packet send AUTOMATICO/cablato: NOT RUN.
