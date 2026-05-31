@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: we-telegram-interactive-buttons-live-blocked
-- timestamp_utc: 2026-05-31T07:25:49Z
+- task_ref: wf-telegram-inbound-polling-package-prep
+- timestamp_utc: 2026-05-31T07:29:41Z
 - branch: main
-- real_task_commit: d2ae35a315f2ba6675c36fe461eb9dee2a575dd5
+- real_task_commit: 2fc6d137671525ea7cc7600c1bb49aa5da8b8d8b
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-d2ae35a315f2ba6675c36fe461eb9dee2a575dd5	refs/heads/main
+2fc6d137671525ea7cc7600c1bb49aa5da8b8d8b	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+2fc6d13 docs: prepare Telegram inbound polling package
+79e27d4 docs: update rolling Cursor report
 d2ae35a docs: record We Telegram interactive buttons live BLOCKED
 c3e3507 docs: update rolling Cursor report
 9146cce docs: prepare Telegram interactive decision buttons package
-e6b4a3f docs: update rolling Cursor report
-0b6f6ad docs: record Wd operational Decision Packet B live PASS
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ e6b4a3f docs: update rolling Cursor report
 ```
 
 ## HISTORY
+
+### we-telegram-interactive-buttons-live-blocked — 2026-05-31T07:25:49Z
+
+- real_task_commit: d2ae35a315f2ba6675c36fe461eb9dee2a575dd5
+- result_cursor: PASS
 
 ### we-telegram-interactive-buttons-package-prep — 2026-05-31T07:12:07Z
 
