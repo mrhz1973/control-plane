@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: wf47-datatable-ready-import-template-prep
-- timestamp_utc: 2026-05-31T09:16:57Z
+- task_ref: wf47-datatable-manual-validation-pass
+- timestamp_utc: 2026-05-31T09:37:17Z
 - branch: main
-- real_task_commit: 41fef737b98260a21b08d8270b36d1616d0b5686
+- real_task_commit: c286589b80f7ae1aac8ce3c3615f781f72470b83
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-41fef737b98260a21b08d8270b36d1616d0b5686	refs/heads/main
+c286589b80f7ae1aac8ce3c3615f781f72470b83	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+c286589 docs: record Wf47 Data Table manual validation PASS
+8f330ae docs: update rolling Cursor report
 41fef73 docs: prepare Wf47 Data Table ready-import template
 a0e14e3 docs: update rolling Cursor report
 f0bc9a6 docs: record Wf hardened polling validation blocked
-36460e6 docs: update rolling Cursor report
-9871d2d docs: harden Wf Telegram polling path prep
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ f0bc9a6 docs: record Wf hardened polling validation blocked
 ```
 
 ## HISTORY
+
+### wf47-datatable-ready-import-template-prep — 2026-05-31T09:16:57Z
+
+- real_task_commit: 41fef737b98260a21b08d8270b36d1616d0b5686
+- result_cursor: PASS
 
 ### wf-hardened-polling-manual-validation-partial-blocked — 2026-05-31T08:56:31Z
 
