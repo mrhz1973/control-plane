@@ -8,7 +8,7 @@
 > ricordare o reincollare stato/output: leggilo da qui o da GitHub. I token costano
 > meno della memoria dell'utente.
 
-Ultimo aggiornamento: 2026-05-30 — Wb-live package prepared (template + test event + runbook + registration prompt)
+Ultimo aggiornamento: 2026-05-30 — Wb-live n8n -> classifier-server manual single execution via Tailscale PASS
 
 ## PASS confermati (con prova)
 - Foundation completa: Tailscale attivo, 3 AI installate e collaudate, abbonamenti fissi, nessuna API a consumo.
@@ -24,10 +24,11 @@ Ultimo aggiornamento: 2026-05-30 — Wb-live package prepared (template + test e
 - Step Wa classifier HTTP server v1 offline: PASS — tools/classifier-server-v1.mjs; tests/classifier-server/run-offline-tests.mjs T1-T5 PASS; bind default loopback 127.0.0.1; zero external dependencies; no chain-of-thought; wrapper not modified.
 - Wb-docs: docs/foundation/DECISION_PACKET_FORMAT.md definito — estensione canonica di PROJECT_VISION §7.7; ponte classifier->gate umano; regole di redazione Telegram/no-secrets/no-CoT.
 - Wb-live package: PREP PASS — importable inactive n8n template, sanitized classifier test event, manual runbook, and registration prompt prepared; no runtime executed.
+- Wb-live n8n -> classifier-server manual single execution via Tailscale: PASS ATTESTATO UTENTE — evidence: HTTP 200; schema-valid classifier output (risk=low, route=auto_allowed, confidence=high, requires_human=false); no fallback; workflow inactive after run; no Telegram send; no workflow 40/41 mutation or execution; no PM-34 unlock/touch; no secrets/token/chat_id/credential/webhook/API key/chain-of-thought in output.
 
 ## Frontiera attuale / prossimo gate
-- Prossimo gate reale (Wb-live physical): user imports template in n8n, configures Tailscale URL/token in UI only, runs Manual Trigger once, then returns sanitized evidence for registration.
-- n8n runtime/wiring to classifier wrapper/server: NOT RUN until physical execution is attested.
+- Prossimo gate reale: design/import gate del Decision Packet Telegram automatico/cablato (ancora separato, non eseguito).
+- n8n runtime/wiring to classifier wrapper/server (automatic/cablato): NOT RUN.
 - Telegram Decision Packet automatico/cablato: NOT RUN.
 - Catena completa AUTOMATIZZATA (nessun filo umano, output Codex auto-instradato a Cursor): NOT RUN. E' Fase 3, gated da PM-34.
 - n8n runtime/wiring to classifier wrapper: NOT RUN.
