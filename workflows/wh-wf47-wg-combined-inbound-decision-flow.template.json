@@ -1,0 +1,512 @@
+{
+  "name": "49 - Wh Wf47 Wg Combined Inbound Decision Flow TEST ONLY - TEMPLATE",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "wh000001-0001-4001-8001-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1560,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "WH PREP — active=false. Combined Wf47 receipt -> Wg correlation.\n\nTables: wf47_polling_state_test + wg_decision_state_test\n\nSet scenario in UI. No live getUpdates in this template (use wf47 workflow 47 for live poll gate).\n\nScenarios: valid_close | duplicate | unknown | stale_closed | note_only | malformed",
+        "height": 260,
+        "width": 500
+      },
+      "id": "wh000011-0011-4011-8011-000000000011",
+      "name": "NOTE - Wh combined prep",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1640,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wh-set-scenario",
+              "name": "scenario",
+              "value": "valid_close",
+              "type": "string"
+            },
+            {
+              "id": "wh-set-chat",
+              "name": "allowed_chat_id",
+              "value": "**CONFIGURE_ALLOWED_CHAT_ID_IN_N8N_UI**",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wh000013-0013-4013-8013-000000000013",
+      "name": "Set Wh test config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1320,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "wf47_polling_state_test"
+        },
+        "returnAll": true,
+        "limit": 10
+      },
+      "id": "wh000014-0014-4014-8014-000000000014",
+      "name": "Data Table - Load wf47 polling state",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -1080,
+        200
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sanitized Wf47 inbound receipt fixture (simulates wf47 Inspect output). No Telegram HTTP.\nconst scenario = String($('Set Wh test config').first().json.scenario || 'valid_close').trim();\nconst ui = $('Set Wh test config').first().json;\nconst ALLOWED = String(ui.allowed_chat_id || '').trim();\nconst chat_ok = ALLOWED.length > 0 && ALLOWED.indexOf('CONFIGURE') === -1 && ALLOWED.indexOf('**') === -1;\nconst fixtures = {\n  valid_close: { inspect_status: 'accepted', decision_id: 'D-9998-T', selected_option: '1', update_id: 986228910, duplicate_or_stale: false, note_present: false, block_reason: null },\n  duplicate: { inspect_status: 'accepted', decision_id: 'D-9998-T', selected_option: '1', update_id: 986228910, duplicate_or_stale: false, note_present: false, block_reason: null },\n  unknown: { inspect_status: 'accepted', decision_id: 'D-9999-X', selected_option: '2', update_id: 986228911, duplicate_or_stale: false, note_present: false, block_reason: null },\n  stale_closed: { inspect_status: 'accepted', decision_id: 'D-9998-T', selected_option: '2', update_id: 986228912, duplicate_or_stale: false, note_present: false, block_reason: null },\n  note_only: { inspect_status: 'note_placeholder', decision_id: 'D-9998-T', selected_option: null, update_id: 986228913, duplicate_or_stale: false, note_present: true, block_reason: null, inbound_text: 'note:D-9998-T:TEST_ONLY_follow_up', response_kind: 'note' },\n  malformed: { inspect_status: 'blocked', decision_id: null, selected_option: null, update_id: null, duplicate_or_stale: false, note_present: false, block_reason: 'malformed_response', response_kind: 'malformed' }\n};\nconst f = fixtures[scenario] || fixtures.malformed;\nreturn [{ json: { ...f, allowed_chat_configured: chat_ok, chat_filter_ok: chat_ok, test_only: true, scenario, response_kind: f.response_kind || 'option' } }];"
+      },
+      "id": "wh000002-0002-4002-8002-000000000002",
+      "name": "Build sanitized Wf47 inbound receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -840,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Wf47 offset/idempotency on wf47_polling_state_test (fixture path).\nconst inb = $('Build sanitized Wf47 inbound receipt').first().json;\nconst rows = $('Data Table - Load wf47 polling state').all().map((i) => i.json);\nconst byKey = (k) => { const r = rows.find((x) => x && x.key === k); return r ? r.value : null; };\nconst lastHandled = Number(byKey('last_handled_update_id') || 0);\nlet handled = {};\ntry { handled = JSON.parse(byKey('handled_keys_json') || '{}'); } catch { handled = {}; }\nlet wf47_status = 'blocked';\nlet wf47_block_reason = inb.block_reason || 'no_matching_update';\nlet wf47_persist = null;\nif (!inb.chat_filter_ok) {\n  wf47_block_reason = 'allowed_chat_not_configured';\n} else if (inb.inspect_status !== 'accepted' || !inb.decision_id) {\n  wf47_block_reason = inb.block_reason || 'no_parseable_decision_response';\n} else {\n  const uid = inb.update_id;\n  const key = inb.decision_id + ':' + (inb.selected_option || 'note') + ':' + uid;\n  if (uid != null && uid <= lastHandled) {\n    wf47_block_reason = 'stale_old_update_id';\n  } else if (handled[key]) {\n    wf47_block_reason = 'duplicate_or_double_click';\n  } else {\n    handled[key] = new Date().toISOString();\n    wf47_status = 'accepted';\n    wf47_block_reason = null;\n    wf47_persist = {\n      last_update_id: String(uid + 1),\n      last_handled_update_id: String(uid),\n      handled_keys_json: JSON.stringify(handled)\n    };\n  }\n}\nreturn {\n  json: {\n    wf47_polling_status: wf47_status,\n    wf47_block_reason,\n    wf47_persist,\n    decision_id: inb.decision_id,\n    selected_option: inb.selected_option,\n    update_id: inb.update_id,\n    note_present: !!inb.note_present,\n    response_kind: inb.response_kind || 'option',\n    inbound_text: inb.inbound_text || (inb.decision_id ? 'dp:' + inb.decision_id + ':' + inb.selected_option : ''),\n    allowed_chat_configured: !!inb.allowed_chat_configured,\n    test_only: true\n  }\n};"
+      },
+      "id": "wh000003-0003-4003-8003-000000000003",
+      "name": "Wf47 polling offset guard",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -600,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "wh-if-wf47",
+              "leftValue": "={{ $json.wf47_polling_status === 'accepted' && $json.wf47_persist !== null }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "wh000015-0015-4015-8015-000000000015",
+      "name": "IF wf47 persist polling state",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -360,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const w = $('Wf47 polling offset guard').first().json;\nconst p = w.wf47_persist;\nconst note = 'wf47 polling state TEST ONLY';\nreturn [\n  { json: { state_key: 'last_update_id', state_value: p.last_update_id, note } },\n  { json: { state_key: 'last_handled_update_id', state_value: p.last_handled_update_id, note } },\n  { json: { state_key: 'handled_keys_json', state_value: p.handled_keys_json, note } }\n];"
+      },
+      "id": "wh000016-0016-4016-8016-000000000016",
+      "name": "Prepare wf47 state upserts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "wf47_polling_state_test"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "condition": "eq",
+              "keyValue": "={{ $json.state_key }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ $json.state_key }}",
+            "value": "={{ $json.state_value }}",
+            "updated_at": "={{ $now.toISO() }}",
+            "note": "={{ $json.note }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "wh000017-0017-4017-8017-000000000017",
+      "name": "Data Table - Upsert wf47 state row",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        120,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "wg_decision_state_test"
+        },
+        "returnAll": true,
+        "limit": 50
+      },
+      "id": "wh000018-0018-4018-8018-000000000018",
+      "name": "Data Table - Load wg decision state",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -360,
+        320
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Wg correlation from Wf47 sanitized receipt.\nconst wf = $('Wf47 polling offset guard').item.json;\nconst rows = $('Data Table - Load wg decision state').all().map((i) => i.json);\nconst findRow = (id) => rows.find((r) => r && String(r.decision_id) === String(id));\nconst decision_id = wf.decision_id;\nconst selected_option = wf.selected_option;\nconst update_id = wf.update_id;\nconst note_present = !!wf.note_present;\nconst response_kind = wf.response_kind || 'option';\nlet wg_status = 'blocked';\nlet wg_block_reason = 'malformed_response';\nlet persist_row = null;\nconst now = new Date().toISOString();\nif (wf.wf47_polling_status !== 'accepted') {\n  wg_block_reason = wf.wf47_block_reason || 'wf47_polling_blocked';\n} else if (response_kind === 'malformed' || !decision_id) {\n  wg_block_reason = 'malformed_response';\n} else if (response_kind === 'note') {\n  const row = findRow(decision_id);\n  if (!row) wg_block_reason = 'unknown_decision_id';\n  else {\n    wg_status = 'note_recorded';\n    wg_block_reason = null;\n    persist_row = { decision_id, status: String(row.status || 'open'), selected_option: row.selected_option || '', created_at: row.created_at || now, closed_at: row.closed_at || '', update_id: String(update_id || ''), note_preview: String(wf.inbound_text || '').slice(0, 80), source: 'TEST ONLY' };\n  }\n} else {\n  const row = findRow(decision_id);\n  if (!row) wg_block_reason = 'unknown_decision_id';\n  else if (String(row.status) === 'closed') {\n    wg_block_reason = (update_id != null && String(row.update_id) === String(update_id)) ? 'duplicate_or_already_closed' : 'already_closed_or_stale';\n  } else if (String(row.status) === 'open' && ['1','2','3'].includes(String(selected_option))) {\n    wg_status = 'closed';\n    wg_block_reason = null;\n    persist_row = { decision_id, status: 'closed', selected_option: String(selected_option), created_at: row.created_at || now, closed_at: now, update_id: String(update_id), note_preview: row.note_preview || '', source: 'TEST ONLY' };\n  } else wg_block_reason = 'malformed_response';\n}\nreturn {\n  json: {\n    wf47_polling_status: wf.wf47_polling_status,\n    wf47_block_reason: wf.wf47_block_reason,\n    wg_correlation_status: wg_status,\n    wg_block_reason,\n    decision_id,\n    selected_option,\n    update_id,\n    note_present,\n    prior_status: decision_id ? (findRow(decision_id)?.status || 'missing') : 'missing',\n    wg_persist_row: persist_row,\n    test_only: true\n  }\n};"
+      },
+      "id": "wh000005-0005-4005-8005-000000000005",
+      "name": "Correlate Wg decision state",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "wh-if-wg",
+              "leftValue": "={{ $json.wg_correlation_status === 'closed' || $json.wg_correlation_status === 'note_recorded' }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "wh000019-0019-4019-8019-000000000019",
+      "name": "IF wg persist decision state",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        120,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return { json: $('Correlate Wg decision state').item.json.wg_persist_row };"
+      },
+      "id": "wh000020-0020-4020-8020-000000000020",
+      "name": "Prepare wg decision upsert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "wg_decision_state_test"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "decision_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.decision_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "decision_id": "={{ $json.decision_id }}",
+            "status": "={{ $json.status }}",
+            "selected_option": "={{ $json.selected_option }}",
+            "created_at": "={{ $json.created_at }}",
+            "closed_at": "={{ $json.closed_at }}",
+            "update_id": "={{ $json.update_id }}",
+            "note_preview": "={{ $json.note_preview }}",
+            "source": "={{ $json.source }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "wh000021-0021-4021-8021-000000000021",
+      "name": "Data Table - Upsert wg decision row",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        600,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const c = $('Correlate Wg decision state').item.json;\nreturn {\n  json: {\n    inspect_status: c.wg_correlation_status === 'closed' ? 'closed' : (c.wg_correlation_status === 'note_recorded' ? 'note_recorded' : 'blocked'),\n    wf47_polling_status: c.wf47_polling_status,\n    wg_correlation_status: c.wg_correlation_status,\n    decision_id: c.decision_id,\n    selected_option: c.selected_option,\n    update_id: c.update_id,\n    note_present: c.note_present,\n    wf47_block_reason: c.wf47_block_reason,\n    wg_block_reason: c.wg_block_reason,\n    prior_status: c.prior_status,\n    state_persisted_wf47: c.wf47_polling_status === 'accepted',\n    state_persisted_wg: c.wg_persist_row !== null && c.wg_persist_row !== undefined,\n    test_only: true\n  }\n};"
+      },
+      "id": "wh000008-0008-4008-8008-000000000008",
+      "name": "Build sanitized combined receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const d = $input.item.json;\nreturn {\n  json: {\n    inspect_status: d.inspect_status,\n    wf47_polling_status: d.wf47_polling_status,\n    wg_correlation_status: d.wg_correlation_status,\n    decision_id: d.decision_id || null,\n    selected_option: d.selected_option || null,\n    update_id: d.update_id ?? null,\n    note_present: d.note_present || false,\n    wf47_block_reason: d.wf47_block_reason || null,\n    wg_block_reason: d.wg_block_reason || null,\n    prior_status: d.prior_status || null,\n    state_persisted_wf47: d.state_persisted_wf47 === true,\n    state_persisted_wg: d.state_persisted_wg === true,\n    test_only: true\n  }\n};"
+      },
+      "id": "wh000009-0009-4009-8009-000000000009",
+      "name": "Inspect combined result (read-only)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Wh test config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Wh test config": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Load wf47 polling state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Load wf47 polling state": {
+      "main": [
+        [
+          {
+            "node": "Build sanitized Wf47 inbound receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build sanitized Wf47 inbound receipt": {
+      "main": [
+        [
+          {
+            "node": "Wf47 polling offset guard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wf47 polling offset guard": {
+      "main": [
+        [
+          {
+            "node": "IF wf47 persist polling state",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Data Table - Load wg decision state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF wf47 persist polling state": {
+      "main": [
+        [
+          {
+            "node": "Prepare wf47 state upserts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Prepare wf47 state upserts": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Upsert wf47 state row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Load wg decision state": {
+      "main": [
+        [
+          {
+            "node": "Correlate Wg decision state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Correlate Wg decision state": {
+      "main": [
+        [
+          {
+            "node": "IF wg persist decision state",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build sanitized combined receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF wg persist decision state": {
+      "main": [
+        [
+          {
+            "node": "Prepare wg decision upsert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Prepare wg decision upsert": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Upsert wg decision row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build sanitized combined receipt": {
+      "main": [
+        [
+          {
+            "node": "Inspect combined result (read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "wh-combined-inbound"
+    },
+    {
+      "name": "wf47-wg"
+    },
+    {
+      "name": "template-only"
+    },
+    {
+      "name": "control-plane"
+    }
+  ]
+}
