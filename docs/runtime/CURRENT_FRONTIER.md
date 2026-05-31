@@ -8,7 +8,7 @@
 > ricordare o reincollare stato/output: leggilo da qui o da GitHub. I token costano
 > meno della memoria dell'utente.
 
-Ultimo aggiornamento: 2026-05-31 — Wh Wf47 Wg combined inbound decision flow manual validation PASS
+Ultimo aggiornamento: 2026-05-31 — Wf47 Wg operationalization plan PREP PASS (no-runtime)
 
 ## PASS confermati (con prova)
 - Foundation completa: Tailscale attivo, 3 AI installate e collaudate, abbonamenti fissi, nessuna API a consumo.
@@ -43,9 +43,10 @@ Ultimo aggiornamento: 2026-05-31 — Wh Wf47 Wg combined inbound decision flow m
 - Wh Wf47->Wg combined inbound decision flow package: PREP PASS — importable inactive workflow 49 template + runbook for feeding sanitized Wf47 inbound receipt into Wg test-only decision state correlation; uses wf47_polling_state_test and wg_decision_state_test; fixture handoff (live getUpdates remains wf47 workflow 47); no runtime; no schedule; no production Data Table; no PM-34.
 - chat_id policy gate + CSV convention + wf49 ready: PASS — PROJECT_VISION §10 emendato (gate esplicito 2026-05-31) per ammettere chat_id negli asset config; CSV seeds in data-tables/; wf49 con chat_id reale 472599368, active:false; token resta vietato; nessun runtime; PM-34 BLOCCATO.
 - Wh Wf47->Wg combined inbound decision flow manual validation: PASS ATTESTATO UTENTE — workflow 49 manual/inactive/off; CSV seeds imported/reset from data-tables/; valid_close accepted at Wf47 and closed D-9998-T option 1 at Wg with both states persisted; duplicate used wf47 reset only while D-9998-T remained closed and produced Wg duplicate_or_already_closed; unknown D-9999-X produced Wg unknown_decision_id; no schedule; no Telegram Trigger; no public webhook; no workflow 40/41/42 mutation; no production Data Table; no PM-34.
+- Wf47->Wg operationalization plan: PREP PASS — no-runtime plan in docs/workflow-wf47-wg-operationalization-plan.md; handoff boundary Wf47 receipt -> Wg correlation; strict increment order; blockers and rollback documented; workflow 49 remains manual/inactive/off; no runtime; PM-34 BLOCCATO.
 
 ## Frontiera attuale / prossimo gate
-- Prossimo gate reale: Decide next safe incremental gate after Wh PASS: either register optional Wh scenarios note_only/malformed/stale_closed, or prepare a no-runtime plan for operationalizing the Wf47 -> Wg handoff while still inactive/off. No schedule. No production Data Table. No PM-34 without explicit separate gate. Wf47, Wg, and Wh manual validations remain PASS. Telegram inbound operational automation remains NOT RUN / NOT ACTIVE.
+- Prossimo gate reale: Wf47->Wg operationalization increment 2–3 — no-runtime config checklist review, then manual inactive/off import rehearsal of wf47/wf48/wf49 (user-attested PASS registration). Optional prior increment 1: Wh scenarios note_only/malformed/stale_closed if needed. No schedule. No production Data Table. No PM-34 without explicit separate gate. Wf47, Wg, and Wh manual validations remain PASS. Telegram inbound operational automation remains NOT RUN / NOT ACTIVE.
 - Wf hardened path manual validation (staticData template): PARTIAL/BLOCKED (historical) — first poll accepted D-9998-T option 1; second poll re-accepted same update_id on staticData path. Superseded for repeated polling by Wf47 Data Table PASS.
 - We Telegram interactive decision buttons live: BLOCKED/PENDING — blocker: Telegram Trigger manual test returned "Bad Request: bad webhook: An HTTPS URL must be provided for webhook"; current n8n access is via local tunnel/http://localhost:5678 and does not provide the public HTTPS webhook URL required by Telegram. No callback received; no sanitized inbound receipt produced; workflow 46 remained inactive/off; no PM-34; no workflow 40/41 mutation; no Data Table production mutation; no GitHub write by workflow. NON marcato PASS. Path (B) polling/getUpdates package is prepared as Wf; path (A) public HTTPS webhook remains a separate architectural option.
 - Telegram inbound replies / decision buttons: NOT RUN / NOT ACTIVE (We live blocked on HTTPS webhook requirement; plain-text replies 1/2/3 remain non-operative).
