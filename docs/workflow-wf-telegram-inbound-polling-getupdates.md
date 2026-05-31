@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-wf-telegram-inbound-polling-getupdates.md`  
-**Status:** Ready-import Data Table template **PREP** (Git). Prior hardened validation **PARTIAL/BLOCKED** on staticData. Safe repeated use **not** PASS until Data Table gate validated. No schedule. No inbound automation.
+**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Repeated manual polling on test-only table validated. **Not** operational automation. **Not** full inbound automation. No schedule.
 
 ---
 
@@ -60,7 +60,8 @@ Token was configured **only in n8n UI** (HTTP URL corrected there). n8n tunnel w
 | Wf hardening prep | Template + runbook updated in Git; **no runtime** from prep task |
 | Wf hardened validation (staticData) | **PARTIAL/BLOCKED** — duplicate not blocked on second poll |
 | Wf47 Data Table ready-import prep | Template in Git with Data Table nodes; **no runtime** from prep task |
-| n8n Data Table (human-created) | **`wf47_polling_state_test`** with seed rows `last_update_id=0`, `last_handled_update_id=0`, `handled_keys_json={}` |
+| Wf47 Data Table manual validation | **PASS ATTESTATO UTENTE** (poll 1 accept + poll 2 no re-accept) |
+| n8n Data Table (human-created) | **`wf47_polling_state_test`** — columns: `key`, `value`, `updated_at`, `note` (note added before successful rerun) |
 | We live | **BLOCKED/PENDING** (HTTPS webhook) |
 | Template | `workflows/wf-telegram-inbound-polling-getupdates.template.json` (workflow **47**) |
 
@@ -124,30 +125,64 @@ Sanitized receipts (no secrets):
 4. In n8n UI only:
    - **Set Wf47 UI config** → replace `allowed_chat_id` placeholder (not Code nodes).
    - **HTTP Request - getUpdates** → token URL placeholder.
-5. **Manual validation gate** (not yet PASS in frontier):
-   - Run 1: expect `accepted` for valid TEST ONLY update.
-   - Run 2 (no new Telegram message): expect `duplicate_or_stale: true` with `block_reason` `duplicate_or_double_click` or `stale_old_update_id` — **must NOT** repeat `accepted` for same `update_id`.
+5. **Data Table schema:** table must include columns **`key`, `value`, `updated_at`, `note`**. Initial run failed on upsert with `unknown column name 'note'` until human added `note` to test-only table.
 
 Data Table node schema inferred from repo: `workflows/42-diff-summary-mvp.template.json` (get by key), `workflows/exports/2026-05-20_github-commit-datatable-dedupe-scheduled-v4-multirepo-draft.redacted.json` (`returnAll` load, `upsert` by `key`).
 
 ---
 
-## 9. Requirement before repeated use PASS
+## 9. Wf47 Data Table manual validation — actual result (PASS)
 
-1. **Persistent store:** `wf47_polling_state_test` only (TEST ONLY — not `control_plane_state` production path unless separately gated).
-2. Second manual poll blocks duplicate/stale per inspect contract.
-3. No Schedule without explicit gate.
-4. No production Data Table / PM-34 / wf40/41 from this workflow.
+**Recorded:** 2026-05-31. Ready-import template; token + `allowed_chat_id` in Set/HTTP UI only; workflow **47** manual/inactive/off.
 
-Prior `staticData` template path: **not validated** — superseded by Data Table ready-import template in Git.
+| Run | Result |
+|-----|--------|
+| **Poll 1** (after `dp:D-9998-T:1` sent) | **PASS** — `inspect_status: accepted`, `decision_id: D-9998-T`, `selected_option: 1`, `update_id: 986228559`, `offset_after_placeholder: 986228560`, `last_handled_update_id: 0` (before persist visible in receipt) |
+| **Poll 2** (no new Telegram message) | **PASS (no re-accept)** — `inspect_status: blocked`, `block_reason: no_parseable_decision_response`, `last_handled_update_id: 986228559`, `offset_after_placeholder: 986228560` |
+
+**Nuance:** `duplicate_or_double_click` was **not** triggered because persisted offset advanced to `986228560`, so Telegram did not return update `986228559` again. This satisfies the operational criterion: **the same update was not accepted twice.**
+
+**Repeated manual polling on test-only Data Table:** **PASS.** Not operational automation.
+
+Poll 1 receipt (sanitized):
+
+```json
+{
+  "inspect_status": "accepted",
+  "decision_id": "D-9998-T",
+  "selected_option": "1",
+  "update_id": 986228559,
+  "duplicate_or_stale": false,
+  "block_reason": null,
+  "allowed_chat_configured": true,
+  "offset_after_placeholder": 986228560,
+  "last_handled_update_id": 0,
+  "test_only": true
+}
+```
+
+Poll 2 receipt (sanitized):
+
+```json
+{
+  "inspect_status": "blocked",
+  "block_reason": "no_parseable_decision_response",
+  "last_handled_update_id": 986228559,
+  "offset_after_placeholder": 986228560,
+  "allowed_chat_configured": true,
+  "test_only": true
+}
+```
+
+Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repeated polling.
 
 ---
 
-## 10. PASS criteria (Data Table manual validation gate)
+## 10. PASS criteria (met — Data Table gate)
 
-- First poll: accepted TEST ONLY decision as today.
-- Second poll (no new message): blocked with `duplicate_or_stale: true` and explicit `block_reason`.
-- No secrets; workflow inactive/off unless separately documented.
+- Poll 1: accepted TEST ONLY decision.
+- Poll 2: did not re-accept same update (blocked, empty parse).
+- No secrets; workflow inactive/off.
 
 ---
 
