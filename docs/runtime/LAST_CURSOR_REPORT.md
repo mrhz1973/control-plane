@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: wf47-wg-operationalization-plan-prep
-- timestamp_utc: 2026-05-31T16:05:00Z
+- task_ref: wf47-wg-operationalization-checklist-prep
+- timestamp_utc: 2026-05-31T16:10:00Z
 - branch: main
-- real_task_commit: 811c69e025222652a7cfd94e287e948cb0fe5dde
+- real_task_commit: d410a8f1fb04db1b447574f55ba75ec4e3d8bdd3
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-811c69e025222652a7cfd94e287e948cb0fe5dde	refs/heads/main
+d410a8f1fb04db1b447574f55ba75ec4e3d8bdd3	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+d410a8f docs: prepare Wf47 Wg operationalization checklist
+fc3fac1 docs: update rolling Cursor report
 811c69e docs: prepare Wf47 Wg operationalization plan
 9ade445 docs: update rolling Cursor report
 341b847 docs: record Wh manual validation PASS
-59fc8ec docs: update rolling Cursor report
-12ed1b8 docs: gate chat_id in git + Data Table CSV convention + wf49 ready-configured
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ Regole:
 ```
 
 ## HISTORY
+
+### wf47-wg-operationalization-plan-prep — 2026-05-31T16:05:00Z
+
+- real_task_commit: 811c69e025222652a7cfd94e287e948cb0fe5dde
+- result_cursor: PASS
 
 ### wh-manual-validation-pass — 2026-05-31T15:57:34Z
 
