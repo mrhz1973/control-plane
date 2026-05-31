@@ -430,7 +430,8 @@ Regola: non confondere finestre/repo. Prompt destinati a `CONTROL PLANE` non van
 ## 10. Invarianti permanenti
 
 - GitHub è fonte di verità.
-- Nessun segreto in Git: token, chat_id, OAuth material, PAT, webhook secret, URL con token.
+- Nessun segreto in Git: token, OAuth material, PAT, webhook secret, URL con token.
+- Eccezione chat_id (gate esplicito 2026-05-31): il chat_id Telegram è AMMESSO negli asset di configurazione del repo (workflow JSON e CSV seed in data-tables/). Il token Telegram e tutti gli altri segreti restano vietati. La redazione del chat_id nel corpo dei messaggi Telegram (DECISION_PACKET_FORMAT §6) resta invariata.
 - Workflow `40` è produzione e non si modifica in silenzio.
 - Workflow `41` è backup off e non si cancella in silenzio.
 - PM-34 real worker resta bloccato finché non esiste una prova reale e un gate esplicito.

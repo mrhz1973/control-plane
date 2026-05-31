@@ -8,7 +8,7 @@
 > ricordare o reincollare stato/output: leggilo da qui o da GitHub. I token costano
 > meno della memoria dell'utente.
 
-Ultimo aggiornamento: 2026-05-31 — Wh Wf47 Wg combined inbound decision flow package prepared
+Ultimo aggiornamento: 2026-05-31 — chat_id policy gate + Data Table CSV convention + wf49 ready-configured
 
 ## PASS confermati (con prova)
 - Foundation completa: Tailscale attivo, 3 AI installate e collaudate, abbonamenti fissi, nessuna API a consumo.
@@ -41,9 +41,10 @@ Ultimo aggiornamento: 2026-05-31 — Wh Wf47 Wg combined inbound decision flow p
 - Wg inbound Decision Packet state correlation package: PREP PASS — importable inactive workflow 48 template + runbook for mapping sanitized inbound DP response to test-only decision state table wg_decision_state_test; scenario fixtures for valid close, duplicate, unknown, stale, note, malformed; no runtime; no schedule; no production Data Table; no PM-34.
 - Wg inbound Decision Packet state correlation manual validation: PASS ATTESTATO UTENTE — workflow 48 manual/inactive/off; test-only table wg_decision_state_test; valid_close closed D-9998-T option 1 and persisted state; duplicate blocked already-closed D-9998-T with duplicate_or_already_closed and no second persist; unknown D-9999-X blocked with unknown_decision_id; no secrets; no schedule; no Telegram Trigger; no public webhook; no workflow 40/41 mutation; no production Data Table; no PM-34.
 - Wh Wf47->Wg combined inbound decision flow package: PREP PASS — importable inactive workflow 49 template + runbook for feeding sanitized Wf47 inbound receipt into Wg test-only decision state correlation; uses wf47_polling_state_test and wg_decision_state_test; fixture handoff (live getUpdates remains wf47 workflow 47); no runtime; no schedule; no production Data Table; no PM-34.
+- chat_id policy gate + CSV convention + wf49 ready: PASS — PROJECT_VISION §10 emendato (gate esplicito 2026-05-31) per ammettere chat_id negli asset config; CSV seeds in data-tables/; wf49 con chat_id reale 472599368, active:false; token resta vietato; nessun runtime; PM-34 BLOCCATO.
 
 ## Frontiera attuale / prossimo gate
-- Prossimo gate reale: Wh manual validation — seed/reset test-only tables wf47_polling_state_test and wg_decision_state_test (open D-9998-T), import inactive workflow 49, run scenarios valid_close, duplicate, unknown; record sanitized Inspect combined receipts. No schedule. No production control_plane_state. No PM-34. Wf47 and Wg manual validations remain PASS. Telegram inbound operational automation remains NOT RUN / NOT ACTIVE.
+- Prossimo gate reale: Wh manual validation — import CSV seeds from data-tables/ into wf47_polling_state_test and wg_decision_state_test (or reset via reimport), import inactive workflow 49 (chat_id già in template), run scenarios valid_close, duplicate, unknown; record sanitized Inspect combined receipts. No schedule. No production control_plane_state. No PM-34. Wf47 and Wg manual validations remain PASS. Telegram inbound operational automation remains NOT RUN / NOT ACTIVE.
 - Wf hardened path manual validation (staticData template): PARTIAL/BLOCKED (historical) — first poll accepted D-9998-T option 1; second poll re-accepted same update_id on staticData path. Superseded for repeated polling by Wf47 Data Table PASS.
 - We Telegram interactive decision buttons live: BLOCKED/PENDING — blocker: Telegram Trigger manual test returned "Bad Request: bad webhook: An HTTPS URL must be provided for webhook"; current n8n access is via local tunnel/http://localhost:5678 and does not provide the public HTTPS webhook URL required by Telegram. No callback received; no sanitized inbound receipt produced; workflow 46 remained inactive/off; no PM-34; no workflow 40/41 mutation; no Data Table production mutation; no GitHub write by workflow. NON marcato PASS. Path (B) polling/getUpdates package is prepared as Wf; path (A) public HTTPS webhook remains a separate architectural option.
 - Telegram inbound replies / decision buttons: NOT RUN / NOT ACTIVE (We live blocked on HTTPS webhook requirement; plain-text replies 1/2/3 remain non-operative).
@@ -63,6 +64,7 @@ Ultimo aggiornamento: 2026-05-31 — Wh Wf47 Wg combined inbound decision flow p
 * wf41 candidato: workflows/exports/2026-05-21_41-plan-handoff-file-candidate.redacted.json
 * Telegram credential n8n: "CONTROL PLANE - Telegram Bot" (token solo in n8n). Data Table: control_plane_state
 * Regole redazione export: workflows/README.md
+* Data Table CSV seeds: data-tables/ (see docs/foundation/DATA_TABLE_CSV_CONVENTION.md)
 
 ## NON ripetere / bloccato
 - NON marcare Codex CLI o Cursor CLI "ATTIVO" in PROJECT_VISION 1.1: la catena e' manuale/supervisionata, non automatica.

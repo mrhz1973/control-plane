@@ -104,19 +104,29 @@ Runtime match (historical): **PASS** for bootstrap single-repo path. **Not** the
 | Remove or placeholder | Never commit |
 |------------------------|--------------|
 | Telegram bot **token** | Plaintext or env |
-| Operational **chat_id** | Use `__CONFIGURE_CHAT_ID_IN_N8N_UI__` or omit |
+| Operational **chat_id** | **No longer mandatory redaction** — allowed in configuration assets (workflow JSON templates, `data-tables/` CSV seeds) per explicit policy gate **2026-05-31**; legacy redacted exports may still use `__CONFIGURE_CHAT_ID_IN_N8N_UI__` |
 | n8n **credential IDs** | Use `__REDACTED_N8N_CREDENTIAL_ID__` or credential **name** only |
 | **Webhook URL** / tunnel URL / webhook secret | n8n / GitHub UI only |
+| **API keys** / OAuth material / **PAT** | — |
 | URLs embedding secrets (signed, token query params) | — |
 | **Execution data**, pinned execution IDs, last-run payloads | — |
 | **Binary** attachments / base64 blobs | — |
-| **Static data** with tokens, chat_id, or personal data | — |
+| **Static data** with tokens or personal data | — |
 | Unnecessary runtime-only parameters (instance URLs with auth, personal notes) | — |
 | `*.unredacted.json` | Local staging only |
 
 Add JSON metadata `redaction` note listing what was stripped (same pattern as existing exports). **Inspect** full file before `git add` — do not trust filename alone.
 
-**Redaction verified before commit:** placeholders only (`__CONFIGURE_CHAT_ID_IN_N8N_UI__`, `__REDACTED_N8N_CREDENTIAL_ID__`, `__REDACTED_VERSION_ID__`); no `*.unredacted.json` in git.
+**Redaction verified before commit:** no token, credential id/content, webhook/auth URL, API key, OAuth/PAT, or chain-of-thought; `*.unredacted.json` not in git. chat_id may be real in config assets (gate 2026-05-31). Legacy exports: placeholders (`__CONFIGURE_CHAT_ID_IN_N8N_UI__`, `__REDACTED_N8N_CREDENTIAL_ID__`, `__REDACTED_VERSION_ID__`) remain valid.
+
+### Data Table CSV seeds (2026-05-31)
+
+| File | Purpose |
+|------|---------|
+| `data-tables/wf47_polling_state_test.csv` | Key/value seed for Wf47 polling offset/idempotency (TEST ONLY) |
+| `data-tables/wg_decision_state_test.csv` | Column seed for Wg/Wh decision state (TEST ONLY; open `D-9998-T`) |
+
+Convention: [DATA_TABLE_CSV_CONVENTION.md](foundation/DATA_TABLE_CSV_CONVENTION.md). Workflow **49** (`workflows/wh-wf47-wg-combined-inbound-decision-flow.template.json`) is ready-configured with real chat_id, **`active: false`**, no Telegram token in Git.
 
 Naming: [workflows/README.md](../workflows/README.md).
 
