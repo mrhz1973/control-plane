@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: wg-inbound-decision-state-correlation-prep
-- timestamp_utc: 2026-05-31T10:05:17Z
+- task_ref: wg-manual-validation-pass
+- timestamp_utc: 2026-05-31T14:49:24Z
 - branch: main
-- real_task_commit: f82916f96558538cb3ae58204e82f7bea6fc2a8b
+- real_task_commit: 540910922f48bbaf31537058f9486b823aeba692
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-f82916f96558538cb3ae58204e82f7bea6fc2a8b	refs/heads/main
+540910922f48bbaf31537058f9486b823aeba692	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+5409109 docs: record Wg manual validation PASS
+926f069 docs: update rolling Cursor report
 f82916f docs: prepare Wg inbound decision state correlation package
 a9921f8 docs: update rolling Cursor report
 c286589 docs: record Wf47 Data Table manual validation PASS
-8f330ae docs: update rolling Cursor report
-41fef73 docs: prepare Wf47 Data Table ready-import template
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ c286589 docs: record Wf47 Data Table manual validation PASS
 ```
 
 ## HISTORY
+
+### wg-inbound-decision-state-correlation-prep — 2026-05-31T10:05:17Z
+
+- real_task_commit: f82916f96558538cb3ae58204e82f7bea6fc2a8b
+- result_cursor: PASS
 
 ### wf47-datatable-manual-validation-pass — 2026-05-31T09:37:17Z
 
