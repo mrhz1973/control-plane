@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-wg-telegram-inbound-decision-state-correlation.md`  
-**Status:** Package **PREP PASS** only. No runtime. No operational automation.
+**Status:** Wg manual validation **PASS ATTESTATO UTENTE**. Not operational automation. Not full inbound automation. No schedule.
 
 ---
 
@@ -85,27 +85,40 @@ No Code-node edits required for normal validation (scenario in Set node).
 
 ---
 
-## 6. Manual validation gate (next)
+## 6. Manual validation — actual result (PASS)
 
-| Step | Action | Expected |
-|------|--------|----------|
-| 1 | Seed open `D-9998-T` in `wg_decision_state_test` | `status=open` |
-| 2 | Import wf **48**; scenario **`valid_close`**; Manual Trigger | `correlation_status: closed`, `decision_id: D-9998-T`, `selected_option: 1`; row closed in table |
-| 3 | Scenario **`duplicate`** (same update) | `blocked`, `block_reason: duplicate_or_already_closed` |
-| 4 | Scenario **`unknown`** | `blocked`, `block_reason: unknown_decision_id` |
-| 5 | Optional: **`stale_closed`**, **`note_only`**, **`malformed`** | Matching `block_reason` / `note_recorded` per template |
+**Recorded:** 2026-05-31. Workflow **48** manual/inactive/off. Table **`wg_decision_state_test`** only.
 
-Record sanitized **Inspect correlation result** JSON only. No secrets.
+| Scenario | Result |
+|----------|--------|
+| **valid_close** | `inspect_status: closed`, `D-9998-T`, option `1`, `prior_status: open`, `state_persisted: true` |
+| **duplicate** | `inspect_status: blocked`, `block_reason: duplicate_or_already_closed`, `prior_status: closed`, `state_persisted: false` |
+| **unknown** | `inspect_status: blocked`, `block_reason: unknown_decision_id`, `D-9999-X`, `prior_status: missing`, `state_persisted: false` |
+
+Sanitized receipts (no secrets):
+
+**valid_close**
+```json
+{"inspect_status":"closed","decision_id":"D-9998-T","selected_option":"1","update_id":986228900,"prior_status":"open","state_persisted":true,"test_only":true}
+```
+
+**duplicate**
+```json
+{"inspect_status":"blocked","decision_id":"D-9998-T","block_reason":"duplicate_or_already_closed","prior_status":"closed","state_persisted":false,"test_only":true}
+```
+
+**unknown**
+```json
+{"inspect_status":"blocked","decision_id":"D-9999-X","block_reason":"unknown_decision_id","prior_status":"missing","state_persisted":false,"test_only":true}
+```
 
 ---
 
-## 7. PASS criteria (future Wg manual validation)
+## 7. Next gate — Wf47 → Wg integration (prep)
 
-- Valid close: open → closed with correct `selected_option`.
-- Duplicate: blocked, not double-close.
-- Unknown: blocked.
-- Sanitized inspect output only; workflow inactive/off.
-- No production Data Table; no PM-34; no wf40/41.
+Prepare a **combined** manual/inactive/off package: sanitized **Wf47** inbound receipt feeds **Wg** correlation in one importable flow (or documented handoff). Still test-only tables; no schedule; no production Data Table; no PM-34.
+
+Optional scenarios not yet live-attested: `stale_closed`, `note_only`, `malformed`.
 
 ---
 
@@ -123,7 +136,8 @@ Record sanitized **Inspect correlation result** JSON only. No secrets.
 | Item | State |
 |------|--------|
 | Wf47 Data Table manual validation | **PASS** (unchanged) |
-| Wg package | **PREP PASS** (this task) |
+| Wg package | **PREP PASS** |
+| Wg manual validation | **PASS ATTESTATO UTENTE** |
 | Telegram inbound operational | **NOT ACTIVE** |
 | PM-34 | **BLOCCATO** |
 | Operational automation | **NOT RUN** |
