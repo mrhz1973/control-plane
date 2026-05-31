@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: wb-live-package-prep
-- timestamp_utc: 2026-05-30T00:25:44Z
+- task_ref: wb-live-manual-classifier-server-pass
+- timestamp_utc: 2026-05-31T00:26:12Z
 - branch: main
-- real_task_commit: 41f22884759cc20ac1a9aa392aee0780681df8a1
+- real_task_commit: 7a398d963a67206ec2aa6805711303ff235bdd6b
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-41f22884759cc20ac1a9aa392aee0780681df8a1	refs/heads/main
+7a398d963a67206ec2aa6805711303ff235bdd6b	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+7a398d9 docs: record Wb-live classifier-server manual execution PASS
+c8beb1f docs: update rolling Cursor report
 41f2288 docs: prepare Wb-live classifier server package
 c7a5360 docs: update rolling Cursor report
 be73a99 docs: define Decision Packet extended format
-6f669cf docs: update rolling Cursor report
-d6dc623 feat: add classifier HTTP server offline Wa
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ d6dc623 feat: add classifier HTTP server offline Wa
 ```
 
 ## HISTORY
+
+### wb-live-package-prep — 2026-05-30T00:25:44Z
+
+- real_task_commit: 41f22884759cc20ac1a9aa392aee0780681df8a1
+- result_cursor: PASS
 
 ### decision-packet-format-wb-docs — 2026-05-30T00:15:06Z
 
