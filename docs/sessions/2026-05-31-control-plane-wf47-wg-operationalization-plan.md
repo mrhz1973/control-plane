@@ -44,9 +44,9 @@ git diff --stat
 git diff -- docs/workflow-wf47-wg-operationalization-plan.md docs/runtime/CURRENT_FRONTIER.md docs/sessions/2026-05-31-control-plane-wf47-wg-operationalization-plan.md
 ```
 
-## Commit / remote (filled post-push)
+## Commit / remote
 
 - **Commit message:** `docs: prepare Wf47 Wg operationalization plan`
-- **Commit hash:** (see below after push)
-- **Remote hash:** (see below after push)
+- **Commit hash:** `811c69e025222652a7cfd94e287e948cb0fe5dde`
+- **Remote hash:** `811c69e025222652a7cfd94e287e948cb0fe5dde` (`refs/heads/main`)
 - **Final status:** PASS (docs-only PREP)
