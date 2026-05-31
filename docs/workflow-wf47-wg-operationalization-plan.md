@@ -2,13 +2,17 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-wf47-wg-operationalization-plan.md`  
-**Status:** **PREP PASS** — planning only. **Not activation.** No runtime executed for this artifact.
+**Status:** **PREP PASS** (plan) + **PREP PASS** (checklist) — planning only. **Not activation.** No runtime executed for this artifact.
+
+This document is **canonical** for the Wf47 → Wg operationalization path. The checklist ([workflow-wf47-wg-operationalization-checklist.md](workflow-wf47-wg-operationalization-checklist.md)) is only a minimum readiness pointer and does not duplicate governance.
 
 ---
 
 ## 1. Purpose and scope
 
-This plan defines **safe, ordered increments** to move from validated **test-only** handoff (Wh) toward a future **operational** Wf47 → Wg inbound Decision Packet path — while every step until an explicit gate remains **manual / inactive / off**.
+This plan defines the **single bounded path** from the validated **test-only** chain (Wf47 / Wg / Wh, all manual PASS) toward a future **operational** Wf47 → Wg inbound Decision Packet path — while every step until an explicit gate remains **manual / inactive / off**.
+
+Per the anti-bureaucracy / momentum rule (PROJECT_VISION §7.9), this path is **bounded, not multiplied**: no repeated pre-pass / pre-pre-pass documents for the same chain unless a **new concrete, named risk** appears.
 
 It does **not** authorize schedule, Telegram Trigger, public webhook, production Data Tables, PM-34 unlock, or workflow 40/41/42 changes.
 
@@ -62,21 +66,34 @@ flowchart LR
 
 ---
 
-## 4. Allowed future increments (strict order)
+## 4. Bounded path (no increment ladder)
 
-Each step requires its **own gate** (docs registration and/or user-attested manual PASS). Do not skip steps.
+The PREP-heavy multi-increment ladder is **retired**. The path is now bounded.
 
-| Order | Increment | Runtime? | Notes |
-|-------|-----------|----------|--------|
-| **0** | This plan (PREP PASS) | No | Current document |
-| **1** | Optional Wh scenarios (if needed) | Manual, wf49 inactive | `note_only`, `malformed`, `stale_closed` — only if product risk requires before live Wf47→Wg chain |
-| **2** | No-runtime config checklist | No | Confirm: credential name in n8n only; test tables + CSV seeds; wf47/wf48/wf49 templates; chat_id in config assets per gate 2026-05-31; redaction rules in [workflows/README.md](../workflows/README.md) |
-| **3** | Manual inactive/off import rehearsal | User in n8n UI | Re-import wf47, wg, wf49 from GitHub; verify `active: false`; no schedule nodes; no Telegram Trigger on inbound path |
-| **4** | Test-only repeated manual run | User in n8n UI | Wf47 live poll (manual) → optional paste/trigger Wg OR Wh fixture path; tables `*_test` only; record sanitized receipts |
-| **5** | Two-workflow handoff rehearsal (inactive) | User in n8n UI | Run Wf47 once; feed **sanitized receipt** into Wg (manual or sub-workflow call) — **no** combined active workflow |
-| **6** | Separate gate: schedule / production table | Only after explicit owner gate | Schedule trigger, `control_plane_state`, or operational inbound **NOT** in this plan |
+**Current state:**
 
-**Wh vs split workflows:** Wh proves correlation in one manual graph. Operational path likely remains **Wf47 then Wg** (two inactive workflows + handoff contract), not activating Wh for production.
+- Wf47 → Wg operationalization **plan**: **PREP PASS**.
+- Wf47 → Wg operationalization **checklist**: **PREP PASS**.
+
+**Next state — one bounded final manual runtime rehearsal:**
+
+- **Test-only and inactive/off** (user in n8n UI). One bounded rehearsal, not a series of separate docs-only gates.
+- It **may include**:
+  - **import/reimport rehearsal** of wf47 / wg / wf49 from GitHub (verify `active: false`; no schedule node; no Telegram Trigger on inbound path), and
+  - **up to 2 repeat manual runs** (Wf47 manual poll → Wg correlation via fixture/handoff, on `*_test` tables only; record sanitized receipts).
+
+**After the rehearsal — exactly one of:**
+
+- **advance to the next real operational gate** (a concrete runtime/security gate), or
+- **mark BLOCKED with a concrete blocker** (named, specific).
+
+**Bound:** do not exceed **1 import/reimport rehearsal + 2 repeat manual runs** for this chain. Beyond that, do not open new pre-pass documents — advance or mark BLOCKED.
+
+**Optional scenarios (`note_only`, `malformed`, `stale_closed`):** **not default.** They require a **named risk** to be run; absent a named risk, they are skipped, not gated as separate steps.
+
+**Evidence quality:** **non-deterministic test evidence must not be used for PASS.** PASS requires deterministic expected output, hash/commit evidence, or explicit user-attested runtime output (PROJECT_VISION §7.9).
+
+**Wh vs split workflows:** Wh proves correlation in one manual graph. The operational path likely remains **Wf47 then Wg** (two inactive workflows + handoff contract), not activating Wh for production.
 
 ---
 
@@ -116,9 +133,9 @@ Each step requires its **own gate** (docs registration and/or user-attested manu
 | No `data-tables/` changed | Yes |
 | No secrets committed | Yes |
 | Plan document complete | This file + frontier PREP entry |
-| **Next gate identified** | **Step 1 or 2** above: optional Wh scenarios **or** no-runtime config checklist + import rehearsal (user-attested) |
+| **Next gate identified** | **One bounded final manual runtime rehearsal** (§4): import/reimport + up to 2 repeat manual runs, then advance or BLOCKED |
 
-**Suggested next gate (after this PREP):** Execute **increment 2** (no-runtime config checklist review) then **increment 3** (manual inactive/off import rehearsal) — user-attested PASS registration only; still no schedule, no production Data Table, no PM-34.
+**Next gate (after this PREP):** one bounded **Wf47/Wg/Wh final manual runtime rehearsal**, test-only and inactive/off — import/reimport rehearsal plus up to 2 repeat manual runs. After that, **advance to the next real operational gate or mark BLOCKED with a concrete blocker**. No optional scenario testing unless a named risk appears. Still no schedule, no production Data Table, no PM-34.
 
 ---
 

@@ -89,6 +89,18 @@ Il corpo copiabile deve includere, in ordine logico:
 
 ---
 
+## 5bis. Anti-PREP-churn (momentum)
+
+Per evitare burocrazia e moltiplicazione di documenti (PROJECT_VISION §7.9), i prompt Cursor devono:
+
+- **Non creare nuovi documenti o checklist** quando un file esistente può essere aggiornato.
+- Preferire **edit sottrattivi** (accorciare/consolidare) invece di aggiungere nuovi layer di PREP.
+- Per catene tipo **Wf47/Wg** e simili, **non** spezzare import rehearsal e run manuali ripetuti in molti gate docs-only separati, **a meno che non esista un blocker concreto**.
+- I **gate runtime restano uno alla volta**, ma gli scenari di test manuali correlati **possono essere raggruppati in un'unica rehearsal finale confinata** se test-only / inactive / off.
+- Il bound per una catena confinata è: **1 rehearsal import/reimport + massimo 2 run manuali ripetuti**, poi **avanzare al prossimo gate reale** oppure **marcare BLOCKED con blocker concreto**.
+
+---
+
 ## 6. Relazione con PROJECT_VISION
 
 - Questo file è **subordinato** a `docs/foundation/PROJECT_VISION.md`.

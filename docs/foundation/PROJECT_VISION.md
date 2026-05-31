@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.8 — 2026-05-30  
-**Versione precedente:** 2.7 — 2026-05-29 (sostituita)  
+**Versione:** 2.9 — 2026-05-31  
+**Versione precedente:** 2.8 — 2026-05-30 (sostituita)  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -343,6 +343,24 @@ Ogni nuovo documento deve ridurre almeno una di queste cose: token, tempo utente
 
 `PROJECT_VISION.md` supera il gate perché evita di ricostruire la destinazione del progetto da decine di session log e PM.
 
+### 7.9 Anti-burocrazia / momentum
+
+La sicurezza esiste per **abilitare il progresso**, non per creare preparazione indefinita. Regole operative:
+
+- **PREP PASS è ammesso solo quando rimuove un blocco reale.** Un PREP che non toglie un blocco concreto è burocrazia (vedi §7.8).
+- Per **una singola catena di feature confinata**, non creare documenti ripetuti di pre-pass / pre-pre-pass a meno che **non compaia un nuovo rischio concreto e nominato**.
+- Dopo che una feature ha avuto:
+  - **1 prova di import/reimport (rehearsal)**, e
+  - **massimo 2 run manuali ripetuti**,
+  il progetto deve fare **una** di queste due cose:
+  - **avanzare al prossimo gate reale**, oppure
+  - marcare **BLOCKED con un blocker concreto**.
+- I **test opzionali non sono default**: richiedono un **rischio nominato** per essere eseguiti.
+- I **test non deterministici sono vietati come evidenza di PASS**.
+- Il **PASS** deve basarsi su **output atteso deterministico**, **evidenza di hash/commit**, oppure **output runtime esplicitamente attestato dall'utente**.
+
+Questa regola non sostituisce i gate di sicurezza (runtime, segreti, PM-34, workflow di produzione): li mantiene, ma vieta di moltiplicare documenti e pre-pass quando non c'è un blocco reale da rimuovere.
+
 ---
 
 ## 8. Comandi e convenzioni
@@ -441,6 +459,7 @@ Regola: non confondere finestre/repo. Prompt destinati a `CONTROL PLANE` non van
 - Runtime, VPS, n8n UI/import/export, credenziali, OAuth e runner automatico sono gate reali.
 - **Ogni componente automatico deve avere fallback graceful al manuale** (sezione 7.6).
 - **Gate umani sono Decision Packet, non prose libere** (sezione 7.7).
+- **Anti-burocrazia / momentum** (sezione 7.9): la sicurezza abilita il progresso; PREP PASS solo se rimuove un blocco reale; per una catena confinata, dopo 1 rehearsal di import/reimport + massimo 2 run manuali ripetuti si avanza al prossimo gate reale o si marca BLOCKED con blocker concreto; test opzionali solo con rischio nominato; test non deterministici vietati come PASS.
 - `alina-lavoro` non viene toccato come app/runtime dal control-plane.
 
 ---
@@ -616,6 +635,7 @@ In una frase: **sto costruendo una fabbrica, non un singolo prodotto.** La fabbr
 | 2.6 | 2026-05-29 | Aggiunto `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`: contratto formato prompt Cursor; metadati routing fuori dal corpo copiabile. §8.3 puntatore. |
 | 2.7 | 2026-05-29 | §8.3: preflight implementatore con aggiornamento locale sicuro nel prompt Cursor; comandi ritorno umano fuori dal prompt copiabile. Allineato `CURSOR_PROMPT_TEMPLATE.md`. |
 | 2.8 | 2026-05-30 | Riscritta §13 (parte semplice) per riflettere lo stato reale: foundation completata, workflow 42 attivo, prima catena wf42 → Codex → Cursor eseguita in modalità manuale/supervisionata (PASS, commit d040896 su repo GIS); catena automatizzata senza filo umano resta tappa successiva. Roadmap a 4 tappe, framing "fabbrica non prodotto". Nessun cambiamento di visione o invariante. |
+| 2.9 | 2026-05-31 | Aggiunta §7.9 anti-burocrazia / momentum e relativo invariante in §10: PREP PASS solo se rimuove un blocco reale; per catena confinata, dopo 1 rehearsal import/reimport + max 2 run manuali ripetuti avanzare al prossimo gate reale o marcare BLOCKED con blocker concreto; test opzionali solo con rischio nominato; test non deterministici vietati come PASS; PASS su output deterministico / hash-commit / runtime attestato dall'utente. Eccezione chat_id invariata. |
 
 ---
 
