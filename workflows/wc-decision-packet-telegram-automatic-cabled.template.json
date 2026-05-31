@@ -1,0 +1,175 @@
+{
+  "name": "Wc - Decision Packet Telegram automatic cabled - TEMPLATE",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "wc000001-0001-4001-8001-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "TEMPLATE ONLY — inactive, manual single execution, configure Telegram credential/chat_id in n8n UI only, no secrets in Git.\n\nWc automatic/cablato Decision Packet Telegram test.\n\nBefore running:\n1) Import this template manually; keep INACTIVE\n2) Configure credential **CONFIGURE_TELEGRAM_CREDENTIAL_IN_N8N_UI** (name: CONTROL PLANE - Telegram Bot)\n3) Configure chat_id **CONFIGURE_CHAT_ID_IN_N8N_UI** in Telegram node only\n4) Run Manual Trigger ONCE — expect one TEST ONLY Decision Packet message\n\nThis template: no workflow 40/41, no Data Table, no GitHub write, no PM-34, no Schedule/Webhook. Classifier output is sanitized test data only (no live classifier-server call in template).",
+        "height": 340,
+        "width": 560
+      },
+      "id": "wc000006-0006-4006-8006-000000000006",
+      "name": "NOTE - template only inactive manual",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sanitized classifier-style event/output for Wc Decision Packet Telegram test.\n// See docs/runtime/test-events/wc-decision-packet-telegram-test-event.json\n// No secrets, tokens, chat_id, credentials, webhooks, API keys, or chain-of-thought.\nconst payload = {\n  event_id: 'evt-wc-decision-packet-test-001',\n  source_repo: 'mrhz1973/control-plane',\n  source_commit: 'abc1234-test-only',\n  workflow_source: 'wc-template-test',\n  decision_id: 'D-9999-T',\n  kind: 'runtime',\n  risk: 'medium',\n  route: 'human_gate',\n  confidence: 'high',\n  requires_human: true,\n  classifier_reason: 'runtime-adjacent Telegram Decision Packet test; human gate required',\n  context: 'Wc template test: classifier-style output requires a supervised human gate before any automatic/cablato promotion.',\n  why_decision_needed: 'Route human_gate with requires_human=true blocks silent auto-proceed; Telegram Decision Packet path must be validated once under supervision.',\n  options: [\n    '1 — Record template import only, no runtime promotion',\n    '2 — Proceed to supervised manual single-send validation later',\n    '3 — Stop and keep automatic/cablato Telegram NOT RUN'\n  ],\n  recommendation: 'Raccomandazione: 2 — validates the formatting/send path once, still manually supervised.',\n  main_risk: 'Accidental promotion of test packet as operational; mitigated by TEST ONLY banner and inactive workflow.',\n  micro_interactions_eliminated: 'Avoids manual copy of classifier fields and ad-hoc Telegram prose reconstruction.',\n  requested_reply: 'Scrivi: 1 / 2 / 3',\n  what_is_not_done: 'No workflow 40/41 mutation, no Data Table write, no GitHub write, no PM-34 unlock, no automated full chain, no operational deploy.'\n};\nreturn [{ json: payload }];"
+      },
+      "id": "wc000002-0002-4002-8002-000000000002",
+      "name": "Set sanitized classifier event/output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Build Telegram-safe Decision Packet per docs/foundation/DECISION_PACKET_FORMAT.md\nconst d = $input.item.json;\nconst opts = Array.isArray(d.options) ? d.options : [];\nconst optionsBlock = opts.map((o) => '  ' + o).join('\\n');\nconst text = [\n  '*** TEST ONLY / TEMPLATE VALIDATION ***',\n  'No operational action should be taken from this test packet.',\n  '',\n  'ID: ' + d.decision_id,\n  'Kind: ' + d.kind,\n  '',\n  'Riferimento evento / provenienza:',\n  '  event_id: ' + d.event_id,\n  '  commit: ' + d.source_commit + ' (' + d.source_repo + ')',\n  '  source: ' + d.workflow_source,\n  '',\n  'Risk: ' + d.risk + '          Route: ' + d.route + '       requires_human: ' + d.requires_human,\n  'Confidence: ' + d.confidence + '    Classifier reason: ' + d.classifier_reason,\n  '',\n  'Contesto:',\n  '  ' + d.context,\n  '',\n  'Perché serve decisione:',\n  '  ' + d.why_decision_needed,\n  '',\n  'Opzioni:',\n  optionsBlock,\n  '',\n  d.recommendation,\n  '',\n  'Rischio principale (opzione raccomandata):',\n  '  ' + d.main_risk,\n  '',\n  'Micro-interazioni eliminate:',\n  '  ' + d.micro_interactions_eliminated,\n  '',\n  'Scelta richiesta:',\n  '  ' + d.requested_reply,\n  '',\n  'Cosa NON viene fatto senza decisione:',\n  '  ' + d.what_is_not_done\n].join('\\n');\nreturn {\n  json: {\n    decision_id: d.decision_id,\n    decision_packet_text: text,\n    test_only: true,\n    note: 'Wc Decision Packet text built — configure Telegram in n8n UI before send'\n  }\n};"
+      },
+      "id": "wc000003-0003-4003-8003-000000000003",
+      "name": "Build Decision Packet text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "**CONFIGURE_CHAT_ID_IN_N8N_UI**",
+        "text": "={{ $json.decision_packet_text }}",
+        "additionalFields": {}
+      },
+      "id": "wc000004-0004-4004-8004-000000000004",
+      "name": "Telegram - Send Decision Packet (CONFIGURE_IN_N8N_UI)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        200
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "**REDACTED_N8N_CREDENTIAL_ID**",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "PASS (future physical run): one Telegram message sent; message matches DECISION_PACKET_FORMAT.md; TEST ONLY banner present; 2-5 numbered options; Scrivi: 1 / 2 / 3; workflow stays INACTIVE.\n\nBLOCKED if: workflow active unexpectedly; credential/chat_id missing; send fails; malformed message; secrets in output; workflow 40/41 touched; PM-34 touched; Data Table/GitHub write.\n\nAfter run: collect sanitized message text, use docs/runtime/WC_DECISION_PACKET_TELEGRAM_REGISTRATION_PROMPT.md.",
+        "height": 280,
+        "width": 520
+      },
+      "id": "wc000007-0007-4007-8007-000000000007",
+      "name": "NOTE - expected PASS BLOCKED criteria",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        200,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Read-only inspection of Telegram send result. No secrets persisted.\nconst resp = $input.item.json;\nreturn {\n  json: {\n    telegram_send_ok: resp && resp.ok !== undefined ? resp.ok : null,\n    message_id: resp && resp.result && resp.result.message_id ? resp.result.message_id : null,\n    test_only: true,\n    note: 'Wc manual single execution result — sanitize Telegram text before recording'\n  }\n};"
+      },
+      "id": "wc000005-0005-4005-8005-000000000005",
+      "name": "Inspect send result (read-only)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set sanitized classifier event/output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set sanitized classifier event/output": {
+      "main": [
+        [
+          {
+            "node": "Build Decision Packet text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Decision Packet text": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send Decision Packet (CONFIGURE_IN_N8N_UI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Send Decision Packet (CONFIGURE_IN_N8N_UI)": {
+      "main": [
+        [
+          {
+            "node": "Inspect send result (read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "wc-decision-packet"
+    },
+    {
+      "name": "template-only"
+    },
+    {
+      "name": "manual-single-execution"
+    },
+    {
+      "name": "telegram"
+    },
+    {
+      "name": "control-plane"
+    }
+  ]
+}

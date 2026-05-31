@@ -1,0 +1,25 @@
+{
+  "event_id": "evt-wc-decision-packet-test-001",
+  "source_repo": "mrhz1973/control-plane",
+  "source_commit": "abc1234-test-only",
+  "workflow_source": "wc-template-test",
+  "decision_id": "D-9999-T",
+  "kind": "runtime",
+  "risk": "medium",
+  "route": "human_gate",
+  "confidence": "high",
+  "requires_human": true,
+  "classifier_reason": "runtime-adjacent Telegram Decision Packet test; human gate required",
+  "context": "Wc template test: classifier-style output requires a supervised human gate before any automatic/cablato promotion.",
+  "why_decision_needed": "Route human_gate with requires_human=true blocks silent auto-proceed; Telegram Decision Packet path must be validated once under supervision.",
+  "options": [
+    "1 — Record template import only, no runtime promotion",
+    "2 — Proceed to supervised manual single-send validation later",
+    "3 — Stop and keep automatic/cablato Telegram NOT RUN"
+  ],
+  "recommendation": "Raccomandazione: 2 — validates the formatting/send path once, still manually supervised.",
+  "main_risk": "Accidental promotion of test packet as operational; mitigated by TEST ONLY banner and inactive workflow.",
+  "micro_interactions_eliminated": "Avoids manual copy of classifier fields and ad-hoc Telegram prose reconstruction.",
+  "requested_reply": "Scrivi: 1 / 2 / 3",
+  "what_is_not_done": "No workflow 40/41 mutation, no Data Table write, no GitHub write, no PM-34 unlock, no automated full chain, no operational deploy."
+}
