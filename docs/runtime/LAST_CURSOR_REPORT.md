@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: wc-telegram-html-formatting-fix-offline
-- timestamp_utc: 2026-05-31T01:23:50Z
+- task_ref: wc-html-formatting-live-pass
+- timestamp_utc: 2026-05-31T01:31:37Z
 - branch: main
-- real_task_commit: 88ab3cbe14c686473146b98df07015d867c39f9c
+- real_task_commit: 47ab57f6beb1d37ee58c06af7ec288341cc85fb4
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-88ab3cbe14c686473146b98df07015d867c39f9c	refs/heads/main
+47ab57f6beb1d37ee58c06af7ec288341cc85fb4	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+47ab57f docs: record Wc HTML formatting live PASS
+774ebf5 docs: update rolling Cursor report
 88ab3cb fix: use HTML parse mode for Decision Packet Telegram formatting
 68a51e7 docs: update rolling Cursor report
 aef6b45 fix: Telegram Decision Packet plain-text parse_mode and offline test
-60a3528 docs: update rolling Cursor report
-dcbcbfb docs: record Wc Decision Packet Telegram manual execution PASS
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ dcbcbfb docs: record Wc Decision Packet Telegram manual execution PASS
 ```
 
 ## HISTORY
+
+### wc-telegram-html-formatting-fix-offline — 2026-05-31T01:23:50Z
+
+- real_task_commit: 88ab3cbe14c686473146b98df07015d867c39f9c
+- result_cursor: PASS
 
 ### wc-telegram-formatting-fix-offline — 2026-05-31T01:01:50Z
 
