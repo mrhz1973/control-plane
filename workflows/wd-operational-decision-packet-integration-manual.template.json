@@ -1,0 +1,225 @@
+{
+  "name": "45 - Wd Operational Decision Packet Integration TEST ONLY - TEMPLATE",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "wd000001-0001-4001-8001-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "TEMPLATE ONLY — inactive, gate B live, configure classifier URL + Telegram in n8n UI only, no secrets in Git.\n\nWd: event -> classifier-server -> operational-style Decision Packet Telegram (TEST ONLY).\n\nBefore running:\n1) Import as workflow 45; keep INACTIVE\n2) Start classifier-server on Ryzen; set **CONFIGURE_CLASSIFIER_SERVER_URL_IN_N8N_UI** (POST .../classify)\n3) Configure Telegram credential **CONFIGURE_TELEGRAM_CREDENTIAL_IN_N8N_UI** (CONTROL PLANE - Telegram Bot)\n4) Configure chat_id **CONFIGURE_CHAT_ID_IN_N8N_UI**\n5) Manual Trigger ONCE\n\nNo wf40/41/42, no Data Table, no GitHub write, no PM-34, no Schedule/Webhook.",
+        "height": 360,
+        "width": 580
+      },
+      "id": "wd000007-0007-4007-8007-000000000007",
+      "name": "NOTE - template only gate B live",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sanitized operational-style event for Wd gate B live.\n// See docs/runtime/test-events/wd-operational-decision-packet-test-event.json\nconst event = {\n  event_id: 'evt-wd-operational-dp-test-001',\n  event_type: 'docs_change_candidate',\n  summary: 'docs-only commit candidate requiring supervised Decision Packet test',\n  touched_paths: ['docs/example.md'],\n  source_repo: 'mrhz1973/control-plane',\n  source_commit: 'abc1234-test-only',\n  workflow_source: 'wd-operational-integration-test',\n  runtime_flags: { touched: true, detail: 'runtime-adjacent Wd integration validation' },\n  secrets_flags: { touched: false, detail: '' },\n  deploy_flags: { touched: false, detail: '' },\n  n8n_flags: { touched: false, workflow_40: false, workflow_41: false, import_disabled: false },\n  automation_flags: { touched: false, autonomous_worker: false, commit_push_loop: false }\n};\nreturn [{ json: event }];"
+      },
+      "id": "wd000002-0002-4002-8002-000000000002",
+      "name": "Set sanitized operational-style event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "**CONFIGURE_CLASSIFIER_SERVER_URL_IN_N8N_UI**/classify",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "wd000003-0003-4003-8003-000000000003",
+      "name": "HTTP Request - Classify (CONFIGURE_IN_N8N_UI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Build operational-style Decision Packet from event + live classifier-server response.\n// HTML parse_mode: escape dynamics; labels keep literal underscores.\nfunction escHtml(v) {\n  if (v === null || v === undefined) return '';\n  const s = Array.isArray(v) ? v.map((x) => escHtml(x)).join('\\n') : String(v);\n  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#39;');\n}\nconst event = $('Set sanitized operational-style event').first().json;\nconst resp = $input.item.json;\nconst body = resp && resp.body !== undefined ? resp.body : resp;\nconst c = body && typeof body === 'object' ? body : {};\nconst decisionId = 'D-9998-T';\nconst options = [\n  '1 — Record B live evidence only; no operational promotion',\n  '2 — Harden Wd path (idempotency/guards) before further operational wiring',\n  '3 — Stop; keep operational Decision Packet automation NOT RUN'\n];\nconst optionsBlock = options.map((o) => '  ' + escHtml(o)).join('\\n');\nconst context = 'Wd gate B: classifier-server response drives operational-style Decision Packet (TEST ONLY). PM-34 remains blocked; full automated chain NOT RUN.';\nconst why = 'Classifier route ' + escHtml(c.route || 'unknown') + ' with requires_human=' + escHtml(c.requires_human) + ' requires supervised Telegram gate for integration validation.';\nconst recommendation = 'Raccomandazione: 1 — record B live PASS/BLOCKED in docs only; do not enable operational automation.';\nconst mainRisk = 'Misreading TEST ONLY packet as operational approval; mitigated by banner and inactive workflow.';\nconst micro = 'Eliminates manual merge of classifier JSON and Decision Packet formatting in chat.';\nconst notDone = 'No PM-34 unlock, no operational automation, no full automated chain, no wf40/41 mutation, no Data Table write, no GitHub write by this workflow.';\nconst text = [\n  '=== TEST ONLY / OPERATIONAL-STYLE VALIDATION ===',\n  'No operational action should be taken from this test packet.',\n  '',\n  'ID: ' + escHtml(decisionId),\n  'Kind: runtime',\n  '',\n  'Riferimento evento / provenienza:',\n  '  event_id: ' + escHtml(event.event_id),\n  '  commit: ' + escHtml(event.source_commit) + ' (' + escHtml(event.source_repo) + ')',\n  '  source: ' + escHtml(event.workflow_source),\n  '',\n  'Risk: ' + escHtml(c.risk) + '          Route: ' + escHtml(c.route) + '       requires_human: ' + escHtml(c.requires_human),\n  'Confidence: ' + escHtml(c.confidence) + '    Classifier reason: ' + escHtml(c.reason),\n  '',\n  'Contesto:',\n  '  ' + escHtml(context),\n  '',\n  'Perché serve decisione:',\n  '  ' + escHtml(why),\n  '',\n  'Opzioni:',\n  optionsBlock,\n  '',\n  escHtml(recommendation),\n  '',\n  'Rischio principale (opzione raccomandata):',\n  '  ' + escHtml(mainRisk),\n  '',\n  'Micro-interazioni eliminate:',\n  '  ' + escHtml(micro),\n  '',\n  'Scelta richiesta:',\n  '  Scrivi: 1 / 2 / 3',\n  '',\n  'Cosa NON viene fatto senza decisione:',\n  '  ' + escHtml(notDone)\n].join('\\n');\nreturn {\n  json: {\n    decision_id: decisionId,\n    http_status: resp && resp.statusCode !== undefined ? resp.statusCode : null,\n    classifier_output: c,\n    decision_packet_text: text,\n    test_only: true,\n    operational_style_validation: true,\n    note: 'Wd operational-style packet built — configure Telegram in n8n UI before send'\n  }\n};"
+      },
+      "id": "wd000004-0004-4004-8004-000000000004",
+      "name": "Build Operational Decision Packet",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "**CONFIGURE_CHAT_ID_IN_N8N_UI**",
+        "text": "={{ $json.decision_packet_text }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "wd000005-0005-4005-8005-000000000005",
+      "name": "Telegram - Send Operational-Style Decision Packet (CONFIGURE_IN_N8N_UI)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        200
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "**REDACTED_N8N_CREDENTIAL_ID**",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "PASS (gate B live): classifier HTTP 200 + valid 5-field output; one TEST ONLY Telegram; D-9998-T; underscores literal; workflow INACTIVE.\n\nBLOCKED: server down, bad classifier JSON, Telegram fail, secrets leak, wf40/41/PM-34/Data Table/GitHub touched.\n\nAfter run: docs/runtime/WD_OPERATIONAL_DECISION_PACKET_REGISTRATION_PROMPT.md",
+        "height": 280,
+        "width": 520
+      },
+      "id": "wd000008-0008-4008-8008-000000000008",
+      "name": "NOTE - gate B PASS BLOCKED",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        200,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Read-only inspection. No secrets persisted.\nconst resp = $input.item.json;\nconst build = $('Build Operational Decision Packet').first().json;\nreturn {\n  json: {\n    telegram_send_ok: resp && resp.ok !== undefined ? resp.ok : null,\n    message_id: resp && resp.result && resp.result.message_id ? resp.result.message_id : null,\n    http_status: build && build.http_status !== undefined ? build.http_status : null,\n    decision_id: build && build.decision_id ? build.decision_id : null,\n    test_only: true,\n    note: 'Wd gate B live result — sanitize before recording'\n  }\n};"
+      },
+      "id": "wd000006-0006-4006-8006-000000000006",
+      "name": "Inspect send result (read-only)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set sanitized operational-style event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set sanitized operational-style event": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Classify (CONFIGURE_IN_N8N_UI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Classify (CONFIGURE_IN_N8N_UI)": {
+      "main": [
+        [
+          {
+            "node": "Build Operational Decision Packet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Operational Decision Packet": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send Operational-Style Decision Packet (CONFIGURE_IN_N8N_UI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Send Operational-Style Decision Packet (CONFIGURE_IN_N8N_UI)": {
+      "main": [
+        [
+          {
+            "node": "Inspect send result (read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "wd-operational"
+    },
+    {
+      "name": "template-only"
+    },
+    {
+      "name": "gate-b-live"
+    },
+    {
+      "name": "classifier-server"
+    },
+    {
+      "name": "telegram"
+    },
+    {
+      "name": "control-plane"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "event_id": "evt-wd-operational-dp-test-001",
+  "source_repo": "mrhz1973/control-plane",
+  "source_commit": "abc1234-test-only",
+  "workflow_source": "wd-operational-integration-test",
+  "event_type": "docs_change_candidate",
+  "summary": "docs-only commit candidate requiring supervised Decision Packet test",
+  "touched_paths": ["docs/example.md"],
+  "secrets_flags": { "touched": false, "detail": "" },
+  "deploy_flags": { "touched": false, "detail": "" },
+  "workflow_flags": { "touched": false, "detail": "" },
+  "pm34_flags": { "touched": false, "detail": "" },
+  "runtime_flags": {
+    "touched": true,
+    "detail": "runtime-adjacent Wd integration validation; expect human_gate unless classifier returns otherwise"
+  },
+  "n8n_flags": {
+    "touched": false,
+    "workflow_40": false,
+    "workflow_41": false,
+    "import_disabled": false
+  },
+  "automation_flags": {
+    "touched": false,
+    "autonomous_worker": false,
+    "commit_push_loop": false
+  },
+  "expected_gate": "manual runtime validation only; TEST ONLY Telegram; PM-34 remains blocked"
+}
