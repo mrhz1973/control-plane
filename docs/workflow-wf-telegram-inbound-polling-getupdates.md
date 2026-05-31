@@ -2,112 +2,106 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-wf-telegram-inbound-polling-getupdates.md`  
-**Status:** Package preparation only. No inbound activation. No runtime.
+**Status:** Post-live-PASS hardening prep. No schedule. No inbound automation. No runtime from this doc alone.
 
 ---
 
 ## 1. Scope
 
-Wf prepares **inbound** Telegram Decision Packet response handling through **polling / getUpdates**, avoiding a **public HTTPS webhook** requirement.
+Wf provides **inbound** Telegram Decision Packet response handling through **polling / getUpdates**, avoiding a **public HTTPS webhook**.
 
-Covers:
+After **Wf live PASS** (manual workflow 47, one-shot `getUpdates`), this runbook and template describe **safe repeated use** design — not operational activation.
 
-- Telegram Bot API `getUpdates` concept (manual trigger in template);
-- `update_id` offset placeholder;
-- allowed chat/user filter placeholder;
-- `decision_id` correlation (`D-NNNN-X`, e.g. `D-9998-T` for TEST ONLY);
-- option **1 / 2 / 3** parsing (plain text or `callback_data`);
-- duplicate / stale / idempotency guard;
-- optional free-text **note** design (`note:D-9998-T:<text>` — placeholder only);
-- sanitized polling receipt JSON.
-
-**Not** PM-34. **Not** operational automation activation. **Not** the automated full chain. **Not** inbound active now. **Not** a production workflow. **Not** a public webhook.
+**Not** PM-34. **Not** operational automation. **Not** the automated full chain. **Not** persistent inbound automation. **Not** a public webhook. **Not** a Schedule Trigger in Git.
 
 ---
 
-## 2. Why
+## 2. Historical facts (Wf live PASS)
 
-We live is **BLOCKED/PENDING** because the Telegram Trigger requires an **HTTPS webhook URL**, while current n8n access is via **local tunnel / `http://localhost:5678`** (no public HTTPS). Wf documents the **polling/getUpdates** alternative for a future live gate.
+| Fact | State |
+|------|--------|
+| Workflow 47 imported manually | `47 - Wf Telegram Inbound Polling getUpdates TEST ONLY - TEMPLATE` |
+| Workflow active | **inactive/off** throughout test |
+| getUpdates | HTTP **200**, `body.ok=true` |
+| Test response | `dp:D-9998-T:1` |
+| Sanitized receipt | `inspect_status: accepted`, `decision_id: D-9998-T`, `selected_option: 1` |
+| Boundaries | No public webhook; no Telegram Trigger; no schedule; no PM-34; no wf40/41 mutation; no GitHub write by workflow; no secrets/raw chat_id/user_id in Git |
+
+Token was configured **only in n8n UI** (HTTP URL corrected there). n8n tunnel was closed after test.
 
 ---
 
-## 3. Preconditions
+## 3. Why polling (context)
+
+**We live** remains **BLOCKED/PENDING** on HTTPS webhook. **Wf live PASS** proved manual `getUpdates` works without public HTTPS. Hardening prepares **repeatable** manual polls before any schedule or production store.
+
+---
+
+## 4. Hardening target before repeated use
+
+| Area | Design |
+|------|--------|
+| **State / offset persistence** | `lastUpdateId` = next `getUpdates` offset; `lastHandledUpdateId` = highest fully processed `update_id`; demo uses workflow `staticData` only — replace with **CONFIGURE_OFFSET_STORE_IN_N8N_UI** at live gate. |
+| **Allowed-chat guard** | Defaults **closed** until **CONFIGURE_ALLOWED_CHAT_ID_IN_N8N_UI** is replaced in n8n UI (no raw `chat_id` in Git). Rejection: `allowed_chat_not_configured`. |
+| **Stale / old update** | Reject when `update_id <= lastHandledUpdateId` → `stale_old_update_id`. |
+| **Duplicate / double-click** | Key: `decision_id` + `selected_option` or `note` + `update_id` in `handledKeys`. Rejection: `duplicate_or_double_click`. |
+| **Open decision correlation** | TEST ONLY list `D-9998-T` only; unknown id → `stale_or_unknown_decision_id`. |
+| **Sanitized receipt contract** | `inspect_status`, `decision_id`, `selected_option`, `update_id`, `duplicate_or_stale`, `note_present`, `block_reason`, `offset_after_placeholder`, `test_only` — no raw `chat_id`, `user_id`, or full message body. |
+| **Schedule** | **No** persistent Schedule in template. Any schedule = separate runtime/security gate. |
+| **deleteWebhook** | Separate gate if bot still has webhook; never automated from template. |
+
+---
+
+## 5. Preconditions
 
 | Precondition | State |
 |--------------|--------|
-| Wd B live operational-style integration | **PASS ATTESTATO UTENTE** |
-| We package | **PREP PASS** |
+| Wf live (first manual poll) | **PASS ATTESTATO UTENTE** |
+| Wf hardening prep | Template + runbook updated in Git; **no runtime** from prep task |
 | We live | **BLOCKED/PENDING** (HTTPS webhook) |
 | Template | `workflows/wf-telegram-inbound-polling-getupdates.template.json` (workflow **47**) |
 
-Telegram credential/token exists only in **n8n UI / credential storage**. Import workflow 47 only when running the future Wf live gate.
-
 ---
 
-## 4. Response formats
+## 6. Response formats
 
 | Kind | Example |
 |------|---------|
 | Callback / structured | `dp:D-9998-T:1`, `dp:D-9998-T:2`, `dp:D-9998-T:3` |
-| Plain option (open decision) | `1`, `2`, `3` (when tied to latest open `decision_id` placeholder) |
-| Note (design only) | `note:D-9998-T:<text>` — bounded/sanitized preview; cannot change selected option |
+| Plain option (single open decision) | `1`, `2`, `3` |
+| Note (design only) | `note:D-9998-T:<text>` — preview bounded in template; cannot change selected option |
 
 ---
 
-## 5. Future Wf live steps
+## 7. Next gate — hardened path manual validation (one step)
 
-1. Import template as **workflow 47**; keep **inactive/off**.
-2. Configure in n8n UI only:
-   - **CONFIGURE_TELEGRAM_BOT_TOKEN_IN_N8N_UI_OR_CREDENTIAL**
-   - **CONFIGURE_ALLOWED_CHAT_ID_IN_N8N_UI**
-   - **CONFIGURE_OFFSET_STORE_IN_N8N_UI** (test-only placeholder)
-   - **CONFIGURE_DECISION_STATE_STORE_IN_N8N_UI** (test-only placeholder)
-3. If a webhook is already set on the bot, **deleteWebhook** is required before reliable `getUpdates` — that is a **separate runtime/security gate**; do not automate from this package.
-4. Run **one manual** polling execution (Manual Trigger).
-5. Send or click one test Decision Packet response if needed.
-6. Verify sanitized receipt at **Inspect polling result (read-only)**.
-7. Confirm boundaries: no PM-34; no wf40/41 mutation; no production Data Table mutation; no GitHub write; no secrets in output.
-
-**Note:** Telegram Bot API `getUpdates` generally **conflicts** with an active webhook. Deleting an existing webhook must be done deliberately, one step at a time, outside this template.
+1. Re-import or refresh workflow **47** from hardened template; keep **inactive/off**.
+2. In n8n UI only: token/credential, replace **CONFIGURE_ALLOWED_CHAT_ID_IN_N8N_UI** in filter node, confirm offset store placeholder.
+3. Run **one** Manual Trigger poll; verify receipt and guards (`allowed_chat_not_configured` if chat not set; `stale_old_update_id` on replay; `duplicate_or_double_click` on repeat).
+4. Record evidence in docs (separate registration task). No schedule. No PM-34.
 
 ---
 
-## 6. PASS criteria (future live)
+## 8. PASS criteria (hardened manual validation)
 
-- `getUpdates` returns a sanitized test update (or empty result documented).
-- `decision_id` parsed.
-- Option **1 / 2 / 3** parsed when applicable.
-- Offset / dedupe guard represented in output.
-- Duplicate / stale guard represented.
-- Sanitized receipt produced; no token; no raw `chat_id` / `user_id`.
-- Workflow inactive/off (or schedule activation gate explicitly documented).
+- Guards visible in sanitized receipt (`block_reason` when blocked).
+- Repeat poll does not double-accept same `update_id` + decision + option.
+- Stale/old `update_id` rejected when already handled.
+- No secrets; workflow inactive/off.
 
 ---
 
-## 7. BLOCKED criteria
+## 9. BLOCKED criteria
 
-- Token/credential cannot be configured safely.
-- `getUpdates` blocked because webhook still set and must be deleted (document blocker).
-- Malformed response.
-- Duplicate/stale guard missing.
-- Sensitive data in output.
-- Workflow becomes unexpectedly active.
+- Real `chat_id` / token committed to Git.
+- Schedule activated without explicit gate.
+- Missing stale or duplicate guards.
 - PM-34, wf40/41, production Data Table, or GitHub touched.
 
 ---
 
-## 8. Evidence to collect
-
-- Sanitized **Inspect polling result** JSON.
-- Confirmation: no token in execution output.
-- No raw `chat_id` / `user_id`.
-- Workflow **active/off** status screenshot or attestation.
-- Boundary confirmations (no PM-34, no wf40/41, no production Data Table, no GitHub write).
-
----
-
-## 9. Related files
+## 10. Related files
 
 - Template: `workflows/wf-telegram-inbound-polling-getupdates.template.json`
-- Registration: `docs/runtime/WF_TELEGRAM_INBOUND_POLLING_REGISTRATION_PROMPT.md`
-- We (webhook path): `docs/workflow-we-telegram-interactive-decision-buttons.md`
+- Registration (live): `docs/runtime/WF_TELEGRAM_INBOUND_POLLING_REGISTRATION_PROMPT.md`
+- We (webhook): `docs/workflow-we-telegram-interactive-decision-buttons.md`
