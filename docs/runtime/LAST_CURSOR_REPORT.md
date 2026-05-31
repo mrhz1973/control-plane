@@ -16,26 +16,26 @@ Regole:
 
 ## LATEST
 
-- task_ref: wh-combined-inbound-decision-flow-prep
-- timestamp_utc: 2026-05-31T14:53:44Z
+- task_ref: chat-id-policy-gate-csv-convention-wf49-ready
+- timestamp_utc: 2026-05-31T15:31:10Z
 - branch: main
-- real_task_commit: 9c167d944dfdb5d3cc8abb16c98e1344db9e6ee0
+- real_task_commit: 12ed1b8e4fdfbca193d31e29ae05a58561bf45c7
 - result_cursor: PASS
 
 ### remote_hash_verbatim — `git ls-remote origin main` post-push commit 1
 
 ```text
-9c167d944dfdb5d3cc8abb16c98e1344db9e6ee0	refs/heads/main
+12ed1b8e4fdfbca193d31e29ae05a58561bf45c7	refs/heads/main
 ```
 
 ### git_log_oneline_5 — `git log --oneline -5`
 
 ```text
+12ed1b8 docs: gate chat_id in git + Data Table CSV convention + wf49 ready-configured
+782963e docs: update rolling Cursor report
 9c167d9 docs: prepare Wh combined inbound decision flow package
 fb9da9c docs: update rolling Cursor report
 5409109 docs: record Wg manual validation PASS
-926f069 docs: update rolling Cursor report
-f82916f docs: prepare Wg inbound decision state correlation package
 ```
 
 ### git_status_short — `git status --short`
@@ -45,6 +45,11 @@ f82916f docs: prepare Wg inbound decision state correlation package
 ```
 
 ## HISTORY
+
+### wh-combined-inbound-decision-flow-prep — 2026-05-31T14:53:44Z
+
+- real_task_commit: 9c167d944dfdb5d3cc8abb16c98e1344db9e6ee0
+- result_cursor: PASS
 
 ### wg-manual-validation-pass — 2026-05-31T14:49:24Z
 
