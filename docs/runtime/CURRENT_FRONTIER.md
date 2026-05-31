@@ -9,7 +9,7 @@
 > PRINCIPIO MEMORIA: il sistema ricorda per l'umano. Non chiedere mai di reincollare
 > stato/output: leggilo da qui o da GitHub. I token costano meno della memoria dell'utente.
 
-Ultimo aggiornamento: 2026-05-31 — anti-burocrazia / momentum correction (docs-only, no-runtime).
+Ultimo aggiornamento: 2026-05-31 — Wf47/Wg/Wh final manual runtime rehearsal PASS ATTESTATO UTENTE.
 
 ---
 
@@ -23,17 +23,19 @@ Ultimo aggiornamento: 2026-05-31 — anti-burocrazia / momentum correction (docs
 
 ## Latest verified PASS
 
-- **Wf47 → Wg operationalization checklist**: **PREP PASS / no-runtime**.
-- (precedente) Wf47 → Wg operationalization plan: **PREP PASS / no-runtime**.
+- **Wf47/Wg/Wh final manual runtime rehearsal**: **PASS ATTESTATO UTENTE**.
 - Dettaglio commit/hash: vedi `docs/runtime/LAST_CURSOR_REPORT.md` (LATEST + HISTORY).
+- Evidenza runtime: `docs/sessions/2026-05-31-control-plane-wf47-wg-wh-final-manual-runtime-rehearsal-pass.md`.
 
 ## Stato Wf47 / Wg / Wh
 
-- **Wf47** (polling/getUpdates, Data Table test-only) manual validation: **PASS ATTESTATO UTENTE**.
-- **Wg** (inbound Decision Packet state correlation, test-only) manual validation: **PASS ATTESTATO UTENTE**.
-- **Wh** (Wf47 → Wg combined inbound decision flow, workflow 49, test-only) manual validation: **PASS ATTESTATO UTENTE**.
+- **Wf47** manual validation: **PASS ATTESTATO UTENTE**.
+- **Wg** manual validation: **PASS ATTESTATO UTENTE**.
+- **Wh** combined flow manual validation: **PASS ATTESTATO UTENTE**.
+- **Final bounded manual runtime rehearsal**: **PASS ATTESTATO UTENTE** (workflow 49, 3 deterministic runs: valid_close, duplicate, unknown).
 - **Telegram inbound operational automation**: **NOT ACTIVE / NOT RUN**.
 - Catena completa AUTOMATIZZATA (nessun filo umano): **NOT RUN** — Fase 3, gated da PM-34.
+- **PM-34**: **BLOCKED**.
 
 ## Active blockers
 
@@ -43,7 +45,7 @@ Ultimo aggiornamento: 2026-05-31 — anti-burocrazia / momentum correction (docs
 
 ## Next gate
 
-**Next gate: one bounded Wf47/Wg/Wh final manual runtime rehearsal, test-only and inactive/off. It may include import/reimport rehearsal plus up to 2 repeat manual runs. After that, advance to the next real operational gate or mark BLOCKED with a concrete blocker. No optional scenario testing unless a named risk appears.**
+**Next gate: advance to the next real operational gate after Wf47/Wg/Wh final rehearsal PASS. Do not create more PREP/PRE-PREP documents for this chain unless a new named risk appears. Candidate next gate must remain separate and explicit: no schedule, no Telegram Trigger, no public webhook, no production Data Table, no control_plane_state, no PM-34, and no workflow 40/41/42 mutation without a new gate.**
 
 Canonico: `docs/workflow-wf47-wg-operationalization-plan.md`. Riferimento anti-burocrazia: PROJECT_VISION §7.9.
 

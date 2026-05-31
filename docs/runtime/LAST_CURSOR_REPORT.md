@@ -13,23 +13,19 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wf47-wg-operationalization-checklist-prep
+task_ref: wf47-wg-wh-final-manual-runtime-rehearsal-pass
 result_cursor: PASS
-real_task_commit: d410a8f1fb04db1b447574f55ba75ec4e3d8bdd3
-rolling_report_commit: af280519e09eb9bfff2841d9f90cb9f0f0dbb0a7
-remote_hash_verbatim: d410a8f1fb04db1b447574f55ba75ec4e3d8bdd3
+result_runtime: PASS_ATTESTATO_UTENTE
+real_task_commit: PENDING_POST_COMMIT
 branch: main
-verification_rule: real_task_commit deve risultare nella chain di origin/main
-timestamp_utc: 2026-05-31T16:10:00Z
+verification_rule: PASS is based on deterministic user-attested runtime output plus Git commit evidence
+timestamp_utc: 2026-05-31T18:45:00Z
 ```
 
 - `real_task_commit` = commit reale del task (commit 1). È l'hash da verificare.
 - `rolling_report_commit` = commit leggero che aggiorna solo questo report (commit 2). NON è il commit del task.
 - `remote_hash_verbatim` = `git ls-remote origin main` catturato al push del commit 1.
-
-```text
-d410a8f1fb04db1b447574f55ba75ec4e3d8bdd3	refs/heads/main
-```
+- `result_runtime` = evidenza runtime attestata dall'utente (output deterministico sanitizzato).
 
 ---
 
@@ -49,6 +45,16 @@ Solo le **5 entry più recenti**, compatte. La cronologia precedente è recupera
 **Git history** (`git log`) e dai **session log** in `docs/sessions/`.
 
 ```yaml
+- task_ref: anti-bureaucracy-momentum-correction
+  real_task_commit: dc8fc7223c5a3e4c1303475504c65116afcf1f4c
+  result_cursor: PASS
+  timestamp_utc: 2026-05-31T18:35:00Z
+
+- task_ref: wf47-wg-operationalization-checklist-prep
+  real_task_commit: d410a8f1fb04db1b447574f55ba75ec4e3d8bdd3
+  result_cursor: PASS
+  timestamp_utc: 2026-05-31T16:10:00Z
+
 - task_ref: wf47-wg-operationalization-plan-prep
   real_task_commit: 811c69e025222652a7cfd94e287e948cb0fe5dde
   result_cursor: PASS
@@ -63,14 +69,4 @@ Solo le **5 entry più recenti**, compatte. La cronologia precedente è recupera
   real_task_commit: 12ed1b8e4fdfbca193d31e29ae05a58561bf45c7
   result_cursor: PASS
   timestamp_utc: 2026-05-31T15:31:10Z
-
-- task_ref: wh-combined-inbound-decision-flow-prep
-  real_task_commit: 9c167d944dfdb5d3cc8abb16c98e1344db9e6ee0
-  result_cursor: PASS
-  timestamp_utc: 2026-05-31T14:53:44Z
-
-- task_ref: wg-manual-validation-pass
-  real_task_commit: 540910922f48bbaf31537058f9486b823aeba692
-  result_cursor: PASS
-  timestamp_utc: 2026-05-31T14:49:24Z
 ```

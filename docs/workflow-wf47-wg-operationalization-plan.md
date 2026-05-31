@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-wf47-wg-operationalization-plan.md`  
-**Status:** **PREP PASS** (plan) + **PREP PASS** (checklist) — planning only. **Not activation.** No runtime executed for this artifact.
+**Status:** **PREP PASS** (plan + checklist) + **final bounded manual runtime rehearsal PASS ATTESTATO UTENTE**. Workflows 47/48/49 remain **manual / inactive / off**. Not operational activation.
 
 This document is **canonical** for the Wf47 → Wg operationalization path. The checklist ([workflow-wf47-wg-operationalization-checklist.md](workflow-wf47-wg-operationalization-checklist.md)) is only a minimum readiness pointer and does not duplicate governance.
 
@@ -25,6 +25,7 @@ It does **not** authorize schedule, Telegram Trigger, public webhook, production
 | **Wf47** Data Table manual validation | **PASS** — offset/idempotency on `wf47_polling_state_test` |
 | **Wg** inbound Decision Packet state correlation manual validation | **PASS** — valid_close, duplicate, unknown on `wg_decision_state_test` |
 | **Wh** Wf47 → Wg combined inbound decision flow manual validation | **PASS** — workflow **49** manual/inactive/off; fixture handoff + CSV seeds |
+| **Final bounded manual runtime rehearsal** | **PASS ATTESTATO UTENTE** — workflow **49** in n8n UI; 3 deterministic runs (valid_close, duplicate, unknown); workflows 47/48/49 present, inactive/off |
 | **Workflow 49** | **manual / inactive / off** — integration proof, not production automation |
 | **Telegram inbound operational automation** | **NOT RUN / NOT ACTIVE** |
 | **PM-34** | **BLOCCATO** |
@@ -68,26 +69,25 @@ flowchart LR
 
 ## 4. Bounded path (no increment ladder)
 
-The PREP-heavy multi-increment ladder is **retired**. The path is now bounded.
+The PREP-heavy multi-increment ladder is **retired**. The bounded path is **complete**.
 
-**Current state:**
+**Completed state:**
 
 - Wf47 → Wg operationalization **plan**: **PREP PASS**.
 - Wf47 → Wg operationalization **checklist**: **PREP PASS**.
+- **Final bounded manual runtime rehearsal**: **PASS ATTESTATO UTENTE** (2026-05-31).
 
-**Next state — one bounded final manual runtime rehearsal:**
+**Rehearsal outcome:**
 
-- **Test-only and inactive/off** (user in n8n UI). One bounded rehearsal, not a series of separate docs-only gates.
-- It **may include**:
-  - **import/reimport rehearsal** of wf47 / wg / wf49 from GitHub (verify `active: false`; no schedule node; no Telegram Trigger on inbound path), and
-  - **up to 2 repeat manual runs** (Wf47 manual poll → Wg correlation via fixture/handoff, on `*_test` tables only; record sanitized receipts).
+- **import/reimport not needed** — workflows 47, 48, and 49 were already present in n8n UI, inactive/off.
+- **3 essential deterministic runs passed** on workflow 49: `valid_close`, `duplicate`, `unknown` (user-attested sanitized receipts).
+- **Optional scenarios** (`note_only`, `malformed`, `stale_closed`) **not run** — no named risk required them.
+- **No non-deterministic evidence** used for PASS.
+- Workflows 47/48/49 remained **test-only / inactive / off** throughout. No schedule, Telegram Trigger, public webhook, production Data Table, or `control_plane_state`.
 
-**After the rehearsal — exactly one of:**
+**Next step:** a **separate real operational gate** — not more prep churn for this chain. Do not create additional PREP/PRE-PREP documents unless a **new named risk** appears.
 
-- **advance to the next real operational gate** (a concrete runtime/security gate), or
-- **mark BLOCKED with a concrete blocker** (named, specific).
-
-**Bound:** do not exceed **1 import/reimport rehearsal + 2 repeat manual runs** for this chain. Beyond that, do not open new pre-pass documents — advance or mark BLOCKED.
+**Bound satisfied:** 1 import/reimport rehearsal (skipped — already present) + 3 deterministic manual runs (within max 2 repeat + initial run allowance). Per PROJECT_VISION §7.9, advance to next real gate or mark BLOCKED — rehearsal **PASS**, so **advance**.
 
 **Optional scenarios (`note_only`, `malformed`, `stale_closed`):** **not default.** They require a **named risk** to be run; absent a named risk, they are skipped, not gated as separate steps.
 
@@ -133,9 +133,9 @@ The PREP-heavy multi-increment ladder is **retired**. The path is now bounded.
 | No `data-tables/` changed | Yes |
 | No secrets committed | Yes |
 | Plan document complete | This file + frontier PREP entry |
-| **Next gate identified** | **One bounded final manual runtime rehearsal** (§4): import/reimport + up to 2 repeat manual runs, then advance or BLOCKED |
+| **Next gate identified** | **Advance to next real operational gate** — separate, explicit; no more PREP for this chain unless new named risk |
 
-**Next gate (after this PREP):** one bounded **Wf47/Wg/Wh final manual runtime rehearsal**, test-only and inactive/off — import/reimport rehearsal plus up to 2 repeat manual runs. After that, **advance to the next real operational gate or mark BLOCKED with a concrete blocker**. No optional scenario testing unless a named risk appears. Still no schedule, no production Data Table, no PM-34.
+**Next gate (after final rehearsal PASS):** advance to the **next real operational gate** after Wf47/Wg/Wh final rehearsal PASS. Do not create more PREP/PRE-PREP documents for this chain unless a new named risk appears. Candidate next gate must remain separate and explicit: no schedule, no Telegram Trigger, no public webhook, no production Data Table, no `control_plane_state`, no PM-34, and no workflow 40/41/42 mutation without a new gate.
 
 ---
 
@@ -145,3 +145,4 @@ The PREP-heavy multi-increment ladder is **retired**. The path is now bounded.
 - Telegram Decision Packet **operational** automation: **NOT RUN**
 - Catena completa automatizzata: **NOT RUN** (PM-34)
 - Wf47 / Wg / Wh manual validations: **PASS** (preserved)
+- Final bounded manual runtime rehearsal: **PASS ATTESTATO UTENTE**
