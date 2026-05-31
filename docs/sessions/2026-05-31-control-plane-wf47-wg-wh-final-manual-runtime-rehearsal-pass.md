@@ -148,3 +148,10 @@ git diff -- docs/runtime/CURRENT_FRONTIER.md docs/runtime/LAST_CURSOR_REPORT.md 
 ## 10. Final status
 
 **PASS** — Wf47/Wg/Wh final bounded manual runtime rehearsal recorded. Workflows 47/48/49 remain test-only/inactive/off. Next step: separate real operational gate; no more PREP for this chain unless a new named risk appears.
+
+## 11. Rolling report hygiene (follow-up)
+
+- **Purpose:** consolidate `LAST_CURSOR_REPORT.md` LATEST after fragmented report commits (`0a7390c`, `3f67a7e`); confirm `real_task_commit: 98a3b4ff89d2341a45b01fd9ff2b74c279433946` (no `PENDING_POST_COMMIT`); add `remote_hash_verbatim` as stable YAML key; clarify snapshot vs HEAD.
+- **No runtime executed by Cursor** for this hygiene fix.
+- **Forbidden actions not performed:** no n8n, workflows, data-tables, schedule, PM-34, secrets, workflow 40/41/42.
+- **Hygiene commit:** see final report (`docs: fix final rehearsal rolling report hash`).

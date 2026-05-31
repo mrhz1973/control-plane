@@ -17,16 +17,18 @@ task_ref: wf47-wg-wh-final-manual-runtime-rehearsal-pass
 result_cursor: PASS
 result_runtime: PASS_ATTESTATO_UTENTE
 real_task_commit: 98a3b4ff89d2341a45b01fd9ff2b74c279433946
-rolling_report_commit: 0a7390c110b7dd366e56ab497b79358adf768786
 branch: main
 verification_rule: PASS is based on deterministic user-attested runtime output plus Git commit evidence
+remote_hash_verbatim: 98a3b4ff89d2341a45b01fd9ff2b74c279433946
 timestamp_utc: 2026-05-31T18:45:00Z
 ```
 
-- `real_task_commit` = commit reale del task (commit 1). È l'hash da verificare.
-- `rolling_report_commit` = commit leggero che aggiorna solo questo report (commit 2). NON è il commit del task.
-- `remote_hash_verbatim` = `git ls-remote origin main` catturato al push del commit 1.
+- `real_task_commit` = commit reale del task (`docs: record Wf47 Wg Wh final rehearsal pass`). È l'hash da verificare nella chain di `origin/main`.
+- `rolling_report_commit` = commit leggero che aggiorna solo questo report. NON è il commit del task. Impostato nel commit di hygiene del report (vedi session log).
+- `remote_hash_verbatim` = snapshot di `git ls-remote origin main` al push del task commit 1; `real_task_commit` deve restare nella chain anche se HEAD remoto avanza.
 - `result_runtime` = evidenza runtime attestata dall'utente (output deterministico sanitizzato).
+
+Snapshot al push del task commit:
 
 ```text
 98a3b4ff89d2341a45b01fd9ff2b74c279433946	refs/heads/main
