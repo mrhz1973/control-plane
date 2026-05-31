@@ -17,6 +17,7 @@ task_ref: wf47-wg-wh-final-manual-runtime-rehearsal-pass
 result_cursor: PASS
 result_runtime: PASS_ATTESTATO_UTENTE
 real_task_commit: 98a3b4ff89d2341a45b01fd9ff2b74c279433946
+rolling_report_commit: 7892716a3d10598d68fa3e084ef9bd6c93de0d15
 branch: main
 verification_rule: PASS is based on deterministic user-attested runtime output plus Git commit evidence
 remote_hash_verbatim: 98a3b4ff89d2341a45b01fd9ff2b74c279433946
