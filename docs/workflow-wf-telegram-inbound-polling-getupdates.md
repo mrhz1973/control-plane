@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-wf-telegram-inbound-polling-getupdates.md`  
-**Status:** Post-live-PASS hardening prep. No schedule. No inbound automation. No runtime from this doc alone.
+**Status:** Hardened manual validation **PARTIAL/BLOCKED**. Safe repeated use **not** PASS. No schedule. No inbound automation.
 
 ---
 
@@ -73,25 +73,64 @@ Token was configured **only in n8n UI** (HTTP URL corrected there). n8n tunnel w
 
 ---
 
-## 7. Next gate — hardened path manual validation (one step)
+## 7. Hardened manual validation — actual result (PARTIAL/BLOCKED)
 
-1. Re-import or refresh workflow **47** from hardened template; keep **inactive/off**.
-2. In n8n UI only: token/credential, replace **CONFIGURE_ALLOWED_CHAT_ID_IN_N8N_UI** in filter node, confirm offset store placeholder.
-3. Run **one** Manual Trigger poll; verify receipt and guards (`allowed_chat_not_configured` if chat not set; `stale_old_update_id` on replay; `duplicate_or_double_click` on repeat).
-4. Record evidence in docs (separate registration task). No schedule. No PM-34.
+**Recorded:** 2026-05-31. Workflow **47** inactive/off. Token and allowed chat configured in n8n UI only.
+
+| Run | Result |
+|-----|--------|
+| **First** manual poll | **PASS (parse/accept)** — `inspect_status: accepted`, `decision_id: D-9998-T`, `selected_option: 1`, `duplicate_or_stale: false`, `allowed_chat_configured: true` |
+| **Second** manual poll (no new Telegram message) | **BLOCKED (duplicate/stale)** — same receipt as first run: again `accepted` with same `update_id`; `duplicate_or_stale: false`; guards did not block replay |
+
+**Conclusion:** Manual `getUpdates` with token + allowed chat can parse and accept a valid TEST ONLY response. **Duplicate/stale persistence is NOT validated.** Same update was accepted twice. Demo workflow `staticData` / placeholder offset store is **insufficient or not reliable** for repeated manual inactive executions.
+
+**Safe repeated use:** **NOT PASS.** Do not mark operational or repeated polling ready.
+
+Sanitized receipts (no secrets):
+
+```json
+[
+  {
+    "inspect_status": "accepted",
+    "decision_id": "D-9998-T",
+    "selected_option": "1",
+    "update_id": 986228558,
+    "duplicate_or_stale": false,
+    "note_present": false,
+    "block_reason": null,
+    "allowed_chat_configured": true,
+    "offset_after_placeholder": 986228559,
+    "test_only": true
+  }
+]
+```
+
+(Second run produced identical sanitized output.)
 
 ---
 
-## 8. PASS criteria (hardened manual validation)
+## 8. Requirement before repeated use
 
-- Guards visible in sanitized receipt (`block_reason` when blocked).
-- Repeat poll does not double-accept same `update_id` + decision + option.
-- Stale/old `update_id` rejected when already handled.
-- No secrets; workflow inactive/off.
+Before any “safe repeated use” PASS:
+
+1. Choose a **deliberate persistent state store** for offset + idempotency — e.g. test-only n8n Data Table or other approved store, configured **only in n8n UI** (no table id, token, or raw `chat_id` in Git).
+2. Validate in a **separate** manual gate: second poll without new message must yield `duplicate_or_double_click` or `stale_old_update_id` (or equivalent blocked receipt).
+3. No persistent Schedule without explicit runtime/security gate.
+4. Production Data Table activation is **not** prescribed here unless separately gated.
+
+Workflow `staticData` in the template remains **demo-only** and was **not validated** for cross-execution persistence.
 
 ---
 
-## 9. BLOCKED criteria
+## 9. PASS criteria (future — persistent store gate)
+
+- First poll: accepted TEST ONLY decision as today.
+- Second poll (no new message): blocked with `duplicate_or_stale: true` and explicit `block_reason`.
+- No secrets; workflow inactive/off unless separately documented.
+
+---
+
+## 10. BLOCKED criteria
 
 - Real `chat_id` / token committed to Git.
 - Schedule activated without explicit gate.
@@ -100,7 +139,7 @@ Token was configured **only in n8n UI** (HTTP URL corrected there). n8n tunnel w
 
 ---
 
-## 10. Related files
+## 11. Related files
 
 - Template: `workflows/wf-telegram-inbound-polling-getupdates.template.json`
 - Registration (live): `docs/runtime/WF_TELEGRAM_INBOUND_POLLING_REGISTRATION_PROMPT.md`

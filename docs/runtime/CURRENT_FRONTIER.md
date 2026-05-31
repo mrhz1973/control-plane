@@ -8,7 +8,7 @@
 > ricordare o reincollare stato/output: leggilo da qui o da GitHub. I token costano
 > meno della memoria dell'utente.
 
-Ultimo aggiornamento: 2026-05-31 — Wf polling hardening prep
+Ultimo aggiornamento: 2026-05-31 — Wf hardened polling manual validation PARTIAL/BLOCKED
 
 ## PASS confermati (con prova)
 - Foundation completa: Tailscale attivo, 3 AI installate e collaudate, abbonamenti fissi, nessuna API a consumo.
@@ -38,7 +38,8 @@ Ultimo aggiornamento: 2026-05-31 — Wf polling hardening prep
 - Wf polling hardening prep: PREP PASS — hardened inactive workflow 47 template and runbook for safe repeated manual polling; offset/lastHandledUpdateId placeholders, allowed-chat closed-by-default guard, stale_old_update_id and duplicate_or_double_click guards, sanitized receipt contract; no runtime executed; no schedule; no inbound automation; no PM-34.
 
 ## Frontiera attuale / prossimo gate
-- Prossimo gate reale: Wf hardened path manual validation — re-import or refresh workflow 47 from hardened template, keep inactive/off, configure allowed chat and token only in n8n UI, run one manual getUpdates poll, verify stale/duplicate/allowed-chat guards and sanitized receipt, then record evidence. One step only. Any persistent schedule, production Data Table, deleteWebhook, or operational automation remains a separate runtime/security gate.
+- Wf hardened path manual validation: PARTIAL/BLOCKED — first manual poll accepted valid TEST ONLY decision D-9998-T option 1; second manual poll without new Telegram message accepted the same update_id again; duplicate/stale persistence NOT validated; likely cause demo workflow staticData insufficient or not persisted across repeated manual inactive executions; safe repeated use remains blocked. NON marcato PASS for repeated use.
+- Prossimo gate reale: decide and validate a test-only persistent state store for Wf polling offset/idempotency (e.g. test-only n8n Data Table or other approved store configured only in UI), without schedule and without PM-34. One runtime/security gate at a time. Any production Data Table, deleteWebhook, or operational automation remains a separate gate.
 - We Telegram interactive decision buttons live: BLOCKED/PENDING — blocker: Telegram Trigger manual test returned "Bad Request: bad webhook: An HTTPS URL must be provided for webhook"; current n8n access is via local tunnel/http://localhost:5678 and does not provide the public HTTPS webhook URL required by Telegram. No callback received; no sanitized inbound receipt produced; workflow 46 remained inactive/off; no PM-34; no workflow 40/41 mutation; no Data Table production mutation; no GitHub write by workflow. NON marcato PASS. Path (B) polling/getUpdates package is prepared as Wf; path (A) public HTTPS webhook remains a separate architectural option.
 - Telegram inbound replies / decision buttons: NOT RUN / NOT ACTIVE (We live blocked on HTTPS webhook requirement; plain-text replies 1/2/3 remain non-operative).
 - Wc formatting fix LIVE plain-text rerun: BLOCKED/PENDING (historical) — updated banner (=== TEST ONLY ===) appeared, but Telegram still rendered event_id/human_gate/requires_human without underscores (workflow 43 reimport). Not recorded as live PASS.
