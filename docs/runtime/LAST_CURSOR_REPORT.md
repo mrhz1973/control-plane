@@ -17,21 +17,28 @@ task_ref: wf47-schedule-trigger-id-fix
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
 real_task_commit: 9d56f144c6f4152156d17d46504e584e24a6ed9b
-rolling_report_commit: a3ceadd6c798757c6260134a369743a64983c0cf
+rolling_report_commit: 1c0c1085e4805616b1822b450d262ecb0ea0235b
 branch: main
-verification_rule: PASS requires commit in origin/main; runtime schedule gate remains manual/user-attested later
-remote_hash_verbatim: 9d56f144c6f4152156d17d46504e584e24a6ed9b
+verification_rule: PASS requires fixed template commit in origin/main chain; runtime schedule gate remains manual/user-attested later
+remote_hash_verbatim: 1c0c1085e4805616b1822b450d262ecb0ea0235b
 timestamp_utc: 2026-06-01T14:02:00Z
 ```
 
-- `real_task_commit` = commit reale del task (`workflow: fix Wf47 schedule trigger node id`). È l'hash da verificare.
+- `real_task_commit` = commit con template id-fix (`workflow: fix Wf47 schedule trigger node id`). **Non** è `c51e8a6` (Phase 1 schedule add; aveva id duplicato).
 - `result_runtime` = **NOT_RUN_BY_CURSOR** — Phase 2 schedule runtime remains user-attested.
-- `rolling_report_commit` = commit leggero che aggiorna solo questo report (non è il task commit).
+- `rolling_report_commit` = ultimo commit che aggiorna solo questo report (non è il task commit).
+- Verifica: `9d56f14` è antenato di `origin/main` HEAD; template su `main` ha id unici.
 
-Snapshot al push del task commit:
+Snapshot task commit (id-fix):
 
 ```text
 9d56f144c6f4152156d17d46504e584e24a6ed9b	refs/heads/main
+```
+
+Snapshot `origin/main` HEAD (post Phase 1b hygiene):
+
+```text
+1c0c1085e4805616b1822b450d262ecb0ea0235b	refs/heads/main
 ```
 
 ---

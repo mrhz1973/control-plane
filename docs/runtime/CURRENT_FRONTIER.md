@@ -51,7 +51,7 @@ Runbook: `docs/workflow-wf-telegram-inbound-polling-getupdates.md` §10.
 ## Audit
 
 - Phase 1 session: `docs/sessions/2026-06-01-control-plane-wf47-schedule-trigger-template-ready.md`.
-- Phase 1b id fix: `docs/sessions/2026-06-01-control-plane-wf47-schedule-trigger-id-fix.md`.
+- Phase 1b id fix + hygiene closed: `docs/sessions/2026-06-01-control-plane-wf47-schedule-trigger-id-fix.md` (`real_task_commit` `9d56f14`, not `c51e8a6`).
 - Hash: `docs/runtime/LAST_CURSOR_REPORT.md`.
 
 ## Manutenzione

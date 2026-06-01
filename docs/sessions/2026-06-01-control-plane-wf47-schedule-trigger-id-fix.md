@@ -64,10 +64,17 @@ See final report (node uniqueness scripts + `git diff --check`).
 
 ## 11. Commit / remote hash
 
-- Commit 1 (`workflow: fix Wf47 schedule trigger node id`): `9d56f144c6f4152156d17d46504e584e24a6ed9b`
-- Commit 2 (`docs: update rolling Cursor report`): see final report
-- Remote hash: see final report (`git ls-remote origin main`)
+- Task commit (`workflow: fix Wf47 schedule trigger node id`): `9d56f144c6f4152156d17d46504e584e24a6ed9b`
+- Rolling report commits: `a3ceadd6c798757c6260134a369743a64983c0cf`, `1c0c1085e4805616b1822b450d262ecb0ea0235b`
+- Remote hash (`origin/main` HEAD): `1c0c1085e4805616b1822b450d262ecb0ea0235b`
 
-## 12. Final status
+## 12. Phase 1b hygiene closure (2026-06-01)
 
-**PASS** — unique node ids ready for Phase 2 reimport.
+- Template on `origin/main` already fixed; **no workflow re-edit** in hygiene pass.
+- `LAST_CURSOR_REPORT.md` LATEST: `task_ref: wf47-schedule-trigger-id-fix`, `real_task_commit: 9d56f14` (not `c51e8a6`).
+- Verified: `git merge-base --is-ancestor 9d56f14 HEAD` — id-fix commit in `main` chain.
+- Runtime Phase 2 may proceed only after operator reimport + explicit runtime gate.
+
+## 13. Final status
+
+**PASS** — Phase 1b closed. Unique node ids on `main`; report aligned with `9d56f14`. Ready for Phase 2 reimport (user-attested).
