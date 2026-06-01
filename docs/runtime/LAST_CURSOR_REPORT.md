@@ -17,6 +17,7 @@ task_ref: wg48-external-receipt-mode
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
 real_task_commit: 18c9dd0f9e0e922877a4d3dd567ff50f9af5f544
+rolling_report_commit: 4ededaf
 branch: main
 verification_rule: PASS requires commit in origin/main; runtime gate remains manual/user-attested later
 remote_hash_verbatim: 18c9dd0f9e0e922877a4d3dd567ff50f9af5f544
