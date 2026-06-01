@@ -17,6 +17,7 @@ task_ref: wf47-schedule-trigger-id-fix
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
 real_task_commit: 9d56f144c6f4152156d17d46504e584e24a6ed9b
+rolling_report_commit: a3ceadd6c798757c6260134a369743a64983c0cf
 branch: main
 verification_rule: PASS requires commit in origin/main; runtime schedule gate remains manual/user-attested later
 remote_hash_verbatim: 9d56f144c6f4152156d17d46504e584e24a6ed9b
