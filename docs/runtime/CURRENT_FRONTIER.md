@@ -9,7 +9,7 @@
 > PRINCIPIO MEMORIA: il sistema ricorda per l'umano. Non chiedere mai di reincollare
 > stato/output: leggilo da qui o da GitHub. I token costano meno della memoria dell'utente.
 
-Ultimo aggiornamento: 2026-05-31 — Wf47/Wg/Wh final manual runtime rehearsal PASS ATTESTATO UTENTE.
+Ultimo aggiornamento: 2026-06-01 — Wg48 external receipt mode (implementation ready).
 
 ---
 
@@ -23,31 +23,33 @@ Ultimo aggiornamento: 2026-05-31 — Wf47/Wg/Wh final manual runtime rehearsal P
 
 ## Latest verified PASS
 
-- **Wf47/Wg/Wh final manual runtime rehearsal**: **PASS ATTESTATO UTENTE**.
-- Dettaglio commit/hash: vedi `docs/runtime/LAST_CURSOR_REPORT.md` (LATEST + HISTORY).
-- Evidenza runtime: `docs/sessions/2026-05-31-control-plane-wf47-wg-wh-final-manual-runtime-rehearsal-pass.md`.
+- **Wf47/Wg/Wh final manual runtime rehearsal** (workflow 49 fixtures): **PASS ATTESTATO UTENTE**.
+- **47 - Wf live getUpdates manual poll**: **PASS ATTESTATO UTENTE** (live gate discovery).
+- Dettaglio commit/hash: `docs/runtime/LAST_CURSOR_REPORT.md` (LATEST + HISTORY).
 
 ## Stato Wf47 / Wg / Wh
 
-- **Wf47** manual validation: **PASS ATTESTATO UTENTE**.
-- **Wg** manual validation: **PASS ATTESTATO UTENTE**.
-- **Wh** combined flow manual validation: **PASS ATTESTATO UTENTE**.
-- **Final bounded manual runtime rehearsal**: **PASS ATTESTATO UTENTE** (workflow 49, 3 deterministic runs: valid_close, duplicate, unknown).
+- **Wf47** manual validation + **live getUpdates poll**: **PASS ATTESTATO UTENTE**.
+- **Wg** fixture manual validation: **PASS ATTESTATO UTENTE**.
+- **Wg external receipt mode** (`external_receipt` + `manual_receipt_json`): **IMPLEMENTATION READY** (after this task commit).
+- **47→48 live manual handoff**: **BLOCKED** until updated **48 - Wg** is reimported and run with `external_receipt`.
+- **Wh** combined flow (workflow 49): **PASS ATTESTATO UTENTE** (fixture rehearsal; unchanged).
 - **Telegram inbound operational automation**: **NOT ACTIVE / NOT RUN**.
-- Catena completa AUTOMATIZZATA (nessun filo umano): **NOT RUN** — Fase 3, gated da PM-34.
+- Catena completa AUTOMATIZZATA: **NOT RUN** — gated da PM-34.
 - **PM-34**: **BLOCKED**.
 
 ## Active blockers
 
-- **PM-34** real worker: **BLOCKED** (nessuna prova reale + gate esplicito).
-- **We** Telegram interactive buttons (live): **BLOCKED/PENDING** — Telegram Trigger richiede public HTTPS webhook; n8n attuale è tunnel/loopback. Path B polling = Wf47 (PASS).
-- Path B OpenClaw agent `main`: **BLOCKED** (manca provider API key — policy no provider API key).
+- **PM-34** real worker: **BLOCKED**.
+- **47→48 live handoff**: **BLOCKED** until 48 - Wg reimported from updated template.
+- **We** Telegram interactive buttons (live): **BLOCKED/PENDING** (HTTPS webhook).
+- Path B OpenClaw agent `main`: **BLOCKED** (no provider API key).
 
 ## Next gate
 
-**Next gate: advance to the next real operational gate after Wf47/Wg/Wh final rehearsal PASS. Do not create more PREP/PRE-PREP documents for this chain unless a new named risk appears. Candidate next gate must remain separate and explicit: no schedule, no Telegram Trigger, no public webhook, no production Data Table, no control_plane_state, no PM-34, and no workflow 40/41/42 mutation without a new gate.**
+**Reimport only 48 - Wg Telegram Inbound Decision State Correlation TEST ONLY - TEMPLATE from updated template, keep active:false, set scenario external_receipt with the sanitized receipt produced by 47 - Wf, then run 48 - Wg manually. No schedule, no Telegram Trigger, no public webhook, no production Data Table, no control_plane_state, no PM-34, no workflow 40/41/42.**
 
-Canonico: `docs/workflow-wf47-wg-operationalization-plan.md`. Riferimento anti-burocrazia: PROJECT_VISION §7.9.
+Canonico: `docs/workflow-wf47-wg-operationalization-plan.md` §4bis · runbook: `docs/workflow-wg-telegram-inbound-decision-state-correlation.md` §5bis.
 
 ## Do-not-do (vincoli espliciti)
 
@@ -58,34 +60,22 @@ Canonico: `docs/workflow-wf47-wg-operationalization-plan.md`. Riferimento anti-b
 - NO `control_plane_state` per il path Wf47/Wg/Wh.
 - NO PM-34 unlock senza gate esplicito separato.
 - NO mutazione workflow 40 / 41 / 42.
-- NO segreti in Git (token, credential id/content, webhook/auth URL, API key, OAuth, PAT, CoT, URL tokenizzati).
-- NO test opzionali (`note_only` / `malformed` / `stale_closed`) senza un rischio nominato.
-- NO test non deterministici come evidenza di PASS.
-- NO nuovi documenti di pre-pass/pre-pre-pass per la stessa catena senza un nuovo rischio concreto.
+- NO segreti in Git.
+- NO nuovi PREP/PRE-PREP per questa catena senza rischio nominato.
 
 ## Asset n8n esistenti (NON riconfigurare da zero)
 
-- Inventario canonico: `docs/WORKFLOW_EXPORT_STATUS.md`.
-- wf40 polling commit → Telegram: `workflows/exports/READY_IMPORT_40-control-plane-active-with-credentials.json`.
-- wf42 diff-summary: `workflows/42-diff-summary-mvp.template.json` (+ `docs/workflow-42-diff-summary-mvp.md`).
-- wf41 candidato backup: `workflows/exports/2026-05-21_41-plan-handoff-file-candidate.redacted.json`.
-- Telegram credential n8n: "CONTROL PLANE - Telegram Bot" (token solo in n8n). Data Table produzione: `control_plane_state`.
-- Wf47/Wg/Wh templates + CSV seeds test-only: `workflows/` e `data-tables/` (vedi `docs/foundation/DATA_TABLE_CSV_CONVENTION.md`).
-- Regole redazione export: `workflows/README.md`.
+- Inventario: `docs/WORKFLOW_EXPORT_STATUS.md`.
+- Wf47/Wg/Wh templates: `workflows/` (48 - Wg updated for `external_receipt`; reimport 48 only for next gate).
+- CSV seeds test-only: `data-tables/` (non mutare in questo gate).
+- Telegram credential n8n: "CONTROL PLANE - Telegram Bot" (token solo in n8n).
 
-## NON ripetere / note
+## Audit / cronologia
 
-- NON marcare Codex CLI o Cursor CLI "ATTIVO" in PROJECT_VISION §1.1: la catena è manuale/supervisionata, non automatica.
-- NON marcare Ollama classifier "ATTIVO nel loop": local runtime PASS, non cablato a n8n.
-- NON ri-sondare `codex --version` / `--help`: noto codex-cli 0.133.0 (`--ephemeral`, `--sandbox read-only`, `--cd`, `--add-dir`, prompt via stdin).
+- Hash task: `docs/runtime/LAST_CURSOR_REPORT.md`.
+- Session log Wg48 mode: `docs/sessions/2026-06-01-control-plane-wg48-external-receipt-mode.md`.
+- Git history per evidenza completa.
 
-## Audit / cronologia (dove guardare)
+## Manutenzione
 
-- Hash dei commit reali e ultimi 5 task: `docs/runtime/LAST_CURSOR_REPORT.md`.
-- Evidenza dettagliata per ogni PASS storico: session log in `docs/sessions/`.
-- Cronologia completa e auditabilità: Git history (`git log`, `git show`).
-
-## Manutenzione di questo file
-
-- Aggiornare come EPILOGO di ogni task che cambia lo stato, nello stesso commit che produce il cambiamento.
-- Tenerlo compatto (preferibilmente < 120 righe): è un file di stato, non un session log. La cronologia vive in LAST_CURSOR_REPORT.md, session log e Git history.
+- Aggiornare come epilogo di ogni task che cambia lo stato. Preferibilmente < 120 righe.

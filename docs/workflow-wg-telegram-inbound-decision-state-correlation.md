@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-wg-telegram-inbound-decision-state-correlation.md`  
-**Status:** Wg manual validation **PASS ATTESTATO UTENTE**. Not operational automation. Not full inbound automation. No schedule.
+**Status:** Wg fixture manual validation **PASS ATTESTATO UTENTE**. **External receipt mode** added for live 47→48 handoff (implementation ready; runtime gate pending reimport). Not operational automation. No schedule.
 
 ---
 
@@ -78,14 +78,55 @@ No `chat_id`, `user_id`, token, or message body in table or Git.
 
 1. Create/seed **`wg_decision_state_test`**.
 2. Import template once; keep inactive.
-3. **Set Wg test scenario** — choose scenario for each manual run (see §6).
+3. **Set Wg test scenario** — choose scenario for each manual run (see §6). For live 47→48 handoff use `external_receipt` + `manual_receipt_json` (see §5bis).
 4. Run Manual Trigger; read **Inspect correlation result**.
 
-No Code-node edits required for normal validation (scenario in Set node).
+No Code-node edits required for fixture validation (scenario in Set node). Live 47→48 uses `external_receipt` only.
 
 ---
 
-## 6. Manual validation — actual result (PASS)
+## 5bis. Wg external receipt mode (live 47→48 handoff)
+
+**Purpose:** consume a **sanitized receipt copied from workflow 47** (Wf), not an internal fixture.
+
+| Setting | Value |
+|---------|--------|
+| **scenario** | `external_receipt` |
+| **manual_receipt_json** | JSON object (or string) pasted from 47 - Wf output — e.g. Inspect sanitized receipt |
+
+**Constraints:** `active: false` · no Telegram API · no schedule · no production Data Table · no `control_plane_state` · no PM-34 · no workflow 40/41/42 mutation.
+
+**Example `manual_receipt_json`** (from 47 - Wf after `dp:D-9998-T:1`):
+
+```json
+{
+  "inspect_status": "accepted",
+  "decision_id": "D-9998-T",
+  "selected_option": "1",
+  "update_id": 986228560,
+  "duplicate_or_stale": false,
+  "note_present": false,
+  "block_reason": null,
+  "allowed_chat_configured": true,
+  "offset_after_placeholder": 986228561,
+  "last_handled_update_id": 0,
+  "test_only": true
+}
+```
+
+**Operator flow (manual live gate):**
+
+1. Run **47 - Wf** manually after sending `dp:D-9998-T:1` on Telegram.
+2. Copy the **sanitized receipt** from 47 (accepted output).
+3. In **48 - Wg**, set `scenario` = `external_receipt` and paste receipt into `manual_receipt_json`.
+4. Run **48 - Wg** manually (keep **inactive/off**).
+5. **Expected:** `D-9998-T` closes if `wg_decision_state_test` has `D-9998-T` **open**.
+
+If `manual_receipt_json` is missing or invalid, workflow returns deterministic `block_reason: missing_or_invalid_external_receipt`.
+
+---
+
+## 6. Manual validation — fixture scenarios (PASS)
 
 **Recorded:** 2026-05-31. Workflow **48** manual/inactive/off. Table **`wg_decision_state_test`** only.
 
@@ -114,11 +155,11 @@ Sanitized receipts (no secrets):
 
 ---
 
-## 7. Next gate — Wf47 → Wg integration (prep)
+## 7. Next gate — live 47→48 manual handoff
 
-Prepare a **combined** manual/inactive/off package: sanitized **Wf47** inbound receipt feeds **Wg** correlation in one importable flow (or documented handoff). Still test-only tables; no schedule; no production Data Table; no PM-34.
+**Reimport only** `workflows/wg-telegram-inbound-decision-state-correlation.template.json` (48 - Wg), keep **active:false**, then run live handoff with `external_receipt` + receipt from 47 - Wf. Wh (49) and prior fixture PASS unchanged.
 
-Optional scenarios not yet live-attested: `stale_closed`, `note_only`, `malformed`.
+Optional scenarios (`stale_closed`, `note_only`, `malformed`) remain fixture-only unless a **named risk** requires them.
 
 ---
 
@@ -136,8 +177,9 @@ Optional scenarios not yet live-attested: `stale_closed`, `note_only`, `malforme
 | Item | State |
 |------|--------|
 | Wf47 Data Table manual validation | **PASS** (unchanged) |
-| Wg package | **PREP PASS** |
-| Wg manual validation | **PASS ATTESTATO UTENTE** |
+| Wg fixture manual validation | **PASS ATTESTATO UTENTE** |
+| Wg external receipt mode | **IMPLEMENTATION READY** (live 47→48 gate after reimport) |
+| 47→48 live manual handoff | **BLOCKED** until updated 48 reimported and run |
 | Telegram inbound operational | **NOT ACTIVE** |
 | PM-34 | **BLOCCATO** |
 | Operational automation | **NOT RUN** |

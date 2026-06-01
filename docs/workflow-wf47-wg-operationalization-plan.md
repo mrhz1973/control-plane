@@ -95,6 +95,16 @@ The PREP-heavy multi-increment ladder is **retired**. The bounded path is **comp
 
 **Wh vs split workflows:** Wh proves correlation in one manual graph. The operational path likely remains **Wf47 then Wg** (two inactive workflows + handoff contract), not activating Wh for production.
 
+### 4bis. Live gate discovery (2026-06-01) — concrete blocker fix
+
+During the **first live manual gate** (47 → manual sanitized receipt → 48):
+
+- **47 - Wf** live `getUpdates` produced a valid **accepted** sanitized receipt — **PASS ATTESTATO UTENTE** (not re-tested by this task).
+- **48 - Wg** could **not** consume it: node *Build sanitized inbound test input* only built internal fixtures and explicitly simulated Wf47 receipts.
+- **Fix (not a new PREP chain):** add **`external_receipt`** scenario + **`manual_receipt_json`** on 48 - Wg template. Fixture scenarios (`valid_close`, `duplicate`, `unknown`, `stale_closed`, `note_only`, `malformed`) unchanged.
+
+**Next gate after template commit:** reimport **only** 48 - Wg from updated template, keep **active:false**, set `scenario=external_receipt` with receipt from 47 - Wf, run 48 manually. No schedule, Telegram Trigger, public webhook, production Data Table, `control_plane_state`, PM-34, or workflow 40/41/42.
+
 ---
 
 ## 5. Hard blockers (never without explicit gate)
@@ -133,9 +143,9 @@ The PREP-heavy multi-increment ladder is **retired**. The bounded path is **comp
 | No `data-tables/` changed | Yes |
 | No secrets committed | Yes |
 | Plan document complete | This file + frontier PREP entry |
-| **Next gate identified** | **Advance to next real operational gate** — separate, explicit; no more PREP for this chain unless new named risk |
+| **Next gate identified** | **Reimport 48 - Wg only** → live 47→48 manual handoff with `external_receipt` |
 
-**Next gate (after final rehearsal PASS):** advance to the **next real operational gate** after Wf47/Wg/Wh final rehearsal PASS. Do not create more PREP/PRE-PREP documents for this chain unless a new named risk appears. Candidate next gate must remain separate and explicit: no schedule, no Telegram Trigger, no public webhook, no production Data Table, no `control_plane_state`, no PM-34, and no workflow 40/41/42 mutation without a new gate.
+**Next gate:** reimport only **48 - Wg** from updated template, keep **active:false**, set `scenario=external_receipt` with sanitized receipt from **47 - Wf**, run 48 manually. Not more PREP for this chain unless a new named risk appears. Still: no schedule, Telegram Trigger, public webhook, production Data Table, `control_plane_state`, PM-34, workflow 40/41/42.
 
 ---
 

@@ -13,27 +13,18 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wf47-wg-wh-final-manual-runtime-rehearsal-pass
+task_ref: wg48-external-receipt-mode
 result_cursor: PASS
-result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: 98a3b4ff89d2341a45b01fd9ff2b74c279433946
-rolling_report_commit: 7892716a3d10598d68fa3e084ef9bd6c93de0d15
+result_runtime: NOT_RUN_BY_CURSOR
+real_task_commit: PENDING_POST_COMMIT
 branch: main
-verification_rule: PASS is based on deterministic user-attested runtime output plus Git commit evidence
-remote_hash_verbatim: 98a3b4ff89d2341a45b01fd9ff2b74c279433946
-timestamp_utc: 2026-05-31T18:45:00Z
+verification_rule: PASS requires commit in origin/main; runtime gate remains manual/user-attested later
+timestamp_utc: 2026-06-01T12:00:00Z
 ```
 
-- `real_task_commit` = commit reale del task (`docs: record Wf47 Wg Wh final rehearsal pass`). È l'hash da verificare nella chain di `origin/main`.
-- `rolling_report_commit` = commit leggero che aggiorna solo questo report. NON è il commit del task. Impostato nel commit di hygiene del report (vedi session log).
-- `remote_hash_verbatim` = snapshot di `git ls-remote origin main` al push del task commit 1; `real_task_commit` deve restare nella chain anche se HEAD remoto avanza.
-- `result_runtime` = evidenza runtime attestata dall'utente (output deterministico sanitizzato).
-
-Snapshot al push del task commit:
-
-```text
-98a3b4ff89d2341a45b01fd9ff2b74c279433946	refs/heads/main
-```
+- `real_task_commit` = commit reale del task (`workflow: add Wg external receipt mode`). È l'hash da verificare.
+- `result_runtime` = **NOT_RUN_BY_CURSOR** — live 47→48 handoff resta gate manuale utente dopo reimport 48 - Wg.
+- `rolling_report_commit` = eventuale commit leggero che aggiorna solo questo report (non è il task commit).
 
 ---
 
@@ -41,7 +32,7 @@ Snapshot al push del task commit:
 
 - **PASS** richiede che `real_task_commit` risulti nella chain di `origin/main`.
 - Il **GitHub raw** può essere **stale** (cache/CDN): in caso di divergenza, **vince l'hash remoto** (`git ls-remote` / `git rev-parse origin/main`).
-- `rolling_report_commit` **non** va trattato come il commit reale del task: è il commit 2 che aggiorna solo questo file.
+- `rolling_report_commit` **non** va trattato come il commit reale del task.
 - Un **SUCCESS** dichiarato **senza** l'output git richiesto **non** è PASS.
 - **Nessun segreto**: token, chat_id, webhook, PAT, API key, OAuth, URL con token.
 
@@ -49,10 +40,15 @@ Snapshot al push del task commit:
 
 ## HISTORY
 
-Solo le **5 entry più recenti**, compatte. La cronologia precedente è recuperabile da
-**Git history** (`git log`) e dai **session log** in `docs/sessions/`.
+Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: wf47-wg-wh-final-manual-runtime-rehearsal-pass
+  real_task_commit: 98a3b4ff89d2341a45b01fd9ff2b74c279433946
+  result_cursor: PASS
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-05-31T18:45:00Z
+
 - task_ref: anti-bureaucracy-momentum-correction
   real_task_commit: dc8fc7223c5a3e4c1303475504c65116afcf1f4c
   result_cursor: PASS
@@ -72,9 +68,4 @@ Solo le **5 entry più recenti**, compatte. La cronologia precedente è recupera
   real_task_commit: 341b847081f8e5e03d86631865b91a94f155c81b
   result_cursor: PASS
   timestamp_utc: 2026-05-31T15:57:34Z
-
-- task_ref: chat-id-policy-gate-csv-convention-wf49-ready
-  real_task_commit: 12ed1b8e4fdfbca193d31e29ae05a58561bf45c7
-  result_cursor: PASS
-  timestamp_utc: 2026-05-31T15:31:10Z
 ```
