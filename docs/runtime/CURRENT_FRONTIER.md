@@ -51,7 +51,7 @@ Runbooks: `docs/workflow-wf-telegram-inbound-polling-getupdates.md` §10bis, `do
 
 ## Audit
 
-- Phase 1c safe branch: `docs/sessions/2026-06-01-control-plane-wg48-correlate-safe-branch-input.md`.
+- Phase 1c safe branch + hygiene closed: `docs/sessions/2026-06-01-control-plane-wg48-correlate-safe-branch-input.md` (`real_task_commit` `177f973`, not `771d030`).
 - Handoff template: `docs/sessions/2026-06-01-control-plane-wf47-wg-controlled-handoff-template.md`.
 - Schedule PASS: `docs/sessions/2026-06-01-control-plane-wf47-limited-schedule-runtime-pass.md`.
 - Hash: `docs/runtime/LAST_CURSOR_REPORT.md`.

@@ -17,20 +17,27 @@ task_ref: wg48-correlate-safe-branch-input
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
 real_task_commit: 177f973f65947cbb6f65d7e988a08520a1f5b21c
-rolling_report_commit: 8e42a5daf3c3cfdceb6c4a9100c3589cc9fe72bd
+rolling_report_commit: PENDING_HYGIENE_CLOSE
 branch: main
-verification_rule: PASS requires commit in origin/main; controlled 47->48 runtime gate remains manual/user-attested later
-remote_hash_verbatim: 8e42a5daf3c3cfdceb6c4a9100c3589cc9fe72bd
-timestamp_utc: 2026-06-01T17:10:00Z
+verification_rule: PASS requires fixed template commit in origin/main chain; controlled 47->48 runtime gate remains manual/user-attested later
+remote_hash_verbatim: PENDING_HYGIENE_CLOSE
+timestamp_utc: 2026-06-01T17:30:00Z
 ```
 
-- `real_task_commit` = `workflow: fix Wg48 safe branch input` — Correlate node try/catch for unexecuted branch nodes.
+- `real_task_commit` = `workflow: fix Wg48 safe branch input` (`177f973`). **Non** è `771d030` (handoff template) né rolling-only docs.
 - `result_runtime` = **NOT_RUN_BY_CURSOR** — Phase 2 controlled 47→48 handoff runtime remains user-attested.
+- Verifica: `git merge-base --is-ancestor 177f973 origin/main` → exit 0; template su `main` ha try/catch su entrambi i branch source.
 
-Snapshot task commit:
+Snapshot task commit (safe branch fix):
 
 ```text
 177f973f65947cbb6f65d7e988a08520a1f5b21c	refs/heads/main
+```
+
+Snapshot `origin/main` HEAD (post Phase 1c hygiene close):
+
+```text
+PENDING_HYGIENE_CLOSE	refs/heads/main
 ```
 
 ---

@@ -85,8 +85,16 @@ See final report (`JSON OK`, unique ids, `active:false`, correlate try/catch che
 ## 12. Commit / remote hash
 
 - Task commit (`workflow: fix Wg48 safe branch input`): `177f973f65947cbb6f65d7e988a08520a1f5b21c`
-- Remote: `git ls-remote origin main` after push.
+- Prior rolling report commits: `8e42a5d`, `43ca46c` (hash alignment only).
+- Hygiene close commit: see post-push `git ls-remote origin main`.
 
-## 13. Final status
+## 13. Phase 1c hygiene closure (2026-06-01)
 
-**PASS** — Wg48 safe branch dereference fixed in template. Phase 2 controlled handoff runtime remains **BLOCKED** until user gate.
+- Template on `origin/main` already fixed at `177f973`; **no workflow re-edit** in hygiene pass.
+- `LAST_CURSOR_REPORT.md` LATEST: `task_ref: wg48-correlate-safe-branch-input`, `real_task_commit: 177f973` (not `771d030`).
+- Verified: `git merge-base --is-ancestor 177f973 origin/main` — safe-branch fix in `main` chain.
+- No n8n/runtime/import performed.
+
+## 14. Final status
+
+**PASS** — Phase 1c closed. Safe branch input on `main`; report aligned with `177f973`. Phase 2 controlled handoff runtime remains **BLOCKED** until user gate.
