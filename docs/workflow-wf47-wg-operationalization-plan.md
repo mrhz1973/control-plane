@@ -135,6 +135,14 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 - **47** turned off after test window; **48** published as callable subworkflow only (not scheduled).
 - **Not** a PREP/PRE-PREP chain. Boundaries unchanged: no **49**, no wf40/41/42, no PM-34, no production tables, no public webhook, no Telegram Trigger.
 
+### 4octies. Shared decision store — open/close contract (Gate 1 design, 2026-06-01)
+
+- **Gap named:** outbound (Wd/Wc) sends Decision Packet but does **not** write **open**; inbound (Wg) closes **manually seeded** `wg_decision_state_test`; **control_plane_state** is SHA tracking for wf40 — **not** a decision store.
+- **Direction chosen:** shared test-only table **`control_plane_decisions_test`** — open on send, close on reply — **not** redundant PREP; concrete design for a real loop gap.
+- **Design doc:** [decision-store-shared-open-close-design.md](decision-store-shared-open-close-design.md).
+- **Gate 1:** design **PASS** (docs-only). **Gate 2** template no-runtime; **Gate 3** runtime user-attested — **not started**.
+- **Operational loop:** **NOT ACTIVE / NOT RUN** — design only.
+
 ---
 
 ## 5. Hard blockers (never without explicit gate)

@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-01 — 47→48 controlled handoff runtime PASS.
+Ultimo aggiornamento: 2026-06-01 — Shared decision store Gate 1 design.
 
 ---
 
@@ -16,19 +16,15 @@ Ultimo aggiornamento: 2026-06-01 — 47→48 controlled handoff runtime PASS.
 
 ## Latest verified PASS
 
-- **47→48 controlled handoff runtime**: **PASS ATTESTATO UTENTE** (`update_id` **986228567**; 47 accepted → 48 closed **D-9998-T**).
+- **47→48 controlled handoff runtime**: **PASS ATTESTATO UTENTE** (`update_id` **986228567**).
 - Evidenza: `docs/sessions/2026-06-01-control-plane-wf47-wg-controlled-handoff-runtime-pass.md`.
 
-## Stato Wf47 / Wg / Wh
+## Stato Wf47 / Wg / Wh / decision store
 
-- **47 - Wf live getUpdates manual poll**: **PASS ATTESTATO UTENTE**.
-- **47 - Wf first limited schedule runtime test**: **PASS ATTESTATO UTENTE**.
-- **47→48 live manual handoff**: **PASS ATTESTATO UTENTE**.
-- **47→48 controlled handoff runtime**: **PASS ATTESTATO UTENTE** (`update_id` **986228567**).
-- **48 - Wg external_receipt / callable correlation**: **PASS ATTESTATO UTENTE**.
-- **49 - Wh final rehearsal**: **PASS ATTESTATO UTENTE** (not used for this gate).
-- **47→48 controlled handoff template**: **IMPLEMENTATION READY**.
-- **Wg48 correlate safe branch input**: **PASS** (template).
+- **47→48 controlled handoff runtime**: **PASS ATTESTATO UTENTE** (unchanged).
+- **Shared decision store open/close contract — Gate 1 design**: **PASS** (docs-only).
+- **Shared decision store — Gate 2** (template no-runtime): **NOT STARTED**.
+- **Shared decision store — Gate 3** (runtime user-attested): **NOT STARTED**.
 - **Telegram inbound operational automation**: **NOT ACTIVE / NOT RUN**.
 - Catena completa AUTOMATIZZATA: **NOT RUN**. **PM-34**: **BLOCKED**.
 
@@ -39,18 +35,17 @@ Ultimo aggiornamento: 2026-06-01 — 47→48 controlled handoff runtime PASS.
 
 ## Next gate
 
-Controlled **47→48** test-only runtime **PASS ATTESTATO UTENTE** recorded. **Telegram inbound operational automation** remains **NOT ACTIVE / NOT RUN**; **PM-34** **BLOCKED**. No new PREP/PRE-PREP unless a **named blocker** appears. Boundaries unchanged: NO Telegram Trigger · NO public webhook · NO production Data Table · NO `control_plane_state` · NO **48** scheduled independently · NO **49** active · NO wf40/41/42 mutation · NO secrets.
+**Gate 2:** template no-runtime — Wd writes **open** to `control_plane_decisions_test`; Wg reads same store for close-on-reply. **No runtime.** Design: `docs/decision-store-shared-open-close-design.md`. Boundaries: NO `control_plane_state` · NO production table · NO PM-34 · NO Telegram Trigger · NO public webhook · NO wf40/41/42 · NO secrets.
 
 ## Do-not-do
 
-- NO Telegram Trigger / public webhook / production Data Table / `control_plane_state`.
+- NO Telegram Trigger / public webhook / production Data Table / `control_plane_state` for decisions.
 - NO 48 scheduled / 49 active / PM-34 / wf40/41/42 mutation / secrets in Git.
 
 ## Audit
 
-- Controlled handoff runtime PASS: `docs/sessions/2026-06-01-control-plane-wf47-wg-controlled-handoff-runtime-pass.md`.
-- Phase 1c safe branch: `docs/sessions/2026-06-01-control-plane-wg48-correlate-safe-branch-input.md`.
-- Handoff template: `docs/sessions/2026-06-01-control-plane-wf47-wg-controlled-handoff-template.md`.
+- Decision store Gate 1: `docs/decision-store-shared-open-close-design.md`, `docs/sessions/2026-06-01-control-plane-decision-store-shared-design.md`.
+- Controlled handoff runtime: `docs/sessions/2026-06-01-control-plane-wf47-wg-controlled-handoff-runtime-pass.md`.
 - Hash: `docs/runtime/LAST_CURSOR_REPORT.md`.
 
 ## Manutenzione
