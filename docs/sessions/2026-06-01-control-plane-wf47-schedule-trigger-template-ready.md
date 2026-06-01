@@ -90,9 +90,9 @@ git diff -- workflows/wf-telegram-inbound-polling-getupdates.template.json docs/
 
 ## 12. Commit / remote hash
 
-- Commit 1 (`workflow: add Wf47 disabled schedule trigger`): `__COMMIT_1__`
-- Commit 2 (`docs: update rolling Cursor report`): `__COMMIT_2__`
-- Remote hash: `__REMOTE_HASH__`
+- Commit 1 (`workflow: add Wf47 disabled schedule trigger`): `c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b`
+- Commit 2 (`docs: update rolling Cursor report`): see final report
+- Remote hash: see final report (`git ls-remote origin main`)
 
 ## 13. Final status
 

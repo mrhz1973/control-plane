@@ -13,25 +13,24 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wf47-wg-live-manual-handoff-pass
+task_ref: wf47-disabled-schedule-trigger-template
 result_cursor: PASS
-result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: 580e2b5a153a34409243d2319aea2290d0d8b2bb
-rolling_report_commit: 2456df02d969236d49765d815f32feaf093fbda0
+result_runtime: NOT_RUN_BY_CURSOR
+real_task_commit: c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b
 branch: main
-verification_rule: PASS is based on deterministic user-attested runtime output plus commit evidence in origin/main
-remote_hash_verbatim: 580e2b5a153a34409243d2319aea2290d0d8b2bb
-timestamp_utc: 2026-06-01T14:00:00Z
+verification_rule: PASS requires commit in origin/main; runtime schedule gate remains manual/user-attested later
+remote_hash_verbatim: c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b
+timestamp_utc: 2026-06-01T13:45:00Z
 ```
 
-- `real_task_commit` = commit reale del task (`docs: record Wf47 Wg live handoff pass`). È l'hash da verificare.
-- `result_runtime` = **PASS_ATTESTATO_UTENTE** — live 47→48 manual handoff (real Telegram receipt → external_receipt on 48).
+- `real_task_commit` = commit reale del task (`workflow: add Wf47 disabled schedule trigger`). È l'hash da verificare.
+- `result_runtime` = **NOT_RUN_BY_CURSOR** — Phase 2 limited schedule test on 47 - Wf remains user-attested.
 - `rolling_report_commit` = commit leggero che aggiorna solo questo report (non è il task commit).
 
 Snapshot al push del task commit:
 
 ```text
-580e2b5a153a34409243d2319aea2290d0d8b2bb	refs/heads/main
+c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b	refs/heads/main
 ```
 
 ---
@@ -51,6 +50,12 @@ Snapshot al push del task commit:
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: wf47-wg-live-manual-handoff-pass
+  real_task_commit: 580e2b5a153a34409243d2319aea2290d0d8b2bb
+  result_cursor: PASS
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-06-01T14:00:00Z
+
 - task_ref: wg48-external-receipt-mode
   real_task_commit: 18c9dd0f9e0e922877a4d3dd567ff50f9af5f544
   result_cursor: PASS
@@ -72,9 +77,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   real_task_commit: d410a8f1fb04db1b447574f55ba75ec4e3d8bdd3
   result_cursor: PASS
   timestamp_utc: 2026-05-31T16:10:00Z
-
-- task_ref: wf47-wg-operationalization-plan-prep
-  real_task_commit: 811c69e025222652a7cfd94e287e948cb0fe5dde
-  result_cursor: PASS
-  timestamp_utc: 2026-05-31T16:05:00Z
 ```
