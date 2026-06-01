@@ -17,6 +17,7 @@ task_ref: wf47-wg-live-manual-handoff-pass
 result_cursor: PASS
 result_runtime: PASS_ATTESTATO_UTENTE
 real_task_commit: 580e2b5a153a34409243d2319aea2290d0d8b2bb
+rolling_report_commit: 2456df02d969236d49765d815f32feaf093fbda0
 branch: main
 verification_rule: PASS is based on deterministic user-attested runtime output plus commit evidence in origin/main
 remote_hash_verbatim: 580e2b5a153a34409243d2319aea2290d0d8b2bb
