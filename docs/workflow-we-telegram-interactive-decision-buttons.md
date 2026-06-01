@@ -49,7 +49,7 @@ Until We live is recorded, Wd-validated replies `1`, `2`, `3` in plain Telegram 
 2. Configure in n8n UI only:
    - **CONFIGURE_TELEGRAM_CREDENTIAL_IN_N8N_UI**
    - **CONFIGURE_ALLOWED_CHAT_ID_IN_N8N_UI**
-   - **CONFIGURE_DECISION_STATE_STORE_IN_N8N_UI** (placeholder; no real table id in Git)
+   - **CONFIGURE_DECISION_STATE_STORE_IN_N8N_UI** (placeholder; no real table id in Git) — Gate 2: resolves to the shared decision store **`control_plane_decisions_test`** (Data Table by name; same store Wd opens and Wg closes). We template itself is **not** modified at Gate 2; this is documentation only, no runtime. See [decision-store-shared-open-close-design.md](decision-store-shared-open-close-design.md).
 3. Send a TEST ONLY Decision Packet with inline buttons (from Wd path or manual test).
 4. Click one button; verify sanitized receipt at **Inspect inbound result**.
 5. Confirm boundaries: no PM-34; no wf40/41 mutation; no GitHub write; Data Table only if explicitly configured as test-only store.

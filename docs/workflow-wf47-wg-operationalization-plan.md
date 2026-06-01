@@ -143,6 +143,16 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 - **Gate 1:** design **PASS** (docs-only). **Gate 2** template no-runtime; **Gate 3** runtime user-attested — **not started**.
 - **Operational loop:** **NOT ACTIVE / NOT RUN** — design only.
 
+### 4nonies. Shared decision store — Gate 2 template no-runtime (2026-06-01)
+
+- **Status:** **IMPLEMENTATION READY / PASS** (template + docs only). **No runtime.**
+- **Wd:** loads `control_plane_decisions_test`, prepares open row, gates Telegram with **IF shared decision open allowed**, upserts **open** before send; closed id → `blocked` (`duplicate_open_attempt`), no reopen, no send.
+- **Wg:** **Load/Upsert shared decision** nodes target `control_plane_decisions_test` (was `wg_decision_state_test`); Correlate carries `updated_at`/`created_by`/`source_workflow`/`packet_kind`.
+- **We:** placeholder documented to resolve to `control_plane_decisions_test` (template unchanged).
+- **Named risk `open_without_send`:** open row may precede a failed Telegram send — verified at **Gate 3 runtime user-attested**, not here.
+- **Boundaries:** both templates `active: false`; no `data-tables/**`; no CSV seed; no table created in repo; no `control_plane_state`; no wf40/41/42; no PM-34; no 49; no Schedule/Telegram Trigger/webhook; no secrets.
+- **Gate 3:** runtime user-attested end-to-end open→close on shared store — **NEXT / NOT STARTED**.
+
 ---
 
 ## 5. Hard blockers (never without explicit gate)

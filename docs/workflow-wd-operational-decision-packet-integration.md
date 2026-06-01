@@ -82,3 +82,36 @@ Test event reference: `docs/runtime/test-events/wd-operational-decision-packet-t
 ## 8. Registration
 
 Use `docs/runtime/WD_OPERATIONAL_DECISION_PACKET_REGISTRATION_PROMPT.md` after B live.
+
+---
+
+## 9. Shared decision store — OPEN ON SEND (Gate 2 template no-runtime)
+
+**Status:** **IMPLEMENTATION READY / PASS** (template + docs only, 2026-06-01). **No runtime.** Design: [decision-store-shared-open-close-design.md](decision-store-shared-open-close-design.md).
+
+Wd now **prepares and upserts an `open` row** on the shared store **`control_plane_decisions_test`** (Data Table by name) **before** the Telegram send. It does **not** touch `control_plane_state` or any production table.
+
+**New nodes (after Build Operational Decision Packet):**
+
+| Node | Role |
+|------|------|
+| **Data Table - Load shared decisions** | `get` rows from `control_plane_decisions_test` (returnAll, alwaysOutputData) |
+| **Prepare shared decision open row** | Build open row; compute `open_action` (`insert` / `noop` / `reopen_nonclosed` / `blocked`) and `open_allowed` |
+| **IF shared decision open allowed** | true → upsert + send; false → straight to Inspect (no send) |
+| **Data Table - Upsert shared decision open** | Upsert `open` keyed on `decision_id`; then Telegram send |
+
+**Idempotency / block:**
+
+| Existing row | open_action | Send? |
+|--------------|-------------|-------|
+| missing | `insert` | yes |
+| `open` | `noop` (touch `updated_at`) | yes |
+| `closed` | `blocked` / `block_reason: duplicate_open_attempt` | **no** (no reopen, no send) |
+
+**Columns written:** `decision_id`, `status=open`, `selected_option=""`, `created_at`, `closed_at=""`, `update_id=""`, `note_preview=""`, `source=TEST ONLY`, `updated_at`, `created_by=wd`, `source_workflow`, `packet_kind`. No `chat_id`, token, or message body.
+
+**Inspect send result (read-only)** runs on both IF branches and reports `open_action` / `block_reason`; it only claims `telegram_send_ok` when the Telegram node actually ran.
+
+**Risk `open_without_send`:** the open row is upserted **before** the Telegram send, so a send failure can leave a row `open` without a delivered packet. This is a **named risk verified at Gate 3 runtime (user-attested)**, not in this template gate.
+
+**Boundaries:** `active: false` · `CONFIGURE_*` placeholders kept · no `data-tables/**` · no CSV seed · no table creation in repo (operator creates `control_plane_decisions_test` in n8n UI) · no `control_plane_state` · no wf40/41/42 · no PM-34 · no Schedule/Telegram Trigger/webhook · no secrets.

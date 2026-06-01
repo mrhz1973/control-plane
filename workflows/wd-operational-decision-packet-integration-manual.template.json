@@ -14,7 +14,7 @@
     },
     {
       "parameters": {
-        "content": "TEMPLATE ONLY — inactive, gate B live, configure classifier URL + Telegram in n8n UI only, no secrets in Git.\n\nWd: event -> classifier-server -> operational-style Decision Packet Telegram (TEST ONLY).\n\nBefore running:\n1) Import as workflow 45; keep INACTIVE\n2) Start classifier-server on Ryzen; set **CONFIGURE_CLASSIFIER_SERVER_URL_IN_N8N_UI** (POST .../classify)\n3) Configure Telegram credential **CONFIGURE_TELEGRAM_CREDENTIAL_IN_N8N_UI** (CONTROL PLANE - Telegram Bot)\n4) Configure chat_id **CONFIGURE_CHAT_ID_IN_N8N_UI**\n5) Manual Trigger ONCE\n\nNo wf40/41/42, no Data Table, no GitHub write, no PM-34, no Schedule/Webhook.",
+        "content": "TEMPLATE ONLY — inactive, gate B live, configure classifier URL + Telegram in n8n UI only, no secrets in Git.\n\nWd: event -> classifier-server -> operational-style Decision Packet Telegram (TEST ONLY).\n\nGate 2 OPEN ON SEND: writes TEST ONLY open decision to control_plane_decisions_test only (Data Table by name). NOT control_plane_state. If decision_id already closed, do NOT reopen (blocked/duplicate_open_attempt) and do NOT send.\n\nBefore running:\n1) Import as workflow 45; keep INACTIVE\n2) Start classifier-server on Ryzen; set **CONFIGURE_CLASSIFIER_SERVER_URL_IN_N8N_UI** (POST .../classify)\n3) Configure Telegram credential **CONFIGURE_TELEGRAM_CREDENTIAL_IN_N8N_UI** (CONTROL PLANE - Telegram Bot)\n4) Configure chat_id **CONFIGURE_CHAT_ID_IN_N8N_UI**\n5) Create Data Table control_plane_decisions_test in n8n UI (not in Git)\n6) Manual Trigger ONCE\n\nRisk open_without_send: row may be open before Telegram send fails — verified at Gate 3 runtime user-attested.\n\nNo wf40/41/42, no control_plane_state, no GitHub write, no PM-34, no Schedule/Webhook.",
         "height": 360,
         "width": 580
       },
@@ -91,7 +91,7 @@
     {
       "parameters": {
         "chatId": "**CONFIGURE_CHAT_ID_IN_N8N_UI**",
-        "text": "={{ $json.decision_packet_text }}",
+        "text": "={{ $('Build Operational Decision Packet').first().json.decision_packet_text }}",
         "additionalFields": {
           "parse_mode": "HTML"
         }
@@ -129,15 +129,131 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Read-only inspection. No secrets persisted.\nconst resp = $input.item.json;\nconst build = $('Build Operational Decision Packet').first().json;\nreturn {\n  json: {\n    telegram_send_ok: resp && resp.ok !== undefined ? resp.ok : null,\n    message_id: resp && resp.result && resp.result.message_id ? resp.result.message_id : null,\n    http_status: build && build.http_status !== undefined ? build.http_status : null,\n    decision_id: build && build.decision_id ? build.decision_id : null,\n    test_only: true,\n    note: 'Wd gate B live result — sanitize before recording'\n  }\n};"
+        "jsCode": "// Read-only inspection — works on sent (IF true) and no_send/blocked (IF false) branches. No secrets persisted.\nconst resp = $input.item.json;\nconst build = $('Build Operational Decision Packet').first().json;\nlet prep = {};\ntry { prep = $('Prepare shared decision open row').first().json || {}; } catch (e) { prep = {}; }\nconst sent = !!(resp && (resp.ok !== undefined || (resp.result && resp.result.message_id)));\nreturn {\n  json: {\n    telegram_send_ok: sent ? (resp.ok !== undefined ? resp.ok : null) : null,\n    message_id: sent && resp.result && resp.result.message_id ? resp.result.message_id : null,\n    http_status: build && build.http_status !== undefined ? build.http_status : null,\n    decision_id: build && build.decision_id ? build.decision_id : null,\n    open_action: prep.open_action !== undefined ? prep.open_action : null,\n    block_reason: prep.block_reason !== undefined ? prep.block_reason : null,\n    test_only: true,\n    note: 'Wd gate B live result — sanitize before recording; no send claimed unless Telegram ran'\n  }\n};"
       },
       "id": "wd000006-0006-4006-8006-000000000006",
       "name": "Inspect send result (read-only)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
+        720,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_decisions_test"
+        },
+        "returnAll": true,
+        "limit": 50
+      },
+      "id": "wd000009-0009-4009-8009-000000000009",
+      "name": "Data Table - Load shared decisions",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        200
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Prepare OPEN ON SEND row for control_plane_decisions_test (TEST ONLY). No secrets.\nconst build = $('Build Operational Decision Packet').first().json;\nlet rows = [];\ntry { rows = $('Data Table - Load shared decisions').all().map((i) => i.json); } catch (e) { rows = []; }\nconst decision_id = build && build.decision_id ? build.decision_id : null;\nconst existing = rows.find((r) => r && String(r.decision_id) === String(decision_id));\nconst now = new Date().toISOString();\nconst SOURCE_WORKFLOW = '45 - Wd Operational Decision Packet Integration TEST ONLY - TEMPLATE';\nlet open_action = 'insert';\nlet block_reason = null;\nlet open_allowed = true;\nif (existing) {\n  if (String(existing.status) === 'closed') {\n    open_action = 'blocked';\n    block_reason = 'duplicate_open_attempt';\n    open_allowed = false;\n  } else if (String(existing.status) === 'open') {\n    open_action = 'noop';\n  } else {\n    open_action = 'reopen_nonclosed';\n  }\n}\nconst row = {\n  decision_id,\n  status: 'open',\n  selected_option: '',\n  created_at: existing && existing.created_at ? existing.created_at : now,\n  closed_at: '',\n  update_id: '',\n  note_preview: '',\n  source: 'TEST ONLY',\n  updated_at: now,\n  created_by: 'wd',\n  source_workflow: SOURCE_WORKFLOW,\n  packet_kind: 'runtime'\n};\nreturn {\n  json: {\n    decision_id,\n    open_action,\n    open_allowed,\n    block_reason,\n    row,\n    decision_packet_text: build && build.decision_packet_text ? build.decision_packet_text : '',\n    test_only: true\n  }\n};"
+      },
+      "id": "wd000010-0010-4010-8010-000000000010",
+      "name": "Prepare shared decision open row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
         240,
         200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "wd-if-open-allowed",
+              "leftValue": "={{ $json.open_allowed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "wd000011-0011-4011-8011-000000000011",
+      "name": "IF shared decision open allowed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        360,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_decisions_test"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "decision_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.row.decision_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "decision_id": "={{ $json.row.decision_id }}",
+            "status": "={{ $json.row.status }}",
+            "selected_option": "={{ $json.row.selected_option }}",
+            "created_at": "={{ $json.row.created_at }}",
+            "closed_at": "={{ $json.row.closed_at }}",
+            "update_id": "={{ $json.row.update_id }}",
+            "note_preview": "={{ $json.row.note_preview }}",
+            "source": "={{ $json.row.source }}",
+            "updated_at": "={{ $json.row.updated_at }}",
+            "created_by": "={{ $json.row.created_by }}",
+            "source_workflow": "={{ $json.row.source_workflow }}",
+            "packet_kind": "={{ $json.row.packet_kind }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "wd000012-0012-4012-8012-000000000012",
+      "name": "Data Table - Upsert shared decision open",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        80
       ]
     }
   ],
@@ -176,6 +292,57 @@
       ]
     },
     "Build Operational Decision Packet": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Load shared decisions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Load shared decisions": {
+      "main": [
+        [
+          {
+            "node": "Prepare shared decision open row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare shared decision open row": {
+      "main": [
+        [
+          {
+            "node": "IF shared decision open allowed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF shared decision open allowed": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Upsert shared decision open",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Inspect send result (read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Upsert shared decision open": {
       "main": [
         [
           {

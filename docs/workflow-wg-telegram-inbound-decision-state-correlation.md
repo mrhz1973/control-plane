@@ -217,3 +217,22 @@ Live 47→48 handoff **PASS ATTESTATO UTENTE** (2026-06-01). Next operational ga
 - Wf runbook: `docs/workflow-wf-telegram-inbound-polling-getupdates.md`
 - Format: `docs/foundation/DECISION_PACKET_FORMAT.md`
 - Template: `workflows/wg-telegram-inbound-decision-state-correlation.template.json`
+
+---
+
+## 11. Shared decision store — CLOSE ON REPLY (Gate 2 template no-runtime)
+
+**Status:** **IMPLEMENTATION READY / PASS** (template + docs only, 2026-06-01). **No runtime.** Design: [decision-store-shared-open-close-design.md](decision-store-shared-open-close-design.md).
+
+Wg now reads and writes the **shared store `control_plane_decisions_test`** (Data Table by name) instead of `wg_decision_state_test`, closing rows opened by Wd (OPEN ON SEND). Correlation semantics are unchanged.
+
+| Old node | New node | Table |
+|----------|----------|-------|
+| Data Table - Load wg decision state | **Data Table - Load shared decision state** | `control_plane_decisions_test` |
+| Data Table - Upsert wg decision row | **Data Table - Upsert shared decision row** | `control_plane_decisions_test` |
+
+**Correlate inbound to decision state** reads the renamed load node (both the manual fixture path and the callable Wf47 path converge here) and now carries the shared-store extension columns through `persist_row`: `updated_at`, `created_by` (preserves existing `wd`), `source_workflow`, `packet_kind`. The upsert maps all extended columns alongside the base columns.
+
+**Outcomes (unchanged):** option+open → `closed`; note+open → `note_recorded` (status stays open); `unknown_decision_id` (Wg only acts on rows Wd opened); `duplicate_or_already_closed`; `already_closed_or_stale`; `malformed_response`.
+
+**Boundaries:** `active: false` · no Telegram · no schedule · no `control_plane_state` · no `data-tables/**` · no CSV seed · no table creation in repo · no PM-34 · no wf40/41/42 · no secrets.

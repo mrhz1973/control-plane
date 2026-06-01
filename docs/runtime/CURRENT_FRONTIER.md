@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-01 — Shared decision store Gate 1 design.
+Ultimo aggiornamento: 2026-06-01 — Shared decision store Gate 2 template no-runtime.
 
 ---
 
@@ -23,8 +23,8 @@ Ultimo aggiornamento: 2026-06-01 — Shared decision store Gate 1 design.
 
 - **47→48 controlled handoff runtime**: **PASS ATTESTATO UTENTE** (unchanged).
 - **Shared decision store open/close contract — Gate 1 design**: **PASS** (docs-only).
-- **Shared decision store — Gate 2** (template no-runtime): **NOT STARTED**.
-- **Shared decision store — Gate 3** (runtime user-attested): **NOT STARTED**.
+- **Shared decision store — Gate 2** (template no-runtime): **PASS / IMPLEMENTATION READY** (docs-only) — Wd open-on-send + Wg close-on-reply point to `control_plane_decisions_test`; both `active:false`; no runtime.
+- **Shared decision store — Gate 3** (runtime user-attested): **NEXT / NOT STARTED**.
 - **Telegram inbound operational automation**: **NOT ACTIVE / NOT RUN**.
 - Catena completa AUTOMATIZZATA: **NOT RUN**. **PM-34**: **BLOCKED**.
 
@@ -35,7 +35,7 @@ Ultimo aggiornamento: 2026-06-01 — Shared decision store Gate 1 design.
 
 ## Next gate
 
-**Gate 2:** template no-runtime — Wd writes **open** to `control_plane_decisions_test`; Wg reads same store for close-on-reply. **No runtime.** Design: `docs/decision-store-shared-open-close-design.md`. Boundaries: NO `control_plane_state` · NO production table · NO PM-34 · NO Telegram Trigger · NO public webhook · NO wf40/41/42 · NO secrets.
+**Gate 3:** runtime user-attested (test-only) — end-to-end **Wd open on send** → Telegram reply → **Wf accept** → **Wg close** on `control_plane_decisions_test`; verify `open_without_send` risk. Boundaries: NO `control_plane_state` · NO production table · NO PM-34 · NO 49 · NO Telegram Trigger · NO public webhook · NO wf40/41/42 · NO secrets. Design: `docs/decision-store-shared-open-close-design.md`.
 
 ## Do-not-do
 
@@ -45,6 +45,7 @@ Ultimo aggiornamento: 2026-06-01 — Shared decision store Gate 1 design.
 ## Audit
 
 - Decision store Gate 1: `docs/decision-store-shared-open-close-design.md`, `docs/sessions/2026-06-01-control-plane-decision-store-shared-design.md`.
+- Decision store Gate 2: `docs/decision-store-shared-open-close-design.md` §8/§11, `docs/sessions/2026-06-01-control-plane-decision-store-gate2-template-no-runtime.md`.
 - Controlled handoff runtime: `docs/sessions/2026-06-01-control-plane-wf47-wg-controlled-handoff-runtime-pass.md`.
 - Hash: `docs/runtime/LAST_CURSOR_REPORT.md`.
 

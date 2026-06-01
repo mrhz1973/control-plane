@@ -38,7 +38,7 @@
     },
     {
       "parameters": {
-        "content": "WG PREP — active=false. No Telegram. No Schedule.\n\nManual path: Set Wg test scenario (fixtures + external_receipt).\nCallable path: When Executed by Another Workflow → Normalize Wf47 callable receipt (no Set Wg test scenario) → correlate.\n\nBoth paths reach Correlate inbound to decision state via wg_decision_state_test only.",
+        "content": "WG PREP — active=false. No Telegram. No Schedule.\n\nManual path: Set Wg test scenario (fixtures + external_receipt).\nCallable path: When Executed by Another Workflow → Normalize Wf47 callable receipt (no Set Wg test scenario) → correlate.\n\nGate 2 CLOSE ON REPLY: both paths reach Correlate inbound to decision state via the shared store control_plane_decisions_test (Data Table by name) only. NOT control_plane_state. Wg only closes/notes rows opened by Wd; unknown_decision_id stays blocked.",
         "height": 280,
         "width": 480
       },
@@ -100,13 +100,13 @@
         "dataTableId": {
           "__rl": true,
           "mode": "name",
-          "value": "wg_decision_state_test"
+          "value": "control_plane_decisions_test"
         },
         "returnAll": true,
         "limit": 50
       },
       "id": "wg000014-0014-4014-8014-000000000014",
-      "name": "Data Table - Load wg decision state",
+      "name": "Data Table - Load shared decision state",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
@@ -118,7 +118,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Correlate inbound to wg_decision_state_test. No raw Telegram identifiers.\nlet callableRows = [];\ntry { callableRows = $('Normalize Wf47 callable receipt').all(); } catch (e) { callableRows = []; }\n\nlet manualRows = [];\ntry { manualRows = $('Build sanitized inbound test input').all(); } catch (e) { manualRows = []; }\n\nconst inb = (callableRows.length ? callableRows[0].json : manualRows[0].json);\nconst rows = $('Data Table - Load wg decision state').all().map((i) => i.json);\nconst findRow = (id) => rows.find((r) => r && String(r.decision_id) === String(id));\nlet correlation_status = 'blocked';\nlet block_reason = 'malformed_response';\nlet decision_id = inb.decision_id || null;\nlet selected_option = inb.selected_option || null;\nlet update_id = inb.update_id ?? null;\nlet note_present = !!inb.note_present;\nlet persist_row = null;\nconst now = new Date().toISOString();\nif (inb.response_kind === 'malformed' || !decision_id) {\n  block_reason = 'malformed_response';\n} else if (inb.response_kind === 'note') {\n  const row = findRow(decision_id);\n  if (!row) {\n    block_reason = 'unknown_decision_id';\n  } else {\n    correlation_status = 'note_recorded';\n    block_reason = null;\n    const preview = String(inb.note_preview_sanitized || inb.inbound_text || '').slice(0, 80);\n    persist_row = {\n      decision_id,\n      status: String(row.status || 'open'),\n      selected_option: row.selected_option || '',\n      created_at: row.created_at || now,\n      closed_at: row.closed_at || '',\n      update_id: String(update_id || row.update_id || ''),\n      note_preview: preview,\n      source: 'TEST ONLY'\n    };\n  }\n} else if (inb.response_kind === 'option') {\n  const row = findRow(decision_id);\n  if (!row) {\n    block_reason = 'unknown_decision_id';\n  } else if (String(row.status) === 'closed') {\n    if (update_id != null && String(row.update_id) === String(update_id)) {\n      block_reason = 'duplicate_or_already_closed';\n    } else {\n      block_reason = 'already_closed_or_stale';\n    }\n  } else if (String(row.status) === 'open' && ['1', '2', '3'].includes(String(selected_option))) {\n    correlation_status = 'closed';\n    block_reason = null;\n    persist_row = {\n      decision_id,\n      status: 'closed',\n      selected_option: String(selected_option),\n      created_at: row.created_at || now,\n      closed_at: now,\n      update_id: String(update_id),\n      note_preview: row.note_preview || '',\n      source: 'TEST ONLY'\n    };\n  } else {\n    block_reason = 'malformed_response';\n  }\n}\nreturn {\n  json: {\n    correlation_status,\n    block_reason,\n    decision_id,\n    selected_option,\n    update_id,\n    note_present,\n    prior_status: decision_id ? (findRow(decision_id)?.status || 'missing') : 'missing',\n    persist_row,\n    test_only: true\n  }\n};"
+        "jsCode": "// Correlate inbound to shared store control_plane_decisions_test (CLOSE ON REPLY). No raw Telegram identifiers.\nlet callableRows = [];\ntry { callableRows = $('Normalize Wf47 callable receipt').all(); } catch (e) { callableRows = []; }\n\nlet manualRows = [];\ntry { manualRows = $('Build sanitized inbound test input').all(); } catch (e) { manualRows = []; }\n\nconst inb = (callableRows.length ? callableRows[0].json : manualRows[0].json);\nconst rows = $('Data Table - Load shared decision state').all().map((i) => i.json);\nconst findRow = (id) => rows.find((r) => r && String(r.decision_id) === String(id));\nlet correlation_status = 'blocked';\nlet block_reason = 'malformed_response';\nlet decision_id = inb.decision_id || null;\nlet selected_option = inb.selected_option || null;\nlet update_id = inb.update_id ?? null;\nlet note_present = !!inb.note_present;\nlet persist_row = null;\nconst now = new Date().toISOString();\nif (inb.response_kind === 'malformed' || !decision_id) {\n  block_reason = 'malformed_response';\n} else if (inb.response_kind === 'note') {\n  const row = findRow(decision_id);\n  if (!row) {\n    block_reason = 'unknown_decision_id';\n  } else {\n    correlation_status = 'note_recorded';\n    block_reason = null;\n    const preview = String(inb.note_preview_sanitized || inb.inbound_text || '').slice(0, 80);\n    persist_row = {\n      decision_id,\n      status: String(row.status || 'open'),\n      selected_option: row.selected_option || '',\n      created_at: row.created_at || now,\n      closed_at: row.closed_at || '',\n      update_id: String(update_id || row.update_id || ''),\n      note_preview: preview,\n      source: 'TEST ONLY',\n      updated_at: now,\n      created_by: row.created_by || 'wd',\n      source_workflow: row.source_workflow || '',\n      packet_kind: row.packet_kind || ''\n    };\n  }\n} else if (inb.response_kind === 'option') {\n  const row = findRow(decision_id);\n  if (!row) {\n    block_reason = 'unknown_decision_id';\n  } else if (String(row.status) === 'closed') {\n    if (update_id != null && String(row.update_id) === String(update_id)) {\n      block_reason = 'duplicate_or_already_closed';\n    } else {\n      block_reason = 'already_closed_or_stale';\n    }\n  } else if (String(row.status) === 'open' && ['1', '2', '3'].includes(String(selected_option))) {\n    correlation_status = 'closed';\n    block_reason = null;\n    persist_row = {\n      decision_id,\n      status: 'closed',\n      selected_option: String(selected_option),\n      created_at: row.created_at || now,\n      closed_at: now,\n      update_id: String(update_id),\n      note_preview: row.note_preview || '',\n      source: 'TEST ONLY',\n      updated_at: now,\n      created_by: row.created_by || 'wd',\n      source_workflow: row.source_workflow || '',\n      packet_kind: row.packet_kind || ''\n    };\n  } else {\n    block_reason = 'malformed_response';\n  }\n}\nreturn {\n  json: {\n    correlation_status,\n    block_reason,\n    decision_id,\n    selected_option,\n    update_id,\n    note_present,\n    prior_status: decision_id ? (findRow(decision_id)?.status || 'missing') : 'missing',\n    persist_row,\n    test_only: true\n  }\n};"
       },
       "id": "wg000005-0005-4005-8005-000000000005",
       "name": "Correlate inbound to decision state",
@@ -183,7 +183,7 @@
         "dataTableId": {
           "__rl": true,
           "mode": "name",
-          "value": "wg_decision_state_test"
+          "value": "control_plane_decisions_test"
         },
         "matchType": "allConditions",
         "filters": {
@@ -205,13 +205,17 @@
             "closed_at": "={{ $json.closed_at }}",
             "update_id": "={{ $json.update_id }}",
             "note_preview": "={{ $json.note_preview }}",
-            "source": "={{ $json.source }}"
+            "source": "={{ $json.source }}",
+            "updated_at": "={{ $json.updated_at }}",
+            "created_by": "={{ $json.created_by }}",
+            "source_workflow": "={{ $json.source_workflow }}",
+            "packet_kind": "={{ $json.packet_kind }}"
           }
         },
         "options": {}
       },
       "id": "wg000017-0017-4017-8017-000000000017",
-      "name": "Data Table - Upsert wg decision row",
+      "name": "Data Table - Upsert shared decision row",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
@@ -275,7 +279,7 @@
       "main": [
         [
           {
-            "node": "Data Table - Load wg decision state",
+            "node": "Data Table - Load shared decision state",
             "type": "main",
             "index": 0
           }
@@ -297,14 +301,14 @@
       "main": [
         [
           {
-            "node": "Data Table - Load wg decision state",
+            "node": "Data Table - Load shared decision state",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Data Table - Load wg decision state": {
+    "Data Table - Load shared decision state": {
       "main": [
         [
           {
@@ -347,7 +351,7 @@
       "main": [
         [
           {
-            "node": "Data Table - Upsert wg decision row",
+            "node": "Data Table - Upsert shared decision row",
             "type": "main",
             "index": 0
           }

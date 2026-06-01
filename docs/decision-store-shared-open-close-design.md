@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/decision-store-shared-open-close-design.md`  
-**Status:** Gate 1 **design PASS** (docs-only). **No runtime.** **No** workflow or Data Table mutation in Git.  
+**Status:** Gate 1 **design PASS** + Gate 2 **template no-runtime IMPLEMENTATION READY / PASS** (docs + template only). **No runtime.** **No** Data Table mutation in Git (no `data-tables/**`, no CSV seed, no table creation in repo).  
 **Date:** 2026-06-01
 
 ---
@@ -204,12 +204,13 @@ updated_at: <now ISO>
 
 ## 8. Subsequent gates (design only — do not implement in Gate 1)
 
-### Gate 2 — template no-runtime
+### Gate 2 — template no-runtime — IMPLEMENTATION READY / PASS (2026-06-01)
 
-- **Wd** template: upsert **open** to `control_plane_decisions_test` after send.
-- **Wg** template: Data Table node targets **`control_plane_decisions_test`** (not `wg_decision_state_test`) for shared loop path; fixture path may remain for regression.
-- **We** placeholder: document points to `control_plane_decisions_test` name (no runtime).
-- **No** n8n import/activation/schedule by Cursor.
+- **Wd** template (`workflows/wd-operational-decision-packet-integration-manual.template.json`): after **Build Operational Decision Packet** it now **loads** `control_plane_decisions_test`, **prepares** an open row, **gates** the Telegram send with **IF shared decision open allowed**, and **upserts open** via **Data Table - Upsert shared decision open** before send. Closed `decision_id` → `open_action: blocked` / `block_reason: duplicate_open_attempt`, **no reopen and no send** (Telegram is on the IF-true branch only). Both IF branches converge on **Inspect send result (read-only)**, which now reports `open_action` / `block_reason` and only claims a Telegram send when the node actually ran (Addendum 1). Sticky note documents shared store + `open_without_send` risk.
+- **Wg** template (`workflows/wg-telegram-inbound-decision-state-correlation.template.json`): **Data Table - Load shared decision state** and **Data Table - Upsert shared decision row** target **`control_plane_decisions_test`** (renamed from the `wg_decision_state_test` nodes). **Correlate inbound to decision state** reads the renamed load node and carries `updated_at` / `created_by` / `source_workflow` / `packet_kind` through `persist_row`; the upsert maps the extended columns. Both manual fixtures and the callable Wf47 path share the same store.
+- **We** placeholder: `CONFIGURE_DECISION_STATE_STORE_IN_N8N_UI` documented to resolve to `control_plane_decisions_test` (We template itself **not** modified; no runtime).
+- **No** n8n import/activation/schedule by Cursor. **No** `data-tables/**`, **no** CSV seed, **no** table creation in repo — the operator creates `control_plane_decisions_test` in the n8n UI.
+- Both templates keep `active: false` and `CONFIGURE_*` placeholders; no secrets, no hardcoded runtime workflow ids.
 
 ### Gate 3 — runtime user-attested (test-only)
 
@@ -245,6 +246,8 @@ updated_at: <now ISO>
 
 ---
 
-## 11. Gate 1 status
+## 11. Gate status
 
-**PASS (design)** — shared store contract defined. **Gate 2/3 not started.**
+- **Gate 1 (design):** **PASS** — shared store contract defined.
+- **Gate 2 (template no-runtime):** **PASS / IMPLEMENTATION READY** — Wd open-on-send and Wg close-on-reply templates point to `control_plane_decisions_test`; both `active: false`; no runtime; no `data-tables/**`; no CSV seed; no table created in repo.
+- **Gate 3 (runtime user-attested):** **NEXT / NOT STARTED** — verifies `open_without_send` risk and end-to-end open→close on the shared store.
