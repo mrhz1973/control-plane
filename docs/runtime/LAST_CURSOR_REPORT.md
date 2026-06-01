@@ -17,10 +17,10 @@ task_ref: wf47-wg-controlled-handoff-template
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
 real_task_commit: 771d03087d46ec5e3247ad7f97922b2cd8b03aad
-rolling_report_commit: PENDING_POST_COMMIT_2
+rolling_report_commit: 56d78b0bcff7c417289e222806232af7ad499a7a
 branch: main
 verification_rule: PASS requires commit in origin/main; controlled 47->48 runtime gate remains manual/user-attested later
-remote_hash_verbatim: PENDING_POST_PUSH
+remote_hash_verbatim: 56d78b0bcff7c417289e222806232af7ad499a7a
 timestamp_utc: 2026-06-01T16:45:00Z
 ```
 
