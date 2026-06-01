@@ -14,7 +14,28 @@
     },
     {
       "parameters": {
-        "content": "READY IMPORT — active=false. No Schedule. No Telegram Trigger.\n\nPrereq: n8n Data Table wf47_polling_state_test with rows:\n  last_update_id=0, last_handled_update_id=0, handled_keys_json={}\n\nHuman steps ONLY:\n1) Delete/avoid duplicate old workflow 47 before import\n2) Import this template once\n3) Set node: replace **CONFIGURE_ALLOWED_CHAT_ID_IN_N8N_UI**\n4) HTTP node: token URL in n8n UI only\n5) Manual Trigger twice to validate duplicate block\n\nPersistence: Data Table (not staticData). TEST ONLY table wf47_polling_state_test.",
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "wf000012-0012-4012-8012-000000000012",
+      "name": "Schedule Trigger - TEST ONLY DISABLED",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1560,
+        400
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "READY IMPORT — active=false. Schedule Trigger exists disabled/test-only. No Telegram Trigger. No public webhook. active:false until explicit runtime gate.\n\nPrereq: n8n Data Table wf47_polling_state_test with rows:\n  last_update_id=0, last_handled_update_id=0, handled_keys_json={}\n\nHuman steps ONLY:\n1) Delete/avoid duplicate old workflow 47 before import\n2) Import this template once\n3) Set node: replace **CONFIGURE_ALLOWED_CHAT_ID_IN_N8N_UI**\n4) HTTP node: token URL in n8n UI only\n5) Manual Trigger twice to validate duplicate block\n\nPersistence: Data Table (not staticData). TEST ONLY table wf47_polling_state_test.",
         "height": 320,
         "width": 520
       },
@@ -307,6 +328,17 @@
   ],
   "connections": {
     "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Wf47 UI config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger - TEST ONLY DISABLED": {
       "main": [
         [
           {

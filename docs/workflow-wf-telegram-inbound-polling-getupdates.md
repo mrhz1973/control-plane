@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-wf-telegram-inbound-polling-getupdates.md`  
-**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Repeated manual polling on test-only table validated. **Not** operational automation. **Not** full inbound automation. No schedule.
+**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Live getUpdates + 47→48 handoff **PASS ATTESTATO UTENTE**. **Disabled Schedule Trigger** versioned in template (Phase 1 ready; **not** activated). **Not** operational automation.
 
 ---
 
@@ -12,7 +12,9 @@ Wf provides **inbound** Telegram Decision Packet response handling through **pol
 
 After **Wf live PASS** (manual workflow 47, one-shot `getUpdates`), this runbook and template describe **safe repeated use** design — not operational activation.
 
-**Not** PM-34. **Not** operational automation. **Not** the automated full chain. **Not** persistent inbound automation. **Not** a public webhook. **Not** a Schedule Trigger in Git.
+**Not** PM-34. **Not** operational automation. **Not** the automated full chain. **Not** persistent inbound automation. **Not** a public webhook. **Not** a Telegram Trigger.
+
+**Triggers (template):** Manual Trigger + **Schedule Trigger - TEST ONLY DISABLED** (`disabled: true`, workflow `active: false`). Schedule is versioned but **not** activated until Phase 2 runtime gate.
 
 ---
 
@@ -47,7 +49,7 @@ Token was configured **only in n8n UI** (HTTP URL corrected there). n8n tunnel w
 | **Duplicate / double-click** | Key: `decision_id` + `selected_option` or `note` + `update_id` in `handledKeys`. Rejection: `duplicate_or_double_click`. |
 | **Open decision correlation** | TEST ONLY list `D-9998-T` only; unknown id → `stale_or_unknown_decision_id`. |
 | **Sanitized receipt contract** | `inspect_status`, `decision_id`, `selected_option`, `update_id`, `duplicate_or_stale`, `note_present`, `block_reason`, `offset_after_placeholder`, `test_only` — no raw `chat_id`, `user_id`, or full message body. |
-| **Schedule** | **No** persistent Schedule in template. Any schedule = separate runtime/security gate. |
+| **Schedule** | **Schedule Trigger - TEST ONLY DISABLED** in template (`every 1 minute`, `disabled: true`, workflow `active: false`). Phase 2 runtime gate required before any schedule run. |
 | **deleteWebhook** | Separate gate if bot still has webhook; never automated from template. |
 
 ---
@@ -178,7 +180,32 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 
 ---
 
-## 10. PASS criteria (met — Data Table gate)
+## 10. Phase 2 — limited schedule runtime test (47 - Wf only, manual/user-attested)
+
+**Phase 1 (template):** disabled Schedule Trigger added to Git — **no runtime** by Cursor.
+
+**Phase 2 operator outline (user-attested PASS/BLOCKED later):**
+
+1. Reset **only** `wf47_polling_state_test` via CSV seed (`last_update_id=0`, `last_handled_update_id=0`, `handled_keys_json={}`).
+2. Reimport updated **47 - Wf** template from GitHub.
+3. Keep workflow **active:false** until ready to start the test window.
+4. Verify **no webhook** is set on the Telegram bot (`getWebhookInfo` / n8n check).
+5. Verify **no other workflow/process** polls `getUpdates` on the same bot token.
+6. Confirm workflow **40/42** are **sendMessage-only** and do **not** poll `getUpdates`.
+7. Activate **47 - Wf** schedule for **5–10 minutes only** (enable workflow + schedule per n8n UI policy).
+8. Send **exactly one** Telegram message: `dp:D-9998-T:1`.
+9. Verify **47** accepts the update **once** (sanitized receipt `inspect_status: accepted`).
+10. Verify **next schedule cycle** does **not** accept the same update as new.
+11. Turn **47 - Wf** **inactive/off** immediately after the window.
+12. Record **PASS** or **BLOCKED** in session log / frontier.
+
+**Technical caution — getUpdates exclusive consumer:** Telegram `getUpdates` is an **exclusive** consumer path per bot. If a webhook is set, or another workflow/process polls the same token, scheduled polling can conflict or consume updates unpredictably. Resolve before Phase 2.
+
+**Hard constraints:** NO Telegram Trigger · NO public webhook · NO production Data Table · NO `control_plane_state` · NO **48** scheduled · NO **49** active · NO PM-34 · NO workflow 40/41/42 mutation · NO secrets in Git.
+
+---
+
+## 11. PASS criteria (met — Data Table gate)
 
 - Poll 1: accepted TEST ONLY decision.
 - Poll 2: did not re-accept same update (blocked, empty parse).
@@ -186,7 +213,7 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 
 ---
 
-## 11. BLOCKED criteria
+## 12. BLOCKED criteria
 
 - Real `chat_id` / token committed to Git.
 - Schedule activated without explicit gate.
@@ -195,7 +222,7 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 
 ---
 
-## 12. Related files
+## 13. Related files
 
 - Template: `workflows/wf-telegram-inbound-polling-getupdates.template.json`
 - Registration (live): `docs/runtime/WF_TELEGRAM_INBOUND_POLLING_REGISTRATION_PROMPT.md`

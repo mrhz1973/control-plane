@@ -109,6 +109,14 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 
 **Next work:** separate operational gate — first limited **schedule test for 47 - Wf only** (test-only, reversible), or BLOCKED with concrete blocker. **Not** another PREP/PRE-PREP doc for this chain.
 
+### 4ter. Schedule test blocker — Phase 1 template ready (2026-06-01)
+
+- **47→48 live handoff:** **PASS ATTESTATO UTENTE** (unchanged).
+- **Next gate:** schedule test limited to **47 - Wf only**.
+- **Blocker found:** `wf-telegram-inbound-polling-getupdates.template.json` had **only Manual Trigger** — repeatable schedule test required a versioned template change (not ad hoc n8n UI).
+- **Phase 1 fix:** add **Schedule Trigger - TEST ONLY DISABLED** (`every 1 minute`, `disabled: true`, workflow `active: false`) connected to **Set Wf47 UI config**. **No runtime** in Phase 1.
+- **Phase 2:** manual/user-attested — reimport 47, reset test table, verify no webhook/other getUpdates consumer, 5–10 min schedule window, accept-once test, turn off immediately.
+
 ---
 
 ## 5. Hard blockers (never without explicit gate)
@@ -147,9 +155,9 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 | No `data-tables/` changed | Yes |
 | No secrets committed | Yes |
 | Plan document complete | This file + frontier PREP entry |
-| **Next gate identified** | **Limited schedule test for 47 - Wf only** (test-only, reversible) or BLOCKED |
+| **Next gate identified** | **Phase 2:** reimport 47 - Wf → limited schedule runtime test (user-attested) |
 
-**Next gate:** define the first limited schedule test for **47 - Wf only**, test-only and reversible, or mark BLOCKED with a concrete blocker. Live 47→48 handoff **PASS**. No more PREP for this chain unless a new named risk appears.
+**Next gate:** reimport **47 - Wf** with disabled schedule trigger, reset `wf47_polling_state_test`, verify getUpdates exclusivity, run 5–10 min schedule test only on 47, accept-once + no re-accept on next cycle, turn off immediately. Live 47→48 handoff **PASS**. Phase 1 template **ready**; Phase 2 **not** run by Cursor.
 
 ---
 
