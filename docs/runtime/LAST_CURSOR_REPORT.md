@@ -17,6 +17,7 @@ task_ref: wf47-disabled-schedule-trigger-template
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
 real_task_commit: c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b
+rolling_report_commit: 90494b80c39fa26e80e9ad4698c8ad9445da99fd
 branch: main
 verification_rule: PASS requires commit in origin/main; runtime schedule gate remains manual/user-attested later
 remote_hash_verbatim: c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b
