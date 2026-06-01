@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-01 — Wf47 disabled Schedule Trigger template (Phase 1 ready).
+Ultimo aggiornamento: 2026-06-01 — Wf47 Schedule Trigger node-id uniqueness fix (Phase 1b).
 
 ---
 
@@ -25,7 +25,8 @@ Ultimo aggiornamento: 2026-06-01 — Wf47 disabled Schedule Trigger template (Ph
 - **48 - Wg external_receipt**: **PASS ATTESTATO UTENTE**.
 - **47→48 live manual handoff**: **PASS ATTESTATO UTENTE**.
 - **49 - Wh final rehearsal**: **PASS ATTESTATO UTENTE** (not used for live 47→48).
-- **47 - Wf disabled Schedule Trigger support**: **IMPLEMENTATION READY** (Phase 1 template; no runtime).
+- **47 - Wf disabled Schedule Trigger support**: **IMPLEMENTATION READY** (Phase 1; Phase 1b fixed duplicate node id before import).
+- **47 - Wf Schedule Trigger node-id uniqueness**: **PASS** (after Phase 1b commit).
 - **First limited 47 - Wf schedule runtime test**: **BLOCKED** until updated 47 reimported + user runtime gate.
 - **Telegram inbound operational automation**: **NOT ACTIVE / NOT RUN**.
 - Catena completa AUTOMATIZZATA: **NOT RUN**. **PM-34**: **BLOCKED**.
@@ -50,6 +51,7 @@ Runbook: `docs/workflow-wf-telegram-inbound-polling-getupdates.md` §10.
 ## Audit
 
 - Phase 1 session: `docs/sessions/2026-06-01-control-plane-wf47-schedule-trigger-template-ready.md`.
+- Phase 1b id fix: `docs/sessions/2026-06-01-control-plane-wf47-schedule-trigger-id-fix.md`.
 - Hash: `docs/runtime/LAST_CURSOR_REPORT.md`.
 
 ## Manutenzione
