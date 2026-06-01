@@ -16,10 +16,11 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 task_ref: wf47-limited-schedule-runtime-pass
 result_cursor: PASS
 result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: PENDING_POST_COMMIT
+real_task_commit: 563f1ba7c1232f1af7de79531023fd24c0eb4761
+rolling_report_commit: 563f1ba7c1232f1af7de79531023fd24c0eb4761
 branch: main
 verification_rule: PASS is based on deterministic user-attested runtime output plus commit evidence in origin/main
-remote_hash_verbatim: PENDING_POST_PUSH
+remote_hash_verbatim: 563f1ba7c1232f1af7de79531023fd24c0eb4761
 timestamp_utc: 2026-06-01T16:00:00Z
 ```
 
@@ -27,6 +28,12 @@ timestamp_utc: 2026-06-01T16:00:00Z
 - `result_runtime` = **PASS_ATTESTATO_UTENTE** — Phase 2 limited schedule test on 47 - Wf only; Cursor did not run n8n.
 - `update_id` accepted once: **986228565**; second cycle did not re-accept.
 - Verifica: `git ls-remote origin main` dopo push.
+
+Snapshot task commit:
+
+```text
+563f1ba7c1232f1af7de79531023fd24c0eb4761	refs/heads/main
+```
 
 ---
 

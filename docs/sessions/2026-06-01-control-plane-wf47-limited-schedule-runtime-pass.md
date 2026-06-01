@@ -102,8 +102,8 @@ git diff --stat
 
 ## 11. Commit / remote hash
 
-- Task commit (`docs: record Wf47 limited schedule pass`): see `git rev-parse HEAD` on `origin/main` after push.
-- Remote hash: see `git ls-remote origin main` after push.
+- Task commit (`docs: record Wf47 limited schedule pass`): `563f1ba7c1232f1af7de79531023fd24c0eb4761`
+- Remote hash (`origin/main` HEAD after push): see post-push `git ls-remote origin main`
 
 ## 12. Final status
 
