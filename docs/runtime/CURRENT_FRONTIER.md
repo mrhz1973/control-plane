@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-01 — Wf47→Wg48 controlled handoff template (Phase 1).
+Ultimo aggiornamento: 2026-06-01 — Wg48 correlate safe branch input (Phase 1c).
 
 ---
 
@@ -26,7 +26,8 @@ Ultimo aggiornamento: 2026-06-01 — Wf47→Wg48 controlled handoff template (Ph
 - **47→48 live manual handoff**: **PASS ATTESTATO UTENTE**.
 - **48 - Wg external_receipt manual correlation**: **PASS ATTESTATO UTENTE**.
 - **49 - Wh final rehearsal**: **PASS ATTESTATO UTENTE** (not used for handoff gates).
-- **47→48 controlled handoff template**: **IMPLEMENTATION READY** (after this task).
+- **47→48 controlled handoff template**: **IMPLEMENTATION READY** (Phase 1c fixes Wg48 safe branch dereference before runtime).
+- **Wg48 correlate safe branch input**: **PASS** (template fix; no runtime by Cursor).
 - **47→48 controlled handoff runtime**: **BLOCKED** until reimport + explicit user gate + manual 48 workflow reference wiring.
 - **Telegram inbound operational automation**: **NOT ACTIVE / NOT RUN**.
 - Catena completa AUTOMATIZZATA: **NOT RUN**. **PM-34**: **BLOCKED**.
@@ -50,6 +51,7 @@ Runbooks: `docs/workflow-wf-telegram-inbound-polling-getupdates.md` §10bis, `do
 
 ## Audit
 
+- Phase 1c safe branch: `docs/sessions/2026-06-01-control-plane-wg48-correlate-safe-branch-input.md`.
 - Handoff template: `docs/sessions/2026-06-01-control-plane-wf47-wg-controlled-handoff-template.md`.
 - Schedule PASS: `docs/sessions/2026-06-01-control-plane-wf47-limited-schedule-runtime-pass.md`.
 - Hash: `docs/runtime/LAST_CURSOR_REPORT.md`.
