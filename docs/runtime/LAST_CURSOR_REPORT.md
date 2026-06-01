@@ -17,10 +17,10 @@ task_ref: wg48-correlate-safe-branch-input
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
 real_task_commit: 177f973f65947cbb6f65d7e988a08520a1f5b21c
-rolling_report_commit: f0762dde6b27e3074b233feb6773c61a8ed8e946
+rolling_report_commit: 7632d270cbb5101afff50377f0149a2792cc01ef
 branch: main
 verification_rule: PASS requires fixed template commit in origin/main chain; controlled 47->48 runtime gate remains manual/user-attested later
-remote_hash_verbatim: f0762dde6b27e3074b233feb6773c61a8ed8e946
+remote_hash_verbatim: 7632d270cbb5101afff50377f0149a2792cc01ef
 timestamp_utc: 2026-06-01T17:30:00Z
 ```
 
@@ -37,7 +37,7 @@ Snapshot task commit (safe branch fix):
 Snapshot `origin/main` HEAD (post Phase 1c hygiene close):
 
 ```text
-f0762dde6b27e3074b233feb6773c61a8ed8e946	refs/heads/main
+7632d270cbb5101afff50377f0149a2792cc01ef	refs/heads/main
 ```
 
 ---
