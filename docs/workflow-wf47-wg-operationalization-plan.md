@@ -121,7 +121,13 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 
 - **47 - Wf schedule gate:** **PASS ATTESTATO UTENTE** — first limited scheduled `getUpdates` test on workflow 47 only.
 - **Value proven:** scheduled polling can accept **one** Telegram Decision Packet response (`update_id` 986228565) and **avoid re-accepting** it on the next cycle.
-- **Next work:** separate operational gate — **not** another PREP/PRE-PREP chain. Candidate: controlled **47→48** automation or test-only handoff mechanism, explicitly gated (no 48 scheduled without gate, no 49 active, no PM-34).
+
+### 4sexies. Controlled 47 → 48 handoff template (Phase 1, 2026-06-01)
+
+- **Status:** template **IMPLEMENTATION READY** — removes manual copy/paste between 47 and 48; **not** a PREP/PRE-PREP chain.
+- **47:** `enable_wg48_handoff=false` default; IF short-circuits before Execute Workflow; no hardcoded 48 workflow id (`CONFIGURE_48_WORKFLOW_REFERENCE_IN_N8N_UI`).
+- **48:** callable entry **When Executed by Another Workflow** → **Normalize Wf47 callable receipt** (does **not** use **Set Wg test scenario**) → same **Correlate inbound to decision state** path as manual fixtures / `external_receipt`.
+- **Phase 2 runtime:** reimport 47 + 48, keep both inactive until gate, reset test tables, wire 48 reference in n8n UI, enable handoff only for test window, verify one accept + 48 closes D-9998-T, turn 47 off immediately.
 
 ---
 
@@ -161,9 +167,9 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 | No `data-tables/` changed | Yes |
 | No secrets committed | Yes |
 | Plan document complete | This file + frontier PREP entry |
-| **Next gate identified** | Post–schedule PASS: define next operational gate (47→48 automation candidate) |
+| **Next gate identified** | Phase 2: controlled 47→48 handoff runtime (reimport + wire 48 reference + enable handoff for test window) |
 
-**Next gate:** define the next real operational gate after **47 - Wf** schedule **PASS ATTESTATO UTENTE**. Candidate: controlled 47→48 handoff/automation (test-only, explicitly gated). No PREP/PRE-PREP unless a new named blocker appears.
+**Next gate:** reimport **47 - Wf** and **48 - Wg**, keep `active:false`, reset test tables, manually wire **CONFIGURE_48_WORKFLOW_REFERENCE_IN_N8N_UI**, enable `enable_wg48_handoff` only for runtime window, run one controlled cycle (47 accept + 48 correlate), turn 47 off immediately. Template Phase 1 **ready**; Phase 2 **not** run by Cursor.
 
 ---
 

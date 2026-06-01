@@ -215,6 +215,16 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 
 ---
 
+## 10bis. Controlled test-only 47 → 48 handoff (template Phase 1)
+
+- **Default OFF:** `Set Wf47 UI config` field `enable_wg48_handoff` = `false`.
+- When `enable_wg48_handoff=false`, **IF Wg48 handoff enabled and accepted** routes to **Inspect polling result** only — **Execute Workflow never runs** (short-circuit before sub-workflow call).
+- **Phase 2 runtime:** operator must set `enable_wg48_handoff=true` only for the test window and **manually wire/select** workflow **48 - Wg** on **Execute Workflow - Wg48 TEST ONLY (CONFIGURE_IN_N8N_UI)** (`CONFIGURE_48_WORKFLOW_REFERENCE_IN_N8N_UI` — **no hardcoded workflow id in Git**).
+- **Handoff payload:** only **accepted** sanitized receipts (`inspect_status: accepted`); blocked / no-parseable / duplicate paths do not call 48.
+- **Boundaries:** NO Telegram Trigger · NO public webhook · NO production Data Table · NO `control_plane_state` · NO PM-34 · NO workflow 40/41/42 mutation · NO secrets in Git.
+
+---
+
 ## 11. PASS criteria (met — Data Table gate)
 
 - Poll 1: accepted TEST ONLY decision.

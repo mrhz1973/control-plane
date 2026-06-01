@@ -13,8 +13,32 @@
       ]
     },
     {
+      "parameters": {},
+      "id": "wg000018-0018-4018-8018-000000000018",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1320,
+        520
+      ]
+    },
+    {
       "parameters": {
-        "content": "WG PREP — active=false. No Telegram. No Schedule.\n\nPrereq: Data Table wg_decision_state_test with seed open row D-9998-T.\n\nSet scenario in UI (Set Wg test scenario):\n  valid_close | duplicate | unknown | stale_closed | note_only | malformed | external_receipt\n\nFor live 47→48 handoff: scenario=external_receipt, paste Wf47 sanitized receipt into manual_receipt_json.\n\nNot control_plane_state. Not wf47_polling_state_test.",
+        "jsCode": "// Normalize Wf47 callable receipt — same contract as external_receipt; does not use Set Wg test scenario.\nconst receipt = $input.first().json;\nconst base = { test_only: true, scenario: 'callable_wf47' };\nconst invalid = () => [{\n  json: {\n    ...base,\n    inspect_status: 'blocked',\n    decision_id: null,\n    selected_option: null,\n    update_id: null,\n    inbound_text: 'missing-or-invalid-callable-receipt',\n    response_kind: 'malformed',\n    note_present: false,\n    block_reason: 'missing_or_invalid_callable_receipt',\n    test_only: true\n  }\n}];\nif (!receipt || typeof receipt !== 'object' || receipt.test_only !== true) return invalid();\nconst has = (k) => Object.prototype.hasOwnProperty.call(receipt, k);\nif (!has('inspect_status') || !has('decision_id') || !has('selected_option') || !has('update_id')) return invalid();\nlet response_kind = 'malformed';\nif (receipt.note_present === true && receipt.decision_id) response_kind = 'note';\nelse if (receipt.decision_id && ['1', '2', '3'].includes(String(receipt.selected_option))) response_kind = 'option';\nconst inbound_text = receipt.inbound_text || (receipt.decision_id && receipt.selected_option\n  ? 'dp:' + receipt.decision_id + ':' + receipt.selected_option\n  : 'missing-or-invalid-callable-receipt');\nreturn [{\n  json: {\n    ...base,\n    inspect_status: receipt.inspect_status,\n    decision_id: receipt.decision_id,\n    selected_option: receipt.selected_option,\n    update_id: receipt.update_id,\n    inbound_text,\n    response_kind,\n    note_present: !!receipt.note_present,\n    note_preview_sanitized: receipt.note_preview_sanitized || receipt.note_preview || null,\n    block_reason: receipt.block_reason || null,\n    duplicate_or_stale: !!receipt.duplicate_or_stale,\n    allowed_chat_configured: receipt.allowed_chat_configured,\n    offset_after_placeholder: receipt.offset_after_placeholder ?? null,\n    last_handled_update_id: receipt.last_handled_update_id ?? null,\n    external_receipt_source: 'wf47_callable'\n  }\n}];"
+      },
+      "id": "wg000019-0019-4019-8019-000000000019",
+      "name": "Normalize Wf47 callable receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1080,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "content": "WG PREP — active=false. No Telegram. No Schedule.\n\nManual path: Set Wg test scenario (fixtures + external_receipt).\nCallable path: When Executed by Another Workflow → Normalize Wf47 callable receipt (no Set Wg test scenario) → correlate.\n\nBoth paths reach Correlate inbound to decision state via wg_decision_state_test only.",
         "height": 280,
         "width": 480
       },
@@ -94,7 +118,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Correlate inbound to wg_decision_state_test. No raw Telegram identifiers.\nconst inb = $('Build sanitized inbound test input').first().json;\nconst rows = $('Data Table - Load wg decision state').all().map((i) => i.json);\nconst findRow = (id) => rows.find((r) => r && String(r.decision_id) === String(id));\nlet correlation_status = 'blocked';\nlet block_reason = 'malformed_response';\nlet decision_id = inb.decision_id || null;\nlet selected_option = inb.selected_option || null;\nlet update_id = inb.update_id ?? null;\nlet note_present = !!inb.note_present;\nlet persist_row = null;\nconst now = new Date().toISOString();\nif (inb.response_kind === 'malformed' || !decision_id) {\n  block_reason = 'malformed_response';\n} else if (inb.response_kind === 'note') {\n  const row = findRow(decision_id);\n  if (!row) {\n    block_reason = 'unknown_decision_id';\n  } else {\n    correlation_status = 'note_recorded';\n    block_reason = null;\n    const preview = String(inb.note_preview_sanitized || inb.inbound_text || '').slice(0, 80);\n    persist_row = {\n      decision_id,\n      status: String(row.status || 'open'),\n      selected_option: row.selected_option || '',\n      created_at: row.created_at || now,\n      closed_at: row.closed_at || '',\n      update_id: String(update_id || row.update_id || ''),\n      note_preview: preview,\n      source: 'TEST ONLY'\n    };\n  }\n} else if (inb.response_kind === 'option') {\n  const row = findRow(decision_id);\n  if (!row) {\n    block_reason = 'unknown_decision_id';\n  } else if (String(row.status) === 'closed') {\n    if (update_id != null && String(row.update_id) === String(update_id)) {\n      block_reason = 'duplicate_or_already_closed';\n    } else {\n      block_reason = 'already_closed_or_stale';\n    }\n  } else if (String(row.status) === 'open' && ['1', '2', '3'].includes(String(selected_option))) {\n    correlation_status = 'closed';\n    block_reason = null;\n    persist_row = {\n      decision_id,\n      status: 'closed',\n      selected_option: String(selected_option),\n      created_at: row.created_at || now,\n      closed_at: now,\n      update_id: String(update_id),\n      note_preview: row.note_preview || '',\n      source: 'TEST ONLY'\n    };\n  } else {\n    block_reason = 'malformed_response';\n  }\n}\nreturn {\n  json: {\n    correlation_status,\n    block_reason,\n    decision_id,\n    selected_option,\n    update_id,\n    note_present,\n    prior_status: decision_id ? (findRow(decision_id)?.status || 'missing') : 'missing',\n    persist_row,\n    test_only: true\n  }\n};"
+        "jsCode": "// Correlate inbound to wg_decision_state_test. No raw Telegram identifiers.\nconst callableRows = $('Normalize Wf47 callable receipt').all();\nconst manualRows = $('Build sanitized inbound test input').all();\nconst inb = (callableRows.length ? callableRows[0].json : manualRows[0].json);\nconst rows = $('Data Table - Load wg decision state').all().map((i) => i.json);\nconst findRow = (id) => rows.find((r) => r && String(r.decision_id) === String(id));\nlet correlation_status = 'blocked';\nlet block_reason = 'malformed_response';\nlet decision_id = inb.decision_id || null;\nlet selected_option = inb.selected_option || null;\nlet update_id = inb.update_id ?? null;\nlet note_present = !!inb.note_present;\nlet persist_row = null;\nconst now = new Date().toISOString();\nif (inb.response_kind === 'malformed' || !decision_id) {\n  block_reason = 'malformed_response';\n} else if (inb.response_kind === 'note') {\n  const row = findRow(decision_id);\n  if (!row) {\n    block_reason = 'unknown_decision_id';\n  } else {\n    correlation_status = 'note_recorded';\n    block_reason = null;\n    const preview = String(inb.note_preview_sanitized || inb.inbound_text || '').slice(0, 80);\n    persist_row = {\n      decision_id,\n      status: String(row.status || 'open'),\n      selected_option: row.selected_option || '',\n      created_at: row.created_at || now,\n      closed_at: row.closed_at || '',\n      update_id: String(update_id || row.update_id || ''),\n      note_preview: preview,\n      source: 'TEST ONLY'\n    };\n  }\n} else if (inb.response_kind === 'option') {\n  const row = findRow(decision_id);\n  if (!row) {\n    block_reason = 'unknown_decision_id';\n  } else if (String(row.status) === 'closed') {\n    if (update_id != null && String(row.update_id) === String(update_id)) {\n      block_reason = 'duplicate_or_already_closed';\n    } else {\n      block_reason = 'already_closed_or_stale';\n    }\n  } else if (String(row.status) === 'open' && ['1', '2', '3'].includes(String(selected_option))) {\n    correlation_status = 'closed';\n    block_reason = null;\n    persist_row = {\n      decision_id,\n      status: 'closed',\n      selected_option: String(selected_option),\n      created_at: row.created_at || now,\n      closed_at: now,\n      update_id: String(update_id),\n      note_preview: row.note_preview || '',\n      source: 'TEST ONLY'\n    };\n  } else {\n    block_reason = 'malformed_response';\n  }\n}\nreturn {\n  json: {\n    correlation_status,\n    block_reason,\n    decision_id,\n    selected_option,\n    update_id,\n    note_present,\n    prior_status: decision_id ? (findRow(decision_id)?.status || 'missing') : 'missing',\n    persist_row,\n    test_only: true\n  }\n};"
       },
       "id": "wg000005-0005-4005-8005-000000000005",
       "name": "Correlate inbound to decision state",
@@ -230,6 +254,28 @@
         [
           {
             "node": "Set Wg test scenario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Wf47 callable receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Wf47 callable receipt": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Load wg decision state",
             "type": "main",
             "index": 0
           }

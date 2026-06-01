@@ -128,6 +128,25 @@ If `manual_receipt_json` is missing or invalid, workflow returns deterministic `
 
 ---
 
+## 5ter. Callable path from 47 - Wf (controlled handoff template)
+
+**Purpose:** allow **47 - Wf** to invoke **48 - Wg** via **Execute Workflow** with the same sanitized receipt contract as `external_receipt`, without manual paste.
+
+| Entry | Path |
+|-------|------|
+| **Manual / fixtures** | Manual Trigger → **Set Wg test scenario** → Build sanitized inbound test input → … |
+| **Callable from 47** | **When Executed by Another Workflow** → **Normalize Wf47 callable receipt** → Data Table load → **Correlate inbound to decision state** |
+
+- Callable path does **not** use **Set Wg test scenario** (that node runs only on the Manual Trigger branch).
+- **Normalize Wf47 callable receipt** maps incoming receipt to the same item shape as **Build sanitized inbound test input** (proven `external_receipt` contract).
+- **Correlate inbound to decision state** reads from callable adapter **or** manual build node — both entry points reach correlation.
+- Manual `external_receipt` + `manual_receipt_json` remains available and independent.
+- **active: false** · no Telegram · no schedule · **wg_decision_state_test** only.
+
+Phase 2: operator wires `CONFIGURE_48_WORKFLOW_REFERENCE_IN_N8N_UI` on 47 and sets `enable_wg48_handoff=true` only for the test window.
+
+---
+
 ## 6. Manual validation — fixture scenarios (PASS)
 
 **Recorded:** 2026-05-31. Workflow **48** manual/inactive/off. Table **`wg_decision_state_test`** only.
