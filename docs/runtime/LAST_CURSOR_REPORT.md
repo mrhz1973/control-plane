@@ -13,31 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wg48-correlate-safe-branch-input
+task_ref: wf47-wg-controlled-handoff-runtime-pass
 result_cursor: PASS
-result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: 177f973f65947cbb6f65d7e988a08520a1f5b21c
-rolling_report_commit: 7632d270cbb5101afff50377f0149a2792cc01ef
+result_runtime: PASS_ATTESTATO_UTENTE
+real_task_commit: 52ce5281402e2d3ed0519d806b05f8cba3714958
+rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS requires fixed template commit in origin/main chain; controlled 47->48 runtime gate remains manual/user-attested later
-remote_hash_verbatim: 7632d270cbb5101afff50377f0149a2792cc01ef
-timestamp_utc: 2026-06-01T17:30:00Z
+verification_rule: PASS runtime is user-attested plus docs commit in origin/main; no runtime executed by Cursor
+remote_hash_verbatim: verify with git ls-remote origin main after push
+timestamp_utc: 2026-06-01T18:48:00Z
 ```
 
-- `real_task_commit` = `workflow: fix Wg48 safe branch input` (`177f973`). **Non** è `771d030` (handoff template) né rolling-only docs.
-- `result_runtime` = **NOT_RUN_BY_CURSOR** — Phase 2 controlled 47→48 handoff runtime remains user-attested.
-- Verifica: `git merge-base --is-ancestor 177f973 origin/main` → exit 0; template su `main` ha try/catch su entrambi i branch source.
+- `real_task_commit` = `docs: record wf47-wg controlled handoff runtime pass` (`52ce528`). **Non** è il commit rolling report.
+- `result_runtime` = **PASS_ATTESTATO UTENTE** — `update_id` **986228567**; 47 accepted → 48 closed **D-9998-T**.
+- `rolling_report_commit` = commit che aggiorna solo questo file (non task commit).
 
-Snapshot task commit (safe branch fix):
-
-```text
-177f973f65947cbb6f65d7e988a08520a1f5b21c	refs/heads/main
-```
-
-Snapshot `origin/main` HEAD (post Phase 1c hygiene close):
+Snapshot task commit:
 
 ```text
-7632d270cbb5101afff50377f0149a2792cc01ef	refs/heads/main
+52ce5281402e2d3ed0519d806b05f8cba3714958	refs/heads/main
 ```
 
 ---
@@ -57,6 +51,12 @@ Snapshot `origin/main` HEAD (post Phase 1c hygiene close):
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: wg48-correlate-safe-branch-input
+  real_task_commit: 177f973f65947cbb6f65d7e988a08520a1f5b21c
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-01T17:30:00Z
+
 - task_ref: wf47-wg-controlled-handoff-template
   real_task_commit: 771d03087d46ec5e3247ad7f97922b2cd8b03aad
   result_cursor: PASS
@@ -80,10 +80,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-01T14:00:00Z
-
-- task_ref: wg48-external-receipt-mode
-  real_task_commit: 18c9dd0f9e0e922877a4d3dd567ff50f9af5f544
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-01T12:00:00Z
 ```
