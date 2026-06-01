@@ -223,6 +223,13 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 - **Handoff payload:** only **accepted** sanitized receipts (`inspect_status: accepted`); blocked / no-parseable / duplicate paths do not call 48.
 - **Boundaries:** NO Telegram Trigger · NO public webhook · NO production Data Table · NO `control_plane_state` · NO PM-34 · NO workflow 40/41/42 mutation · NO secrets in Git.
 
+### Controlled 47→48 handoff runtime — PASS ATTESTATO UTENTE (2026-06-01)
+
+- **Gate:** controlled test-only **47 → 48** via **Execute Workflow** + callable **48 - Wg** (not permanent operational activation).
+- **47 / Build sanitized polling receipt:** `inspect_status: accepted`, `decision_id` **D-9998-T**, `selected_option` **1**, `update_id` **986228567**, `offset_after_placeholder` **986228568**, `test_only: true`.
+- **Post-test:** **47 - Wf** turned **off/inactive** after the test window.
+- Session: `docs/sessions/2026-06-01-control-plane-wf47-wg-controlled-handoff-runtime-pass.md`.
+
 ---
 
 ## 11. PASS criteria (met — Data Table gate)

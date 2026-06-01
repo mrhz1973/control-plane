@@ -129,6 +129,12 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 - **48:** callable entry **When Executed by Another Workflow** → **Normalize Wf47 callable receipt** (does **not** use **Set Wg test scenario**) → same **Correlate inbound to decision state** path as manual fixtures / `external_receipt`.
 - **Phase 2 runtime:** reimport 47 + 48, keep both inactive until gate, reset test tables, wire 48 reference in n8n UI, enable handoff only for test window, verify one accept + 48 closes D-9998-T, turn 47 off immediately.
 
+### 4septies. Controlled 47 → 48 runtime PASS (2026-06-01)
+
+- **Status:** controlled **47→48** runtime **PASS ATTESTATO UTENTE** — `update_id` **986228567**; **D-9998-T** closed via callable **48 - Wg** (not manual paste).
+- **47** turned off after test window; **48** published as callable subworkflow only (not scheduled).
+- **Not** a PREP/PRE-PREP chain. Boundaries unchanged: no **49**, no wf40/41/42, no PM-34, no production tables, no public webhook, no Telegram Trigger.
+
 ---
 
 ## 5. Hard blockers (never without explicit gate)
@@ -167,9 +173,9 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 | No `data-tables/` changed | Yes |
 | No secrets committed | Yes |
 | Plan document complete | This file + frontier PREP entry |
-| **Next gate identified** | Phase 2: controlled 47→48 handoff runtime (reimport + wire 48 reference + enable handoff for test window) |
+| **Next gate identified** | Controlled 47→48 runtime **PASS ATTESTATO UTENTE** recorded; operational automation remains **NOT ACTIVE** |
 
-**Next gate:** reimport **47 - Wf** and **48 - Wg**, keep `active:false`, reset test tables, manually wire **CONFIGURE_48_WORKFLOW_REFERENCE_IN_N8N_UI**, enable `enable_wg48_handoff` only for runtime window, run one controlled cycle (47 accept + 48 correlate), turn 47 off immediately. Template Phase 1 **ready**; Phase 2 **not** run by Cursor.
+**Status:** controlled **47→48** test-only runtime **PASS ATTESTATO UTENTE** (`update_id` **986228567**). Telegram inbound operational automation **NOT ACTIVE / NOT RUN**. PM-34 **BLOCKED**. No new PREP unless named blocker.
 
 ---
 

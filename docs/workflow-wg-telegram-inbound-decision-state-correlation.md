@@ -145,6 +145,13 @@ If `manual_receipt_json` is missing or invalid, workflow returns deterministic `
 
 Phase 2: operator wires `CONFIGURE_48_WORKFLOW_REFERENCE_IN_N8N_UI` on 47 and sets `enable_wg48_handoff=true` only for the test window.
 
+### Controlled callable runtime — PASS ATTESTATO UTENTE (2026-06-01)
+
+- **Gate:** **47 - Wf** invoked **48 - Wg** as **callable subworkflow** (published for Execute Workflow only — **not scheduled**, not operational automation).
+- **48 / Inspect correlation result:** `inspect_status: closed`, `decision_id` **D-9998-T**, `selected_option` **1**, `update_id` **986228567**, `prior_status: open`, `state_persisted: true`, `test_only: true`.
+- Manual `external_receipt` path remains available and independent.
+- Session: `docs/sessions/2026-06-01-control-plane-wf47-wg-controlled-handoff-runtime-pass.md`.
+
 ---
 
 ## 6. Manual validation — fixture scenarios (PASS)
