@@ -17,11 +17,11 @@ task_ref: wf47-schedule-trigger-id-fix
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
 real_task_commit: 9d56f144c6f4152156d17d46504e584e24a6ed9b
-rolling_report_commit: 258bb8438b58533db56e3b623b1905859983f958
+rolling_report_commit: d6260735f529bf9a3d35e8e20a4cd4f47fef9e94
 branch: main
 verification_rule: PASS requires fixed template commit in origin/main chain; runtime schedule gate remains manual/user-attested later
-remote_hash_verbatim: 258bb8438b58533db56e3b623b1905859983f958
-timestamp_utc: 2026-06-01T14:02:00Z
+remote_hash_verbatim: d6260735f529bf9a3d35e8e20a4cd4f47fef9e94
+timestamp_utc: 2026-06-01T15:30:00Z
 ```
 
 - `real_task_commit` = commit con template id-fix (`workflow: fix Wf47 schedule trigger node id`). **Non** è `c51e8a6` (Phase 1 schedule add; aveva id duplicato).
@@ -38,7 +38,7 @@ Snapshot task commit (id-fix):
 Snapshot `origin/main` HEAD (post Phase 1b hygiene close):
 
 ```text
-258bb8438b58533db56e3b623b1905859983f958	refs/heads/main
+d6260735f529bf9a3d35e8e20a4cd4f47fef9e94	refs/heads/main
 ```
 
 ---

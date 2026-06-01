@@ -67,7 +67,8 @@ See final report (node uniqueness scripts + `git diff --check`).
 - Task commit (`workflow: fix Wf47 schedule trigger node id`): `9d56f144c6f4152156d17d46504e584e24a6ed9b`
 - Rolling report commits: `a3ceadd6c798757c6260134a369743a64983c0cf`, `1c0c1085e4805616b1822b450d262ecb0ea0235b`
 - Hygiene close commit (`docs: close Wf47 schedule id fix report`): `258bb8438b58533db56e3b623b1905859983f958`
-- Remote hash (`origin/main` HEAD): `258bb8438b58533db56e3b623b1905859983f958`
+- Rolling report sync (`docs: update rolling Cursor report`): `d6260735f529bf9a3d35e8e20a4cd4f47fef9e94`
+- Remote hash (`origin/main` HEAD): `d6260735f529bf9a3d35e8e20a4cd4f47fef9e94`
 
 ## 12. Phase 1b hygiene closure (2026-06-01)
 
@@ -76,6 +77,13 @@ See final report (node uniqueness scripts + `git diff --check`).
 - Verified: `git merge-base --is-ancestor 9d56f14 HEAD` — id-fix commit in `main` chain.
 - Runtime Phase 2 may proceed only after operator reimport + explicit runtime gate.
 
-## 13. Final status
+## 13. Re-verification (2026-06-01, CONTROL PLANE)
 
-**PASS** — Phase 1b closed. Unique node ids on `main`; report aligned with `9d56f14`. Ready for Phase 2 reimport (user-attested).
+- `git merge-base --is-ancestor 9d56f14 origin/main` → exit 0 (fix already in chain).
+- Template on `origin/main`: Schedule `wf000018-…`, NOTE `wf000012-…`, 17 unique ids; no workflow edit required.
+- GitHub raw `main` template confirmed fixed (prior ChatGPT check was stale CDN / pre-push).
+- No n8n/runtime/import performed.
+
+## 14. Final status
+
+**PASS** — Phase 1b closed. Unique node ids on `main`; report aligned with `9d56f14`. Phase 2 runtime remains user-attested after reimport.
