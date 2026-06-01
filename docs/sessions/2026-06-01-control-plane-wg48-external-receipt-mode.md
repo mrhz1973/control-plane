@@ -66,8 +66,8 @@ git diff -- workflows/wg-telegram-inbound-decision-state-correlation.template.js
 
 ## 9. Commit / remote hash
 
-- Task commit (`workflow: add Wg external receipt mode`): `__TASK_COMMIT__`
-- Remote hash after push: `__REMOTE_HASH__`
+- Task commit (`workflow: add Wg external receipt mode`): `18c9dd0f9e0e922877a4d3dd567ff50f9af5f544`
+- Remote hash after push: see final report (`git ls-remote origin main`)
 
 ## 10. Final status
 

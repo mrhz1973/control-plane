@@ -16,15 +16,22 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 task_ref: wg48-external-receipt-mode
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: PENDING_POST_COMMIT
+real_task_commit: 18c9dd0f9e0e922877a4d3dd567ff50f9af5f544
 branch: main
 verification_rule: PASS requires commit in origin/main; runtime gate remains manual/user-attested later
+remote_hash_verbatim: 18c9dd0f9e0e922877a4d3dd567ff50f9af5f544
 timestamp_utc: 2026-06-01T12:00:00Z
 ```
 
 - `real_task_commit` = commit reale del task (`workflow: add Wg external receipt mode`). È l'hash da verificare.
 - `result_runtime` = **NOT_RUN_BY_CURSOR** — live 47→48 handoff resta gate manuale utente dopo reimport 48 - Wg.
-- `rolling_report_commit` = eventuale commit leggero che aggiorna solo questo report (non è il task commit).
+- `rolling_report_commit` = commit leggero che aggiorna solo questo report (non è il task commit).
+
+Snapshot al push del task commit:
+
+```text
+18c9dd0f9e0e922877a4d3dd567ff50f9af5f544	refs/heads/main
+```
 
 ---
 
