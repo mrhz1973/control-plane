@@ -17,10 +17,10 @@ task_ref: decision-store-shared-design
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
 real_task_commit: f127696b10f1125499f892becdfa323e47151de7
-rolling_report_commit: PENDING_SELF_REFERENCE
+rolling_report_commit: 324858d77392fcc7acd3798b4312a86307b84b98
 branch: main
 verification_rule: PASS = design docs commit in origin/main; no runtime; no workflow/data-table modified
-remote_hash_verbatim: verify with git ls-remote origin main after push
+remote_hash_verbatim: 324858d77392fcc7acd3798b4312a86307b84b98
 timestamp_utc: 2026-06-01T22:02:00Z
 ```
 
