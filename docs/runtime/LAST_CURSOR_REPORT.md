@@ -13,26 +13,18 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wg48-external-receipt-mode
+task_ref: wf47-wg-live-manual-handoff-pass
 result_cursor: PASS
-result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: 18c9dd0f9e0e922877a4d3dd567ff50f9af5f544
-rolling_report_commit: 4ededaf
+result_runtime: PASS_ATTESTATO_UTENTE
+real_task_commit: PENDING_POST_COMMIT
 branch: main
-verification_rule: PASS requires commit in origin/main; runtime gate remains manual/user-attested later
-remote_hash_verbatim: 18c9dd0f9e0e922877a4d3dd567ff50f9af5f544
-timestamp_utc: 2026-06-01T12:00:00Z
+verification_rule: PASS is based on deterministic user-attested runtime output plus commit evidence in origin/main
+timestamp_utc: 2026-06-01T14:00:00Z
 ```
 
-- `real_task_commit` = commit reale del task (`workflow: add Wg external receipt mode`). È l'hash da verificare.
-- `result_runtime` = **NOT_RUN_BY_CURSOR** — live 47→48 handoff resta gate manuale utente dopo reimport 48 - Wg.
+- `real_task_commit` = commit reale del task (`docs: record Wf47 Wg live handoff pass`). È l'hash da verificare.
+- `result_runtime` = **PASS_ATTESTATO_UTENTE** — live 47→48 manual handoff (real Telegram receipt → external_receipt on 48).
 - `rolling_report_commit` = commit leggero che aggiorna solo questo report (non è il task commit).
-
-Snapshot al push del task commit:
-
-```text
-18c9dd0f9e0e922877a4d3dd567ff50f9af5f544	refs/heads/main
-```
 
 ---
 
@@ -51,6 +43,12 @@ Snapshot al push del task commit:
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: wg48-external-receipt-mode
+  real_task_commit: 18c9dd0f9e0e922877a4d3dd567ff50f9af5f544
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-01T12:00:00Z
+
 - task_ref: wf47-wg-wh-final-manual-runtime-rehearsal-pass
   real_task_commit: 98a3b4ff89d2341a45b01fd9ff2b74c279433946
   result_cursor: PASS
@@ -71,9 +69,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   real_task_commit: 811c69e025222652a7cfd94e287e948cb0fe5dde
   result_cursor: PASS
   timestamp_utc: 2026-05-31T16:05:00Z
-
-- task_ref: wh-manual-validation-pass
-  real_task_commit: 341b847081f8e5e03d86631865b91a94f155c81b
-  result_cursor: PASS
-  timestamp_utc: 2026-05-31T15:57:34Z
 ```

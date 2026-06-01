@@ -124,6 +124,8 @@ No Code-node edits required for fixture validation (scenario in Set node). Live 
 
 If `manual_receipt_json` is missing or invalid, workflow returns deterministic `block_reason: missing_or_invalid_external_receipt`.
 
+**Live PASS (2026-06-01):** `external_receipt` validated manually with real **47 - Wf** receipt — `update_id` **986228561**, **D-9998-T** closed from `prior_status: open`, `state_persisted: true`, `test_only: true`. Evidenza: [session log](sessions/2026-06-01-control-plane-wf47-wg-live-manual-handoff-pass.md).
+
 ---
 
 ## 6. Manual validation — fixture scenarios (PASS)
@@ -155,11 +157,9 @@ Sanitized receipts (no secrets):
 
 ---
 
-## 7. Next gate — live 47→48 manual handoff
+## 7. Next gate
 
-**Reimport only** `workflows/wg-telegram-inbound-decision-state-correlation.template.json` (48 - Wg), keep **active:false**, then run live handoff with `external_receipt` + receipt from 47 - Wf. Wh (49) and prior fixture PASS unchanged.
-
-Optional scenarios (`stale_closed`, `note_only`, `malformed`) remain fixture-only unless a **named risk** requires them.
+Live 47→48 handoff **PASS ATTESTATO UTENTE** (2026-06-01). Next operational gate: limited **schedule test for 47 - Wf only** (separate, explicit) or BLOCKED with concrete blocker.
 
 ---
 
@@ -178,8 +178,8 @@ Optional scenarios (`stale_closed`, `note_only`, `malformed`) remain fixture-onl
 |------|--------|
 | Wf47 Data Table manual validation | **PASS** (unchanged) |
 | Wg fixture manual validation | **PASS ATTESTATO UTENTE** |
-| Wg external receipt mode | **IMPLEMENTATION READY** (live 47→48 gate after reimport) |
-| 47→48 live manual handoff | **BLOCKED** until updated 48 reimported and run |
+| Wg external receipt mode | **PASS ATTESTATO UTENTE** (live 47 receipt, `update_id` 986228561) |
+| 47→48 live manual handoff | **PASS ATTESTATO UTENTE** |
 | Telegram inbound operational | **NOT ACTIVE** |
 | PM-34 | **BLOCCATO** |
 | Operational automation | **NOT RUN** |

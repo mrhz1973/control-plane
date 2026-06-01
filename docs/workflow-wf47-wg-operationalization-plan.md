@@ -103,7 +103,11 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 - **48 - Wg** could **not** consume it: node *Build sanitized inbound test input* only built internal fixtures and explicitly simulated Wf47 receipts.
 - **Fix (not a new PREP chain):** add **`external_receipt`** scenario + **`manual_receipt_json`** on 48 - Wg template. Fixture scenarios (`valid_close`, `duplicate`, `unknown`, `stale_closed`, `note_only`, `malformed`) unchanged.
 
-**Next gate after template commit:** reimport **only** 48 - Wg from updated template, keep **active:false**, set `scenario=external_receipt` with receipt from 47 - Wf, run 48 manually. No schedule, Telegram Trigger, public webhook, production Data Table, `control_plane_state`, PM-34, or workflow 40/41/42.
+**Blocker fixed:** `external_receipt` + `manual_receipt_json` on 48 - Wg (commit `18c9dd0`).
+
+**Live manual 47→48 handoff:** **PASS ATTESTATO UTENTE** (2026-06-01). Real Telegram `getUpdates` receipt from **47 - Wf** (`update_id` 986228561, `D-9998-T` accepted) was manually handed to **48 - Wg**; **D-9998-T** closed from `prior_status: open`, `state_persisted: true`. Value proven: split workflows + paste handoff works without Wh (49) for this gate.
+
+**Next work:** separate operational gate — first limited **schedule test for 47 - Wf only** (test-only, reversible), or BLOCKED with concrete blocker. **Not** another PREP/PRE-PREP doc for this chain.
 
 ---
 
@@ -143,9 +147,9 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 | No `data-tables/` changed | Yes |
 | No secrets committed | Yes |
 | Plan document complete | This file + frontier PREP entry |
-| **Next gate identified** | **Reimport 48 - Wg only** → live 47→48 manual handoff with `external_receipt` |
+| **Next gate identified** | **Limited schedule test for 47 - Wf only** (test-only, reversible) or BLOCKED |
 
-**Next gate:** reimport only **48 - Wg** from updated template, keep **active:false**, set `scenario=external_receipt` with sanitized receipt from **47 - Wf**, run 48 manually. Not more PREP for this chain unless a new named risk appears. Still: no schedule, Telegram Trigger, public webhook, production Data Table, `control_plane_state`, PM-34, workflow 40/41/42.
+**Next gate:** define the first limited schedule test for **47 - Wf only**, test-only and reversible, or mark BLOCKED with a concrete blocker. Live 47→48 handoff **PASS**. No more PREP for this chain unless a new named risk appears.
 
 ---
 
