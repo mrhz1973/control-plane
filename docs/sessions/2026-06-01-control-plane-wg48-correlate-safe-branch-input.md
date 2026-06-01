@@ -86,7 +86,7 @@ See final report (`JSON OK`, unique ids, `active:false`, correlate try/catch che
 
 - Task commit (`workflow: fix Wg48 safe branch input`): `177f973f65947cbb6f65d7e988a08520a1f5b21c`
 - Prior rolling report commits: `8e42a5d`, `43ca46c` (hash alignment only).
-- Hygiene close commit: see post-push `git ls-remote origin main`.
+- Hygiene close commit (`docs: close Wg48 safe branch report`): `f0762dde6b27e3074b233feb6773c61a8ed8e946`
 
 ## 13. Phase 1c hygiene closure (2026-06-01)
 
