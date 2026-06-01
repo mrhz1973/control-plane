@@ -203,6 +203,16 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 
 **Hard constraints:** NO Telegram Trigger · NO public webhook · NO production Data Table · NO `control_plane_state` · NO **48** scheduled · NO **49** active · NO PM-34 · NO workflow 40/41/42 mutation · NO secrets in Git.
 
+### Phase 2 schedule runtime — PASS ATTESTATO UTENTE (2026-06-01)
+
+- **First limited schedule runtime test:** **PASS ATTESTATO UTENTE** (user-attested; Cursor did not run runtime).
+- **First cycle:** `inspect_status: accepted`, `update_id` **986228565**, `decision_id` **D-9998-T**, `selected_option` **1**.
+- **Second cycle:** did **not** re-accept the same update as new (`block_reason: no_parseable_decision_response`).
+- **State:** `last_handled_update_id` advanced to **986228565**; `offset_after_placeholder` **986228566**.
+- **Token:** configured **only in n8n UI** on HTTP Request — must not be committed to Git.
+- **Post-test:** **47 - Wf** turned **off/inactive** after the short window.
+- Session: `docs/sessions/2026-06-01-control-plane-wf47-limited-schedule-runtime-pass.md`.
+
 ---
 
 ## 11. PASS criteria (met — Data Table gate)

@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-01 — Wf47 Schedule Trigger node-id uniqueness fix (Phase 1b).
+Ultimo aggiornamento: 2026-06-01 — Wf47 first limited schedule runtime test PASS.
 
 ---
 
@@ -16,32 +16,31 @@ Ultimo aggiornamento: 2026-06-01 — Wf47 Schedule Trigger node-id uniqueness fi
 
 ## Latest verified PASS
 
-- **47→48 live manual handoff**: **PASS ATTESTATO UTENTE** (`real_task_commit` `580e2b5…`).
-- Evidenza: `docs/sessions/2026-06-01-control-plane-wf47-wg-live-manual-handoff-pass.md`.
+- **47 - Wf first limited schedule runtime test**: **PASS ATTESTATO UTENTE** (`update_id` 986228565 accepted once; next cycle no re-accept).
+- Evidenza: `docs/sessions/2026-06-01-control-plane-wf47-limited-schedule-runtime-pass.md`.
 
 ## Stato Wf47 / Wg / Wh
 
 - **47 - Wf live getUpdates manual poll**: **PASS ATTESTATO UTENTE**.
-- **48 - Wg external_receipt**: **PASS ATTESTATO UTENTE**.
+- **47 - Wf first limited schedule runtime test**: **PASS ATTESTATO UTENTE**.
+- **47 - Wf accept-once / no re-accept next cycle**: **PASS ATTESTATO UTENTE**.
 - **47→48 live manual handoff**: **PASS ATTESTATO UTENTE**.
-- **49 - Wh final rehearsal**: **PASS ATTESTATO UTENTE** (not used for live 47→48).
-- **47 - Wf disabled Schedule Trigger support**: **IMPLEMENTATION READY** (Phase 1; Phase 1b fixed duplicate node id before import).
-- **47 - Wf Schedule Trigger node-id uniqueness**: **PASS** (after Phase 1b commit).
-- **First limited 47 - Wf schedule runtime test**: **BLOCKED** until updated 47 reimported + user runtime gate.
+- **48 - Wg external_receipt manual correlation**: **PASS ATTESTATO UTENTE**.
+- **49 - Wh final rehearsal**: **PASS ATTESTATO UTENTE** (not used for this schedule gate).
+- **47 - Wf Schedule Trigger node-id uniqueness**: **PASS** (template Phase 1b).
 - **Telegram inbound operational automation**: **NOT ACTIVE / NOT RUN**.
 - Catena completa AUTOMATIZZATA: **NOT RUN**. **PM-34**: **BLOCKED**.
 
 ## Active blockers
 
 - **PM-34**: **BLOCKED**.
-- **47 schedule runtime test**: **BLOCKED** until Phase 2 user gate (reimport + exclusivity checks).
 - **We** (HTTPS webhook): **BLOCKED/PENDING**.
 
 ## Next gate
 
-**Reimport only 47 - Wf Telegram Inbound Polling getUpdates TEST ONLY - TEMPLATE from updated template, reset wf47_polling_state_test, verify no Telegram webhook and no other getUpdates consumer, then run a 5–10 minute schedule test on 47 - Wf only. Verify accept-once and no re-accept on next cycle. Turn 47 off immediately. No Telegram Trigger, no public webhook, no production Data Table, no control_plane_state, no 48 scheduled, no 49 active, no PM-34, no workflow 40/41/42 mutation, no secrets.**
+**Next gate: define the next real operational gate after 47 - Wf schedule PASS. Candidate direction: connect scheduled 47 output to 48 - Wg or introduce a controlled test-only handoff mechanism. No PREP/PRE-PREP documents unless a new named blocker appears. No Telegram Trigger, no public webhook, no production Data Table, no control_plane_state, no 48 scheduled without explicit gate, no 49 active, no PM-34, no workflow 40/41/42 mutation, no secrets.**
 
-Runbook: `docs/workflow-wf-telegram-inbound-polling-getupdates.md` §10.
+Runbooks: `docs/workflow-wf-telegram-inbound-polling-getupdates.md`, `docs/workflow-wf47-wg-operationalization-plan.md`.
 
 ## Do-not-do
 
@@ -50,8 +49,8 @@ Runbook: `docs/workflow-wf-telegram-inbound-polling-getupdates.md` §10.
 
 ## Audit
 
-- Phase 1 session: `docs/sessions/2026-06-01-control-plane-wf47-schedule-trigger-template-ready.md`.
-- Phase 1b id fix + hygiene closed: `docs/sessions/2026-06-01-control-plane-wf47-schedule-trigger-id-fix.md` (`real_task_commit` `9d56f14`, not `c51e8a6`).
+- Schedule runtime PASS: `docs/sessions/2026-06-01-control-plane-wf47-limited-schedule-runtime-pass.md`.
+- Phase 1b id fix: `docs/sessions/2026-06-01-control-plane-wf47-schedule-trigger-id-fix.md`.
 - Hash: `docs/runtime/LAST_CURSOR_REPORT.md`.
 
 ## Manutenzione

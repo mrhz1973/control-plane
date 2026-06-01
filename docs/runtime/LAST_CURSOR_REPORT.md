@@ -13,33 +13,20 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wf47-schedule-trigger-id-fix
+task_ref: wf47-limited-schedule-runtime-pass
 result_cursor: PASS
-result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: 9d56f144c6f4152156d17d46504e584e24a6ed9b
-rolling_report_commit: ae64a094a95f079196d274bfe8564c57d57867e8
+result_runtime: PASS_ATTESTATO_UTENTE
+real_task_commit: PENDING_POST_COMMIT
 branch: main
-verification_rule: PASS requires fixed template commit in origin/main chain; runtime schedule gate remains manual/user-attested later
-remote_hash_verbatim: ae64a094a95f079196d274bfe8564c57d57867e8
-timestamp_utc: 2026-06-01T15:30:00Z
+verification_rule: PASS is based on deterministic user-attested runtime output plus commit evidence in origin/main
+remote_hash_verbatim: PENDING_POST_PUSH
+timestamp_utc: 2026-06-01T16:00:00Z
 ```
 
-- `real_task_commit` = commit con template id-fix (`workflow: fix Wf47 schedule trigger node id`). **Non** è `c51e8a6` (Phase 1 schedule add; aveva id duplicato).
-- `result_runtime` = **NOT_RUN_BY_CURSOR** — Phase 2 schedule runtime remains user-attested.
-- `rolling_report_commit` = ultimo commit che aggiorna solo questo report (non è il task commit).
-- Verifica: `9d56f14` è antenato di `origin/main` HEAD; template su `main` ha id unici.
-
-Snapshot task commit (id-fix):
-
-```text
-9d56f144c6f4152156d17d46504e584e24a6ed9b	refs/heads/main
-```
-
-Snapshot `origin/main` HEAD (post Phase 1b hygiene close):
-
-```text
-ae64a094a95f079196d274bfe8564c57d57867e8	refs/heads/main
-```
+- `real_task_commit` = commit `docs: record Wf47 limited schedule pass` (session + frontier + runbooks).
+- `result_runtime` = **PASS_ATTESTATO_UTENTE** — Phase 2 limited schedule test on 47 - Wf only; Cursor did not run n8n.
+- `update_id` accepted once: **986228565**; second cycle did not re-accept.
+- Verifica: `git ls-remote origin main` dopo push.
 
 ---
 
@@ -58,6 +45,12 @@ ae64a094a95f079196d274bfe8564c57d57867e8	refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: wf47-schedule-trigger-id-fix
+  real_task_commit: 9d56f144c6f4152156d17d46504e584e24a6ed9b
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-01T15:30:00Z
+
 - task_ref: wf47-disabled-schedule-trigger-template
   real_task_commit: c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b
   result_cursor: PASS
@@ -81,9 +74,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-05-31T18:45:00Z
-
-- task_ref: anti-bureaucracy-momentum-correction
-  real_task_commit: dc8fc7223c5a3e4c1303475504c65116afcf1f4c
-  result_cursor: PASS
-  timestamp_utc: 2026-05-31T18:35:00Z
 ```

@@ -117,6 +117,12 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 - **Phase 1 fix:** add **Schedule Trigger - TEST ONLY DISABLED** (`every 1 minute`, `disabled: true`, workflow `active: false`) connected to **Set Wf47 UI config**. **No runtime** in Phase 1.
 - **Phase 2:** manual/user-attested — reimport 47, reset test table, verify no webhook/other getUpdates consumer, 5–10 min schedule window, accept-once test, turn off immediately.
 
+### 4quinquies. 47 - Wf schedule gate PASS (2026-06-01)
+
+- **47 - Wf schedule gate:** **PASS ATTESTATO UTENTE** — first limited scheduled `getUpdates` test on workflow 47 only.
+- **Value proven:** scheduled polling can accept **one** Telegram Decision Packet response (`update_id` 986228565) and **avoid re-accepting** it on the next cycle.
+- **Next work:** separate operational gate — **not** another PREP/PRE-PREP chain. Candidate: controlled **47→48** automation or test-only handoff mechanism, explicitly gated (no 48 scheduled without gate, no 49 active, no PM-34).
+
 ---
 
 ## 5. Hard blockers (never without explicit gate)
@@ -155,9 +161,9 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 | No `data-tables/` changed | Yes |
 | No secrets committed | Yes |
 | Plan document complete | This file + frontier PREP entry |
-| **Next gate identified** | **Phase 2:** reimport 47 - Wf → limited schedule runtime test (user-attested) |
+| **Next gate identified** | Post–schedule PASS: define next operational gate (47→48 automation candidate) |
 
-**Next gate:** reimport **47 - Wf** with disabled schedule trigger, reset `wf47_polling_state_test`, verify getUpdates exclusivity, run 5–10 min schedule test only on 47, accept-once + no re-accept on next cycle, turn off immediately. Live 47→48 handoff **PASS**. Phase 1 template **ready**; Phase 2 **not** run by Cursor.
+**Next gate:** define the next real operational gate after **47 - Wf** schedule **PASS ATTESTATO UTENTE**. Candidate: controlled 47→48 handoff/automation (test-only, explicitly gated). No PREP/PRE-PREP unless a new named blocker appears.
 
 ---
 
