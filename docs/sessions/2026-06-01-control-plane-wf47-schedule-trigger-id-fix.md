@@ -68,7 +68,8 @@ See final report (node uniqueness scripts + `git diff --check`).
 - Rolling report commits: `a3ceadd6c798757c6260134a369743a64983c0cf`, `1c0c1085e4805616b1822b450d262ecb0ea0235b`
 - Hygiene close commit (`docs: close Wf47 schedule id fix report`): `258bb8438b58533db56e3b623b1905859983f958`
 - Rolling report sync (`docs: update rolling Cursor report`): `d6260735f529bf9a3d35e8e20a4cd4f47fef9e94`
-- Remote hash (`origin/main` HEAD): `d6260735f529bf9a3d35e8e20a4cd4f47fef9e94`
+- Re-verification report commit: `ae64a094a95f079196d274bfe8564c57d57867e8`
+- Remote hash (`origin/main` HEAD): `ae64a094a95f079196d274bfe8564c57d57867e8` (after push)
 
 ## 12. Phase 1b hygiene closure (2026-06-01)
 
