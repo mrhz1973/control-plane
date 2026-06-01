@@ -17,10 +17,10 @@ task_ref: wf47-wg-controlled-handoff-runtime-pass
 result_cursor: PASS
 result_runtime: PASS_ATTESTATO_UTENTE
 real_task_commit: 52ce5281402e2d3ed0519d806b05f8cba3714958
-rolling_report_commit: PENDING_SELF_REFERENCE
+rolling_report_commit: 658034a0b0cc7afdfd4be54c01f17f0652b98596
 branch: main
 verification_rule: PASS runtime is user-attested plus docs commit in origin/main; no runtime executed by Cursor
-remote_hash_verbatim: verify with git ls-remote origin main after push
+remote_hash_verbatim: 658034a0b0cc7afdfd4be54c01f17f0652b98596
 timestamp_utc: 2026-06-01T18:48:00Z
 ```
 
