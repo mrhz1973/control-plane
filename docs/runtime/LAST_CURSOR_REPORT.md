@@ -17,10 +17,10 @@ task_ref: wg48-correlate-safe-branch-input
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
 real_task_commit: 177f973f65947cbb6f65d7e988a08520a1f5b21c
-rolling_report_commit: PENDING_POST_COMMIT_2
+rolling_report_commit: 8e42a5daf3c3cfdceb6c4a9100c3589cc9fe72bd
 branch: main
 verification_rule: PASS requires commit in origin/main; controlled 47->48 runtime gate remains manual/user-attested later
-remote_hash_verbatim: PENDING_POST_PUSH
+remote_hash_verbatim: 8e42a5daf3c3cfdceb6c4a9100c3589cc9fe72bd
 timestamp_utc: 2026-06-01T17:10:00Z
 ```
 
