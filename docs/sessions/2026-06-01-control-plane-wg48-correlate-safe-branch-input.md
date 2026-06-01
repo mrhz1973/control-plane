@@ -84,7 +84,7 @@ See final report (`JSON OK`, unique ids, `active:false`, correlate try/catch che
 
 ## 12. Commit / remote hash
 
-- Task commit: `workflow: fix Wg48 safe branch input` — see `real_task_commit` in `LAST_CURSOR_REPORT.md`.
+- Task commit (`workflow: fix Wg48 safe branch input`): `177f973f65947cbb6f65d7e988a08520a1f5b21c`
 - Remote: `git ls-remote origin main` after push.
 
 ## 13. Final status

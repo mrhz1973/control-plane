@@ -13,26 +13,24 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wf47-wg-controlled-handoff-template
+task_ref: wg48-correlate-safe-branch-input
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: 771d03087d46ec5e3247ad7f97922b2cd8b03aad
-rolling_report_commit: 56d78b0bcff7c417289e222806232af7ad499a7a
+real_task_commit: 177f973f65947cbb6f65d7e988a08520a1f5b21c
+rolling_report_commit: PENDING_POST_COMMIT_2
 branch: main
 verification_rule: PASS requires commit in origin/main; controlled 47->48 runtime gate remains manual/user-attested later
-remote_hash_verbatim: 56d78b0bcff7c417289e222806232af7ad499a7a
-timestamp_utc: 2026-06-01T16:45:00Z
+remote_hash_verbatim: PENDING_POST_PUSH
+timestamp_utc: 2026-06-01T17:10:00Z
 ```
 
-- `real_task_commit` = `workflow: add Wf47 Wg controlled handoff` (templates + docs + frontier + session).
-- `result_runtime` = **NOT_RUN_BY_CURSOR** — Phase 2 handoff runtime remains user-attested.
-- `enable_wg48_handoff=false` default; IF short-circuits before Execute Workflow when off.
-- `CONFIGURE_48_WORKFLOW_REFERENCE_IN_N8N_UI` — no hardcoded 48 workflow id in Git.
+- `real_task_commit` = `workflow: fix Wg48 safe branch input` — Correlate node try/catch for unexecuted branch nodes.
+- `result_runtime` = **NOT_RUN_BY_CURSOR** — Phase 2 controlled 47→48 handoff runtime remains user-attested.
 
 Snapshot task commit:
 
 ```text
-771d03087d46ec5e3247ad7f97922b2cd8b03aad	refs/heads/main
+177f973f65947cbb6f65d7e988a08520a1f5b21c	refs/heads/main
 ```
 
 ---
@@ -52,6 +50,12 @@ Snapshot task commit:
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: wf47-wg-controlled-handoff-template
+  real_task_commit: 771d03087d46ec5e3247ad7f97922b2cd8b03aad
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-01T16:45:00Z
+
 - task_ref: wf47-limited-schedule-runtime-pass
   real_task_commit: 563f1ba7c1232f1af7de79531023fd24c0eb4761
   result_cursor: PASS
@@ -75,10 +79,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: NOT_RUN_BY_CURSOR
   timestamp_utc: 2026-06-01T12:00:00Z
-
-- task_ref: wf47-disabled-schedule-trigger-template
-  real_task_commit: c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-01T13:45:00Z
 ```
