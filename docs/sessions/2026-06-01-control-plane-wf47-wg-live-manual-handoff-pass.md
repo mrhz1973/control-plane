@@ -99,8 +99,8 @@ git diff -- docs/runtime/CURRENT_FRONTIER.md docs/runtime/LAST_CURSOR_REPORT.md 
 
 ## 9. Commit / remote hash
 
-- Task commit (`docs: record Wf47 Wg live handoff pass`): `__TASK_COMMIT__`
-- Remote hash after push: `__REMOTE_HASH__`
+- Task commit (`docs: record Wf47 Wg live handoff pass`): `580e2b5a153a34409243d2319aea2290d0d8b2bb`
+- Remote hash after push: see final report (`git ls-remote origin main`)
 
 ## 10. Final status
 

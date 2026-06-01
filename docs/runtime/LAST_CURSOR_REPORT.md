@@ -16,15 +16,22 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 task_ref: wf47-wg-live-manual-handoff-pass
 result_cursor: PASS
 result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: PENDING_POST_COMMIT
+real_task_commit: 580e2b5a153a34409243d2319aea2290d0d8b2bb
 branch: main
 verification_rule: PASS is based on deterministic user-attested runtime output plus commit evidence in origin/main
+remote_hash_verbatim: 580e2b5a153a34409243d2319aea2290d0d8b2bb
 timestamp_utc: 2026-06-01T14:00:00Z
 ```
 
 - `real_task_commit` = commit reale del task (`docs: record Wf47 Wg live handoff pass`). È l'hash da verificare.
 - `result_runtime` = **PASS_ATTESTATO_UTENTE** — live 47→48 manual handoff (real Telegram receipt → external_receipt on 48).
 - `rolling_report_commit` = commit leggero che aggiorna solo questo report (non è il task commit).
+
+Snapshot al push del task commit:
+
+```text
+580e2b5a153a34409243d2319aea2290d0d8b2bb	refs/heads/main
+```
 
 ---
 
