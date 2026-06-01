@@ -13,25 +13,24 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wf47-disabled-schedule-trigger-template
+task_ref: wf47-schedule-trigger-id-fix
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b
-rolling_report_commit: 90494b80c39fa26e80e9ad4698c8ad9445da99fd
+real_task_commit: 9d56f144c6f4152156d17d46504e584e24a6ed9b
 branch: main
 verification_rule: PASS requires commit in origin/main; runtime schedule gate remains manual/user-attested later
-remote_hash_verbatim: c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b
-timestamp_utc: 2026-06-01T13:45:00Z
+remote_hash_verbatim: 9d56f144c6f4152156d17d46504e584e24a6ed9b
+timestamp_utc: 2026-06-01T14:02:00Z
 ```
 
-- `real_task_commit` = commit reale del task (`workflow: add Wf47 disabled schedule trigger`). È l'hash da verificare.
-- `result_runtime` = **NOT_RUN_BY_CURSOR** — Phase 2 limited schedule test on 47 - Wf remains user-attested.
+- `real_task_commit` = commit reale del task (`workflow: fix Wf47 schedule trigger node id`). È l'hash da verificare.
+- `result_runtime` = **NOT_RUN_BY_CURSOR** — Phase 2 schedule runtime remains user-attested.
 - `rolling_report_commit` = commit leggero che aggiorna solo questo report (non è il task commit).
 
 Snapshot al push del task commit:
 
 ```text
-c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b	refs/heads/main
+9d56f144c6f4152156d17d46504e584e24a6ed9b	refs/heads/main
 ```
 
 ---
@@ -51,6 +50,12 @@ c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b	refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: wf47-disabled-schedule-trigger-template
+  real_task_commit: c51e8a6e38fa5bfedeac5a7f41319cb648d7e83b
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-01T13:45:00Z
+
 - task_ref: wf47-wg-live-manual-handoff-pass
   real_task_commit: 580e2b5a153a34409243d2319aea2290d0d8b2bb
   result_cursor: PASS
@@ -73,9 +78,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   real_task_commit: dc8fc7223c5a3e4c1303475504c65116afcf1f4c
   result_cursor: PASS
   timestamp_utc: 2026-05-31T18:35:00Z
-
-- task_ref: wf47-wg-operationalization-checklist-prep
-  real_task_commit: d410a8f1fb04db1b447574f55ba75ec4e3d8bdd3
-  result_cursor: PASS
-  timestamp_utc: 2026-05-31T16:10:00Z
 ```

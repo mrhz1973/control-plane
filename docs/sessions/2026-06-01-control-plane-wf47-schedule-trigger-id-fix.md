@@ -64,9 +64,9 @@ See final report (node uniqueness scripts + `git diff --check`).
 
 ## 11. Commit / remote hash
 
-- Commit 1 (`workflow: fix Wf47 schedule trigger node id`): `__COMMIT_1__`
-- Commit 2 (`docs: update rolling Cursor report`): `__COMMIT_2__`
-- Remote hash: `__REMOTE_HASH__`
+- Commit 1 (`workflow: fix Wf47 schedule trigger node id`): `9d56f144c6f4152156d17d46504e584e24a6ed9b`
+- Commit 2 (`docs: update rolling Cursor report`): see final report
+- Remote hash: see final report (`git ls-remote origin main`)
 
 ## 12. Final status
 
