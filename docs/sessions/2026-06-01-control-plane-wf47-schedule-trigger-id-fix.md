@@ -66,7 +66,8 @@ See final report (node uniqueness scripts + `git diff --check`).
 
 - Task commit (`workflow: fix Wf47 schedule trigger node id`): `9d56f144c6f4152156d17d46504e584e24a6ed9b`
 - Rolling report commits: `a3ceadd6c798757c6260134a369743a64983c0cf`, `1c0c1085e4805616b1822b450d262ecb0ea0235b`
-- Remote hash (`origin/main` HEAD): `1c0c1085e4805616b1822b450d262ecb0ea0235b`
+- Hygiene close commit (`docs: close Wf47 schedule id fix report`): `258bb8438b58533db56e3b623b1905859983f958`
+- Remote hash (`origin/main` HEAD): `258bb8438b58533db56e3b623b1905859983f958`
 
 ## 12. Phase 1b hygiene closure (2026-06-01)
 

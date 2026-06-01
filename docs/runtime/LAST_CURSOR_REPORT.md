@@ -17,10 +17,10 @@ task_ref: wf47-schedule-trigger-id-fix
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
 real_task_commit: 9d56f144c6f4152156d17d46504e584e24a6ed9b
-rolling_report_commit: 1c0c1085e4805616b1822b450d262ecb0ea0235b
+rolling_report_commit: 258bb8438b58533db56e3b623b1905859983f958
 branch: main
 verification_rule: PASS requires fixed template commit in origin/main chain; runtime schedule gate remains manual/user-attested later
-remote_hash_verbatim: 1c0c1085e4805616b1822b450d262ecb0ea0235b
+remote_hash_verbatim: 258bb8438b58533db56e3b623b1905859983f958
 timestamp_utc: 2026-06-01T14:02:00Z
 ```
 
@@ -35,10 +35,10 @@ Snapshot task commit (id-fix):
 9d56f144c6f4152156d17d46504e584e24a6ed9b	refs/heads/main
 ```
 
-Snapshot `origin/main` HEAD (post Phase 1b hygiene):
+Snapshot `origin/main` HEAD (post Phase 1b hygiene close):
 
 ```text
-1c0c1085e4805616b1822b450d262ecb0ea0235b	refs/heads/main
+258bb8438b58533db56e3b623b1905859983f958	refs/heads/main
 ```
 
 ---
