@@ -13,24 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: decision-store-shared-design
+task_ref: decision-store-gate2-template-no-runtime
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: f127696b10f1125499f892becdfa323e47151de7
-rolling_report_commit: 324858d77392fcc7acd3798b4312a86307b84b98
+real_task_commit: fc1b398fa6d90e11d772e430b13681d101c1efd4
+rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = design docs commit in origin/main; no runtime; no workflow/data-table modified
-remote_hash_verbatim: 324858d77392fcc7acd3798b4312a86307b84b98
-timestamp_utc: 2026-06-01T22:02:00Z
+verification_rule: PASS = template + design docs commit in origin/main; no runtime; active:false; no data-tables/** modified; no CSV seed; no table created in repo
+remote_hash_verbatim: PENDING_SELF_REFERENCE
+timestamp_utc: 2026-06-01T23:55:00Z
 ```
 
-- `real_task_commit` = `docs: design shared decision store open/close contract` (`f127696`).
-- `result_runtime` = **NOT_RUN_BY_CURSOR** — Gate 1 design only; Gate 2/3 not started.
+- `real_task_commit` = `workflow: wire shared decision store templates` (`fc1b398`).
+- `result_runtime` = **NOT_RUN_BY_CURSOR** — Gate 2 template no-runtime only; Gate 3 runtime user-attested not started.
+- `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** — backfilled to this rolling-report commit hash in the next hygiene micro-fix.
 
 Snapshot task commit:
 
 ```text
-f127696b10f1125499f892becdfa323e47151de7	refs/heads/main
+fc1b398fa6d90e11d772e430b13681d101c1efd4	refs/heads/main
 ```
 
 ---
@@ -50,6 +51,13 @@ f127696b10f1125499f892becdfa323e47151de7	refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: decision-store-shared-design
+  real_task_commit: f127696b10f1125499f892becdfa323e47151de7
+  rolling_report_commit: 324858d77392fcc7acd3798b4312a86307b84b98
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-01T22:02:00Z
+
 - task_ref: wf47-wg-controlled-handoff-runtime-pass
   real_task_commit: 52ce5281402e2d3ed0519d806b05f8cba3714958
   result_cursor: PASS
@@ -73,10 +81,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-01T16:00:00Z
-
-- task_ref: wf47-schedule-trigger-id-fix
-  real_task_commit: 9d56f144c6f4152156d17d46504e584e24a6ed9b
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-01T15:30:00Z
 ```
