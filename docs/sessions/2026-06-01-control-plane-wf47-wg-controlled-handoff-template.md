@@ -69,8 +69,8 @@ See final report (JSON parse, unique ids, active:false, handoff/callable checks,
 
 ## 11. Commit / remote hash
 
-- Task commit: see `git rev-parse` for `workflow: add Wf47 Wg controlled handoff`.
-- Rolling report commit: separate `docs: update rolling Cursor report`.
+- Task commit (`workflow: add Wf47 Wg controlled handoff`): `771d03087d46ec5e3247ad7f97922b2cd8b03aad`
+- Rolling report commit: see post-push `git ls-remote origin main`
 
 ## 12. Final status
 
