@@ -17,10 +17,10 @@ task_ref: wf47-limited-schedule-runtime-pass
 result_cursor: PASS
 result_runtime: PASS_ATTESTATO_UTENTE
 real_task_commit: 563f1ba7c1232f1af7de79531023fd24c0eb4761
-rolling_report_commit: 563f1ba7c1232f1af7de79531023fd24c0eb4761
+rolling_report_commit: 3efc7038ece7bcf614dbc7e27b3781f2580c76ba
 branch: main
 verification_rule: PASS is based on deterministic user-attested runtime output plus commit evidence in origin/main
-remote_hash_verbatim: 563f1ba7c1232f1af7de79531023fd24c0eb4761
+remote_hash_verbatim: 3efc7038ece7bcf614dbc7e27b3781f2580c76ba
 timestamp_utc: 2026-06-01T16:00:00Z
 ```
 
