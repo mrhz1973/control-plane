@@ -115,3 +115,25 @@ Wd now **prepares and upserts an `open` row** on the shared store **`control_pla
 **Risk `open_without_send`:** the open row is upserted **before** the Telegram send, so a send failure can leave a row `open` without a delivered packet. This is a **named risk verified at Gate 3 runtime (user-attested)**, not in this template gate.
 
 **Boundaries:** `active: false` · `CONFIGURE_*` placeholders kept · no `data-tables/**` · no CSV seed · no table creation in repo (operator creates `control_plane_decisions_test` in n8n UI) · no `control_plane_state` · no wf40/41/42 · no PM-34 · no Schedule/Telegram Trigger/webhook · no secrets.
+
+---
+
+## 10. Gate 3 runtime PASS — Wd open-on-send (2026-06-02)
+
+**Status:** **PASS ATTESTATO UTENTE**. Session: [2026-06-02-control-plane-decision-store-gate3-runtime-pass.md](sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md).
+
+**45 - Wd / Inspect send result:**
+
+| Field | Value |
+|-------|-------|
+| telegram_send_ok | true |
+| message_id | 732 |
+| http_status | 200 |
+| decision_id | D-9998-T |
+| open_action | insert |
+| block_reason | null |
+| test_only | true |
+
+Wd wrote **open** on `control_plane_decisions_test` (`created_at: 2026-06-02T00:46:44.236Z`) before the Telegram reply was accepted by **47 - Wf**. Risk `open_without_send` **not observed** (`open_action: insert` + `telegram_send_ok: true`).
+
+**Not** permanent operational automation. Temporary classifier routing (Ryzen + reverse SSH tunnel + VPS bridge) used for Gate 3 evidence only.

@@ -212,11 +212,15 @@ updated_at: <now ISO>
 - **No** n8n import/activation/schedule by Cursor. **No** `data-tables/**`, **no** CSV seed, **no** table creation in repo — the operator creates `control_plane_decisions_test` in the n8n UI.
 - Both templates keep `active: false` and `CONFIGURE_*` placeholders; no secrets, no hardcoded runtime workflow ids.
 
-### Gate 3 — runtime user-attested (test-only)
+### Gate 3 — runtime user-attested — PASS ATTESTATO UTENTE (2026-06-02)
 
-- End-to-end: **Wd open on send** → user Telegram reply → **Wf accept** → **Wg close** on shared store.
-- **47** off after test window; **48** callable/subworkflow only — not scheduled independently.
-- User-attested PASS/BLOCKED in session + frontier.
+- **Path proved:** **45 Wd open-on-send** → Telegram reply `dp:D-9998-T:1` → **47 Wf accept** (`update_id` **986228569**) → **48 Wg close** → `control_plane_decisions_test` row **closed**.
+- **Wd evidence:** `telegram_send_ok: true`, `message_id: 732`, `decision_id: D-9998-T`, `open_action: insert`; row `status: open` on shared store before inbound close.
+- **Wg evidence:** `inspect_status: closed`, `prior_status: open`, `state_persisted: true`, `update_id: 986228569`; final row `status: closed`, `closed_at: 2026-06-02T22:06:45.132Z`.
+- **Risk `open_without_send`:** **not observed** — `open_action: insert` and `telegram_send_ok: true` in same run.
+- **Cleanup:** **47** off after test window; **48** callable/published, not scheduled independently; **40/42** unchanged; **49** not used; no manual table row edits for close.
+- **Temporary routing:** classifier on Ryzen + reverse SSH tunnel + VPS Python bridge — Gate 3 evidence only, not permanent production wiring.
+- **Not** permanent operational automation. Session: `docs/sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md`.
 
 ---
 
@@ -250,4 +254,4 @@ updated_at: <now ISO>
 
 - **Gate 1 (design):** **PASS** — shared store contract defined.
 - **Gate 2 (template no-runtime):** **PASS / IMPLEMENTATION READY** — Wd open-on-send and Wg close-on-reply templates point to `control_plane_decisions_test`; both `active: false`; no runtime; no `data-tables/**`; no CSV seed; no table created in repo.
-- **Gate 3 (runtime user-attested):** **NEXT / NOT STARTED** — verifies `open_without_send` risk and end-to-end open→close on the shared store.
+- **Gate 3 (runtime user-attested):** **PASS ATTESTATO UTENTE** (2026-06-02) — end-to-end **45→47→48** on `control_plane_decisions_test`; `update_id` **986228569**; `open_without_send` risk not observed. Test-only; not permanent automation.

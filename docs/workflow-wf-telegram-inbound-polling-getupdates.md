@@ -232,6 +232,30 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 
 ---
 
+## 10ter. Gate 3 runtime PASS — Wf accept (2026-06-02)
+
+**Status:** **PASS ATTESTATO UTENTE** (shared decision store end-to-end). Session: [2026-06-02-control-plane-decision-store-gate3-runtime-pass.md](sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md).
+
+**47 - Wf / Build sanitized polling receipt:**
+
+| Field | Value |
+|-------|-------|
+| inspect_status | accepted |
+| decision_id | D-9998-T |
+| selected_option | 1 |
+| update_id | 986228569 |
+| duplicate_or_stale | false |
+| note_present | false |
+| block_reason | null |
+| allowed_chat_configured | true |
+| offset_after_placeholder | 986228570 |
+| last_handled_update_id | 986228567 |
+| test_only | true |
+
+**47 - Wf** turned **off/unpublished/inactive** after the Gate 3 test window. **Not** permanently operational. Callable handoff to **48 - Wg** used for close-on-reply on `control_plane_decisions_test`.
+
+---
+
 ## 11. PASS criteria (met — Data Table gate)
 
 - Poll 1: accepted TEST ONLY decision.

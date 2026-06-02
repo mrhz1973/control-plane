@@ -153,6 +153,17 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 - **Boundaries:** both templates `active: false`; no `data-tables/**`; no CSV seed; no table created in repo; no `control_plane_state`; no wf40/41/42; no PM-34; no 49; no Schedule/Telegram Trigger/webhook; no secrets.
 - **Gate 3:** runtime user-attested end-to-end open→close on shared store — **NEXT / NOT STARTED**.
 
+### 4decies. Shared decision store — Gate 3 runtime end-to-end PASS (2026-06-02)
+
+- **Status:** **PASS ATTESTATO UTENTE** — test-only loop, **not** production automation.
+- **Path:** **45 Wd open-on-send** → Telegram reply → **47 Wf accept** (`update_id` **986228569**) → **48 Wg close** → `control_plane_decisions_test` **closed**.
+- **Wd:** `telegram_send_ok: true`, `open_action: insert`, `decision_id: D-9998-T`; shared store row `open` before inbound.
+- **Wg:** `prior_status: open`, `state_persisted: true`, final `status: closed`.
+- **Risk `open_without_send`:** not observed in this run.
+- **Cleanup:** **47** off after test window; **48** callable/published, not scheduled independently; **40/42** unchanged; **49** not used; **PM-34** **BLOCKED**.
+- **Temporary routing:** classifier Ryzen + reverse SSH tunnel + VPS Python bridge — Gate 3 evidence only.
+- Session: `docs/sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md`. **No** new PREP/PRE-PREP.
+
 ---
 
 ## 5. Hard blockers (never without explicit gate)

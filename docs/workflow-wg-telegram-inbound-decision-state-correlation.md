@@ -236,3 +236,27 @@ Wg now reads and writes the **shared store `control_plane_decisions_test`** (Dat
 **Outcomes (unchanged):** option+open → `closed`; note+open → `note_recorded` (status stays open); `unknown_decision_id` (Wg only acts on rows Wd opened); `duplicate_or_already_closed`; `already_closed_or_stale`; `malformed_response`.
 
 **Boundaries:** `active: false` · no Telegram · no schedule · no `control_plane_state` · no `data-tables/**` · no CSV seed · no table creation in repo · no PM-34 · no wf40/41/42 · no secrets.
+
+---
+
+## 12. Gate 3 runtime PASS — Wg close-on-reply (2026-06-02)
+
+**Status:** **PASS ATTESTATO UTENTE**. Session: [2026-06-02-control-plane-decision-store-gate3-runtime-pass.md](sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md).
+
+**48 - Wg / Inspect correlation result:**
+
+| Field | Value |
+|-------|-------|
+| inspect_status | closed |
+| decision_id | D-9998-T |
+| selected_option | 1 |
+| update_id | 986228569 |
+| note_present | false |
+| block_reason | null |
+| prior_status | open |
+| state_persisted | true |
+| test_only | true |
+
+Final `control_plane_decisions_test` row: `status: closed`, `closed_at: 2026-06-02T22:06:45.132Z`, `update_id: 986228569`. Row was opened by **45 - Wd** (`open_action: insert`); closed via callable **48 - Wg** after **47 - Wf** accept — no manual table row edits.
+
+**48 - Wg** remains **published/callable**, **not** scheduled independently. **Not** permanent operational automation.
