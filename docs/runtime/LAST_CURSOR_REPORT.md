@@ -13,25 +13,32 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: canonicalize-rolling-report-backfill-convention
+task_ref: classifier-persistent-at-logon-a1-pass
 result_cursor: PASS
-result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: c6051033aa3e80dd1ae682b0803369d517858c1a
+result_runtime: PASS_ATTESTATO_UTENTE
+real_task_commit: 408e5752aaa1262d2e6a6b775cc1845916538a37
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = §8.1 chiarito + report allineato in origin/main; no runtime; no workflows/data-tables/foundation-altro modificati
+verification_rule: PASS = a.1 runtime user-attested + docs commit in origin/main; no runtime by Cursor; Ryzen loopback persistence only; no workflows/data-tables modified
 remote_hash_verbatim: PENDING_SELF_REFERENCE
-timestamp_utc: 2026-06-03T22:17:00Z
+timestamp_utc: 2026-06-03T23:45:31Z
 ```
 
-- `real_task_commit` = `docs: canonicalize rolling report backfill convention (§8.1)` (`c605103`).
-- `result_runtime` = **NOT_RUN_BY_CURSOR** — docs-only; nessun runtime n8n.
-- `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill con lo SHA del rispettivo commit-report quando archiviato in HISTORY al task successivo (`PROJECT_VISION.md` §8.1). **Non** esiste un commit finalize-hash dedicato.
+- `real_task_commit` = `docs: a.1 classifier persistent at-logon on Ryzen (loopback) - runtime PASS user-attested` (`408e575`).
+- `result_runtime` = **PASS_ATTESTATO UTENTE** — classifier at-logon L1+L2 on Ryzen loopback; Cursor did not execute runtime.
+- `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo (`PROJECT_VISION.md` §8.1).
 
 Snapshot task commit:
 
 ```text
-c6051033aa3e80dd1ae682b0803369d517858c1a	refs/heads/main
+408e5752aaa1262d2e6a6b775cc1845916538a37	refs/heads/main
+```
+
+Post-push verification (commit 1):
+
+```text
+git ls-remote origin main
+408e5752aaa1262d2e6a6b775cc1845916538a37	refs/heads/main
 ```
 
 ---
@@ -52,6 +59,14 @@ c6051033aa3e80dd1ae682b0803369d517858c1a	refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: canonicalize-rolling-report-backfill-convention
+  real_task_commit: c6051033aa3e80dd1ae682b0803369d517858c1a
+  rolling_report_commit: 5694b0d1e1daff16be488f01705a7f096dc9690b
+  remote_hash_verbatim: 5694b0d1e1daff16be488f01705a7f096dc9690b
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-03T22:17:00Z
+
 - task_ref: decision-store-gate3-runtime-pass
   real_task_commit: 0f6605c7c0dd6fbd06f5a5480905ef91300a9dc6
   rolling_report_commit: 7f833e5af295ca59f79b49d46d237ec0ad706ba4
@@ -78,10 +93,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-01T18:48:00Z
-
-- task_ref: wg48-correlate-safe-branch-input
-  real_task_commit: 177f973f65947cbb6f65d7e988a08520a1f5b21c
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-01T17:30:00Z
 ```
