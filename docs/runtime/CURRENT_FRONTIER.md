@@ -5,28 +5,25 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-02 — Shared decision store Gate 3 runtime PASS.
+Ultimo aggiornamento: 2026-06-04 — a.1 classifier persistent at-logon PASS.
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow 40/42: **ATTIVO** (produzione, non si tocca).
-- Classifier local: **PASS**; Gate 3 used temporary tunnel routing (evidence only, not permanent).
+- Classifier Ryzen: **persistent at-logon** (a.1 **PASS ATTESTATO UTENTE**); loopback `127.0.0.1:8765` only — **not** wired to n8n/VPS permanently.
 
 ## Latest verified PASS
 
-- **Shared decision store Gate 3 runtime end-to-end**: **PASS ATTESTATO UTENTE** — `update_id` **986228569**; path **45 Wd open** → Telegram reply → **47 Wf accept** → **48 Wg close** on `control_plane_decisions_test`.
-- Evidenza: `docs/sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md`.
+- **a.1 — classifier persistent at-logon (Ryzen)**: **PASS ATTESTATO UTENTE** — L1: port 8765 LISTEN after logout/login, `healthz` ok; L2: POST `/classify` case A valid JSON. Evidenza: `docs/sessions/2026-06-04-control-plane-classifier-persistent-at-logon-a1-pass.md`.
+- **Shared decision store Gate 3 end-to-end**: **PASS ATTESTATO UTENTE** (`update_id` **986228569**). Evidenza: `docs/sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md`.
 
-## Stato Wf47 / Wg / Wh / decision store
+## Stato Wf47 / Wg / decision store
 
-- **Shared decision store — Gate 1 design**: **PASS** (docs-only).
-- **Shared decision store — Gate 2** (template no-runtime): **PASS / IMPLEMENTATION READY**.
-- **Shared decision store — Gate 3** (runtime user-attested): **PASS ATTESTATO UTENTE**.
-- **47→48 controlled handoff runtime**: **PASS ATTESTATO UTENTE** (unchanged; prior gate).
-- **47 - Wf**: **off** after Gate 3 test window — not permanently operational.
-- **48 - Wg**: **callable/published**, not scheduled independently.
+- Decision store Gates 1–3: **PASS** (Gate 3 runtime user-attested).
+- **47 - Wf**: off after test windows — not permanently operational.
+- **48 - Wg**: callable/published, not scheduled independently.
 - **Telegram inbound operational automation**: **NOT ACTIVE / NOT RUN**.
 - Catena completa AUTOMATIZZATA: **NOT RUN**. **PM-34**: **BLOCKED**.
 
@@ -37,18 +34,18 @@ Ultimo aggiornamento: 2026-06-02 — Shared decision store Gate 3 runtime PASS.
 
 ## Next gate
 
-Registrazione/stabilizzazione operativa successiva — e.g. permanent classifier routing, We inbound, or explicit operational gate. **No** permanent automation declared. Boundaries: NO PM-34 · NO 49 · NO wf40/41/42 mutation · NO Telegram Trigger · NO public webhook · NO production table · NO secrets.
+Stable classifier routing for n8n (e.g. replace Gate 3 temporary tunnel) or explicit operational gate — **persistence achieved; no permanent automation declared**. Boundaries: NO PM-34 · NO 49 · NO wf40/41/42 mutation · NO Telegram Trigger · NO public webhook · NO production table · NO secrets.
 
 ## Do-not-do
 
 - NO Telegram Trigger / public webhook / production Data Table / `control_plane_state` for decisions.
 - NO 48 scheduled independently / 49 active / PM-34 unlock / wf40/41/42 mutation / secrets in Git.
-- NO treating Gate 3 test loop as permanent operational automation.
+- NO declaring a.1 or Gate 3 as permanent operational loop automation.
 
 ## Audit
 
-- Decision store Gate 3: `docs/sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md`, `docs/decision-store-shared-open-close-design.md` §11.
-- Decision store Gate 2: `docs/sessions/2026-06-01-control-plane-decision-store-gate2-template-no-runtime.md`.
+- a.1 classifier: `docs/sessions/2026-06-04-control-plane-classifier-persistent-at-logon-a1-pass.md`, `docs/runtime/control-plane-classifier.task.xml`.
+- Decision store Gate 3: `docs/sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md`.
 - Hash: `docs/runtime/LAST_CURSOR_REPORT.md`.
 
 ## Manutenzione
