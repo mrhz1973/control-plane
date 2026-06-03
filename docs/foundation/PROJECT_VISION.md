@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.9 — 2026-05-31  
-**Versione precedente:** 2.8 — 2026-05-30 (sostituita)  
+**Versione:** 2.10 — 2026-06-02  
+**Versione precedente:** 2.9 — 2026-05-31 (sostituita)  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -410,7 +410,7 @@ git ls-remote origin main
 
 Il report finale Cursor deve contenere l'**output testuale verbatim** di questi comandi, non una tabella e non un riassunto. Un SUCCESS senza questi output **non** vale PASS.
 
-**Report rolling Cursor (obbligatorio dopo ogni push di task reale):** dopo il push del commit reale, Cursor deve catturare verbatim `git ls-remote origin main`, `git log --oneline -5` e `git status --short`, e scriverli in `docs/runtime/LAST_CURSOR_REPORT.md`. Il report registra il commit reale (commit 1). Il commit leggero che aggiorna solo il report (commit 2) **non** si ri-registra: `LATEST.real_task_commit` resta lo SHA del commit 1. Il report **non** sostituisce `git ls-remote`, ma rende persistente su GitHub l'evidenza dell'hash per handoff e verificatore.
+**Report rolling Cursor (obbligatorio dopo ogni push di task reale):** dopo il push del commit reale, Cursor deve catturare verbatim `git ls-remote origin main`, `git log --oneline -5` e `git status --short`, e scriverli in `docs/runtime/LAST_CURSOR_REPORT.md`. Il report registra il commit reale (commit 1). Il commit leggero che aggiorna solo il report (commit 2) **non** si ri-registra: `LATEST.real_task_commit` resta lo SHA del commit 1. I campi `rolling_report_commit` e `remote_hash_verbatim` del blocco LATEST restano `PENDING_SELF_REFERENCE` finché quel LATEST è il più recente, e vengono backfillati con lo SHA del rispettivo commit-report quando il LATEST viene archiviato in HISTORY al task successivo. Non esiste un commit finalize-hash dedicato. Il report **non** sostituisce `git ls-remote`, ma rende persistente su GitHub l'evidenza dell'hash per handoff e verificatore.
 
 ### 8.2 Script npm
 
@@ -636,6 +636,8 @@ In una frase: **sto costruendo una fabbrica, non un singolo prodotto.** La fabbr
 | 2.7 | 2026-05-29 | §8.3: preflight implementatore con aggiornamento locale sicuro nel prompt Cursor; comandi ritorno umano fuori dal prompt copiabile. Allineato `CURSOR_PROMPT_TEMPLATE.md`. |
 | 2.8 | 2026-05-30 | Riscritta §13 (parte semplice) per riflettere lo stato reale: foundation completata, workflow 42 attivo, prima catena wf42 → Codex → Cursor eseguita in modalità manuale/supervisionata (PASS, commit d040896 su repo GIS); catena automatizzata senza filo umano resta tappa successiva. Roadmap a 4 tappe, framing "fabbrica non prodotto". Nessun cambiamento di visione o invariante. |
 | 2.9 | 2026-05-31 | Aggiunta §7.9 anti-burocrazia / momentum e relativo invariante in §10: PREP PASS solo se rimuove un blocco reale; per catena confinata, dopo 1 rehearsal import/reimport + max 2 run manuali ripetuti avanzare al prossimo gate reale o marcare BLOCKED con blocker concreto; test opzionali solo con rischio nominato; test non deterministici vietati come PASS; PASS su output deterministico / hash-commit / runtime attestato dall'utente. Eccezione chat_id invariata. |
+
+| 2.10 | 2026-06-02 | §8.1: chiarito che rolling_report_commit/remote_hash_verbatim del LATEST restano PENDING_SELF_REFERENCE e si backfillano all'archiviazione in HISTORY; nessun commit finalize-hash dedicato. Allinea PROJECT_VISION alla pratica già in uso. |
 
 ---
 
