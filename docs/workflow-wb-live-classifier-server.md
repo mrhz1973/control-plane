@@ -107,3 +107,18 @@ For the docs-only test event, expect `risk: low`, `route: auto_allowed`, `requir
 
 Use **`docs/runtime/WB_LIVE_REGISTRATION_PROMPT.md`** to record **PASS** or **BLOCKED**
 based on the sanitized evidence collected above.
+
+---
+
+## 10. Stable transport — Tailscale Serve + token + ACL (D-0021, 2026-06-04)
+
+**Status:** **PASS ATTESTATO UTENTE** (runtime user-attested). Session: [2026-06-04-control-plane-classifier-tailscale-serve-auth-acl-pass.md](sessions/2026-06-04-control-plane-classifier-tailscale-serve-auth-acl-pass.md).
+
+The **Gate 3 temporary** path (reverse SSH tunnel Ryzen → VPS + Python bridge `172.18.0.1:8765`) is **superseded** for classifier transport by:
+
+- **Tailscale Serve** tailnet-only → `https://asusdesktop.tailc01234.ts.net/` → proxy `http://127.0.0.1:8765`
+- **`CLASSIFIER_AUTH_TOKEN`** on Ryzen (Windows User env); **`X-Classifier-Token`** required for `/classify` when token is set
+- **Tailscale ACL**: VPS `100.114.7.53/32` → Ryzen `100.110.35.23/32` `tcp:443` only
+- **No Funnel**; no token in Git
+
+**n8n workflow wiring** (URL + header in HTTP Request node) remains a **future gate** — not done in D-0021. Configure token **only in n8n UI**, never in Git.

@@ -74,11 +74,12 @@ starting a listener.
 
 ---
 
-## 6. Optional auth
+## 6. Auth (loopback optional; required beyond loopback)
 
-- If `CLASSIFIER_AUTH_TOKEN` is set, the server requires header `X-Classifier-Token` equal
-  to it. If absent, no auth is required.
-- The token value is **never committed**, never printed, and never included in docs/tests.
+- If `CLASSIFIER_AUTH_TOKEN` is **unset**, `/classify` has no auth (loopback-only posture, e.g. a.1).
+- If `CLASSIFIER_AUTH_TOKEN` is **set**, `/classify` requires header **`X-Classifier-Token`** with a matching value; missing or wrong token → **401** `{"error":"unauthorized"}`. **`GET /healthz`** stays exempt.
+- When the service is exposed beyond loopback (e.g. Tailscale Serve to VPS/n8n), **`CLASSIFIER_AUTH_TOKEN` must be set** — operational posture validated in D-0021 (2026-06-04).
+- Token value: **never** in Git, docs, tests, or session logs; configure via environment (Ryzen) and n8n UI only.
 
 ---
 
