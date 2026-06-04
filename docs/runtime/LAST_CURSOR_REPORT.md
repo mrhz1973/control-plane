@@ -13,32 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: classifier-persistent-at-logon-a1-pass
+task_ref: classifier-tailscale-serve-auth-acl-pass
 result_cursor: PASS
 result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: 408e5752aaa1262d2e6a6b775cc1845916538a37
+real_task_commit: a8a198fa16fe10a709006c3d6f8ceb8f5d17d93f
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = a.1 runtime user-attested + docs commit in origin/main; no runtime by Cursor; Ryzen loopback persistence only; no workflows/data-tables modified
+verification_rule: PASS = runtime user-attested + docs commit in origin/main; Tailscale Serve tailnet-only + token + ACL; no runtime by Cursor; no workflows/data-tables modified
 remote_hash_verbatim: PENDING_SELF_REFERENCE
-timestamp_utc: 2026-06-03T23:45:31Z
+timestamp_utc: 2026-06-04T01:03:27Z
 ```
 
-- `real_task_commit` = `docs: a.1 classifier persistent at-logon on Ryzen (loopback) - runtime PASS user-attested` (`408e575`).
-- `result_runtime` = **PASS_ATTESTATO UTENTE** — classifier at-logon L1+L2 on Ryzen loopback; Cursor did not execute runtime.
+- `real_task_commit` = `docs: record classifier tailscale serve auth acl pass` (`a8a198f`).
+- `result_runtime` = **PASS_ATTESTATO UTENTE** — D-0021 Tailscale Serve + token + ACL; Cursor did not execute runtime.
 - `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo (`PROJECT_VISION.md` §8.1).
 
 Snapshot task commit:
 
 ```text
-408e5752aaa1262d2e6a6b775cc1845916538a37	refs/heads/main
-```
-
-Post-push verification (commit 1):
-
-```text
-git ls-remote origin main
-408e5752aaa1262d2e6a6b775cc1845916538a37	refs/heads/main
+a8a198fa16fe10a709006c3d6f8ceb8f5d17d93f	refs/heads/main
 ```
 
 ---
@@ -59,6 +52,13 @@ git ls-remote origin main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: classifier-persistent-at-logon-a1-pass
+  real_task_commit: 408e5752aaa1262d2e6a6b775cc1845916538a37
+  rolling_report_commit: b295afacf47414eb8e61fd7c7e0fcb8cbdeff4f3
+  result_cursor: PASS
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-06-03T23:45:31Z
+
 - task_ref: canonicalize-rolling-report-backfill-convention
   real_task_commit: c6051033aa3e80dd1ae682b0803369d517858c1a
   rolling_report_commit: 5694b0d1e1daff16be488f01705a7f096dc9690b
@@ -87,10 +87,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: NOT_RUN_BY_CURSOR
   timestamp_utc: 2026-06-01T22:02:00Z
-
-- task_ref: wf47-wg-controlled-handoff-runtime-pass
-  real_task_commit: 52ce5281402e2d3ed0519d806b05f8cba3714958
-  result_cursor: PASS
-  result_runtime: PASS_ATTESTATO_UTENTE
-  timestamp_utc: 2026-06-01T18:48:00Z
 ```
