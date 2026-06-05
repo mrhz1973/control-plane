@@ -13,25 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0024m-mapping-preview-workflow-template
+task_ref: d0024m-mapping-preview-runtime-pass
 result_cursor: PASS
-result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: faa758ea59dff3c8e13668bd71ec8571137f83b7
+result_runtime: PASS_ATTESTATO_UTENTE
+real_task_commit: f1f48fb8ab6c6215c0fc2122473a324d005220e4
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = redacted inactive fixture-only n8n workflow template committed to origin/main + redaction check exit 0; no runtime; no n8n import/export/execute; no live classifier call; no HTTP/Telegram/webhook/schedule nodes; no workflow 40/41/42 mutation; no PM-34 unlock; D-0024-M runtime PASS not declared
+verification_rule: PASS = user-attested manual n8n fixture-only mapping preview run + docs evidence commit in origin/main + redaction check exit 0; no live classifier call; no HTTP/Telegram/webhook/schedule; no workflow 40/41/42 mutation; no workflow 49; no PM-34 unlock; no permanent automation declared
 remote_hash_verbatim: PENDING_SELF_REFERENCE
-timestamp_utc: 2026-06-05T23:06:03Z
+timestamp_utc: 2026-06-05T23:16:05Z
 ```
 
-- `real_task_commit` = `docs: add D-0024-M mapping preview workflow template` (`faa758e`).
-- `result_runtime` = **NOT_RUN_BY_CURSOR** — fixture-only template commit; manual import/run pending.
+- `real_task_commit` = `docs: record D-0024-M mapping preview runtime PASS` (`f1f48fb`).
+- `result_runtime` = **PASS_ATTESTATO_UTENTE** — user manually ran workflow 55 fixture-only mapping preview in n8n; no runtime by Cursor.
 - `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo (`PROJECT_VISION.md` §8.1).
 
 Snapshot task commit:
 
 ```text
-faa758ea59dff3c8e13668bd71ec8571137f83b7	refs/heads/main
+f1f48fb8ab6c6215c0fc2122473a324d005220e4	refs/heads/main
 ```
 
 ---
@@ -52,6 +52,13 @@ faa758ea59dff3c8e13668bd71ec8571137f83b7	refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0024m-mapping-preview-workflow-template
+  real_task_commit: faa758ea59dff3c8e13668bd71ec8571137f83b7
+  rolling_report_commit: a3694119bae795b45f1fec2715ff08e5d2b25508
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-05T23:06:03Z
+
 - task_ref: d0023n-decision-packet-mapping-design
   real_task_commit: 207aaec645de2f0aa90a28345f88eef3296a0c05
   rolling_report_commit: a933375d85306aeaf6220ee992eb2355e5657d16
@@ -79,11 +86,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-04T01:03:27Z
-
-- task_ref: classifier-persistent-at-logon-a1-pass
-  real_task_commit: 408e5752aaa1262d2e6a6b775cc1845916538a37
-  rolling_report_commit: b295afacf47414eb8e61fd7c7e0fcb8cbdeff4f3
-  result_cursor: PASS
-  result_runtime: PASS_ATTESTATO_UTENTE
-  timestamp_utc: 2026-06-03T23:45:31Z
 ```
