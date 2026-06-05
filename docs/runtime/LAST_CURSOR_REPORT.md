@@ -13,25 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0023n-decision-packet-mapping-design
+task_ref: d0024m-mapping-preview-workflow-template
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: 207aaec645de2f0aa90a28345f88eef3296a0c05
+real_task_commit: faa758ea59dff3c8e13668bd71ec8571137f83b7
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = docs-only mapping contract commit in origin/main + redaction check exit 0; no runtime; no n8n import/export/execute; no Telegram send; no workflow changes; no secrets added
+verification_rule: PASS = redacted inactive fixture-only n8n workflow template committed to origin/main + redaction check exit 0; no runtime; no n8n import/export/execute; no live classifier call; no HTTP/Telegram/webhook/schedule nodes; no workflow 40/41/42 mutation; no PM-34 unlock; D-0024-M runtime PASS not declared
 remote_hash_verbatim: PENDING_SELF_REFERENCE
-timestamp_utc: 2026-06-05T22:43:07Z
+timestamp_utc: 2026-06-05T23:06:03Z
 ```
 
-- `real_task_commit` = `docs: define decision packet mapping contract` (`207aaec`).
-- `result_runtime` = **NOT_RUN_BY_CURSOR** — D-0023-N Option 1 docs-only design.
+- `real_task_commit` = `docs: add D-0024-M mapping preview workflow template` (`faa758e`).
+- `result_runtime` = **NOT_RUN_BY_CURSOR** — fixture-only template commit; manual import/run pending.
 - `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo (`PROJECT_VISION.md` §8.1).
 
 Snapshot task commit:
 
 ```text
-207aaec645de2f0aa90a28345f88eef3296a0c05	refs/heads/main
+faa758ea59dff3c8e13668bd71ec8571137f83b7	refs/heads/main
 ```
 
 ---
@@ -52,6 +52,13 @@ Snapshot task commit:
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0023n-decision-packet-mapping-design
+  real_task_commit: 207aaec645de2f0aa90a28345f88eef3296a0c05
+  rolling_report_commit: a933375d85306aeaf6220ee992eb2355e5657d16
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-05T22:43:07Z
+
 - task_ref: redact-tailnet-identifiers-and-check
   real_task_commit: c77cfae63140b013db460eaddc9edce5b2bdb458
   rolling_report_commit: cec31921e2daa78ec76bd481466d8312024afb06
@@ -79,12 +86,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-03T23:45:31Z
-
-- task_ref: canonicalize-rolling-report-backfill-convention
-  real_task_commit: c6051033aa3e80dd1ae682b0803369d517858c1a
-  rolling_report_commit: 5694b0d1e1daff16be488f01705a7f096dc9690b
-  remote_hash_verbatim: 5694b0d1e1daff16be488f01705a7f096dc9690b
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-03T22:17:00Z
 ```
