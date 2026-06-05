@@ -6,6 +6,22 @@ Future chats and agents must read this file before changing CONTROL PLANE n8n au
 
 ---
 
+## Redaction pre-commit gate
+
+Before committing control-plane docs/workflow artifacts, run:
+
+```bash
+bash tools/redaction-check.sh
+```
+
+The check blocks real tailnet IPs (100.64.0.0/10) and real `*.ts.net` hostnames in tracked files. Placeholders such as `<RYZEN_TS_IP>`, `<VPS_TS_IP>`, and `<RYZEN>.<TAILNET>.ts.net` are allowed.
+
+Do not commit secrets, token values, credential ids/content, auth URLs, webhook URLs, provider API keys, OAuth material, or raw runtime dumps.
+
+If the script flags a clean repo because of its own regexes, placeholder examples, or commit SHAs, fix the script exclusions instead of weakening real IP/host detection.
+
+---
+
 ## Ready-import n8n credential binding
 
 For CONTROL PLANE ready-import workflow JSON, **credential name alone is not enough**.

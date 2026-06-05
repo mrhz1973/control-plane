@@ -18,10 +18,10 @@
 
 | Item | Value |
 |------|--------|
-| Ryzen / asusdesktop Tailscale IP | 100.110.35.23 |
-| VPS / ubuntu Tailscale IP | 100.114.7.53 |
-| Serve URL | `https://asusdesktop.tailc01234.ts.net/` |
-| Serve status | `https://asusdesktop.tailc01234.ts.net` (tailnet only) → `/` proxy `http://127.0.0.1:8765` |
+| Ryzen / asusdesktop Tailscale IP | <RYZEN_TS_IP> |
+| VPS / ubuntu Tailscale IP | <VPS_TS_IP> |
+| Serve URL | `https://<RYZEN>.<TAILNET>.ts.net/` |
+| Serve status | `https://<RYZEN>.<TAILNET>.ts.net` (tailnet only) → `/` proxy `http://127.0.0.1:8765` |
 | Funnel | **NOT** enabled |
 | Exposure | Tailnet only |
 
@@ -37,8 +37,8 @@
 ## 4. ACL
 
 - Prior ACL: allow-all → replaced with restrictive grant:
-  - `src`: `100.114.7.53/32` (VPS)
-  - `dst`: `100.110.35.23/32` (Ryzen)
+  - `src`: `<VPS_TS_IP>/32` (VPS)
+  - `dst`: `<RYZEN_TS_IP>/32` (Ryzen)
   - `ip`: `tcp:443`
 - Tailscale SSH self/check rule preserved.
 - After ACL save: same pass results as before ACL tightening (see §5).
@@ -48,7 +48,7 @@
 **`/healthz` from VPS:**
 
 ```text
-curl -sS -i https://asusdesktop.tailc01234.ts.net/healthz
+curl -sS -i https://<RYZEN>.<TAILNET>.ts.net/healthz
 HTTP/2 200
 {"status":"ok"}
 ```

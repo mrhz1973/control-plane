@@ -36,6 +36,10 @@ Ultimo aggiornamento: 2026-06-05 — D-0022-W n8n classifier manual wiring/confi
 
 Separate explicit decision required before next runtime integration step (design/import/operation) — **do not auto-start**. No automatic loop marked active. Boundaries: NO PM-34 · NO 49 · NO wf40/41/42 mutation · NO Telegram Trigger · NO Funnel · NO public webhook · NO provider API key · NO secrets in Git.
 
+## Redaction hygiene
+
+- Before commits touching docs/workflow artifacts: run `bash tools/redaction-check.sh`. Real tailnet IPs and real `*.ts.net` hosts must not be committed.
+
 ## Do-not-do
 
 - NO Telegram Trigger / Funnel / public webhook / production Data Table / `control_plane_state` for decisions.

@@ -7,7 +7,7 @@
 ## User-attested execution
 
 - Manual single execution via n8n UI (template imported and configured manually).
-- Classifier server URL (Tailscale): `http://100.110.35.23:8765`
+- Classifier server URL (Tailscale): `http://<RYZEN_TS_IP>:8765`
 - VPS/n8n reached Ryzen classifier-server through Tailscale.
 - HTTP 200.
 - Classifier output: `risk=low`, `route=auto_allowed`, `confidence=high`, `requires_human=false`.

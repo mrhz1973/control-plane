@@ -116,9 +116,9 @@ based on the sanitized evidence collected above.
 
 The **Gate 3 temporary** path (reverse SSH tunnel Ryzen → VPS + Python bridge `172.18.0.1:8765`) is **superseded** for classifier transport by:
 
-- **Tailscale Serve** tailnet-only → `https://asusdesktop.tailc01234.ts.net/` → proxy `http://127.0.0.1:8765`
+- **Tailscale Serve** tailnet-only → `https://<RYZEN>.<TAILNET>.ts.net/` → proxy `http://127.0.0.1:8765`
 - **`CLASSIFIER_AUTH_TOKEN`** on Ryzen (Windows User env); **`X-Classifier-Token`** required for `/classify` when token is set
-- **Tailscale ACL**: VPS `100.114.7.53/32` → Ryzen `100.110.35.23/32` `tcp:443` only
+- **Tailscale ACL**: VPS `<VPS_TS_IP>/32` → Ryzen `<RYZEN_TS_IP>/32` `tcp:443` only
 - **No Funnel**; no token in Git
 
 **n8n workflow wiring** (URL + header in HTTP Request node) remains a **future gate** — not done in D-0021. Configure token **only in n8n UI**, never in Git.
