@@ -13,25 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: classifier-tailscale-serve-auth-acl-pass
+task_ref: d0022w-n8n-classifier-manual-wiring-pass
 result_cursor: PASS
 result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: a8a198fa16fe10a709006c3d6f8ceb8f5d17d93f
+real_task_commit: eadd9287b154ba27235cbe8da876922e8dd6de17
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = runtime user-attested + docs commit in origin/main; Tailscale Serve tailnet-only + token + ACL; no runtime by Cursor; no workflows/data-tables modified
+verification_rule: PASS = runtime user-attested + docs commit in origin/main; dedicated inactive manual n8n workflow; HTTP 200 schema-valid final run; auth-fail 401 verified; fail-closed 404 verified; no permanent automation declared; no workflows/code/templates modified by Cursor
 remote_hash_verbatim: PENDING_SELF_REFERENCE
-timestamp_utc: 2026-06-04T01:03:27Z
+timestamp_utc: 2026-06-05T19:14:04Z
 ```
 
-- `real_task_commit` = `docs: record classifier tailscale serve auth acl pass` (`a8a198f`).
-- `result_runtime` = **PASS_ATTESTATO UTENTE** — D-0021 Tailscale Serve + token + ACL; Cursor did not execute runtime.
+- `real_task_commit` = `docs: record D-0022-W classifier wiring PASS` (`eadd928`).
+- `result_runtime` = **PASS_ATTESTATO UTENTE** — D-0022-W dedicated inactive manual n8n workflow; Cursor did not execute runtime.
 - `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo (`PROJECT_VISION.md` §8.1).
 
 Snapshot task commit:
 
 ```text
-a8a198fa16fe10a709006c3d6f8ceb8f5d17d93f	refs/heads/main
+eadd9287b154ba27235cbe8da876922e8dd6de17	refs/heads/main
 ```
 
 ---
@@ -52,6 +52,13 @@ a8a198fa16fe10a709006c3d6f8ceb8f5d17d93f	refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: classifier-tailscale-serve-auth-acl-pass
+  real_task_commit: a8a198fa16fe10a709006c3d6f8ceb8f5d17d93f
+  rolling_report_commit: 45231516831a9e6936c86e09ff1da1fb2d97d72c
+  result_cursor: PASS
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-06-04T01:03:27Z
+
 - task_ref: classifier-persistent-at-logon-a1-pass
   real_task_commit: 408e5752aaa1262d2e6a6b775cc1845916538a37
   rolling_report_commit: b295afacf47414eb8e61fd7c7e0fcb8cbdeff4f3
@@ -80,11 +87,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: NOT_RUN_BY_CURSOR
   timestamp_utc: 2026-06-01T23:55:00Z
-
-- task_ref: decision-store-shared-design
-  real_task_commit: f127696b10f1125499f892becdfa323e47151de7
-  rolling_report_commit: 324858d77392fcc7acd3798b4312a86307b84b98
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-01T22:02:00Z
 ```
