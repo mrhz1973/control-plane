@@ -13,25 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0022w-n8n-classifier-manual-wiring-pass
+task_ref: redact-tailnet-identifiers-and-check
 result_cursor: PASS
-result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: eadd9287b154ba27235cbe8da876922e8dd6de17
+result_runtime: NOT_RUN_BY_CURSOR
+real_task_commit: c77cfae63140b013db460eaddc9edce5b2bdb458
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = runtime user-attested + docs commit in origin/main; dedicated inactive manual n8n workflow; HTTP 200 schema-valid final run; auth-fail 401 verified; fail-closed 404 verified; no permanent automation declared; no workflows/code/templates modified by Cursor
+verification_rule: PASS = forward redaction commit in origin/main + tools/redaction-check.sh exit 0; no runtime; no history rewrite; no workflow/export/template changes; no secrets added
 remote_hash_verbatim: PENDING_SELF_REFERENCE
-timestamp_utc: 2026-06-05T19:14:04Z
+timestamp_utc: 2026-06-05T22:22:44Z
 ```
 
-- `real_task_commit` = `docs: record D-0022-W classifier wiring PASS` (`eadd928`).
-- `result_runtime` = **PASS_ATTESTATO UTENTE** — D-0022-W dedicated inactive manual n8n workflow; Cursor did not execute runtime.
+- `real_task_commit` = `docs: redact tailnet identifiers and add check` (`c77cfae`).
+- `result_runtime` = **NOT_RUN_BY_CURSOR** — forward redaction + local pre-commit check only.
 - `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo (`PROJECT_VISION.md` §8.1).
 
 Snapshot task commit:
 
 ```text
-eadd9287b154ba27235cbe8da876922e8dd6de17	refs/heads/main
+c77cfae63140b013db460eaddc9edce5b2bdb458	refs/heads/main
 ```
 
 ---
@@ -52,6 +52,13 @@ eadd9287b154ba27235cbe8da876922e8dd6de17	refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0022w-n8n-classifier-manual-wiring-pass
+  real_task_commit: eadd9287b154ba27235cbe8da876922e8dd6de17
+  rolling_report_commit: 03c1e7b05313e87069e415abc78312c2dc94c0d9
+  result_cursor: PASS
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-06-05T19:14:04Z
+
 - task_ref: classifier-tailscale-serve-auth-acl-pass
   real_task_commit: a8a198fa16fe10a709006c3d6f8ceb8f5d17d93f
   rolling_report_commit: 45231516831a9e6936c86e09ff1da1fb2d97d72c
@@ -80,11 +87,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-02T22:53:00Z
-
-- task_ref: decision-store-gate2-template-no-runtime
-  real_task_commit: fc1b398fa6d90e11d772e430b13681d101c1efd4
-  rolling_report_commit: 29ebe2e10dba388122640be76e4e26fad96dbe42
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-01T23:55:00Z
 ```
