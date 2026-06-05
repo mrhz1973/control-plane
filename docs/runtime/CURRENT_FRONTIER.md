@@ -5,14 +5,14 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-05 — D-0023-N Decision Packet mapping design PASS.
+Ultimo aggiornamento: 2026-06-05 — D-0024-M mapping preview workflow template committed (runtime pending).
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
-- Classifier: **D-0021** transport/auth **PASS**; **D-0022-W** n8n wiring **PASS ATTESTATO UTENTE**; **D-0023-N** mapping contract **PASS** (docs-only) — **no permanent automation declared**.
+- Classifier: **D-0021** transport/auth **PASS**; **D-0022-W** n8n wiring **PASS ATTESTATO UTENTE**; **D-0023-N** mapping contract **PASS** (docs-only); **D-0024-M** fixture-only mapping preview template **committed** — runtime **pending manual import/run** — **no permanent automation declared**.
 
 ## Latest verified PASS
 
@@ -34,7 +34,7 @@ Ultimo aggiornamento: 2026-06-05 — D-0023-N Decision Packet mapping design PAS
 
 ## Next gate
 
-Manual test of the mapping contract is a **separate explicit gate** — **not** auto-started. No automatic loop marked active. Boundaries: NO PM-34 · NO 49 · NO wf40/41/42 mutation · NO 48 schedule · NO Telegram Trigger · NO Funnel · NO public webhook · NO provider API key · NO secrets in Git.
+**D-0024-M** manual import/run of fixture-only mapping preview workflow (`55 - D-0024-M Decision Packet mapping preview TEST SAFE`) — **user-attested**, separate explicit gate; **not** auto-started; **not** D-0024-M runtime PASS until attested. Boundaries: NO PM-34 · NO 49 · NO wf40/41/42 mutation · NO 48 schedule · NO Telegram Trigger · NO Funnel · NO public webhook · NO provider API key · NO secrets in Git.
 
 ## Redaction hygiene
 

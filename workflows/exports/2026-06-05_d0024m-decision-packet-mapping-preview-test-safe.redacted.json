@@ -1,0 +1,154 @@
+{
+  "name": "55 - D-0024-M Decision Packet mapping preview TEST SAFE",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d24m000001-0001-4001-8001-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "D-0024-M TEST SAFE — inactive, manual, fixture-only, offline.\n\nNo HTTP Request, no Telegram, no webhook, no schedule, no credentials, no live classifier.\n\nChain: Manual Trigger -> Fixture source -> Build Decision Packet preview -> Inspect preview output.\n\nChange selectedFixture in Fixture source to run one case (default: all).",
+        "height": 280,
+        "width": 520
+      },
+      "id": "d24m000005-0005-4005-8005-000000000005",
+      "name": "NOTE - D-0024-M test safe fixture only",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -980,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// D-0024-M fixture-only classifier outputs. Change selectedFixture to run one case.\nconst selectedFixture = 'all';\n\nconst eventBase = {\n  event_id: '<EVENT_ID>',\n  source_repo: '<REPO>',\n  source_commit: '<COMMIT_SHA>',\n  source_workflow: '<WORKFLOW_ID>',\n  tailnet_host: '<RYZEN>.<TAILNET>.ts.net',\n  ryzen_ts_ip: '<RYZEN_TS_IP>',\n  vps_ts_ip: '<VPS_TS_IP>',\n  summary: 'fixture-only Decision Packet mapping preview (D-0024-M)'\n};\n\nconst fixtures = [\n  {\n    fixture_id: 'human_gate',\n    classifier_output: {\n      risk: 'medium',\n      route: 'human_gate',\n      reason: 'fixture:runtime_adjacent_manual_review_required',\n      confidence: 'high',\n      requires_human: true\n    }\n  },\n  {\n    fixture_id: 'auto_allowed',\n    classifier_output: {\n      risk: 'low',\n      route: 'auto_allowed',\n      reason: 'fixture:docs_only_low_risk',\n      confidence: 'high',\n      requires_human: false\n    }\n  },\n  {\n    fixture_id: 'blocked',\n    classifier_output: {\n      risk: 'high',\n      route: 'blocked',\n      reason: 'fixture:blocked_explicit_override_required',\n      confidence: 'high',\n      requires_human: true\n    }\n  },\n  {\n    fixture_id: 'fail_closed',\n    classifier_output: {\n      risk: 'low',\n      route: 'invalid_route_not_in_schema',\n      reason: null\n    }\n  }\n];\n\nconst picked = selectedFixture === 'all'\n  ? fixtures\n  : fixtures.filter((f) => f.fixture_id === selectedFixture);\n\nreturn picked.map((f) => ({\n  json: {\n    fixture_id: f.fixture_id,\n    selectedFixture,\n    classifier_output: f.classifier_output,\n    event_context: { ...eventBase, fixture_id: f.fixture_id },\n    fixture_only: true,\n    test_only: true,\n    no_runtime: true\n  }\n}));"
+      },
+      "id": "d24m000002-0002-4002-8002-000000000002",
+      "name": "Fixture source",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -660,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Build Decision Packet preview per docs/contracts/decision-packet-mapping-v1.md\nconst ALLOWED_ROUTES = ['auto_allowed', 'human_gate', 'blocked'];\nconst ALLOWED_RISK = ['low', 'medium', 'high'];\nconst ALLOWED_CONF = ['low', 'medium', 'high'];\n\nfunction isValidClassifier(c) {\n  if (!c || typeof c !== 'object' || Array.isArray(c)) return false;\n  const req = ['risk', 'route', 'reason', 'confidence', 'requires_human'];\n  for (const k of req) {\n    if (!Object.prototype.hasOwnProperty.call(c, k)) return false;\n  }\n  if (!ALLOWED_ROUTES.includes(String(c.route))) return false;\n  if (!ALLOWED_RISK.includes(String(c.risk))) return false;\n  if (!ALLOWED_CONF.includes(String(c.confidence))) return false;\n  if (typeof c.reason !== 'string' || c.reason.length === 0) return false;\n  if (typeof c.requires_human !== 'boolean') return false;\n  return true;\n}\n\nfunction failClosed(reason) {\n  return {\n    risk: 'high',\n    route: 'human_gate',\n    requires_human: true,\n    confidence: 'low',\n    reason: reason || 'fallback:malformed_or_incoherent_fixture'\n  };\n}\n\nfunction buildOptions() {\n  return [\n    '1 — Do not proceed; keep manual mode',\n    '2 — Review manually and decide the next bounded step',\n    '3 — Authorize a supervised, scope-limited next step'\n  ];\n}\n\nfunction recommendationFor(route) {\n  if (route === 'blocked') {\n    return 'Raccomandazione: 1 — Do not proceed; keep manual mode unless explicit override context exists.';\n  }\n  return 'Raccomandazione: 2 — Review manually and decide the next bounded step.';\n}\n\nfunction perché(route, c) {\n  if (route === 'blocked') {\n    return 'Classifier route is blocked — do not proceed without explicit human override.';\n  }\n  if (c.confidence === 'low') {\n    return 'Classifier confidence is low — fail-closed human review required.';\n  }\n  return 'Classifier requires human gate — no silent auto-proceed for this event context.';\n}\n\nfunction buildPacket(c, eventCtx, fixtureId) {\n  const provenance = [\n    'event_id=' + eventCtx.event_id,\n    'repo=' + eventCtx.source_repo,\n    'commit=' + eventCtx.source_commit,\n    'source=' + eventCtx.source_workflow,\n    'fixture=' + fixtureId\n  ].join('; ');\n  return {\n    ID: 'D-0024-M-T',\n    Kind: 'runtime',\n    Contesto: 'Fixture \"' + fixtureId + '\": ' + eventCtx.summary + ' Classifier route ' + c.route + '; risk ' + c.risk + '.',\n    'Perché serve decisione': perché(c.route, c),\n    Opzioni: buildOptions(),\n    Raccomandazione: recommendationFor(c.route),\n    'Rischio principale': 'Proceeding without human boundary check may expand scope or touch forbidden runtime despite ' + c.risk + ' risk signal.',\n    'Micro-interazioni eliminate': 'Manual copy/paste of classifier JSON into Decision Packet shape.',\n    'Scelta richiesta': 'Scrivi: 1 / 2 / 3',\n    'Cosa NON viene fatto': 'No runtime, no Telegram send, no workflow mutation, no PM-34 unlock, no deploy/rollback, no secrets written, no automatic loop.',\n    'Riferimento evento / provenienza': provenance,\n    Risk: c.risk,\n    Route: c.route,\n    requires_human: c.requires_human,\n    Confidence: c.confidence,\n    'Classifier reason': c.reason\n  };\n}\n\nconst inp = $input.item.json;\nconst raw = inp.classifier_output;\nlet synthesized = false;\nlet c;\n\nif (!isValidClassifier(raw)) {\n  c = failClosed('fallback:malformed_or_incoherent_fixture');\n  synthesized = true;\n} else {\n  c = { ...raw };\n}\n\nconst noPacketEligible =\n  !synthesized &&\n  c.route === 'auto_allowed' &&\n  c.requires_human === false &&\n  c.confidence !== 'low';\n\nif (noPacketEligible) {\n  return {\n    json: {\n      fixture_id: inp.fixture_id,\n      preview_status: 'NO_PACKET_NO_ACTION',\n      packet_present: false,\n      packet: null,\n      effective_classifier: c,\n      fail_closed_synthesized: false,\n      fixture_only: true,\n      test_only: true,\n      no_runtime: true\n    }\n  };\n}\n\nlet packetClassifier = { ...c };\nif (c.confidence === 'low' || c.requires_human === true) {\n  if (c.route !== 'blocked') {\n    packetClassifier.route = 'human_gate';\n  }\n}\nif (synthesized) {\n  packetClassifier = { ...c };\n}\nif (packetClassifier.route === 'auto_allowed') {\n  packetClassifier.route = 'human_gate';\n}\n\nconst packet = buildPacket(packetClassifier, inp.event_context, inp.fixture_id);\n\nreturn {\n  json: {\n    fixture_id: inp.fixture_id,\n    preview_status: 'PACKET_PREVIEW',\n    packet_present: true,\n    packet,\n    effective_classifier: packetClassifier,\n    fail_closed_synthesized: synthesized,\n    fixture_only: true,\n    test_only: true,\n    no_runtime: true\n  }\n};"
+      },
+      "id": "d24m000003-0003-4003-8003-000000000003",
+      "name": "Build Decision Packet preview",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Read-only inspect / normalize preview output\nconst d = $input.item.json;\nconst ALLOWED = ['auto_allowed', 'human_gate', 'blocked'];\n\nfunction routeCheck() {\n  if (d.packet_present && d.packet && d.packet.Route) {\n    return ALLOWED.includes(String(d.packet.Route));\n  }\n  if (d.effective_classifier && d.effective_classifier.route) {\n    if (d.preview_status === 'NO_PACKET_NO_ACTION') {\n      return d.effective_classifier.route === 'auto_allowed';\n    }\n    return ALLOWED.includes(String(d.effective_classifier.route));\n  }\n  return false;\n}\n\nreturn {\n  json: {\n    fixture_id: d.fixture_id,\n    preview_status: d.preview_status,\n    packet_present: d.packet_present,\n    packet: d.packet,\n    checks: {\n      route_in_allowed_set: routeCheck(),\n      no_send_performed: true,\n      no_secret_placeholders_only: true,\n      fixture_only: true,\n      no_http_request_node_expected: true\n    },\n    fixture_only: true,\n    test_only: true,\n    no_runtime: true\n  }\n};"
+      },
+      "id": "d24m000004-0004-4004-8004-000000000004",
+      "name": "Inspect preview output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -180,
+        300
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fixture source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fixture source": {
+      "main": [
+        [
+          {
+            "node": "Build Decision Packet preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Decision Packet preview": {
+      "main": [
+        [
+          {
+            "node": "Inspect preview output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "__REDACTED_VERSION_ID__",
+  "meta": {
+    "status": "DRAFT / D-0024-M TEST SAFE / NOT ACTIVE / NOT IMPORTED BY CURSOR",
+    "purpose": "Fixture-only classifier-output to Decision Packet mapping preview test",
+    "rawGitHubUrl": "https://raw.githubusercontent.com/mrhz1973/control-plane/main/workflows/exports/2026-06-05_d0024m-decision-packet-mapping-preview-test-safe.redacted.json",
+    "runtimeTarget": "separate 55 test workflow; manual import/run pending; not wf40/41/42",
+    "noGitHubWrites": true,
+    "noDataTableWrites": true,
+    "no40Change": true,
+    "manualOnly": true,
+    "activeFalse": true,
+    "fixtureOnly": true,
+    "noLiveClassifier": true
+  },
+  "id": "__REDACTED_WORKFLOW_ID__",
+  "tags": [
+    {
+      "name": "not-imported"
+    },
+    {
+      "name": "redacted"
+    },
+    {
+      "name": "control-plane"
+    },
+    {
+      "name": "d-0024-m"
+    },
+    {
+      "name": "decision-packet"
+    },
+    {
+      "name": "mapping-preview"
+    },
+    {
+      "name": "test-safe"
+    },
+    {
+      "name": "55"
+    }
+  ],
+  "staticData": null
+}

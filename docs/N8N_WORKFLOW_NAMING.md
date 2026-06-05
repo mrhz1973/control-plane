@@ -118,6 +118,16 @@ When a candidate becomes production:
 
 ---
 
+## D-0024-M test-safe template (2026-06-05)
+
+| ID | Workflow name (n8n UI) | State |
+|----|------------------------|--------|
+| **55** | `55 - D-0024-M Decision Packet mapping preview TEST SAFE` | **Template committed**; manual import/run **pending**; fixture-only; inactive/manual; no HTTP/Telegram/webhook/schedule. **Not** imported or run by Cursor. Export: `workflows/exports/2026-06-05_d0024m-decision-packet-mapping-preview-test-safe.redacted.json` |
+
+Full registry reconciliation with live n8n UI remains follow-up / out of scope for this note.
+
+---
+
 ## Rename map (2026-05-21)
 
 | Former (docs/export history) | Current (runtime) |
