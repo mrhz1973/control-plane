@@ -13,25 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0024m-mapping-preview-runtime-pass
+task_ref: d0025l-live-mapping-preview-workflow-template
 result_cursor: PASS
-result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: f1f48fb8ab6c6215c0fc2122473a324d005220e4
+result_runtime: NOT_RUN_BY_CURSOR
+real_task_commit: cff4e8aabf8e481e9943509256029c9c049d4b32
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = user-attested manual n8n fixture-only mapping preview run + docs evidence commit in origin/main + redaction check exit 0; no live classifier call; no HTTP/Telegram/webhook/schedule; no workflow 40/41/42 mutation; no workflow 49; no PM-34 unlock; no permanent automation declared
+verification_rule: PASS = redacted inactive manual test-safe n8n workflow template committed to origin/main + redaction check exit 0; no runtime by Cursor; no n8n import/export/execute; live classifier not called by Cursor; no Telegram/webhook/schedule/Funnel; no workflow 40/41/42 mutation; no workflow 49; no PM-34 unlock; D-0025-L runtime PASS not declared
 remote_hash_verbatim: PENDING_SELF_REFERENCE
-timestamp_utc: 2026-06-05T23:16:05Z
+timestamp_utc: 2026-06-06T00:08:33Z
 ```
 
-- `real_task_commit` = `docs: record D-0024-M mapping preview runtime PASS` (`f1f48fb`).
-- `result_runtime` = **PASS_ATTESTATO_UTENTE** — user manually ran workflow 55 fixture-only mapping preview in n8n; no runtime by Cursor.
+- `real_task_commit` = `docs: add D-0025-L live mapping preview workflow template` (`cff4e8a`).
+- `result_runtime` = **NOT_RUN_BY_CURSOR** — live classifier mapping preview template commit; manual import/run pending.
 - `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo (`PROJECT_VISION.md` §8.1).
 
 Snapshot task commit:
 
 ```text
-f1f48fb8ab6c6215c0fc2122473a324d005220e4	refs/heads/main
+cff4e8aabf8e481e9943509256029c9c049d4b32	refs/heads/main
 ```
 
 ---
@@ -52,6 +52,13 @@ f1f48fb8ab6c6215c0fc2122473a324d005220e4	refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0024m-mapping-preview-runtime-pass
+  real_task_commit: f1f48fb8ab6c6215c0fc2122473a324d005220e4
+  rolling_report_commit: b53811b0b652954322b2480d7b0d9e209d7776cb
+  result_cursor: PASS
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-06-05T23:16:05Z
+
 - task_ref: d0024m-mapping-preview-workflow-template
   real_task_commit: faa758ea59dff3c8e13668bd71ec8571137f83b7
   rolling_report_commit: a3694119bae795b45f1fec2715ff08e5d2b25508
@@ -79,11 +86,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-05T19:14:04Z
-
-- task_ref: classifier-tailscale-serve-auth-acl-pass
-  real_task_commit: a8a198fa16fe10a709006c3d6f8ceb8f5d17d93f
-  rolling_report_commit: 45231516831a9e6936c86e09ff1da1fb2d97d72c
-  result_cursor: PASS
-  result_runtime: PASS_ATTESTATO_UTENTE
-  timestamp_utc: 2026-06-04T01:03:27Z
 ```
