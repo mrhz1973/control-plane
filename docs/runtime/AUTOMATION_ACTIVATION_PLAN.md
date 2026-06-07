@@ -54,6 +54,17 @@ Each gate is a **separate explicit decision**. PASS on one gate **does not** aut
 | **Rollback / kill switch** | N/A — no runtime change |
 | **Stop conditions** | Missing workflow; unexpected active schedule; credential/URL drift requiring Git commit of secrets |
 
+#### Gate A evidence — PASS ATTESTATO UTENTE (2026-06-07)
+
+- **Session:** `docs/sessions/2026-06-07-control-plane-gate-a-readiness-audit-pass.md`
+- **Method:** Read-only n8n UI inventory + classifier `/healthz` (no token); **no workflow execution**
+- **Workflows:** 45/Wd inactive; 46/We present, Telegram Trigger not published-active, live BLOCKED/PENDING; 47/Wf Manual + Schedule TEST ONLY **disabled**; 48/Wg callable/published, not scheduled; 49/Wh Manual only, inactive
+- **Data Tables (test):** `control_plane_decisions_test`, `wf47_polling_state_test`, `wg_decision_state_test` — present
+- **Classifier:** `/healthz` HTTP 200, `{"status":"ok"}`
+- **Unchanged:** inbound/loop NOT ACTIVE; PM-34 BLOCKED; `n8n_ready=false`; Option 4 not started
+
+Gates B–F: **not PASS** unless separately attested.
+
 ### Gate B — Limited manual runtime re-verification (existing assets)
 
 | | |

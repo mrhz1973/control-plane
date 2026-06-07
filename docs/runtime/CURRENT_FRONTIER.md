@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-07 — D-0028-A Option 2 automation activation plan (docs-only).
+Ultimo aggiornamento: 2026-06-07 — Gate A readiness audit PASS ATTESTATO UTENTE.
 
 ---
 
@@ -13,12 +13,13 @@ Ultimo aggiornamento: 2026-06-07 — D-0028-A Option 2 automation activation pla
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
 - Classifier / mapping preview: **D-0021**–**D-0025-L** PASS; **D-0027-R** Wd45 reverification PASS.
-- **D-0028-A Option 2:** automation activation **plan** committed (docs-only) — `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`. **Option 4 not started.**
+- **D-0028-A Option 2:** activation plan committed. **Gate A** readiness audit **PASS ATTESTATO UTENTE** (2026-06-07). **Option 4 not started.**
 - **`n8n_ready=false`** unchanged. **No permanent automation declared**. Pezzi collegati ≠ loop avviato.
 
 ## Latest verified PASS
 
-- **D-0027-R — Wd45 runtime reverification**: **PASS ATTESTATO UTENTE** — existing workflow **45/Wd**; test-only `D-9999-T`; `telegram_send_ok`, `message_id=748`. **Not** operational loop activation. Evidenza: `docs/sessions/2026-06-07-control-plane-wd45-d9999t-runtime-reverification-pass.md`.
+- **Gate A — Readiness audit (D-0028-A)**: **PASS ATTESTATO UTENTE** — read-only inventory 45/46/47/48/49 + Data Tables test + classifier `/healthz` OK. **Not** loop activation. Evidenza: `docs/sessions/2026-06-07-control-plane-gate-a-readiness-audit-pass.md`.
+- **D-0027-R — Wd45 runtime reverification**: **PASS ATTESTATO UTENTE** — existing workflow **45/Wd**; test-only `D-9999-T`; `telegram_send_ok`, `message_id=748`. Evidenza: `docs/sessions/2026-06-07-control-plane-wd45-d9999t-runtime-reverification-pass.md`.
 - **D-0025-L — Live classifier mapping preview**: **PASS ATTESTATO UTENTE** — workflow `56`. Evidenza: `docs/sessions/2026-06-07-control-plane-d0025l-live-mapping-preview-runtime-pass.md`.
 - **D-0024-M — Decision Packet mapping preview (fixture-only)**: **PASS ATTESTATO UTENTE** — workflow `55`. Evidenza: `docs/sessions/2026-06-06-control-plane-d0024m-mapping-preview-runtime-pass.md`.
 - **D-0023-N — Decision Packet mapping design**: **PASS** (docs-only). Evidenza: `docs/contracts/decision-packet-mapping-v1.md`, `docs/sessions/2026-06-05-control-plane-d0023n-decision-packet-mapping-design.md`.
@@ -49,7 +50,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 ## Next gate
 
-**Not auto-started.** Choose explicitly: **Gate A** readiness audit (docs/runtime preflight, no run) per `AUTOMATION_ACTIVATION_PLAN.md`, **or** future **D-0028-A Option 4** controlled activation — **separate decision**; Option 4 **not** begun by plan commit. Boundaries: NO PM-34 · NO `n8n_ready=true` · NO wf40/41/42 mutation · NO new workflow unless explicit · NO permanent schedule/webhook/Telegram Trigger/Funnel · pezzi collegati ≠ loop avviato.
+**Not auto-started.** Next explicit choice: **Gate B** limited manual runtime re-verification (existing assets) **or** future **D-0028-A Option 4** controlled activation — **separate decision**; Option 4 **not** begun. Boundaries: NO PM-34 · NO `n8n_ready=true` · NO wf40/41/42 mutation · NO new workflow unless explicit · NO permanent schedule/webhook/Telegram Trigger/Funnel · pezzi collegati ≠ loop avviato.
 
 ## Redaction hygiene
 
@@ -65,7 +66,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 - Inbound/decision-store: sessions under `docs/sessions/2026-05-31-*`, `docs/sessions/2026-06-01-*`, `docs/sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md`.
 - Mapping preview / Wd reverification: `docs/sessions/2026-06-06-control-plane-d0024m-*`, `docs/sessions/2026-06-07-control-plane-d0025l-*`, `docs/sessions/2026-06-07-control-plane-wd45-d9999t-runtime-reverification-pass.md`.
-- D-0028-A activation plan: `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`, `docs/sessions/2026-06-07-control-plane-d0028a-automation-activation-plan.md`.
+- D-0028-A / Gate A: `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`, `docs/sessions/2026-06-07-control-plane-d0028a-automation-activation-plan.md`, `docs/sessions/2026-06-07-control-plane-gate-a-readiness-audit-pass.md`.
 - Hash: `docs/runtime/LAST_CURSOR_REPORT.md`.
 
 ## Manutenzione
