@@ -13,27 +13,26 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: gate-a-readiness-audit-pass
+task_ref: gate-b-inbound-one-shot-pass
 result_cursor: PASS
 result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: 7fd7377c0573b0e56e3784d3c6063bbc955e26c1
+real_task_commit: 83105bdf185135c4cf8c99dc31f5ec93dd70daab
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = user-attested Gate A read-only readiness audit + docs evidence commit in origin/main + redaction check exit 0; no workflow execution by Cursor; no n8n; no new workflow; no activation; Option 4 not started; PM-34 BLOCKED; n8n_ready=false
+verification_rule: PASS = user-attested Gate B inbound one-shot D-1000-T close via 47/Wf + docs evidence commit in origin/main + redaction check exit 0; no runtime by Cursor; no new workflow; no Data Table row deletion; no permanent loop; Option 4 not active; PM-34 BLOCKED; n8n_ready=false
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 timestamp_utc: 2026-06-07
 ```
 
-- Registrato **Gate A readiness audit PASS** (read-only inventory + classifier healthz).
-- Workflows **45/46/47/48/49** inventoried; test Data Tables present; `/healthz` HTTP 200 `status:ok` (no token).
-- Nessun workflow eseguito da Cursor. Nessun nuovo workflow. **Option 4 non avviata.**
-- **PM-34 BLOCKED.** **`n8n_ready=false`**. Pezzi collegati ≠ loop avviato.
+- Registrato **Gate B inbound one-shot PASS**. **`D-1000-T`** closed via **47/Wf** manual polling; `selected_option=1`, `update_id=986228573`.
+- **`D-1000-T`** send duplicate `message_id=753`/`754` — diagnostic only. **`D-9999-T`** open residue — not deleted.
+- Nessun nuovo workflow. Nessun loop permanente attivo. **PM-34 BLOCKED.** **`n8n_ready=false`**.
 - `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo (`PROJECT_VISION.md` §8.1).
 
 Snapshot task commit:
 
 ```text
-7fd7377c0573b0e56e3784d3c6063bbc955e26c1	refs/heads/main
+83105bdf185135c4cf8c99dc31f5ec93dd70daab	refs/heads/main
 ```
 
 ---
@@ -54,6 +53,13 @@ Snapshot task commit:
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: gate-a-readiness-audit-pass
+  real_task_commit: 7fd7377c0573b0e56e3784d3c6063bbc955e26c1
+  rolling_report_commit: bd497bdece4b3ced4d112dc1a104ceb137c4fa33
+  result_cursor: PASS
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-06-07
+
 - task_ref: d0028a-automation-activation-plan
   real_task_commit: f42c06e2a1881141dfa1342746fc22e4651007c4
   rolling_report_commit: e36d91d02efdb2ceb6528f7d43069a347feeedff
@@ -81,11 +87,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-07
-
-- task_ref: d0024m-mapping-preview-runtime-pass
-  real_task_commit: f1f48fb8ab6c6215c0fc2122473a324d005220e4
-  rolling_report_commit: b53811b0b652954322b2480d7b0d9e209d7776cb
-  result_cursor: PASS
-  result_runtime: PASS_ATTESTATO_UTENTE
-  timestamp_utc: 2026-06-05T23:16:05Z
 ```
