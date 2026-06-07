@@ -52,6 +52,41 @@ function Get-Sanitized {
     return $t.Trim()
 }
 
+function Get-LatestRealTaskCommitFromReport {
+    param([string]$Content)
+
+    if ([string]::IsNullOrWhiteSpace($Content)) { return $null }
+
+    # Scope to ## LATEST only; stop at --- or the next ## heading (e.g. ## Rules, ## HISTORY).
+    $latestMatch = [regex]::Match(
+        $Content,
+        '(?ms)^##\s+LATEST\s*\r?\n(.*?)(?=^\r?\n---\r?\n|^\r?\n##\s|\z)'
+    )
+    if (-not $latestMatch.Success) { return $null }
+
+    $latestSection = $latestMatch.Groups[1].Value
+
+    # First fenced yaml block inside LATEST (the LATEST snapshot block).
+    $yamlMatch = [regex]::Match(
+        $latestSection,
+        '(?ms)^```(?:yaml)?\s*\r?\n(.*?\r?\n)```'
+    )
+    if (-not $yamlMatch.Success) { return $null }
+
+    $yamlBlock = $yamlMatch.Groups[1].Value
+
+    # Exactly one real_task_commit in the LATEST yaml block; never scan HISTORY.
+    $commitMatches = [regex]::Matches(
+        $yamlBlock,
+        '(?m)^\s*real_task_commit:\s*([0-9a-fA-F]+)\s*$'
+    )
+    if ($commitMatches.Count -ne 1) { return $null }
+
+    $parsed = $commitMatches[0].Groups[1].Value.Trim()
+    if ($parsed -match '^[0-9a-fA-F]{7,40}$') { return $parsed }
+    return $null
+}
+
 # Defaults so the JSON contract is complete even on early failure.
 $result = "FAIL"
 $failureReasons = New-Object System.Collections.Generic.List[string]
@@ -96,8 +131,7 @@ try {
         if (Test-Path -LiteralPath $reportPath -PathType Leaf) {
             try {
                 $content = Get-Content -LiteralPath $reportPath -Raw -ErrorAction Stop
-                $m = [regex]::Match($content, '(?m)^\s*real_task_commit:\s*([0-9a-fA-F]+)\s*$')
-                if ($m.Success) { $parsedCommit = $m.Groups[1].Value.Trim() }
+                $parsedCommit = Get-LatestRealTaskCommitFromReport -Content $content
             }
             catch {
                 $parsedCommit = $null
