@@ -33,13 +33,13 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Latest verified snapshot
 
 ```yaml
-task_ref: handoff-post-push-verification-rule
-verified_task_commit: 94ed080996a6d5c77691aa4ed1b573439c51a2e2
-verified_rolling_report_commit: 890b104ea634bf35800015cbb5c4e031d7aab6bc
-verified_through_commit: 890b104ea634bf35800015cbb5c4e031d7aab6bc
-observed_head: 890b104ea634bf35800015cbb5c4e031d7aab6bc
-observed_origin_main: 890b104ea634bf35800015cbb5c4e031d7aab6bc
-observed_ls_remote_main: 890b104ea634bf35800015cbb5c4e031d7aab6bc
+task_ref: last-handoff-verify-artifact
+verified_task_commit: 3cb075a4b7b6b2b1b611a80dc15089fdcf485ee6
+verified_rolling_report_commit: 7fac1add9a7c515a5d55f21d87f61a63935815bd
+verified_through_commit: 7fac1add9a7c515a5d55f21d87f61a63935815bd
+observed_head: 7fac1add9a7c515a5d55f21d87f61a63935815bd
+observed_origin_main: 7fac1add9a7c515a5d55f21d87f61a63935815bd
+observed_ls_remote_main: 7fac1add9a7c515a5d55f21d87f61a63935815bd
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
@@ -67,20 +67,20 @@ git status --short
 (clean — no output lines)
 
 git log --oneline -5
+7fac1ad docs: update rolling Cursor report
+3cb075a docs: add last handoff verification artifact
 890b104 docs: update rolling Cursor report
 94ed080 docs: add handoff post-push verification rule
 46f6638 docs: update rolling Cursor report
-83105bd docs: record Gate B inbound one-shot PASS
-bd497bd docs: update rolling Cursor report
 
 git rev-parse HEAD
-890b104ea634bf35800015cbb5c4e031d7aab6bc
+7fac1add9a7c515a5d55f21d87f61a63935815bd
 
 git rev-parse origin/main
-890b104ea634bf35800015cbb5c4e031d7aab6bc
+7fac1add9a7c515a5d55f21d87f61a63935815bd
 
 git ls-remote origin main
-890b104ea634bf35800015cbb5c4e031d7aab6bc	refs/heads/main
+7fac1add9a7c515a5d55f21d87f61a63935815bd	refs/heads/main
 ```
 
 ---
@@ -131,3 +131,5 @@ aggio control
 ```
 
 **Nota:** il commit che aggiorna questo file è verificabile tramite output post-push del task corrente o backfill al task successivo — **non** tramite auto-riferimento nel medesimo snapshot.
+
+**Futuro:** [`AUTOMATIC_POST_PUSH_VERIFIER.md`](AUTOMATIC_POST_PUSH_VERIFIER.md) — worker/n8n popolerà questo file automaticamente; fino ad allora aggiornamento manuale o via Cursor task.

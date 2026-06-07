@@ -39,6 +39,22 @@ Evidence index: `docs/sessions/`, `docs/runtime/CURRENT_FRONTIER.md`, `docs/N8N_
 
 ---
 
+## Micro-step propedeutico — Automatic post-push verifier (before permanent loop)
+
+**Status:** Design **PASS** (docs-only, 2026-06-07). **Not implemented.** **No runtime.**
+
+| | |
+|---|---|
+| **Purpose** | Replace manual copy-paste of git verify-only output after Cursor tasks; deterministic hash check without LLM |
+| **Design doc** | [`AUTOMATIC_POST_PUSH_VERIFIER.md`](AUTOMATIC_POST_PUSH_VERIFIER.md) |
+| **Precondition for** | Any future permanent automation loop (Gate E/F); complements `LAST_HANDOFF_VERIFY.md` |
+| **Next implementation gate** | Test-safe Manual Trigger workflow + worker script — **separate** explicit decision; **not** Gate C/D/E/F PASS |
+| **Unchanged** | PM-34 **BLOCKED** · `n8n_ready=false` · no new production workflow in this design step |
+
+Gates C–F: **not PASS** unless separately attested.
+
+---
+
 ## Sequenza di attivazione progressiva (gate separati)
 
 Each gate is a **separate explicit decision**. PASS on one gate **does not** auto-start the next.
@@ -166,4 +182,5 @@ Option 4 **does not** begin when this plan is committed. It requires choosing wh
 - [`CURRENT_FRONTIER.md`](CURRENT_FRONTIER.md) — authoritative compact state
 - [`N8N_WORKFLOW_NAMING.md`](../N8N_WORKFLOW_NAMING.md) — workflow registry
 - [`decision-store-shared-open-close-design.md`](../decision-store-shared-open-close-design.md)
+- [`AUTOMATIC_POST_PUSH_VERIFIER.md`](AUTOMATIC_POST_PUSH_VERIFIER.md) — post-push verify design (docs-only)
 - Session: `docs/sessions/2026-06-07-control-plane-d0028a-automation-activation-plan.md`
