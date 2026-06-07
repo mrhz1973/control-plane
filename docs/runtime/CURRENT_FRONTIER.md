@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-08 — runtime post-push verifier hardened + auto-source ExpectedTaskCommit.
+Ultimo aggiornamento: 2026-06-08 — runtime post-push verifier LATEST-scoped auto-source parser.
 
 ---
 
@@ -15,7 +15,7 @@ Ultimo aggiornamento: 2026-06-08 — runtime post-push verifier hardened + auto-
 - Classifier / mapping preview: **D-0021**–**D-0025-L** PASS; **D-0027-R** Wd45 reverification PASS.
 - **D-0028-A Option 2:** activation plan committed. **Gate A** PASS · **Gate B** inbound one-shot **PASS ATTESTATO UTENTE** (2026-06-07). **Option 4 not permanent loop.**
 - **`n8n_ready=false`** unchanged. **No permanent automation declared**. Pezzi collegati ≠ loop avviato.
-- **Automatic post-push verifier:** design docs-only **PASS** (2026-06-07). Not implemented. See `docs/runtime/AUTOMATIC_POST_PUSH_VERIFIER.md`.
+- **Runtime post-push verifier:** `tools/runtime-post-push-verifier.ps1` **implementato e hardened** — JSON strutturato, exit code coerenti, auto-source **scoped al blocco LATEST** di `LAST_CURSOR_REPORT.md`; override manuale opzionale. Design futuro n8n/worker: `docs/runtime/AUTOMATIC_POST_PUSH_VERIFIER.md` — **not wired, no HTTP wrapper, no n8n runtime**.
 
 ## Latest verified PASS
 
@@ -52,7 +52,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 ## Next gate
 
-**Not auto-started.** Recommended next: **test-safe implementation** of automatic post-push verifier (Manual Trigger only, inactive) — **not** PM-34, **not** permanent loop. Then: hardening/cleanup **`D-9999-T`** + **47/Wf** target, **or** Gate C (We/46 HTTPS) / Option 4 — **separate explicit decision** only. Boundaries: NO PM-34 · NO `n8n_ready=true` · NO permanent loop · NO Data Table row deletion without gate · pezzi collegati ≠ loop avviato.
+**Not auto-started.** Recommended next: **n8n/worker wrapper** for post-push verifier (Manual Trigger only, inactive) — separate Decision Packet; **not** PM-34, **not** permanent loop. Then: hardening/cleanup **`D-9999-T`** + **47/Wf** target, **or** Gate C (We/46 HTTPS) / Option 4 — **separate explicit decision** only. Boundaries: NO PM-34 · NO `n8n_ready=true` · NO permanent loop · wf40/42 untouched · pezzi collegati ≠ loop avviato.
 
 ## Redaction hygiene
 
@@ -63,7 +63,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 - **Invariante §8.1 PROJECT_VISION:** report Cursor post-push deve includere output git verbatim (incluso `git ls-remote origin main`). Orchestratore **non** chiede shell utente se output già presente; verify-only Cursor se manca; shell utente = fallback finale.
 - **`LAST_HANDOFF_VERIFY.md`:** artefatto persistente per `aggio control`; snapshot backfilled to `7fac1ad` (last-handoff-verify-artifact); `artifact_commit: PENDING_SELF_REFERENCE`. **PM-34 BLOCKED** · **`n8n_ready=false`** · nessun runtime.
 - **`AUTOMATIC_POST_PUSH_VERIFIER.md`:** design docs-only — future n8n/worker replaces manual verify paste; LLM not needed for hash equality.
-- **`tools/runtime-post-push-verifier.ps1`:** **hardened runtime verifier validato** (structured JSON, PASS→exit 0 / FAIL→exit 1). **Auto-source** di `real_task_commit` da `LAST_CURSOR_REPORT.md` quando `-ExpectedTaskCommit` è omesso; **override manuale** ancora disponibile; fail-closed `expected_commit_unreadable`. Verifica indipendente contro il remoto (non rende il report fonte di PASS). **No wrapper HTTP** · **no n8n runtime** · **PM-34 BLOCKED** · **`n8n_ready=false`**.
+- **`tools/runtime-post-push-verifier.ps1`:** **runtime verifier implementato e hardened** (structured JSON, PASS→exit 0 / FAIL→exit 1). **Auto-source scoped al blocco LATEST** di `LAST_CURSOR_REPORT.md` (mai da HISTORY); override manuale opzionale; fail-closed `expected_commit_unreadable`. Verifica indipendente contro il remoto. **No wrapper HTTP** · **no n8n runtime** · wf40/42 untouched · **PM-34 BLOCKED** · **`n8n_ready=false`**.
 
 ## Do-not-do
 
