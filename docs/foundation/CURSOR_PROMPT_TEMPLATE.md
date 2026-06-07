@@ -70,9 +70,23 @@ Il corpo copiabile deve includere, in ordine logico:
 6. Istruzioni di commit selettivo e push.
 7. Contratto di report finale con output git **verbatim** e evidenza richiesta.
 
-**Report finale Cursor:** termina con evidenza e output git verbatim richiesti, **non** con comandi di ritorno chat/orchestratore.
+**Report finale Cursor (obbligatorio dopo commit/push):** termina con evidenza e output git verbatim, **non** con comandi di ritorno chat/orchestratore. Deve includere **sempre** l'output testuale verbatim di:
 
-**Gate diagnostici umani** (solo se reali): chiedere output locale all'umano solo per workspace dirty inatteso, repo/branch sbagliato, pull rifiutato, auth failure, conflitto, clone mancante, workstation ambigua, sospetta corruzione repo.
+```bash
+git log --oneline -5
+git status --short
+git rev-parse HEAD
+git rev-parse origin/main
+git branch --show-current
+git show --stat HEAD
+git ls-remote origin main
+```
+
+Il PASS remoto si chiude su `HEAD` = `origin/main` = `git ls-remote origin main`, branch `main`, workspace pulito. **Niente tabelle** al posto dell'output; **niente riassunti** al posto di `git ls-remote`.
+
+**Orchestratore:** se il report Cursor contiene già questi output completi, **non** chiedere all'utente PowerShell per verifica hash. Se mancano, preparare un prompt **verify-only** per Cursor (solo comandi sopra, zero edit) prima di escalare shell manuale utente (`PROJECT_VISION.md` §8.1 Handoff / post-push verification invariant).
+
+**Gate diagnostici umani** (solo se reali): chiedere output locale all'umano solo per workspace dirty inatteso, repo/branch sbagliato, pull rifiutato, auth failure, conflitto, clone mancante, workstation ambigua, sospetta corruzione repo — **non** come fallback di routine post-push quando Cursor è disponibile.
 
 ---
 

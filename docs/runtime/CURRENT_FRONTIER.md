@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-07 — Gate B inbound one-shot PASS ATTESTATO UTENTE.
+Ultimo aggiornamento: 2026-06-07 — handoff post-push verification invariant (§8.1 PROJECT_VISION).
 
 ---
 
@@ -56,6 +56,10 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 ## Redaction hygiene
 
 - Before commits touching docs/workflow artifacts: run `bash tools/redaction-check.sh`.
+
+## Handoff / post-push verification
+
+- **Invariante §8.1 PROJECT_VISION:** report Cursor post-push deve includere output git verbatim (incluso `git ls-remote origin main`). Orchestratore **non** chiede shell utente se output già presente; verify-only Cursor se manca; shell utente = fallback finale.
 
 ## Do-not-do
 

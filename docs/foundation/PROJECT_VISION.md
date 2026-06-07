@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.10 — 2026-06-02  
-**Versione precedente:** 2.9 — 2026-05-31 (sostituita)  
+**Versione:** 2.11 — 2026-06-07  
+**Versione precedente:** 2.10 — 2026-06-02 (sostituita)  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -410,6 +410,15 @@ git ls-remote origin main
 
 Il report finale Cursor deve contenere l'**output testuale verbatim** di questi comandi, non una tabella e non un riassunto. Un SUCCESS senza questi output **non** vale PASS.
 
+**Handoff / post-push verification invariant (anti-regressione):**
+
+- Dopo ogni task Cursor che fa commit/push, il **report finale Cursor** deve includere sempre l'output verbatim dei comandi post-push elencati sopra, **incluso** `git ls-remote origin main`.
+- Il **PASS remoto** si chiude quando: `git rev-parse HEAD` = `git rev-parse origin/main` = hash da `git ls-remote origin main`; `git branch --show-current` = `main`; `git status --short` = workspace pulito.
+- **Orchestratore (GPT):** se il report Cursor contiene già questi output completi e coerenti, **non** chiedere all'utente di rieseguire PowerShell o shell locale per verifica hash. Chiudere il PASS remoto **direttamente** dal report Cursor (e/o da `docs/runtime/LAST_CURSOR_REPORT.md` su GitHub).
+- Se gli output post-push **mancano** o sono **incompleti/ambigui**, l'orchestratore **non** deve chiedere subito shell manuale all'utente: preparare prima un **prompt Cursor verify-only** (solo i comandi post-push, nessuna modifica file).
+- **Shell manuale utente** = **fallback finale** soltanto: Cursor non disponibile; repo locale non accessibile da Cursor; output Cursor ancora ambiguo dopo retry verify-only.
+- Ogni **handoff**, **prompt Cursor** e **report post-task** deve ricordare questa invariante. L'obiettivo low-touch: eliminare micro-interazioni meccaniche ripetute (es. chiedere `git ls-remote` all'utente dopo ogni `aggio control` quando Cursor ha già stampato l'output).
+
 **Report rolling Cursor (obbligatorio dopo ogni push di task reale):** dopo il push del commit reale, Cursor deve catturare verbatim `git ls-remote origin main`, `git log --oneline -5` e `git status --short`, e scriverli in `docs/runtime/LAST_CURSOR_REPORT.md`. Il report registra il commit reale (commit 1). Il commit leggero che aggiorna solo il report (commit 2) **non** si ri-registra: `LATEST.real_task_commit` resta lo SHA del commit 1. I campi `rolling_report_commit` e `remote_hash_verbatim` del blocco LATEST restano `PENDING_SELF_REFERENCE` finché quel LATEST è il più recente, e vengono backfillati con lo SHA del rispettivo commit-report quando il LATEST viene archiviato in HISTORY al task successivo. Non esiste un commit finalize-hash dedicato. Il report **non** sostituisce `git ls-remote`, ma rende persistente su GitHub l'evidenza dell'hash per handoff e verificatore.
 
 ### 8.2 Script npm
@@ -494,7 +503,8 @@ Contenuto minimo:
 - riferimento a `PROJECT_VISION.md` come entry point della nuova chat;
 - `docs/runtime/LAST_CURSOR_REPORT.md` se esiste, in particolare `LATEST.real_task_commit`;
 - hash remoto da `git ls-remote origin main` diretto quando possibile;
-- **mai** usare report incollati in chat come verifica primaria del PASS.
+- **mai** usare report incollati in chat come verifica primaria del PASS;
+- **regola orchestratore:** se l'ultimo report Cursor include già l'output post-push verbatim completo (`§8.1`), **non** chiedere all'utente shell manuale; in assenza di output, prompt Cursor verify-only prima del fallback utente (`§8.1` Handoff / post-push verification invariant).
 
 ### 11.4 Backlog futuro — handoff via Ollama stimatore
 
@@ -638,6 +648,7 @@ In una frase: **sto costruendo una fabbrica, non un singolo prodotto.** La fabbr
 | 2.9 | 2026-05-31 | Aggiunta §7.9 anti-burocrazia / momentum e relativo invariante in §10: PREP PASS solo se rimuove un blocco reale; per catena confinata, dopo 1 rehearsal import/reimport + max 2 run manuali ripetuti avanzare al prossimo gate reale o marcare BLOCKED con blocker concreto; test opzionali solo con rischio nominato; test non deterministici vietati come PASS; PASS su output deterministico / hash-commit / runtime attestato dall'utente. Eccezione chat_id invariata. |
 
 | 2.10 | 2026-06-02 | §8.1: chiarito che rolling_report_commit/remote_hash_verbatim del LATEST restano PENDING_SELF_REFERENCE e si backfillano all'archiviazione in HISTORY; nessun commit finalize-hash dedicato. Allinea PROJECT_VISION alla pratica già in uso. |
+| 2.11 | 2026-06-07 | §8.1: invariante handoff/post-push verification anti-regressione — Cursor stampa output git verbatim; orchestratore non chiede shell utente se output presente; verify-only Cursor prima del fallback manuale. §11.3: puntatore orchestratore. |
 
 ---
 
