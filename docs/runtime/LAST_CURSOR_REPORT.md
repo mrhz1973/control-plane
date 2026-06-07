@@ -13,26 +13,27 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0028a-automation-activation-plan
+task_ref: gate-a-readiness-audit-pass
 result_cursor: PASS
-result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: f42c06e2a1881141dfa1342746fc22e4651007c4
+result_runtime: PASS_ATTESTATO_UTENTE
+real_task_commit: 7fd7377c0573b0e56e3784d3c6063bbc955e26c1
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = docs-only automation activation plan commit in origin/main + CURRENT_FRONTIER update + redaction check exit 0; no runtime by Cursor; no n8n; no new workflow; no activation; D-0028-A Option 4 not started; PM-34 BLOCKED; n8n_ready=false
+verification_rule: PASS = user-attested Gate A read-only readiness audit + docs evidence commit in origin/main + redaction check exit 0; no workflow execution by Cursor; no n8n; no new workflow; no activation; Option 4 not started; PM-34 BLOCKED; n8n_ready=false
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 timestamp_utc: 2026-06-07
 ```
 
-- Creato piano docs-only per attivazione progressiva automazione control-plane (`AUTOMATION_ACTIVATION_PLAN.md`).
-- Nessun runtime n8n. Nessun nuovo workflow. Futura **Option 4** resta gate separato — **non avviata**.
+- Registrato **Gate A readiness audit PASS** (read-only inventory + classifier healthz).
+- Workflows **45/46/47/48/49** inventoried; test Data Tables present; `/healthz` HTTP 200 `status:ok` (no token).
+- Nessun workflow eseguito da Cursor. Nessun nuovo workflow. **Option 4 non avviata.**
 - **PM-34 BLOCKED.** **`n8n_ready=false`**. Pezzi collegati ≠ loop avviato.
 - `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo (`PROJECT_VISION.md` §8.1).
 
 Snapshot task commit:
 
 ```text
-f42c06e2a1881141dfa1342746fc22e4651007c4	refs/heads/main
+7fd7377c0573b0e56e3784d3c6063bbc955e26c1	refs/heads/main
 ```
 
 ---
@@ -53,6 +54,13 @@ f42c06e2a1881141dfa1342746fc22e4651007c4	refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0028a-automation-activation-plan
+  real_task_commit: f42c06e2a1881141dfa1342746fc22e4651007c4
+  rolling_report_commit: e36d91d02efdb2ceb6528f7d43069a347feeedff
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-07
+
 - task_ref: wd45-d9999t-runtime-reverification-pass
   real_task_commit: 17594d66721b4a3aca815bfccb9ac1566d692c4e
   rolling_report_commit: 1e1db5ef667635ee1d8eedab48323dec014b584c
@@ -73,13 +81,6 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-07
-
-- task_ref: d0025l-live-mapping-preview-workflow-template
-  real_task_commit: cff4e8aabf8e481e9943509256029c9c049d4b32
-  rolling_report_commit: 4dd1c76d7b197f5c4e32b5c1ce5763f080c241fd
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-06T00:08:33Z
 
 - task_ref: d0024m-mapping-preview-runtime-pass
   real_task_commit: f1f48fb8ab6c6215c0fc2122473a324d005220e4
