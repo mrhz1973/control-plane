@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-07 — D-0026-S Decision Packet / inbound state reconciliation (docs-only).
+Ultimo aggiornamento: 2026-06-07 — D-0027-R Wd45 D-9999-T runtime reverification PASS ATTESTATO UTENTE.
 
 ---
 
@@ -17,6 +17,7 @@ Ultimo aggiornamento: 2026-06-07 — D-0026-S Decision Packet / inbound state re
 
 ## Latest verified PASS
 
+- **D-0027-R — Wd45 runtime reverification**: **PASS ATTESTATO UTENTE** — existing workflow **45/Wd**; test-only `D-9999-T`; `telegram_send_ok`, `message_id=748`. **Not** operational loop activation. Evidenza: `docs/sessions/2026-06-07-control-plane-wd45-d9999t-runtime-reverification-pass.md`.
 - **D-0025-L — Live classifier mapping preview**: **PASS ATTESTATO UTENTE** — workflow `56`. Evidenza: `docs/sessions/2026-06-07-control-plane-d0025l-live-mapping-preview-runtime-pass.md`.
 - **D-0024-M — Decision Packet mapping preview (fixture-only)**: **PASS ATTESTATO UTENTE** — workflow `55`. Evidenza: `docs/sessions/2026-06-06-control-plane-d0024m-mapping-preview-runtime-pass.md`.
 - **D-0023-N — Decision Packet mapping design**: **PASS** (docs-only). Evidenza: `docs/contracts/decision-packet-mapping-v1.md`, `docs/sessions/2026-06-05-control-plane-d0023n-decision-packet-mapping-design.md`.
@@ -28,7 +29,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 | Asset | Stato | Note |
 |-------|--------|------|
-| **45 / Wd** | **PASS ATTESTATO UTENTE** (2026-05-31) | Manual → `/classify` → Telegram Send Decision Packet. Evidenza: `telegram_send_ok`, `message_id=678`, `decision_id=D-9998-T`. **Non va ricreato.** Session: `docs/sessions/2026-05-31-control-plane-wd-operational-decision-packet-b-live-pass.md`. Gate 3 re-run: `message_id=732` (2026-06-02). |
+| **45 / Wd** | **PASS ATTESTATO UTENTE** (2026-05-31) + **riverifica PASS ATTESTATO UTENTE** (2026-06-07) | Manual → `/classify` → Telegram Send Decision Packet. Original: `D-9998-T`, `message_id=678`. Riverifica: `D-9999-T`, `message_id=748`, `open_action=insert`. **Non va ricreato.** Sessions: `docs/sessions/2026-05-31-control-plane-wd-operational-decision-packet-b-live-pass.md`, `docs/sessions/2026-06-07-control-plane-wd45-d9999t-runtime-reverification-pass.md`. Gate 3 re-run 2026-06-02: `message_id=732`. Inbound **47/48/49 not activated**. |
 | **46 / We** | Package-prep **completato**; **live BLOCKED/PENDING** | HTTPS webhook required; **We live PASS NON registrato**. Session: `docs/sessions/2026-05-31-control-plane-we-telegram-interactive-buttons-live-blocked.md`. |
 | **47 / Wf** | **PASS multipli ATTESTATO UTENTE**; **ora off** | Data Table accept-once, limited-schedule runtime, live getUpdates, handoff 47→48. Non ridurre a “off/exists”. Sessions: `docs/sessions/2026-06-01-control-plane-wf47-*`. |
 | **48 / Wg** | **PASS**; **callable**; **non schedulato** | Manual validation + handoff 47→48 controllato/live. |
@@ -62,7 +63,7 @@ Separate operational step — **not yet decided**; **not** auto-started. Prossim
 ## Audit
 
 - Inbound/decision-store: sessions under `docs/sessions/2026-05-31-*`, `docs/sessions/2026-06-01-*`, `docs/sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md`.
-- Mapping preview: `docs/sessions/2026-06-06-control-plane-d0024m-*`, `docs/sessions/2026-06-07-control-plane-d0025l-*`.
+- Mapping preview / Wd reverification: `docs/sessions/2026-06-06-control-plane-d0024m-*`, `docs/sessions/2026-06-07-control-plane-d0025l-*`, `docs/sessions/2026-06-07-control-plane-wd45-d9999t-runtime-reverification-pass.md`.
 - Hash: `docs/runtime/LAST_CURSOR_REPORT.md`.
 
 ## Manutenzione

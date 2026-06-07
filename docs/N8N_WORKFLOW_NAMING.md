@@ -126,7 +126,7 @@ When a candidate becomes production:
 
 | ID | Workflow (letter) | State |
 |----|-------------------|--------|
-| **45** | **Wd** — Manual → `/classify` → Telegram Send Decision Packet | **PASS ATTESTATO UTENTE** (2026-05-31). Evidenza: `telegram_send_ok`, `message_id=678`, `decision_id=D-9998-T`. **Non ricreare.** Session: `docs/sessions/2026-05-31-control-plane-wd-operational-decision-packet-b-live-pass.md`. Gate 3 re-evidence 2026-06-02: `message_id=732`. |
+| **45** | **Wd** — Manual → `/classify` → Telegram Send Decision Packet | **PASS ATTESTATO UTENTE** (2026-05-31): `D-9998-T`, `message_id=678`. **Riverificato PASS ATTESTATO UTENTE** (2026-06-07): `D-9999-T`, `message_id=748`, `open_action=insert`. Workflow **esistente** — **non ricreare**. Test-only/manual; no inbound 47/48/49; no schedule/webhook/Funnel. **PM-34 BLOCKED.** **`n8n_ready=false`.** Sessions: `docs/sessions/2026-05-31-control-plane-wd-operational-decision-packet-b-live-pass.md`, `docs/sessions/2026-06-07-control-plane-wd45-d9999t-runtime-reverification-pass.md`. Gate 3 re-evidence 2026-06-02: `message_id=732`. |
 | **46** | **We** — Telegram interactive buttons | Package-prep **completato**; **live BLOCKED/PENDING** (HTTPS webhook). **We live PASS non registrato.** Session: `docs/sessions/2026-05-31-control-plane-we-telegram-interactive-buttons-live-blocked.md`. |
 | **47** | **Wf** — Telegram inbound polling getUpdates | **PASS multipli ATTESTATO UTENTE**: Data Table accept-once, limited-schedule runtime, live getUpdates, handoff 47→48. **Ora off.** Sessions: `docs/sessions/2026-06-01-control-plane-wf47-*`. |
 | **48** | **Wg** — Inbound decision state correlation | **PASS**: manual validation + handoff 47→48 controllato/live. **Callable**; **non schedulato**. |
