@@ -1,6 +1,8 @@
 ﻿[CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)]
+    # Optional manual override. When omitted, the verifier auto-sources
+    # real_task_commit from docs/runtime/LAST_CURSOR_REPORT.md (fail-closed).
+    [Parameter(Mandatory = $false)]
     [string]$ExpectedTaskCommit
 )
 
@@ -65,6 +67,7 @@ $taskCommitExists = $false
 $taskCommitInChain = $false
 $log = @()
 $errorMessage = $null
+$expectedCommitSource = if ([string]::IsNullOrWhiteSpace($ExpectedTaskCommit)) { "auto:LAST_CURSOR_REPORT.md" } else { "manual" }
 
 try {
     $top = Invoke-GitCmd @("rev-parse", "--show-toplevel")
@@ -74,6 +77,43 @@ try {
     else {
         if (-not $failureReasons.Contains("git_repo_invalid")) { $failureReasons.Add("git_repo_invalid") }
         if (-not $errorMessage) { $errorMessage = Get-Sanitized (($top.StdErr -join "; ")) }
+    }
+
+    # Auto-source ExpectedTaskCommit from LAST_CURSOR_REPORT.md when no manual
+    # override is supplied. Fail-closed: any unreadable/unparsable/invalid value
+    # yields expected_commit_unreadable and a FAIL result. The report only
+    # supplies the *declared* commit; PASS still depends on the independent
+    # remote checks below (chain + HEAD==origin==ls-remote + branch + clean).
+    if ($expectedCommitSource -eq "auto:LAST_CURSOR_REPORT.md") {
+        $reportPath = if ($topLevel) {
+            Join-Path $topLevel "docs/runtime/LAST_CURSOR_REPORT.md"
+        }
+        else {
+            "docs/runtime/LAST_CURSOR_REPORT.md"
+        }
+
+        $parsedCommit = $null
+        if (Test-Path -LiteralPath $reportPath -PathType Leaf) {
+            try {
+                $content = Get-Content -LiteralPath $reportPath -Raw -ErrorAction Stop
+                $m = [regex]::Match($content, '(?m)^\s*real_task_commit:\s*([0-9a-fA-F]+)\s*$')
+                if ($m.Success) { $parsedCommit = $m.Groups[1].Value.Trim() }
+            }
+            catch {
+                $parsedCommit = $null
+                if (-not $errorMessage) { $errorMessage = Get-Sanitized ($_.Exception.Message) }
+            }
+        }
+
+        if ($parsedCommit -and ($parsedCommit -match '^[0-9a-fA-F]{7,40}$')) {
+            $ExpectedTaskCommit = $parsedCommit
+        }
+        else {
+            $ExpectedTaskCommit = ""
+            if (-not $failureReasons.Contains("expected_commit_unreadable")) {
+                $failureReasons.Add("expected_commit_unreadable")
+            }
+        }
     }
 
     $fetch = Invoke-GitCmd @("fetch", "origin", "main")
@@ -125,15 +165,17 @@ try {
         $log = $lg.StdOut
     }
 
-    $ce = Invoke-GitCmd @("cat-file", "-e", $ExpectedTaskCommit)
-    $taskCommitExists = ($ce.ExitCode -eq 0)
-    if (-not $taskCommitExists) {
-        $failureReasons.Add("expected_task_commit_not_found")
-    }
-    else {
-        $mb = Invoke-GitCmd @("merge-base", "--is-ancestor", $ExpectedTaskCommit, "HEAD")
-        $taskCommitInChain = ($mb.ExitCode -eq 0)
-        if (-not $taskCommitInChain) { $failureReasons.Add("expected_task_commit_not_in_chain") }
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedTaskCommit)) {
+        $ce = Invoke-GitCmd @("cat-file", "-e", $ExpectedTaskCommit)
+        $taskCommitExists = ($ce.ExitCode -eq 0)
+        if (-not $taskCommitExists) {
+            $failureReasons.Add("expected_task_commit_not_found")
+        }
+        else {
+            $mb = Invoke-GitCmd @("merge-base", "--is-ancestor", $ExpectedTaskCommit, "HEAD")
+            $taskCommitInChain = ($mb.ExitCode -eq 0)
+            if (-not $taskCommitInChain) { $failureReasons.Add("expected_task_commit_not_in_chain") }
+        }
     }
 
     if ($branchOk -and $workspaceClean -and $hashMatch -and $taskCommitExists -and $taskCommitInChain) {
@@ -156,6 +198,7 @@ finally {
         result               = $result
         failure_reasons      = $reasonsArray
         expected_task_commit = $ExpectedTaskCommit
+        expected_commit_source = $expectedCommitSource
         task_commit_exists   = $taskCommitExists
         task_commit_in_chain = $taskCommitInChain
         top_level            = $topLevel
