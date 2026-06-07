@@ -63,7 +63,7 @@ Each gate is a **separate explicit decision**. PASS on one gate **does not** aut
 - **Classifier:** `/healthz` HTTP 200, `{"status":"ok"}`
 - **Unchanged:** inbound/loop NOT ACTIVE; PM-34 BLOCKED; `n8n_ready=false`; Option 4 not started
 
-Gates B–F: **not PASS** unless separately attested.
+Gates C–F: **not PASS** unless separately attested.
 
 ### Gate B — Limited manual runtime re-verification (existing assets)
 
@@ -75,6 +75,18 @@ Gates B–F: **not PASS** unless separately attested.
 | **Evidenza PASS** | User-attested session per run: sanitized Inspect output, `test_only=true`, no secrets; `telegram_send_ok` or equivalent checks documented |
 | **Rollback / kill switch** | Leave all test workflows **inactive/off**; disable any temporary schedule immediately; document `handoff ora` per PROJECT_VISION kill switch |
 | **Stop conditions** | Classifier unreachable; duplicate_open_attempt without new test id; any send outside test-only scope; unexpected wf40 side effect |
+
+#### Gate B evidence — PASS ATTESTATO UTENTE (2026-06-07)
+
+- **Session:** `docs/sessions/2026-06-07-control-plane-gate-b-inbound-one-shot-pass.md`
+- **Scope:** Limited inbound one-shot — **45/Wd** `D-1000-T` send → Telegram reply → **47/Wf** polling close on `control_plane_decisions_test`
+- **45/Wd:** `D-1000-T`, `telegram_send_ok=true`, `message_id=753`/`754` (duplicate diagnostic), `open_action=insert`
+- **47/Wf final:** `inspect_status=closed`, `decision_id=D-1000-T`, `selected_option=1`, `update_id=986228573`, `test_only=true`
+- **Store:** `D-1000-T` closed; `D-9998-T` closed (historical); **`D-9999-T` open** residue — not deleted
+- **Manual fix:** `open_decision_ids_test_only` retargeted `D-9998-T` → `D-1000-T` in n8n UI (no secrets in Git)
+- **Not done:** 48/Wg/49/Wh auto-promotion; permanent loop; PM-34 unlock; `n8n_ready=true`
+
+Gates C–F: **not PASS** unless separately attested.
 
 ### Gate C — We/46 live unblock plan (HTTPS webhook only)
 
