@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-07 — automatic post-push verifier design (docs-only).
+Ultimo aggiornamento: 2026-06-08 — runtime post-push verifier hardened + auto-source ExpectedTaskCommit.
 
 ---
 
@@ -63,6 +63,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 - **Invariante §8.1 PROJECT_VISION:** report Cursor post-push deve includere output git verbatim (incluso `git ls-remote origin main`). Orchestratore **non** chiede shell utente se output già presente; verify-only Cursor se manca; shell utente = fallback finale.
 - **`LAST_HANDOFF_VERIFY.md`:** artefatto persistente per `aggio control`; snapshot backfilled to `7fac1ad` (last-handoff-verify-artifact); `artifact_commit: PENDING_SELF_REFERENCE`. **PM-34 BLOCKED** · **`n8n_ready=false`** · nessun runtime.
 - **`AUTOMATIC_POST_PUSH_VERIFIER.md`:** design docs-only — future n8n/worker replaces manual verify paste; LLM not needed for hash equality.
+- **`tools/runtime-post-push-verifier.ps1`:** **hardened runtime verifier validato** (structured JSON, PASS→exit 0 / FAIL→exit 1). **Auto-source** di `real_task_commit` da `LAST_CURSOR_REPORT.md` quando `-ExpectedTaskCommit` è omesso; **override manuale** ancora disponibile; fail-closed `expected_commit_unreadable`. Verifica indipendente contro il remoto (non rende il report fonte di PASS). **No wrapper HTTP** · **no n8n runtime** · **PM-34 BLOCKED** · **`n8n_ready=false`**.
 
 ## Do-not-do
 
