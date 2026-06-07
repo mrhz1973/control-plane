@@ -13,29 +13,28 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: last-handoff-verify-artifact
+task_ref: automatic-post-push-verifier-design
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: 3cb075a4b7b6b2b1b611a80dc15089fdcf485ee6
+real_task_commit: 2fff6572d2252453536a86b1510b3772808c341f
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = docs-only LAST_HANDOFF_VERIFY.md artifact + PROJECT_VISION cross-ref + session log + commit in origin/main + redaction check exit 0; verified_through_commit model; no runtime; no n8n; no new workflow; PM-34 BLOCKED; n8n_ready=false
+verification_rule: PASS = docs-only AUTOMATIC_POST_PUSH_VERIFIER design + LAST_HANDOFF_VERIFY backfill to 7fac1ad + activation plan micro-step + session log + commit in origin/main + redaction check exit 0; no runtime; no n8n workflow; PM-34 BLOCKED; n8n_ready=false
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 timestamp_utc: 2026-06-07
 ```
 
-- Creato **`docs/runtime/LAST_HANDOFF_VERIFY.md`**.
-- L'artefatto consente all'orchestratore di leggere da GitHub l'ultima verifica post-push durante **`aggio control`**.
-- Usa **`verified_through_commit`** e **non** auto-certifica il proprio commit.
-- Cursor **verify-only** resta fallback primario se l'artefatto è mancante/stale.
-- Shell utente resta **fallback finale**.
+- Creato design **automatic post-push verifier** (`docs/runtime/AUTOMATIC_POST_PUSH_VERIFIER.md`).
+- Verifier sostituisce il copia-incolla manuale degli output git; n8n/worker esegue verifica **deterministica**.
+- GPT/Codex entra solo per diagnosi / Decision Packet — **non** per hash equality.
+- **`LAST_HANDOFF_VERIFY.md`** aggiornato fino a **`7fac1ad`**; `artifact_commit: PENDING_SELF_REFERENCE` — non auto-certifica questo task.
 - Nessun runtime n8n. Nessun nuovo workflow. **PM-34 BLOCKED.** **`n8n_ready=false`**.
-- `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo (`PROJECT_VISION.md` §8.1).
+- `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo.
 
 Snapshot task commit:
 
 ```text
-3cb075a4b7b6b2b1b611a80dc15089fdcf485ee6	refs/heads/main
+2fff6572d2252453536a86b1510b3772808c341f	refs/heads/main
 ```
 
 ---
@@ -57,6 +56,13 @@ Snapshot task commit:
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: last-handoff-verify-artifact
+  real_task_commit: 3cb075a4b7b6b2b1b611a80dc15089fdcf485ee6
+  rolling_report_commit: 7fac1add9a7c515a5d55f21d87f61a63935815bd
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-07
+
 - task_ref: handoff-post-push-verification-rule
   real_task_commit: 94ed080996a6d5c77691aa4ed1b573439c51a2e2
   rolling_report_commit: 890b104ea634bf35800015cbb5c4e031d7aab6bc
@@ -83,12 +89,5 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   rolling_report_commit: e36d91d02efdb2ceb6528f7d43069a347feeedff
   result_cursor: PASS
   result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-07
-
-- task_ref: wd45-d9999t-runtime-reverification-pass
-  real_task_commit: 17594d66721b4a3aca815bfccb9ac1566d692c4e
-  rolling_report_commit: 1e1db5ef667635ee1d8eedab48323dec014b584c
-  result_cursor: PASS
-  result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-07
 ```
