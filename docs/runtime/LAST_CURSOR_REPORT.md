@@ -13,27 +13,26 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wd45-d9999t-runtime-reverification-pass
+task_ref: d0028a-automation-activation-plan
 result_cursor: PASS
-result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: 17594d66721b4a3aca815bfccb9ac1566d692c4e
+result_runtime: NOT_RUN_BY_CURSOR
+real_task_commit: f42c06e2a1881141dfa1342746fc22e4651007c4
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = user-attested manual n8n Wd45 D-9999-T reverification + docs evidence commit in origin/main + redaction check exit 0; existing workflow 45 reused; no new workflow; no inbound 47/48/49; no HTTP/Telegram/webhook/schedule/Funnel by Cursor; no workflow 40/41/42 mutation; no PM-34 unlock; no n8n_ready=true; no permanent automation declared
+verification_rule: PASS = docs-only automation activation plan commit in origin/main + CURRENT_FRONTIER update + redaction check exit 0; no runtime by Cursor; no n8n; no new workflow; no activation; D-0028-A Option 4 not started; PM-34 BLOCKED; n8n_ready=false
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 timestamp_utc: 2026-06-07
 ```
 
-- Registrato **PASS runtime attestato** per riverifica manuale **45/Wd** esistente (D-0027-R).
-- Test-only **`D-9999-T`** Telegram send OK; `message_id=748`; `telegram_send_ok=true`.
-- Nessun nuovo workflow. Nessun inbound **47/48/49**. No schedule/webhook/Funnel.
+- Creato piano docs-only per attivazione progressiva automazione control-plane (`AUTOMATION_ACTIVATION_PLAN.md`).
+- Nessun runtime n8n. Nessun nuovo workflow. Futura **Option 4** resta gate separato — **non avviata**.
 - **PM-34 BLOCKED.** **`n8n_ready=false`**. Pezzi collegati ≠ loop avviato.
 - `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo (`PROJECT_VISION.md` §8.1).
 
 Snapshot task commit:
 
 ```text
-17594d66721b4a3aca815bfccb9ac1566d692c4e	refs/heads/main
+f42c06e2a1881141dfa1342746fc22e4651007c4	refs/heads/main
 ```
 
 ---
@@ -54,6 +53,13 @@ Snapshot task commit:
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: wd45-d9999t-runtime-reverification-pass
+  real_task_commit: 17594d66721b4a3aca815bfccb9ac1566d692c4e
+  rolling_report_commit: 1e1db5ef667635ee1d8eedab48323dec014b584c
+  result_cursor: PASS
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-06-07
+
 - task_ref: decision-packet-runtime-state-reconciliation
   real_task_commit: e3ccf6c4e87abb23143deb4b0338291676f534d7
   rolling_report_commit: 33c537499c6b7e15e7ec8ccb703f6fb8afe9ffa5
@@ -81,11 +87,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-05T23:16:05Z
-
-- task_ref: d0024m-mapping-preview-workflow-template
-  real_task_commit: faa758ea59dff3c8e13668bd71ec8571137f83b7
-  rolling_report_commit: a3694119bae795b45f1fec2715ff08e5d2b25508
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-05T23:06:03Z
 ```
