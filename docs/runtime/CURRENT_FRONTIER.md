@@ -5,14 +5,15 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-07 — D-0027-R Wd45 D-9999-T runtime reverification PASS ATTESTATO UTENTE.
+Ultimo aggiornamento: 2026-06-07 — D-0028-A Option 2 automation activation plan (docs-only).
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
-- Classifier / mapping preview: **D-0021** transport/auth **PASS**; **D-0022-W** n8n wiring **PASS ATTESTATO UTENTE**; **D-0023-N** mapping contract **PASS** (docs-only); **D-0024-M** fixture-only mapping preview **PASS ATTESTATO UTENTE**; **D-0025-L** live classifier → mapping preview **PASS ATTESTATO UTENTE** — **closed**.
+- Classifier / mapping preview: **D-0021**–**D-0025-L** PASS; **D-0027-R** Wd45 reverification PASS.
+- **D-0028-A Option 2:** automation activation **plan** committed (docs-only) — `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`. **Option 4 not started.**
 - **`n8n_ready=false`** unchanged. **No permanent automation declared**. Pezzi collegati ≠ loop avviato.
 
 ## Latest verified PASS
@@ -48,7 +49,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 ## Next gate
 
-Separate operational step — **not yet decided**; **not** auto-started. Prossimo runtime atteso: riuso/riverifica **45/46/47/48/49** e decision-store, non nuovo workflow. Boundaries: NO PM-34 · NO wf40/41/42 mutation · NO 48 schedule · NO Telegram Trigger · NO Funnel · NO public webhook · NO provider API key · NO secrets in Git · NO `n8n_ready=true` · NO permanent automation · pezzi collegati ≠ loop avviato.
+**Not auto-started.** Choose explicitly: **Gate A** readiness audit (docs/runtime preflight, no run) per `AUTOMATION_ACTIVATION_PLAN.md`, **or** future **D-0028-A Option 4** controlled activation — **separate decision**; Option 4 **not** begun by plan commit. Boundaries: NO PM-34 · NO `n8n_ready=true` · NO wf40/41/42 mutation · NO new workflow unless explicit · NO permanent schedule/webhook/Telegram Trigger/Funnel · pezzi collegati ≠ loop avviato.
 
 ## Redaction hygiene
 
@@ -64,6 +65,7 @@ Separate operational step — **not yet decided**; **not** auto-started. Prossim
 
 - Inbound/decision-store: sessions under `docs/sessions/2026-05-31-*`, `docs/sessions/2026-06-01-*`, `docs/sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md`.
 - Mapping preview / Wd reverification: `docs/sessions/2026-06-06-control-plane-d0024m-*`, `docs/sessions/2026-06-07-control-plane-d0025l-*`, `docs/sessions/2026-06-07-control-plane-wd45-d9999t-runtime-reverification-pass.md`.
+- D-0028-A activation plan: `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`, `docs/sessions/2026-06-07-control-plane-d0028a-automation-activation-plan.md`.
 - Hash: `docs/runtime/LAST_CURSOR_REPORT.md`.
 
 ## Manutenzione
