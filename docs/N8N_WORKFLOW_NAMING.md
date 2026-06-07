@@ -4,7 +4,7 @@
 
 **Related:** [MVP_STATUS.md](MVP_STATUS.md), [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [final n8n cleanup](sessions/2026-05-21-control-plane-final-n8n-cleanup.md).
 
-**Last updated:** 2026-05-22 — PM-22/PM-23 **PASS**; production **`40` classifier bridge ACTIVE**; **`41` BACKUP OFF**.
+**Last updated:** 2026-06-07 — D-0026-S Decision Packet / inbound state reconciliation (docs-only).
 
 ---
 
@@ -118,11 +118,30 @@ When a candidate becomes production:
 
 ---
 
+---
+
+## Decision Packet / inbound reconciliation (2026-06-07)
+
+**Scope:** docs-only state reconciliation after D-0025-L. **No new workflow.** **No runtime in this task.** **No production workflow mutation.** Inbound/loop activation remains a **separate gate**. **PM-34 BLOCKED.** **`n8n_ready=false`.** Pezzi collegati ≠ loop avviato.
+
+| ID | Workflow (letter) | State |
+|----|-------------------|--------|
+| **45** | **Wd** — Manual → `/classify` → Telegram Send Decision Packet | **PASS ATTESTATO UTENTE** (2026-05-31). Evidenza: `telegram_send_ok`, `message_id=678`, `decision_id=D-9998-T`. **Non ricreare.** Session: `docs/sessions/2026-05-31-control-plane-wd-operational-decision-packet-b-live-pass.md`. Gate 3 re-evidence 2026-06-02: `message_id=732`. |
+| **46** | **We** — Telegram interactive buttons | Package-prep **completato**; **live BLOCKED/PENDING** (HTTPS webhook). **We live PASS non registrato.** Session: `docs/sessions/2026-05-31-control-plane-we-telegram-interactive-buttons-live-blocked.md`. |
+| **47** | **Wf** — Telegram inbound polling getUpdates | **PASS multipli ATTESTATO UTENTE**: Data Table accept-once, limited-schedule runtime, live getUpdates, handoff 47→48. **Ora off.** Sessions: `docs/sessions/2026-06-01-control-plane-wf47-*`. |
+| **48** | **Wg** — Inbound decision state correlation | **PASS**: manual validation + handoff 47→48 controllato/live. **Callable**; **non schedulato**. |
+| **49** | **Wh** — Combined Wf47/Wg inbound decision flow | Rehearsal manuale finale **PASS ATTESTATO UTENTE**; **provato**; **ora inattivo**. **Not** “not used” — bounded fixture rehearsal PASS; not operational loop. Session: `docs/sessions/2026-05-31-control-plane-wf47-wg-wh-final-manual-runtime-rehearsal-pass.md`. |
+| — | **decision-store** (`control_plane_decisions_test`) | Gate 1 design **PASS** · Gate 2 template **PASS** · Gate 3 runtime end-to-end **PASS** (2026-06-02). Session: `docs/sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md`. |
+
+Full live n8n UI registry reconciliation beyond this note remains follow-up / out of scope.
+
+---
+
 ## D-0024-M test-safe template (2026-06-05)
 
 | ID | Workflow name (n8n UI) | State |
 |----|------------------------|--------|
-| **55** | `55 - D-0024-M Decision Packet mapping preview TEST SAFE` | **Template committed**; manual import/run **pending**; fixture-only; inactive/manual; no HTTP/Telegram/webhook/schedule. **Not** imported or run by Cursor. Export: `workflows/exports/2026-06-05_d0024m-decision-packet-mapping-preview-test-safe.redacted.json` |
+| **55** | `55 - D-0024-M Decision Packet mapping preview TEST SAFE` | **Runtime PASS ATTESTATO UTENTE** (2026-06-06); fixture-only; inactive/manual. Export: `workflows/exports/2026-06-05_d0024m-decision-packet-mapping-preview-test-safe.redacted.json` |
 
 Full registry reconciliation with live n8n UI remains follow-up / out of scope for this note.
 
