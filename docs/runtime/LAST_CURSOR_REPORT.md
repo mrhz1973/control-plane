@@ -13,25 +13,28 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0025l-live-mapping-preview-workflow-template
+task_ref: d0025l-live-preview-runtime-pass
 result_cursor: PASS
-result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: cff4e8aabf8e481e9943509256029c9c049d4b32
+result_runtime: PASS_ATTESTATO_UTENTE
+real_task_commit: d762f5ebae68bc18765b409485eba36aa7266cdb
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = redacted inactive manual test-safe n8n workflow template committed to origin/main + redaction check exit 0; no runtime by Cursor; no n8n import/export/execute; live classifier not called by Cursor; no Telegram/webhook/schedule/Funnel; no workflow 40/41/42 mutation; no workflow 49; no PM-34 unlock; D-0025-L runtime PASS not declared
+verification_rule: PASS = user-attested manual n8n live classifier mapping preview run + docs evidence commit in origin/main + redaction check exit 0; live classifier called by user in n8n only; no HTTP/Telegram/webhook/schedule/Funnel by Cursor; no workflow 40/41/42 mutation; no workflow 49; no PM-34 unlock; no n8n_ready=true; no permanent automation declared
 remote_hash_verbatim: PENDING_SELF_REFERENCE
-timestamp_utc: 2026-06-06T00:08:33Z
+timestamp_utc: 2026-06-07
 ```
 
-- `real_task_commit` = `docs: add D-0025-L live mapping preview workflow template` (`cff4e8a`).
-- `result_runtime` = **NOT_RUN_BY_CURSOR** — live classifier mapping preview template commit; manual import/run pending.
+- D-0025-L live classifier mapping preview runtime **PASS ATTESTATO UTENTE**.
+- Workflow **56** manual single run; `fail_closed_synthesized=false`.
+- Classifier output: `high` / `human_gate` / confidence `high` / reason `guard:secrets_touched` (keyword-guard on `"secrets"` in test summary).
+- `no_send_performed=true`. No Telegram/webhook/schedule/Funnel.
+- **PM-34 BLOCKED**. **`n8n_ready=false`** unchanged.
 - `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo (`PROJECT_VISION.md` §8.1).
 
 Snapshot task commit:
 
 ```text
-cff4e8aabf8e481e9943509256029c9c049d4b32	refs/heads/main
+d762f5ebae68bc18765b409485eba36aa7266cdb	refs/heads/main
 ```
 
 ---
@@ -52,6 +55,13 @@ cff4e8aabf8e481e9943509256029c9c049d4b32	refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0025l-live-mapping-preview-workflow-template
+  real_task_commit: cff4e8aabf8e481e9943509256029c9c049d4b32
+  rolling_report_commit: 4dd1c76d7b197f5c4e32b5c1ce5763f080c241fd
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-06T00:08:33Z
+
 - task_ref: d0024m-mapping-preview-runtime-pass
   real_task_commit: f1f48fb8ab6c6215c0fc2122473a324d005220e4
   rolling_report_commit: b53811b0b652954322b2480d7b0d9e209d7776cb
@@ -79,11 +89,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: NOT_RUN_BY_CURSOR
   timestamp_utc: 2026-06-05T22:22:44Z
-
-- task_ref: d0022w-n8n-classifier-manual-wiring-pass
-  real_task_commit: eadd9287b154ba27235cbe8da876922e8dd6de17
-  rolling_report_commit: 03c1e7b05313e87069e415abc78312c2dc94c0d9
-  result_cursor: PASS
-  result_runtime: PASS_ATTESTATO_UTENTE
-  timestamp_utc: 2026-06-05T19:14:04Z
 ```
