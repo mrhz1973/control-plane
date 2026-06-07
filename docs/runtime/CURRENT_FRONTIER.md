@@ -3,9 +3,9 @@
 > LEGGI QUESTO FILE PER PRIMO, prima di proporre qualsiasi cosa.
 > Lo stato si LEGGE da qui, NON si ricostruisce cercando tra i session log.
 > Questo file è un **file di stato compatto**, NON un archivio storico.
-> Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/sessions/`, Git history.
+> Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-07 — handoff post-push verification invariant (§8.1 PROJECT_VISION).
+Ultimo aggiornamento: 2026-06-07 — `LAST_HANDOFF_VERIFY.md` handoff verification artifact.
 
 ---
 
@@ -60,6 +60,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 ## Handoff / post-push verification
 
 - **Invariante §8.1 PROJECT_VISION:** report Cursor post-push deve includere output git verbatim (incluso `git ls-remote origin main`). Orchestratore **non** chiede shell utente se output già presente; verify-only Cursor se manca; shell utente = fallback finale.
+- **`LAST_HANDOFF_VERIFY.md`:** artefatto persistente per `aggio control`; usa `verified_through_commit`; non auto-certifica il proprio commit. **PM-34 BLOCKED** · **`n8n_ready=false`** · nessun runtime.
 
 ## Do-not-do
 
@@ -72,7 +73,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 - Inbound/decision-store: sessions under `docs/sessions/2026-05-31-*`, `docs/sessions/2026-06-01-*`, `docs/sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md`.
 - Mapping preview / Wd reverification: `docs/sessions/2026-06-06-control-plane-d0024m-*`, `docs/sessions/2026-06-07-control-plane-d0025l-*`, `docs/sessions/2026-06-07-control-plane-wd45-d9999t-runtime-reverification-pass.md`.
 - D-0028-A / Gates: `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`, Gate A/B sessions `docs/sessions/2026-06-07-control-plane-gate-*`.
-- Hash: `docs/runtime/LAST_CURSOR_REPORT.md`.
+- Hash: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`.
 
 ## Manutenzione
 
