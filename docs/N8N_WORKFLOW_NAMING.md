@@ -132,7 +132,7 @@ Full registry reconciliation with live n8n UI remains follow-up / out of scope f
 
 | ID | Workflow name (n8n UI) | State |
 |----|------------------------|--------|
-| **56** | `56 - D-0025-L Live classifier mapping preview TEST SAFE` | **Template committed**; manual import/run **pending**; live classifier call + Decision Packet preview only; inactive/manual; no Telegram/webhook/schedule/Funnel; no production workflow mutation. **Not** imported or run by Cursor. Export: `workflows/exports/2026-06-06_d0025l-live-classifier-mapping-preview-test-safe.redacted.json` |
+| **56** | `56 - D-0025-L Live classifier mapping preview TEST SAFE` | **Runtime PASS ATTESTATO UTENTE** (2026-06-07); manual single run; inactive/test-safe; live classifier + Decision Packet preview only; no Telegram/webhook/schedule/Funnel; no production workflow mutation. **Not** imported or run by Cursor — runtime executed manually by user. Export: `workflows/exports/2026-06-06_d0025l-live-classifier-mapping-preview-test-safe.redacted.json` |
 
 Full registry reconciliation with live n8n UI remains follow-up / out of scope for this note.
 
