@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-08 — remote invocation transport design (docs-only, not wired).
+Ultimo aggiornamento: 2026-06-08 — workflow 57 post-push verifier file reader PASS (manual trigger only).
 
 ---
 
@@ -15,7 +15,8 @@ Ultimo aggiornamento: 2026-06-08 — remote invocation transport design (docs-on
 - Classifier / mapping preview: **D-0021**–**D-0025-L** PASS; **D-0027-R** Wd45 reverification PASS.
 - **D-0028-A Option 2:** activation plan committed. **Gate A** PASS · **Gate B** inbound one-shot **PASS ATTESTATO UTENTE** (2026-06-07). **Option 4 not permanent loop.**
 - **`n8n_ready=false`** unchanged. **No permanent automation declared**. Pezzi collegati ≠ loop avviato.
-- **Runtime post-push verifier:** `tools/runtime-post-push-verifier.ps1` **implementato e hardened** — auto-source scoped LATEST. Trasporto remoto VPS↔nodo: **`docs/runtime/REMOTE_INVOCATION_TRANSPORT_DESIGN.md`** (design-only, **not wired**, raccomanda nodo→VPS push). **`n8n_ready=false`** · **PM-34 BLOCKED**.
+- **Workflow 57 / Post-push verifier file reader TEST ONLY:** versionato (`9804765`); **Manual Trigger only**, **active=false**; legge JSON da `/files/control-plane-verifier-inbox/latest.json`; **PASS runtime attestato** (`read_ok=true`, `hash_match=true`); **non loop**, **non schedule**. wf40/42 untouched · wf41 off · no Telegram Trigger/Funnel/public webhook · **PM-34 BLOCKED**.
+- **Runtime post-push verifier:** `tools/runtime-post-push-verifier.ps1` **implementato e hardened** — auto-source scoped LATEST. Trasporto remoto VPS↔nodo: **`docs/runtime/REMOTE_INVOCATION_TRANSPORT_DESIGN.md`** (design-only, **not wired**, raccomanda nodo→VPS push).
 
 ## Latest verified PASS
 

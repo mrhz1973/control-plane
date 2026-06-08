@@ -13,26 +13,26 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: remote-invocation-transport-design
+task_ref: workflow-57-post-push-verifier-file-reader
 result_cursor: PASS
-result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: 440015ba568f47d42fa2c9d3c77d0aebd2da7301
+result_runtime: PASS_ATTESTATO_UTENTE
+real_task_commit: 9804765db6c1a77524007e5fc4ae8484a98caf63
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = docs-only REMOTE_INVOCATION_TRANSPORT_DESIGN.md (D-0031-W); Option B nodo→VPS push recommended; no services started; no http wrapper; no n8n workflow; no secrets; PM-34 BLOCKED; n8n_ready=false; not wired
+verification_rule: PASS = workflow 57 export versioned and runtime-attested; Manual Trigger only; active=false; reads verifier JSON from /files/control-plane-verifier-inbox/latest.json; no schedule; no loop; no PM-34; n8n_ready=false; wf40/42 untouched
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 timestamp_utc: 2026-06-08
 ```
 
-- Creato **`docs/runtime/REMOTE_INVOCATION_TRANSPORT_DESIGN.md`** (D-0031-W design-first).
-- Confronto direzione (A) VPS inbound vs **(B) nodo→VPS push (raccomandata)**; trasporto tailnet-only; threat model; fallback graceful §7.6.
-- Decision Packet bozza **D-0032-W** (NON approvato). **Not wired.** **No services started.**
-- **PM-34 BLOCKED.** **`n8n_ready=false`**.
+- Registrato **workflow 57** post-push verifier file reader **PASS ATTESTATO UTENTE**.
+- Export: `workflows/57 - Post-push verifier file reader TEST ONLY.json` (`9804765`); Manual Trigger only, active=false.
+- Runtime: `read_ok=true`, `result=PASS`, `hash_match=true`, `workspace_clean=true`; `source_path=/files/control-plane-verifier-inbox/latest.json`; file temporaneo VPS rimosso (`LATEST_JSON_CLEAN`).
+- **Non loop.** **Non schedule.** wf40/42 untouched. **PM-34 BLOCKED.** **`n8n_ready=false`**.
 
 Snapshot task commit:
 
 ```text
-440015ba568f47d42fa2c9d3c77d0aebd2da7301	refs/heads/main
+9804765db6c1a77524007e5fc4ae8484a98caf63	refs/heads/main
 ```
 
 ---
@@ -54,6 +54,13 @@ Snapshot task commit:
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: remote-invocation-transport-design
+  real_task_commit: 440015ba568f47d42fa2c9d3c77d0aebd2da7301
+  rolling_report_commit: 9d48f37ddee49c2ad1b0993be8a9e21f69f5109a
+  result_cursor: PASS
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-06-08
+
 - task_ref: runtime-post-push-verifier-latest-scoped-parser
   real_task_commit: 5d1514af500cdb31e344ecbb57759834dc1e783f
   rolling_report_commit: 636911332ce030b6b480fb1549d7ea5c4c96ba78
@@ -78,13 +85,6 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
 - task_ref: automatic-post-push-verifier-design
   real_task_commit: 2fff6572d2252453536a86b1510b3772808c341f
   rolling_report_commit: e809e926489fbff81a8e5aba76c061cd47e3b67a
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-07
-
-- task_ref: last-handoff-verify-artifact
-  real_task_commit: 3cb075a4b7b6b2b1b611a80dc15089fdcf485ee6
-  rolling_report_commit: 7fac1add9a7c515a5d55f21d87f61a63935815bd
   result_cursor: PASS
   result_runtime: NOT_RUN_BY_CURSOR
   timestamp_utc: 2026-06-07
