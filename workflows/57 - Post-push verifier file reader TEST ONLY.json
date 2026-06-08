@@ -1,0 +1,78 @@
+{
+  "name": "57 - Post-push verifier file reader TEST ONLY",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "70a2f851-9af3-46e4-8ce0-fd43478a4799",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        800,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "command": "node -e \"const fs=require('fs'); const p='/files/control-plane-verifier-inbox/latest.json'; try { const d=JSON.parse(fs.readFileSync(p,'utf8')); console.log(JSON.stringify({worker:'post-push-verifier-file-reader',read_ok:true,result:d.result,hash_match:d.hash_match,expected_task_commit:d.expected_task_commit,expected_commit_source:d.expected_commit_source,head:d.head,origin_main:d.origin_main,ls_remote_main:d.ls_remote_main,workspace_clean:d.workspace_clean,branch:d.branch,source_path:p,test_only:true})); } catch(e) { console.log(JSON.stringify({worker:'post-push-verifier-file-reader',read_ok:false,result:'FAIL',failure_reasons:['verifier_json_unreadable'],error:String(e.message||e),source_path:p,test_only:true})); }\""
+      },
+      "id": "7fd181b9-5429-4e21-91e8-85fc9252637e",
+      "name": "Read verifier JSON from /files",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nconst raw = String(row.stdout || row.data || row.output || '').trim();\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  parsed = {\n    worker: 'post-push-verifier-file-reader',\n    read_ok: false,\n    result: 'FAIL',\n    failure_reasons: ['worker_stdout_unparseable'],\n    raw_preview: raw.slice(0, 300),\n    test_only: true\n  };\n}\nreturn [{ json: parsed }];"
+      },
+      "id": "af5fbd6f-87e6-49a3-9e58-c98690c4e1ca",
+      "name": "Normalize verifier JSON result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        -160
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read verifier JSON from /files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read verifier JSON from /files": {
+      "main": [
+        [
+          {
+            "node": "Normalize verifier JSON result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "eb7636b5-a3f9-4f1c-8704-8f2db5b31f7f",
+  "meta": {
+    "instanceId": "0319381fab885f639cbac060718f520c2525cb985f8057b47d0fc6aff7016641"
+  },
+  "id": "QsEY7KqnyHYeDxUv",
+  "tags": []
+}
