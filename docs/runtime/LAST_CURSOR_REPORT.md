@@ -16,7 +16,7 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 task_ref: remote-invocation-transport-design
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: 017dd80452e3458f4285232ff721145cf12847da
+real_task_commit: 440015ba568f47d42fa2c9d3c77d0aebd2da7301
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
 verification_rule: PASS = docs-only REMOTE_INVOCATION_TRANSPORT_DESIGN.md (D-0031-W); Option B nodo→VPS push recommended; no services started; no http wrapper; no n8n workflow; no secrets; PM-34 BLOCKED; n8n_ready=false; not wired
@@ -32,7 +32,7 @@ timestamp_utc: 2026-06-08
 Snapshot task commit:
 
 ```text
-017dd80452e3458f4285232ff721145cf12847da	refs/heads/main
+440015ba568f47d42fa2c9d3c77d0aebd2da7301	refs/heads/main
 ```
 
 ---
