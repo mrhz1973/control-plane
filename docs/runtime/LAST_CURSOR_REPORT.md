@@ -13,28 +13,26 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: runtime-post-push-verifier-latest-scoped-parser
+task_ref: remote-invocation-transport-design
 result_cursor: PASS
 result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: 5d1514af500cdb31e344ecbb57759834dc1e783f
+real_task_commit: 017dd80452e3458f4285232ff721145cf12847da
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = verifier auto-sources real_task_commit only from the LATEST fenced yaml block in LAST_CURSOR_REPORT.md when -ExpectedTaskCommit is omitted, never from HISTORY; keeps optional manual override; fail-closed expected_commit_unreadable if LATEST/report is missing, unreadable, unparsable, ambiguous, or invalid; verifies expected commit independently against origin/main chain and HEAD==origin==ls-remote; no http wrapper; no n8n runtime; no workflow mutation; no secrets; PM-34 BLOCKED; n8n_ready=false
+verification_rule: PASS = docs-only REMOTE_INVOCATION_TRANSPORT_DESIGN.md (D-0031-W); Option B nodo→VPS push recommended; no services started; no http wrapper; no n8n workflow; no secrets; PM-34 BLOCKED; n8n_ready=false; not wired
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 timestamp_utc: 2026-06-08
 ```
 
-- Auto-source **scoped al blocco LATEST** (fenced yaml) di `LAST_CURSOR_REPORT.md`; **mai** da HISTORY.
-- **Fail-closed:** LATEST mancante/illeggibile/non parsabile/ambiguo o SHA non valida → `expected_commit_unreadable`, JSON strutturato, exit 1.
-- Override manuale `-ExpectedTaskCommit` ancora disponibile; PASS dipende da verifica indipendente contro il remoto.
-- **No wrapper HTTP.** **No n8n runtime.** **No workflow mutation.** **No secrets.**
+- Creato **`docs/runtime/REMOTE_INVOCATION_TRANSPORT_DESIGN.md`** (D-0031-W design-first).
+- Confronto direzione (A) VPS inbound vs **(B) nodo→VPS push (raccomandata)**; trasporto tailnet-only; threat model; fallback graceful §7.6.
+- Decision Packet bozza **D-0032-W** (NON approvato). **Not wired.** **No services started.**
 - **PM-34 BLOCKED.** **`n8n_ready=false`**.
-- `rolling_report_commit` / `remote_hash_verbatim` = **PENDING_SELF_REFERENCE** finché questo LATEST resta il più recente; backfill in HISTORY al task successivo.
 
 Snapshot task commit:
 
 ```text
-5d1514af500cdb31e344ecbb57759834dc1e783f	refs/heads/main
+017dd80452e3458f4285232ff721145cf12847da	refs/heads/main
 ```
 
 ---
@@ -56,6 +54,13 @@ Snapshot task commit:
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: runtime-post-push-verifier-latest-scoped-parser
+  real_task_commit: 5d1514af500cdb31e344ecbb57759834dc1e783f
+  rolling_report_commit: 636911332ce030b6b480fb1549d7ea5c4c96ba78
+  result_cursor: PASS
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-06-08
+
 - task_ref: runtime-post-push-verifier-autosource
   real_task_commit: ae94a01d82f9ec64293cd48a585668e6c2f03bb4
   rolling_report_commit: 268e8837141272cb751c23083961e9355557a93f
@@ -80,13 +85,6 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
 - task_ref: last-handoff-verify-artifact
   real_task_commit: 3cb075a4b7b6b2b1b611a80dc15089fdcf485ee6
   rolling_report_commit: 7fac1add9a7c515a5d55f21d87f61a63935815bd
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-07
-
-- task_ref: handoff-post-push-verification-rule
-  real_task_commit: 94ed080996a6d5c77691aa4ed1b573439c51a2e2
-  rolling_report_commit: 890b104ea634bf35800015cbb5c4e031d7aab6bc
   result_cursor: PASS
   result_runtime: NOT_RUN_BY_CURSOR
   timestamp_utc: 2026-06-07

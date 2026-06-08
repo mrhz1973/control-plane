@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-08 — runtime post-push verifier LATEST-scoped auto-source parser.
+Ultimo aggiornamento: 2026-06-08 — remote invocation transport design (docs-only, not wired).
 
 ---
 
@@ -15,7 +15,7 @@ Ultimo aggiornamento: 2026-06-08 — runtime post-push verifier LATEST-scoped au
 - Classifier / mapping preview: **D-0021**–**D-0025-L** PASS; **D-0027-R** Wd45 reverification PASS.
 - **D-0028-A Option 2:** activation plan committed. **Gate A** PASS · **Gate B** inbound one-shot **PASS ATTESTATO UTENTE** (2026-06-07). **Option 4 not permanent loop.**
 - **`n8n_ready=false`** unchanged. **No permanent automation declared**. Pezzi collegati ≠ loop avviato.
-- **Runtime post-push verifier:** `tools/runtime-post-push-verifier.ps1` **implementato e hardened** — JSON strutturato, exit code coerenti, auto-source **scoped al blocco LATEST** di `LAST_CURSOR_REPORT.md`; override manuale opzionale. Design futuro n8n/worker: `docs/runtime/AUTOMATIC_POST_PUSH_VERIFIER.md` — **not wired, no HTTP wrapper, no n8n runtime**.
+- **Runtime post-push verifier:** `tools/runtime-post-push-verifier.ps1` **implementato e hardened** — auto-source scoped LATEST. Trasporto remoto VPS↔nodo: **`docs/runtime/REMOTE_INVOCATION_TRANSPORT_DESIGN.md`** (design-only, **not wired**, raccomanda nodo→VPS push). **`n8n_ready=false`** · **PM-34 BLOCKED**.
 
 ## Latest verified PASS
 
