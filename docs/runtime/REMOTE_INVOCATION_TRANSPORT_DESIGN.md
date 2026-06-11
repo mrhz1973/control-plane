@@ -211,7 +211,9 @@ context: D-0031-W design; verifier hardened; Passo 1 inbox SFTP attestato; Passo
 | PM-34 | **BLOCKED** |
 | `n8n_ready` | **false** |
 | wf40 / wf42 | **untouched** |
-| Validazione runtime campi | Step **successivo user-attested** — Cursor non dichiara runtime PASS |
+| Validazione runtime campi | **PASS ATTESTATO UTENTE / Claude-attested** (2026-06-11) |
+| Invocazione canonica | `powershell -NoProfile -ExecutionPolicy Bypass -File tools\push-post-push-verifier-result.ps1` |
+| ExecutionPolicy bypass | **Solo process-level** — nessun `Set-ExecutionPolicy` persistente; nessuna modifica policy nodo |
 
 ### Opzioni (2–3)
 
@@ -240,9 +242,16 @@ context: D-0031-W design; verifier hardened; Passo 1 inbox SFTP attestato; Passo
 
 1. ~~Decision Packet D-0032-W approvato~~ — **fatto** (2026-06-11, variante manuale)
 2. ~~Script push one-shot~~ — **fatto** (`tools/push-post-push-verifier-result.ps1`)
-3. **User-attested PASS session** — esecuzione manuale uploader + lettura wf57; **pending**
+3. ~~User-attested PASS session~~ — **fatto** (2026-06-11, field-validation end-to-end manuale)
 4. **Non** auto-promuovere a schedule permanente
+
+### Gate chiusi / fuori scope (salvo Decision Packet separato)
+
+- schedule · loop · push-hook · wrapper HTTP · callable-from-n8n worker
+- PM-34 unlock · `n8n_ready=true`
+- workflow 57 `active=true`
+- wf40/wf42 mutation
 
 ---
 
-**Fine documento — trasporto approvato (manuale one-shot); runtime field validation pending user-attested.**
+**Fine documento — trasporto manuale one-shot field-validated (2026-06-11); nessuna automazione permanente.**

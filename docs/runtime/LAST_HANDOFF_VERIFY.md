@@ -33,54 +33,52 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Latest verified snapshot
 
 ```yaml
-task_ref: last-handoff-verify-artifact
-verified_task_commit: 3cb075a4b7b6b2b1b611a80dc15089fdcf485ee6
-verified_rolling_report_commit: 7fac1add9a7c515a5d55f21d87f61a63935815bd
-verified_through_commit: 7fac1add9a7c515a5d55f21d87f61a63935815bd
-observed_head: 7fac1add9a7c515a5d55f21d87f61a63935815bd
-observed_origin_main: 7fac1add9a7c515a5d55f21d87f61a63935815bd
-observed_ls_remote_main: 7fac1add9a7c515a5d55f21d87f61a63935815bd
+task_ref: d-0032-w-field-validation-pass
+verified_task_commit: cc6c52551a4fc7b820af984c9ea6e299b6b30ae9
+verified_rolling_report_commit: 966f508d5b153a02421b5acecaac78a5c7c85535
+verified_through_commit: 966f508d5b153a02421b5acecaac78a5c7c85535
+observed_head: 966f508d5b153a02421b5acecaac78a5c7c85535
+observed_origin_main: 966f508d5b153a02421b5acecaac78a5c7c85535
+observed_ls_remote_main: 966f508d5b153a02421b5acecaac78a5c7c85535
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
 result: PASS
-result_runtime: NOT_RUN_BY_CURSOR
-timestamp_utc: 2026-06-07
+result_runtime: PASS_ATTESTATO_UTENTE
+timestamp_utc: 2026-06-11
 ```
+
+**Nota:** questo snapshot verifica attraverso `966f508d5b153a02421b5acecaac78a5c7c85535` (HEAD pre-closure docs), **non** il commit docs-only di chiusura D-0032-W.
 
 ---
 
 ## Command outputs (verbatim, sanitized)
 
 ```text
-git rev-parse --show-toplevel
-C:/Users/mrhz/Documents/AI/GitHub/control-plane
+git fetch --prune origin
+
+git status --short
+
+git branch --show-current
+main
 
 git remote -v
 origin	https://github.com/mrhz1973/control-plane.git (fetch)
 origin	https://github.com/mrhz1973/control-plane.git (push)
 
-git branch --show-current
-main
-
-git status --short
-(clean — no output lines)
-
-git log --oneline -5
-7fac1ad docs: update rolling Cursor report
-3cb075a docs: add last handoff verification artifact
-890b104 docs: update rolling Cursor report
-94ed080 docs: add handoff post-push verification rule
-46f6638 docs: update rolling Cursor report
-
-git rev-parse HEAD
-7fac1add9a7c515a5d55f21d87f61a63935815bd
-
-git rev-parse origin/main
-7fac1add9a7c515a5d55f21d87f61a63935815bd
+git pull --ff-only origin main
+From https://github.com/mrhz1973/control-plane
+ * branch            main       -> FETCH_HEAD
+Already up to date.
 
 git ls-remote origin main
-7fac1add9a7c515a5d55f21d87f61a63935815bd	refs/heads/main
+966f508d5b153a02421b5acecaac78a5c7c85535	refs/heads/main
+
+git rev-parse HEAD
+966f508d5b153a02421b5acecaac78a5c7c85535
+
+git rev-parse origin/main
+966f508d5b153a02421b5acecaac78a5c7c85535
 ```
 
 ---

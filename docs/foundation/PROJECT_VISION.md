@@ -49,6 +49,7 @@ La tabella seguente è un riferimento operativo del principio: per ogni componen
 | Auto-aggio (futuro) | Scrivere `aggio` per ogni completamento | NON ATTIVO |
 | Decision Packet su Telegram | Decidere a prosa libera, in modo ambiguo | NON ATTIVO |
 | Handoff via N turni | Capire manualmente quando una chat satura | NON ATTIVO |
+| Uploader esito verifier via sftp | copia-incolla manuale output verifica post-task | ATTIVO (manuale one-shot) |
 
 Ogni nuovo componente che si propone deve aggiungere una riga a questa tabella.
 
@@ -653,6 +654,7 @@ In una frase: **sto costruendo una fabbrica, non un singolo prodotto.** La fabbr
 | 2.10 | 2026-06-02 | §8.1: chiarito che rolling_report_commit/remote_hash_verbatim del LATEST restano PENDING_SELF_REFERENCE e si backfillano all'archiviazione in HISTORY; nessun commit finalize-hash dedicato. Allinea PROJECT_VISION alla pratica già in uso. |
 | 2.11 | 2026-06-07 | §8.1: invariante handoff/post-push verification anti-regressione — Cursor stampa output git verbatim; orchestratore non chiede shell utente se output presente; verify-only Cursor prima del fallback manuale. §11.3: puntatore orchestratore. |
 | 2.12 | 2026-06-07 | §8.1 / §11.3: introdotto `docs/runtime/LAST_HANDOFF_VERIFY.md` — artefatto handoff/`aggio control` con `verified_through_commit`; `LAST_CURSOR_REPORT.md` resta rolling task report. |
+| 2.13 | 2026-06-12 | §1.1: D-0032-W manual one-shot verifier result uploader field-validated; invocazione canonica con bypass PowerShell solo di processo documentata; PM-34 resta BLOCKED; `n8n_ready=false`; nessuno schedule/loop. |
 
 ---
 

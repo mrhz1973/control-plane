@@ -15,18 +15,19 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ```yaml
 task_ref: d-0032-w-option1-passo2-verifier-result-uploader
 result_cursor: PASS
-result_runtime: NOT_RUN_BY_CURSOR
+result_runtime: PASS_ATTESTATO_UTENTE
 real_task_commit: cc6c52551a4fc7b820af984c9ea6e299b6b30ae9
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = commit 1 implemented manual SFTP uploader only (tools/push-post-push-verifier-result.ps1); no runtime PASS by Cursor; no schedule; no loop; no push-hook; workflow 57 Manual Trigger only and inactive; wf40/42 untouched; PM-34 BLOCKED; n8n_ready=false
+verification_rule: PASS = manual SFTP uploader field-validated end-to-end (Passo 3); canonical invocation powershell -NoProfile -ExecutionPolicy Bypass -File tools\push-post-push-verifier-result.ps1; verifier PASS; SFTP upload succeeded; workflow 57 manual read read_ok=true result=PASS hash_match=true; cleanup LATEST_JSON_CLEAN; no schedule; no loop; wf57 inactive/manual; wf40/42 untouched; PM-34 BLOCKED; n8n_ready=false
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 timestamp_utc: 2026-06-11
 ```
 
-- **D-0032-W Opzione 1 Passo 2:** script uploader `tools/push-post-push-verifier-result.ps1` — esecuzione manuale one-shot; child verifier locale; deposito JSON via SFTP alias `ionos-cpinbox` → `/srv/cp-verifier-inbox/latest.json`.
-- **Non schedule.** **Non loop.** **Non push-hook.** wf57 inactive/manual. wf40/42 untouched. **PM-34 BLOCKED.** **`n8n_ready=false`**.
-- **Runtime execution** of uploader + workflow 57 field read: **NOT_RUN_BY_CURSOR** — user-attested/future.
+- **D-0032-W Passo 3 field-validation:** **PASS ATTESTATO UTENTE / Claude-attested** (2026-06-11).
+- Invocazione canonica: `powershell -NoProfile -ExecutionPolicy Bypass -File tools\push-post-push-verifier-result.ps1` (bypass solo process-level).
+- Verifier PASS · SFTP upload succeeded · workflow 57 manual read: `read_ok=true`, `result=PASS`, `hash_match=true` · cleanup `LATEST_JSON_CLEAN`.
+- **Non schedule.** **Non loop.** wf57 inactive/manual. wf40/42 untouched. **PM-34 BLOCKED.** **`n8n_ready=false`**.
 
 ---
 
