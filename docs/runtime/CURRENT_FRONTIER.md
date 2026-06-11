@@ -5,7 +5,7 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-06-08 — workflow 57 post-push verifier file reader PASS (manual trigger only).
+Ultimo aggiornamento: 2026-06-11 — D-0032-W Opzione 1 Passo 2: verifier result uploader (manual one-shot).
 
 ---
 
@@ -15,8 +15,9 @@ Ultimo aggiornamento: 2026-06-08 — workflow 57 post-push verifier file reader 
 - Classifier / mapping preview: **D-0021**–**D-0025-L** PASS; **D-0027-R** Wd45 reverification PASS.
 - **D-0028-A Option 2:** activation plan committed. **Gate A** PASS · **Gate B** inbound one-shot **PASS ATTESTATO UTENTE** (2026-06-07). **Option 4 not permanent loop.**
 - **`n8n_ready=false`** unchanged. **No permanent automation declared**. Pezzi collegati ≠ loop avviato.
-- **Workflow 57 / Post-push verifier file reader TEST ONLY:** versionato (`9804765`); **Manual Trigger only**, **active=false**; legge JSON da `/files/control-plane-verifier-inbox/latest.json`; **PASS runtime attestato** (`read_ok=true`, `hash_match=true`); **non loop**, **non schedule**. wf40/42 untouched · wf41 off · no Telegram Trigger/Funnel/public webhook · **PM-34 BLOCKED**.
-- **Runtime post-push verifier:** `tools/runtime-post-push-verifier.ps1` **implementato e hardened** — auto-source scoped LATEST. Trasporto remoto VPS↔nodo: **`docs/runtime/REMOTE_INVOCATION_TRANSPORT_DESIGN.md`** (design-only, **not wired**, raccomanda nodo→VPS push).
+- **D-0032-W Opzione 1 Passo 2:** `tools/push-post-push-verifier-result.ps1` **implementato** — esecuzione **manuale one-shot**; esegue verifier locale e deposita JSON su VPS via SFTP alias `ionos-cpinbox` → `/srv/cp-verifier-inbox/latest.json`. **No schedule** · **no loop** · **no push-hook** · **no runtime PASS da Cursor** (validazione campi = step futuro user-attested).
+- **Workflow 57 / Post-push verifier file reader TEST ONLY:** versionato (`9804765`); **Manual Trigger only**, **active=false**; legge JSON da `/files/control-plane-verifier-inbox/latest.json`; reader **PASS runtime attestato** (2026-06-08); **non loop**, **non schedule**. wf40/42 untouched · wf41 off · no Telegram Trigger/Funnel/public webhook · **PM-34 BLOCKED**.
+- **Runtime post-push verifier:** `tools/runtime-post-push-verifier.ps1` **implementato e hardened** — auto-source scoped LATEST. Trasporto remoto: **`docs/runtime/REMOTE_INVOCATION_TRANSPORT_DESIGN.md`** — **APPROVED** Opzione 2 (B) variante **manuale one-shot** (2026-06-11); **not auto-wired**.
 
 ## Latest verified PASS
 
@@ -53,7 +54,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 ## Next gate
 
-**Not auto-started.** Recommended next: **n8n/worker wrapper** for post-push verifier (Manual Trigger only, inactive) — separate Decision Packet; **not** PM-34, **not** permanent loop. Then: hardening/cleanup **`D-9999-T`** + **47/Wf** target, **or** Gate C (We/46 HTTPS) / Option 4 — **separate explicit decision** only. Boundaries: NO PM-34 · NO `n8n_ready=true` · NO permanent loop · wf40/42 untouched · pezzi collegati ≠ loop avviato.
+**Not auto-started.** Recommended next: **user-attested runtime** of `tools/push-post-push-verifier-result.ps1` + manual workflow 57 read of deposited JSON — separate session; **not** PM-34, **not** permanent loop, **not** schedule. Then: hardening/cleanup **`D-9999-T`** + **47/Wf** target, **or** Gate C (We/46 HTTPS) / Option 4 — **separate explicit decision** only. Boundaries: NO PM-34 · NO `n8n_ready=true` · NO permanent loop · wf40/42 untouched · pezzi collegati ≠ loop avviato.
 
 ## Redaction hygiene
 
@@ -65,6 +66,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 - **`LAST_HANDOFF_VERIFY.md`:** artefatto persistente per `aggio control`; snapshot backfilled to `7fac1ad` (last-handoff-verify-artifact); `artifact_commit: PENDING_SELF_REFERENCE`. **PM-34 BLOCKED** · **`n8n_ready=false`** · nessun runtime.
 - **`AUTOMATIC_POST_PUSH_VERIFIER.md`:** design docs-only — future n8n/worker replaces manual verify paste; LLM not needed for hash equality.
 - **`tools/runtime-post-push-verifier.ps1`:** **runtime verifier implementato e hardened** (structured JSON, PASS→exit 0 / FAIL→exit 1). **Auto-source scoped al blocco LATEST** di `LAST_CURSOR_REPORT.md` (mai da HISTORY); override manuale opzionale; fail-closed `expected_commit_unreadable`. Verifica indipendente contro il remoto. **No wrapper HTTP** · **no n8n runtime** · wf40/42 untouched · **PM-34 BLOCKED** · **`n8n_ready=false`**.
+- **`tools/push-post-push-verifier-result.ps1`:** **uploader manuale one-shot** — child verifier + deposito SFTP alias `ionos-cpinbox`; exit 0 solo su verifier PASS + upload OK. **No schedule** · **no loop** · wf57 inactive/manual · runtime field validation **future/user-attested**.
 
 ## Do-not-do
 

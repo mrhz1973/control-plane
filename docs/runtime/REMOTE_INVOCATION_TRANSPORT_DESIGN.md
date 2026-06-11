@@ -175,17 +175,43 @@ Ogni failure **degrada** a percorso manuale; **nessuno** stato inventato fuori d
 
 ---
 
-## 7. Decision Packet BOZZA (NON approvato)
+## 7. Decision Packet D-0032-W
 
-> **Formato §7.7 — bozza only.** Questo documento **non attiva** nulla. Richiede gate runtime separato + approvazione umana.
+> **Formato §7.7.** Approvazione 2026-06-11: **Opzione 2 (B)** ristretta a **esecuzione manuale one-shot least-privilege**. Nessun schedule, nessun push-hook, nessun loop.
 
 ```yaml
 decision_id: D-0032-W
 kind: runtime
-status: DRAFT — NOT APPROVED
+status: APPROVED — Opzione 2 (B: nodo→VPS push), variante MANUALE one-shot least-privilege, 2026-06-11
 title: Attivazione trasporto remoto verifier nodo→VPS
-context: D-0031-W design; verifier hardened; Option B raccomandata
+context: D-0031-W design; verifier hardened; Passo 1 inbox SFTP attestato; Passo 2 uploader script
 ```
+
+### Mapping etichette operative
+
+| Etichetta chat operativa | Etichetta Decision Packet | Significato |
+|--------------------------|---------------------------|-------------|
+| Opzione 1 / trasporto manuale | **Opzione 2** (B) | Nodo push esito a VPS — **solo** manual one-shot |
+| Opzione 1 (packet) | Status quo | **Non approvato** — verify manuale senza trasporto |
+| Opzione 3 (packet) | (A) VPS SSH inbound | **Non approvato** |
+
+**Nota vincolante (2026-06-11):** la bozza Opzione 2 menzionava «on schedule/push-hook locale». L'approvazione la **restringe** a **manual one-shot execution only**: nessuno schedule, nessun push-hook, nessun loop permanente.
+
+### Stato approvato (implementazione Passo 2)
+
+| Elemento | Valore |
+|----------|--------|
+| Esecuzione verifier | Sul nodo, clone locale, child di `tools/runtime-post-push-verifier.ps1` |
+| Trasporto | SFTP batch via alias `ionos-cpinbox` (least-privilege, jailed `internal-sftp`) |
+| Script uploader | `tools/push-post-push-verifier-result.ps1` |
+| Destinazione VPS | `/srv/cp-verifier-inbox/latest.json` |
+| Reader n8n mount | `/files/control-plane-verifier-inbox/latest.json` |
+| Workflow 57 | **Manual Trigger only**, **active=false** |
+| Schedule / loop / push-hook | **Vietati** |
+| PM-34 | **BLOCKED** |
+| `n8n_ready` | **false** |
+| wf40 / wf42 | **untouched** |
+| Validazione runtime campi | Step **successivo user-attested** — Cursor non dichiara runtime PASS |
 
 ### Opzioni (2–3)
 
@@ -210,13 +236,13 @@ context: D-0031-W design; verifier hardened; Option B raccomandata
 - Segreti in Git
 - Loop operativo permanente senza kill switch
 
-### Prossimo gate (se approvato in futuro)
+### Prossimo gate
 
-1. Decision Packet D-0032-W approvato da umano
-2. Implementazione test-safe Opzione 2: script push one-shot + n8n Manual Trigger **inactive**
-3. User-attested PASS session
+1. ~~Decision Packet D-0032-W approvato~~ — **fatto** (2026-06-11, variante manuale)
+2. ~~Script push one-shot~~ — **fatto** (`tools/push-post-push-verifier-result.ps1`)
+3. **User-attested PASS session** — esecuzione manuale uploader + lettura wf57; **pending**
 4. **Non** auto-promuovere a schedule permanente
 
 ---
 
-**Fine documento — design only, not wired.**
+**Fine documento — trasporto approvato (manuale one-shot); runtime field validation pending user-attested.**

@@ -13,27 +13,20 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: workflow-57-post-push-verifier-file-reader
+task_ref: d-0032-w-option1-passo2-verifier-result-uploader
 result_cursor: PASS
-result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: 9804765db6c1a77524007e5fc4ae8484a98caf63
+result_runtime: NOT_RUN_BY_CURSOR
+real_task_commit: cc6c52551a4fc7b820af984c9ea6e299b6b30ae9
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = workflow 57 export versioned and runtime-attested; Manual Trigger only; active=false; reads verifier JSON from /files/control-plane-verifier-inbox/latest.json; no schedule; no loop; no PM-34; n8n_ready=false; wf40/42 untouched
+verification_rule: PASS = commit 1 implemented manual SFTP uploader only (tools/push-post-push-verifier-result.ps1); no runtime PASS by Cursor; no schedule; no loop; no push-hook; workflow 57 Manual Trigger only and inactive; wf40/42 untouched; PM-34 BLOCKED; n8n_ready=false
 remote_hash_verbatim: PENDING_SELF_REFERENCE
-timestamp_utc: 2026-06-08
+timestamp_utc: 2026-06-11
 ```
 
-- Registrato **workflow 57** post-push verifier file reader **PASS ATTESTATO UTENTE**.
-- Export: `workflows/57 - Post-push verifier file reader TEST ONLY.json` (`9804765`); Manual Trigger only, active=false.
-- Runtime: `read_ok=true`, `result=PASS`, `hash_match=true`, `workspace_clean=true`; `source_path=/files/control-plane-verifier-inbox/latest.json`; file temporaneo VPS rimosso (`LATEST_JSON_CLEAN`).
-- **Non loop.** **Non schedule.** wf40/42 untouched. **PM-34 BLOCKED.** **`n8n_ready=false`**.
-
-Snapshot task commit:
-
-```text
-9804765db6c1a77524007e5fc4ae8484a98caf63	refs/heads/main
-```
+- **D-0032-W Opzione 1 Passo 2:** script uploader `tools/push-post-push-verifier-result.ps1` — esecuzione manuale one-shot; child verifier locale; deposito JSON via SFTP alias `ionos-cpinbox` → `/srv/cp-verifier-inbox/latest.json`.
+- **Non schedule.** **Non loop.** **Non push-hook.** wf57 inactive/manual. wf40/42 untouched. **PM-34 BLOCKED.** **`n8n_ready=false`**.
+- **Runtime execution** of uploader + workflow 57 field read: **NOT_RUN_BY_CURSOR** — user-attested/future.
 
 ---
 
@@ -46,6 +39,7 @@ Snapshot task commit:
 - Un **SUCCESS** dichiarato **senza** l'output git richiesto **non** è PASS.
 - **Orchestratore:** se il report Cursor include già l'output post-push verbatim completo (`PROJECT_VISION.md` §8.1), **non** chiedere shell manuale all'utente; leggere anche `docs/runtime/LAST_HANDOFF_VERIFY.md` durante `aggio control`; verify-only Cursor se manca/stale; shell utente = fallback finale.
 - **Nessun segreto**: token, chat_id, webhook, PAT, API key, OAuth, URL con token.
+- **Two-commit convention:** quando un task reale deve essere referenziato dal rolling report, Cursor crea prima il commit reale (commit 1), cattura l'hash con `git rev-parse HEAD`, e solo dopo crea il commit docs/report (commit 2). Cursor **non** deve mai predire o inventare il proprio hash futuro.
 
 ---
 
@@ -54,6 +48,13 @@ Snapshot task commit:
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: workflow-57-post-push-verifier-file-reader
+  real_task_commit: 9804765db6c1a77524007e5fc4ae8484a98caf63
+  rolling_report_commit: 0d2567c176d87a04cf159c4c2cd5e0608c8811a9
+  result_cursor: PASS
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-06-08
+
 - task_ref: remote-invocation-transport-design
   real_task_commit: 440015ba568f47d42fa2c9d3c77d0aebd2da7301
   rolling_report_commit: 9d48f37ddee49c2ad1b0993be8a9e21f69f5109a
@@ -81,11 +82,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: NOT_RUN_BY_CURSOR
   timestamp_utc: 2026-06-08
-
-- task_ref: automatic-post-push-verifier-design
-  real_task_commit: 2fff6572d2252453536a86b1510b3772808c341f
-  rolling_report_commit: e809e926489fbff81a8e5aba76c061cd47e3b67a
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-07
 ```
