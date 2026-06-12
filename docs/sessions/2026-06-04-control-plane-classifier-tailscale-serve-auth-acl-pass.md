@@ -86,3 +86,31 @@ After ACL save: `/healthz` still HTTP/2 200; `/classify` without token still 401
 ## 8. Conclusion
 
 **D-0021 classifier stable transport/auth = PASS ATTESTATO UTENTE.**
+
+---
+
+## 9. Addendum 2026-06-13 — GIS tailnet ACL grant
+
+**Date:** 2026-06-13  
+**Motivation:** enable browser access from any tailnet member device to the **GOI GIS Tool** (port 8000) and the **Navionics proxy** (port 5000) on the VPS.
+
+### Grant applied (manual Tailscale admin console)
+
+```json
+{ "src": ["autogroup:member"], "dst": ["100.114.7.53/32"], "ip": ["tcp:8000", "tcp:5000"] }
+```
+
+### Notes
+
+- Grant applied **manually** in the Tailscale admin console; this repository **documents** but does **not enforce** ACL policy.
+- Pre-existing grant **VPS → Ryzen `tcp:443`** (D-0021 classifier path) **preserved**.
+- Tailscale SSH **`check`** rule **preserved**.
+- Root cause of prior Windows→VPS timeouts (2026-06-13): **restrictive Tailscale ACL**, not host firewall (host firewall open on `tailscale0`).
+- SSH tunnel (`ssh -L`) was used only as a **temporary smoke-test workaround**, then retired; not the final architecture.
+- **Planet-Clone** commit **`5e57c7f`** added SonarChart endpoint `/sonar/` on the **same proxy port 5000**; ACL grant covers the port, not individual paths.
+- Endpoint `/sonar/` is available from the proxy; the **GIS monolite does not consume it yet** (GIS uses `/tiles/` only).
+- **OPSEC risk to audit (Blocco 5):** raw tailnet exposure on ports **5000/8000**; SonarChart now exposed via proxy; possible evolution **B2** with `tailscale serve`, loopback rebind, and relative URLs.
+
+### Related GIS session
+
+Documented in repo `cursor-coordinate-converter`: checkpoint/session append **2026-06-12/2026-06-13**, orchestrator inbox **`2026-06-13_0112_riepilogo_vps-tailnet-navionics-systemd.md`**.

@@ -122,3 +122,19 @@ The **Gate 3 temporary** path (reverse SSH tunnel Ryzen → VPS + Python bridge 
 - **No Funnel**; no token in Git
 
 **n8n workflow wiring** (URL + header in HTTP Request node) remains a **future gate** — not done in D-0021. Configure token **only in n8n UI**, never in Git.
+
+---
+
+## 11. Addendum 2026-06-13 — GIS / Navionics tailnet ACL grant
+
+On **2026-06-13** an **additive** Tailscale ACL grant was applied manually in the admin console to allow tailnet members to reach the GOI GIS Tool and Navionics proxy on the VPS Tailscale IP **`100.114.7.53`**:
+
+```json
+{ "src": ["autogroup:member"], "dst": ["100.114.7.53/32"], "ip": ["tcp:8000", "tcp:5000"] }
+```
+
+This grant is **separate from** the D-0021 classifier grant (VPS → Ryzen `tcp:443` only). The D-0021 restrictive ACL tightening (2026-06-04) had blocked general tailnet→VPS access on ports 22/5000/8000; the 2026-06-13 grant restores GIS/proxy access without reverting the classifier path.
+
+**Planet-Clone** commit **`5e57c7f`** added SonarChart `/sonar/` on the same proxy port; the GIS monolite still uses `/tiles/` only. OPSEC review of raw ports 5000/8000 and possible **B2** (`tailscale serve` + loopback) is tracked as Blocco 5 in the GIS project.
+
+Full session notes: [2026-06-04-control-plane-classifier-tailscale-serve-auth-acl-pass.md](sessions/2026-06-04-control-plane-classifier-tailscale-serve-auth-acl-pass.md) §9; GIS orchestrator inbox **`2026-06-13_0112_riepilogo_vps-tailnet-navionics-systemd.md`** (repo `cursor-coordinate-converter`).
