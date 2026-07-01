@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.12 — 2026-06-07  
-**Versione precedente:** 2.11 — 2026-06-07 (sostituita)  
+**Versione:** 2.14 — 2026-07-02  
+**Versione precedente:** 2.13 — 2026-06-12 (sostituita)  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -460,7 +460,8 @@ Regola: non confondere finestre/repo. Prompt destinati a `CONTROL PLANE` non van
 ## 10. Invarianti permanenti
 
 - GitHub è fonte di verità.
-- Nessun segreto in Git: token, OAuth material, PAT, webhook secret, URL con token.
+- Nessun segreto in Git: token (incluso bot token Telegram), chat_id, credenziali, OAuth material, PAT, webhook secret, API key, URL con token.
+- Identificatori tailnet (IP CGNAT `100.x`, hostname `*.ts.net`) **tollerati** per decisione 2026-07-02 (repo pubblico consapevole): non-secret by policy; `tools/redaction-check.sh` li segnala come **WARN informativo non bloccante**. I veri segreti restano vietati e bloccanti.
 - Eccezione chat_id (gate esplicito 2026-05-31): il chat_id Telegram è AMMESSO negli asset di configurazione del repo (workflow JSON e CSV seed in data-tables/). Il token Telegram e tutti gli altri segreti restano vietati. La redazione del chat_id nel corpo dei messaggi Telegram (DECISION_PACKET_FORMAT §6) resta invariata.
 - Workflow `40` è produzione e non si modifica in silenzio.
 - Workflow `41` è backup off e non si cancella in silenzio.
@@ -655,6 +656,7 @@ In una frase: **sto costruendo una fabbrica, non un singolo prodotto.** La fabbr
 | 2.11 | 2026-06-07 | §8.1: invariante handoff/post-push verification anti-regressione — Cursor stampa output git verbatim; orchestratore non chiede shell utente se output presente; verify-only Cursor prima del fallback manuale. §11.3: puntatore orchestratore. |
 | 2.12 | 2026-06-07 | §8.1 / §11.3: introdotto `docs/runtime/LAST_HANDOFF_VERIFY.md` — artefatto handoff/`aggio control` con `verified_through_commit`; `LAST_CURSOR_REPORT.md` resta rolling task report. |
 | 2.13 | 2026-06-12 | §1.1: D-0032-W manual one-shot verifier result uploader field-validated; invocazione canonica con bypass PowerShell solo di processo documentata; PM-34 resta BLOCKED; `n8n_ready=false`; nessuno schedule/loop. |
+| 2.14 | 2026-07-02 | §10: invariante segreti riformulato — nessun segreto in Git (token, chat_id, credenziali, OAuth, PAT, webhook secret, API key); **tailnet identifiers: tolerated / non-secret by policy decision 2026-07-02** (repo pubblico consapevole, WARN non bloccante); **true secrets remain forbidden and blocking**; `tools/redaction-check.sh` aggiornato in commit tools separato. Eccezione chat_id 2026-05-31 invariata. |
 
 ---
 

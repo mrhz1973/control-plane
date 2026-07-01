@@ -68,6 +68,7 @@ Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: 
 ## Redaction hygiene
 
 - Before commits touching docs/workflow artifacts: run `bash tools/redaction-check.sh`.
+- **Decisione 2026-07-02 — redaction policy aggiornata:** **identificatori tailnet** (IP CGNAT `100.x`, hostname `*.ts.net`) **non bloccanti** — WARN informativo, repo pubblico consapevole. **Restano vietati e bloccanti:** token (incluso bot token Telegram), `chat_id`, credential, OAuth, PAT, webhook secret, API key. `tools/redaction-check.sh` aggiornato in commit `tools:` separato (aggiunti pattern Telegram bot token + chat_id). Eccezione chat_id 2026-05-31 (workflow JSON / data-tables seed) invariata. Invarianti confermati: **PM-34 BLOCKED** · **`n8n_ready=false`** · wf40/41/42 untouched · no permanent schedule · no public webhook · **Gate E solo via Decision Packet dedicato**.
 
 ## Handoff / post-push verification
 
