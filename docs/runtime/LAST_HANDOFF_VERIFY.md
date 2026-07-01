@@ -30,7 +30,7 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 
 ---
 
-## Latest verified snapshot
+## Previous snapshot (backfilled)
 
 ```yaml
 task_ref: d-0032-w-field-validation-pass
@@ -42,44 +42,51 @@ observed_origin_main: 966f508d5b153a02421b5acecaac78a5c7c85535
 observed_ls_remote_main: 966f508d5b153a02421b5acecaac78a5c7c85535
 branch: main
 workspace_status: clean
-artifact_commit: PENDING_SELF_REFERENCE
+artifact_commit: 817bffa
 result: PASS
 result_runtime: PASS_ATTESTATO_UTENTE
 timestamp_utc: 2026-06-11
 ```
 
-**Nota:** questo snapshot verifica attraverso `966f508d5b153a02421b5acecaac78a5c7c85535` (HEAD pre-closure docs), **non** il commit docs-only di chiusura D-0032-W.
+**Nota:** snapshot D-0032-W verificato attraverso `966f508`; `artifact_commit` backfilled a `817bffa`.
 
 ---
 
-## Command outputs (verbatim, sanitized)
+## Latest verified snapshot
+
+```yaml
+task_ref: gate-d-rehearsal-pass-docs-closure
+verified_task_commit: df046f68867cdffcd350592a2781b53ce21ca8c0
+verified_rolling_report_commit: n/a
+verified_through_commit: df046f68867cdffcd350592a2781b53ce21ca8c0
+observed_head: df046f68867cdffcd350592a2781b53ce21ca8c0
+observed_origin_main: df046f68867cdffcd350592a2781b53ce21ca8c0
+observed_ls_remote_main: df046f68867cdffcd350592a2781b53ce21ca8c0
+branch: main
+workspace_status: clean
+artifact_commit: PENDING_SELF_REFERENCE
+result: DOCS_CLOSURE_PREPARED
+result_runtime: GATE_D_PASS_ATTESTED_CLAUD_EVIDENCE
+timestamp_utc: 2026-07-02
+```
+
+**Nota:** questo snapshot verifica attraverso `df046f68867cdffcd350592a2781b53ce21ca8c0` (BASE preflight pre-task Gate D docs closure), **non** il commit docs-only finale di chiusura D-0033. Output post-push del commit finale vanno **solo** nel report Cursor finale.
+
+---
+
+## Command outputs (verbatim, sanitized — preflight Gate D docs closure)
 
 ```text
-git fetch --prune origin
-
 git status --short
 
-git branch --show-current
-main
-
-git remote -v
-origin	https://github.com/mrhz1973/control-plane.git (fetch)
-origin	https://github.com/mrhz1973/control-plane.git (push)
-
-git pull --ff-only origin main
-From https://github.com/mrhz1973/control-plane
- * branch            main       -> FETCH_HEAD
-Already up to date.
-
-git ls-remote origin main
-966f508d5b153a02421b5acecaac78a5c7c85535	refs/heads/main
-
 git rev-parse HEAD
-966f508d5b153a02421b5acecaac78a5c7c85535
+df046f68867cdffcd350592a2781b53ce21ca8c0
 
-git rev-parse origin/main
-966f508d5b153a02421b5acecaac78a5c7c85535
+git ls-remote origin refs/heads/main
+df046f68867cdffcd350592a2781b53ce21ca8c0	refs/heads/main
 ```
+
+**BASE (preflight):** `df046f68867cdffcd350592a2781b53ce21ca8c0`
 
 ---
 

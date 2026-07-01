@@ -126,6 +126,19 @@ Gates C–F: **not PASS** unless separately attested.
 | **Rollback / kill switch** | Stop schedule; set 47/48/49 **inactive**; clear test rows only if operator policy allows — never production tables |
 | **Stop conditions** | Stale webhook blocking getUpdates; handoff failure 47→48; open_without_send observed without documented acceptance |
 
+#### Gate D evidence — PASS ATTESTATO UTENTE (2026-07-02)
+
+- **Session:** `docs/sessions/2026-07-02-control-plane-gate-d-rehearsal-pass.md`
+- **Decision:** D-0033 / Gate D bounded rehearsal
+- **Pre-step hygiene:** `D-9999-T` closed (`selected_option=2`, `update_id=986228574`) — Gate B residue cleanup
+- **Fase 1 — D-1001-T:** manual rehearsal; UI bug fix on **45** (`event.event_id` vs hardcoded `D-1000-T`) and **47** (`open_decision_ids_test_only` → `D-1001-T`); closed `update_id=986228576`
+- **Fase 2 — D-1002-T:** time-boxed scheduled pickup within declared window (2026-07-02 00:51–01:06 Europe/Rome); closed `update_id=986228577`; schedule deactivated post-pickup
+- **Addendum A — D-1003-T:** full chain 45→Telegram→47→48; handoff **`state_persisted=true`**; closed `update_id=986228578`
+- **Final workflow inventory:** aligned with Gate A — 45/47/49 inactive; 47 Schedule Trigger deactivated; 48 callable/not scheduled; **`enable_wg48_handoff=false`**
+- **Unchanged:** PM-34 BLOCKED; `n8n_ready=false`; wf40/41/42 untouched; no permanent schedule; no public webhook
+
+Gates E–F: **not PASS** unless separately attested.
+
 ### Gate E — Phase 1 controlled start (kill switch mandatory)
 
 | | |
