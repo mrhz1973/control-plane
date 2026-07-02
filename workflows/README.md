@@ -53,6 +53,22 @@ Example: `2026-05-20_push-notify.redacted.json`
 - **Redaction:** same rules as v4 — no token or real credential/workflow/webhook IDs in git; chat_id allowed in config assets per gate 2026-05-31 (this export may still use placeholders)
 - **Do not commit:** `02F-unredacted-export-local-only.json` or `*.unredacted.json`
 
+## 45 / Wd — post Gate D UI fix export (D-0033)
+
+- **File:** `exports/2026-07-02_wd-45-operational-decision-packet-integration-post-gate-d.redacted.json`
+- **Runtime name:** `45 - Wd Operational Decision Packet Integration TEST ONLY - TEMPLATE` — **inactive** post Gate D rehearsal (2026-07-02)
+- **Purpose:** redacted re-export after Gate D UI fix (`event.event_id` drives `decision_id` in Build Operational Decision Packet); aligns committed export with n8n UI post D-1001-T / D-1002-T / D-1003-T
+- **Redaction:** `__REDACTED_N8N_CREDENTIAL_ID__`; no bot token in JSON; chat_id allowed in config assets per gate 2026-05-31; classifier tailnet URL may WARN (non-blocking per 2026-07-02 policy)
+- **Import:** keep **inactive**; configure classifier URL + Telegram credential in n8n UI only — see [AUTOMATION_ACTIVATION_PLAN.md](../docs/runtime/AUTOMATION_ACTIVATION_PLAN.md)
+
+## 47 / Wf — post Gate D UI fix export (D-0033)
+
+- **File:** `exports/2026-07-02_wf-47-telegram-inbound-polling-getupdates-post-gate-d.redacted.json`
+- **Runtime name:** `47 - Wf Telegram Inbound Polling getUpdates TEST ONLY - TEMPLATE` — **inactive** / not Published post Gate D; Schedule Trigger **deactivated**
+- **Purpose:** redacted re-export after Gate D UI fixes on inbound polling path; `enable_wg48_handoff=false` default; token placeholder in getUpdates URL only
+- **Redaction:** `__CONFIGURE_TELEGRAM_BOT_TOKEN_IN_N8N_UI_OR_CREDENTIAL__` in getUpdates URL; no bot token in JSON; `allowed_chat_id` allowed in config assets per gate 2026-05-31
+- **Import:** keep **inactive**; Schedule Trigger disabled; no permanent loop — see [CURRENT_FRONTIER.md](../docs/runtime/CURRENT_FRONTIER.md)
+
 ## Do not commit
 
 - `*.unredacted.json` (listed in [.gitignore](../.gitignore))
