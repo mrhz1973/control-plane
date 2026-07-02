@@ -4,13 +4,7 @@ n8n workflow JSON exports belong in **`workflows/exports/`**.
 
 ## Before commit
 
-- Exports must be **redacted** before commit (unless a newer policy gate explicitly allows a field in configuration assets).
-- **Policy gate 2026-05-31:** operational **chat_id** is **no longer redacted by default** in workflow JSON templates and `data-tables/` CSV seed files committed as configuration assets.
-- **chat_id** may appear in those configuration assets when required for ready-import/manual test workflows (e.g. workflow 49).
-- Still **forbidden in Git:** Telegram bot token, credential id/content, webhook/auth URL, API key, OAuth material, PAT, chain-of-thought, unredacted execution dumps.
-- Remove or replace: tokens, API keys, webhook secrets, credential IDs tied to secrets.
-- **No tokenized URLs** (e.g. `https://api.telegram.org/bot<TOKEN>/...`).
-- **No credentials** embedded in node parameters.
+Policy 2026-07-02: export committabili senza obbligo di redazione. Vedi PROJECT_VISION §10 e docs/ROTATION_CHECKLIST.md.
 
 ## Naming convention
 
