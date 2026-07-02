@@ -6,6 +6,64 @@
 
 ---
 
+## Header operativo (delta / routing / redaction)
+
+### A. Disciplina prompt-size
+
+- I prompt Cursor devono portare **SOLO il delta** del task.
+- Il boilerplate si richiama per riferimento a questo template (`docs/foundation/CURSOR_PROMPT_TEMPLATE.md`).
+- **Non** inlineare ogni volta tutto il boilerplate nel corpo copiabile.
+
+### B. Comandi di ritorno umano e routing metadata fuori dal prompt
+
+- Comandi umani di ritorno (es. `aggio control`, `format`, e simili) **non** vanno nel corpo copiabile del prompt Cursor e **non** vanno nei report Cursor.
+- Metadati di routing (modalità, modello, finestra operativa) restano **fuori** dal corpo del prompt quando sono istruzioni per l'orchestratore e non per Cursor.
+- Rimando: [PROJECT_VISION.md](PROJECT_VISION.md) §8.
+
+### C. Redaction fallback Windows senza bash
+
+Quando `bash` non è disponibile, usare **`git grep` sui file tracked** con pattern allineati a `tools/redaction-check.sh` — **non** improvvisare pattern diversi.
+
+**FAIL (bloccanti) — pattern equivalenti:**
+
+```text
+# Telegram bot token
+[0-9]{8,12}:[A-Za-z0-9_-]{30,}
+
+# chat_id / chatId con assegnazione numerica (6+ cifre)
+(chat_id|chatId).{0,3}[:=].{0,3}-?[0-9]{6,}
+
+# JSON chat id
+"chat"[[:space:]]*:[[:space:]]*[{][[:space:]]*"id"[[:space:]]*:[[:space:]]*-?[0-9]{6,}
+```
+
+**Esclusioni chat_id (gate 2026-05-31):** `workflows/exports`, `data-tables`.
+
+**Esempio (PowerShell / cmd con git):**
+
+```bash
+git grep -n -E '[0-9]{8,12}:[A-Za-z0-9_-]{30,}' -- . ':(exclude)tools/redaction-check.sh'
+git grep -n -E '(chat_id|chatId).{0,3}[:=].{0,3}-?[0-9]{6,}' -- . ':(exclude)tools/redaction-check.sh' ':(exclude)workflows/exports' ':(exclude)data-tables'
+git grep -n -E '"chat"[[:space:]]*:[[:space:]]*[{][[:space:]]*"id"[[:space:]]*:[[:space:]]*-?[0-9]{6,}' -- . ':(exclude)tools/redaction-check.sh' ':(exclude)workflows/exports' ':(exclude)data-tables'
+```
+
+**Regole fallback:**
+
+- Usare `git grep` sui file **tracked**; non scansionare untracked a caso.
+- Menzioni in prosa di `chat_id` **senza** assegnazione numerica **non** sono FAIL.
+- Se il fallback trova candidati, ispezionare manualmente e bloccare solo se sono valori reali.
+- **Non** improvvisare pattern diversi dal check vero.
+
+### D. Exit code arbitro
+
+- Usare `bash tools/redaction-check.sh` quando bash è disponibile.
+- L'**exit code** del check è l'arbitro: **FAIL blocca** il commit.
+- **WARN** è atteso sulle righe tailnet per policy **2026-07-02** (identificatori `100.x` / `*.ts.net`).
+- I WARN tailnet **non** si «sistemano» durante il task.
+- WARN tailnet **non** autorizza a introdurre segreti veri.
+
+---
+
 ## 1. Scopo
 
 - Definisce come GPT-B / Codex / ChatGPT devono formattare i prompt destinati a Cursor in questo repository.
