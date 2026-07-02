@@ -13,21 +13,20 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d-0032-w-option1-passo2-verifier-result-uploader
-result_cursor: PASS
-result_runtime: PASS_ATTESTATO_UTENTE
-real_task_commit: cc6c52551a4fc7b820af984c9ea6e299b6b30ae9
+task_ref: post-gate-d-policy-frontier-verify-only
+result_cursor: PASS_VERIFY_ONLY
+result_runtime: NOT_RUN_BY_CURSOR
+real_task_commit: b462ee7eda6235797dab41ac822a331e30bbe7c5
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS = manual SFTP uploader field-validated end-to-end (Passo 3); canonical invocation powershell -NoProfile -ExecutionPolicy Bypass -File tools\push-post-push-verifier-result.ps1; verifier PASS; SFTP upload succeeded; workflow 57 manual read read_ok=true result=PASS hash_match=true; cleanup LATEST_JSON_CLEAN; no schedule; no loop; wf57 inactive/manual; wf40/42 untouched; PM-34 BLOCKED; n8n_ready=false
-remote_hash_verbatim: PENDING_SELF_REFERENCE
-timestamp_utc: 2026-06-11
+verification_rule: PASS verify-only = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su b462ee7; workspace clean; branch main; nessun file modificato; nessun runtime n8n; nessun commit/push/branch/staging durante la verifica.
+remote_hash_verbatim: "b462ee7eda6235797dab41ac822a331e30bbe7c5\trefs/heads/main"
+timestamp_utc: 2026-07-03
 ```
 
-- **D-0032-W Passo 3 field-validation:** **PASS ATTESTATO UTENTE / Claude-attested** (2026-06-11).
-- Invocazione canonica: `powershell -NoProfile -ExecutionPolicy Bypass -File tools\push-post-push-verifier-result.ps1` (bypass solo process-level).
-- Verifier PASS · SFTP upload succeeded · workflow 57 manual read: `read_ok=true`, `result=PASS`, `hash_match=true` · cleanup `LATEST_JSON_CLEAN`.
-- **Non schedule.** **Non loop.** wf57 inactive/manual. wf40/42 untouched. **PM-34 BLOCKED.** **`n8n_ready=false`**.
+- **Verify-only post Gate D / policy / frontier:** verifica Git read-only su `b462ee7` — HEAD locale = `origin/main` = ls-remote; workspace clean; branch `main`.
+- **Non** è un PASS runtime; nessun runtime n8n eseguito o attivato da Cursor.
+- Snapshot verifica attraverso `b462ee7`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
 
 ---
 
@@ -39,7 +38,7 @@ timestamp_utc: 2026-06-11
 - I campi `rolling_report_commit` e `remote_hash_verbatim` del LATEST restano `PENDING_SELF_REFERENCE` finché quel LATEST è il più recente; si backfillano in HISTORY al task successivo. **Non** esiste un commit finalize-hash dedicato (`PROJECT_VISION.md` §8.1).
 - Un **SUCCESS** dichiarato **senza** l'output git richiesto **non** è PASS.
 - **Orchestratore:** se il report Cursor include già l'output post-push verbatim completo (`PROJECT_VISION.md` §8.1), **non** chiedere shell manuale all'utente; leggere anche `docs/runtime/LAST_HANDOFF_VERIFY.md` durante `aggio control`; verify-only Cursor se manca/stale; shell utente = fallback finale.
-- **Nessun segreto**: token, chat_id, webhook, PAT, API key, OAuth, URL con token.
+- **Policy materiali sensibili v2.15:** il repo è trattato come non-confidenziale secondo `PROJECT_VISION.md` §10; non stampare o introdurre token, API key, OAuth material, PAT, URL con token, credential material o runtime dump non previsto. Chat_id e identificatori tailnet seguono le eccezioni/tolleranze documentate in `PROJECT_VISION.md` §10. Controllo compensativo finale: rotazione credenziali secondo `docs/ROTATION_CHECKLIST.md`.
 - **Two-commit convention:** quando un task reale deve essere referenziato dal rolling report, Cursor crea prima il commit reale (commit 1), cattura l'hash con `git rev-parse HEAD`, e solo dopo crea il commit docs/report (commit 2). Cursor **non** deve mai predire o inventare il proprio hash futuro.
 
 ---
@@ -49,6 +48,13 @@ timestamp_utc: 2026-06-11
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d-0032-w-option1-passo2-verifier-result-uploader
+  real_task_commit: cc6c52551a4fc7b820af984c9ea6e299b6b30ae9
+  rolling_report_commit: 966f508d5b153a02421b5acecaac78a5c7c85535
+  result_cursor: PASS
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-06-11
+
 - task_ref: workflow-57-post-push-verifier-file-reader
   real_task_commit: 9804765db6c1a77524007e5fc4ae8484a98caf63
   rolling_report_commit: 0d2567c176d87a04cf159c4c2cd5e0608c8811a9
@@ -73,13 +79,6 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
 - task_ref: runtime-post-push-verifier-autosource
   real_task_commit: ae94a01d82f9ec64293cd48a585668e6c2f03bb4
   rolling_report_commit: 268e8837141272cb751c23083961e9355557a93f
-  result_cursor: PASS
-  result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-08
-
-- task_ref: runtime-post-push-verifier-script
-  real_task_commit: 25586ea5cc10ea1f2d172b201f8201ee2300431c
-  rolling_report_commit: 8df27d142a08dfcd8026c81ffde384aae19f36d9
   result_cursor: PASS
   result_runtime: NOT_RUN_BY_CURSOR
   timestamp_utc: 2026-06-08

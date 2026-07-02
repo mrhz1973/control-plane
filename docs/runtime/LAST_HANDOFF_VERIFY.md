@@ -26,7 +26,7 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
   3. **`LAST_CURSOR_REPORT.md`** su GitHub
   4. Prompt **Cursor verify-only** (git read-only, zero edit)
   5. Shell manuale utente = **fallback finale**
-- **Nessun segreto:** token, chat_id, webhook, PAT, API key, OAuth, URL con token.
+- **Policy materiali sensibili v2.15:** il repo è trattato come non-confidenziale secondo `PROJECT_VISION.md` §10; non stampare o introdurre token, API key, OAuth material, PAT, URL con token, credential material o runtime dump non previsto. Chat_id e identificatori tailnet seguono le eccezioni/tolleranze documentate in `PROJECT_VISION.md` §10. Controllo compensativo finale: rotazione credenziali secondo `docs/ROTATION_CHECKLIST.md`.
 
 ---
 
@@ -55,38 +55,58 @@ timestamp_utc: 2026-06-11
 ## Latest verified snapshot
 
 ```yaml
-task_ref: gate-d-rehearsal-pass-docs-closure
-verified_task_commit: df046f68867cdffcd350592a2781b53ce21ca8c0
+task_ref: post-gate-d-policy-frontier-verify-only
+verified_task_commit: b462ee7eda6235797dab41ac822a331e30bbe7c5
 verified_rolling_report_commit: n/a
-verified_through_commit: df046f68867cdffcd350592a2781b53ce21ca8c0
-observed_head: df046f68867cdffcd350592a2781b53ce21ca8c0
-observed_origin_main: df046f68867cdffcd350592a2781b53ce21ca8c0
-observed_ls_remote_main: df046f68867cdffcd350592a2781b53ce21ca8c0
+verified_through_commit: b462ee7eda6235797dab41ac822a331e30bbe7c5
+observed_head: b462ee7eda6235797dab41ac822a331e30bbe7c5
+observed_origin_main: b462ee7eda6235797dab41ac822a331e30bbe7c5
+observed_ls_remote_main: b462ee7eda6235797dab41ac822a331e30bbe7c5
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
-result: DOCS_CLOSURE_PREPARED
-result_runtime: GATE_D_PASS_ATTESTED_CLAUD_EVIDENCE
-timestamp_utc: 2026-07-02
+result: PASS_REMOTE_DOCUMENTAL_VERIFY_ONLY
+result_runtime: NOT_RUN
+timestamp_utc: 2026-07-03
 ```
 
-**Nota:** questo snapshot verifica attraverso `df046f68867cdffcd350592a2781b53ce21ca8c0` (BASE preflight pre-task Gate D docs closure), **non** il commit docs-only finale di chiusura D-0033. Output post-push del commit finale vanno **solo** nel report Cursor finale.
+**Nota:** questo snapshot verifica attraverso `b462ee7` — verifica Git read-only / documentale post Gate D, policy-change e frontier fix; **non** è un PASS runtime; nessun runtime n8n è stato eseguito o attivato. Il commit che aggiorna questo file **non** si auto-certifica; resta il modello `artifact_commit: PENDING_SELF_REFERENCE`.
 
 ---
 
-## Command outputs (verbatim, sanitized — preflight Gate D docs closure)
+## Command outputs (verbatim, sanitized — verify-only post Gate D / policy / frontier)
 
 ```text
 git status --short
 
+git branch --show-current
+main
+
 git rev-parse HEAD
-df046f68867cdffcd350592a2781b53ce21ca8c0
+b462ee7eda6235797dab41ac822a331e30bbe7c5
+
+git rev-parse origin/main
+b462ee7eda6235797dab41ac822a331e30bbe7c5
 
 git ls-remote origin refs/heads/main
-df046f68867cdffcd350592a2781b53ce21ca8c0	refs/heads/main
+b462ee7eda6235797dab41ac822a331e30bbe7c5	refs/heads/main
+
+git log --oneline -8
+b462ee7 docs: remove stale frontier redaction-check reference
+47b15b5 docs: record non-confidential repo decision and rotation checklist
+c712e1e tools: remove redaction check per non-confidential repo decision
+f6f5579 workflows: re-export redacted 45 and 47 post gate d ui fixes
+7564c03 docs: fix pm archive completeness
+af1cac0 docs: add router docs entrypoints
+1b8f637 docs: clarify redaction invariants
+3a4a16c tools: tune redaction check secret patterns
+
+git diff --stat
+
+git diff --name-only
 ```
 
-**BASE (preflight):** `df046f68867cdffcd350592a2781b53ce21ca8c0`
+**BASE (preflight):** `b462ee7eda6235797dab41ac822a331e30bbe7c5`
 
 ---
 
