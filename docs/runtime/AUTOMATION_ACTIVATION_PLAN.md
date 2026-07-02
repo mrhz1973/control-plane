@@ -141,14 +141,138 @@ Gates E–F: **not PASS** unless separately attested.
 
 ### Gate E — Phase 1 controlled start (kill switch mandatory)
 
+**Status (2026-07-03):** PREP docs-only aggiornato in questo file. **Non** è Gate E PASS. **Non** esegue runtime. **Non** auto-avvia Gate E.
+
+#### Scope boundary — cosa è cosa
+
+| Layer | Gate E Phase 1 | Fuori scope / gate separato |
+|-------|----------------|----------------------------|
+| **Docs-only / GitHub-only** | Aggiornare session log, checklist, evidenza; commit selettivo su `main` | — |
+| **Runtime n8n manuale** | **Un solo** run manuale bounded per rehearsal Phase 1, su asset esistenti 45/47/48, **inactive/off** dopo run | Import/export massivo; nuovi workflow |
+| **Telegram reale** | Solo messaggi attesi dal Decision Packet di autorizzazione; conteggio fan-out verificabile | Broadcast non dichiarato; chat fuori scope |
+| **Webhook / schedule** | **Vietato** schedule permanente; eventuale finestra time-boxed **solo** se esplicitamente autorizzata nel Decision Packet, **deactivated** entro fine finestra | Telegram Trigger; Funnel; public webhook; schedule 47/48/49 left on |
+| **OpenClaw gateway** | **Non** coinvolto — transport/backlog opzionale, non model path target (`PROJECT_VISION.md` §2) | Qualsiasi attivazione OpenClaw come orchestratore |
+| **Worker / PM-34** | **BLOCKED** — nessun worker loop, nessun `pm34_unblocked=true` | Gate F |
+| **Gate F** | **Non** iniziato da Gate E PASS | PM-34 unlock, `n8n_ready=true` |
+
+#### Precondizioni (tutte richieste prima di qualsiasi run Gate E)
+
+1. **Gate D PASS** attestato (`docs/sessions/2026-07-02-control-plane-gate-d-rehearsal-pass.md`).
+2. **Decision Packet dedicato** che autorizza esplicitamente Gate E Phase 1 bounded scope (kind `runtime`, opzioni numerate, kill switch nominato).
+3. **Re-export 45/47 post-fix UI** — finding **chiuso** (vedi sotto); rebuild da export committati deve bastare.
+4. Asset **45/47/48** callable/inactive come Gate D inventory finale; **40/41/42 untouched**.
+5. **`PM-34` BLOCKED**, **`n8n_ready=false`**, **`enable_wg48_handoff=false`** in n8n UI (default fuori test).
+6. Classifier transport configurato **solo** in n8n UI; nessun segreto nuovo introdotto per questo gate.
+7. Operatore ha letto questo PREP e accetta fail-closed + kill switch prima del run.
+
+#### Finding pre-Gate E — stato e criteri operativi
+
+##### 1. Fan-out 45/47 (operazionalizzato)
+
+Gate E **non** deve generare fan-out incontrollato di messaggi Telegram o item di output.
+
+| Asset | Evidenza attesa (PASS) | Stop condition (NO-GO immediato) |
+|-------|------------------------|----------------------------------|
+| **45 / Wd** | **Esattamente 1** messaggio Telegram Decision Packet per `decision_id` del run; session log riporta `message_id` singolo (o duplicate diagnostic documentato come stesso invio) | **>1** messaggio distinto per lo stesso `decision_id` senza autorizzazione nel Decision Packet; fan-out 3–5 messaggi non dichiarato |
+| **47 / Wf** | **1 item** Inspect/output per decisione chiusa nel run; se multi-item, **≤5 item** totali e ogni item mappato a `decision_id`/`update_id` distinto nel session log | **>5 item** in output 47; item senza `decision_id`/`update_id`; fan-out che supera il previsto nel Decision Packet |
+
+**Regola:** una semplice menzione del rischio fan-out **non** basta — il session log Gate E deve contenere conteggio esplicito messaggi (45) e item (47) con confronto ai limiti sopra.
+
+##### 2. Derivation 47 da decision-store (operazionalizzato)
+
 | | |
 |---|---|
-| **Precondizioni** | Gates B–D PASS as applicable; explicit Decision Packet authorizing **bounded** phase-1 scope; kill switch documented |
-| **Cosa si può fare** | **Limited** operational window: e.g. manual-triggered or tightly bounded schedule with documented start/end; monitor Telegram + decision-store; **still no PM-34** |
-| **Cosa NON si può fare** | Full autonomous loop; `n8n_ready=true`; wf40/41/42 promotion; provider API keys in workflow; undeclared public webhook |
-| **Evidenza PASS** | Session log: window start/end; zero undeclared sends; kill switch exercised or ready; PM-34 still BLOCKED |
-| **Rollback / kill switch** | **Immediate:** deactivate all phase-1 schedules; set inbound workflows off; `handoff ora`; restore wf40-only production if any candidate touched |
-| **Stop conditions** | Duplicate packets; classifier fail-open; inbound reply without guard; any secret leakage |
+| **Comportamento richiesto** | **47** deriva l'elenco decisioni **open** da `control_plane_decisions_test` (query/load store), **non** da lista manuale hardcoded |
+| **Vietato come fonte operativa** | Campo/lista `open_decision_ids_test_only` popolata manualmente in n8n UI come sostituto dello store |
+| **Uso test-only ammesso** | Override fixture **solo** se nominato nel Decision Packet, confinato al run, e session log dichiara `store_derivation_bypassed=true` + motivo — **non** equivalente a comportamento operativo Gate E PASS |
+| **Evidenza PASS** | Inspect/output 47 mostra `decision_id`(s) coerenti con righe `status=open` nello store al momento del pickup; nessun retarget manuale post-Gate-D pattern |
+| **Stop condition** | Pickup su `decision_id` assente dallo store; chiusura su decisione già closed; lista manuale usata senza bypass documentato |
+
+##### 3. Re-export 45/47 post-fix UI — **CHIUSO**
+
+| | |
+|---|---|
+| **Commit** | `f6f5579` — `workflows: re-export redacted 45 and 47 post gate d ui fixes` |
+| **Export** | `workflows/exports/2026-07-02_wd-45-operational-decision-packet-integration-post-gate-d.redacted.json`, `workflows/exports/2026-07-02_wf-47-telegram-inbound-polling-getupdates-post-gate-d.redacted.json` |
+| **Finding** | UI fix Gate D (`event.event_id` su 45; path inbound su 47) allineati agli export committati — rebuild/import da repo deve bastare |
+| **Gate E** | **Non** richiede nuovo re-export salvo divergenza UI post-PREP attestata |
+
+##### 4. `enable_wg48_handoff` (operazionalizzato)
+
+| | |
+|---|---|
+| **Default fuori test** | **`false`** — IF su 47 short-circuita prima di Execute Workflow verso 48 |
+| **Gate E ammesso** | Test **manuale/confinato** con `enable_wg48_handoff=true` **solo** se esplicitamente autorizzato nel Decision Packet; **una** catena 47→48 per run; **deactivated/off** entro fine run |
+| **Vietato** | Handoff permanente verso 48; schedule su 48; lasciare `enable_wg48_handoff=true` dopo il run |
+| **Evidenza PASS** | Session log: flag `false` in inventory finale; se testato `true`, log con `state_persisted` + timestamp finestra + conferma ripristino `false` |
+| **Stop condition** | Handoff 47→48 con flag `true` non autorizzato; 48 invocato con schedule; flag left on post-run |
+
+#### Procedura one-step manuale (Gate E Phase 1 — solo dopo Decision Packet)
+
+**Un solo run bounded.** Nessun loop. Nessun schedule permanente.
+
+1. **Preflight (read-only):** inventory n8n UI — 45/47/49 **inactive**; 47 Schedule Trigger **deactivated**; 48 **callable/not scheduled**; 40/41/42 **unchanged**; `enable_wg48_handoff=false`.
+2. **Hygiene store (se richiesto dal Decision Packet):** chiudere righe test residue; **non** toccare `control_plane_state`.
+3. **Open (45):** Manual Trigger **45/Wd** una volta con `event_id` = `decision_id` del test Gate E; verificare **1** Telegram send; registrare `message_id`.
+4. **Pickup (47):** Manual Trigger **47/Wf** — derivation da store (non lista manuale); verificare conteggio item ≤5; registrare `update_id`, `selected_option`, `inspect_status`.
+5. **Handoff (48, opzionale):** solo se autorizzato nel Decision Packet e flag test temporaneo; altrimenti skip.
+6. **Teardown obbligatorio:** 45/47/49 **inactive**; 47 Schedule **deactivated**; `enable_wg48_handoff=false`; nessuno schedule lasciato attivo.
+7. **Session log:** `docs/sessions/YYYY-MM-DD-control-plane-gate-e-phase1-*.md` con conteggi fan-out, derivation source, flag finale.
+
+#### Evidenze minime (Gate E PASS — user-attested)
+
+- Decision Packet reference (ID/kind).
+- Sanitized Inspect/output per 45, 47, (48 se usato).
+- Conteggio esplicito: messaggi 45 = 1; item 47 ≤5.
+- Store rows: `decision_id`, `status`, `closed_at` coerenti.
+- Final inventory: 45/47/49 inactive; schedule off; `enable_wg48_handoff=false`.
+- **`test_only=true`** dove applicabile.
+- **Non** secrets dump non previsto.
+
+#### Criteri GO / NO-GO
+
+| GO (proseguire / attestare PASS) | NO-GO (fail-closed, stop immediato) |
+|----------------------------------|--------------------------------------|
+| Tutte le precondizioni soddisfatte | Decision Packet mancante o scope non autorizzato |
+| Fan-out entro limiti tabella sopra | Fan-out oltre limiti; messaggi/item non mappati |
+| 47 derivation da store (o bypass documentato) | Lista manuale `open_decision_ids_test_only` come fonte operativa |
+| Teardown completato; inventory Gate-D-like | Schedule/webhook lasciato attivo |
+| `enable_wg48_handoff=false` in inventory finale | Flag `true` non autorizzato o left on |
+| wf40/41/42 untouched | Qualsiasi side effect su 40/41/42 |
+| PM-34 BLOCKED; `n8n_ready=false` | Tentativo unlock PM-34 o `n8n_ready=true` |
+
+#### Rollback / fail-closed / kill switch
+
+- **Immediate kill switch:** `handoff ora` (`PROJECT_VISION.md` §11.1); deactivate tutti schedule 47/48/49; set inbound workflows **inactive/off**; `enable_wg48_handoff=false`.
+- **Fail-closed default:** al primo NO-GO, **stop** — non “fix forward” silenzioso; documentare BLOCKED con motivo concreto.
+- **Rollback:** ripristinare inventory Gate D (45/47/49 inactive; 47 schedule deactivated; 48 callable/not scheduled); **non** cancellare righe store senza policy operatore.
+- **wf40/41/42:** qualunque side effect = **stop** + session incident; **no** promotion silent.
+
+#### Stop conditions (riepilogo)
+
+- Fan-out 45 >1 messaggio o 47 >5 item non autorizzato.
+- 47 usa lista manuale invece dello store senza bypass documentato.
+- Schedule permanente o webhook/Telegram Trigger attivato.
+- `enable_wg48_handoff=true` fuori test autorizzato o left on.
+- Classifier unreachable; duplicate_open_attempt non gestito.
+- Secret leakage non previsto; wf40/41/42 mutation.
+- PM-34 unlock o `n8n_ready=true` tentato.
+
+#### Cosa NON fa questo PREP (2026-07-03)
+
+- **Non** esegue n8n, **non** import/export workflow, **non** attiva schedule/webhook.
+- **Non** dichiara Gate E PASS.
+- **Non** aggiorna `LAST_CURSOR_REPORT.md` / `LAST_HANDOFF_VERIFY.md` — il commit docs-only PREP entra nel modello `PENDING_SELF_REFERENCE`; backfill al task successivo, **non** finalize-hash dedicato.
+- **Non** crea `GATE_E_DECISION_REHEARSAL_PLAN.md` — piano operativo resta in questa sezione.
+
+| | |
+|---|---|
+| **Precondizioni** | Gates B–D PASS; Decision Packet Gate E; finding re-export chiuso (`f6f5579`); fan-out/derivation/handoff criteri sopra compresi |
+| **Cosa si può fare** | **Limited** operational window Phase 1: manual-triggered bounded run; monitor Telegram + decision-store; **still no PM-34** |
+| **Cosa NON si può fare** | Full autonomous loop; permanent schedule; `n8n_ready=true`; wf40/41/42 promotion; OpenClaw activation; worker/PM-34; Gate F |
+| **Evidenza PASS** | User-attested session con tabelle GO/NO-GO soddisfatte; kill switch ready/exercised; PM-34 still BLOCKED |
+| **Rollback / kill switch** | **Immediate:** deactivate phase-1 schedules; inbound off; `enable_wg48_handoff=false`; `handoff ora` |
+| **Stop conditions** | Vedi tabella NO-GO sopra |
 
 ### Gate F — PM-34 unlock (Decision Packet required)
 

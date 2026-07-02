@@ -56,12 +56,14 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 ## Next gate
 
-**Not auto-started.** **Gate D closed** (2026-07-02). **Gate E** — **SOLO via Decision Packet dedicato** — precondizioni documentate:
+**Not auto-started.** **Gate D closed** (2026-07-02). **Gate E** — **SOLO via Decision Packet dedicato** — PREP docs-only aggiornato in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E (2026-07-03). **Non** è Gate E PASS. **Nessun runtime** eseguito per questo PREP.
 
-1. **Fan-out** messaggi/item da risolvere (45 invia 3–5 messaggi; output 47 ripetuti 4–5 item).
-2. **47** deve derivare decisioni aperte dallo store, non da lista manuale `open_decision_ids_test_only`.
-3. **Re-export redatto** 45 e 47 post-fix UI — divergono dai template committati; rebuild deve bastare.
-4. Flag **`enable_wg48_handoff`** documentato; default **`false`** fuori test.
+Precondizioni Gate E — stato finding:
+
+1. **Fan-out 45/47** — da validare in Gate E manual-only (criteri operativi nel piano: 45 = 1 messaggio; 47 ≤5 item; stop se oltre).
+2. **47 derivation da store** — da validare in Gate E manual-only (vietata lista manuale `open_decision_ids_test_only` come fonte operativa).
+3. **Re-export 45/47 post-fix UI** — **chiuso** da `f6f5579` (`workflows/exports/2026-07-02_*post-gate-d.redacted.json`).
+4. **`enable_wg48_handoff`** — default **`false`** fuori test; test manuale/confinato solo se autorizzato nel Decision Packet.
 
 Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: **PM-34 BLOCKED** · **`n8n_ready=false`** · NO permanent schedule · wf40/42 untouched · pezzi collegati ≠ loop avviato.
 
