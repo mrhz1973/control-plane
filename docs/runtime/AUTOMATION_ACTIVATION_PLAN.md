@@ -265,15 +265,6 @@ Gate E **non** deve generare fan-out incontrollato di messaggi Telegram o item d
 - **Non** aggiorna `LAST_CURSOR_REPORT.md` / `LAST_HANDOFF_VERIFY.md` — il commit docs-only PREP entra nel modello `PENDING_SELF_REFERENCE`; backfill al task successivo, **non** finalize-hash dedicato.
 - **Non** crea `GATE_E_DECISION_REHEARSAL_PLAN.md` — piano operativo resta in questa sezione.
 
-| | |
-|---|---|
-| **Precondizioni** | Gates B–D PASS; Decision Packet Gate E; finding re-export chiuso (`f6f5579`); fan-out/derivation/handoff criteri sopra compresi |
-| **Cosa si può fare** | **Limited** operational window Phase 1: manual-triggered bounded run; monitor Telegram + decision-store; **still no PM-34** |
-| **Cosa NON si può fare** | Full autonomous loop; permanent schedule; `n8n_ready=true`; wf40/41/42 promotion; OpenClaw activation; worker/PM-34; Gate F |
-| **Evidenza PASS** | User-attested session con tabelle GO/NO-GO soddisfatte; kill switch ready/exercised; PM-34 still BLOCKED |
-| **Rollback / kill switch** | **Immediate:** deactivate phase-1 schedules; inbound off; `enable_wg48_handoff=false`; `handoff ora` |
-| **Stop conditions** | Vedi tabella NO-GO sopra |
-
 ### Gate F — PM-34 unlock (Decision Packet required)
 
 | | |

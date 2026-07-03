@@ -55,58 +55,55 @@ timestamp_utc: 2026-06-11
 ## Latest verified snapshot
 
 ```yaml
-task_ref: post-gate-d-policy-frontier-verify-only
-verified_task_commit: b462ee7eda6235797dab41ac822a331e30bbe7c5
+task_ref: gate-e-controlled-start-prep-docs-only
+verified_task_commit: 34cea4684491ff729df7322418e558febff4257b
 verified_rolling_report_commit: n/a
-verified_through_commit: b462ee7eda6235797dab41ac822a331e30bbe7c5
-observed_head: b462ee7eda6235797dab41ac822a331e30bbe7c5
-observed_origin_main: b462ee7eda6235797dab41ac822a331e30bbe7c5
-observed_ls_remote_main: b462ee7eda6235797dab41ac822a331e30bbe7c5
+verified_through_commit: 34cea4684491ff729df7322418e558febff4257b
+observed_head: 34cea4684491ff729df7322418e558febff4257b
+observed_origin_main: 34cea4684491ff729df7322418e558febff4257b
+observed_ls_remote_main: 34cea4684491ff729df7322418e558febff4257b
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
-result: PASS_REMOTE_DOCUMENTAL_VERIFY_ONLY
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
 result_runtime: NOT_RUN
 timestamp_utc: 2026-07-03
 ```
 
-**Nota:** questo snapshot verifica attraverso `b462ee7` — verifica Git read-only / documentale post Gate D, policy-change e frontier fix; **non** è un PASS runtime; nessun runtime n8n è stato eseguito o attivato. Il commit che aggiorna questo file **non** si auto-certifica; resta il modello `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** questo snapshot verifica attraverso `34cea46` — PREP Gate E docs-only (`AUTOMATION_ACTIVATION_PLAN.md` § Gate E); **non** è Gate E PASS; **non** è PASS runtime; nessun runtime n8n eseguito o attivato; nessun workflow toccato. Il commit che aggiorna questo file **non** si auto-certifica; resta il modello `artifact_commit: PENDING_SELF_REFERENCE`.
 
 ---
 
-## Command outputs (verbatim, sanitized — verify-only post Gate D / policy / frontier)
+## Command outputs (verbatim, sanitized — Gate E PREP docs-only)
 
 ```text
-git status --short
-
-git branch --show-current
-main
-
 git rev-parse HEAD
-b462ee7eda6235797dab41ac822a331e30bbe7c5
+34cea4684491ff729df7322418e558febff4257b
 
 git rev-parse origin/main
-b462ee7eda6235797dab41ac822a331e30bbe7c5
+34cea4684491ff729df7322418e558febff4257b
 
 git ls-remote origin refs/heads/main
-b462ee7eda6235797dab41ac822a331e30bbe7c5	refs/heads/main
+34cea4684491ff729df7322418e558febff4257b	refs/heads/main
+
+git status --short
+
+git diff --name-only BASE..HEAD
+docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
+docs/runtime/CURRENT_FRONTIER.md
 
 git log --oneline -8
+34cea46 docs: prep gate e controlled start plan
+1a910b4 docs: refresh runtime verification artifacts
 b462ee7 docs: remove stale frontier redaction-check reference
 47b15b5 docs: record non-confidential repo decision and rotation checklist
 c712e1e tools: remove redaction check per non-confidential repo decision
 f6f5579 workflows: re-export redacted 45 and 47 post gate d ui fixes
 7564c03 docs: fix pm archive completeness
 af1cac0 docs: add router docs entrypoints
-1b8f637 docs: clarify redaction invariants
-3a4a16c tools: tune redaction check secret patterns
-
-git diff --stat
-
-git diff --name-only
 ```
 
-**BASE (preflight):** `b462ee7eda6235797dab41ac822a331e30bbe7c5`
+**BASE (preflight):** `34cea4684491ff729df7322418e558febff4257b`
 
 ---
 
