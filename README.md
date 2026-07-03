@@ -23,9 +23,8 @@ Lo stato corrente vive **SOLO** nel frontier. Questo README non contiene snapsho
 
 ## Invarianti stabili
 
-- **No secrets in Git:** token, chat_id, credenziali, OAuth, PAT, webhook secret, API key
-- Identificatori tailnet tollerati come **WARN** (policy 2026-07-02)
-- `bash tools/redaction-check.sh` pre-commit
+- **Repo non-confidenziale** (`PROJECT_VISION.md` §10, v2.15): controllo compensativo = rotazione totale a fine progetto — [`docs/ROTATION_CHECKLIST.md`](docs/ROTATION_CHECKLIST.md); `tools/redaction-check.sh` **rimosso**
+- **Advisor read-only:** metodo e cautele output in [`docs/advisors/GLM_ADVISOR_METHOD.md`](docs/advisors/GLM_ADVISOR_METHOD.md)
 - Workflow produzione mai mutati in silenzio
 - Attivazioni solo via Decision Packet
 - **PM-34 BLOCKED** · **`n8n_ready=false`** — gate espliciti
