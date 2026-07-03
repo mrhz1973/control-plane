@@ -56,7 +56,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 ## Next gate
 
-**Not auto-started.** **Gate D closed** (2026-07-02). **Gate E** — **SOLO via Decision Packet dedicato** — PREP docs-only aggiornato in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E (2026-07-03). **Non** è Gate E PASS. **Nessun runtime** eseguito per questo PREP.
+**Not auto-started.** **Gate D closed** (2026-07-02). **Gate E** — **SOLO via Decision Packet dedicato** — PREP docs-only aggiornato in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E (2026-07-03). Prompt runtime Gate E manual-only **preparato** nello stesso piano (`Gate E runtime manual-only prompt — prepared, not executed`); **non eseguito**; primo run raccomandato **senza** `enable_wg48_handoff=true`; Gate E runtime richiede **decisione separata**. **Non** è Gate E PASS. **Nessun runtime** eseguito per questo PREP.
 
 Precondizioni Gate E — stato finding:
 

@@ -265,6 +265,184 @@ Gate E **non** deve generare fan-out incontrollato di messaggi Telegram o item d
 - **Non** aggiorna `LAST_CURSOR_REPORT.md` / `LAST_HANDOFF_VERIFY.md` — il commit docs-only PREP entra nel modello `PENDING_SELF_REFERENCE`; backfill al task successivo, **non** finalize-hash dedicato.
 - **Non** crea `GATE_E_DECISION_REHEARSAL_PLAN.md` — piano operativo resta in questa sezione.
 
+#### Gate E runtime manual-only prompt — prepared, not executed
+
+**Status:** prompt operativo preparato in questo file (2026-07-03). **Non eseguito.** **Non** è Gate E PASS. **Non** è PASS runtime.
+
+> **QUESTO PROMPT FUTURO ESEGUE RUNTIME SOLO SE INCOLLATO IN UNA SUCCESSIVA FASE AUTORIZZATA.**
+> **IL TASK ATTUALE LO PREPARA SOLTANTO.**
+
+Il blocco sotto è il prompt copiabile per un futuro task Gate E runtime manual-only, **solo** dopo Decision Packet dedicato che autorizza esplicitamente il run.
+
+---
+
+**Prompt copiabile — Gate E runtime manual-only (futuro, non eseguire ora)**
+
+You are working in `mrhz1973/control-plane`, branch `main`. This is a **Gate E Phase 1 runtime rehearsal — manual-only**. One decision/test case. One bounded window. **Do not** declare Gate E PASS or runtime PASS autonomously.
+
+##### 1. Ruoli e responsabilità
+
+| Ruolo | Responsabilità |
+|-------|----------------|
+| **Cursor** | Guida, legge stato repo/docs, produce checklist, raccoglie e organizza evidenze. **Non** dichiara PASS runtime autonomamente. **Non** clicca n8n, **non** invia Telegram, **non** modifica credenziali. |
+| **Operatore** | Agisce manualmente su UI n8n/Telegram **un passo alla volta** quando il prompt dice `WAIT`. |
+| **Orchestratore** | Decide GO/NO-GO sulla base del report e delle evidenze. |
+| **Reviewer esterno** (quando disponibile) | Consultivo / verifica indipendente. **Non** sostituisce l'operatore. **Non** è gatekeeper pre-Gate E. |
+
+##### 2. Preflight (obbligatorio prima di qualsiasi click n8n)
+
+```bash
+git status --short
+git pull --ff-only origin main
+BASE=$(git rev-parse HEAD)
+git branch --show-current
+git rev-parse HEAD
+git rev-parse origin/main
+git ls-remote origin refs/heads/main
+```
+
+HEAD di riferimento al momento della preparazione prompt: `6832b9b7e0da42b0fcce5fb0da07cc5548e0eb6c`. **Non** trattare questo hash hardcoded come prova sufficiente: la prova effettiva richiede sempre output **fresco** di `git ls-remote origin refs/heads/main` e coerenza con `HEAD` / `origin/main`. Fermarsi se workspace dirty, branch ≠ `main`, o hash non allineati.
+
+##### 3. Confine runtime
+
+- Gate E runtime è **manual-only** — nessun automatismo oltre la singola azione confermata.
+- **Una sola** decisione / test case per run.
+- **Una sola** finestra temporale dichiarata nel Decision Packet.
+- **Nessuno** schedule permanente.
+- **Nessun** webhook pubblico.
+- **Nessun** Telegram Trigger.
+- **Nessun** Funnel.
+- **Nessun** OpenClaw gateway.
+- **Nessun** worker PM-34.
+- **Nessun** Gate F.
+- **`n8n_ready=false`** resta falso — non modificare.
+- **`pm34_unblocked=false`** resta falso — non modificare.
+- **40/41/42** non si toccano.
+- **Nessun** export/import workflow.
+- **Nessuna** modifica credenziali.
+
+##### 4. Primo run Gate E — senza handoff 48
+
+`enable_wg48_handoff` deve restare **`false`** per tutto il primo run Gate E.
+
+Il test handoff 47→48 con `enable_wg48_handoff=true` richiede **addendum / Decision Packet separato** — non incluso nel primo run.
+
+##### 5. Evidence collection (template — compilare durante il run, non ora)
+
+```text
+Gate E Runtime Evidence
+
+- decision_id:
+- update_id:
+- timestamp_start:
+- timestamp_end:
+- workflow manuale eseguito:
+- workflow non toccati:
+- 45 Telegram messages observed:
+- 47 items observed:
+- decision-store snapshot pre-run:
+- decision-store snapshot post-run:
+- 47 derivation source:
+- open_decision_ids_test_only used? yes/no:
+- store_derivation_bypassed: yes/no
+- bypass_reason: (solo se bypass test-only autorizzato)
+- enable_wg48_handoff initial:
+- enable_wg48_handoff final:
+- schedules changed? yes/no:
+- webhooks opened? yes/no:
+- teardown completed? yes/no:
+- stop conditions triggered? yes/no:
+- operator attestation:
+```
+
+##### 6. Criteri numerici e stop immediato
+
+| Asset | Limite |
+|-------|--------|
+| **45 / Wd** | **Esattamente 1** messaggio Telegram atteso per decisione |
+| **47 / Wf** | **Massimo 5** item osservati/elaborati |
+
+**Stop immediato** se:
+
+- 45 > 1 messaggio inatteso
+- 47 > 5 item
+- ripetizione non richiesta
+- `decision_id` non derivato dallo store
+- `open_decision_ids_test_only` usato come fonte operativa (senza bypass test-only autorizzato e documentato)
+- `enable_wg48_handoff` diventa `true`
+- qualsiasi schedule permanente viene aperto
+- qualsiasi workflow 40/41/42 viene toccato
+- `n8n_ready` cambia
+- `pm34_unblocked` cambia
+
+##### 7. Procedura one-step (operatore — un passo alla volta)
+
+**Non** eseguire raffiche di comandi o click. Ogni step attende conferma operatore.
+
+1. **Preflight Git** (sezione 2) — solo read-only finché non GO orchestratore.
+2. `WAIT:` incolla screenshot/stato n8n pre-run (inventory: 45/47/49 inactive; 47 Schedule deactivated; 48 callable/not scheduled; 40/41/42 unchanged; `enable_wg48_handoff=false`).
+3. `WAIT:` conferma Decision Packet Gate E autorizzato (ID, scope, finestra).
+4. `WAIT:` conferma hygiene store completata (se richiesta).
+5. `WAIT:` operatore esegue **Manual Trigger 45/Wd** una volta — incolla evidenza send (`message_id`, conteggio messaggi = 1).
+6. `WAIT:` operatore risponde su Telegram (se previsto dal test case).
+7. `WAIT:` operatore esegue **Manual Trigger 47/Wf** — derivation da store; incolla output/count (`update_id`, item count ≤5, `inspect_status`).
+8. **Non** eseguire handoff 48 nel primo run (`enable_wg48_handoff` resta `false`).
+9. `WAIT:` incolla stato decision-store post-run.
+10. **Teardown** (sezione 8).
+11. Compila template Evidence (sezione 5).
+12. Report finale (sezione 9).
+
+##### 8. Teardown e kill switch
+
+**Teardown obbligatorio post-run:**
+
+- Verificare schedule **non** attivati (47/48/49).
+- Verificare `enable_wg48_handoff=false`.
+- Verificare nessun workflow 40/41/42 modificato.
+- Verificare nessun webhook pubblico aperto.
+- Chiudere eventuale finestra manuale.
+- Fermarsi se qualunque condizione non torna — documentare NO-GO.
+
+**Kill switch — azioni operatore umano (non eseguibili da Cursor):**
+
+```text
+handoff ora
+disable/leave inactive any phase-1 schedule
+inbound off
+enable_wg48_handoff=false
+stop immediately
+```
+
+Cursor **non** esegue queste azioni. Cursor guida, registra e organizza evidenza. L'operatore esegue manualmente in UI n8n/Telegram. Ogni azione runtime richiede gate reale `WAIT`.
+
+##### 9. Report finale (obbligatorio — non dichiarare PASS runtime da Cursor)
+
+Il report deve includere:
+
+- Output git verbatim (`git rev-parse HEAD`, `git rev-parse origin/main`, `git ls-remote origin refs/heads/main`, `git status --short`, `git log --oneline -8`).
+- Evidenze runtime (template sezione 5 compilato).
+- Conteggio messaggi 45 e item 47.
+- Stato pre/post decision-store.
+- Stop conditions (sì/no, dettaglio).
+- Teardown completato (sì/no).
+- Conferma nessun 40/41/42 toccato.
+- Conferma `n8n_ready=false`.
+- Conferma `pm34_unblocked=false`.
+- Conferma nessun Gate F avviato.
+- **Dichiarazione esplicita:** Cursor **non** dichiara PASS runtime né Gate E PASS — attestazione operatore/orchestratore su evidenza.
+
+##### 10. Rolling report e artefatti verification
+
+- Il task che **prepara** questo prompt **non** aggiorna `LAST_CURSOR_REPORT.md` / `LAST_HANDOFF_VERIFY.md`.
+- Il commit docs-only che prepara il prompt entra nel modello `PENDING_SELF_REFERENCE`.
+- Registrazione/backfill artefatti verification: task docs-only **separato**, secondo two-commit convention.
+- **Non** esiste finalize-hash commit dedicato.
+- Nessun PASS runtime può essere registrato senza evidenza runtime e Decision Packet dedicato.
+
+---
+
+**Fine prompt copiabile Gate E runtime manual-only.**
+
 ### Gate F — PM-34 unlock (Decision Packet required)
 
 | | |
