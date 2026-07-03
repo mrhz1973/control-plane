@@ -9,6 +9,7 @@ Repository di **documentazione** del control-plane, **export n8n redatti** e **r
 | [docs/foundation/PROJECT_VISION.md](docs/foundation/PROJECT_VISION.md) | Visione e regole — entry point canonico |
 | [docs/runtime/CURRENT_FRONTIER.md](docs/runtime/CURRENT_FRONTIER.md) | Stato autorevole — **LEGGI PRIMA DI PROPORRE** |
 | [docs/runtime/AUTOMATION_ACTIVATION_PLAN.md](docs/runtime/AUTOMATION_ACTIVATION_PLAN.md) | Scala di attivazione, gate A–F |
+| [docs/advisors/GLM_ADVISOR_METHOD.md](docs/advisors/GLM_ADVISOR_METHOD.md) | metodo standing per GLM Advisor read-only |
 
 Lo stato corrente vive **SOLO** nel frontier. Questo README non contiene snapshot: se ne trovi uno, è un bug.
 
