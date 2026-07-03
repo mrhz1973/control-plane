@@ -13,20 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: gate-e-controlled-start-prep-docs-only
+task_ref: glm-advisor-method-docs-only
 result_cursor: PASS_DOCS_ONLY
 result_runtime: NOT_RUN_BY_CURSOR
-real_task_commit: 34cea4684491ff729df7322418e558febff4257b
+base_commit: be24da36c0b3146ac5b081f7109595aa753e557e
+real_task_commit: 19bd24c06f5f0d83efb361c695dae467180e8d0f
+commit_subject: docs: add glm advisor method
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS docs-only = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su 34cea46; workspace clean; diff limitato a AUTOMATION_ACTIVATION_PLAN.md e CURRENT_FRONTIER.md; nessun workflow toccato; nessun runtime n8n; non Gate E PASS.
-remote_hash_verbatim: "34cea4684491ff729df7322418e558febff4257b\trefs/heads/main"
+verification_rule: PASS docs-only commit 1 = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su 19bd24c; workspace clean; diff limitato a docs/advisors/GLM_ADVISOR_METHOD.md e README.md; nessun workflow toccato; nessun runtime n8n; non Gate E PASS; non PASS runtime. Commit 2 = solo artefatti verifica/report.
+remote_hash_verbatim: "19bd24c06f5f0d83efb361c695dae467180e8d0f\trefs/heads/main"
 timestamp_utc: 2026-07-03
 ```
 
-- **Gate E PREP docs-only:** aggiornamento `AUTOMATION_ACTIVATION_PLAN.md` § Gate E + puntamento `CURRENT_FRONTIER.md`; verifica remota su `34cea46`.
+- **Commit 1 — GLM Advisor method docs-only:** creato `docs/advisors/GLM_ADVISOR_METHOD.md`; router in `README.md`; verifica remota su `19bd24c`.
+- **Commit 2 (questo report):** solo artefatti di verifica (`LAST_CURSOR_REPORT.md`, `LAST_HANDOFF_VERIFY.md`); **non** modifica sostanza commit 1.
+- **Scope commit 1:** `docs/advisors/GLM_ADVISOR_METHOD.md` created; `README.md` router line added.
+- **Explicit non-touched (commit 1):** `CURRENT_FRONTIER.md`, `LAST_CURSOR_REPORT.md`, `LAST_HANDOFF_VERIFY.md`, `workflows/**`, 40/41/42, nessun runtime n8n, nessuno schedule/webhook/Telegram, **non** Gate E PASS, **non** PASS runtime.
 - **Non** è Gate E PASS; **non** è PASS runtime; nessun runtime n8n eseguito o attivato; nessun workflow toccato.
-- Snapshot verifica attraverso `34cea46`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
+- Snapshot verifica attraverso `19bd24c`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
 
 ---
 
@@ -48,6 +53,13 @@ timestamp_utc: 2026-07-03
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: gate-e-controlled-start-prep-docs-only
+  real_task_commit: 34cea4684491ff729df7322418e558febff4257b
+  rolling_report_commit: 6832b9b7e0da42b0fcce5fb0da07cc5548e0eb6c
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-07-03
+
 - task_ref: post-gate-d-policy-frontier-verify-only
   real_task_commit: b462ee7eda6235797dab41ac822a331e30bbe7c5
   rolling_report_commit: 1a910b4eba30f6e6ff4f801b2cdbb1984a6d0a0d
@@ -74,12 +86,5 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   rolling_report_commit: 9d48f37ddee49c2ad1b0993be8a9e21f69f5109a
   result_cursor: PASS
   result_runtime: NOT_RUN_BY_CURSOR
-  timestamp_utc: 2026-06-08
-
-- task_ref: runtime-post-push-verifier-latest-scoped-parser
-  real_task_commit: 5d1514af500cdb31e344ecbb57759834dc1e783f
-  rolling_report_commit: 636911332ce030b6b480fb1549d7ea5c4c96ba78
-  result_cursor: PASS
-  result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-08
 ```
