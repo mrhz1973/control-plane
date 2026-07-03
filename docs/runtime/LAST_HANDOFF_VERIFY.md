@@ -33,37 +33,35 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
-task_ref: gate-e-controlled-start-prep-docs-only
-verified_task_commit: 34cea4684491ff729df7322418e558febff4257b
-verified_rolling_report_commit: 6832b9b7e0da42b0fcce5fb0da07cc5548e0eb6c
-verified_through_commit: 34cea4684491ff729df7322418e558febff4257b
-observed_head: 34cea4684491ff729df7322418e558febff4257b
-observed_origin_main: 34cea4684491ff729df7322418e558febff4257b
-observed_ls_remote_main: 34cea4684491ff729df7322418e558febff4257b
+task_ref: glm-advisor-method-docs-only
+verified_task_commit: 19bd24c06f5f0d83efb361c695dae467180e8d0f
+verified_rolling_report_commit: 64dbd8bac29ece0f759c37c72e49baad8cfdf0da
+verified_through_commit: 19bd24c06f5f0d83efb361c695dae467180e8d0f
+observed_head: 19bd24c06f5f0d83efb361c695dae467180e8d0f
+observed_origin_main: 19bd24c06f5f0d83efb361c695dae467180e8d0f
+observed_ls_remote_main: 19bd24c06f5f0d83efb361c695dae467180e8d0f
 branch: main
 workspace_status: clean
-artifact_commit: 6832b9b7e0da42b0fcce5fb0da07cc5548e0eb6c
+artifact_commit: 64dbd8bac29ece0f759c37c72e49baad8cfdf0da
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
 result_runtime: NOT_RUN
 timestamp_utc: 2026-07-03
 ```
 
-**Nota:** snapshot Gate E PREP docs-only verificato attraverso `34cea46`; `artifact_commit` backfilled a `6832b9b`.
-
-**Nota Gate D artifact backfill:** pending gate-d artifact backfill not found in current file.
+**Nota:** snapshot GLM Advisor method docs-only verificato attraverso `19bd24c`; `artifact_commit` e `verified_rolling_report_commit` backfilled a `64dbd8b`.
 
 ---
 
 ## Latest verified snapshot
 
 ```yaml
-task_ref: glm-advisor-method-docs-only
-verified_task_commit: 19bd24c06f5f0d83efb361c695dae467180e8d0f
+task_ref: readme-policy-alignment-docs-only
+verified_task_commit: b2f66140902df5a92fcb70a294c59ab6ea0d4233
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: 19bd24c06f5f0d83efb361c695dae467180e8d0f
-observed_head: 19bd24c06f5f0d83efb361c695dae467180e8d0f
-observed_origin_main: 19bd24c06f5f0d83efb361c695dae467180e8d0f
-observed_ls_remote_main: 19bd24c06f5f0d83efb361c695dae467180e8d0f
+verified_through_commit: b2f66140902df5a92fcb70a294c59ab6ea0d4233
+observed_head: b2f66140902df5a92fcb70a294c59ab6ea0d4233
+observed_origin_main: b2f66140902df5a92fcb70a294c59ab6ea0d4233
+observed_ls_remote_main: b2f66140902df5a92fcb70a294c59ab6ea0d4233
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
@@ -72,40 +70,41 @@ result_runtime: NOT_RUN
 timestamp_utc: 2026-07-03
 ```
 
-**Nota:** questo snapshot verifica attraverso `19bd24c` — commit 1 GLM Advisor method docs-only (`docs/advisors/GLM_ADVISOR_METHOD.md` + router `README.md`); **non** è Gate E PASS; **non** è PASS runtime; nessun runtime n8n eseguito o attivato; nessun workflow toccato. Commit 2 = solo artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta il modello `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** questo snapshot verifica attraverso `b2f6614` — commit 1 README policy alignment docs-only; **non** è Gate E PASS; **non** è PASS runtime; nessun runtime n8n eseguito o attivato; nessun workflow toccato. Commit 2 = solo artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta il modello `artifact_commit: PENDING_SELF_REFERENCE`.
+
+**Finding README stale — chiuso nel merito:** `README.md` riallineato a `PROJECT_VISION.md` v2.15 §10; redaction-check / `No secrets in Git` non sono più regole README; rotazione compensativa via `docs/ROTATION_CHECKLIST.md`; advisor read-only via `docs/advisors/GLM_ADVISOR_METHOD.md`; verifica shell indipendente: **GO**, zero finding.
 
 ---
 
-## Command outputs (verbatim, sanitized — GLM Advisor method docs-only)
+## Command outputs (verbatim, sanitized — README policy alignment docs-only)
 
 ```text
 git rev-parse HEAD
-19bd24c06f5f0d83efb361c695dae467180e8d0f
+b2f66140902df5a92fcb70a294c59ab6ea0d4233
 
 git rev-parse origin/main
-19bd24c06f5f0d83efb361c695dae467180e8d0f
+b2f66140902df5a92fcb70a294c59ab6ea0d4233
 
 git ls-remote origin refs/heads/main
-19bd24c06f5f0d83efb361c695dae467180e8d0f	refs/heads/main
+b2f66140902df5a92fcb70a294c59ab6ea0d4233	refs/heads/main
 
 git status --short
 
-git diff --name-only be24da36c0b3146ac5b081f7109595aa753e557e..HEAD
+git diff --name-only 64dbd8bac29ece0f759c37c72e49baad8cfdf0da..HEAD
 README.md
-docs/advisors/GLM_ADVISOR_METHOD.md
 
 git log --oneline -8
+b2f6614 docs: align readme with current repo policy
+64dbd8b docs: refresh glm advisor verification artifacts
 19bd24c docs: add glm advisor method
 be24da3 docs: prepare gate e runtime prompt
 6832b9b docs: refresh gate e prep verification
 34cea46 docs: prep gate e controlled start plan
 1a910b4 docs: refresh runtime verification artifacts
 b462ee7 docs: remove stale frontier redaction-check reference
-47b15b5 docs: record non-confidential repo decision and rotation checklist
-c712e1e tools: remove redaction check per non-confidential repo decision
 ```
 
-**BASE (preflight commit 1):** `be24da36c0b3146ac5b081f7109595aa753e557e`
+**BASE (preflight commit 1):** `64dbd8bac29ece0f759c37c72e49baad8cfdf0da`
 
 ---
 
