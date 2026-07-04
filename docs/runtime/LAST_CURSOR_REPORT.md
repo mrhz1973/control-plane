@@ -13,26 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: ge01-wf45-fanout-fixforward-pr1-merge-post-report
+task_ref: glm-advisor-session-starter-docs-only
 result_cursor: PASS_DOCS_ONLY
 result_runtime: NOT_RUN_BY_CURSOR
-base_commit: b62a30b24223a86396119c3d106f2bc2597a71af
-merge_commit: 6a6b9d8f9679a86423ad9914df9629d7df679b65
-pr_head_commit: a32f9e36f16bde10bc09f8f8c42a8cf04f296057
-commit_subject: Merge PR #1: fix(wf45) GE-01 fan-out collapse
+base_commit: 389eaf3df6d0ba138b569eeadf858f13a557a7a9
+real_task_commit: 63f37090137f78bc7165c625fee20e5f316a8468
+commit_subject: docs: add fixed GLM advisor session starter
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS docs-only post-merge Condition 2 = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su 6a6b9d8 (merge PR #1); workspace clean; diff limitato a LAST_CURSOR_REPORT.md e LAST_HANDOFF_VERIFY.md; nessun runtime n8n; non Gate E PASS; non PASS runtime; GE-02 non autorizzato; import live n8n non autorizzato.
-remote_hash_verbatim: "6a6b9d8f9679a86423ad9914df9629d7df679b65\trefs/heads/main"
+verification_rule: PASS docs-only commit 1 = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su 63f3709; workspace clean; diff commit 1 limitato a docs/advisors/GLM_ADVISOR_METHOD.md; nessun workflow toccato; nessun runtime n8n; non Gate E PASS; non PASS runtime; GE-02 non autorizzato. Commit 2 = solo artefatti verifica/report.
+remote_hash_verbatim: "63f37090137f78bc7165c625fee20e5f316a8468\trefs/heads/main"
 timestamp_utc: 2026-07-04
 ```
 
-- **Post-merge Condition 2 — rolling report docs-only:** PR #1 merged on `main`; merge commit `6a6b9d8`; PR head `a32f9e3`; base pre-merge `b62a30b`.
-- **PR #1 substance (merged):** GE-01 wf45 fan-out collapse fix-forward — template + `2026-07-04` proposed export; `2026-07-02` Gate-D snapshot preserved; session `docs/sessions/2026-07-04-control-plane-gate-e-ge01-stop-fanout-fix-forward.md`.
-- **Explicit non-touched in this commit:** workflows live n8n; wf40/41/42; runtime; schedule/webhook/Telegram; credentials.
-- **GE-01 = STOP / REVIEW REQUIRED** (runtime finding pre-merge); **Gate E PASS = NO**; **PASS runtime = NO**; **GE-02 = not authorized**; **live n8n import = not authorized**.
-- Snapshot verifica attraverso merge `6a6b9d8`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
-- **Backfill PENDING_SELF_REFERENCE:** `readme-policy-alignment-docs-only` → `rolling_report_commit: b62a30b` (in HISTORY). Catena `glm-advisor-method-docs-only` (base `be24da3` → substance `19bd24c` → artifacts `64dbd8b`) già backfilled in HISTORY precedente.
+- **Commit 1 — GLM Advisor session starter docs-only:** aggiunta §6.1 (starter fisso operatore) in `docs/advisors/GLM_ADVISOR_METHOD.md`; §7 esteso con `STALE_LOCAL_CLONE`, comandi eseguiti, contatori no-write; §4 whitelist **invariata**; nessun `git pull` obbligatorio; GLM rileva clone stale ma **non** lo aggiorna; verifica remota su `63f3709`.
+- **Commit 2 (questo report):** solo artefatti di verifica (`LAST_CURSOR_REPORT.md`, `LAST_HANDOFF_VERIFY.md`); **non** modifica sostanza commit 1.
+- **Explicit non-touched (commit 1):** `workflows/**`, wf40/41/42, `CURRENT_FRONTIER.md`, `AUTOMATION_ACTIVATION_PLAN.md`, `PROJECT_VISION.md`, runtime n8n, schedule/webhook/Telegram/classifier/tunnel, credenziali.
+- **Gate E PASS = NO**; **PASS runtime = NO**; **GE-02 = not authorized**; nessun runtime n8n eseguito o attivato.
+- Snapshot verifica attraverso `63f3709`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
+- **Backfill PENDING_SELF_REFERENCE:** `ge01-wf45-fanout-fixforward-pr1-merge-post-report` → `rolling_report_commit: 389eaf3` (in HISTORY).
 
 ---
 
@@ -54,6 +53,13 @@ timestamp_utc: 2026-07-04
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: ge01-wf45-fanout-fixforward-pr1-merge-post-report
+  real_task_commit: 6a6b9d8f9679a86423ad9914df9629d7df679b65
+  rolling_report_commit: 389eaf3df6d0ba138b569eeadf858f13a557a7a9
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-07-04
+
 - task_ref: readme-policy-alignment-docs-only
   real_task_commit: b2f66140902df5a92fcb70a294c59ab6ea0d4233
   rolling_report_commit: b62a30b24223a86396119c3d106f2bc2597a71af
@@ -81,11 +87,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS_VERIFY_ONLY
   result_runtime: NOT_RUN_BY_CURSOR
   timestamp_utc: 2026-07-03
-
-- task_ref: d-0032-w-option1-passo2-verifier-result-uploader
-  real_task_commit: cc6c52551a4fc7b820af984c9ea6e299b6b30ae9
-  rolling_report_commit: 966f508d5b153a02421b5acecaac78a5c7c85535
-  result_cursor: PASS
-  result_runtime: PASS_ATTESTATO_UTENTE
-  timestamp_utc: 2026-06-11
 ```
