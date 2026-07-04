@@ -14,7 +14,7 @@
     },
     {
       "parameters": {
-        "content": "TEMPLATE ONLY — inactive, gate B live, configure classifier URL + Telegram in n8n UI only, no secrets in Git.\n\nWd: event -> classifier-server -> operational-style Decision Packet Telegram (TEST ONLY).\n\nGate 2 OPEN ON SEND: writes TEST ONLY open decision to control_plane_decisions_test only (Data Table by name). NOT control_plane_state. If decision_id already closed, do NOT reopen (blocked/duplicate_open_attempt) and do NOT send.\n\nBefore running:\n1) Import as workflow 45; keep INACTIVE\n2) Start classifier-server on Ryzen; set **CONFIGURE_CLASSIFIER_SERVER_URL_IN_N8N_UI** (POST .../classify)\n3) Configure Telegram credential **CONFIGURE_TELEGRAM_CREDENTIAL_IN_N8N_UI** (CONTROL PLANE - Telegram Bot)\n4) Configure chat_id **CONFIGURE_CHAT_ID_IN_N8N_UI**\n5) Create Data Table control_plane_decisions_test in n8n UI (not in Git)\n6) Manual Trigger ONCE\n\nRisk open_without_send: row may be open before Telegram send fails — verified at Gate 3 runtime user-attested.\n\nNo wf40/41/42, no control_plane_state, no GitHub write, no PM-34, no Schedule/Webhook.",
+        "content": "TEMPLATE ONLY — inactive, gate B live, configure classifier URL + Telegram in n8n UI only, no secrets in Git.\n\nWd: event -> classifier-server -> operational-style Decision Packet Telegram (TEST ONLY).\n\nGate 2 OPEN ON SEND: writes TEST ONLY open decision to control_plane_decisions_test only (Data Table by name). NOT control_plane_state. If decision_id already closed, do NOT reopen (blocked/duplicate_open_attempt) and do NOT send.\n\nBefore running:\n1) Import as workflow 45; keep INACTIVE\n2) Start classifier-server on Ryzen; set **CONFIGURE_CLASSIFIER_SERVER_URL_IN_N8N_UI** (POST .../classify)\n3) Configure Telegram credential **CONFIGURE_TELEGRAM_CREDENTIAL_IN_N8N_UI** (CONTROL PLANE - Telegram Bot)\n4) Configure chat_id **CONFIGURE_CHAT_ID_IN_N8N_UI**\n5) Create Data Table control_plane_decisions_test in n8n UI (not in Git)\n6) Manual Trigger ONCE\n\nRisk open_without_send: row may be open before Telegram send fails — verified at Gate 3 runtime user-attested.\n\nNo wf40/41/42, no control_plane_state, no GitHub write, no PM-34, no Schedule/Webhook.\n\nGE-01 fix (repo-only): Collapse load fan-out before Prepare; max 1 item per decision_id before Telegram; duplicate_open_attempt = blocked terminal (send_suppressed, no send). Import live = separate gated step.",
         "height": 360,
         "width": 580
       },
@@ -128,8 +128,8 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "// Read-only inspection — works on sent (IF true) and no_send/blocked (IF false) branches. No secrets persisted.\nconst resp = $input.item.json;\nconst build = $('Build Operational Decision Packet').first().json;\nlet prep = {};\ntry { prep = $('Prepare shared decision open row').first().json || {}; } catch (e) { prep = {}; }\nconst sent = !!(resp && (resp.ok !== undefined || (resp.result && resp.result.message_id)));\nreturn {\n  json: {\n    telegram_send_ok: sent ? (resp.ok !== undefined ? resp.ok : null) : null,\n    message_id: sent && resp.result && resp.result.message_id ? resp.result.message_id : null,\n    http_status: build && build.http_status !== undefined ? build.http_status : null,\n    decision_id: build && build.decision_id ? build.decision_id : null,\n    open_action: prep.open_action !== undefined ? prep.open_action : null,\n    block_reason: prep.block_reason !== undefined ? prep.block_reason : null,\n    test_only: true,\n    note: 'Wd gate B live result — sanitize before recording; no send claimed unless Telegram ran'\n  }\n};"
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Read-only inspection — single audit item per run (fan-out collapsed).\n// Works on sent (IF true -> Telegram) and blocked/no_send (IF false) branches.\nconst items = $input.all();\nconst build = $('Build Operational Decision Packet').first().json;\nlet prep = {};\ntry { prep = $('Prepare shared decision open row').first().json || {}; } catch (e) { prep = {}; }\nconst last = items.length ? items[items.length - 1].json : {};\nconst telegramRan = !!(last && (last.ok !== undefined || (last.result && last.result.message_id)));\nconst blocked = prep.open_allowed === false || prep.open_action === 'blocked';\nconst sendSuppressed = blocked || prep.open_action === 'blocked';\nreturn [{\n  json: {\n    telegram_send_ok: telegramRan ? (last.ok !== undefined ? last.ok : null) : null,\n    message_id: telegramRan && last.result && last.result.message_id ? last.result.message_id : null,\n    http_status: build && build.http_status !== undefined ? build.http_status : null,\n    decision_id: (build && build.decision_id) || prep.decision_id || null,\n    open_action: prep.open_action !== undefined ? prep.open_action : null,\n    block_reason: prep.block_reason !== undefined ? prep.block_reason : null,\n    send_suppressed: sendSuppressed,\n    fan_out_items_in: items.length,\n    fan_out_collapsed: items.length > 1,\n    pass_claimed: false,\n    test_only: true,\n    note: sendSuppressed\n      ? 'Wd blocked terminal — no Telegram send; http_status is classifier-only not send PASS'\n      : 'Wd gate B live result — sanitize before recording; no send claimed unless Telegram ran'\n  }\n}];"
       },
       "id": "wd000006-0006-4006-8006-000000000006",
       "name": "Inspect send result (read-only)",
@@ -164,8 +164,8 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "// Prepare OPEN ON SEND row for control_plane_decisions_test (TEST ONLY). No secrets.\nconst build = $('Build Operational Decision Packet').first().json;\nlet rows = [];\ntry { rows = $('Data Table - Load shared decisions').all().map((i) => i.json); } catch (e) { rows = []; }\nconst decision_id = build && build.decision_id ? build.decision_id : null;\nconst existing = rows.find((r) => r && String(r.decision_id) === String(decision_id));\nconst now = new Date().toISOString();\nconst SOURCE_WORKFLOW = '45 - Wd Operational Decision Packet Integration TEST ONLY - TEMPLATE';\nlet open_action = 'insert';\nlet block_reason = null;\nlet open_allowed = true;\nif (existing) {\n  if (String(existing.status) === 'closed') {\n    open_action = 'blocked';\n    block_reason = 'duplicate_open_attempt';\n    open_allowed = false;\n  } else if (String(existing.status) === 'open') {\n    open_action = 'noop';\n  } else {\n    open_action = 'reopen_nonclosed';\n  }\n}\nconst row = {\n  decision_id,\n  status: 'open',\n  selected_option: '',\n  created_at: existing && existing.created_at ? existing.created_at : now,\n  closed_at: '',\n  update_id: '',\n  note_preview: '',\n  source: 'TEST ONLY',\n  updated_at: now,\n  created_by: 'wd',\n  source_workflow: SOURCE_WORKFLOW,\n  packet_kind: 'runtime'\n};\nreturn {\n  json: {\n    decision_id,\n    open_action,\n    open_allowed,\n    block_reason,\n    row,\n    decision_packet_text: build && build.decision_packet_text ? build.decision_packet_text : '',\n    test_only: true\n  }\n};"
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Prepare OPEN ON SEND row for control_plane_decisions_test (TEST ONLY). No secrets.\n// runOnceForAllItems: Load may return N store rows; logic uses .all() once — must emit 1 item.\nconst build = $('Build Operational Decision Packet').first().json;\nlet rows = [];\ntry { rows = $('Data Table - Load shared decisions').all().map((i) => i.json); } catch (e) { rows = []; }\nconst decision_id = build && build.decision_id ? build.decision_id : null;\nconst existing = rows.find((r) => r && String(r.decision_id) === String(decision_id));\nconst now = new Date().toISOString();\nconst SOURCE_WORKFLOW = '45 - Wd Operational Decision Packet Integration TEST ONLY - TEMPLATE';\nlet open_action = 'insert';\nlet block_reason = null;\nlet open_allowed = true;\nif (existing) {\n  if (String(existing.status) === 'closed') {\n    open_action = 'blocked';\n    block_reason = 'duplicate_open_attempt';\n    open_allowed = false;\n  } else if (String(existing.status) === 'open') {\n    open_action = 'noop';\n  } else {\n    open_action = 'reopen_nonclosed';\n  }\n}\nconst row = {\n  decision_id,\n  status: 'open',\n  selected_option: '',\n  created_at: existing && existing.created_at ? existing.created_at : now,\n  closed_at: '',\n  update_id: '',\n  note_preview: '',\n  source: 'TEST ONLY',\n  updated_at: now,\n  created_by: 'wd',\n  source_workflow: SOURCE_WORKFLOW,\n  packet_kind: 'runtime'\n};\nreturn [{\n  json: {\n    decision_id,\n    open_action,\n    open_allowed,\n    block_reason,\n    row,\n    decision_packet_text: build && build.decision_packet_text ? build.decision_packet_text : '',\n    test_only: true\n  }\n}];"
       },
       "id": "wd000010-0010-4010-8010-000000000010",
       "name": "Prepare shared decision open row",
@@ -255,6 +255,19 @@
         480,
         80
       ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Collapse Data Table load fan-out: Load returns 1 item per store row (returnAll).\n// Downstream Prepare / IF / Telegram / Inspect must receive exactly 1 gate item per run.\nconst build = $('Build Operational Decision Packet').first().json;\nconst loaded = $input.all();\nconst rowCount = loaded.length;\nreturn [{\n  json: {\n    decision_id: build && build.decision_id ? build.decision_id : null,\n    store_rows_loaded: rowCount,\n    fan_out_collapsed: rowCount > 1,\n    test_only: true,\n    note: 'Wd: collapsed load fan-out to single gate item before shared decision open prep'\n  }\n}];"
+      },
+      "id": "wd000013-0013-4013-8013-000000000013",
+      "name": "Collapse load fan-out (1 item per run)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        200
+      ]
     }
   ],
   "connections": {
@@ -306,7 +319,7 @@
       "main": [
         [
           {
-            "node": "Prepare shared decision open row",
+            "node": "Collapse load fan-out (1 item per run)",
             "type": "main",
             "index": 0
           }
@@ -358,6 +371,17 @@
         [
           {
             "node": "Inspect send result (read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse load fan-out (1 item per run)": {
+      "main": [
+        [
+          {
+            "node": "Prepare shared decision open row",
             "type": "main",
             "index": 0
           }
