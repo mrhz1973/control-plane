@@ -49,12 +49,18 @@ Example: `2026-05-20_push-notify.redacted.json`
 
 ## 45 / Wd — post Gate D UI fix export (D-0033)
 
-- **File:** `exports/2026-07-02_wd-45-operational-decision-packet-integration-post-gate-d.redacted.json`
+- **File (snapshot storico):** `exports/2026-07-02_wd-45-operational-decision-packet-integration-post-gate-d.redacted.json`
 - **Runtime name:** `45 - Wd Operational Decision Packet Integration TEST ONLY - TEMPLATE` — **inactive** post Gate D rehearsal (2026-07-02)
-- **Purpose:** redacted re-export after Gate D UI fix (`event.event_id` drives `decision_id` in Build Operational Decision Packet); aligns committed export with n8n UI post D-1001-T / D-1002-T / D-1003-T
-- **GE-01 fix-forward (2026-07-04, repo-only):** Collapse load fan-out node; Prepare/Inspect `runOnceForAllItems`; blocked `duplicate_open_attempt` → single audit item, `send_suppressed`. **Live n8n not updated** — import = separate GE-02 gated step. See [`docs/sessions/2026-07-04-control-plane-gate-e-ge01-stop-fanout-fix-forward.md`](../docs/sessions/2026-07-04-control-plane-gate-e-ge01-stop-fanout-fix-forward.md)
+- **Purpose:** redacted re-export after Gate D UI fix (`event.event_id` drives `decision_id` in Build Operational Decision Packet); aligns committed export with n8n UI post D-1001-T / D-1002-T / D-1003-T. **Snapshot storico post-Gate-D — non patchato** (identico a `b62a30b`); **non** contiene fix GE-01 Collapse.
 - **Redaction:** `__REDACTED_N8N_CREDENTIAL_ID__`; no bot token in JSON; chat_id allowed in config assets per gate 2026-05-31; classifier tailnet URL may WARN (non-blocking per 2026-07-02 policy)
 - **Import:** keep **inactive**; configure classifier URL + Telegram credential in n8n UI only — see [AUTOMATION_ACTIVATION_PLAN.md](../docs/runtime/AUTOMATION_ACTIVATION_PLAN.md)
+
+## 45 / Wd — GE-01 fix-forward proposed export (2026-07-04)
+
+- **File (candidato futuro):** `exports/2026-07-04_wd-45-operational-decision-packet-integration-ge01-fixforward.proposed.redacted.json`
+- **Status:** **proposed** — repo-only patch; **non esportato da n8n live**; **non** sostituisce lo snapshot 2026-07-02
+- **Purpose:** candidato per import GE-02 gated — Collapse load fan-out node; Prepare/Inspect `runOnceForAllItems`; blocked `duplicate_open_attempt` → single audit item, `send_suppressed`. **Live n8n not updated** — import = separate GE-02 gated step. See [`docs/sessions/2026-07-04-control-plane-gate-e-ge01-stop-fanout-fix-forward.md`](../docs/sessions/2026-07-04-control-plane-gate-e-ge01-stop-fanout-fix-forward.md)
+- **Import:** **only** after Decision Packet authorizes GE-02; keep **inactive**; do **not** treat as Gate D historical evidence
 
 ## 47 / Wf — post Gate D UI fix export (D-0033)
 

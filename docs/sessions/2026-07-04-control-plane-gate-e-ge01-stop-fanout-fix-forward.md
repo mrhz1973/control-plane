@@ -66,20 +66,24 @@ Known pre-Gate E finding (Gate D session §G.1): fan-out on D-1003-T → 5 Teleg
 
 ---
 
-## 4. Repo-only fix-forward (commit 1 / sostanza)
+## 4. Repo-only fix-forward (offline — live n8n NOT updated)
 
-**Files patched (offline — live n8n NOT updated):**
+**Files patched (repo-only):**
 
-- `workflows/wd-operational-decision-packet-integration-manual.template.json`
-- `workflows/exports/2026-07-02_wd-45-operational-decision-packet-integration-post-gate-d.redacted.json`
+- `workflows/wd-operational-decision-packet-integration-manual.template.json` — template con fix GE-01
+- `workflows/exports/2026-07-04_wd-45-operational-decision-packet-integration-ge01-fixforward.proposed.redacted.json` — **candidato futuro** per import GE-02 gated (non esportato da n8n live)
 
-**Changes:**
+**Snapshot storico preservato (non patchato):**
+
+- `workflows/exports/2026-07-02_wd-45-operational-decision-packet-integration-post-gate-d.redacted.json` — re-export post-Gate D (D-0033); **identico a `b62a30b`**; **non** contiene il fix Collapse
+
+**Changes (template + proposed export):**
 
 1. **New node:** `Collapse load fan-out (1 item per run)` — after Load, before Prepare; collapses N store rows to **1 gate item** per run.
 2. **Prepare shared decision open row:** `runOnceForAllItems`; returns **1 item**; logic unchanged (`duplicate_open_attempt` → `open_allowed=false`).
 3. **Inspect send result (read-only):** `runOnceForAllItems`; emits **1 audit record** with `send_suppressed`, `fan_out_items_in`, `fan_out_collapsed`, `pass_claimed=false`; explicit note when blocked that `http_status` is classifier-only.
 
-**Import live:** separate gated step — operator must re-import workflow 45 from patched export **only** after Decision Packet authorizes GE-02.
+**Import live:** separate gated step — operator must import workflow 45 from the **2026-07-04 proposed export** (not the 2026-07-02 snapshot) **only** after Decision Packet authorizes GE-02.
 
 ---
 
@@ -88,7 +92,7 @@ Known pre-Gate E finding (Gate D session §G.1): fan-out on D-1003-T → 5 Teleg
 Before any future **GE-02** run:
 
 1. **New `test_id` / `decision_id`** OR store cleaned/deduplicated — **do not** re-open **D-1003-T** (closed Gate D).
-2. **Patched workflow 45** imported to n8n UI (inactive) from repo export — verify Collapse node present.
+2. **Patched workflow 45** imported to n8n UI (inactive) from **`workflows/exports/2026-07-04_wd-45-operational-decision-packet-integration-ge01-fixforward.proposed.redacted.json`** — verify Collapse node present. **Do not** import the 2026-07-02 post-Gate-D snapshot for GE-02.
 3. **Fan-out collapse verifiable:** item count before Telegram **≤ 1**; Inspect output **= 1 item**.
 4. **Blocked duplicate:** `duplicate_open_attempt` → `send_suppressed=true`, **0** Telegram sends, **1** audit record.
 5. **Evidence required:** explicit item counts in session log; user-attested Telegram count; **no** autonomous Gate E PASS.

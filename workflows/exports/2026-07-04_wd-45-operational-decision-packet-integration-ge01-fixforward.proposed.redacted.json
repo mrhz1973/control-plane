@@ -1,0 +1,443 @@
+{
+  "name": "45 - Wd Operational Decision Packet Integration TEST ONLY - TEMPLATE",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "2695d9fe-c7dd-4e48-86f1-447a31fc9627",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1408,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "content": "TEMPLATE ONLY — inactive, gate B live, configure classifier URL + Telegram in n8n UI only, no secrets in Git.\n\nWd: event -> classifier-server -> operational-style Decision Packet Telegram (TEST ONLY).\n\nGate 2 OPEN ON SEND: writes TEST ONLY open decision to control_plane_decisions_test only (Data Table by name). NOT control_plane_state. If decision_id already closed, do NOT reopen (blocked/duplicate_open_attempt) and do NOT send.\n\nBefore running:\n1) Import as workflow 45; keep INACTIVE\n2) Start classifier-server on Ryzen; set **CONFIGURE_CLASSIFIER_SERVER_URL_IN_N8N_UI** (POST .../classify)\n3) Configure Telegram credential **CONFIGURE_TELEGRAM_CREDENTIAL_IN_N8N_UI** (CONTROL PLANE - Telegram Bot)\n4) Configure chat_id **CONFIGURE_CHAT_ID_IN_N8N_UI**\n5) Create Data Table control_plane_decisions_test in n8n UI (not in Git)\n6) Manual Trigger ONCE\n\nRisk open_without_send: row may be open before Telegram send fails — verified at Gate 3 runtime user-attested.\n\nNo wf40/41/42, no control_plane_state, no GitHub write, no PM-34, no Schedule/Webhook.\n\nGE-01 fix (repo-only): Collapse load fan-out before Prepare; max 1 item per decision_id before Telegram; duplicate_open_attempt = blocked terminal (send_suppressed, no send). Import live = separate gated step.",
+        "height": 360,
+        "width": 580
+      },
+      "id": "2826b035-3f2a-4b66-91dd-dd284fd92927",
+      "name": "NOTE - template only gate B live",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1488,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sanitized operational-style event for Wd gate B live.\n// See docs/runtime/test-events/wd-operational-decision-packet-test-event.json\nconst event = {\n  event_id: 'D-1003-T',\n  event_type: 'docs_change_candidate',\n  summary: 'docs-only commit candidate requiring supervised Decision Packet test',\n  touched_paths: ['docs/example.md'],\n  source_repo: 'mrhz1973/control-plane',\n  source_commit: 'abc1234-test-only',\n  workflow_source: 'wd-operational-integration-test',\n  runtime_flags: { touched: true, detail: 'runtime-adjacent Wd integration validation' },\n  secrets_flags: { touched: false, detail: '' },\n  deploy_flags: { touched: false, detail: '' },\n  n8n_flags: { touched: false, workflow_40: false, workflow_41: false, import_disabled: false },\n  automation_flags: { touched: false, autonomous_worker: false, commit_push_loop: false }\n};\nreturn [{ json: event }];"
+      },
+      "id": "87b682dd-a12c-4ac8-8921-0c458fba4fb4",
+      "name": "Set sanitized operational-style event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1184,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://asusdesktop.tailc01234.ts.net/classify",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Classifier-Token",
+              "value": "agTK2cG1Kqumml--TV4EcGYIePOJ1-cUwIVVI0oO9B8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "f1eca1fd-18ce-488b-a1c1-21422240e007",
+      "name": "HTTP Request - Classify (CONFIGURE_IN_N8N_UI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -960,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Build operational-style Decision Packet from event + live classifier-server response.\n// HTML parse_mode: escape dynamics; labels keep literal underscores.\nfunction escHtml(v) {\n  if (v === null || v === undefined) return '';\n  const s = Array.isArray(v) ? v.map((x) => escHtml(x)).join('\\n') : String(v);\n  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#39;');\n}\n\nconst event = $('Set sanitized operational-style event').first().json;\nconst resp = $input.item.json;\nconst body = resp && resp.body !== undefined ? resp.body : resp;\nconst c = body && typeof body === 'object' ? body : {};\n\n// D-0033 / Gate D fix:\n// decision_id must follow the fresh event_id from the upstream sanitized event node.\n// Do not hardcode D-1000-T.\nconst decisionId = event.event_id;\n\nconst options = [\n  '1 — Record B live evidence only; no operational promotion',\n  '2 — Harden Wd path (idempotency/guards) before further operational wiring',\n  '3 — Stop; keep operational Decision Packet automation NOT RUN'\n];\n\nconst optionsBlock = options.map((o) => '  ' + escHtml(o)).join('\\n');\nconst context = 'Wd gate B: classifier-server response drives operational-style Decision Packet (TEST ONLY). PM-34 remains blocked; full automated chain NOT RUN.';\nconst why = 'Classifier route ' + escHtml(c.route || 'unknown') + ' with requires_human=' + escHtml(c.requires_human) + ' requires supervised Telegram gate for integration validation.';\nconst recommendation = 'Raccomandazione: 1 — record B live PASS/BLOCKED in docs only; do not enable operational automation.';\nconst mainRisk = 'Misreading TEST ONLY packet as operational approval; mitigated by banner and inactive workflow.';\nconst micro = 'Eliminates manual merge of classifier JSON and Decision Packet formatting in chat.';\nconst notDone = 'No PM-34 unlock, no operational automation, no full automated chain, no wf40/41 mutation, no Data Table write, no GitHub write by this workflow.';\n\nconst text = [\n  '=== TEST ONLY / OPERATIONAL-STYLE VALIDATION ===',\n  'No operational action should be taken from this test packet.',\n  '',\n  'ID: ' + escHtml(decisionId),\n  'Kind: runtime',\n  '',\n  'Riferimento evento / provenienza:',\n  '  event_id: ' + escHtml(event.event_id),\n  '  commit: ' + escHtml(event.source_commit) + ' (' + escHtml(event.source_repo) + ')',\n  '  source: ' + escHtml(event.workflow_source),\n  '',\n  'Risk: ' + escHtml(c.risk) + '          Route: ' + escHtml(c.route) + '       requires_human: ' + escHtml(c.requires_human),\n  'Confidence: ' + escHtml(c.confidence) + '    Classifier reason: ' + escHtml(c.reason),\n  '',\n  'Contesto:',\n  '  ' + escHtml(context),\n  '',\n  'Perché serve decisione:',\n  '  ' + escHtml(why),\n  '',\n  'Opzioni:',\n  optionsBlock,\n  '',\n  escHtml(recommendation),\n  '',\n  'Rischio principale (opzione raccomandata):',\n  '  ' + escHtml(mainRisk),\n  '',\n  'Micro-interazioni eliminate:',\n  '  ' + escHtml(micro),\n  '',\n  'Scelta richiesta:',\n  '  Scrivi: 1 / 2 / 3',\n  '',\n  'Cosa NON viene fatto senza decisione:',\n  '  ' + escHtml(notDone)\n].join('\\n');\n\nreturn {\n  json: {\n    decision_id: decisionId,\n    http_status: resp && resp.statusCode !== undefined ? resp.statusCode : null,\n    classifier_output: c,\n    decision_packet_text: text,\n    test_only: true,\n    operational_style_validation: true,\n    note: 'Wd operational-style packet built — configure Telegram in n8n UI before send'\n  }\n};"
+      },
+      "id": "4c3e2f90-735d-44c6-8f60-dc50fbc924a9",
+      "name": "Build Operational Decision Packet",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "472599368",
+        "text": "={{ $('Build Operational Decision Packet').first().json.decision_packet_text }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "d50ba0b3-eae4-47b2-b4e4-1548cc338f99",
+      "name": "Telegram - Send Operational-Style Decision Packet (CONFIGURE_IN_N8N_UI)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        384,
+        -352
+      ],
+      "webhookId": "4848a45c-3247-4aac-a2e7-2ee5189393c7",
+      "credentials": {
+        "telegramApi": {
+          "id": "**REDACTED_N8N_CREDENTIAL_ID**",
+          "name": "CONTROL PLANE - Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "PASS (gate B live): classifier HTTP 200 + valid 5-field output; one TEST ONLY Telegram; D-9998-T; underscores literal; workflow INACTIVE.\n\nBLOCKED: server down, bad classifier JSON, Telegram fail, secrets leak, wf40/41/PM-34/Data Table/GitHub touched.\n\nAfter run: docs/runtime/WD_OPERATIONAL_DECISION_PACKET_REGISTRATION_PROMPT.md",
+        "height": 280,
+        "width": 520
+      },
+      "id": "5c614425-c19e-47a9-8dcf-9085f6e1e40d",
+      "name": "NOTE - gate B PASS BLOCKED",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Read-only inspection — single audit item per run (fan-out collapsed).\n// Works on sent (IF true -> Telegram) and blocked/no_send (IF false) branches.\nconst items = $input.all();\nconst build = $('Build Operational Decision Packet').first().json;\nlet prep = {};\ntry { prep = $('Prepare shared decision open row').first().json || {}; } catch (e) { prep = {}; }\nconst last = items.length ? items[items.length - 1].json : {};\nconst telegramRan = !!(last && (last.ok !== undefined || (last.result && last.result.message_id)));\nconst blocked = prep.open_allowed === false || prep.open_action === 'blocked';\nconst sendSuppressed = blocked || prep.open_action === 'blocked';\nreturn [{\n  json: {\n    telegram_send_ok: telegramRan ? (last.ok !== undefined ? last.ok : null) : null,\n    message_id: telegramRan && last.result && last.result.message_id ? last.result.message_id : null,\n    http_status: build && build.http_status !== undefined ? build.http_status : null,\n    decision_id: (build && build.decision_id) || prep.decision_id || null,\n    open_action: prep.open_action !== undefined ? prep.open_action : null,\n    block_reason: prep.block_reason !== undefined ? prep.block_reason : null,\n    send_suppressed: sendSuppressed,\n    fan_out_items_in: items.length,\n    fan_out_collapsed: items.length > 1,\n    pass_claimed: false,\n    test_only: true,\n    note: sendSuppressed\n      ? 'Wd blocked terminal — no Telegram send; http_status is classifier-only not send PASS'\n      : 'Wd gate B live result — sanitize before recording; no send claimed unless Telegram ran'\n  }\n}];"
+      },
+      "id": "c8294468-8ee5-4450-ba88-7bfc22c92021",
+      "name": "Inspect send result (read-only)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_decisions_test"
+        },
+        "returnAll": true
+      },
+      "id": "7f88d2a9-6558-4388-851c-6b1ae68bf137",
+      "name": "Data Table - Load shared decisions",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -512,
+        -288
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Prepare OPEN ON SEND row for control_plane_decisions_test (TEST ONLY). No secrets.\n// runOnceForAllItems: Load may return N store rows; logic uses .all() once — must emit 1 item.\nconst build = $('Build Operational Decision Packet').first().json;\nlet rows = [];\ntry { rows = $('Data Table - Load shared decisions').all().map((i) => i.json); } catch (e) { rows = []; }\nconst decision_id = build && build.decision_id ? build.decision_id : null;\nconst existing = rows.find((r) => r && String(r.decision_id) === String(decision_id));\nconst now = new Date().toISOString();\nconst SOURCE_WORKFLOW = '45 - Wd Operational Decision Packet Integration TEST ONLY - TEMPLATE';\nlet open_action = 'insert';\nlet block_reason = null;\nlet open_allowed = true;\nif (existing) {\n  if (String(existing.status) === 'closed') {\n    open_action = 'blocked';\n    block_reason = 'duplicate_open_attempt';\n    open_allowed = false;\n  } else if (String(existing.status) === 'open') {\n    open_action = 'noop';\n  } else {\n    open_action = 'reopen_nonclosed';\n  }\n}\nconst row = {\n  decision_id,\n  status: 'open',\n  selected_option: '',\n  created_at: existing && existing.created_at ? existing.created_at : now,\n  closed_at: '',\n  update_id: '',\n  note_preview: '',\n  source: 'TEST ONLY',\n  updated_at: now,\n  created_by: 'wd',\n  source_workflow: SOURCE_WORKFLOW,\n  packet_kind: 'runtime'\n};\nreturn [{\n  json: {\n    decision_id,\n    open_action,\n    open_allowed,\n    block_reason,\n    row,\n    decision_packet_text: build && build.decision_packet_text ? build.decision_packet_text : '',\n    test_only: true\n  }\n}];"
+      },
+      "id": "b2239f28-5fd0-4b1a-a3bf-fc4f3c9e0a67",
+      "name": "Prepare shared decision open row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "wd-if-open-allowed",
+              "leftValue": "={{ $json.open_allowed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "95b0c1cc-9dd8-4fe7-bdab-9f1917cb7c50",
+      "name": "IF shared decision open allowed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_decisions_test"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "decision_id",
+              "keyValue": "={{ $json.row.decision_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "decision_id": "={{ $json.row.decision_id }}",
+            "status": "={{ $json.row.status }}",
+            "selected_option": "={{ $json.row.selected_option }}",
+            "created_at": "={{ $json.row.created_at }}",
+            "closed_at": "={{ $json.row.closed_at }}",
+            "update_id": "={{ $json.row.update_id }}",
+            "note_preview": "={{ $json.row.note_preview }}",
+            "source": "={{ $json.row.source }}",
+            "updated_at": "={{ $json.row.updated_at }}",
+            "created_by": "={{ $json.row.created_by }}",
+            "source_workflow": "={{ $json.row.source_workflow }}",
+            "packet_kind": "={{ $json.row.packet_kind }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "1a6fea47-da8f-41b4-9ed3-86d6279b662e",
+      "name": "Data Table - Upsert shared decision open",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        -352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Collapse Data Table load fan-out: Load returns 1 item per store row (returnAll).\n// Downstream Prepare / IF / Telegram / Inspect must receive exactly 1 gate item per run.\nconst build = $('Build Operational Decision Packet').first().json;\nconst loaded = $input.all();\nconst rowCount = loaded.length;\nreturn [{\n  json: {\n    decision_id: build && build.decision_id ? build.decision_id : null,\n    store_rows_loaded: rowCount,\n    fan_out_collapsed: rowCount > 1,\n    test_only: true,\n    note: 'Wd: collapsed load fan-out to single gate item before shared decision open prep'\n  }\n}];"
+      },
+      "id": "wd000013-0013-4013-8013-000000000013",
+      "name": "Collapse load fan-out (1 item per run)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        200
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set sanitized operational-style event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set sanitized operational-style event": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Classify (CONFIGURE_IN_N8N_UI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Classify (CONFIGURE_IN_N8N_UI)": {
+      "main": [
+        [
+          {
+            "node": "Build Operational Decision Packet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Operational Decision Packet": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Load shared decisions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Load shared decisions": {
+      "main": [
+        [
+          {
+            "node": "Collapse load fan-out (1 item per run)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare shared decision open row": {
+      "main": [
+        [
+          {
+            "node": "IF shared decision open allowed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF shared decision open allowed": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Upsert shared decision open",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Inspect send result (read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Upsert shared decision open": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send Operational-Style Decision Packet (CONFIGURE_IN_N8N_UI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Send Operational-Style Decision Packet (CONFIGURE_IN_N8N_UI)": {
+      "main": [
+        [
+          {
+            "node": "Inspect send result (read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse load fan-out (1 item per run)": {
+      "main": [
+        [
+          {
+            "node": "Prepare shared decision open row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0e3063d9-8cf3-4bf1-871d-024e7a48d98a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0319381fab885f639cbac060718f520c2525cb985f8057b47d0fc6aff7016641"
+  },
+  "id": "MVyrwwrB33Ft9gco",
+  "tags": [
+    {
+      "updatedAt": "2026-05-26T22:14:40.760Z",
+      "createdAt": "2026-05-26T22:14:40.760Z",
+      "id": "33r0BwuWZvfE9ANO",
+      "name": "template-only"
+    },
+    {
+      "updatedAt": "2026-05-31T06:05:29.726Z",
+      "createdAt": "2026-05-31T06:05:29.726Z",
+      "id": "BYTjFzfEzddy4Wdj",
+      "name": "gate-b-live"
+    },
+    {
+      "updatedAt": "2026-05-31T00:07:32.024Z",
+      "createdAt": "2026-05-31T00:07:32.024Z",
+      "id": "DMYHxXaIze6AIeW0",
+      "name": "classifier-server"
+    },
+    {
+      "updatedAt": "2026-05-20T00:52:54.133Z",
+      "createdAt": "2026-05-20T00:52:54.133Z",
+      "id": "LP84ub7M6cViHUPU",
+      "name": "control-plane"
+    },
+    {
+      "updatedAt": "2026-05-20T00:52:54.170Z",
+      "createdAt": "2026-05-20T00:52:54.170Z",
+      "id": "b0RURNiy6XhUNUMi",
+      "name": "telegram"
+    },
+    {
+      "updatedAt": "2026-05-31T06:05:29.727Z",
+      "createdAt": "2026-05-31T06:05:29.727Z",
+      "id": "qTZbdzfEDwtQKw5p",
+      "name": "wd-operational"
+    }
+  ]
+}

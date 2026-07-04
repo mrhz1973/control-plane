@@ -115,6 +115,14 @@ Wd now **prepares and upserts an `open` row** on the shared store **`control_pla
 
 **Fan-out (GE-01 STOP — 2026-07-04):** Pre-fix, Load (`returnAll`) × Prepare (`runOnceForEachItem`) multiplied items (~6) on `duplicate_open_attempt` for closed `D-1003-T`; Telegram received = 0 (IF false) but Inspect emitted 6 identical audit records. Repo fix: Collapse node + Prepare/Inspect `runOnceForAllItems`. Session: [`2026-07-04-control-plane-gate-e-ge01-stop-fanout-fix-forward.md`](sessions/2026-07-04-control-plane-gate-e-ge01-stop-fanout-fix-forward.md). Live import = separate gated step.
 
+**Exports (distinzione):**
+
+| File | Ruolo |
+|------|--------|
+| `workflows/exports/2026-07-02_wd-45-operational-decision-packet-integration-post-gate-d.redacted.json` | Snapshot storico post-Gate-D (D-0033); **non patchato** |
+| `workflows/exports/2026-07-04_wd-45-operational-decision-packet-integration-ge01-fixforward.proposed.redacted.json` | Candidato futuro GE-02 gated; contiene fix Collapse/`send_suppressed`; **non esportato da n8n live** |
+| `workflows/wd-operational-decision-packet-integration-manual.template.json` | Template sorgente con fix GE-01 |
+
 **Risk `open_without_send`:** the open row is upserted **before** the Telegram send, so a send failure can leave a row `open` without a delivered packet. This is a **named risk verified at Gate 3 runtime (user-attested)**, not in this template gate.
 
 **Boundaries:** `active: false` · `CONFIGURE_*` placeholders kept · no `data-tables/**` · no CSV seed · no table creation in repo (operator creates `control_plane_decisions_test` in n8n UI) · no `control_plane_state` · no wf40/41/42 · no PM-34 · no Schedule/Telegram Trigger/webhook · no secrets.
