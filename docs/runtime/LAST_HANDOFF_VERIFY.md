@@ -33,78 +33,81 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
-task_ref: glm-advisor-method-docs-only
-verified_task_commit: 19bd24c06f5f0d83efb361c695dae467180e8d0f
-verified_rolling_report_commit: 64dbd8bac29ece0f759c37c72e49baad8cfdf0da
-verified_through_commit: 19bd24c06f5f0d83efb361c695dae467180e8d0f
-observed_head: 19bd24c06f5f0d83efb361c695dae467180e8d0f
-observed_origin_main: 19bd24c06f5f0d83efb361c695dae467180e8d0f
-observed_ls_remote_main: 19bd24c06f5f0d83efb361c695dae467180e8d0f
-branch: main
-workspace_status: clean
-artifact_commit: 64dbd8bac29ece0f759c37c72e49baad8cfdf0da
-result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
-result_runtime: NOT_RUN
-timestamp_utc: 2026-07-03
-```
-
-**Nota:** snapshot GLM Advisor method docs-only verificato attraverso `19bd24c`; `artifact_commit` e `verified_rolling_report_commit` backfilled a `64dbd8b`.
-
----
-
-## Latest verified snapshot
-
-```yaml
 task_ref: readme-policy-alignment-docs-only
 verified_task_commit: b2f66140902df5a92fcb70a294c59ab6ea0d4233
-verified_rolling_report_commit: PENDING_SELF_REFERENCE
+verified_rolling_report_commit: b62a30b24223a86396119c3d106f2bc2597a71af
 verified_through_commit: b2f66140902df5a92fcb70a294c59ab6ea0d4233
 observed_head: b2f66140902df5a92fcb70a294c59ab6ea0d4233
 observed_origin_main: b2f66140902df5a92fcb70a294c59ab6ea0d4233
 observed_ls_remote_main: b2f66140902df5a92fcb70a294c59ab6ea0d4233
 branch: main
 workspace_status: clean
-artifact_commit: PENDING_SELF_REFERENCE
+artifact_commit: b62a30b24223a86396119c3d106f2bc2597a71af
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
 result_runtime: NOT_RUN
 timestamp_utc: 2026-07-03
 ```
 
-**Nota:** questo snapshot verifica attraverso `b2f6614` — commit 1 README policy alignment docs-only; **non** è Gate E PASS; **non** è PASS runtime; nessun runtime n8n eseguito o attivato; nessun workflow toccato. Commit 2 = solo artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta il modello `artifact_commit: PENDING_SELF_REFERENCE`.
-
-**Finding README stale — chiuso nel merito:** `README.md` riallineato a `PROJECT_VISION.md` v2.15 §10; redaction-check / `No secrets in Git` non sono più regole README; rotazione compensativa via `docs/ROTATION_CHECKLIST.md`; advisor read-only via `docs/advisors/GLM_ADVISOR_METHOD.md`; verifica shell indipendente: **GO**, zero finding.
+**Nota:** snapshot README policy alignment verificato attraverso `b2f6614`; `artifact_commit` e `verified_rolling_report_commit` backfilled a `b62a30b`.
 
 ---
 
-## Command outputs (verbatim, sanitized — README policy alignment docs-only)
+## Latest verified snapshot
+
+```yaml
+task_ref: ge01-wf45-fanout-fixforward-pr1-merge-post-report
+verified_task_commit: 6a6b9d8f9679a86423ad9914df9629d7df679b65
+verified_pr_head_commit: a32f9e36f16bde10bc09f8f8c42a8cf04f296057
+verified_base_commit: b62a30b24223a86396119c3d106f2bc2597a71af
+verified_rolling_report_commit: PENDING_SELF_REFERENCE
+verified_through_commit: 6a6b9d8f9679a86423ad9914df9629d7df679b65
+observed_head: 6a6b9d8f9679a86423ad9914df9629d7df679b65
+observed_origin_main: 6a6b9d8f9679a86423ad9914df9629d7df679b65
+observed_ls_remote_main: 6a6b9d8f9679a86423ad9914df9629d7df679b65
+branch: main
+workspace_status: clean
+artifact_commit: PENDING_SELF_REFERENCE
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: NOT_RUN
+timestamp_utc: 2026-07-04
+```
+
+**Nota:** questo snapshot verifica attraverso merge `6a6b9d8` — PR #1 GE-01 wf45 fan-out fix-forward merged on `main`; PR head `a32f9e3`; base pre-merge `b62a30b`. **Non** è Gate E PASS; **non** è PASS runtime; **GE-01 = STOP / REVIEW REQUIRED** (runtime pre-merge); **GE-02 = not authorized**; **live n8n import = not authorized**; nessun runtime n8n eseguito o attivato in questo task. Commit 2 post-merge = solo artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta il modello `artifact_commit: PENDING_SELF_REFERENCE`.
+
+**Backfill PENDING_SELF_REFERENCE:** readme-policy snapshot → `b62a30b`. Catena glm-advisor (base `be24da3` → substance `19bd24c` → artifacts `64dbd8b`) già backfilled in snapshot precedente.
+
+---
+
+## Command outputs (verbatim, sanitized — GE-01 PR #1 merge post-report)
 
 ```text
 git rev-parse HEAD
-b2f66140902df5a92fcb70a294c59ab6ea0d4233
+6a6b9d8f9679a86423ad9914df9629d7df679b65
 
 git rev-parse origin/main
-b2f66140902df5a92fcb70a294c59ab6ea0d4233
+6a6b9d8f9679a86423ad9914df9629d7df679b65
 
 git ls-remote origin refs/heads/main
-b2f66140902df5a92fcb70a294c59ab6ea0d4233	refs/heads/main
+6a6b9d8f9679a86423ad9914df9629d7df679b65	refs/heads/main
 
 git status --short
 
-git diff --name-only 64dbd8bac29ece0f759c37c72e49baad8cfdf0da..HEAD
-README.md
-
-git log --oneline -8
+git log --oneline -10
+6a6b9d8 Merge PR #1: fix(wf45) GE-01 fan-out collapse
+a32f9e3 fix(wf45): split GE-01 proposed export from 2026-07-02 Gate-D snapshot
+a684ca7 fix(wf45): collapse load fan-out before telegram gate (GE-01 repo-only)
+b62a30b docs: refresh readme policy verification artifacts
 b2f6614 docs: align readme with current repo policy
 64dbd8b docs: refresh glm advisor verification artifacts
 19bd24c docs: add glm advisor method
 be24da3 docs: prepare gate e runtime prompt
 6832b9b docs: refresh gate e prep verification
 34cea46 docs: prep gate e controlled start plan
-1a910b4 docs: refresh runtime verification artifacts
-b462ee7 docs: remove stale frontier redaction-check reference
 ```
 
-**BASE (preflight commit 1):** `64dbd8bac29ece0f759c37c72e49baad8cfdf0da`
+**BASE (pre-merge main):** `b62a30b24223a86396119c3d106f2bc2597a71af`
+**PR head:** `a32f9e36f16bde10bc09f8f8c42a8cf04f296057`
+**Merge commit:** `6a6b9d8f9679a86423ad9914df9629d7df679b65`
 
 ---
 

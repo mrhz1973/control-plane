@@ -13,25 +13,26 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: readme-policy-alignment-docs-only
+task_ref: ge01-wf45-fanout-fixforward-pr1-merge-post-report
 result_cursor: PASS_DOCS_ONLY
 result_runtime: NOT_RUN_BY_CURSOR
-base_commit: 64dbd8bac29ece0f759c37c72e49baad8cfdf0da
-real_task_commit: b2f66140902df5a92fcb70a294c59ab6ea0d4233
-commit_subject: docs: align readme with current repo policy
+base_commit: b62a30b24223a86396119c3d106f2bc2597a71af
+merge_commit: 6a6b9d8f9679a86423ad9914df9629d7df679b65
+pr_head_commit: a32f9e36f16bde10bc09f8f8c42a8cf04f296057
+commit_subject: Merge PR #1: fix(wf45) GE-01 fan-out collapse
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS docs-only commit 1 = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su b2f6614; workspace clean; diff limitato a README.md; nessun workflow toccato; nessun runtime n8n; non Gate E PASS; non PASS runtime. Commit 2 = solo artefatti verifica/report.
-remote_hash_verbatim: "b2f66140902df5a92fcb70a294c59ab6ea0d4233\trefs/heads/main"
-timestamp_utc: 2026-07-03
+verification_rule: PASS docs-only post-merge Condition 2 = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su 6a6b9d8 (merge PR #1); workspace clean; diff limitato a LAST_CURSOR_REPORT.md e LAST_HANDOFF_VERIFY.md; nessun runtime n8n; non Gate E PASS; non PASS runtime; GE-02 non autorizzato; import live n8n non autorizzato.
+remote_hash_verbatim: "6a6b9d8f9679a86423ad9914df9629d7df679b65\trefs/heads/main"
+timestamp_utc: 2026-07-04
 ```
 
-- **Commit 1 — README policy alignment docs-only:** `README.md` riallineato a `PROJECT_VISION.md` v2.15 §10; rimossi riferimenti stale a redaction-check e `No secrets in Git`; puntamento rotazione compensativa (`ROTATION_CHECKLIST.md`) e advisor read-only (`GLM_ADVISOR_METHOD.md`); verifica remota su `b2f6614`.
-- **Commit 2 (questo report):** solo artefatti di verifica (`LAST_CURSOR_REPORT.md`, `LAST_HANDOFF_VERIFY.md`); **non** modifica sostanza commit 1.
-- **Scope commit 1:** `README.md` updated only; stale redaction-check / `No secrets in Git` README rules removed or replaced.
-- **Explicit non-touched (commit 1):** `docs/advisors/GLM_ADVISOR_METHOD.md`, `CURRENT_FRONTIER.md`, `AUTOMATION_ACTIVATION_PLAN.md`, `LAST_CURSOR_REPORT.md`, `LAST_HANDOFF_VERIFY.md`, `PROJECT_VISION.md`, `ROTATION_CHECKLIST.md`, `workflows/**`, 40/41/42, nessun runtime n8n, nessuno schedule/webhook/Telegram, **non** Gate E PASS, **non** PASS runtime.
-- **Non** è Gate E PASS; **non** è PASS runtime; nessun runtime n8n eseguito o attivato; nessun workflow toccato.
-- Snapshot verifica attraverso `b2f6614`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
+- **Post-merge Condition 2 — rolling report docs-only:** PR #1 merged on `main`; merge commit `6a6b9d8`; PR head `a32f9e3`; base pre-merge `b62a30b`.
+- **PR #1 substance (merged):** GE-01 wf45 fan-out collapse fix-forward — template + `2026-07-04` proposed export; `2026-07-02` Gate-D snapshot preserved; session `docs/sessions/2026-07-04-control-plane-gate-e-ge01-stop-fanout-fix-forward.md`.
+- **Explicit non-touched in this commit:** workflows live n8n; wf40/41/42; runtime; schedule/webhook/Telegram; credentials.
+- **GE-01 = STOP / REVIEW REQUIRED** (runtime finding pre-merge); **Gate E PASS = NO**; **PASS runtime = NO**; **GE-02 = not authorized**; **live n8n import = not authorized**.
+- Snapshot verifica attraverso merge `6a6b9d8`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
+- **Backfill PENDING_SELF_REFERENCE:** `readme-policy-alignment-docs-only` → `rolling_report_commit: b62a30b` (in HISTORY). Catena `glm-advisor-method-docs-only` (base `be24da3` → substance `19bd24c` → artifacts `64dbd8b`) già backfilled in HISTORY precedente.
 
 ---
 
@@ -53,6 +54,13 @@ timestamp_utc: 2026-07-03
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: readme-policy-alignment-docs-only
+  real_task_commit: b2f66140902df5a92fcb70a294c59ab6ea0d4233
+  rolling_report_commit: b62a30b24223a86396119c3d106f2bc2597a71af
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-07-03
+
 - task_ref: glm-advisor-method-docs-only
   real_task_commit: 19bd24c06f5f0d83efb361c695dae467180e8d0f
   rolling_report_commit: 64dbd8bac29ece0f759c37c72e49baad8cfdf0da
@@ -80,11 +88,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS
   result_runtime: PASS_ATTESTATO_UTENTE
   timestamp_utc: 2026-06-11
-
-- task_ref: workflow-57-post-push-verifier-file-reader
-  real_task_commit: 9804765db6c1a77524007e5fc4ae8484a98caf63
-  rolling_report_commit: 0d2567c176d87a04cf159c4c2cd5e0608c8811a9
-  result_cursor: PASS
-  result_runtime: PASS_ATTESTATO_UTENTE
-  timestamp_utc: 2026-06-08
 ```
