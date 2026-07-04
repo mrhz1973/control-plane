@@ -96,7 +96,8 @@ Wd now **prepares and upserts an `open` row** on the shared store **`control_pla
 | Node | Role |
 |------|------|
 | **Data Table - Load shared decisions** | `get` rows from `control_plane_decisions_test` (returnAll, alwaysOutputData) |
-| **Prepare shared decision open row** | Build open row; compute `open_action` (`insert` / `noop` / `reopen_nonclosed` / `blocked`) and `open_allowed` |
+| **Collapse load fan-out (1 item per run)** | Collapses N load items to **1 gate item** per run (GE-01 fix-forward) |
+| **Prepare shared decision open row** | Build open row; compute `open_action` (`insert` / `noop` / `reopen_nonclosed` / `blocked`) and `open_allowed`; **`runOnceForAllItems`** — emits 1 item |
 | **IF shared decision open allowed** | true → upsert + send; false → straight to Inspect (no send) |
 | **Data Table - Upsert shared decision open** | Upsert `open` keyed on `decision_id`; then Telegram send |
 
@@ -110,7 +111,17 @@ Wd now **prepares and upserts an `open` row** on the shared store **`control_pla
 
 **Columns written:** `decision_id`, `status=open`, `selected_option=""`, `created_at`, `closed_at=""`, `update_id=""`, `note_preview=""`, `source=TEST ONLY`, `updated_at`, `created_by=wd`, `source_workflow`, `packet_kind`. No `chat_id`, token, or message body.
 
-**Inspect send result (read-only)** runs on both IF branches and reports `open_action` / `block_reason`; it only claims `telegram_send_ok` when the Telegram node actually ran.
+**Inspect send result (read-only)** runs on both IF branches and reports `open_action` / `block_reason`; it only claims `telegram_send_ok` when the Telegram node actually ran. After GE-01 fix-forward: **`runOnceForAllItems`** — max **1 audit item** per run; blocked path sets `send_suppressed=true`, `pass_claimed=false`; `http_status` is classifier-only and must not be read as send PASS.
+
+**Fan-out (GE-01 STOP — 2026-07-04):** Pre-fix, Load (`returnAll`) × Prepare (`runOnceForEachItem`) multiplied items (~6) on `duplicate_open_attempt` for closed `D-1003-T`; Telegram received = 0 (IF false) but Inspect emitted 6 identical audit records. Repo fix: Collapse node + Prepare/Inspect `runOnceForAllItems`. Session: [`2026-07-04-control-plane-gate-e-ge01-stop-fanout-fix-forward.md`](sessions/2026-07-04-control-plane-gate-e-ge01-stop-fanout-fix-forward.md). Live import = separate gated step.
+
+**Exports (distinzione):**
+
+| File | Ruolo |
+|------|--------|
+| `workflows/exports/2026-07-02_wd-45-operational-decision-packet-integration-post-gate-d.redacted.json` | Snapshot storico post-Gate-D (D-0033); **non patchato** |
+| `workflows/exports/2026-07-04_wd-45-operational-decision-packet-integration-ge01-fixforward.proposed.redacted.json` | Candidato futuro GE-02 gated; contiene fix Collapse/`send_suppressed`; **non esportato da n8n live** |
+| `workflows/wd-operational-decision-packet-integration-manual.template.json` | Template sorgente con fix GE-01 |
 
 **Risk `open_without_send`:** the open row is upserted **before** the Telegram send, so a send failure can leave a row `open` without a delivered packet. This is a **named risk verified at Gate 3 runtime (user-attested)**, not in this template gate.
 
