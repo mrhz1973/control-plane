@@ -33,81 +33,80 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
-task_ref: ge01-wf45-fanout-fixforward-pr1-merge-post-report
-verified_task_commit: 6a6b9d8f9679a86423ad9914df9629d7df679b65
-verified_pr_head_commit: a32f9e36f16bde10bc09f8f8c42a8cf04f296057
-verified_base_commit: b62a30b24223a86396119c3d106f2bc2597a71af
-verified_rolling_report_commit: 389eaf3df6d0ba138b569eeadf858f13a557a7a9
-verified_through_commit: 6a6b9d8f9679a86423ad9914df9629d7df679b65
-observed_head: 6a6b9d8f9679a86423ad9914df9629d7df679b65
-observed_origin_main: 6a6b9d8f9679a86423ad9914df9629d7df679b65
-observed_ls_remote_main: 6a6b9d8f9679a86423ad9914df9629d7df679b65
-branch: main
-workspace_status: clean
-artifact_commit: 389eaf3df6d0ba138b569eeadf858f13a557a7a9
-result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
-result_runtime: NOT_RUN
-timestamp_utc: 2026-07-04
-```
-
-**Nota:** snapshot GE-01 PR #1 merge verificato attraverso merge `6a6b9d8`; `artifact_commit` e `verified_rolling_report_commit` backfilled a `389eaf3`. GE-01 = STOP / REVIEW REQUIRED (runtime pre-merge); GE-02 non autorizzato.
-
----
-
-## Latest verified snapshot
-
-```yaml
 task_ref: glm-advisor-session-starter-docs-only
 verified_task_commit: 63f37090137f78bc7165c625fee20e5f316a8468
 verified_base_commit: 389eaf3df6d0ba138b569eeadf858f13a557a7a9
-verified_rolling_report_commit: PENDING_SELF_REFERENCE
+verified_rolling_report_commit: eb43cef571774a1b513328d8f4837c2c7224c4fc
 verified_through_commit: 63f37090137f78bc7165c625fee20e5f316a8468
 observed_head: 63f37090137f78bc7165c625fee20e5f316a8468
 observed_origin_main: 63f37090137f78bc7165c625fee20e5f316a8468
 observed_ls_remote_main: 63f37090137f78bc7165c625fee20e5f316a8468
 branch: main
 workspace_status: clean
-artifact_commit: PENDING_SELF_REFERENCE
+artifact_commit: eb43cef571774a1b513328d8f4837c2c7224c4fc
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
 result_runtime: NOT_RUN
 timestamp_utc: 2026-07-04
 ```
 
-**Nota:** questo snapshot verifica attraverso `63f3709` — commit 1 GLM Advisor session starter docs-only (§6.1 starter fisso + §7 output format esteso in `docs/advisors/GLM_ADVISOR_METHOD.md`). §4 whitelist invariata; nessun `git pull` obbligatorio; GLM rileva clone stale (`STALE_LOCAL_CLONE`) ma **non** lo aggiorna. **Non** è Gate E PASS; **non** è PASS runtime; **GE-02 = not authorized**; nessun runtime n8n eseguito o attivato. Commit 2 = solo artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta il modello `artifact_commit: PENDING_SELF_REFERENCE`.
-
-**Backfill PENDING_SELF_REFERENCE:** GE-01 PR #1 merge snapshot → `389eaf3`.
+**Nota:** snapshot GLM Advisor session starter verificato attraverso `63f3709`; `artifact_commit` e `verified_rolling_report_commit` backfilled a `eb43cef`. Non Gate E PASS; GE-02 non autorizzato.
 
 ---
 
-## Command outputs (verbatim, sanitized — GLM Advisor session starter docs-only)
+## Latest verified snapshot
+
+```yaml
+task_ref: d0038e-wf45-import-ui-only-pass
+verified_task_commit: 11747f91d707f71c76accab93489ab44627f009e
+verified_base_commit: eb43cef571774a1b513328d8f4837c2c7224c4fc
+verified_rolling_report_commit: PENDING_SELF_REFERENCE
+verified_through_commit: 11747f91d707f71c76accab93489ab44627f009e
+observed_head: 11747f91d707f71c76accab93489ab44627f009e
+observed_origin_main: 11747f91d707f71c76accab93489ab44627f009e
+observed_ls_remote_main: 11747f91d707f71c76accab93489ab44627f009e
+branch: main
+workspace_status: clean
+artifact_commit: PENDING_SELF_REFERENCE
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: NOT_RUN
+timestamp_utc: 2026-07-06
+```
+
+**Nota:** questo snapshot verifica attraverso `11747f9` — commit 1 D-0038-E wf45 import UI-only (option 1): sessione `docs/sessions/2026-07-06-control-plane-d0038e-wf45-import-ui-only-pass.md`; import target `workflows/exports/2026-07-04_wd-45-operational-decision-packet-integration-ge01-fixforward.proposed.redacted.json`; export storico 2026-07-02 **non** importato; risultato **PASS_IMPORT_UI_ONLY**; runtime **NOT_RUN**; Execute workflow **NOT_PRESSED**; Publish **NOT_PRESSED**; Telegram/classifier **NOT_RUN**; evidenza screenshot operatore (singola catena wf45 con nodo Collapse load fan-out presente). **Non** è Gate E PASS; **non** è PASS runtime; **GE-02 = not authorized**; **PM-34 BLOCKED**; **`n8n_ready=false`**; wf40/41/42 untouched; nessun runtime n8n eseguito o attivato da Cursor. Commit 2 = solo artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta il modello `artifact_commit: PENDING_SELF_REFERENCE`.
+
+**Backfill PENDING_SELF_REFERENCE:** GLM Advisor session starter snapshot → `eb43cef`.
+
+---
+
+## Command outputs (verbatim, sanitized — D-0038-E wf45 import UI-only)
 
 ```text
 git rev-parse HEAD
-63f37090137f78bc7165c625fee20e5f316a8468
+11747f91d707f71c76accab93489ab44627f009e
 
 git rev-parse origin/main
-63f37090137f78bc7165c625fee20e5f316a8468
+11747f91d707f71c76accab93489ab44627f009e
 
 git ls-remote origin refs/heads/main
-63f37090137f78bc7165c625fee20e5f316a8468	refs/heads/main
+11747f91d707f71c76accab93489ab44627f009e	refs/heads/main
 
 git status --short
 
-git diff --name-only 389eaf3df6d0ba138b569eeadf858f13a557a7a9..HEAD
-docs/advisors/GLM_ADVISOR_METHOD.md
+git diff --name-only eb43cef571774a1b513328d8f4837c2c7224c4fc..HEAD
+docs/sessions/2026-07-06-control-plane-d0038e-wf45-import-ui-only-pass.md
 
 git log --oneline -8
+11747f9 docs: record D-0038-E wf45 import-only result
+eb43cef docs: refresh GLM advisor starter verification artifacts
 63f3709 docs: add fixed GLM advisor session starter
 389eaf3 docs: refresh GE-01 PR1 merge verification artifacts
 6a6b9d8 Merge PR #1: fix(wf45) GE-01 fan-out collapse
 a32f9e3 fix(wf45): split GE-01 proposed export from 2026-07-02 Gate-D snapshot
 a684ca7 fix(wf45): collapse load fan-out before telegram gate (GE-01 repo-only)
 b62a30b docs: refresh readme policy verification artifacts
-b2f6614 docs: align readme with current repo policy
-64dbd8b docs: refresh glm advisor verification artifacts
 ```
 
-**BASE (preflight commit 1):** `389eaf3df6d0ba138b569eeadf858f13a557a7a9`
+**BASE (preflight commit 1):** `eb43cef571774a1b513328d8f4837c2c7224c4fc`
 
 ---
 
