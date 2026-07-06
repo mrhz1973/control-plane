@@ -13,28 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0038e-wf45-import-ui-only-pr2-merge-post-report
+task_ref: d0041e-ge02-prep-docs-only
 result_cursor: PASS_DOCS_ONLY
 result_runtime: NOT_RUN_BY_CURSOR
-base_commit: eb43cef571774a1b513328d8f4837c2c7224c4fc
-substance_commit: 11747f91d707f71c76accab93489ab44627f009e
-merge_commit: ea1dbef504c48c9edae547181d96268b1974e898
-pr_head_commit: a75dfc476ba70318c85f6c2b62075cc68ea2a275
-commit_subject: Merge PR #2: docs D-0038-E wf45 import-only result
+base_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
+real_task_commit: d4082ae0e6b5ff940b2e9c6768b58510b00e4c1c
+commit_subject: docs: prepare D-0041-E GE-02 docs-only packet
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS docs-only post-merge = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su ea1dbef (merge PR #2); workspace clean; diff limitato a LAST_CURSOR_REPORT.md e LAST_HANDOFF_VERIFY.md; nessun runtime n8n; import UI-only attestato; non Gate E PASS; non PASS runtime; GE-02 non autorizzato.
-remote_hash_verbatim: "ea1dbef504c48c9edae547181d96268b1974e898\trefs/heads/main"
+verification_rule: PASS docs-only commit 1 = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su d4082ae; workspace clean; diff commit 1 limitato a docs/sessions/2026-07-06-control-plane-d0041e-ge02-prep-docs-only.md; nessun workflow JSON toccato; nessun runtime n8n; GE-02 prep docs-only; non GE-02 run; non Gate E PASS; non PASS runtime; GE-02 run non autorizzato. Commit 2 = solo artefatti verifica/report.
+remote_hash_verbatim: "d4082ae0e6b5ff940b2e9c6768b58510b00e4c1c\trefs/heads/main"
 timestamp_utc: 2026-07-06
 ```
 
-- **Post-merge — PR #2 D-0038-E import UI-only docs:** merge commit `ea1dbef`; PR head `a75dfc4`; substance `11747f9`; base pre-PR `eb43cef`.
-- **PR #2 substance (merged):** sessione `docs/sessions/2026-07-06-control-plane-d0038e-wf45-import-ui-only-pass.md`; import target `workflows/exports/2026-07-04_wd-45-operational-decision-packet-integration-ge01-fixforward.proposed.redacted.json`; export storico 2026-07-02 **non** importato; risultato **PASS_IMPORT_UI_ONLY**; runtime **NOT_RUN**; Execute workflow **NOT_PRESSED**; Publish **NOT_PRESSED**; Telegram/classifier **NOT_RUN**; evidenza screenshot operatore (singola catena wf45 con nodo Collapse load fan-out presente).
-- **Explicit non-touched:** `workflows/**`, wf40/41/42, runtime n8n, schedule/webhook/Telegram/classifier/tunnel, credenziali.
-- **Gate E PASS = NO**; **PASS runtime = NO**; **GE-02 = not authorized**; **PM-34 BLOCKED**; **`n8n_ready=false`**; nessun runtime n8n eseguito o attivato.
-- **Method note (GLM PR #2 review):** una deviazione metodo non bloccante — `git fetch` del ref PR usato senza autorizzazione one-off esplicita; severità **LOW** per merito PR, **MEDIUM** per metodo; non bloccante; metodo GLM **non** modificato in questo task.
-- Snapshot verifica attraverso merge `ea1dbef`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
-- **Backfill PENDING_SELF_REFERENCE:** `d0038e-wf45-import-ui-only-pass` → `rolling_report_commit: ea1dbef` (in HISTORY).
+- **Commit 1 — D-0041-E GE-02 prep docs-only (option 1):** sessione `docs/sessions/2026-07-06-control-plane-d0041e-ge02-prep-docs-only.md`; **GO PREP GE-02 DOCS-ONLY**; packet skeleton minimo per run manuale bounded; test_id `GE-02` / decision_id candidate `D-1003-T` (duplicate-open-attempt closed path); fan-out guard item count ≤ 1; STOP se > 1 audit item o Telegram inatteso.
+- **Commit 2 (questo report):** solo artefatti di verifica (`LAST_CURSOR_REPORT.md`, `LAST_HANDOFF_VERIFY.md`); **non** modifica sostanza commit 1.
+- **Explicit non-touched (commit 1):** `workflows/**`, wf40/41/42, runtime n8n, schedule/webhook/Telegram/classifier/tunnel/import/publish, credenziali.
+- **NOT GE-02 run**; **Gate E PASS = NO**; **PASS runtime = NO**; **GE-02 run = not authorized**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; nessun runtime n8n eseguito o attivato da Cursor.
+- Snapshot verifica attraverso `d4082ae`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
+- **Backfill PENDING_SELF_REFERENCE:** `d0038e-wf45-import-ui-only-pr2-merge-post-report` → `rolling_report_commit: e589b9e` (in HISTORY).
 
 ---
 
@@ -56,6 +53,13 @@ timestamp_utc: 2026-07-06
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0038e-wf45-import-ui-only-pr2-merge-post-report
+  real_task_commit: ea1dbef504c48c9edae547181d96268b1974e898
+  rolling_report_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-07-06
+
 - task_ref: d0038e-wf45-import-ui-only-pass
   real_task_commit: 11747f91d707f71c76accab93489ab44627f009e
   rolling_report_commit: ea1dbef504c48c9edae547181d96268b1974e898

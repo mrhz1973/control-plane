@@ -33,39 +33,39 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
-task_ref: d0038e-wf45-import-ui-only-pass
-verified_task_commit: 11747f91d707f71c76accab93489ab44627f009e
+task_ref: d0038e-wf45-import-ui-only-pr2-merge-post-report
+verified_task_commit: ea1dbef504c48c9edae547181d96268b1974e898
+verified_substance_commit: 11747f91d707f71c76accab93489ab44627f009e
+verified_pr_head_commit: a75dfc476ba70318c85f6c2b62075cc68ea2a275
 verified_base_commit: eb43cef571774a1b513328d8f4837c2c7224c4fc
-verified_rolling_report_commit: ea1dbef504c48c9edae547181d96268b1974e898
-verified_through_commit: 11747f91d707f71c76accab93489ab44627f009e
-observed_head: 11747f91d707f71c76accab93489ab44627f009e
-observed_origin_main: 11747f91d707f71c76accab93489ab44627f009e
-observed_ls_remote_main: 11747f91d707f71c76accab93489ab44627f009e
+verified_rolling_report_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
+verified_through_commit: ea1dbef504c48c9edae547181d96268b1974e898
+observed_head: ea1dbef504c48c9edae547181d96268b1974e898
+observed_origin_main: ea1dbef504c48c9edae547181d96268b1974e898
+observed_ls_remote_main: ea1dbef504c48c9edae547181d96268b1974e898
 branch: main
 workspace_status: clean
-artifact_commit: ea1dbef504c48c9edae547181d96268b1974e898
+artifact_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
 result_runtime: NOT_RUN
 timestamp_utc: 2026-07-06
 ```
 
-**Nota:** snapshot D-0038-E wf45 import UI-only verificato attraverso substance `11747f9`; `artifact_commit` e `verified_rolling_report_commit` backfilled a merge `ea1dbef` (PR #2). **PASS_IMPORT_UI_ONLY**; runtime **NOT_RUN**; Gate E PASS **NO**; GE-02 non autorizzato.
+**Nota:** snapshot PR #2 merge post-report verificato attraverso merge `ea1dbef`; `artifact_commit` e `verified_rolling_report_commit` backfilled a `e589b9e`. PASS_IMPORT_UI_ONLY; GE-02 non autorizzato.
 
 ---
 
 ## Latest verified snapshot
 
 ```yaml
-task_ref: d0038e-wf45-import-ui-only-pr2-merge-post-report
-verified_task_commit: ea1dbef504c48c9edae547181d96268b1974e898
-verified_substance_commit: 11747f91d707f71c76accab93489ab44627f009e
-verified_pr_head_commit: a75dfc476ba70318c85f6c2b62075cc68ea2a275
-verified_base_commit: eb43cef571774a1b513328d8f4837c2c7224c4fc
+task_ref: d0041e-ge02-prep-docs-only
+verified_task_commit: d4082ae0e6b5ff940b2e9c6768b58510b00e4c1c
+verified_base_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: ea1dbef504c48c9edae547181d96268b1974e898
-observed_head: ea1dbef504c48c9edae547181d96268b1974e898
-observed_origin_main: ea1dbef504c48c9edae547181d96268b1974e898
-observed_ls_remote_main: ea1dbef504c48c9edae547181d96268b1974e898
+verified_through_commit: d4082ae0e6b5ff940b2e9c6768b58510b00e4c1c
+observed_head: d4082ae0e6b5ff940b2e9c6768b58510b00e4c1c
+observed_origin_main: d4082ae0e6b5ff940b2e9c6768b58510b00e4c1c
+observed_ls_remote_main: d4082ae0e6b5ff940b2e9c6768b58510b00e4c1c
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
@@ -74,41 +74,41 @@ result_runtime: NOT_RUN
 timestamp_utc: 2026-07-06
 ```
 
-**Nota:** questo snapshot verifica attraverso merge `ea1dbef` — PR #2 D-0038-E wf45 import UI-only merged on `main`; substance `11747f9`; PR head `a75dfc4`; base pre-PR `eb43cef`. **PASS_IMPORT_UI_ONLY**; runtime **NOT_RUN**; Execute workflow **NOT_PRESSED**; Publish **NOT_PRESSED**; Telegram/classifier **NOT_RUN**; **Non** è Gate E PASS; **non** è PASS runtime; **GE-02 = not authorized**; **PM-34 BLOCKED**; **`n8n_ready=false`**; wf40/41/42 untouched; nessun runtime n8n eseguito o attivato. **Method note (GLM PR #2 review):** deviazione metodo non bloccante — `git fetch` ref PR senza autorizzazione one-off esplicita; severità LOW (merito PR) / MEDIUM (metodo); metodo GLM non modificato. Commit post-merge = solo artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** questo snapshot verifica attraverso `d4082ae` — commit 1 D-0041-E GE-02 prep docs-only (option 1 = GO PREP GE-02 DOCS-ONLY): sessione `docs/sessions/2026-07-06-control-plane-d0041e-ge02-prep-docs-only.md`; packet skeleton minimo per run manuale bounded; **NOT GE-02 run**; **NOT Gate E PASS**; **NOT PASS runtime**; **GE-02 run = not authorized**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; wf40/41/42 untouched; nessun runtime n8n/import/publish/Telegram/classifier/tunnel eseguito o attivato da Cursor. Commit 2 = solo artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta `artifact_commit: PENDING_SELF_REFERENCE`.
 
-**Backfill PENDING_SELF_REFERENCE:** D-0038-E import UI-only snapshot → `ea1dbef`.
+**Backfill PENDING_SELF_REFERENCE:** PR #2 merge post-report snapshot → `e589b9e`.
 
 ---
 
-## Command outputs (verbatim, sanitized — PR #2 D-0038-E merge post-report)
+## Command outputs (verbatim, sanitized — D-0041-E GE-02 prep docs-only)
 
 ```text
 git rev-parse HEAD
-ea1dbef504c48c9edae547181d96268b1974e898
+d4082ae0e6b5ff940b2e9c6768b58510b00e4c1c
 
 git rev-parse origin/main
-ea1dbef504c48c9edae547181d96268b1974e898
+d4082ae0e6b5ff940b2e9c6768b58510b00e4c1c
 
 git ls-remote origin refs/heads/main
-ea1dbef504c48c9edae547181d96268b1974e898	refs/heads/main
+d4082ae0e6b5ff940b2e9c6768b58510b00e4c1c	refs/heads/main
 
 git status --short
 
+git diff --name-only e589b9e8384d2262864877fe5070d5ab60c8b98e..HEAD
+docs/sessions/2026-07-06-control-plane-d0041e-ge02-prep-docs-only.md
+
 git log --oneline -8
+d4082ae docs: prepare D-0041-E GE-02 docs-only packet
+e589b9e docs: refresh PR2 merge verification artifacts
 ea1dbef Merge PR #2: docs D-0038-E wf45 import-only result
 a75dfc4 docs: refresh D-0038-E wf45 import UI-only verification artifacts
 11747f9 docs: record D-0038-E wf45 import-only result
 eb43cef docs: refresh GLM advisor starter verification artifacts
 63f3709 docs: add fixed GLM advisor session starter
 389eaf3 docs: refresh GE-01 PR1 merge verification artifacts
-6a6b9d8 Merge PR #1: fix(wf45) GE-01 fan-out collapse
-a32f9e3 fix(wf45): split GE-01 proposed export from 2026-07-02 Gate-D snapshot
 ```
 
-**BASE (pre-PR main):** `eb43cef571774a1b513328d8f4837c2c7224c4fc`
-**Substance commit:** `11747f91d707f71c76accab93489ab44627f009e`
-**PR head:** `a75dfc476ba70318c85f6c2b62075cc68ea2a275`
-**Merge commit:** `ea1dbef504c48c9edae547181d96268b1974e898`
+**BASE (preflight commit 1):** `e589b9e8384d2262864877fe5070d5ab60c8b98e`
 
 ---
 
