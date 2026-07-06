@@ -33,39 +33,39 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
-task_ref: d0038e-wf45-import-ui-only-pr2-merge-post-report
-verified_task_commit: ea1dbef504c48c9edae547181d96268b1974e898
-verified_substance_commit: 11747f91d707f71c76accab93489ab44627f009e
-verified_pr_head_commit: a75dfc476ba70318c85f6c2b62075cc68ea2a275
-verified_base_commit: eb43cef571774a1b513328d8f4837c2c7224c4fc
-verified_rolling_report_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
-verified_through_commit: ea1dbef504c48c9edae547181d96268b1974e898
-observed_head: ea1dbef504c48c9edae547181d96268b1974e898
-observed_origin_main: ea1dbef504c48c9edae547181d96268b1974e898
-observed_ls_remote_main: ea1dbef504c48c9edae547181d96268b1974e898
+task_ref: ge02-bounded-runtime-pass
+verified_task_commit: 84b264ef076e83c6fad40292acb9eb407307b218
+verified_base_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
+verified_rolling_report_commit: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
+verified_through_commit: 84b264ef076e83c6fad40292acb9eb407307b218
+observed_head: 84b264ef076e83c6fad40292acb9eb407307b218
+observed_origin_main: 84b264ef076e83c6fad40292acb9eb407307b218
+observed_ls_remote_main: 84b264ef076e83c6fad40292acb9eb407307b218
 branch: main
 workspace_status: clean
-artifact_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
+artifact_commit: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
-result_runtime: NOT_RUN
+result_runtime: PASS_ATTESTATO_UTENTE
 timestamp_utc: 2026-07-06
 ```
 
-**Nota:** snapshot PR #2 merge post-report verificato attraverso merge `ea1dbef`; `artifact_commit` e `verified_rolling_report_commit` backfilled a `e589b9e`. PASS_IMPORT_UI_ONLY; GE-02 runtime non ancora registrato.
+**Nota:** snapshot GE-02 bounded runtime verificato attraverso substance `84b264e`; `artifact_commit` e `verified_rolling_report_commit` backfilled a merge `b6e293f` (PR #4). **PASS_ATTESTATO_UTENTE**; Gate E PASS **NO**; global PASS runtime **NO**.
 
 ---
 
 ## Latest verified snapshot
 
 ```yaml
-task_ref: ge02-bounded-runtime-pass
-verified_task_commit: 84b264ef076e83c6fad40292acb9eb407307b218
+task_ref: ge02-bounded-runtime-pr4-merge-post-report
+verified_task_commit: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
+verified_substance_commit: 84b264ef076e83c6fad40292acb9eb407307b218
+verified_pr_head_commit: 021c5ca0271e50a764a2260b7208af846d8b6cad
 verified_base_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: 84b264ef076e83c6fad40292acb9eb407307b218
-observed_head: 84b264ef076e83c6fad40292acb9eb407307b218
-observed_origin_main: 84b264ef076e83c6fad40292acb9eb407307b218
-observed_ls_remote_main: 84b264ef076e83c6fad40292acb9eb407307b218
+verified_through_commit: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
+observed_head: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
+observed_origin_main: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
+observed_ls_remote_main: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
@@ -74,41 +74,41 @@ result_runtime: PASS_ATTESTATO_UTENTE
 timestamp_utc: 2026-07-06
 ```
 
-**Nota:** questo snapshot verifica attraverso `84b264e` — commit 1 GE-02 bounded runtime user-attested: sessione `docs/sessions/2026-07-06-control-plane-ge02-bounded-runtime-pass.md`; **PASS_ATTESTATO_UTENTE**; singolo run manuale wf45; `D-1003-T` duplicate_open_attempt blocked; `send_suppressed=true`; `fan_out_items_in=1`; `pass_claimed=false`; **0** Telegram; `http_status: 502` classifier-only (not Telegram send PASS); tunnel chiuso CTRL+C; Publish/Active/additional Execute **NOT_PRESSED**; retry **forbidden**. **NOT Gate E PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; wf40/41/42 untouched; nessun runtime da Cursor; **PR #3 non merged**. Commit 2 = solo artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** questo snapshot verifica attraverso merge `b6e293f` — PR #4 GE-02 bounded runtime record merged on `main`; substance `84b264e`; PR head `021c5ca`; base pre-PR `e589b9e`. **PASS_ATTESTATO_UTENTE**; singolo run manuale wf45; `send_suppressed=true`; `fan_out_items_in=1`; **0** Telegram; Publish/Active/additional Execute **NOT_PRESSED**; retry **forbidden**. **NOT Gate E PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; wf40/41/42 untouched; nessun workflow JSON edit; nessun runtime da Cursor; **PR #3 non merged**. Commit post-merge = solo artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta `artifact_commit: PENDING_SELF_REFERENCE`.
 
-**Backfill PENDING_SELF_REFERENCE:** PR #2 merge post-report snapshot → `e589b9e`.
+**Backfill PENDING_SELF_REFERENCE:** GE-02 bounded runtime snapshot → `b6e293f`.
 
 ---
 
-## Command outputs (verbatim, sanitized — GE-02 bounded runtime pass)
+## Command outputs (verbatim, sanitized — PR #4 GE-02 merge post-report)
 
 ```text
 git rev-parse HEAD
-84b264ef076e83c6fad40292acb9eb407307b218
+b6e293f8abd41db65064f24d283eb7aa9a8d96e6
 
 git rev-parse origin/main
-84b264ef076e83c6fad40292acb9eb407307b218
+b6e293f8abd41db65064f24d283eb7aa9a8d96e6
 
 git ls-remote origin refs/heads/main
-84b264ef076e83c6fad40292acb9eb407307b218	refs/heads/main
+b6e293f8abd41db65064f24d283eb7aa9a8d96e6	refs/heads/main
 
 git status --short
 
-git diff --name-only e589b9e8384d2262864877fe5070d5ab60c8b98e..HEAD
-docs/sessions/2026-07-06-control-plane-ge02-bounded-runtime-pass.md
-
 git log --oneline -8
+b6e293f Merge PR #4: docs GE-02 bounded runtime record
+021c5ca docs: refresh GE-02 runtime verification artifacts
 84b264e docs: record GE-02 bounded runtime result
 e589b9e docs: refresh PR2 merge verification artifacts
 ea1dbef Merge PR #2: docs D-0038-E wf45 import-only result
 a75dfc4 docs: refresh D-0038-E wf45 import UI-only verification artifacts
 11747f9 docs: record D-0038-E wf45 import-only result
 eb43cef docs: refresh GLM advisor starter verification artifacts
-63f3709 docs: add fixed GLM advisor session starter
-389eaf3 docs: refresh GE-01 PR1 merge verification artifacts
 ```
 
-**BASE (preflight commit 1):** `e589b9e8384d2262864877fe5070d5ab60c8b98e`
+**BASE (pre-PR main):** `e589b9e8384d2262864877fe5070d5ab60c8b98e`
+**Substance commit:** `84b264ef076e83c6fad40292acb9eb407307b218`
+**PR head:** `021c5ca0271e50a764a2260b7208af846d8b6cad`
+**Merge commit:** `b6e293f8abd41db65064f24d283eb7aa9a8d96e6`
 
 ---
 

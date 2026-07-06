@@ -13,25 +13,27 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: ge02-bounded-runtime-pass
+task_ref: ge02-bounded-runtime-pr4-merge-post-report
 result_cursor: PASS_DOCS_ONLY
 result_runtime: PASS_ATTESTATO_UTENTE
 base_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
-real_task_commit: 84b264ef076e83c6fad40292acb9eb407307b218
-commit_subject: docs: record GE-02 bounded runtime result
+substance_commit: 84b264ef076e83c6fad40292acb9eb407307b218
+merge_commit: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
+pr_head_commit: 021c5ca0271e50a764a2260b7208af846d8b6cad
+commit_subject: Merge PR #4: docs GE-02 bounded runtime record
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS docs-only commit 1 = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su 84b264e; workspace clean; diff commit 1 limitato a docs/sessions/2026-07-06-control-plane-ge02-bounded-runtime-pass.md; nessun workflow JSON toccato; runtime GE-02 user-attested registrato; non Gate E PASS; non global PASS runtime; PR #3 non merged. Commit 2 = solo artefatti verifica/report.
-remote_hash_verbatim: "84b264ef076e83c6fad40292acb9eb407307b218\trefs/heads/main"
+verification_rule: PASS docs-only post-merge = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su b6e293f (merge PR #4); workspace clean; diff limitato a LAST_CURSOR_REPORT.md e LAST_HANDOFF_VERIFY.md; GE-02 PASS_ATTESTATO_UTENTE preservato; non Gate E PASS; non global PASS runtime; PR #3 non merged; nessun runtime n8n da Cursor.
+remote_hash_verbatim: "b6e293f8abd41db65064f24d283eb7aa9a8d96e6\trefs/heads/main"
 timestamp_utc: 2026-07-06
 ```
 
-- **Commit 1 — GE-02 bounded runtime (user-attested):** sessione `docs/sessions/2026-07-06-control-plane-ge02-bounded-runtime-pass.md`; **PASS_ATTESTATO_UTENTE**; singolo run manuale wf45; `D-1003-T` duplicate_open_attempt blocked; `send_suppressed=true`; `fan_out_items_in=1`; `pass_claimed=false`; **0** Telegram; `http_status: 502` classifier-only; tunnel chiuso CTRL+C; Publish/Active/additional Execute **NOT_PRESSED**; retry **forbidden**.
-- **Commit 2 (questo report):** solo artefatti di verifica (`LAST_CURSOR_REPORT.md`, `LAST_HANDOFF_VERIFY.md`); **non** modifica sostanza commit 1.
-- **Explicit non-touched (commit 1):** `workflows/**`, wf40/41/42, runtime n8n da Cursor, import/publish/schedule/webhook, credenziali.
-- **NOT Gate E PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; nessun runtime n8n eseguito o attivato da Cursor; **PR #3 non merged**.
-- Snapshot verifica attraverso `84b264e`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
-- **Backfill PENDING_SELF_REFERENCE:** `d0038e-wf45-import-ui-only-pr2-merge-post-report` → `rolling_report_commit: e589b9e` (in HISTORY).
+- **Post-merge — PR #4 GE-02 bounded runtime record:** merge commit `b6e293f`; PR head `021c5ca`; substance `84b264e`; base pre-PR `e589b9e`.
+- **PR #4 substance (merged):** sessione `docs/sessions/2026-07-06-control-plane-ge02-bounded-runtime-pass.md`; **PASS_ATTESTATO_UTENTE**; singolo run manuale wf45; `D-1003-T` duplicate_open_attempt blocked; `send_suppressed=true`; `fan_out_items_in=1`; `pass_claimed=false`; **0** Telegram; `http_status: 502` classifier-only; tunnel chiuso CTRL+C; Publish/Active/additional Execute **NOT_PRESSED**; retry **forbidden**.
+- **Explicit non-touched:** `workflows/**`, wf40/41/42, runtime n8n da Cursor, import/publish/schedule/webhook, credenziali.
+- **NOT Gate E PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; **PR #3 non merged**; nessun runtime n8n eseguito o attivato da Cursor.
+- Snapshot verifica attraverso merge `b6e293f`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
+- **Backfill PENDING_SELF_REFERENCE:** `ge02-bounded-runtime-pass` → `rolling_report_commit: b6e293f` (in HISTORY).
 
 ---
 
@@ -53,6 +55,13 @@ timestamp_utc: 2026-07-06
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: ge02-bounded-runtime-pass
+  real_task_commit: 84b264ef076e83c6fad40292acb9eb407307b218
+  rolling_report_commit: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-07-06
+
 - task_ref: d0038e-wf45-import-ui-only-pr2-merge-post-report
   real_task_commit: ea1dbef504c48c9edae547181d96268b1974e898
   rolling_report_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
