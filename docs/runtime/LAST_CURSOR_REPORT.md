@@ -13,27 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: ge02-bounded-runtime-pr4-merge-post-report
+task_ref: wf47-wg48-bounded-handoff-pass
 result_cursor: PASS_DOCS_ONLY
 result_runtime: PASS_ATTESTATO_UTENTE
-base_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
-substance_commit: 84b264ef076e83c6fad40292acb9eb407307b218
-merge_commit: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
-pr_head_commit: 021c5ca0271e50a764a2260b7208af846d8b6cad
-commit_subject: Merge PR #4: docs GE-02 bounded runtime record
+base_commit: 0b9fe468a0e1672d314c25e1276082b25a01da6f
+real_task_commit: 823d025b27b2cf488422eedadff4c73437e0a391
+commit_subject: docs: record wf47 wg48 bounded handoff pass
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS docs-only post-merge = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su b6e293f (merge PR #4); workspace clean; diff limitato a LAST_CURSOR_REPORT.md e LAST_HANDOFF_VERIFY.md; GE-02 PASS_ATTESTATO_UTENTE preservato; non Gate E PASS; non global PASS runtime; PR #3 non merged; nessun runtime n8n da Cursor.
-remote_hash_verbatim: "b6e293f8abd41db65064f24d283eb7aa9a8d96e6\trefs/heads/main"
-timestamp_utc: 2026-07-06
+verification_rule: PASS docs-only commit 1 = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su 823d025; workspace clean; diff commit 1 limitato a docs/workflow-wf47-wg-operationalization-plan.md; wf47→wf48 bounded handoff PASS_ATTESTATO_UTENTE registrato; nessun workflow JSON toccato; nessun runtime n8n da Cursor; non Gate E full PASS; non global PASS runtime; enable_wg48_handoff=false. Commit 2 = solo artefatti verifica/report.
+remote_hash_verbatim: "823d025b27b2cf488422eedadff4c73437e0a391\trefs/heads/main"
+timestamp_utc: 2026-07-09
 ```
 
-- **Post-merge — PR #4 GE-02 bounded runtime record:** merge commit `b6e293f`; PR head `021c5ca`; substance `84b264e`; base pre-PR `e589b9e`.
-- **PR #4 substance (merged):** sessione `docs/sessions/2026-07-06-control-plane-ge02-bounded-runtime-pass.md`; **PASS_ATTESTATO_UTENTE**; singolo run manuale wf45; `D-1003-T` duplicate_open_attempt blocked; `send_suppressed=true`; `fan_out_items_in=1`; `pass_claimed=false`; **0** Telegram; `http_status: 502` classifier-only; tunnel chiuso CTRL+C; Publish/Active/additional Execute **NOT_PRESSED**; retry **forbidden**.
-- **Explicit non-touched:** `workflows/**`, wf40/41/42, runtime n8n da Cursor, import/publish/schedule/webhook, credenziali.
-- **NOT Gate E PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; **PR #3 non merged**; nessun runtime n8n eseguito o attivato da Cursor.
-- Snapshot verifica attraverso merge `b6e293f`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
-- **Backfill PENDING_SELF_REFERENCE:** `ge02-bounded-runtime-pass` → `rolling_report_commit: b6e293f` (in HISTORY).
+- **Commit 1 — wf47→wf48 bounded automatic handoff (user-attested):** `docs/workflow-wf47-wg-operationalization-plan.md` §4undecies; **PASS_ATTESTATO_UTENTE**; `D-3045-T`; `update_id` **986228600**; `selected_option` **1**; `prior_status` open → `inspect_status` closed; `state_persisted` true; table hygiene completed; `wf47_polling_state_test` post-run offsets recorded; `wg_decision_state_test` inspected untouched; runtime restored (`enable_wg48_handoff=false`, `open_decision_ids_test_only: ['D-1003-T']`); no Publish/Active/Schedule/webhook/Telegram Trigger; parsing limitation options 1/2/3 only.
+- **Commit 2 (questo report):** solo artefatti di verifica (`LAST_CURSOR_REPORT.md`, `LAST_HANDOFF_VERIFY.md`); **non** modifica sostanza commit 1.
+- **Explicit non-touched (commit 1):** `workflows/**`, `data-tables/**`, wf40/41/42, runtime n8n da Cursor, import/export, credenziali.
+- **NOT Gate E full PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`pm34_unblocked=false`**; **`enable_wg48_handoff=false`**; nessun runtime n8n eseguito o attivato da Cursor.
+- Snapshot verifica attraverso `823d025`; il commit che aggiorna questo file **non** auto-certifica il proprio hash (`rolling_report_commit: PENDING_SELF_REFERENCE`).
+- **Backfill PENDING_SELF_REFERENCE:** `ge02-bounded-runtime-pr4-merge-post-report` → `rolling_report_commit: 0b9fe46` (in HISTORY).
 
 ---
 
@@ -55,6 +53,13 @@ timestamp_utc: 2026-07-06
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: ge02-bounded-runtime-pr4-merge-post-report
+  real_task_commit: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
+  rolling_report_commit: 0b9fe468a0e1672d314c25e1276082b25a01da6f
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: PASS_ATTESTATO_UTENTE
+  timestamp_utc: 2026-07-06
+
 - task_ref: ge02-bounded-runtime-pass
   real_task_commit: 84b264ef076e83c6fad40292acb9eb407307b218
   rolling_report_commit: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
