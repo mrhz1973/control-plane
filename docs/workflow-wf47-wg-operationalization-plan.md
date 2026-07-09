@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-wf47-wg-operationalization-plan.md`  
-**Status:** **PREP PASS** (plan + checklist) + **final bounded manual runtime rehearsal PASS ATTESTATO UTENTE**. Workflows 47/48/49 remain **manual / inactive / off**. Not operational activation.
+**Status:** **PREP PASS** (plan + checklist) + **final bounded manual runtime rehearsal PASS ATTESTATO UTENTE** + **bounded automatic 47→48 handoff PASS ATTESTATO UTENTE** (2026-07-09). Workflows 47/48/49 remain **manual / inactive / off**. Not operational activation.
 
 This document is **canonical** for the Wf47 → Wg operationalization path. The checklist ([workflow-wf47-wg-operationalization-checklist.md](workflow-wf47-wg-operationalization-checklist.md)) is only a minimum readiness pointer and does not duplicate governance.
 
@@ -26,6 +26,8 @@ It does **not** authorize schedule, Telegram Trigger, public webhook, production
 | **Wg** inbound Decision Packet state correlation manual validation | **PASS** — valid_close, duplicate, unknown on `wg_decision_state_test` |
 | **Wh** Wf47 → Wg combined inbound decision flow manual validation | **PASS** — workflow **49** manual/inactive/off; fixture handoff + CSV seeds |
 | **Final bounded manual runtime rehearsal** | **PASS ATTESTATO UTENTE** — workflow **49** in n8n UI; 3 deterministic runs (valid_close, duplicate, unknown); workflows 47/48/49 present, inactive/off |
+| **Controlled 47 → 48 runtime PASS** | **PASS ATTESTATO UTENTE** (2026-06-01) — callable handoff; `update_id` **986228567** |
+| **Bounded automatic 47 → 48 handoff** | **PASS ATTESTATO UTENTE** (2026-07-09) — `D-3045-T`; `update_id` **986228600**; `selected_option` **1**; Execute Workflow reference to workflow 48 (`iTXuuFbMLmc9sUdf`); test window only with `enable_wg48_handoff=true`, restored to **false** after run |
 | **Workflow 49** | **manual / inactive / off** — integration proof, not production automation |
 | **Telegram inbound operational automation** | **NOT RUN / NOT ACTIVE** |
 | **PM-34** | **BLOCCATO** |
@@ -164,6 +166,47 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 - **Temporary routing:** classifier Ryzen + reverse SSH tunnel + VPS Python bridge — Gate 3 evidence only.
 - Session: `docs/sessions/2026-06-02-control-plane-decision-store-gate3-runtime-pass.md`. **No** new PREP/PRE-PREP.
 
+### 4undecies. Bounded automatic 47 → 48 handoff PASS (2026-07-09)
+
+- **Status:** **PASS ATTESTATO UTENTE** — bounded test-only runtime arc; **not** operational activation; **not** Gate E full PASS; **not** global PASS runtime.
+- **Path validated:**
+  - **47 - Wf** Telegram inbound polling getUpdates
+  - **48 - Wg** Telegram decision state correlation
+  - **47** Execute Workflow reference → workflow **48** id `iTXuuFbMLmc9sUdf` (operator-verified in n8n UI; local editor URL pattern `http://localhost:5678/workflow/iTXuuFbMLmc9sUdf`)
+- **Runtime test (single bounded run):**
+  - `decision_id`: **D-3045-T**
+  - Operator Telegram reply: `dp:D-3045-T:1`
+  - **Execute Workflow - Wg48 TEST ONLY** final output (1 item):
+
+```json
+{
+  "inspect_status": "closed",
+  "decision_id": "D-3045-T",
+  "selected_option": "1",
+  "update_id": 986228600,
+  "note_present": false,
+  "block_reason": null,
+  "prior_status": "open",
+  "state_persisted": true,
+  "test_only": true
+}
+```
+
+- **Temporary runtime config (test window only):**
+  - **Build getUpdates request from state:** `open_decision_ids_test_only: ['D-3045-T']`
+  - **Set Wf47 UI config:** `enable_wg48_handoff = true`
+- **Post-test restore (operator-completed):**
+  - `enable_wg48_handoff = false`
+  - `open_decision_ids_test_only: ['D-1003-T']`
+  - No Execute after restore · no Publish · no Active · no permanent Schedule · no public webhook · no Telegram Trigger
+- **Table hygiene (operator-completed):**
+  - `control_plane_decisions_test` contains only: **D-1003-T** closed, **D-3045-T** closed, **D-8019-T** closed, **D-4218-T** closed
+  - Noisy test rows removed (including **D-GE-SENDOK-*** and unused random test IDs)
+  - `wf47_polling_state_test` after run: `last_update_id = 986228601`, `last_handled_update_id = 986228600`
+  - `wg_decision_state_test` inspected and **left untouched**
+- **Limitation (do not over-claim):** tested path passed with `selected_option=1`. Current wf47/wf48 tested parsing path appears limited to options **1/2/3**. **Do not** claim full future robustness for Decision Packets using options **4/5**.
+- **Boundaries unchanged:** PM-34 **BLOCKED** · `n8n_ready` **false** · `pm34_unblocked` **false** · `enable_wg48_handoff` **false** (restored) · wf40/41/42 untouched · no production activation · Cursor **did not** run n8n.
+
 ---
 
 ## 5. Hard blockers (never without explicit gate)
@@ -202,9 +245,9 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 | No `data-tables/` changed | Yes |
 | No secrets committed | Yes |
 | Plan document complete | This file + frontier PREP entry |
-| **Next gate identified** | Controlled 47→48 runtime **PASS ATTESTATO UTENTE** recorded; operational automation remains **NOT ACTIVE** |
+| **Next gate identified** | Bounded automatic **47→48** handoff **PASS ATTESTATO UTENTE** recorded (2026-07-09, `D-3045-T`); operational automation remains **NOT ACTIVE** |
 
-**Status:** controlled **47→48** test-only runtime **PASS ATTESTATO UTENTE** (`update_id` **986228567**). Telegram inbound operational automation **NOT ACTIVE / NOT RUN**. PM-34 **BLOCKED**. No new PREP unless named blocker.
+**Status:** bounded automatic **47→48** test-only handoff **PASS ATTESTATO UTENTE** (`update_id` **986228600**, `selected_option` **1**). Telegram inbound operational automation **NOT ACTIVE / NOT RUN**. PM-34 **BLOCKED**. `enable_wg48_handoff` **false** (restored). No Gate E full PASS. No global PASS runtime. Parsing limitation: options **1/2/3** tested path only — options **4/5** not claimed robust.
 
 ---
 
@@ -215,3 +258,4 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 - Catena completa automatizzata: **NOT RUN** (PM-34)
 - Wf47 / Wg / Wh manual validations: **PASS** (preserved)
 - Final bounded manual runtime rehearsal: **PASS ATTESTATO UTENTE**
+- Bounded automatic **47→48** handoff (2026-07-09): **PASS ATTESTATO UTENTE** — `D-3045-T`; runtime restored; `enable_wg48_handoff` **false**
