@@ -195,6 +195,8 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 - **Temporary runtime config (test window only):**
   - **Build getUpdates request from state:** `open_decision_ids_test_only: ['D-3045-T']`
   - **Set Wf47 UI config:** `enable_wg48_handoff = true`
+  - **Authorization note:** flip temporaneo `enable_wg48_handoff` autorizzato da **decisione utente esplicita in chat** (2026-07-09); **Decision Packet non emesso**.
+- **wf48 scope (clarification):** nessuna modifica a **wf48** in questo arco. Nessun fix UI wf48 pendente nei record: i riferimenti fan-out in **GE-02** sono l'instrumentazione del fix **wf45** (PR #1); il fix template **wg48** "safe branch input" (`177f973`) è già consolidato in repo.
 - **Post-test restore (operator-completed):**
   - `enable_wg48_handoff = false`
   - `open_decision_ids_test_only: ['D-1003-T']`

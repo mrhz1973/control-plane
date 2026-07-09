@@ -5,13 +5,14 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-07-02 — Gate D bounded rehearsal PASS attestato (D-0033).
+Ultimo aggiornamento: 2026-07-09 — chiarimento post-PASS wf47→wf48 bounded handoff.
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
+- **wf47→wf48 bounded automatic handoff** = **PASS_ATTESTATO_UTENTE** (2026-07-09); fixture **D-3045-T** consumata (closed); hygiene `control_plane_decisions_test` (4 righe `-T`, tutte closed); debito noto: parsing opzioni testato solo **1/2/3** vs §7.7 (**2–5**).
 - Classifier / mapping preview: **D-0021**–**D-0025-L** PASS; **D-0027-R** Wd45 reverification PASS.
 - **D-0028-A Option 2:** activation plan committed. **Gate A** PASS · **Gate B** inbound one-shot **PASS ATTESTATO UTENTE** (2026-06-07). **Gate D** bounded rehearsal **PASS ATTESTATO UTENTE / Claude-attested** (2026-07-02). **Option 4 not permanent loop.**
 - **`n8n_ready=false`** unchanged. **No permanent automation declared**. Pezzi collegati ≠ loop avviato.
