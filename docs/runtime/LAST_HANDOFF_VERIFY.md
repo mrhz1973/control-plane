@@ -33,82 +33,81 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
-task_ref: ge02-bounded-runtime-pr4-merge-post-report
-verified_task_commit: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
-verified_substance_commit: 84b264ef076e83c6fad40292acb9eb407307b218
-verified_pr_head_commit: 021c5ca0271e50a764a2260b7208af846d8b6cad
-verified_base_commit: e589b9e8384d2262864877fe5070d5ab60c8b98e
-verified_rolling_report_commit: 0b9fe468a0e1672d314c25e1276082b25a01da6f
-verified_through_commit: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
-observed_head: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
-observed_origin_main: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
-observed_ls_remote_main: b6e293f8abd41db65064f24d283eb7aa9a8d96e6
-branch: main
-workspace_status: clean
-artifact_commit: 0b9fe468a0e1672d314c25e1276082b25a01da6f
-result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
-result_runtime: PASS_ATTESTATO_UTENTE
-timestamp_utc: 2026-07-06
-```
-
-**Nota:** snapshot PR #4 merge post-report verificato attraverso merge `b6e293f`; `artifact_commit` e `verified_rolling_report_commit` backfilled a `0b9fe46`.
-
----
-
-## Latest verified snapshot
-
-```yaml
 task_ref: wf47-wg48-bounded-handoff-pass
 verified_task_commit: 823d025b27b2cf488422eedadff4c73437e0a391
 verified_base_commit: 0b9fe468a0e1672d314c25e1276082b25a01da6f
-verified_rolling_report_commit: PENDING_SELF_REFERENCE
+verified_rolling_report_commit: 5884acd608113a9e50da8a7f00aebead0cabffd9
 verified_through_commit: 823d025b27b2cf488422eedadff4c73437e0a391
 observed_head: 823d025b27b2cf488422eedadff4c73437e0a391
 observed_origin_main: 823d025b27b2cf488422eedadff4c73437e0a391
 observed_ls_remote_main: 823d025b27b2cf488422eedadff4c73437e0a391
 branch: main
 workspace_status: clean
-artifact_commit: PENDING_SELF_REFERENCE
+artifact_commit: 5884acd608113a9e50da8a7f00aebead0cabffd9
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
 result_runtime: PASS_ATTESTATO_UTENTE
 timestamp_utc: 2026-07-09
 ```
 
-**Nota:** questo snapshot verifica attraverso `823d025` — commit 1 wf47→wf48 bounded automatic handoff user-attested: `docs/workflow-wf47-wg-operationalization-plan.md` §4undecies; **PASS_ATTESTATO_UTENTE**; `D-3045-T`; `update_id` **986228600**; `selected_option` **1**; `prior_status` open → closed; `state_persisted` true; table hygiene completed; runtime restored (`enable_wg48_handoff=false`); no Publish/Active/Schedule/webhook/Telegram Trigger. **NOT Gate E full PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; wf40/41/42 untouched; nessun workflow JSON/data-tables edit; nessun runtime da Cursor. Commit 2 = solo artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta `artifact_commit: PENDING_SELF_REFERENCE`.
-
-**Backfill PENDING_SELF_REFERENCE:** PR #4 merge post-report snapshot → `0b9fe46`.
+**Nota:** snapshot wf47→wf48 bounded handoff verificato attraverso `823d025`; `artifact_commit` e `verified_rolling_report_commit` backfilled a `5884acd`.
 
 ---
 
-## Command outputs (verbatim, sanitized — wf47→wf48 bounded handoff pass)
+## Latest verified snapshot
+
+```yaml
+task_ref: d-0040-e-gate-e-preflight-no-go
+verified_task_commit: 85a91dad1f8ae40e5e3552c336c399caf00336dc
+verified_base_commit: 49c228f2433f71149136f3303777aa7d802b633f
+verified_rolling_report_commit: PENDING_SELF_REFERENCE
+verified_through_commit: 85a91dad1f8ae40e5e3552c336c399caf00336dc
+observed_head: 85a91dad1f8ae40e5e3552c336c399caf00336dc
+observed_origin_main: 85a91dad1f8ae40e5e3552c336c399caf00336dc
+observed_ls_remote_main: 85a91dad1f8ae40e5e3552c336c399caf00336dc
+branch: main
+workspace_status: clean
+artifact_commit: PENDING_SELF_REFERENCE
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: NOT_RUN_OPERATOR_PREFLIGHT_NOGO
+timestamp_utc: 2026-07-09
+```
+
+**Nota:** questo snapshot verifica attraverso `85a91da` — commit 1 D-0040-E Gate E Phase 1 preflight NO-GO: sessione `docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md`; **NO-GO preflight** (non runtime FAIL); no open rows in `control_plane_decisions_test`; store snapshot all closed; 47 derivation da store non dimostrabile; 45 non re-run; 47 non eseguito; 48 non chiamato. **NOT Gate E PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; wf40/41/42 untouched; nessun workflow/data-tables edit; nessun runtime da Cursor. Commit 2 = artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta `artifact_commit: PENDING_SELF_REFERENCE`.
+
+**Backfill PENDING_SELF_REFERENCE:** wf47→wf48 bounded handoff snapshot → `5884acd`.
+
+---
+
+## Command outputs (verbatim, sanitized — D-0040-E Gate E preflight NO-GO)
 
 ```text
 git rev-parse HEAD
-823d025b27b2cf488422eedadff4c73437e0a391
+85a91dad1f8ae40e5e3552c336c399caf00336dc
 
 git rev-parse origin/main
-823d025b27b2cf488422eedadff4c73437e0a391
+85a91dad1f8ae40e5e3552c336c399caf00336dc
 
 git ls-remote origin refs/heads/main
-823d025b27b2cf488422eedadff4c73437e0a391	refs/heads/main
+85a91dad1f8ae40e5e3552c336c399caf00336dc	refs/heads/main
 
 git status --short
 
-git diff --name-only 0b9fe468a0e1672d314c25e1276082b25a01da6f..HEAD
-docs/workflow-wf47-wg-operationalization-plan.md
+git diff --name-only 49c228f2433f71149136f3303777aa7d802b633f..HEAD
+docs/runtime/CURRENT_FRONTIER.md
+docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md
 
 git log --oneline -8
+85a91da docs: record d-0040-e gate e preflight no-go
+49c228f docs: refresh cursor report after handoff clarification
+06332d4 docs: clarify wf47 wf48 handoff authorization
+5884acd docs: refresh wf47 wg48 handoff verification artifacts
 823d025 docs: record wf47 wg48 bounded handoff pass
 0b9fe46 docs: refresh PR4 merge verification artifacts
 b6e293f Merge PR #4: docs GE-02 bounded runtime record
 021c5ca docs: refresh GE-02 runtime verification artifacts
-84b264e docs: record GE-02 bounded runtime result
-e589b9e docs: refresh PR2 merge verification artifacts
-ea1dbef Merge PR #2: docs D-0038-E wf45 import-only result
-a75dfc4 docs: refresh D-0038-E wf45 import UI-only verification artifacts
 ```
 
-**BASE (preflight commit 1):** `0b9fe468a0e1672d314c25e1276082b25a01da6f`
+**BASE (preflight commit 1):** `49c228f2433f71149136f3303777aa7d802b633f`
 
 ---
 

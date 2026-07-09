@@ -13,25 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wf47-wg48-handoff-clarification
+task_ref: d-0040-e-gate-e-preflight-no-go
 result_cursor: PASS_DOCS_ONLY
-result_runtime: NOT_RUN_BY_CURSOR
-base_commit: 5884acd608113a9e50da8a7f00aebead0cabffd9
-real_task_commit: 06332d470303c0a25e177bb7b8ceec15a46ee5fc
-commit_subject: docs: clarify wf47 wf48 handoff authorization
+result_runtime: NOT_RUN_OPERATOR_PREFLIGHT_NOGO
+base_commit: 49c228f2433f71149136f3303777aa7d802b633f
+real_task_commit: 85a91dad1f8ae40e5e3552c336c399caf00336dc
+commit_subject: docs: record d-0040-e gate e preflight no-go
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: PASS docs-only commit 1 = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su 06332d4; workspace clean; diff commit 1 limitato a CURRENT_FRONTIER.md e workflow-wf47-wg-operationalization-plan.md; chiarimento post-PASS handoff; nessun workflow JSON toccato; nessun runtime n8n da Cursor; non Gate E PASS; non global PASS runtime; enable_wg48_handoff=false. Commit 2 = solo LAST_CURSOR_REPORT.md.
-remote_hash_verbatim: "06332d470303c0a25e177bb7b8ceec15a46ee5fc\trefs/heads/main"
+verification_rule: PASS docs-only commit 1 = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su 85a91da; workspace clean; diff commit 1 limitato a session D-0040-E + CURRENT_FRONTIER.md; NO-GO preflight registrato; nessun workflow JSON toccato; nessun runtime n8n da Cursor; non Gate E PASS; non global PASS runtime; enable_wg48_handoff=false. Commit 2 = LAST_CURSOR_REPORT.md + LAST_HANDOFF_VERIFY.md.
+remote_hash_verbatim: "85a91dad1f8ae40e5e3552c336c399caf00336dc\trefs/heads/main"
 timestamp_utc: 2026-07-09
 ```
 
-- **Commit 1 — chiarimento post-PASS wf47→wf48 bounded handoff:** `CURRENT_FRONTIER.md` + `workflow-wf47-wg-operationalization-plan.md` §4undecies; flip `enable_wg48_handoff` autorizzato da decisione utente esplicita in chat (Decision Packet non emesso); nessuna modifica wf48 in arco; fan-out GE-02 = instrumentazione fix wf45; wg48 safe branch input (`177f973`) già in repo; debito parsing opzioni 1/2/3 vs §7.7 (2–5).
-- **Commit 2 (questo report):** solo `LAST_CURSOR_REPORT.md`; **non** modifica sostanza commit 1; **non** certifica il proprio hash.
+- **Commit 1 — D-0040-E Gate E Phase 1 preflight NO-GO:** sessione `docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md`; **NO-GO preflight** (non runtime FAIL); no open rows in `control_plane_decisions_test`; store snapshot D-1003-T/D-3045-T/D-8019-T/D-4218-T all closed; 47 derivation da store non dimostrabile; 45 non re-run; 47 non eseguito; 48 non chiamato; `enable_wg48_handoff=false`.
+- **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md`; **non** certifica il proprio hash.
 - **Explicit non-touched:** `workflows/**`, `data-tables/**`, wf40/41/42, runtime n8n da Cursor, import/export, credenziali.
-- **NOT Gate E PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; nessun runtime n8n eseguito o attivato da Cursor.
-- Snapshot verifica attraverso `06332d4`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
-- **Backfill PENDING_SELF_REFERENCE:** `wf47-wg48-bounded-handoff-pass` → `rolling_report_commit: 5884acd` (in HISTORY).
+- **NOT Gate E PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; nessun runtime n8n eseguito o attivato da Cursor.
+- Snapshot verifica attraverso `85a91da`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
+- **Backfill PENDING_SELF_REFERENCE:** `wf47-wg48-handoff-clarification` → `rolling_report_commit: 49c228f` (in HISTORY).
 
 ---
 
@@ -53,6 +53,13 @@ timestamp_utc: 2026-07-09
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: wf47-wg48-handoff-clarification
+  real_task_commit: 06332d470303c0a25e177bb7b8ceec15a46ee5fc
+  rolling_report_commit: 49c228f2433f71149136f3303777aa7d802b633f
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-07-09
+
 - task_ref: wf47-wg48-bounded-handoff-pass
   real_task_commit: 823d025b27b2cf488422eedadff4c73437e0a391
   rolling_report_commit: 5884acd608113a9e50da8a7f00aebead0cabffd9
