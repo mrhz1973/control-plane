@@ -5,13 +5,14 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-07-09 — chiarimento post-PASS wf47→wf48 bounded handoff.
+Ultimo aggiornamento: 2026-07-09 — D-0040-E Gate E Phase 1 preflight NO-GO.
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
+- **D-0040-E Gate E Phase 1 Opzione 1** = **NO-GO preflight** (2026-07-09); motivo = no open rows in `control_plane_decisions_test`; store snapshot = **D-1003-T** / **D-3045-T** / **D-8019-T** / **D-4218-T** all **closed**; runtime **NOT_RUN**; Gate E PASS **NO**; prossimo gate richiede **nuova decisione** (fixture bounded wf45 nuova, bypass documentato, o sospensione runtime).
 - **wf47→wf48 bounded automatic handoff** = **PASS_ATTESTATO_UTENTE** (2026-07-09); fixture **D-3045-T** consumata (closed); hygiene `control_plane_decisions_test` (4 righe `-T`, tutte closed); debito noto: parsing opzioni testato solo **1/2/3** vs §7.7 (**2–5**).
 - Classifier / mapping preview: **D-0021**–**D-0025-L** PASS; **D-0027-R** Wd45 reverification PASS.
 - **D-0028-A Option 2:** activation plan committed. **Gate A** PASS · **Gate B** inbound one-shot **PASS ATTESTATO UTENTE** (2026-06-07). **Gate D** bounded rehearsal **PASS ATTESTATO UTENTE / Claude-attested** (2026-07-02). **Option 4 not permanent loop.**
@@ -57,7 +58,11 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 ## Next gate
 
-**Not auto-started.** **Gate D closed** (2026-07-02). **Gate E** — **SOLO via Decision Packet dedicato** — PREP docs-only aggiornato in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E (2026-07-03). Prompt runtime Gate E manual-only **preparato** nello stesso piano (`Gate E runtime manual-only prompt — prepared, not executed`); **non eseguito**; primo run raccomandato **senza** `enable_wg48_handoff=true`; Gate E runtime richiede **decisione separata**. **Non** è Gate E PASS. **Nessun runtime** eseguito per questo PREP.
+**Not auto-started.** **Gate D closed** (2026-07-02). **D-0040-E Gate E Phase 1** = **NO-GO preflight** (2026-07-09) — no open rows in store; **47 derivation da store non dimostrabile**; **non** è Gate E PASS; **non** è failure runtime 47/Wf. Evidenza: `docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md`.
+
+**Prossima decisione richiesta** (non selezionata): (a) fixture bounded wf45 + nuovo `decision_id` + 47 store derivation; (b) test 47 con `open_decision_ids_test_only` (bypass, non prova store); (c) sospensione runtime + consolidamento docs.
+
+**Gate E** — **SOLO via Decision Packet dedicato** — PREP in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E PASS. **Nessun runtime** eseguito per D-0040-E.
 
 Precondizioni Gate E — stato finding:
 
