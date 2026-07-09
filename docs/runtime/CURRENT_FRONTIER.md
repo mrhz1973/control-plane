@@ -5,14 +5,23 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-07-09 — D-0040-E Gate E Phase 1 preflight NO-GO.
+Ultimo aggiornamento: 2026-07-09 — D-0041-E / D-0042-E bounded partial-pass runtime (user-attested).
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
-- **D-0040-E Gate E Phase 1 Opzione 1** = **NO-GO preflight** (2026-07-09); motivo = no open rows in `control_plane_decisions_test`; store snapshot = **D-1003-T** / **D-3045-T** / **D-8019-T** / **D-4218-T** all **closed**; runtime **NOT_RUN**; Gate E PASS **NO**; prossimo gate richiede **nuova decisione** (fixture bounded wf45 nuova, bypass documentato, o sospensione runtime).
+- **D-0041-E / D-0042-E** = **bounded PARTIAL PASS** (2026-07-09, user-attested) — **NOT Gate E full PASS** · **NOT global PASS runtime**:
+  - **D-0041-E Opzione 1** approvata: fixture pulita **wf45** → store **open** → **47** derivation da store.
+  - **wf45 evidence:** `telegram_send_ok=true`; `message_id=1203`; `http_status=200`; `decision_id=D-0041-T`; `open_action=insert`; `block_reason=null`; `fan_out_items_in=1`; `test_only=true`; `pass_claimed=false`.
+  - **Store:** `D-0041-T` in `control_plane_decisions_test`, `status=open`; `selected_option`/`update_id`/`closed_at`/`note_preview` vuoti; righe reali = **1**.
+  - **Stop pre-47 (D-0041-E):** **47 ufficiale/live** aveva ancora lista manuale hardcoded `open_decision_ids_test_only: ['D-1003-T']` → **47 ufficiale NON eseguito** per Gate E derivation.
+  - **D-0042-E Opzione 1** approvata: import bounded separato workflow **47 test** con derivation da `control_plane_decisions_test`; **non** sostituisce 47 ufficiale; no Active / no Publish / no Schedule; `enable_wg48_handoff=false`; **wf48 non chiamato**.
+  - **47 importato evidence:** `inspect_status=accepted`; `decision_id=D-0041-T`; `selected_option=1`; `update_id=986228601`; `duplicate_or_stale=false`; `block_reason=null`; `allowed_chat_configured=true`; `offset_after_placeholder=986228602`; `last_handled_update_id=986228600`; `open_decision_ids_source=control_plane_decisions_test`; `store_derivation_bypassed=false`; `test_only=true`. Post-run `wf47_polling_state_test`: `last_update_id=986228602`; `last_handled_update_id=986228601`; `handled_keys_json` aggiornato.
+  - **PARTIAL PASS scope:** wf45 open-on-send fixture creation · accepted polling response da store derivation nel **47 importato test** · update polling state · wf48 non chiamato.
+  - **NON Gate E full PASS perché:** derivation provata su workflow importato separato (non 47 ufficiale); `open_decision_ids_count=3` con `D-0041-T` ripetuto 3× mentre store aveva 1 riga reale; 47 ufficiale richiede consolidamento/export con store derivation e dedupe.
+- **D-0040-E Gate E Phase 1** = **NO-GO preflight** (2026-07-09); no open rows pre-test; superseded da D-0041-E fixture path.
 - **wf47→wf48 bounded automatic handoff** = **PASS_ATTESTATO_UTENTE** (2026-07-09); fixture **D-3045-T** consumata (closed); hygiene `control_plane_decisions_test` (4 righe `-T`, tutte closed); debito noto: parsing opzioni testato solo **1/2/3** vs §7.7 (**2–5**).
 - Classifier / mapping preview: **D-0021**–**D-0025-L** PASS; **D-0027-R** Wd45 reverification PASS.
 - **D-0028-A Option 2:** activation plan committed. **Gate A** PASS · **Gate B** inbound one-shot **PASS ATTESTATO UTENTE** (2026-06-07). **Gate D** bounded rehearsal **PASS ATTESTATO UTENTE / Claude-attested** (2026-07-02). **Option 4 not permanent loop.**
@@ -39,12 +48,12 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 | Asset | Stato | Note |
 |-------|--------|------|
-| **45 / Wd** | **PASS ATTESTATO UTENTE** + Gate D **2026-07-02** | Gate B: `D-1000-T`. Gate D: `D-1001-T`/`D-1002-T`/`D-1003-T` sends; UI fix `event.event_id`. **Inactive** post-rehearsal. |
+| **45 / Wd** | **PASS ATTESTATO UTENTE** + Gate D + **D-0041-E** **2026-07-09** | `D-0041-T` open-on-send (`message_id=1203`); fan-out guard `fan_out_items_in=1`. **Inactive** post-test. |
 | **46 / We** | Package-prep **completato**; **live BLOCKED/PENDING** | HTTPS webhook required; **We live PASS NON registrato**. |
-| **47 / Wf** | **PASS multipli** + **Gate D** **2026-07-02** | `D-1001-T`/`D-1002-T`/`D-1003-T` closed; time-boxed pickup proven; schedule **deactivated**. **`enable_wg48_handoff=false`**. **Inactive / not Published.** |
-| **48 / Wg** | **PASS** + Gate D handoff **2026-07-02** | **`state_persisted=true`** on `D-1003-T`; **callable**; **non schedulato**. |
+| **47 / Wf** | **PARTIAL PASS** **D-0042-E** **2026-07-09** | Store derivation provata su **47 importato test** only; **47 ufficiale** ancora lista hardcoded `['D-1003-T']` — **non eseguito** per derivation; dedupe fan-in **pending**. **`enable_wg48_handoff=false`**. **Inactive / not Published.** |
+| **48 / Wg** | **PASS** + Gate D; **non chiamato** in D-0041/42 | **callable**; **non schedulato**. |
 | **49 / Wh** | Rehearsal **PASS**; **inattivo** | Not auto-promoted by Gate D. |
-| **decision-store** | Gates **1–3 PASS** + Gate B/D rows closed | `D-9999-T` closed (hygiene). `D-1001-T`/`D-1002-T`/`D-1003-T` closed (Gate D). |
+| **decision-store** | Gates **1–3 PASS** + Gate B/D + **D-0041-E** | `D-0041-T` **open** (post wf45); historical closed rows retained. |
 
 - **Telegram inbound operational automation**: **NOT ACTIVE / NOT RUN**.
 - **We/46 live**: **BLOCKED/PENDING** (HTTPS webhook).
@@ -58,16 +67,21 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 ## Next gate
 
-**Not auto-started.** **Gate D closed** (2026-07-02). **D-0040-E Gate E Phase 1** = **NO-GO preflight** (2026-07-09) — no open rows in store; **47 derivation da store non dimostrabile**; **non** è Gate E PASS; **non** è failure runtime 47/Wf. Evidenza: `docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md`.
+**Not auto-started.** **Gate D closed** (2026-07-02). **D-0041-E / D-0042-E** = **bounded PARTIAL PASS** (2026-07-09) — **NOT Gate E full PASS**. Evidenza: `CURRENT_FRONTIER.md` (questo file); D-0040-E preflight NO-GO: `docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md`.
 
-**Prossima decisione richiesta** (non selezionata): (a) fixture bounded wf45 + nuovo `decision_id` + 47 store derivation; (b) test 47 con `open_decision_ids_test_only` (bypass, non prova store); (c) sospensione runtime + consolidamento docs.
+**Next frontier (non auto-started):**
+1. Consolidare fix **D-0042-E** nel workflow/export **47 ufficiale**.
+2. Correggere fan-in duplication: una sola item downstream o dedupe Set su `openDecisionIds`.
+3. **47 ufficiale** deve derivare ID open da `control_plane_decisions_test` `status=open`.
+4. Mantenere `enable_wg48_handoff=false` salvo nuova decisione.
+5. Poi rerun bounded validation — no Active / no Publish / no Schedule.
 
-**Gate E** — **SOLO via Decision Packet dedicato** — PREP in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E PASS. **Nessun runtime** eseguito per D-0040-E.
+**Gate E** — **SOLO via Decision Packet dedicato** — PREP in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E full PASS.
 
 Precondizioni Gate E — stato finding:
 
 1. **Fan-out 45/47** — da validare in Gate E manual-only (criteri operativi nel piano: 45 = 1 messaggio; 47 ≤5 item; stop se oltre).
-2. **47 derivation da store** — da validare in Gate E manual-only (vietata lista manuale `open_decision_ids_test_only` come fonte operativa).
+2. **47 derivation da store** — **PARTIAL** su 47 importato test (D-0042-E); **47 ufficiale** ancora lista hardcoded — consolidamento/export **pending**; dedupe fan-in **pending**.
 3. **Re-export 45/47 post-fix UI** — **chiuso** da `f6f5579` (`workflows/exports/2026-07-02_*post-gate-d.redacted.json`).
 4. **`enable_wg48_handoff`** — default **`false`** fuori test; test manuale/confinato solo se autorizzato nel Decision Packet.
 
