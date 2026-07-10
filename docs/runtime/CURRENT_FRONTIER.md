@@ -5,13 +5,17 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-07-09 — D-0041-E / D-0042-E bounded partial-pass runtime (user-attested).
+Ultimo aggiornamento: 2026-07-10 — Gate E wf47 ufficiale: store derivation + dedupe consolidati (repo-only).
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
+- **Gate E wf47 ufficiale consolidation** = **bounded consolidation ready** (2026-07-10, repo-only) — **NOT Gate E full PASS** · **NOT runtime validation**:
+  - Template ufficiale `workflows/wf-telegram-inbound-polling-getupdates.template.json` aggiornato: rimossa lista hardcoded `open_decision_ids_test_only`; derivation da `control_plane_decisions_test` (`status=open`, dedupe Set); `Collapse shared decisions load fan-out` + `Build getUpdates` `runOnceForAllItems`; inspect espone `open_decision_ids_source`, `store_derivation_bypassed=false`, `open_decision_ids_count`.
+  - **Runtime n8n non eseguito** da Cursor su questo task — validazione bounded = JSON structure + invariant grep only.
+  - `enable_wg48_handoff=false` invariato; **wf48 non chiamato**; no Active / no Publish / no Schedule.
 - **D-0041-E / D-0042-E** = **bounded PARTIAL PASS** (2026-07-09, user-attested) — **NOT Gate E full PASS** · **NOT global PASS runtime**:
   - **D-0041-E Opzione 1** approvata: fixture pulita **wf45** → store **open** → **47** derivation da store.
   - **wf45 evidence:** `telegram_send_ok=true`; `message_id=1203`; `http_status=200`; `decision_id=D-0041-T`; `open_action=insert`; `block_reason=null`; `fan_out_items_in=1`; `test_only=true`; `pass_claimed=false`.
@@ -50,7 +54,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 |-------|--------|------|
 | **45 / Wd** | **PASS ATTESTATO UTENTE** + Gate D + **D-0041-E** **2026-07-09** | `D-0041-T` open-on-send (`message_id=1203`); fan-out guard `fan_out_items_in=1`. **Inactive** post-test. |
 | **46 / We** | Package-prep **completato**; **live BLOCKED/PENDING** | HTTPS webhook required; **We live PASS NON registrato**. |
-| **47 / Wf** | **PARTIAL PASS** **D-0042-E** **2026-07-09** | Store derivation provata su **47 importato test** only; **47 ufficiale** ancora lista hardcoded `['D-1003-T']` — **non eseguito** per derivation; dedupe fan-in **pending**. **`enable_wg48_handoff=false`**. **Inactive / not Published.** |
+| **47 / Wf** | **bounded consolidation ready** **2026-07-10** + **PARTIAL PASS** D-0042-E | Template ufficiale: store derivation + dedupe fan-in; **runtime bounded validation pending** (re-import + manual run). **`enable_wg48_handoff=false`**. **Inactive / not Published.** |
 | **48 / Wg** | **PASS** + Gate D; **non chiamato** in D-0041/42 | **callable**; **non schedulato**. |
 | **49 / Wh** | Rehearsal **PASS**; **inattivo** | Not auto-promoted by Gate D. |
 | **decision-store** | Gates **1–3 PASS** + Gate B/D + **D-0041-E** | `D-0041-T` **open** (post wf45); historical closed rows retained. |
@@ -70,18 +74,16 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 **Not auto-started.** **Gate D closed** (2026-07-02). **D-0041-E / D-0042-E** = **bounded PARTIAL PASS** (2026-07-09) — **NOT Gate E full PASS**. Evidenza: `CURRENT_FRONTIER.md` (questo file); D-0040-E preflight NO-GO: `docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md`.
 
 **Next frontier (non auto-started):**
-1. Consolidare fix **D-0042-E** nel workflow/export **47 ufficiale**.
-2. Correggere fan-in duplication: una sola item downstream o dedupe Set su `openDecisionIds`.
-3. **47 ufficiale** deve derivare ID open da `control_plane_decisions_test` `status=open`.
-4. Mantenere `enable_wg48_handoff=false` salvo nuova decisione.
-5. Poi rerun bounded validation — no Active / no Publish / no Schedule.
+1. **Bounded runtime validation** — re-import 47 ufficiale in n8n UI; manual one-shot con open row in store; verificare `open_decision_ids_count` = righe open reali (no fan-in dup).
+2. Mantenere `enable_wg48_handoff=false` salvo nuova decisione.
+3. Poi eventuale Gate E bounded rerun — no Active / no Publish / no Schedule.
 
 **Gate E** — **SOLO via Decision Packet dedicato** — PREP in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E full PASS.
 
 Precondizioni Gate E — stato finding:
 
 1. **Fan-out 45/47** — da validare in Gate E manual-only (criteri operativi nel piano: 45 = 1 messaggio; 47 ≤5 item; stop se oltre).
-2. **47 derivation da store** — **PARTIAL** su 47 importato test (D-0042-E); **47 ufficiale** ancora lista hardcoded — consolidamento/export **pending**; dedupe fan-in **pending**.
+2. **47 derivation da store** — **consolidated in template ufficiale** (2026-07-10); **runtime bounded validation pending**; dedupe fan-in in template (Collapse + runOnceForAllItems Build).
 3. **Re-export 45/47 post-fix UI** — **chiuso** da `f6f5579` (`workflows/exports/2026-07-02_*post-gate-d.redacted.json`).
 4. **`enable_wg48_handoff`** — default **`false`** fuori test; test manuale/confinato solo se autorizzato nel Decision Packet.
 
@@ -94,7 +96,7 @@ Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: 
 ## Handoff / post-push verification
 
 - **Invariante §8.1 PROJECT_VISION:** report Cursor post-push deve includere output git verbatim (incluso `git ls-remote origin main`). Orchestratore **non** chiede shell utente se output già presente; verify-only Cursor se manca; shell utente = fallback finale.
-- **`LAST_HANDOFF_VERIFY.md`:** artefatto persistente per `aggio control`; snapshot D-0032-W field-validation through `966f508`; `artifact_commit: PENDING_SELF_REFERENCE`. **PM-34 BLOCKED** · **`n8n_ready=false`**.
+- **`LAST_HANDOFF_VERIFY.md`:** artefatto persistente per `aggio control`; snapshot D-0032-W field-validation through `966f508`; `artifact_commit: PENDING_SELF_REFERENCE`. **Stale** rispetto a D-0041-E/D-0042-E e consolidation wf47 (`verified_through_commit=85a91da`) — **non** aggiornato come verifica primaria shell in questo task. **PM-34 BLOCKED** · **`n8n_ready=false`**.
 - **`AUTOMATIC_POST_PUSH_VERIFIER.md`:** design docs-only — future n8n/worker replaces manual verify paste; LLM not needed for hash equality.
 - **`tools/runtime-post-push-verifier.ps1`:** **runtime verifier implementato e hardened** (structured JSON, PASS→exit 0 / FAIL→exit 1). **Auto-source scoped al blocco LATEST** di `LAST_CURSOR_REPORT.md` (mai da HISTORY); override manuale opzionale; fail-closed `expected_commit_unreadable`. Verifica indipendente contro il remoto. **No wrapper HTTP** · **no n8n runtime** · wf40/42 untouched · **PM-34 BLOCKED** · **`n8n_ready=false`**.
 - **`tools/push-post-push-verifier-result.ps1`:** **uploader manuale one-shot operativo** — invocazione canonica `powershell -NoProfile -ExecutionPolicy Bypass -File tools\push-post-push-verifier-result.ps1`; child verifier + deposito SFTP alias `ionos-cpinbox`; field-validation **PASS ATTESTATO UTENTE** (2026-06-11). **No schedule** · **no loop** · wf57 inactive/manual.
