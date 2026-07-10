@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.15 — 2026-07-02 (decisione serale)  
-**Versione precedente:** 2.14 — 2026-07-02 (sostituita)  
+**Versione:** 2.16 — 2026-07-10 (handoff template + read-set nuova chat)  
+**Versione precedente:** 2.15 — 2026-07-02 (sostituita)  
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -493,6 +493,8 @@ Il progetto deve sopravvivere alla saturazione delle chat.
 
 Path canonico: `docs/handoffs/YYYY-MM-DD-HHMM-<topic>-handoff.md`
 
+**Scheletro obbligatorio:** `docs/foundation/HANDOFF_TEMPLATE.md` — ogni handoff committato deve seguire quella struttura (placeholder compilati, nessuna sezione omessa).
+
 Contenuto minimo:
 
 - HEAD / hash remoto osservato tramite `git ls-remote origin main` (o equivalente);
@@ -510,6 +512,17 @@ Contenuto minimo:
 - hash remoto da `git ls-remote origin main` diretto quando possibile;
 - **mai** usare report incollati in chat come verifica primaria del PASS;
 - **regola orchestratore:** se l'ultimo report Cursor include già l'output post-push verbatim completo (`§8.1`), **non** chiedere all'utente shell manuale; in assenza di output, prompt Cursor verify-only prima del fallback utente (`§8.1` Handoff / post-push verification invariant).
+
+**Read-set orchestratore — nuova chat (ordine operativo):**
+
+1. `docs/runtime/CURRENT_FRONTIER.md`
+2. `docs/foundation/PROJECT_VISION.md`
+3. `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`
+4. `docs/runtime/LAST_CURSOR_REPORT.md`
+5. `docs/runtime/LAST_HANDOFF_VERIFY.md`
+6. handoff corrente (path canonico dello stesso arco)
+
+`PROJECT_VISION.md` resta **entry point canonico** (§11.2); il **read-set operativo** della nuova chat segue però l'ordine **FRONTIER → PROJECT_VISION → CURSOR_PROMPT_TEMPLATE → LAST_CURSOR_REPORT → LAST_HANDOFF_VERIFY → handoff**. I file vanno letti dal **repo vivo** a HEAD dichiarato nell'handoff, **mai** da copie incollate in chat. La verifica hash è demandata a **shell Claude** (`git ls-remote origin main`) o a **output verbatim Cursor** §8.1 — non a narrativa chat o letture web.
 
 ### 11.4 Backlog futuro — handoff via Ollama stimatore
 
@@ -658,6 +671,7 @@ In una frase: **sto costruendo una fabbrica, non un singolo prodotto.** La fabbr
 | 2.13 | 2026-06-12 | §1.1: D-0032-W manual one-shot verifier result uploader field-validated; invocazione canonica con bypass PowerShell solo di processo documentata; PM-34 resta BLOCKED; `n8n_ready=false`; nessuno schedule/loop. |
 | 2.14 | 2026-07-02 | §10: invariante segreti riformulato — nessun segreto in Git (token, chat_id, credenziali, OAuth, PAT, webhook secret, API key); **tailnet identifiers: tolerated / non-secret by policy decision 2026-07-02** (repo pubblico consapevole, WARN non bloccante); **true secrets remain forbidden and blocking**; `tools/redaction-check.sh` aggiornato in commit tools separato. Eccezione chat_id 2026-05-31 invariata. |
 | 2.15 | 2026-07-02 | §10: decisione serale 2026-07-02 — repo dichiaratamente non confidenziale; regole segreti rimosse dal canone; `tools/redaction-check.sh` rimosso in commit tools separato; controllo compensativo = rotazione totale credenziali a fine progetto (`docs/ROTATION_CHECKLIST.md`); rischio accettato dall'utente a verbale. Altri invarianti §10 invariati. |
+| 2.16 | 2026-07-10 | §11.3: `HANDOFF_TEMPLATE.md` scheletro obbligatorio; read-set nuova chat (FRONTIER → PROJECT_VISION → CURSOR_PROMPT_TEMPLATE → LAST_CURSOR_REPORT → LAST_HANDOFF_VERIFY → handoff); repo vivo a HEAD dichiarato; verifica hash via shell Claude o output verbatim Cursor §8.1. |
 
 ---
 
