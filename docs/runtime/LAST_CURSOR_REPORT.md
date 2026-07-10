@@ -13,25 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d-0041-e-d-0042-e-bounded-partial-pass
-result_cursor: PASS_DOCS_ONLY
-result_runtime: PASS_ATTESTATO_UTENTE_PARTIAL
-base_commit: 0411f3e46ecd0b37800979768ed9b05a849cb144
-real_task_commit: d4a1d173f59b4fb4a7140bdd07c117c0c0243b4b
-commit_subject: docs: record d-0041-e d-0042-e bounded partial pass
+task_ref: wf47-gate-e-store-consolidation
+result_cursor: PASS_DOCS_AND_TEMPLATE
+result_runtime: NOT_RUN_BOUNDED_CONSOLIDATION_READY
+base_commit: a7b3bdba4761f03d1512d0cb225f4524407febb3
+real_task_commit: 3b8bc992e22d1617071a73bfd23592aec2ce346e
+commit_subject: feat(wf47): consolidate Gate E store derivation and fan-in dedupe
 rolling_report_commit: PENDING_SELF_REFERENCE
-branch: main
-verification_rule: PASS docs-only commit 1 = HEAD locale, origin/main e ls-remote refs/heads/main coincidono su d4a1d17; workspace clean; diff commit 1 limitato a CURRENT_FRONTIER.md; D-0041-E/D-0042-E bounded PARTIAL PASS registrato; nessun workflow JSON toccato; nessun runtime n8n da Cursor; non Gate E full PASS; non global PASS runtime; enable_wg48_handoff=false. Commit 2 = solo LAST_CURSOR_REPORT.md.
-remote_hash_verbatim: "d4a1d173f59b4fb4a7140bdd07c117c0c0243b4b\trefs/heads/main"
-timestamp_utc: 2026-07-09
+branch: cursor/wf47-gate-e-store-consolidation-79b7
+verification_rule: PASS commit 1 = workflow template + CURRENT_FRONTIER only; bounded local validation JSON parse + grep (no open_decision_ids_test_only in code paths; active=false; enable_wg48_handoff=false); no runtime n8n; not Gate E full PASS; wf48 not called; wf40/41/42 untouched; LAST_HANDOFF_VERIFY not updated (stale). Commit 2 = solo LAST_CURSOR_REPORT.md.
+remote_hash_verbatim: PENDING_SELF_REFERENCE
+timestamp_utc: 2026-07-10
 ```
 
-- **Commit 1 — D-0041-E / D-0042-E bounded partial-pass (user-attested):** `CURRENT_FRONTIER.md`; wf45 `D-0041-T` open-on-send; 47 ufficiale non eseguito (lista hardcoded); 47 importato test store derivation accepted; fan-in dedupe pending; wf48 non chiamato; **PARTIAL PASS** — **NOT Gate E full PASS**.
+- **Commit 1 — wf47 Gate E consolidation (repo-only):** `workflows/wf-telegram-inbound-polling-getupdates.template.json` + `CURRENT_FRONTIER.md`; store derivation da `control_plane_decisions_test`; Collapse fan-out + dedupe Set; rimossa lista hardcoded; inspect fields `open_decision_ids_source` / `store_derivation_bypassed` / `open_decision_ids_count`; **bounded consolidation ready** — **NOT Gate E full PASS**; **NOT runtime validation**.
 - **Commit 2 (questo report):** solo `LAST_CURSOR_REPORT.md`; **non** certifica il proprio hash.
-- **Explicit non-touched:** `workflows/**`, `data-tables/**`, wf40/41/42, wf48, runtime n8n da Cursor, import/export live, credenziali.
-- **NOT Gate E full PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**.
-- Snapshot verifica attraverso `d4a1d17`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
-- **Backfill PENDING_SELF_REFERENCE:** `d-0040-e-gate-e-preflight-no-go` → `rolling_report_commit: 0411f3e` (in HISTORY).
+- **Explicit non-touched:** wf40/41/42, wf48 (not called), `data-tables/**`, runtime n8n da Cursor, import/export live n8n, credenziali, `LAST_HANDOFF_VERIFY.md` (resta **stale** — `verified_through_commit=85a91da`).
+- **NOT Gate E full PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; no Active / Publish / Schedule permanente.
+- Snapshot verifica attraverso `3b8bc99`; `rolling_report_commit: PENDING_SELF_REFERENCE` (debito backfill — risolto al task successivo).
+- **Backfill PENDING_SELF_REFERENCE:** `d-0041-e-d-0042-e-bounded-partial-pass` → `rolling_report_commit: a7b3bdb` (in HISTORY).
 
 ---
 
@@ -53,6 +53,13 @@ timestamp_utc: 2026-07-09
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d-0041-e-d-0042-e-bounded-partial-pass
+  real_task_commit: d4a1d173f59b4fb4a7140bdd07c117c0c0243b4b
+  rolling_report_commit: a7b3bdba4761f03d1512d0cb225f4524407febb3
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: PASS_ATTESTATO_UTENTE_PARTIAL
+  timestamp_utc: 2026-07-09
+
 - task_ref: d-0040-e-gate-e-preflight-no-go
   real_task_commit: 85a91dad1f8ae40e5e3552c336c399caf00336dc
   rolling_report_commit: 0411f3e46ecd0b37800979768ed9b05a849cb144
