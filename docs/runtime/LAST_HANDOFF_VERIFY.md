@@ -59,20 +59,20 @@ timestamp_utc: 2026-07-09
 task_ref: d-0040-e-gate-e-preflight-no-go
 verified_task_commit: 85a91dad1f8ae40e5e3552c336c399caf00336dc
 verified_base_commit: 49c228f2433f71149136f3303777aa7d802b633f
-verified_rolling_report_commit: PENDING_SELF_REFERENCE
+verified_rolling_report_commit: 0411f3e46ecd0b37800979768ed9b05a849cb144
 verified_through_commit: 85a91dad1f8ae40e5e3552c336c399caf00336dc
 observed_head: 85a91dad1f8ae40e5e3552c336c399caf00336dc
 observed_origin_main: 85a91dad1f8ae40e5e3552c336c399caf00336dc
 observed_ls_remote_main: 85a91dad1f8ae40e5e3552c336c399caf00336dc
 branch: main
 workspace_status: clean
-artifact_commit: PENDING_SELF_REFERENCE
+artifact_commit: 0411f3e46ecd0b37800979768ed9b05a849cb144
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
 result_runtime: NOT_RUN_OPERATOR_PREFLIGHT_NOGO
 timestamp_utc: 2026-07-09
 ```
 
-**Nota:** questo snapshot verifica attraverso `85a91da` — commit 1 D-0040-E Gate E Phase 1 preflight NO-GO: sessione `docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md`; **NO-GO preflight** (non runtime FAIL); no open rows in `control_plane_decisions_test`; store snapshot all closed; 47 derivation da store non dimostrabile; 45 non re-run; 47 non eseguito; 48 non chiamato. **NOT Gate E PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; wf40/41/42 untouched; nessun workflow/data-tables edit; nessun runtime da Cursor. Commit 2 = artefatti verifica/report. Il commit che aggiorna questo file **non** si auto-certifica; resta `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** questo snapshot verifica attraverso `85a91da` — commit 1 D-0040-E Gate E Phase 1 preflight NO-GO: sessione `docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md`; **NO-GO preflight** (non runtime FAIL); no open rows in `control_plane_decisions_test`; store snapshot all closed; 47 derivation da store non dimostrabile; 45 non re-run; 47 non eseguito; 48 non chiamato. **NOT Gate E PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; wf40/41/42 untouched; nessun workflow/data-tables edit; nessun runtime da Cursor. Commit 2 = artefatti verifica/report. **Backfill ristretto (2026-07-10, arco handoff compliance):** `verified_rolling_report_commit` e `artifact_commit` portati a `0411f3e` — **non** nuova verifica primaria; snapshot resta stale rispetto ad `a7b3bdb`+.
 
 **Backfill PENDING_SELF_REFERENCE:** wf47→wf48 bounded handoff snapshot → `5884acd`.
 
