@@ -5,14 +5,21 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-07-11 — Gate E wf47 ufficiale: store derivation + dedupe consolidati (repo-side).
+Ultimo aggiornamento: 2026-07-11 — wf47 bounded runtime validation PASS_ATTESTATO_UTENTE_SCOPE_LIMITED.
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
-- **Gate E wf47 ufficiale consolidation** = **bounded consolidation ready** + **bounded repo-side validation pass** (2026-07-11, repo-only) — **NOT Gate E full PASS** · **NOT runtime n8n validation**:
+- **wf47 bounded runtime validation** = **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (2026-07-11, operator-attested) — **NOT Gate E full PASS** · **NOT runtime end-to-end PASS**:
+  - **47 ufficiale** re-importato manualmente in n8n UI dall'operatore; manual one-shot eseguito.
+  - **Inspect output:** `inspect_status=blocked`; `block_reason=allowed_chat_not_configured`; `allowed_chat_configured=false`.
+  - **Derivation/dedupe PASS scope-limited:** `open_decision_ids_source=control_plane_decisions_test`; `store_derivation_bypassed=false`; `open_decision_ids_count=1`; `test_only=true`.
+  - **Receipt/decision close non testato** (blocked prima del path accepted).
+  - **wf48 non chiamato**; no Active / no Publish / no Schedule.
+  - Evidenza: `docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md`.
+- **Gate E wf47 ufficiale consolidation** = **bounded consolidation ready** + **bounded repo-side validation pass** (2026-07-11, repo-only, PR #7 merged `3c40070`) — superseded per runtime derivation da attestazione scope-limited sopra:
   - Template ufficiale `workflows/wf-telegram-inbound-polling-getupdates.template.json`: rimossa lista hardcoded `open_decision_ids_test_only`; derivation da `control_plane_decisions_test` (`status=open`, dedupe Set); `Collapse shared decisions load fan-out` + `Build getUpdates` `runOnceForAllItems`; inspect espone `open_decision_ids_source`, `store_derivation_bypassed=false`, `open_decision_ids_count`.
   - Validazione repo-side: JSON parse OK; dedupe simulation fixture → `["D-0041-T"]` count=1; invariant grep (`active=false`, `enable_wg48_handoff=false`).
   - **Runtime n8n non eseguito** da Cursor — bounded validation = repo-side only.
@@ -56,7 +63,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 |-------|--------|------|
 | **45 / Wd** | **PASS ATTESTATO UTENTE** + Gate D + **D-0041-E** **2026-07-09** | `D-0041-T` open-on-send (`message_id=1203`); fan-out guard `fan_out_items_in=1`. **Inactive** post-test. |
 | **46 / We** | Package-prep **completato**; **live BLOCKED/PENDING** | HTTPS webhook required; **We live PASS NON registrato**. |
-| **47 / Wf** | **bounded consolidation ready** **2026-07-11** + **PARTIAL PASS** D-0042-E | Template ufficiale: store derivation + dedupe fan-in; **runtime bounded validation pending** (re-import + manual one-shot). **`enable_wg48_handoff=false`**. **Inactive / not Published.** |
+| **47 / Wf** | **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** **2026-07-11** + consolidation **PR #7** | Store derivation + dedupe runtime attestato (`open_decision_ids_count=1`); inspect **blocked** (`allowed_chat_not_configured`); receipt close **non testato**. **`enable_wg48_handoff=false`**. **Inactive / not Published.** |
 | **48 / Wg** | **PASS** + Gate D; **non chiamato** in D-0041/42 | **callable**; **non schedulato**. |
 | **49 / Wh** | Rehearsal **PASS**; **inattivo** | Not auto-promoted by Gate D. |
 | **decision-store** | Gates **1–3 PASS** + Gate B/D + **D-0041-E** | `D-0041-T` **open** (post wf45); historical closed rows retained. |
@@ -76,16 +83,16 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 **Not auto-started.** **Gate D closed** (2026-07-02). **D-0041-E / D-0042-E** = **bounded PARTIAL PASS** (2026-07-09) — **NOT Gate E full PASS**. Evidenza: `CURRENT_FRONTIER.md` (questo file); D-0040-E preflight NO-GO: `docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md`.
 
 **Next frontier (non auto-started):**
-1. **Bounded runtime validation** — re-import 47 ufficiale in n8n UI; manual one-shot con `D-0041-T` open in store; verificare `open_decision_ids_count=1` (no fan-in dup).
+1. Decidere se configurare `allowed_chat` per receipt bounded su **47 ufficiale** oppure procedere con altro Decision Packet dedicato.
 2. Mantenere `enable_wg48_handoff=false` salvo nuova decisione.
-3. Eventuale Gate E bounded rerun — no Active / no Publish / no Schedule.
+3. Eventuale Gate E bounded rerun receipt path — no Active / no Publish / no Schedule.
 
 **Gate E** — **SOLO via Decision Packet dedicato** — PREP in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E full PASS.
 
 Precondizioni Gate E — stato finding:
 
 1. **Fan-out 45/47** — da validare in Gate E manual-only (criteri operativi nel piano: 45 = 1 messaggio; 47 ≤5 item; stop se oltre).
-2. **47 derivation da store** — **consolidated in template ufficiale** (2026-07-11); **runtime bounded validation pending**; dedupe fan-in in template (Collapse + runOnceForAllItems Build).
+2. **47 derivation da store + dedupe** — **repo-side consolidated** (PR #7) + **bounded runtime derivation PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (2026-07-11); receipt/close path **non testato** (`allowed_chat_not_configured`).
 3. **Re-export 45/47 post-fix UI** — **chiuso** da `f6f5579` (`workflows/exports/2026-07-02_*post-gate-d.redacted.json`).
 4. **`enable_wg48_handoff`** — default **`false`** fuori test; test manuale/confinato solo se autorizzato nel Decision Packet.
 
@@ -116,6 +123,7 @@ Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: 
 - D-0028-A / Gates: `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`, Gate A/B sessions `docs/sessions/2026-06-07-control-plane-gate-*`.
 - D-0032-W field-validation: `docs/sessions/2026-06-12-control-plane-d-0032-w-field-validation-pass.md`.
 - Gate D bounded rehearsal: `docs/sessions/2026-07-02-control-plane-gate-d-rehearsal-pass.md`.
+- wf47 bounded runtime validation: `docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md`.
 - Hash / verify: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/runtime/AUTOMATIC_POST_PUSH_VERIFIER.md`.
 
 ## Manutenzione
