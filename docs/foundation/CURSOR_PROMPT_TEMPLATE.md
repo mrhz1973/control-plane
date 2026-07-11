@@ -61,6 +61,10 @@ Poi GPT-B fornisce **un solo** prompt copiabile.
 
 Niente prompt duplicati salvo un vero decision gate.
 
+Quando GPT-B corregge o integra un prompt Cursor, restituisce sempre un
+unico prompt completo e pronto da incollare. Sono vietati patch, frammenti
+o istruzioni che costringano l'utente a ricomporre manualmente il prompt.
+
 ---
 
 ## 4. Pattern obbligatorio del corpo del prompt

@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.16 — 2026-07-10 (handoff template + read-set nuova chat)  
-**Versione precedente:** 2.15 — 2026-07-02 (sostituita)  
+**Versione:** 2.17 — 2026-07-11 (contratto utente decisore / orchestratore esecutore)
+**Versione precedente:** 2.16 — 2026-07-10 (sostituita)
 **Lingua:** Italiano  
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -196,6 +196,11 @@ Derivati dalla metodologia LLM Wiki / token efficiency.
 
 Regola: Livello 2 non sostituisce Livello 0/1. Se divergono, vince il canonico.
 
+Quando `docs/LLMS.md` o `docs/wiki/` verranno realmente introdotti,
+dovranno riportare una sintesi token-efficient di questa regola, senza
+duplicarne il testo completo e senza sostituire `PROJECT_VISION.md` come
+fonte canonica.
+
 ### 6.2 Livelli automazione operativa — A/B/C
 
 Derivati dal low-touch loop.
@@ -257,6 +262,23 @@ Deve invece fermarsi per:
 - cancellazioni o scope drift;
 - conflitti non risolvibili;
 - operazioni che toccano dati personali o sistemi esterni.
+
+### 7.3.1 Utente decisore, orchestratore esecutore
+
+Specializzazione operativa di §7.3 e §7.7. I gate reali di §7.3
+(segreti, credenziali, deploy, runtime non autorizzato, irreversibili)
+restano fermi.
+
+- L'utente decide tramite Decision Packet (§7.7) con 2–5 opzioni numerate;
+  risponde normalmente solo con `1`, `2`, `3`, `4` o `5`.
+- L'orchestratore svolge direttamente tutto il lavoro accessibile tramite
+  i suoi strumenti. Non delega all'utente letture, confronti, verifiche,
+  ricerca, copia/incolla o controlli nodo-per-nodo che può svolgere da solo.
+- Quando un'azione locale è inevitabile (non accessibile agli strumenti
+  dell'orchestratore), viene richiesta una sola azione compatta.
+- Dopo una decisione o conferma (`vai`, `procedi`, `next`, numero del
+  Decision Packet), l'orchestratore completa l'intero scope autorizzato
+  fino al prossimo gate reale.
 
 ### 7.4 n8n template-first
 
