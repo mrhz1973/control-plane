@@ -13,15 +13,15 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wf45-wf47-official-bounded-receipt-pass
+task_ref: d0045e-wf48-external-receipt-close-record
 result_cursor: PASS_DOCS_ONLY
 result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
-base_commit: 6fafa9b187d6886eefadc9cacfb7225563c5c90d
-real_task_commit: cd2c2e4356b27fc044e9f54470c2264b32dede6e
-commit_subject: docs: record official wf45-wf47 bounded receipt pass
+base_commit: f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18
+real_task_commit: 35cb338a2cfbfe7730515eb68300501f94cf01f2
+commit_subject: docs: record D-0045-E wf48 external receipt close pass
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: docs-only user-attested runtime record; scope session + CURRENT_FRONTIER + wf47 runbook + AUTOMATION_ACTIVATION_PLAN; wf45→wf47 receipt accepted + polling state persisted; D-0044-T open intentional; wf48 not called; not Gate E full PASS; not runtime end-to-end PASS.
+verification_rule: docs-only user-attested runtime record; D-0045-E Opzione 1 wf48 manual external_receipt; D-0044-T closed; wf47_rerun=false; callable_47_to_48_used=false; new_telegram_reply=false; enable_wg48_handoff=false; not Gate E full PASS; not runtime end-to-end automatico.
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 timestamp_utc: 2026-07-12
 runtime_executed: false
@@ -29,48 +29,57 @@ workflow_modified: false
 n8n_ready: false
 pm34_unblocked: false
 gate_e_full_pass: false
-wf48_called: false
+wf48_called: true
+wf48_mode: manual_external_receipt
+wf47_rerun: false
+callable_47_to_48_used: false
+new_telegram_reply: false
+enable_wg48_handoff: false
+decision_close_persisted: true
 ```
 
-- **Commit 1 — wf45→wf47 official bounded receipt (docs-only record):** session `docs/sessions/2026-07-12-control-plane-wf45-wf47-official-bounded-receipt-pass.md` + `CURRENT_FRONTIER.md` + runbook + activation plan; **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** — **NOT Gate E full PASS**; **NOT runtime end-to-end PASS**; **NOT runtime by Cursor**.
+- **Commit 1 — D-0045-E wf48 external receipt close (docs-only record):** session + `CURRENT_FRONTIER.md` + `AUTOMATION_ACTIVATION_PLAN.md` + Wg runbook; **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** — **NOT Gate E full PASS**; **NOT runtime end-to-end automatico**; **NOT runtime by Cursor**.
 - **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md`; **non** certifica il proprio hash.
 - **Explicit non-touched:** `workflows/**`, `data-tables/**`, wf40/41/42; nessun runtime n8n da Cursor; nessun workflow edit.
-- **D-0044-T** resta **open** intenzionalmente; **wf48 non chiamato**; `enable_wg48_handoff=false`.
+- **D-0044-T closed** via wf48 manual `external_receipt`; **callable non usato**; `enable_wg48_handoff=false`.
 - **PM-34 BLOCKED**; **`n8n_ready=false`**.
-- Snapshot verifica attraverso `cd2c2e4`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
-- **Backfill PENDING_SELF_REFERENCE:** `user-decision-orchestrator-execution-contract` → `rolling_report_commit: 6fafa9b` (in HISTORY).
+- Snapshot verifica attraverso `35cb338`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
+- **Backfill PENDING_SELF_REFERENCE:** `wf45-wf47-official-bounded-receipt-pass` → `rolling_report_commit: f01ad73` (in HISTORY).
 
 **Post-push evidence (commit 1 — real task):**
 
 ```text
-git log --oneline -5
+git log --oneline -8
+35cb338 docs: record D-0045-E wf48 external receipt close pass
+f01ad73 docs: refresh runtime reports for wf45-wf47 bounded receipt
 cd2c2e4 docs: record official wf45-wf47 bounded receipt pass
 6fafa9b docs: refresh runtime reports for orchestrator contract
 641d8b1 docs: codify user-decision orchestrator-execution contract
 39b53e4 docs: refresh runtime reports for wf47 bounded validation
 f55f009 docs: record wf47 bounded runtime validation
+3c40070 Merge PR #7: wf47 store derivation and fan-in dedupe
 
 git status --short
 
 git rev-parse HEAD
-cd2c2e4356b27fc044e9f54470c2264b32dede6e
+35cb338a2cfbfe7730515eb68300501f94cf01f2
 
 git rev-parse origin/main
-cd2c2e4356b27fc044e9f54470c2264b32dede6e
+35cb338a2cfbfe7730515eb68300501f94cf01f2
 
 git branch --show-current
 main
 
 git show --stat HEAD
-commit cd2c2e4356b27fc044e9f54470c2264b32dede6e
- docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |   5 +-
- docs/runtime/CURRENT_FRONTIER.md                   |  43 ++++----
- ...lane-wf45-wf47-official-bounded-receipt-pass.md | 113 +++++++++++++++++++++
- ...kflow-wf-telegram-inbound-polling-getupdates.md |  24 ++++-
- 4 files changed, 163 insertions(+), 22 deletions(-)
+commit 35cb338a2cfbfe7730515eb68300501f94cf01f2
+ docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |   3 +-
+ docs/runtime/CURRENT_FRONTIER.md                   |  41 ++++---
+ ...ne-d-0045-e-wf48-external-receipt-close-pass.md | 125 +++++++++++++++++++++
+ ...-telegram-inbound-decision-state-correlation.md |  24 +++-
+ 4 files changed, 177 insertions(+), 16 deletions(-)
 
-git ls-remote origin main
-cd2c2e4356b27fc044e9f54470c2264b32dede6e	refs/heads/main
+git ls-remote origin refs/heads/main
+35cb338a2cfbfe7730515eb68300501f94cf01f2	refs/heads/main
 ```
 
 ---
@@ -93,6 +102,13 @@ cd2c2e4356b27fc044e9f54470c2264b32dede6e	refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: wf45-wf47-official-bounded-receipt-pass
+  real_task_commit: cd2c2e4356b27fc044e9f54470c2264b32dede6e
+  rolling_report_commit: f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
+  timestamp_utc: 2026-07-12
+
 - task_ref: user-decision-orchestrator-execution-contract
   real_task_commit: 641d8b1687c65b86b27661b2bddcc8fe77e58941
   rolling_report_commit: 6fafa9b187d6886eefadc9cacfb7225563c5c90d

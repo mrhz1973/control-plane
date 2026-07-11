@@ -33,6 +33,29 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: wf45-wf47-official-bounded-receipt-pass
+verified_task_commit: cd2c2e4356b27fc044e9f54470c2264b32dede6e
+verified_base_commit: 6fafa9b187d6886eefadc9cacfb7225563c5c90d
+verified_rolling_report_commit: f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18
+verified_through_commit: cd2c2e4356b27fc044e9f54470c2264b32dede6e
+observed_head: cd2c2e4356b27fc044e9f54470c2264b32dede6e
+observed_origin_main: cd2c2e4356b27fc044e9f54470c2264b32dede6e
+observed_ls_remote_main: cd2c2e4356b27fc044e9f54470c2264b32dede6e
+branch: main
+workspace_status: clean
+artifact_commit: f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
+gate_e_full_pass: false
+n8n_ready: false
+pm34_unblocked: false
+wf48_called: false
+timestamp_utc: 2026-07-12
+```
+
+**Nota:** snapshot wf45→wf47 official bounded receipt; superseded da D-0045-E wf48 external receipt close (2026-07-12).
+
+```yaml
 task_ref: user-decision-orchestrator-execution-contract
 verified_task_commit: 641d8b1687c65b86b27661b2bddcc8fe77e58941
 verified_base_commit: 39b53e4495aa628c52890dc297226350d71dfc53
@@ -121,14 +144,14 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: wf45-wf47-official-bounded-receipt-pass
-verified_task_commit: cd2c2e4356b27fc044e9f54470c2264b32dede6e
-verified_base_commit: 6fafa9b187d6886eefadc9cacfb7225563c5c90d
+task_ref: d0045e-wf48-external-receipt-close-record
+verified_task_commit: 35cb338a2cfbfe7730515eb68300501f94cf01f2
+verified_base_commit: f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: cd2c2e4356b27fc044e9f54470c2264b32dede6e
-observed_head: cd2c2e4356b27fc044e9f54470c2264b32dede6e
-observed_origin_main: cd2c2e4356b27fc044e9f54470c2264b32dede6e
-observed_ls_remote_main: cd2c2e4356b27fc044e9f54470c2264b32dede6e
+verified_through_commit: 35cb338a2cfbfe7730515eb68300501f94cf01f2
+observed_head: 35cb338a2cfbfe7730515eb68300501f94cf01f2
+observed_origin_main: 35cb338a2cfbfe7730515eb68300501f94cf01f2
+observed_ls_remote_main: 35cb338a2cfbfe7730515eb68300501f94cf01f2
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
@@ -137,13 +160,43 @@ result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
 gate_e_full_pass: false
 n8n_ready: false
 pm34_unblocked: false
-wf48_called: false
+wf48_called: true
+wf48_mode: manual_external_receipt
+wf47_rerun: false
+callable_47_to_48_used: false
+enable_wg48_handoff: false
+decision_close_persisted: true
 timestamp_utc: 2026-07-12
 ```
 
-**Nota:** wf45→wf47 official bounded receipt **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** verified through `cd2c2e4` — receipt accepted (`D-0044-T`, `selected_option=1`, `update_id=986228602`); polling state persisted; **D-0044-T open** intenzionale; **wf48 non chiamato**; close 47→48 **non testato**; **nessun runtime eseguito da Cursor**; **nessun workflow modificato**; **NOT Gate E full PASS**; **NOT runtime end-to-end PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** D-0045-E wf48 manual `external_receipt` close **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** verified through `35cb338` — `D-0044-T` **closed** (`state_persisted=true`, `update_id=986228602`); **wf47 non rieseguito**; **callable non usato**; **nessun nuovo Telegram**; **nessun runtime eseguito da Cursor**; **nessun workflow modificato**; **NOT Gate E full PASS**; **NOT runtime end-to-end automatico**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
 
-**Backfill PENDING_SELF_REFERENCE:** orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+**Backfill PENDING_SELF_REFERENCE:** wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+
+---
+
+## Command outputs (verbatim, sanitized — D-0045-E wf48 external receipt close)
+
+```text
+git rev-parse HEAD
+35cb338a2cfbfe7730515eb68300501f94cf01f2
+
+git rev-parse origin/main
+35cb338a2cfbfe7730515eb68300501f94cf01f2
+
+git ls-remote origin refs/heads/main
+35cb338a2cfbfe7730515eb68300501f94cf01f2	refs/heads/main
+
+git status --short
+
+git diff --name-only f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18..HEAD
+docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
+docs/runtime/CURRENT_FRONTIER.md
+docs/sessions/2026-07-12-control-plane-d-0045-e-wf48-external-receipt-close-pass.md
+docs/workflow-wg-telegram-inbound-decision-state-correlation.md
+```
+
+**BASE (record commit 1):** `f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18`
 
 ---
 
