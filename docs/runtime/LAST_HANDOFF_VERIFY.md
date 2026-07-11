@@ -33,6 +33,31 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: d0046e-gate-e-stop-decision
+verified_task_commit: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+verified_base_commit: 95b904504c7cbe7a94b18bfaa1f845d9459b999f
+verified_rolling_report_commit: 375f495c1976153e0b68722fddc480c147bf8124
+verified_through_commit: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+observed_head: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+observed_origin_main: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+observed_ls_remote_main: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+branch: main
+workspace_status: clean
+artifact_commit: 375f495c1976153e0b68722fddc480c147bf8124
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: NOT_RUN_OPERATOR_DECISION_STOP
+record_status: SUPERSEDED_GOVERNANCE_ERROR
+superseded_by: D-0047-G
+invalid_provenance: GLM_recommendation_misattributed_as_operator_choice
+gate_e_full_pass: false
+n8n_ready: false
+pm34_unblocked: false
+timestamp_utc: 2026-07-12
+```
+
+**Nota:** snapshot D-0046-E stop — invalid decision provenance; superseded da D-0047-G governance correction (2026-07-12). **Non** valid operator choice.
+
+```yaml
 task_ref: d0045e-wf48-external-receipt-close-record
 verified_task_commit: 35cb338a2cfbfe7730515eb68300501f94cf01f2
 verified_base_commit: f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18
@@ -56,7 +81,7 @@ decision_close_persisted: true
 timestamp_utc: 2026-07-12
 ```
 
-**Nota:** snapshot D-0045-E wf48 external receipt close; superseded da D-0046-E Gate E stop decision (2026-07-12).
+**Nota:** snapshot D-0045-E wf48 external receipt close; superseded da D-0046-E record (voided by D-0047-G).
 
 ```yaml
 task_ref: wf45-wf47-official-bounded-receipt-pass
@@ -170,37 +195,65 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: d0046e-gate-e-stop-decision
-verified_task_commit: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
-verified_base_commit: 95b904504c7cbe7a94b18bfaa1f845d9459b999f
+task_ref: d0047g-d0046e-governance-correction
+verified_task_commit: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+verified_base_commit: 375f495c1976153e0b68722fddc480c147bf8124
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
-observed_head: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
-observed_origin_main: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
-observed_ls_remote_main: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+verified_through_commit: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+observed_head: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+observed_origin_main: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+observed_ls_remote_main: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
-result_runtime: NOT_RUN_OPERATOR_DECISION_STOP
-decision_id: D-0046-E
-selected_option: 3
-gate_e_status: STOPPED_BY_OPERATOR_DECISION
+result_runtime: NOT_RUN_GOVERNANCE_CORRECTION
+decision_id: D-0047-G
+selected_option: 2
+decision_provenance: direct_operator_message
+d0046e_record_status: VOIDED_MISATTRIBUTED_OPERATOR_CHOICE
+gate_e_status: OPERATOR_DECISION_PENDING
 gate_e_runtime_authorized: false
 gate_e_full_pass: false
-d0046t_created: false
-wf45_called: false
-wf47_called: false
-wf48_called: false
+runtime_executed: false
+workflow_modified: false
 enable_wg48_handoff: false
 n8n_ready: false
 pm34_unblocked: false
+anti_proxy_rule_codified: true
 timestamp_utc: 2026-07-12
 ```
 
-**Nota:** D-0046-E Opzione 3 **STOPPED_BY_OPERATOR_DECISION** verified through `4273bde` — Gate E runtime **non autorizzato** e **non eseguito**; **D-0046-T non creata**; **nessun Telegram**; **nessun workflow/store mutation**; **NOT** runtime failure; **NOT** BLOCKED; **NOT Gate E full PASS**; **D-0045-E** resta ultimo PASS scope-limited runtime; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** D-0047-G governance correction verified through `5fdf1dd` — D-0046-E Option 3 **voided** (misattributed GLM recommendation); **Gate E** = `OPERATOR_DECISION_PENDING`; **anti-proxy rule** codified; **nessun runtime**; **D-0045-E** resta ultimo PASS scope-limited; **NOT Gate E full PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
 
-**Backfill PENDING_SELF_REFERENCE:** D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+**Backfill PENDING_SELF_REFERENCE:** D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+
+---
+
+## Command outputs (verbatim, sanitized — D-0047-G governance correction)
+
+```text
+git rev-parse HEAD
+5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+
+git rev-parse origin/main
+5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+
+git ls-remote origin refs/heads/main
+5fdf1dd3d8dbaca0b235188f67bb6c38389d607e	refs/heads/main
+
+git status --short
+
+git diff --name-only 375f495c1976153e0b68722fddc480c147bf8124..HEAD
+docs/advisors/GLM_ADVISOR_METHOD.md
+docs/foundation/PROJECT_VISION.md
+docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
+docs/runtime/CURRENT_FRONTIER.md
+docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md
+docs/sessions/2026-07-12-control-plane-d-0047-g-governance-correction.md
+```
+
+**BASE (record commit 1):** `375f495c1976153e0b68722fddc480c147bf8124`
 
 ---
 

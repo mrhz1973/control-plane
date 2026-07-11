@@ -13,26 +13,28 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0046e-gate-e-stop-decision
+task_ref: d0047g-d0046e-governance-correction
 result_cursor: PASS_DOCS_ONLY
-result_runtime: NOT_RUN_OPERATOR_DECISION_STOP
-base_commit: 95b904504c7cbe7a94b18bfaa1f845d9459b999f
-real_task_commit: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
-commit_subject: docs: record D-0046-E Gate E stop decision
+result_runtime: NOT_RUN_GOVERNANCE_CORRECTION
+base_commit: 375f495c1976153e0b68722fddc480c147bf8124
+real_task_commit: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+commit_subject: docs: correct D-0046-E provenance and add anti-proxy rule
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: docs-only operator decision record; D-0046-E Opzione 3 STOP Gate E full bounded manual chain; gate_e_runtime_authorized=false; D-0046-T not created; not Gate E full PASS; not runtime failure.
+verification_rule: docs-only governance correction; D-0047-G Opzione 2 direct_operator_message; D-0046-E VOIDED_MISATTRIBUTED_OPERATOR_CHOICE; gate_e OPERATOR_DECISION_PENDING; anti_proxy_rule_codified; not Gate E full PASS; no runtime.
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 timestamp_utc: 2026-07-12
+decision_id: D-0047-G
+selected_option: 2
+decision_provenance: direct_operator_message
+d0046e_record_status: VOIDED_MISATTRIBUTED_OPERATOR_CHOICE
+gate_e_status: OPERATOR_DECISION_PENDING
+gate_e_runtime_authorized: false
+gate_e_full_pass: false
 runtime_executed: false
 workflow_modified: false
 store_modified: false
 telegram_sent: false
-decision_id: D-0046-E
-selected_option: 3
-gate_e_status: STOPPED_BY_OPERATOR_DECISION
-gate_e_runtime_authorized: false
-gate_e_full_pass: false
 d0046t_created: false
 wf45_called: false
 wf47_called: false
@@ -40,49 +42,52 @@ wf48_called: false
 enable_wg48_handoff: false
 n8n_ready: false
 pm34_unblocked: false
+anti_proxy_rule_codified: true
 ```
 
-- **Commit 1 — D-0046-E Gate E stop (docs-only record):** session + `CURRENT_FRONTIER.md` + `AUTOMATION_ACTIVATION_PLAN.md`; **NOT_RUN_OPERATOR_DECISION_STOP** — **NOT** runtime failure; **NOT** BLOCKED; **NOT** Gate E full PASS; **NOT runtime by Cursor**.
+- **Commit 1 — D-0047-G governance correction (docs-only):** session D-0047-G + D-0046-E correction + `CURRENT_FRONTIER` + `AUTOMATION_ACTIVATION_PLAN` + `PROJECT_VISION` v2.18 + `GLM_ADVISOR_METHOD`; **NOT_RUN_GOVERNANCE_CORRECTION** — **NOT** runtime; **NOT** Gate E full PASS.
 - **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md`; **non** certifica il proprio hash.
-- **Explicit non-touched:** `workflows/**`, `data-tables/**`, wf40/41/42; nessun runtime; nessun workflow edit; nessun store mutation; nessun Telegram.
-- **D-0046-T non creata**; **D-0045-E** resta ultimo PASS scope-limited runtime.
-- **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**.
-- Snapshot verifica attraverso `4273bde`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
-- **Backfill PENDING_SELF_REFERENCE:** `d0045e-wf48-external-receipt-close-record` → `rolling_report_commit: 95b9045` (in HISTORY).
+- **D-0046-E Option 3** voided (GLM recommendation misattributed); **Gate E** = `OPERATOR_DECISION_PENDING`.
+- **D-0045-E** resta ultimo PASS scope-limited runtime.
+- Snapshot verifica attraverso `5fdf1dd`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
+- **Backfill PENDING_SELF_REFERENCE:** `d0046e-gate-e-stop-decision` → `rolling_report_commit: 375f495` (in HISTORY; record_status SUPERSEDED_GOVERNANCE_ERROR).
 
 **Post-push evidence (commit 1 — real task):**
 
 ```text
 git log --oneline -8
+5fdf1dd docs: correct D-0046-E provenance and add anti-proxy rule
+375f495 docs: refresh runtime reports for D-0046-E stop
 4273bde docs: record D-0046-E Gate E stop decision
 95b9045 docs: refresh runtime reports for D-0045-E wf48 close
 35cb338 docs: record D-0045-E wf48 external receipt close pass
 f01ad73 docs: refresh runtime reports for wf45-wf47 bounded receipt
 cd2c2e4 docs: record official wf45-wf47 bounded receipt pass
 6fafa9b docs: refresh runtime reports for orchestrator contract
-641d8b1 docs: codify user-decision orchestrator-execution contract
-39b53e4 docs: refresh runtime reports for wf47 bounded validation
 
 git status --short
 
 git rev-parse HEAD
-4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
 
 git rev-parse origin/main
-4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
 
 git branch --show-current
 main
 
 git show --stat HEAD
-commit 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+commit 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+ docs/advisors/GLM_ADVISOR_METHOD.md                | 13 +++-
+ docs/foundation/PROJECT_VISION.md                  | 14 +++-
  docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  6 +-
- docs/runtime/CURRENT_FRONTIER.md                   | 38 +++++-----
- ...-control-plane-d-0046-e-gate-e-stop-decision.md | 82 ++++++++++++++++++++++
- 3 files changed, 109 insertions(+), 17 deletions(-)
+ docs/runtime/CURRENT_FRONTIER.md                   | 32 +++++----
+ ...-control-plane-d-0046-e-gate-e-stop-decision.md | 30 ++++----
+ ...control-plane-d-0047-g-governance-correction.md | 84 ++++++++++++++++++++++
+ 6 files changed, 143 insertions(+), 36 deletions(-)
 
 git ls-remote origin refs/heads/main
-4273bde2ef0bc61f4fe2d56fd658a2eb61a26377	refs/heads/main
+5fdf1dd3d8dbaca0b235188f67bb6c38389d607e	refs/heads/main
 ```
 
 ---
@@ -105,6 +110,15 @@ git ls-remote origin refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0046e-gate-e-stop-decision
+  real_task_commit: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+  rolling_report_commit: 375f495c1976153e0b68722fddc480c147bf8124
+  result_cursor: PASS_DOCS_ONLY
+  original_result_runtime: NOT_RUN_OPERATOR_DECISION_STOP
+  record_status: SUPERSEDED_GOVERNANCE_ERROR
+  superseded_by: D-0047-G
+  timestamp_utc: 2026-07-12
+
 - task_ref: d0045e-wf48-external-receipt-close-record
   real_task_commit: 35cb338a2cfbfe7730515eb68300501f94cf01f2
   rolling_report_commit: 95b904504c7cbe7a94b18bfaa1f845d9459b999f
