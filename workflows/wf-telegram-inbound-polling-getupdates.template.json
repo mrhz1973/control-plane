@@ -35,7 +35,7 @@
     },
     {
       "parameters": {
-        "content": "READY IMPORT — active=false. Schedule Trigger disabled/test-only. No Telegram Trigger. No public webhook.\n\nWg48 handoff: Set Wf47 UI config enable_wg48_handoff=false (default). When false, IF short-circuits before Execute Workflow. Phase 2: set true only for test window + wire CONFIGURE_48_WORKFLOW_REFERENCE_IN_N8N_UI on Execute Workflow node (no hardcoded workflow id in Git).\n\nPrereq: wf47_polling_state_test seeded. Token/chat_id in n8n UI only.",
+        "content": "READY IMPORT — active=false. Schedule Trigger disabled/test-only. No Telegram Trigger. No public webhook.\n\nGate E store derivation: open_decision_ids derived from control_plane_decisions_test (status=open); Collapse load fan-out before Build (runOnceForAllItems). No hardcoded open_decision_ids_test_only.\n\nWg48 handoff: Set Wf47 UI config enable_wg48_handoff=false (default). When false, IF short-circuits before Execute Workflow. Phase 2: set true only for test window + wire CONFIGURE_48_WORKFLOW_REFERENCE_IN_N8N_UI on Execute Workflow node (no hardcoded workflow id in Git).\n\nPrereq: wf47_polling_state_test + control_plane_decisions_test seeded. Token/chat_id in n8n UI only.",
         "height": 320,
         "width": 520
       },
@@ -84,6 +84,42 @@
         "dataTableId": {
           "__rl": true,
           "mode": "name",
+          "value": "control_plane_decisions_test"
+        },
+        "returnAll": true,
+        "limit": 50
+      },
+      "id": "wf000021-0021-4021-8021-000000000021",
+      "name": "Data Table - Load shared decisions",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -1200,
+        200
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Collapse Data Table load fan-out: Load returns 1 item per store row (returnAll).\n// Downstream polling state load may fan-out again; Build uses runOnceForAllItems to emit 1 item.\nconst loaded = $input.all();\nconst rowCount = loaded.length;\nreturn [{\n  json: {\n    store_rows_loaded: rowCount,\n    fan_out_collapsed: rowCount > 1,\n    test_only: true,\n    note: 'Wf47: collapsed shared decisions load fan-out before polling state + build'\n  }\n}];"
+      },
+      "id": "wf000022-0022-4022-8022-000000000022",
+      "name": "Collapse shared decisions load fan-out (1 item per run)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1140,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
           "value": "wf47_polling_state_test"
         },
         "returnAll": true,
@@ -101,7 +137,8 @@
     },
     {
       "parameters": {
-        "jsCode": "// Build getUpdates params from wf47_polling_state_test rows (no token/chat in output).\nconst rows = $('Data Table - Load wf47 polling state').all().map((i) => i.json);\nconst byKey = (k) => {\n  const row = rows.find((r) => r && r.key === k);\n  return row ? row.value : null;\n};\nconst lastUpdateId = Number(byKey('last_update_id') || 0);\nconst lastHandled = Number(byKey('last_handled_update_id') || 0);\nlet handledKeys = {};\ntry {\n  const raw = byKey('handled_keys_json') || '{}';\n  handledKeys = typeof raw === 'object' ? raw : JSON.parse(String(raw));\n} catch {\n  handledKeys = {};\n}\nreturn [{\n  json: {\n    offset: lastUpdateId,\n    limit: 10,\n    last_handled_update_id: lastHandled,\n    handled_keys: handledKeys,\n    open_decision_ids_test_only: ['D-9998-T'],\n    state_table: 'wf47_polling_state_test',\n    test_only: true\n  }\n}];"
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Build getUpdates params from wf47_polling_state_test + derive open IDs from store (no token/chat in output).\nconst pollRows = $('Data Table - Load wf47 polling state').all().map((i) => i.json);\nconst storeRows = $('Data Table - Load shared decisions').all().map((i) => i.json);\nconst byKey = (k) => {\n  const row = pollRows.find((r) => r && r.key === k);\n  return row ? row.value : null;\n};\nconst lastUpdateId = Number(byKey('last_update_id') || 0);\nconst lastHandled = Number(byKey('last_handled_update_id') || 0);\nlet handledKeys = {};\ntry {\n  const raw = byKey('handled_keys_json') || '{}';\n  handledKeys = typeof raw === 'object' ? raw : JSON.parse(String(raw));\n} catch {\n  handledKeys = {};\n}\nconst openSet = new Set();\nfor (const r of storeRows) {\n  if (r && String(r.status) === 'open' && r.decision_id) {\n    openSet.add(String(r.decision_id));\n  }\n}\nconst open_decision_ids = [...openSet].sort();\nreturn [{\n  json: {\n    offset: lastUpdateId,\n    limit: 10,\n    last_handled_update_id: lastHandled,\n    handled_keys: handledKeys,\n    open_decision_ids,\n    open_decision_ids_source: 'control_plane_decisions_test',\n    store_derivation_bypassed: false,\n    open_decision_ids_count: open_decision_ids.length,\n    state_table: 'wf47_polling_state_test',\n    test_only: true\n  }\n}];"
       },
       "id": "wf000002-0002-4002-8002-000000000002",
       "name": "Build getUpdates request from state",
@@ -150,7 +187,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Normalize — no raw chat_id/user_id/message body in output.\nconst build = $('Build getUpdates request from state').first().json;\nconst lastHandled = Number(build.last_handled_update_id || 0);\nconst resp = $input.item.json;\nconst body = resp && resp.body !== undefined ? resp.body : resp;\nconst results = body && Array.isArray(body.result) ? body.result : [];\nconst OPEN = build.open_decision_ids_test_only || ['D-9998-T'];\nconst items = [];\nfor (const u of results) {\n  const cq = u.callback_query || {};\n  const msg = cq.message || u.message || {};\n  const text = String(cq.data || msg.text || '').trim();\n  let inbound_kind = 'unknown';\n  if (text.startsWith('note:')) inbound_kind = 'note';\n  else if (text.startsWith('dp:')) inbound_kind = 'callback';\n  else if (/^[123]$/.test(text)) inbound_kind = 'plain_option';\n  const uid = u.update_id;\n  items.push({\n    update_id: uid,\n    inbound_kind,\n    inbound_text: text,\n    stale_update_id_guard: uid != null && uid <= lastHandled\n  });\n}\nreturn {\n  json: {\n    http_ok: body && body.ok === true,\n    result_count: results.length,\n    candidates: items,\n    open_decision_ids: OPEN,\n    last_handled_update_id: lastHandled,\n    handled_keys: build.handled_keys,\n    test_only: true\n  }\n};"
+        "jsCode": "// Normalize — no raw chat_id/user_id/message body in output.\nconst build = $('Build getUpdates request from state').first().json;\nconst lastHandled = Number(build.last_handled_update_id || 0);\nconst resp = $input.item.json;\nconst body = resp && resp.body !== undefined ? resp.body : resp;\nconst results = body && Array.isArray(body.result) ? body.result : [];\nconst OPEN = Array.isArray(build.open_decision_ids) ? build.open_decision_ids : [];\nconst items = [];\nfor (const u of results) {\n  const cq = u.callback_query || {};\n  const msg = cq.message || u.message || {};\n  const text = String(cq.data || msg.text || '').trim();\n  let inbound_kind = 'unknown';\n  if (text.startsWith('note:')) inbound_kind = 'note';\n  else if (text.startsWith('dp:')) inbound_kind = 'callback';\n  else if (/^[123]$/.test(text)) inbound_kind = 'plain_option';\n  const uid = u.update_id;\n  items.push({\n    update_id: uid,\n    inbound_kind,\n    inbound_text: text,\n    stale_update_id_guard: uid != null && uid <= lastHandled\n  });\n}\nreturn {\n  json: {\n    http_ok: body && body.ok === true,\n    result_count: results.length,\n    candidates: items,\n    open_decision_ids: OPEN,\n    open_decision_ids_source: build.open_decision_ids_source || null,\n    store_derivation_bypassed: build.store_derivation_bypassed === true,\n    open_decision_ids_count: build.open_decision_ids_count ?? OPEN.length,\n    last_handled_update_id: lastHandled,\n    handled_keys: build.handled_keys,\n    test_only: true\n  }\n};"
       },
       "id": "wf000004-0004-4004-8004-000000000004",
       "name": "Normalize Telegram updates",
@@ -178,7 +215,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Parse Decision Packet — newest non-stale candidate.\nconst d = $input.item.json;\nconst OPEN = d.open_decision_ids || ['D-9998-T'];\nconst sorted = [...(d.candidates || [])].sort((a, b) => (b.update_id || 0) - (a.update_id || 0));\nlet best = null;\nfor (const c of sorted) {\n  if (c.stale_update_id_guard) continue;\n  let decision_id = null;\n  let selected_option = null;\n  let note_present = false;\n  if (c.inbound_kind === 'callback') {\n    const m = String(c.inbound_text).match(/^dp:(D-\\d{4}-[A-Z]):([123])$/);\n    if (m) { decision_id = m[1]; selected_option = m[2]; }\n  } else if (c.inbound_kind === 'plain_option' && OPEN.length === 1) {\n    decision_id = OPEN[0];\n    selected_option = c.inbound_text;\n  } else if (c.inbound_kind === 'note') {\n    const nm = String(c.inbound_text).match(/^note:(D-\\d{4}-[A-Z]):(.+)$/);\n    if (nm) {\n      decision_id = nm[1];\n      note_present = true;\n      selected_option = null;\n    }\n  }\n  if (decision_id) {\n    best = { update_id: c.update_id, inbound_kind: c.inbound_kind, decision_id, selected_option, note_present };\n    break;\n  }\n}\nreturn {\n  json: {\n    ...d,\n    parsed: best,\n    parse_ok: !!best\n  }\n};"
+        "jsCode": "// Parse Decision Packet — newest non-stale candidate.\nconst d = $input.item.json;\nconst OPEN = Array.isArray(d.open_decision_ids) ? d.open_decision_ids : [];\nconst sorted = [...(d.candidates || [])].sort((a, b) => (b.update_id || 0) - (a.update_id || 0));\nlet best = null;\nfor (const c of sorted) {\n  if (c.stale_update_id_guard) continue;\n  let decision_id = null;\n  let selected_option = null;\n  let note_present = false;\n  if (c.inbound_kind === 'callback') {\n    const m = String(c.inbound_text).match(/^dp:(D-\\d{4}-[A-Z]):([123])$/);\n    if (m) { decision_id = m[1]; selected_option = m[2]; }\n  } else if (c.inbound_kind === 'plain_option' && OPEN.length === 1) {\n    decision_id = OPEN[0];\n    selected_option = c.inbound_text;\n  } else if (c.inbound_kind === 'note') {\n    const nm = String(c.inbound_text).match(/^note:(D-\\d{4}-[A-Z]):(.+)$/);\n    if (nm) {\n      decision_id = nm[1];\n      note_present = true;\n      selected_option = null;\n    }\n  }\n  if (decision_id) {\n    best = { update_id: c.update_id, inbound_kind: c.inbound_kind, decision_id, selected_option, note_present };\n    break;\n  }\n}\nreturn {\n  json: {\n    ...d,\n    parsed: best,\n    parse_ok: !!best\n  }\n};"
       },
       "id": "wf000006-0006-4006-8006-000000000006",
       "name": "Parse Decision Packet response",
@@ -291,7 +328,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Sanitized receipt — no raw chat_id/user_id/token/message body.\nconst d = $('Offset dedupe idempotency guard').item.json;\nreturn {\n  json: {\n    inspect_status: d.status,\n    decision_id: d.decision_id,\n    selected_option: d.selected_option,\n    update_id: d.update_id,\n    duplicate_or_stale: d.duplicate_or_stale,\n    note_present: d.note_present,\n    block_reason: d.block_reason,\n    allowed_chat_configured: d.allowed_chat_configured,\n    offset_after_placeholder: d.offset_after_placeholder,\n    last_handled_update_id: d.last_handled_update_id,\n    test_only: true\n  }\n};"
+        "jsCode": "// Sanitized receipt — no raw chat_id/user_id/token/message body.\nconst d = $('Offset dedupe idempotency guard').item.json;\nconst build = $('Build getUpdates request from state').first().json;\nreturn {\n  json: {\n    inspect_status: d.status,\n    decision_id: d.decision_id,\n    selected_option: d.selected_option,\n    update_id: d.update_id,\n    duplicate_or_stale: d.duplicate_or_stale,\n    note_present: d.note_present,\n    block_reason: d.block_reason,\n    allowed_chat_configured: d.allowed_chat_configured,\n    offset_after_placeholder: d.offset_after_placeholder,\n    last_handled_update_id: d.last_handled_update_id,\n    open_decision_ids_source: build.open_decision_ids_source || null,\n    store_derivation_bypassed: build.store_derivation_bypassed === true,\n    open_decision_ids_count: build.open_decision_ids_count ?? null,\n    test_only: true\n  }\n};"
       },
       "id": "wf000008-0008-4008-8008-000000000008",
       "name": "Build sanitized polling receipt",
@@ -305,7 +342,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Read-only inspect — contract fields only.\nconst d = $input.item.json;\nreturn {\n  json: {\n    inspect_status: d.inspect_status,\n    decision_id: d.decision_id || null,\n    selected_option: d.selected_option || null,\n    update_id: d.update_id ?? null,\n    duplicate_or_stale: d.duplicate_or_stale || false,\n    note_present: d.note_present || false,\n    block_reason: d.block_reason || null,\n    allowed_chat_configured: d.allowed_chat_configured === true,\n    offset_after_placeholder: d.offset_after_placeholder ?? null,\n    last_handled_update_id: d.last_handled_update_id ?? null,\n    test_only: true\n  }\n};"
+        "jsCode": "// Read-only inspect — contract fields only.\nconst d = $input.item.json;\nreturn {\n  json: {\n    inspect_status: d.inspect_status,\n    decision_id: d.decision_id || null,\n    selected_option: d.selected_option || null,\n    update_id: d.update_id ?? null,\n    duplicate_or_stale: d.duplicate_or_stale || false,\n    note_present: d.note_present || false,\n    block_reason: d.block_reason || null,\n    allowed_chat_configured: d.allowed_chat_configured === true,\n    offset_after_placeholder: d.offset_after_placeholder ?? null,\n    last_handled_update_id: d.last_handled_update_id ?? null,\n    open_decision_ids_source: d.open_decision_ids_source || null,\n    store_derivation_bypassed: d.store_derivation_bypassed === true,\n    open_decision_ids_count: d.open_decision_ids_count ?? null,\n    test_only: true\n  }\n};"
       },
       "id": "wf000009-0009-4009-8009-000000000009",
       "name": "Inspect polling result (read-only)",
@@ -318,7 +355,7 @@
     },
     {
       "parameters": {
-        "content": "TABLE: wf47_polling_state_test\nRows: last_update_id | last_handled_update_id | handled_keys_json\nPattern from repo: workflows/42 + v4 multirepo draft (returnAll get, upsert by key).",
+        "content": "TABLES: wf47_polling_state_test + control_plane_decisions_test\nPolling rows: last_update_id | last_handled_update_id | handled_keys_json\nStore: derive open_decision_ids where status=open (deduped Set).\nPattern from repo: workflows/42 + wf45 Collapse load fan-out.",
         "height": 120,
         "width": 400
       },
@@ -412,6 +449,28 @@
       ]
     },
     "Set Wf47 UI config": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Load shared decisions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Load shared decisions": {
+      "main": [
+        [
+          {
+            "node": "Collapse shared decisions load fan-out (1 item per run)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse shared decisions load fan-out (1 item per run)": {
       "main": [
         [
           {
