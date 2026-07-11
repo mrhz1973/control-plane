@@ -33,6 +33,25 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: d-0040-e-gate-e-preflight-no-go
+verified_task_commit: 85a91dad1f8ae40e5e3552c336c399caf00336dc
+verified_base_commit: 49c228f2433f71149136f3303777aa7d802b633f
+verified_rolling_report_commit: 0411f3e46ecd0b37800979768ed9b05a849cb144
+verified_through_commit: 85a91dad1f8ae40e5e3552c336c399caf00336dc
+observed_head: 85a91dad1f8ae40e5e3552c336c399caf00336dc
+observed_origin_main: 85a91dad1f8ae40e5e3552c336c399caf00336dc
+observed_ls_remote_main: 85a91dad1f8ae40e5e3552c336c399caf00336dc
+branch: main
+workspace_status: clean
+artifact_commit: 0411f3e46ecd0b37800979768ed9b05a849cb144
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: NOT_RUN_OPERATOR_PREFLIGHT_NOGO
+timestamp_utc: 2026-07-09
+```
+
+**Nota:** snapshot D-0040-E preflight NO-GO; superseded da wf47 bounded runtime validation record (2026-07-11).
+
+```yaml
 task_ref: wf47-wg48-bounded-handoff-pass
 verified_task_commit: 823d025b27b2cf488422eedadff4c73437e0a391
 verified_base_commit: 0b9fe468a0e1672d314c25e1276082b25a01da6f
@@ -56,25 +75,54 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: d-0040-e-gate-e-preflight-no-go
-verified_task_commit: 85a91dad1f8ae40e5e3552c336c399caf00336dc
-verified_base_commit: 49c228f2433f71149136f3303777aa7d802b633f
-verified_rolling_report_commit: 0411f3e46ecd0b37800979768ed9b05a849cb144
-verified_through_commit: 85a91dad1f8ae40e5e3552c336c399caf00336dc
-observed_head: 85a91dad1f8ae40e5e3552c336c399caf00336dc
-observed_origin_main: 85a91dad1f8ae40e5e3552c336c399caf00336dc
-observed_ls_remote_main: 85a91dad1f8ae40e5e3552c336c399caf00336dc
+task_ref: wf47-bounded-runtime-validation-record
+verified_task_commit: f55f009e2964c0f86eae5aef88b40d84cb8c4486
+verified_base_commit: 3c40070c785b460b76120505dbbd9cf65bd0b26c
+verified_rolling_report_commit: PENDING_SELF_REFERENCE
+verified_through_commit: f55f009e2964c0f86eae5aef88b40d84cb8c4486
+observed_head: f55f009e2964c0f86eae5aef88b40d84cb8c4486
+observed_origin_main: f55f009e2964c0f86eae5aef88b40d84cb8c4486
+observed_ls_remote_main: f55f009e2964c0f86eae5aef88b40d84cb8c4486
 branch: main
 workspace_status: clean
-artifact_commit: 0411f3e46ecd0b37800979768ed9b05a849cb144
+artifact_commit: PENDING_SELF_REFERENCE
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
-result_runtime: NOT_RUN_OPERATOR_PREFLIGHT_NOGO
-timestamp_utc: 2026-07-09
+result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
+gate_e_full_pass: false
+n8n_ready: false
+pm34_unblocked: false
+wf48_called: false
+timestamp_utc: 2026-07-11
 ```
 
-**Nota:** questo snapshot verifica attraverso `85a91da` — commit 1 D-0040-E Gate E Phase 1 preflight NO-GO: sessione `docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md`; **NO-GO preflight** (non runtime FAIL); no open rows in `control_plane_decisions_test`; store snapshot all closed; 47 derivation da store non dimostrabile; 45 non re-run; 47 non eseguito; 48 non chiamato. **NOT Gate E PASS**; **NOT global PASS runtime**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; wf40/41/42 untouched; nessun workflow/data-tables edit; nessun runtime da Cursor. Commit 2 = artefatti verifica/report. **Backfill ristretto (2026-07-10, arco handoff compliance):** `verified_rolling_report_commit` e `artifact_commit` portati a `0411f3e` — **non** nuova verifica primaria; snapshot resta stale rispetto ad `a7b3bdb`+.
+**Nota:** wf47 derivation/dedupe bounded runtime **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** — `open_decision_ids_source=control_plane_decisions_test`; `store_derivation_bypassed=false`; `open_decision_ids_count=1`; `inspect_status=blocked` (`allowed_chat_not_configured`); receipt/close **non testato**; wf48 **non chiamato**. **NOT Gate E full PASS**; **NOT runtime end-to-end PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; wf40/41/42 untouched; nessun workflow/data-tables edit da Cursor; nessun runtime da Cursor. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
 
-**Backfill PENDING_SELF_REFERENCE:** wf47→wf48 bounded handoff snapshot → `5884acd`.
+Evidenza: `docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md`.
+
+**Backfill PENDING_SELF_REFERENCE:** wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+
+---
+
+## Command outputs (verbatim, sanitized — wf47 bounded runtime validation record)
+
+```text
+git rev-parse HEAD
+f55f009e2964c0f86eae5aef88b40d84cb8c4486
+
+git rev-parse origin/main
+f55f009e2964c0f86eae5aef88b40d84cb8c4486
+
+git ls-remote origin refs/heads/main
+f55f009e2964c0f86eae5aef88b40d84cb8c4486	refs/heads/main
+
+git status --short
+
+git diff --name-only 3c40070c785b460b76120505dbbd9cf65bd0b26c..HEAD
+docs/runtime/CURRENT_FRONTIER.md
+docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md
+```
+
+**BASE (record commit 1):** `3c40070c785b460b76120505dbbd9cf65bd0b26c`
 
 ---
 

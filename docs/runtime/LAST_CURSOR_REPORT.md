@@ -13,26 +13,25 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wf47-store-derivation-dedupe-consolidation
-result_cursor: PASS_DOCS_AND_TEMPLATE
-result_runtime: NOT_RUN_BOUNDED_REPO_SIDE_VALIDATION_PASS
-base_commit: b6695577716c10eba93fa6d8a1ea404a9ba8a690
-real_task_commit: 2009a4c14b0777d394e09a9f8bc3b25017eeeec4
-commit_subject: feat(wf47): consolidate store derivation and fan-in dedupe
+task_ref: wf47-bounded-runtime-validation-record
+result_cursor: PASS_DOCS_ONLY
+result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
+base_commit: 3c40070c785b460b76120505dbbd9cf65bd0b26c
+real_task_commit: f55f009e2964c0f86eae5aef88b40d84cb8c4486
+commit_subject: docs: record wf47 bounded runtime validation
 rolling_report_commit: PENDING_SELF_REFERENCE
-branch: cursor/wf47-store-derivation-dedupe-79b7
-verification_rule: PASS commit 1 = wf47 template only; JSON parse; dedupe sim PASS; no open_decision_ids_test_only code path; active=false; enable_wg48_handoff=false; no runtime n8n; not Gate E full PASS; LAST_HANDOFF_VERIFY not touched. Commit 2 = CURRENT_FRONTIER + LAST_CURSOR_REPORT.
+branch: main
+verification_rule: user-attested bounded n8n manual one-shot for wf47; open_decision_ids_source=control_plane_decisions_test; store_derivation_bypassed=false; open_decision_ids_count=1; inspect_status=blocked due allowed_chat_not_configured; not receipt close; not wf48; not Gate E full PASS.
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 timestamp_utc: 2026-07-11
 ```
 
-- **Commit 1 — wf47 consolidation:** `workflows/wf-telegram-inbound-polling-getupdates.template.json`; store derivation + Collapse fan-out + dedupe Set; **bounded consolidation ready** + **bounded repo-side validation pass** — **NOT Gate E full PASS**; **NOT runtime n8n**.
-- **Commit 2 (questo report):** `CURRENT_FRONTIER.md` + `LAST_CURSOR_REPORT.md`; **non** certifica il proprio hash.
-- **Explicit non-touched:** wf40/41/42/48, `data-tables/**`, `LAST_HANDOFF_VERIFY.md`, runtime n8n, import/export live, export storico 47.
+- **Commit 1 — wf47 bounded runtime validation (user-attested record):** `CURRENT_FRONTIER.md` + session `docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md`; **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** — **NOT Gate E full PASS**; **NOT runtime end-to-end PASS**.
+- **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md`; **non** certifica il proprio hash.
+- **Explicit non-touched:** `workflows/**`, `data-tables/**`, wf40/41/42/48; nessun runtime n8n da Cursor.
 - **NOT Gate E full PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; wf48 non chiamato; no Active / Publish / Schedule.
-- Snapshot verifica attraverso `2009a4c`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
-- **Backfill PENDING_SELF_REFERENCE:** `handoff-compliance-d0041-d0042-template` → `rolling_report_commit: 71fad6c` (in HISTORY).
-- **branch PR != main** — non è PASS remoto su `main` finché non mergiato.
+- Snapshot verifica attraverso `f55f009`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
+- **Backfill PENDING_SELF_REFERENCE:** `wf47-store-derivation-dedupe-consolidation` → `rolling_report_commit: 75a1c5d` (in HISTORY).
 
 ---
 
@@ -54,6 +53,13 @@ timestamp_utc: 2026-07-11
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: wf47-store-derivation-dedupe-consolidation
+  real_task_commit: 2009a4c14b0777d394e09a9f8bc3b25017eeeec4
+  rolling_report_commit: 75a1c5d1e87b324421aaa92199a5250adfa5d6c1
+  result_cursor: PASS_DOCS_AND_TEMPLATE
+  result_runtime: NOT_RUN_BOUNDED_REPO_SIDE_VALIDATION_PASS
+  timestamp_utc: 2026-07-11
+
 - task_ref: handoff-compliance-d0041-d0042-template
   real_task_commit: 4f2baef567b4485ce1afae74392172196dc873b5
   rolling_report_commit: 71fad6cad67cdeafa8aa985d557bfe59a80724de
