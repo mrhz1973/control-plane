@@ -141,7 +141,11 @@ Gates E–F: **not PASS** unless separately attested.
 
 ### Gate E — Phase 1 controlled start (kill switch mandatory)
 
-**Status (2026-07-03):** PREP docs-only aggiornato in questo file. **Non** è Gate E PASS. **Non** esegue runtime. **Non** auto-avvia Gate E.
+**Status (2026-07-12):** **STOPPED_BY_OPERATOR_DECISION** — D-0046-E Opzione 3 (2026-07-12). Gate E Phase 1 runtime **non autorizzato** e **non tentato**. **Non** è Gate E full PASS. **Non** auto-avvia Gate E. Riapertura richiede nuovo Decision Packet.
+
+**Disposition record:** Session `docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md`. `result_runtime=NOT_RUN_OPERATOR_DECISION_STOP`. Fixture D-0046-T **non creata**. D-0045-E resta ultimo PASS scope-limited runtime.
+
+**Future reopening (record only):** nuovo Decision Packet deve chiarire: (1) formato risposta Telegram plain `1` vs `dp:<id>:<option>`; (2) preflight una sola riga open per plain option; (3) sequenza temporanea handoff verify false → true → wf47 once → restore false; (4) no retry nella stessa autorizzazione; (5) fan-out wf47 = 1 item atteso, fail-closed oltre salvo autorizzazione esplicita. Procedura storica sotto resta riferimento futuro — **non** nuova PREP chain.
 
 #### Scope boundary — cosa è cosa
 

@@ -5,14 +5,21 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-07-12 — D-0045-E wf48 external receipt close PASS_ATTESTATO_UTENTE_SCOPE_LIMITED.
+Ultimo aggiornamento: 2026-07-12 — D-0046-E Gate E STOPPED_BY_OPERATOR_DECISION.
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
-- **D-0045-E wf48 external receipt close** = **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (2026-07-12, operator-attested) — **NOT Gate E full PASS** · **NOT runtime end-to-end automatico**:
+- **D-0046-E Gate E stop** = **STOPPED_BY_OPERATOR_DECISION** (2026-07-12, operator decision) — **NOT** runtime failure · **NOT** BLOCKED · **NOT** runtime NO-GO:
+  - **Decisione:** D-0046-E Opzione 3 — STOP Gate E full bounded manual chain.
+  - **Runtime:** **non autorizzato** e **non eseguito**; `gate_e_runtime_authorized=false`.
+  - **Fixture D-0046-T:** **non creata**; nessun Telegram; nessun workflow; nessuna mutazione store.
+  - **`enable_wg48_handoff=false`** invariato; wf45/wf47/wf48 **non chiamati** in questo arco.
+  - **Gate E full PASS:** **false**; **PM-34 BLOCKED**; **`n8n_ready=false`**.
+  - Evidenza: `docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md`.
+- **D-0045-E wf48 external receipt close** = **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (2026-07-12, latest scope-limited runtime PASS) — **NOT Gate E full PASS** · **NOT runtime end-to-end automatico**:
   - **Decisione:** D-0045-E Opzione 1 — wf48 manual `external_receipt`; `enable_wg48_handoff=false`; **callable 47→48 non usato**.
   - **Input:** receipt wf47 già accettato riutilizzato (`D-0044-T`, `selected_option=1`, `update_id=986228602`); **wf47 non rieseguito**; **nessun nuovo Telegram**.
   - **48/Wg output:** `inspect_status=closed`; `prior_status=open`; `state_persisted=true`; `test_only=true`.
@@ -91,26 +98,24 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 ## Next gate
 
-**Not auto-started.** **Gate D closed** (2026-07-02). **D-0041-E / D-0042-E** = **bounded PARTIAL PASS** (2026-07-09) — **NOT Gate E full PASS**. Evidenza: `CURRENT_FRONTIER.md` (questo file); D-0040-E preflight NO-GO: `docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md`.
+**Not auto-started.** **Gate D closed** (2026-07-02). **D-0046-E** (2026-07-12) = **STOPPED_BY_OPERATOR_DECISION** — Gate E full bounded manual chain **non** autorizzata né eseguita.
 
 **Next frontier (non auto-started):**
-1. Decision Packet dedicato per eventuale **Gate E full bounded manual chain** con nuova decisione fresca e, **solo se autorizzato**, callable 47→48.
-2. Oppure blocker concreto documentato.
-3. Nessuna ulteriore PREP chain.
-4. Limiti noti **non risolti** (non blocker retroattivi del close D-0044-T):
-   - allowed-chat guard non confronta la chat sorgente;
-   - parser attuale limitato a 1/2/3;
-   - receipt Inspect wf47 non espone direttamente `state_persisted`.
+1. Gate E **non** riparte automaticamente.
+2. Riapertura Gate E richiede **nuovo Decision Packet esplicito** che incorpori le condizioni operative registrate in `docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md` §5.
+3. In assenza di nuova decisione, il progetto resta allo stato di evidenza bounded/manual corrente (D-0045-E = ultimo PASS scope-limited) fino a selezione di altro task strategico.
+4. Nessun blocker tecnico inventato; limiti noti (allowed-chat, parser 1–3, wf47 `state_persisted`) restano separati e non risolti.
 
-**Gate E** — **SOLO via Decision Packet dedicato** — PREP in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E full PASS.
+**Gate E** — disposizione corrente: **STOPPED_BY_OPERATOR_DECISION** (D-0046-E Opzione 3). PREP storico in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E full PASS.
 
-Precondizioni Gate E — stato finding:
+Precondizioni Gate E — stato finding (storico, non aggiornato da D-0046-E):
 
-1. **Fan-out 45/47** — **45 official 2026-07-12:** 1 messaggio; 47 receipt: 1 item — entro limiti; Gate E full fan-out resta da attestare in run dedicato con decisione fresca.
+1. **Fan-out 45/47** — attestazioni parziali 2026-07-12; Gate E full fan-out resta da attestare in run dedicato con decisione fresca.
 2. **47 derivation + receipt + polling** — **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (2026-07-12 official).
-3. **48 manual external_receipt close** — **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (D-0045-E 2026-07-12); **callable 47→48 non testato** in questo arco.
-4. **Re-export 45/47 post-fix UI** — **chiuso** da `f6f5579`.
-5. **`enable_wg48_handoff`** — default **`false`**; callable solo se autorizzato in Decision Packet dedicato.
+3. **48 manual external_receipt close** — **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (D-0045-E 2026-07-12).
+4. **Callable 47→48 in stesso run** — **non testato** negli archi ufficiali 2026-07-12.
+5. **Re-export 45/47 post-fix UI** — **chiuso** da `f6f5579`.
+6. **`enable_wg48_handoff`** — default **`false`**.
 
 Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: **PM-34 BLOCKED** · **`n8n_ready=false`** · NO permanent schedule · wf40/42 untouched · pezzi collegati ≠ loop avviato.
 
@@ -139,6 +144,7 @@ Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: 
 - D-0028-A / Gates: `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`, Gate A/B sessions `docs/sessions/2026-06-07-control-plane-gate-*`.
 - D-0032-W field-validation: `docs/sessions/2026-06-12-control-plane-d-0032-w-field-validation-pass.md`.
 - Gate D bounded rehearsal: `docs/sessions/2026-07-02-control-plane-gate-d-rehearsal-pass.md`.
+- D-0046-E Gate E stop: `docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md`.
 - D-0045-E wf48 external receipt close: `docs/sessions/2026-07-12-control-plane-d-0045-e-wf48-external-receipt-close-pass.md`.
 - wf45→wf47 official bounded receipt: `docs/sessions/2026-07-12-control-plane-wf45-wf47-official-bounded-receipt-pass.md`.
 - wf47 bounded runtime validation (derivation-only): `docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md`.
