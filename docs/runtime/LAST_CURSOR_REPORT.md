@@ -13,73 +13,76 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0045e-wf48-external-receipt-close-record
+task_ref: d0046e-gate-e-stop-decision
 result_cursor: PASS_DOCS_ONLY
-result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
-base_commit: f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18
-real_task_commit: 35cb338a2cfbfe7730515eb68300501f94cf01f2
-commit_subject: docs: record D-0045-E wf48 external receipt close pass
+result_runtime: NOT_RUN_OPERATOR_DECISION_STOP
+base_commit: 95b904504c7cbe7a94b18bfaa1f845d9459b999f
+real_task_commit: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+commit_subject: docs: record D-0046-E Gate E stop decision
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: docs-only user-attested runtime record; D-0045-E Opzione 1 wf48 manual external_receipt; D-0044-T closed; wf47_rerun=false; callable_47_to_48_used=false; new_telegram_reply=false; enable_wg48_handoff=false; not Gate E full PASS; not runtime end-to-end automatico.
+verification_rule: docs-only operator decision record; D-0046-E Opzione 3 STOP Gate E full bounded manual chain; gate_e_runtime_authorized=false; D-0046-T not created; not Gate E full PASS; not runtime failure.
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 timestamp_utc: 2026-07-12
 runtime_executed: false
 workflow_modified: false
+store_modified: false
+telegram_sent: false
+decision_id: D-0046-E
+selected_option: 3
+gate_e_status: STOPPED_BY_OPERATOR_DECISION
+gate_e_runtime_authorized: false
+gate_e_full_pass: false
+d0046t_created: false
+wf45_called: false
+wf47_called: false
+wf48_called: false
+enable_wg48_handoff: false
 n8n_ready: false
 pm34_unblocked: false
-gate_e_full_pass: false
-wf48_called: true
-wf48_mode: manual_external_receipt
-wf47_rerun: false
-callable_47_to_48_used: false
-new_telegram_reply: false
-enable_wg48_handoff: false
-decision_close_persisted: true
 ```
 
-- **Commit 1 — D-0045-E wf48 external receipt close (docs-only record):** session + `CURRENT_FRONTIER.md` + `AUTOMATION_ACTIVATION_PLAN.md` + Wg runbook; **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** — **NOT Gate E full PASS**; **NOT runtime end-to-end automatico**; **NOT runtime by Cursor**.
+- **Commit 1 — D-0046-E Gate E stop (docs-only record):** session + `CURRENT_FRONTIER.md` + `AUTOMATION_ACTIVATION_PLAN.md`; **NOT_RUN_OPERATOR_DECISION_STOP** — **NOT** runtime failure; **NOT** BLOCKED; **NOT** Gate E full PASS; **NOT runtime by Cursor**.
 - **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md`; **non** certifica il proprio hash.
-- **Explicit non-touched:** `workflows/**`, `data-tables/**`, wf40/41/42; nessun runtime n8n da Cursor; nessun workflow edit.
-- **D-0044-T closed** via wf48 manual `external_receipt`; **callable non usato**; `enable_wg48_handoff=false`.
-- **PM-34 BLOCKED**; **`n8n_ready=false`**.
-- Snapshot verifica attraverso `35cb338`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
-- **Backfill PENDING_SELF_REFERENCE:** `wf45-wf47-official-bounded-receipt-pass` → `rolling_report_commit: f01ad73` (in HISTORY).
+- **Explicit non-touched:** `workflows/**`, `data-tables/**`, wf40/41/42; nessun runtime; nessun workflow edit; nessun store mutation; nessun Telegram.
+- **D-0046-T non creata**; **D-0045-E** resta ultimo PASS scope-limited runtime.
+- **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**.
+- Snapshot verifica attraverso `4273bde`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
+- **Backfill PENDING_SELF_REFERENCE:** `d0045e-wf48-external-receipt-close-record` → `rolling_report_commit: 95b9045` (in HISTORY).
 
 **Post-push evidence (commit 1 — real task):**
 
 ```text
 git log --oneline -8
+4273bde docs: record D-0046-E Gate E stop decision
+95b9045 docs: refresh runtime reports for D-0045-E wf48 close
 35cb338 docs: record D-0045-E wf48 external receipt close pass
 f01ad73 docs: refresh runtime reports for wf45-wf47 bounded receipt
 cd2c2e4 docs: record official wf45-wf47 bounded receipt pass
 6fafa9b docs: refresh runtime reports for orchestrator contract
 641d8b1 docs: codify user-decision orchestrator-execution contract
 39b53e4 docs: refresh runtime reports for wf47 bounded validation
-f55f009 docs: record wf47 bounded runtime validation
-3c40070 Merge PR #7: wf47 store derivation and fan-in dedupe
 
 git status --short
 
 git rev-parse HEAD
-35cb338a2cfbfe7730515eb68300501f94cf01f2
+4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
 
 git rev-parse origin/main
-35cb338a2cfbfe7730515eb68300501f94cf01f2
+4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
 
 git branch --show-current
 main
 
 git show --stat HEAD
-commit 35cb338a2cfbfe7730515eb68300501f94cf01f2
- docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |   3 +-
- docs/runtime/CURRENT_FRONTIER.md                   |  41 ++++---
- ...ne-d-0045-e-wf48-external-receipt-close-pass.md | 125 +++++++++++++++++++++
- ...-telegram-inbound-decision-state-correlation.md |  24 +++-
- 4 files changed, 177 insertions(+), 16 deletions(-)
+commit 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+ docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  6 +-
+ docs/runtime/CURRENT_FRONTIER.md                   | 38 +++++-----
+ ...-control-plane-d-0046-e-gate-e-stop-decision.md | 82 ++++++++++++++++++++++
+ 3 files changed, 109 insertions(+), 17 deletions(-)
 
 git ls-remote origin refs/heads/main
-35cb338a2cfbfe7730515eb68300501f94cf01f2	refs/heads/main
+4273bde2ef0bc61f4fe2d56fd658a2eb61a26377	refs/heads/main
 ```
 
 ---
@@ -102,6 +105,13 @@ git ls-remote origin refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0045e-wf48-external-receipt-close-record
+  real_task_commit: 35cb338a2cfbfe7730515eb68300501f94cf01f2
+  rolling_report_commit: 95b904504c7cbe7a94b18bfaa1f845d9459b999f
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
+  timestamp_utc: 2026-07-12
+
 - task_ref: wf45-wf47-official-bounded-receipt-pass
   real_task_commit: cd2c2e4356b27fc044e9f54470c2264b32dede6e
   rolling_report_commit: f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18

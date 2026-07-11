@@ -33,6 +33,32 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: d0045e-wf48-external-receipt-close-record
+verified_task_commit: 35cb338a2cfbfe7730515eb68300501f94cf01f2
+verified_base_commit: f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18
+verified_rolling_report_commit: 95b904504c7cbe7a94b18bfaa1f845d9459b999f
+verified_through_commit: 35cb338a2cfbfe7730515eb68300501f94cf01f2
+observed_head: 35cb338a2cfbfe7730515eb68300501f94cf01f2
+observed_origin_main: 35cb338a2cfbfe7730515eb68300501f94cf01f2
+observed_ls_remote_main: 35cb338a2cfbfe7730515eb68300501f94cf01f2
+branch: main
+workspace_status: clean
+artifact_commit: 95b904504c7cbe7a94b18bfaa1f845d9459b999f
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
+gate_e_full_pass: false
+n8n_ready: false
+pm34_unblocked: false
+wf48_called: true
+wf48_mode: manual_external_receipt
+enable_wg48_handoff: false
+decision_close_persisted: true
+timestamp_utc: 2026-07-12
+```
+
+**Nota:** snapshot D-0045-E wf48 external receipt close; superseded da D-0046-E Gate E stop decision (2026-07-12).
+
+```yaml
 task_ref: wf45-wf47-official-bounded-receipt-pass
 verified_task_commit: cd2c2e4356b27fc044e9f54470c2264b32dede6e
 verified_base_commit: 6fafa9b187d6886eefadc9cacfb7225563c5c90d
@@ -144,34 +170,61 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: d0045e-wf48-external-receipt-close-record
-verified_task_commit: 35cb338a2cfbfe7730515eb68300501f94cf01f2
-verified_base_commit: f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18
+task_ref: d0046e-gate-e-stop-decision
+verified_task_commit: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+verified_base_commit: 95b904504c7cbe7a94b18bfaa1f845d9459b999f
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: 35cb338a2cfbfe7730515eb68300501f94cf01f2
-observed_head: 35cb338a2cfbfe7730515eb68300501f94cf01f2
-observed_origin_main: 35cb338a2cfbfe7730515eb68300501f94cf01f2
-observed_ls_remote_main: 35cb338a2cfbfe7730515eb68300501f94cf01f2
+verified_through_commit: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+observed_head: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+observed_origin_main: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+observed_ls_remote_main: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
-result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
+result_runtime: NOT_RUN_OPERATOR_DECISION_STOP
+decision_id: D-0046-E
+selected_option: 3
+gate_e_status: STOPPED_BY_OPERATOR_DECISION
+gate_e_runtime_authorized: false
 gate_e_full_pass: false
+d0046t_created: false
+wf45_called: false
+wf47_called: false
+wf48_called: false
+enable_wg48_handoff: false
 n8n_ready: false
 pm34_unblocked: false
-wf48_called: true
-wf48_mode: manual_external_receipt
-wf47_rerun: false
-callable_47_to_48_used: false
-enable_wg48_handoff: false
-decision_close_persisted: true
 timestamp_utc: 2026-07-12
 ```
 
-**Nota:** D-0045-E wf48 manual `external_receipt` close **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** verified through `35cb338` — `D-0044-T` **closed** (`state_persisted=true`, `update_id=986228602`); **wf47 non rieseguito**; **callable non usato**; **nessun nuovo Telegram**; **nessun runtime eseguito da Cursor**; **nessun workflow modificato**; **NOT Gate E full PASS**; **NOT runtime end-to-end automatico**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** D-0046-E Opzione 3 **STOPPED_BY_OPERATOR_DECISION** verified through `4273bde` — Gate E runtime **non autorizzato** e **non eseguito**; **D-0046-T non creata**; **nessun Telegram**; **nessun workflow/store mutation**; **NOT** runtime failure; **NOT** BLOCKED; **NOT Gate E full PASS**; **D-0045-E** resta ultimo PASS scope-limited runtime; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
 
-**Backfill PENDING_SELF_REFERENCE:** wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+**Backfill PENDING_SELF_REFERENCE:** D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+
+---
+
+## Command outputs (verbatim, sanitized — D-0046-E Gate E stop decision)
+
+```text
+git rev-parse HEAD
+4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+
+git rev-parse origin/main
+4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
+
+git ls-remote origin refs/heads/main
+4273bde2ef0bc61f4fe2d56fd658a2eb61a26377	refs/heads/main
+
+git status --short
+
+git diff --name-only 95b904504c7cbe7a94b18bfaa1f845d9459b999f..HEAD
+docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
+docs/runtime/CURRENT_FRONTIER.md
+docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md
+```
+
+**BASE (record commit 1):** `95b904504c7cbe7a94b18bfaa1f845d9459b999f`
 
 ---
 
