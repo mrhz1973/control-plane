@@ -13,25 +13,26 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: handoff-compliance-d0041-d0042-template
-result_cursor: PASS_DOCS_ONLY
-result_runtime: NOT_RUN_BY_CURSOR
-base_commit: a7b3bdba4761f03d1512d0cb225f4524407febb3
-real_task_commit: 4f2baef567b4485ce1afae74392172196dc873b5
-commit_subject: docs: add handoff compliance template and d-0041 d-0042 handoffs
+task_ref: wf47-store-derivation-dedupe-consolidation
+result_cursor: PASS_DOCS_AND_TEMPLATE
+result_runtime: NOT_RUN_BOUNDED_REPO_SIDE_VALIDATION_PASS
+base_commit: b6695577716c10eba93fa6d8a1ea404a9ba8a690
+real_task_commit: 2009a4c14b0777d394e09a9f8bc3b25017eeeec4
+commit_subject: feat(wf47): consolidate store derivation and fan-in dedupe
 rolling_report_commit: PENDING_SELF_REFERENCE
-branch: cursor/handoff-compliance-d0041-d0042-79b7
-verification_rule: PASS docs-only commit 1 = HANDOFF_TEMPLATE.md + PROJECT_VISION §11.3 + handoff Claude verbatim + handoff GPT-B conforme; nessun workflow JSON; nessun data-tables; nessun runtime n8n; HEAD guard a7b3bdb; commit 2 = LAST_CURSOR_REPORT + backfill ristretto LAST_HANDOFF_VERIFY snapshot 85a91da.
+branch: cursor/wf47-store-derivation-dedupe-79b7
+verification_rule: PASS commit 1 = wf47 template only; JSON parse; dedupe sim PASS; no open_decision_ids_test_only code path; active=false; enable_wg48_handoff=false; no runtime n8n; not Gate E full PASS; LAST_HANDOFF_VERIFY not touched. Commit 2 = CURRENT_FRONTIER + LAST_CURSOR_REPORT.
 remote_hash_verbatim: PENDING_SELF_REFERENCE
-timestamp_utc: 2026-07-10
+timestamp_utc: 2026-07-11
 ```
 
-- **Commit 1 — handoff compliance (docs-only):** `HANDOFF_TEMPLATE.md`; `PROJECT_VISION.md` §11.3 + v2.16; handoff Claude verbatim; handoff GPT-B conforme; sanatoria path canonico D-0041/D-0042; nessun workflow JSON; nessun runtime n8n.
-- **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + backfill ristretto `LAST_HANDOFF_VERIFY.md` snapshot `85a91da`; **non** certifica il proprio hash.
-- **Explicit non-touched:** `workflows/**`, `data-tables/**`, wf40/41/42/47/48, runtime n8n, import/export live, credenziali.
-- **NOT Gate E full PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; no Active / Publish / Schedule.
-- Snapshot verifica attraverso `4f2baef`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
-- **Backfill PENDING_SELF_REFERENCE:** `d-0041-e-d-0042-e-bounded-partial-pass` → `rolling_report_commit: a7b3bdb` (in HISTORY).
+- **Commit 1 — wf47 consolidation:** `workflows/wf-telegram-inbound-polling-getupdates.template.json`; store derivation + Collapse fan-out + dedupe Set; **bounded consolidation ready** + **bounded repo-side validation pass** — **NOT Gate E full PASS**; **NOT runtime n8n**.
+- **Commit 2 (questo report):** `CURRENT_FRONTIER.md` + `LAST_CURSOR_REPORT.md`; **non** certifica il proprio hash.
+- **Explicit non-touched:** wf40/41/42/48, `data-tables/**`, `LAST_HANDOFF_VERIFY.md`, runtime n8n, import/export live, export storico 47.
+- **NOT Gate E full PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; wf48 non chiamato; no Active / Publish / Schedule.
+- Snapshot verifica attraverso `2009a4c`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
+- **Backfill PENDING_SELF_REFERENCE:** `handoff-compliance-d0041-d0042-template` → `rolling_report_commit: 71fad6c` (in HISTORY).
+- **branch PR != main** — non è PASS remoto su `main` finché non mergiato.
 
 ---
 
@@ -53,6 +54,13 @@ timestamp_utc: 2026-07-10
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: handoff-compliance-d0041-d0042-template
+  real_task_commit: 4f2baef567b4485ce1afae74392172196dc873b5
+  rolling_report_commit: 71fad6cad67cdeafa8aa985d557bfe59a80724de
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: NOT_RUN_BY_CURSOR
+  timestamp_utc: 2026-07-10
+
 - task_ref: d-0041-e-d-0042-e-bounded-partial-pass
   real_task_commit: d4a1d173f59b4fb4a7140bdd07c117c0c0243b4b
   rolling_report_commit: a7b3bdba4761f03d1512d0cb225f4524407febb3
