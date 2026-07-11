@@ -204,7 +204,7 @@ Live 47→48 handoff **PASS ATTESTATO UTENTE** (2026-06-01). Next operational ga
 |------|--------|
 | Wf47 Data Table manual validation | **PASS** (unchanged) |
 | Wg fixture manual validation | **PASS ATTESTATO UTENTE** |
-| Wg external receipt mode | **PASS ATTESTATO UTENTE** (live 47 receipt, `update_id` 986228561) |
+| Wg external receipt mode | **PASS ATTESTATO UTENTE** (live 47 receipt, `update_id` 986228561) + **D-0045-E** (`D-0044-T`, `update_id` 986228602) |
 | 47→48 live manual handoff | **PASS ATTESTATO UTENTE** |
 | Telegram inbound operational | **NOT ACTIVE** |
 | PM-34 | **BLOCCATO** |
@@ -260,3 +260,25 @@ Wg now reads and writes the **shared store `control_plane_decisions_test`** (Dat
 Final `control_plane_decisions_test` row: `status: closed`, `closed_at: 2026-06-02T22:06:45.132Z`, `update_id: 986228569`. Row was opened by **45 - Wd** (`open_action: insert`); closed via callable **48 - Wg** after **47 - Wf** accept — no manual table row edits.
 
 **48 - Wg** remains **published/callable**, **not** scheduled independently. **Not** permanent operational automation.
+
+---
+
+## 12bis. D-0045-E wf48 external receipt close — PASS ATTESTATO UTENTE SCOPE LIMITED (2026-07-12)
+
+**Status:** **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (user-attested; Cursor did not run runtime). Session: [2026-07-12-control-plane-d-0045-e-wf48-external-receipt-close-pass.md](sessions/2026-07-12-control-plane-d-0045-e-wf48-external-receipt-close-pass.md).
+
+**Decision:** D-0045-E Opzione 1 — **48/Wg** manual `external_receipt`; `enable_wg48_handoff=false`.
+
+| Aspect | Value |
+|--------|--------|
+| Receipt reused | `D-0044-T` / option `1` / `update_id` **986228602** (from prior wf47 official run) |
+| wf47 rerun | **false** — update already consumed/persisted |
+| new Telegram reply | **false** |
+| callable 47→48 | **false** |
+| Output | `inspect_status: closed`, `prior_status: open`, `state_persisted: true` |
+| Store row | `D-0044-T` **closed**; `closed_at: 2026-07-11T23:02:56.427Z` |
+| Workflow state | **48 inactive** post-run (operator-attested) |
+
+**Proves:** manual receipt→close contract on `control_plane_decisions_test`. **Does not prove:** callable automatic 47→48 in same run; Gate E full PASS; inbound operational automation.
+
+---
