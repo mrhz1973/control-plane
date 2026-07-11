@@ -1,28 +1,28 @@
-# Session — D-0046-E Gate E stop decision (operator)
+# Session — D-0046-E Gate E stop decision (VOIDED — superseded)
+
+> **CORREZIONE GOVERNANCE (D-0047-G, 2026-07-12):** Questo record è **superseded** da `docs/sessions/2026-07-12-control-plane-d-0047-g-governance-correction.md`. L'attribuzione originale «operatore ha selezionato Opzione 3» era **errata**: **nessuna** scelta diretta Opzione 3 dell'operatore esisteva; il numero 3 proveniva da raccomandazione consultiva GLM, poi erroneamente registrata da GPT-B come decisione operatore. **Stato corrente:** `VOIDED_MISATTRIBUTED_OPERATOR_CHOICE`. **Gate E:** `OPERATOR_DECISION_PENDING`. I commit Git `4273bde` / `375f495` restano evidenza audit — **non** revertiti. I fatti runtime sotto restano veri: **nulla** fu eseguito. Le condizioni di riapertura §5 restano **solo riferimento consultivo**.
 
 **Repository:** `mrhz1973/control-plane`
 **Date:** 2026-07-12
-**Decision:** **D-0046-E Opzione 3** — STOP Gate E full bounded manual chain
-**Outcome:** **NOT_RUN_OPERATOR_DECISION_STOP** — deliberate operator STOP, **not** runtime failure, **not** BLOCKED, **not** runtime NO-GO
-**Type:** Docs-only decision record; **no runtime by Cursor or operator in this task**.
+**Decision (record storico errato):** ~~D-0046-E Opzione 3~~ — **VOIDED** — STOP Gate E full bounded manual chain
+**Outcome (record originale):** ~~NOT_RUN_OPERATOR_DECISION_STOP~~ — superseded; vedi D-0047-G
+**Type:** Docs-only decision record (invalid attribution); **no runtime**.
 
-| Field | Value |
+| Field | Value (corrente post D-0047-G) |
 |-------|--------|
-| **result_cursor** | `PASS_DOCS_ONLY` |
-| **result_runtime** | `NOT_RUN_OPERATOR_DECISION_STOP` |
-| **gate_e_status** | `STOPPED_BY_OPERATOR_DECISION` |
-| **gate_e_runtime_authorized** | **false** |
-| **gate_e_full_pass** | **false** |
+| **record_status** | `VOIDED_MISATTRIBUTED_OPERATOR_CHOICE` |
+| **superseded_by** | D-0047-G |
+| **gate_e_status** | `OPERATOR_DECISION_PENDING` |
 
 ---
 
-## 1. Decision
+## 1. Decision (record storico — attribuzione errata)
 
-After consultative review, the operator selected **Option 3**: **STOP** the proposed Gate E full bounded manual chain.
+~~After consultative review, the operator selected **Option 3**~~ **ERRORE STORICO:** GPT-B registrò come scelta operatore la raccomandazione consultiva GLM «3». L'operatore **non** aveva risposto direttamente `3`.
 
 - **decision_id:** D-0046-E
 - **kind:** runtime
-- **selected_option:** 3
+- ~~**selected_option:** 3~~ **VOIDED**
 - **decision_date:** 2026-07-12
 
 ---
@@ -63,7 +63,9 @@ Any future reopening requires a **new Decision Packet**.
 
 ---
 
-## 5. Future reopening conditions (record only — not solved here)
+## 5. Future reopening conditions (consultative advisory only — not operator choice)
+
+> **Nota D-0047-G:** le condizioni sotto erano raccomandazioni consultive GLM incorporate nel record errato. Restano **riferimento consultivo** per un eventuale futuro Decision Packet — **non** autorizzazione né piano approvato.
 
 A future Decision Packet must address before authorizing runtime:
 

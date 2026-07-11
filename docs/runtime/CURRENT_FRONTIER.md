@@ -5,20 +5,21 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-07-12 — D-0046-E Gate E STOPPED_BY_OPERATOR_DECISION.
+Ultimo aggiornamento: 2026-07-12 — D-0047-G governance correction; Gate E OPERATOR_DECISION_PENDING.
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
-- **D-0046-E Gate E stop** = **STOPPED_BY_OPERATOR_DECISION** (2026-07-12, operator decision) — **NOT** runtime failure · **NOT** BLOCKED · **NOT** runtime NO-GO:
-  - **Decisione:** D-0046-E Opzione 3 — STOP Gate E full bounded manual chain.
-  - **Runtime:** **non autorizzato** e **non eseguito**; `gate_e_runtime_authorized=false`.
-  - **Fixture D-0046-T:** **non creata**; nessun Telegram; nessun workflow; nessuna mutazione store.
-  - **`enable_wg48_handoff=false`** invariato; wf45/wf47/wf48 **non chiamati** in questo arco.
-  - **Gate E full PASS:** **false**; **PM-34 BLOCKED**; **`n8n_ready=false`**.
-  - Evidenza: `docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md`.
+- **D-0047-G governance correction** = **direct operator Opzione 2** (2026-07-12) — `decision_provenance=direct_operator_message`:
+  - **Decisione:** non ratificare D-0046-E Option 3; correggere record repository.
+  - **D-0046-E Option 3:** `VOIDED_MISATTRIBUTED_OPERATOR_CHOICE` — raccomandazione GLM erroneamente registrata come scelta operatore.
+  - **Gate E:** `OPERATOR_DECISION_PENDING` — nessuna scelta operatore valida corrente; runtime **non autorizzato** e **non eseguito**.
+  - **D-0046-T:** **non creata**; nessun Telegram/workflow/store activity.
+  - **`enable_wg48_handoff=false`**; **PM-34 BLOCKED**; **`n8n_ready=false`**; Gate E full PASS **false**.
+  - Commits `4273bde`/`375f495` restano audit Git — superseded, **non** revertiti.
+  - Evidenza: `docs/sessions/2026-07-12-control-plane-d-0047-g-governance-correction.md`.
 - **D-0045-E wf48 external receipt close** = **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (2026-07-12, latest scope-limited runtime PASS) — **NOT Gate E full PASS** · **NOT runtime end-to-end automatico**:
   - **Decisione:** D-0045-E Opzione 1 — wf48 manual `external_receipt`; `enable_wg48_handoff=false`; **callable 47→48 non usato**.
   - **Input:** receipt wf47 già accettato riutilizzato (`D-0044-T`, `selected_option=1`, `update_id=986228602`); **wf47 non rieseguito**; **nessun nuovo Telegram**.
@@ -98,15 +99,15 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 ## Next gate
 
-**Not auto-started.** **Gate D closed** (2026-07-02). **D-0046-E** (2026-07-12) = **STOPPED_BY_OPERATOR_DECISION** — Gate E full bounded manual chain **non** autorizzata né eseguita.
+**Not auto-started.** **Gate D closed** (2026-07-02). **D-0047-G** (2026-07-12) corregge attribuzione D-0046-E; Gate E = **OPERATOR_DECISION_PENDING**.
 
 **Next frontier (non auto-started):**
-1. Gate E **non** riparte automaticamente.
-2. Riapertura Gate E richiede **nuovo Decision Packet esplicito** che incorpori le condizioni operative registrate in `docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md` §5.
-3. In assenza di nuova decisione, il progetto resta allo stato di evidenza bounded/manual corrente (D-0045-E = ultimo PASS scope-limited) fino a selezione di altro task strategico.
-4. Nessun blocker tecnico inventato; limiti noti (allowed-chat, parser 1–3, wf47 `state_persisted`) restano separati e non risolti.
+1. Gate E **non** riparte automaticamente; **nessuna** scelta operatore valida corrente.
+2. Riapertura Gate E richiede **nuovo Decision Packet esplicito** + **risposta diretta operatore** (condizioni consultive in D-0046-E session §5 = solo riferimento advisory).
+3. In assenza di nuova decisione, il progetto resta allo stato bounded/manual corrente (**D-0045-E** = ultimo PASS scope-limited) fino a altro task strategico.
+4. Nessun blocker tecnico inventato; limiti noti restano separati e non risolti.
 
-**Gate E** — disposizione corrente: **STOPPED_BY_OPERATOR_DECISION** (D-0046-E Opzione 3). PREP storico in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E full PASS.
+**Gate E** — disposizione corrente: **OPERATOR_DECISION_PENDING** (D-0046-E Option 3 voided). PREP storico in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E full PASS.
 
 Precondizioni Gate E — stato finding (storico, non aggiornato da D-0046-E):
 
@@ -144,7 +145,8 @@ Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: 
 - D-0028-A / Gates: `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`, Gate A/B sessions `docs/sessions/2026-06-07-control-plane-gate-*`.
 - D-0032-W field-validation: `docs/sessions/2026-06-12-control-plane-d-0032-w-field-validation-pass.md`.
 - Gate D bounded rehearsal: `docs/sessions/2026-07-02-control-plane-gate-d-rehearsal-pass.md`.
-- D-0046-E Gate E stop: `docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md`.
+- D-0047-G governance correction: `docs/sessions/2026-07-12-control-plane-d-0047-g-governance-correction.md`.
+- D-0046-E Gate E stop (voided): `docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md`.
 - D-0045-E wf48 external receipt close: `docs/sessions/2026-07-12-control-plane-d-0045-e-wf48-external-receipt-close-pass.md`.
 - wf45→wf47 official bounded receipt: `docs/sessions/2026-07-12-control-plane-wf45-wf47-official-bounded-receipt-pass.md`.
 - wf47 bounded runtime validation (derivation-only): `docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md`.

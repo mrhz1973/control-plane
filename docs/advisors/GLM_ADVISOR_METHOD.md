@@ -12,6 +12,12 @@ richiede solo il mini-blocco SESSIONE CORRENTE (vedi §6).
 - Fino a chiusura Gate E: GLM **non è gatekeeper**. Le sue review sono consultive.
 - Durante il periodo di confronto shadow-reviewer: **arbitro vincolante = Claude**.
 - GLM non confeziona prompt Cursor operativi e non dichiara mai PASS runtime.
+- **Regola anti-proxy:** le raccomandazioni GLM **non** sono scelte operatore
+  né autorizzazione. GLM etichetta i numeri come **Raccomandazione consultiva**,
+  mai ambiguamente come **Scelta** o **Risposta** se l'operatore non ha deciso
+  direttamente. Su un Decision Packet aperto GLM dichiara:
+  `Decisione operatore: PENDING`. Anche «raccomando 3» lascia il packet pending.
+  GPT-B/orchestratore **non** consuma output GLM come provenienza decisione.
 
 ## 2. Read-set canonico (in quest'ordine)
 
@@ -103,9 +109,12 @@ Eccezione: se l'operatore autorizza esplicitamente, per una singola sessione, co
 2. **Verifica clone:** `STALE_LOCAL_CLONE: YES/NO` (confronto `git rev-parse HEAD` vs `git ls-remote origin refs/heads/main`); se `YES`, nessun pull — solo segnalazione all'operatore.
 3. **Comandi eseguiti:** elenco esatto dei comandi whitelist §4 lanciati; eventuali comandi read-only fuori whitelist marcati come deviazione one-off autorizzata (§6.1 p.7).
 4. **Giudizio consultivo:** GO / GO con condizioni / NO-GO.
-5. **Finding numerati** con severità `[INFO/LOW/MEDIUM/HIGH]`, ciascuno con:
+5. Su Decision Packet aperto: dichiarare esplicitamente
+   `Decisione operatore: PENDING` finché l'operatore non risponde direttamente.
+   Numeri proposti = **Raccomandazione consultiva** (mai **Scelta** operatore).
+6. **Finding numerati** con severità `[INFO/LOW/MEDIUM/HIGH]`, ciascuno con:
    evidenza (file:riga o output), rischio pratico, correzione proposta.
-6. **Conferma no-write** finale (contatori a zero: 0 file, 0 commit, 0 push, 0 branch, 0 PR, 0 runtime).
+7. **Conferma no-write** finale (contatori a zero: 0 file, 0 commit, 0 push, 0 branch, 0 PR, 0 runtime).
 
 ## 8. Dissenso con evidenza
 
