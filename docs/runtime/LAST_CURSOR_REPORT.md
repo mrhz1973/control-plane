@@ -13,25 +13,62 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: wf47-bounded-runtime-validation-record
+task_ref: user-decision-orchestrator-execution-contract
 result_cursor: PASS_DOCS_ONLY
-result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
-base_commit: 3c40070c785b460b76120505dbbd9cf65bd0b26c
-real_task_commit: f55f009e2964c0f86eae5aef88b40d84cb8c4486
-commit_subject: docs: record wf47 bounded runtime validation
+result_runtime: NOT_RUN_BY_CURSOR
+base_commit: 39b53e4495aa628c52890dc297226350d71dfc53
+real_task_commit: 641d8b1687c65b86b27661b2bddcc8fe77e58941
+commit_subject: docs: codify user-decision orchestrator-execution contract
 rolling_report_commit: PENDING_SELF_REFERENCE
 branch: main
-verification_rule: user-attested bounded n8n manual one-shot for wf47; open_decision_ids_source=control_plane_decisions_test; store_derivation_bypassed=false; open_decision_ids_count=1; inspect_status=blocked due allowed_chat_not_configured; not receipt close; not wf48; not Gate E full PASS.
+verification_rule: docs-only contract codification; scope PROJECT_VISION.md v2.17 §6.1 §7.3.1 + CURSOR_PROMPT_TEMPLATE.md §3; runtime_executed=false; workflow_modified=false; not Gate E full PASS.
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 timestamp_utc: 2026-07-11
+runtime_executed: false
+workflow_modified: false
+n8n_ready: false
+pm34_unblocked: false
+gate_e_full_pass: false
+wf48_called: false
 ```
 
-- **Commit 1 — wf47 bounded runtime validation (user-attested record):** `CURRENT_FRONTIER.md` + session `docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md`; **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** — **NOT Gate E full PASS**; **NOT runtime end-to-end PASS**.
+- **Commit 1 — orchestrator contract (docs-only):** `PROJECT_VISION.md` v2.17 (§6.1 LLM Wiki principle, §7.3.1 utente decisore / orchestratore esecutore) + `CURSOR_PROMPT_TEMPLATE.md` §3 (prompt completo); **NOT Gate E full PASS**; **NOT runtime**.
 - **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md`; **non** certifica il proprio hash.
-- **Explicit non-touched:** `workflows/**`, `data-tables/**`, wf40/41/42/48; nessun runtime n8n da Cursor.
-- **NOT Gate E full PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; wf48 non chiamato; no Active / Publish / Schedule.
-- Snapshot verifica attraverso `f55f009`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
-- **Backfill PENDING_SELF_REFERENCE:** `wf47-store-derivation-dedupe-consolidation` → `rolling_report_commit: 75a1c5d` (in HISTORY).
+- **Explicit non-touched:** `CURRENT_FRONTIER.md`, `HANDOFF_TEMPLATE.md`, `workflows/**`, `data-tables/**`, `docs/LLMS.md`, `docs/wiki/**`; nessun runtime n8n; nessun workflow edit.
+- **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; wf48 non chiamato.
+- Snapshot verifica attraverso `641d8b1`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
+- **Backfill PENDING_SELF_REFERENCE:** `wf47-bounded-runtime-validation-record` → `rolling_report_commit: 39b53e4` (in HISTORY).
+
+**Post-push evidence (commit 1 — real task):**
+
+```text
+git log --oneline -5
+641d8b1 docs: codify user-decision orchestrator-execution contract
+39b53e4 docs: refresh runtime reports for wf47 bounded validation
+f55f009 docs: record wf47 bounded runtime validation
+3c40070 Merge PR #7: wf47 store derivation and fan-in dedupe
+75a1c5d docs: refresh cursor report for wf47 consolidation
+
+git status --short
+
+git rev-parse HEAD
+641d8b1687c65b86b27661b2bddcc8fe77e58941
+
+git rev-parse origin/main
+641d8b1687c65b86b27661b2bddcc8fe77e58941
+
+git branch --show-current
+main
+
+git show --stat HEAD
+commit 641d8b1687c65b86b27661b2bddcc8fe77e58941
+ docs/foundation/CURSOR_PROMPT_TEMPLATE.md |  4 ++++
+ docs/foundation/PROJECT_VISION.md         | 26 ++++++++++++++++++++++++--
+ 2 files changed, 28 insertions(+), 2 deletions(-)
+
+git ls-remote origin main
+641d8b1687c65b86b27661b2bddcc8fe77e58941	refs/heads/main
+```
 
 ---
 
@@ -53,6 +90,13 @@ timestamp_utc: 2026-07-11
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: wf47-bounded-runtime-validation-record
+  real_task_commit: f55f009e2964c0f86eae5aef88b40d84cb8c4486
+  rolling_report_commit: 39b53e4495aa628c52890dc297226350d71dfc53
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
+  timestamp_utc: 2026-07-11
+
 - task_ref: wf47-store-derivation-dedupe-consolidation
   real_task_commit: 2009a4c14b0777d394e09a9f8bc3b25017eeeec4
   rolling_report_commit: 75a1c5d1e87b324421aaa92199a5250adfa5d6c1
