@@ -221,6 +221,7 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 - When `enable_wg48_handoff=false`, **IF Wg48 handoff enabled and accepted** routes to **Inspect polling result** only — **Execute Workflow never runs** (short-circuit before sub-workflow call).
 - **Phase 2 runtime:** operator must set `enable_wg48_handoff=true` only for the test window and **manually wire/select** workflow **48 - Wg** on **Execute Workflow - Wg48 TEST ONLY (CONFIGURE_IN_N8N_UI)** (`CONFIGURE_48_WORKFLOW_REFERENCE_IN_N8N_UI` — **no hardcoded workflow id in Git**).
 - **Handoff payload:** only **accepted** sanitized receipts (`inspect_status: accepted`); blocked / no-parseable / duplicate paths do not call 48.
+- **wf47 vs wf48 contract:** **47/Wf** accepts the receipt, advances offset/dedupe, and persists **`wf47_polling_state_test`** only. **48/Wg** applies the choice and transitions the decision row from **open** to **closed** (`selected_option`, `closed_at`, `update_id`). With `enable_wg48_handoff=false`, a receipt `accepted` does **not** modify `control_plane_decisions_test` status.
 - **Boundaries:** NO Telegram Trigger · NO public webhook · NO production Data Table · NO `control_plane_state` · NO PM-34 · NO workflow 40/41/42 mutation · NO secrets in Git.
 
 ### Controlled 47→48 handoff runtime — PASS ATTESTATO UTENTE (2026-06-01)
@@ -252,7 +253,28 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 | last_handled_update_id | 986228567 |
 | test_only | true |
 
-**47 - Wf** turned **off/unpublished/inactive** after the Gate 3 test window. **Not** permanently operational. Callable handoff to **48 - Wg** used for close-on-reply on `control_plane_decisions_test`.
+**47 - Wf** turned **off/unpublished/inactive** after the Gate 3 test window. **Not** permanently operational. Callable handoff to **48 - Wg** performs close-on-reply on `control_plane_decisions_test` when `enable_wg48_handoff=true` and handoff is authorized — **not** by 47 alone.
+
+---
+
+## 10quater. Official wf45 → wf47 bounded receipt — PASS ATTESTATO UTENTE SCOPE LIMITED (2026-07-12)
+
+**Status:** **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (user-attested; Cursor did not run runtime). Session: [2026-07-12-control-plane-wf45-wf47-official-bounded-receipt-pass.md](sessions/2026-07-12-control-plane-wf45-wf47-official-bounded-receipt-pass.md).
+
+**Scope:** Official **45/Wd** + official **47/Wf** manual/inactive; `enable_wg48_handoff=false`; **wf48 not called**.
+
+| Phase | Result |
+|-------|--------|
+| Store hygiene | `D-0041-T` closed manually; no other open rows |
+| **45** open-on-send | `D-0044-T`; `telegram_send_ok=true`; `message_id=1205`; `fan_out_items_in=1` |
+| **47** attempt 1 | **blocked** — `allowed_chat_not_configured`; derivation OK (`open_decision_ids_count=1`) |
+| **47** attempt 2 | **blocked** — `no_parseable_decision_response`; HTTP 404 on getUpdates (sanitized); root cause = invalid endpoint, not store correlation |
+| Operator fix | getUpdates endpoint corrected in n8n UI (no secrets in Git) |
+| **47** verification | **accepted** — `D-0044-T`, `selected_option=1`, `update_id=986228602`, `offset_after_placeholder=986228603` |
+| Polling state | `wf47_polling_state_test` updated (`last_update_id=986228603`, `last_handled_update_id=986228602`) |
+| Decision store | **D-0044-T remains open** — intentional; close is **48/Wg** scope, not tested |
+
+**NOT claimed:** Gate E full PASS · runtime end-to-end PASS · wf48 close · inbound automation active.
 
 ---
 

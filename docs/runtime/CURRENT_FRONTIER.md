@@ -5,20 +5,24 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-07-11 — wf47 bounded runtime validation PASS_ATTESTATO_UTENTE_SCOPE_LIMITED.
+Ultimo aggiornamento: 2026-07-12 — wf45 → wf47 official bounded receipt PASS_ATTESTATO_UTENTE_SCOPE_LIMITED.
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
-- **wf47 bounded runtime validation** = **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (2026-07-11, operator-attested) — **NOT Gate E full PASS** · **NOT runtime end-to-end PASS**:
-  - **47 ufficiale** re-importato manualmente in n8n UI dall'operatore; manual one-shot eseguito.
-  - **Inspect output:** `inspect_status=blocked`; `block_reason=allowed_chat_not_configured`; `allowed_chat_configured=false`.
-  - **Derivation/dedupe PASS scope-limited:** `open_decision_ids_source=control_plane_decisions_test`; `store_derivation_bypassed=false`; `open_decision_ids_count=1`; `test_only=true`.
-  - **Receipt/decision close non testato** (blocked prima del path accepted).
-  - **wf48 non chiamato**; no Active / no Publish / no Schedule.
-  - Evidenza: `docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md`.
+- **wf45 → wf47 official bounded receipt** = **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (2026-07-12, operator-attested) — **NOT Gate E full PASS** · **NOT runtime end-to-end PASS**:
+  - **Pre-hygiene:** `D-0041-T` closed manually (`note_preview=manual_hygiene_before_D-0044-T`); no other open rows.
+  - **45 ufficiale (manual, inactive):** `D-0044-T` open-on-send — `telegram_send_ok=true`; `message_id=1205`; `http_status=200`; `open_action=insert`; `fan_out_items_in=1`; `test_only=true`; `pass_claimed=false`.
+  - **47 ufficiale — blocker history (sintesi):** (1) `allowed_chat_not_configured`; (2) `no_parseable_decision_response` — root cause HTTP 404 su getUpdates (endpoint runtime non valido; risposta sanitizzata `statusCode=404`, `body.ok=false`); derivation OK in entrambi (`open_decision_ids_count=1`).
+  - **Correzione operatore:** endpoint getUpdates corretto in n8n UI (nessun segreto registrato).
+  - **47 verification run — receipt accepted:** `decision_id=D-0044-T`; `selected_option=1`; `update_id=986228602`; `offset_after_placeholder=986228603`; `last_handled_update_id` pre=986228601.
+  - **Polling state persisted:** `wf47_polling_state_test` — `last_update_id=986228603`; `last_handled_update_id=986228602`; `handled_keys_json` aggiornato (chiave D-0044-T/1/986228602).
+  - **D-0044-T in store:** `status=open` intenzionalmente — `selected_option`/`closed_at`/`update_id`/`note_preview` vuoti. **Non** failure wf47: close è scope **48/Wg**.
+  - **wf48 non chiamato**; `enable_wg48_handoff=false`; no Active / no Publish / no Schedule.
+  - Evidenza: `docs/sessions/2026-07-12-control-plane-wf45-wf47-official-bounded-receipt-pass.md`.
+- **wf47 bounded runtime validation (derivation-only)** = **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (2026-07-11) — superseded per receipt ufficiale sopra; storico: `allowed_chat_not_configured`; receipt non testato. Evidenza: `docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md`.
 - **Gate E wf47 ufficiale consolidation** = **bounded consolidation ready** + **bounded repo-side validation pass** (2026-07-11, repo-only, PR #7 merged `3c40070`) — superseded per runtime derivation da attestazione scope-limited sopra:
   - Template ufficiale `workflows/wf-telegram-inbound-polling-getupdates.template.json`: rimossa lista hardcoded `open_decision_ids_test_only`; derivation da `control_plane_decisions_test` (`status=open`, dedupe Set); `Collapse shared decisions load fan-out` + `Build getUpdates` `runOnceForAllItems`; inspect espone `open_decision_ids_source`, `store_derivation_bypassed=false`, `open_decision_ids_count`.
   - Validazione repo-side: JSON parse OK; dedupe simulation fixture → `["D-0041-T"]` count=1; invariant grep (`active=false`, `enable_wg48_handoff=false`).
@@ -61,12 +65,12 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 | Asset | Stato | Note |
 |-------|--------|------|
-| **45 / Wd** | **PASS ATTESTATO UTENTE** + Gate D + **D-0041-E** **2026-07-09** | `D-0041-T` open-on-send (`message_id=1203`); fan-out guard `fan_out_items_in=1`. **Inactive** post-test. |
+| **45 / Wd** | **PASS ATTESTATO UTENTE** + Gate D + **D-0041-E** + **official 2026-07-12** | `D-0044-T` open-on-send (`message_id=1205`); fan-out guard `fan_out_items_in=1`. **Inactive** post-test. |
 | **46 / We** | Package-prep **completato**; **live BLOCKED/PENDING** | HTTPS webhook required; **We live PASS NON registrato**. |
-| **47 / Wf** | **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** **2026-07-11** + consolidation **PR #7** | Store derivation + dedupe runtime attestato (`open_decision_ids_count=1`); inspect **blocked** (`allowed_chat_not_configured`); receipt close **non testato**. **`enable_wg48_handoff=false`**. **Inactive / not Published.** |
-| **48 / Wg** | **PASS** + Gate D; **non chiamato** in D-0041/42 | **callable**; **non schedulato**. |
+| **47 / Wf** | **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** **2026-07-12** + consolidation **PR #7** | Official receipt **accepted** (`D-0044-T`, `selected_option=1`, `update_id=986228602`); polling state persisted; **decision close NOT tested** (`enable_wg48_handoff=false`). **Inactive / not Published.** |
+| **48 / Wg** | **PASS** + Gate D; **non chiamato** in questo arc | **callable**; **non schedulato**. Close D-0044-T = gate separato. |
 | **49 / Wh** | Rehearsal **PASS**; **inattivo** | Not auto-promoted by Gate D. |
-| **decision-store** | Gates **1–3 PASS** + Gate B/D + **D-0041-E** | `D-0041-T` **open** (post wf45); historical closed rows retained. |
+| **decision-store** | Gates **1–3 PASS** + Gate B/D + **official 2026-07-12** | `D-0044-T` **open** intenzionalmente (receipt wf47 ≠ close wf48); `D-0041-T` closed (hygiene). |
 
 - **Telegram inbound operational automation**: **NOT ACTIVE / NOT RUN**.
 - **We/46 live**: **BLOCKED/PENDING** (HTTPS webhook).
@@ -83,18 +87,18 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 **Not auto-started.** **Gate D closed** (2026-07-02). **D-0041-E / D-0042-E** = **bounded PARTIAL PASS** (2026-07-09) — **NOT Gate E full PASS**. Evidenza: `CURRENT_FRONTIER.md` (questo file); D-0040-E preflight NO-GO: `docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md`.
 
 **Next frontier (non auto-started):**
-1. Decidere se configurare `allowed_chat` per receipt bounded su **47 ufficiale** oppure procedere con altro Decision Packet dedicato.
-2. Mantenere `enable_wg48_handoff=false` salvo nuova decisione.
-3. Eventuale Gate E bounded rerun receipt path — no Active / no Publish / no Schedule.
+1. Eventuale bounded **47→48 close** di **D-0044-T** — **solo** via Decision Packet dedicato; `enable_wg48_handoff=false` finché non autorizzato esplicitamente.
+2. Nessun Active / Publish / Schedule / Telegram Trigger / webhook pubblico.
+3. Gate E full chain resta **non** attestata.
 
 **Gate E** — **SOLO via Decision Packet dedicato** — PREP in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E full PASS.
 
 Precondizioni Gate E — stato finding:
 
-1. **Fan-out 45/47** — da validare in Gate E manual-only (criteri operativi nel piano: 45 = 1 messaggio; 47 ≤5 item; stop se oltre).
-2. **47 derivation da store + dedupe** — **repo-side consolidated** (PR #7) + **bounded runtime derivation PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (2026-07-11); receipt/close path **non testato** (`allowed_chat_not_configured`).
+1. **Fan-out 45/47** — **45 official 2026-07-12:** 1 messaggio (`fan_out_items_in=1`); 47 receipt run: 1 item accepted — entro limiti; Gate E full fan-out criteria restano da attestare in run dedicato.
+2. **47 derivation + receipt + polling persistence** — **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (2026-07-12 official); **47→48 decision close** = **NOT RUN** (`enable_wg48_handoff=false`; D-0044-T open intenzionale).
 3. **Re-export 45/47 post-fix UI** — **chiuso** da `f6f5579` (`workflows/exports/2026-07-02_*post-gate-d.redacted.json`).
-4. **`enable_wg48_handoff`** — default **`false`** fuori test; test manuale/confinato solo se autorizzato nel Decision Packet.
+4. **`enable_wg48_handoff`** — default **`false`** fuori test; bounded 47→48 close solo se autorizzato nel Decision Packet.
 
 Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: **PM-34 BLOCKED** · **`n8n_ready=false`** · NO permanent schedule · wf40/42 untouched · pezzi collegati ≠ loop avviato.
 
@@ -123,7 +127,8 @@ Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: 
 - D-0028-A / Gates: `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`, Gate A/B sessions `docs/sessions/2026-06-07-control-plane-gate-*`.
 - D-0032-W field-validation: `docs/sessions/2026-06-12-control-plane-d-0032-w-field-validation-pass.md`.
 - Gate D bounded rehearsal: `docs/sessions/2026-07-02-control-plane-gate-d-rehearsal-pass.md`.
-- wf47 bounded runtime validation: `docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md`.
+- wf45→wf47 official bounded receipt: `docs/sessions/2026-07-12-control-plane-wf45-wf47-official-bounded-receipt-pass.md`.
+- wf47 bounded runtime validation (derivation-only): `docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md`.
 - Hash / verify: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/runtime/AUTOMATIC_POST_PUSH_VERIFIER.md`.
 
 ## Manutenzione

@@ -178,14 +178,15 @@ Gate E **non** deve generare fan-out incontrollato di messaggi Telegram o item d
 
 **Regola:** una semplice menzione del rischio fan-out **non** basta — il session log Gate E deve contenere conteggio esplicito messaggi (45) e item (47) con confronto ai limiti sopra.
 
-##### 2. Derivation 47 da decision-store (operazionalizzato)
+##### 2. Derivation 47 da decision-store + receipt/polling (operazionalizzato)
 
 | | |
 |---|---|
 | **Comportamento richiesto** | **47** deriva l'elenco decisioni **open** da `control_plane_decisions_test` (query/load store), **non** da lista manuale hardcoded |
 | **Vietato come fonte operativa** | Campo/lista `open_decision_ids_test_only` popolata manualmente in n8n UI come sostituto dello store |
 | **Uso test-only ammesso** | Override fixture **solo** se nominato nel Decision Packet, confinato al run, e session log dichiara `store_derivation_bypassed=true` + motivo — **non** equivalente a comportamento operativo Gate E PASS |
-| **Evidenza PASS** | Inspect/output 47 mostra `decision_id`(s) coerenti con righe `status=open` nello store al momento del pickup; nessun retarget manuale post-Gate-D pattern |
+| **Evidenza PASS (derivation + receipt)** | **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** (2026-07-12 official): derivation `open_decision_ids_count=1`; receipt `accepted` (`D-0044-T`, `selected_option=1`, `update_id=986228602`); `wf47_polling_state_test` persisted. Session: `docs/sessions/2026-07-12-control-plane-wf45-wf47-official-bounded-receipt-pass.md` |
+| **Fuori scope attestato** | **47→48 decision close** — `enable_wg48_handoff=false`; **D-0044-T open** intenzionale post-receipt; close = **48/Wg** gate separato |
 | **Stop condition** | Pickup su `decision_id` assente dallo store; chiusura su decisione già closed; lista manuale usata senza bypass documentato |
 
 ##### 3. Re-export 45/47 post-fix UI — **CHIUSO**
