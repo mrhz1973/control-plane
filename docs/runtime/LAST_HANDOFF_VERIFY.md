@@ -33,6 +33,29 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: user-decision-orchestrator-execution-contract
+verified_task_commit: 641d8b1687c65b86b27661b2bddcc8fe77e58941
+verified_base_commit: 39b53e4495aa628c52890dc297226350d71dfc53
+verified_rolling_report_commit: 6fafa9b187d6886eefadc9cacfb7225563c5c90d
+verified_through_commit: 641d8b1687c65b86b27661b2bddcc8fe77e58941
+observed_head: 641d8b1687c65b86b27661b2bddcc8fe77e58941
+observed_origin_main: 641d8b1687c65b86b27661b2bddcc8fe77e58941
+observed_ls_remote_main: 641d8b1687c65b86b27661b2bddcc8fe77e58941
+branch: main
+workspace_status: clean
+artifact_commit: 6fafa9b187d6886eefadc9cacfb7225563c5c90d
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: NOT_RUN_BY_CURSOR
+gate_e_full_pass: false
+n8n_ready: false
+pm34_unblocked: false
+wf48_called: false
+timestamp_utc: 2026-07-11
+```
+
+**Nota:** snapshot orchestrator contract codification; superseded da wf45→wf47 official bounded receipt pass (2026-07-12).
+
+```yaml
 task_ref: wf47-bounded-runtime-validation-record
 verified_task_commit: f55f009e2964c0f86eae5aef88b40d84cb8c4486
 verified_base_commit: 3c40070c785b460b76120505dbbd9cf65bd0b26c
@@ -98,29 +121,54 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: user-decision-orchestrator-execution-contract
-verified_task_commit: 641d8b1687c65b86b27661b2bddcc8fe77e58941
-verified_base_commit: 39b53e4495aa628c52890dc297226350d71dfc53
+task_ref: wf45-wf47-official-bounded-receipt-pass
+verified_task_commit: cd2c2e4356b27fc044e9f54470c2264b32dede6e
+verified_base_commit: 6fafa9b187d6886eefadc9cacfb7225563c5c90d
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: 641d8b1687c65b86b27661b2bddcc8fe77e58941
-observed_head: 641d8b1687c65b86b27661b2bddcc8fe77e58941
-observed_origin_main: 641d8b1687c65b86b27661b2bddcc8fe77e58941
-observed_ls_remote_main: 641d8b1687c65b86b27661b2bddcc8fe77e58941
+verified_through_commit: cd2c2e4356b27fc044e9f54470c2264b32dede6e
+observed_head: cd2c2e4356b27fc044e9f54470c2264b32dede6e
+observed_origin_main: cd2c2e4356b27fc044e9f54470c2264b32dede6e
+observed_ls_remote_main: cd2c2e4356b27fc044e9f54470c2264b32dede6e
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
-result_runtime: NOT_RUN_BY_CURSOR
+result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED
 gate_e_full_pass: false
 n8n_ready: false
 pm34_unblocked: false
 wf48_called: false
-timestamp_utc: 2026-07-11
+timestamp_utc: 2026-07-12
 ```
 
-**Nota:** docs-only contract codification verified through `641d8b1` — `PROJECT_VISION.md` v2.17 §7.3.1 + `CURSOR_PROMPT_TEMPLATE.md` §3; **nessun runtime eseguito**; **nessun workflow modificato**; **NOT Gate E full PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**; wf48 **non chiamato**; wf40/41/42 untouched. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** wf45→wf47 official bounded receipt **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** verified through `cd2c2e4` — receipt accepted (`D-0044-T`, `selected_option=1`, `update_id=986228602`); polling state persisted; **D-0044-T open** intenzionale; **wf48 non chiamato**; close 47→48 **non testato**; **nessun runtime eseguito da Cursor**; **nessun workflow modificato**; **NOT Gate E full PASS**; **NOT runtime end-to-end PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**; **`enable_wg48_handoff=false`**. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
 
-**Backfill PENDING_SELF_REFERENCE:** wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+**Backfill PENDING_SELF_REFERENCE:** orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+
+---
+
+## Command outputs (verbatim, sanitized — wf45-wf47 official bounded receipt pass)
+
+```text
+git rev-parse HEAD
+cd2c2e4356b27fc044e9f54470c2264b32dede6e
+
+git rev-parse origin/main
+cd2c2e4356b27fc044e9f54470c2264b32dede6e
+
+git ls-remote origin refs/heads/main
+cd2c2e4356b27fc044e9f54470c2264b32dede6e	refs/heads/main
+
+git status --short
+
+git diff --name-only 6fafa9b187d6886eefadc9cacfb7225563c5c90d..HEAD
+docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
+docs/runtime/CURRENT_FRONTIER.md
+docs/sessions/2026-07-12-control-plane-wf45-wf47-official-bounded-receipt-pass.md
+docs/workflow-wf-telegram-inbound-polling-getupdates.md
+```
+
+**BASE (record commit 1):** `6fafa9b187d6886eefadc9cacfb7225563c5c90d`
 
 ---
 
