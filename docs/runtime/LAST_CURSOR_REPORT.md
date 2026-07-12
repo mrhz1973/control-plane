@@ -13,86 +13,87 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0049w-we-polling-first-architecture-decision
-result_cursor: PASS_DOCS_ONLY
-result_runtime: NOT_RUN_ARCHITECTURE_DECISION
-base_commit: 417f136266978a4b6a64b85f9fa1574f87bed226
-real_task_commit: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
-commit_subject: docs: select polling-first inbound architecture for D-0049-W
+task_ref: d0050w-wf47-callback-query-l3-repository-implementation
+result_cursor: PASS_REPOSITORY_ONLY_IMPLEMENTATION
+result_runtime: NOT_RUN_L3_IMPLEMENTATION
+base_commit: 095933d9d0b9edb3edf42233225aa89d3e9f3f3f3d
+real_task_commit: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
+commit_subject: feat: harden wf47 callback-query path for D-0050-W
 rolling_report_commit: PENDING_SELF_REFERENCE
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 branch: main
-decision_id: D-0049-W
+decision_id: D-0050-W
 selected_option: 1
 decision_provenance: direct_operator_message
-parent_decision_id: D-0048-S
-parent_selected_option: 2
+parent_decision_id: D-0049-W
+parent_selected_option: 1
 inbound_primary_architecture: WF47_POLLING_FIRST
-we46_primary_path_status: DEPRECATED_AS_PRIMARY_PATH
-we46_template_status: RETAINED_INACTIVE_WEBHOOK_FALLBACK
-we46_live_pass: false
-we46_https_blocker_status: BLOCKED_PENDING_IF_FALLBACK_REOPENED
-wf47_callback_query_target: SELECTED_PENDING_L3
-answer_callback_query_status: PENDING_L3_DESIGN
-l3_implementation_authorized: false
+callback_query_source_guard: IMPLEMENTED_PENDING_L4
+allowed_updates_status: EXPLICIT_PENDING_L4
+parser_options_status: OPTIONS_1_TO_5_IMPLEMENTED_PENDING_L4
+answer_callback_query_status: IMPLEMENTED_PENDING_L4
+receipt_one_item_invariant: PASS_REPOSITORY_SIDE
+fixture_matrix_result: PASS_REPOSITORY_SIDE_A_TO_J
+workflow_template_modified: true
+runtime_workflow_modified: false
+runtime_executed: false
+telegram_api_called: false
+callback_query_live_pass: false
+answer_callback_query_live_pass: false
 l4_runtime_test_authorized: false
 l5_live_activation_authorized: false
-runtime_executed: false
-workflow_modified: false
-telegram_sent: false
-webhook_modified: false
-dns_modified: false
-tunnel_modified: false
+enable_wg48_handoff: false
 gate_e_status: OPERATOR_DECISION_PENDING
 gate_e_full_pass: false
-enable_wg48_handoff: false
+we46_template_status: RETAINED_INACTIVE_WEBHOOK_FALLBACK
+we46_live_pass: false
 n8n_ready: false
 pm34_unblocked: false
 timestamp_utc: 2026-07-12
 ```
 
-- **Commit 1 — D-0049-W architecture decision (docs-only):** session D-0049-W + `CURRENT_FRONTIER` + `AUTOMATION_ACTIVATION_PLAN` + We/wf47 runbooks; **NOT_RUN_ARCHITECTURE_DECISION** — L0/L1/L2 only; **NOT** L3/L4/L5; **NOT** runtime.
+- **Commit 1 — D-0050-W L3 repository implementation:** session D-0050-W + wf47 template + runbook + `CURRENT_FRONTIER` + `AUTOMATION_ACTIVATION_PLAN`; **NOT_RUN_L3_IMPLEMENTATION** — **NOT** runtime; fixtures A–J PASS repo-side.
 - **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md`; **non** certifica il proprio hash.
-- **D-0048-S Opzione 2** parent; **D-0049-W Opzione 1** wf47 polling-first selected; **We/46** deprecated as primary, retained inactive fallback.
+- **D-0049-W Opzione 1** parent; template modified; runtime n8n instance **unchanged**.
 - **D-0045-E** resta ultimo PASS scope-limited runtime.
-- Snapshot verifica attraverso `9c328fe`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
-- **Backfill PENDING_SELF_REFERENCE:** `d0047g-d0046e-governance-correction` → `rolling_report_commit: 417f136` (in HISTORY).
+- Snapshot verifica attraverso `9cc2162`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
+- **Backfill PENDING_SELF_REFERENCE:** `d0049w-we-polling-first-architecture-decision` → `rolling_report_commit: b0bfee4` (in HISTORY).
 
 **Post-push evidence (commit 1 — real task):**
 
 ```text
 git log --oneline -8
+9cc2162 feat: harden wf47 callback-query path for D-0050-W
+095933d Update wf47 polling template for callback handling
+b0bfee4 docs: refresh runtime reports for D-0049-W
 9c328fe docs: select polling-first inbound architecture for D-0049-W
 417f136 docs: refresh runtime reports for D-0047-G correction
 5fdf1dd docs: correct D-0046-E provenance and add anti-proxy rule
 375f495 docs: refresh runtime reports for D-0046-E stop
 4273bde docs: record D-0046-E Gate E stop decision
-95b9045 docs: refresh runtime reports for D-0045-E wf48 close
-35cb338 docs: record D-0045-E wf48 external receipt close pass
-f01ad73 docs: refresh runtime reports for wf45-wf47 bounded receipt
 
 git status --short
 
 git rev-parse HEAD
-9c328fe266a520f59e2f29bb44d30f0377aa6b70
+9cc21624d4441a6a0ca676d4ff0f29cc05341243
 
 git rev-parse origin/main
-9c328fe266a520f59e2f29bb44d30f0377aa6b70
+9cc21624d4441a6a0ca676d4ff0f29cc05341243
 
 git branch --show-current
 main
 
 git show --stat HEAD
-commit 9c328fe266a520f59e2f29bb44d30f0377aa6b70
- docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  15 ++-
- docs/runtime/CURRENT_FRONTIER.md                   |  28 +++--
- ...049-w-we-polling-first-architecture-decision.md | 136 +++++++++++++++++++++
- ...low-we-telegram-interactive-decision-buttons.md |   4 +-
- ...kflow-wf-telegram-inbound-polling-getupdates.md |  29 ++++-
- 5 files changed, 196 insertions(+), 16 deletions(-)
+commit 9cc21624d4441a6a0ca676d4ff0f29cc05341243
+ docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  18 ++--
+ docs/runtime/CURRENT_FRONTIER.md                   |  19 +++-
+ ...0050-w-wf47-callback-query-l3-implementation.md | 109 +++++++++++++++++++++
+ ...kflow-wf-telegram-inbound-polling-getupdates.md |  34 ++++++-
+ ...legram-inbound-polling-getupdates.template.json |  14 +--
+ 5 files changed, 171 insertions(+), 23 deletions(-)
 
 git ls-remote origin refs/heads/main
-9c328fe266a520f59e2f29bb44d30f0377aa6b70	refs/heads/main
+9cc21624d4441a6a0ca676d4ff0f29cc05341243	refs/heads/main
 ```
 
 ---
@@ -115,6 +116,13 @@ git ls-remote origin refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0049w-we-polling-first-architecture-decision
+  real_task_commit: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
+  rolling_report_commit: b0bfee43382b2de1a2fd5710fa3004c6c370af71
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: NOT_RUN_ARCHITECTURE_DECISION
+  timestamp_utc: 2026-07-12
+
 - task_ref: d0047g-d0046e-governance-correction
   real_task_commit: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
   rolling_report_commit: 417f136266978a4b6a64b85f9fa1574f87bed226

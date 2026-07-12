@@ -33,6 +33,38 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: d0049w-we-polling-first-architecture-decision
+verified_task_commit: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
+verified_base_commit: 417f136266978a4b6a64b85f9fa1574f87bed226
+verified_rolling_report_commit: b0bfee43382b2de1a2fd5710fa3004c6c370af71
+verified_through_commit: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
+observed_head: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
+observed_origin_main: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
+observed_ls_remote_main: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
+branch: main
+workspace_status: clean
+artifact_commit: b0bfee43382b2de1a2fd5710fa3004c6c370af71
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: NOT_RUN_ARCHITECTURE_DECISION
+decision_id: D-0049-W
+selected_option: 1
+decision_provenance: direct_operator_message
+parent_decision_id: D-0048-S
+parent_selected_option: 2
+inbound_primary_architecture: WF47_POLLING_FIRST
+gate_e_status: OPERATOR_DECISION_PENDING
+gate_e_full_pass: false
+runtime_executed: false
+workflow_modified: false
+enable_wg48_handoff: false
+n8n_ready: false
+pm34_unblocked: false
+timestamp_utc: 2026-07-12
+```
+
+**Nota:** snapshot D-0049-W polling-first architecture — superseded da D-0050-W L3 repository implementation (2026-07-12).
+
+```yaml
 task_ref: d0047g-d0046e-governance-correction
 verified_task_commit: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
 verified_base_commit: 375f495c1976153e0b68722fddc480c147bf8124
@@ -227,96 +259,99 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: d0049w-we-polling-first-architecture-decision
-verified_task_commit: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
-verified_base_commit: 417f136266978a4b6a64b85f9fa1574f87bed226
+task_ref: d0050w-wf47-callback-query-l3-repository-implementation
+verified_task_commit: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
+verified_base_commit: 095933d9d0b9edb3edf42233225aa89d3e9f3f3f3d
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
-observed_head: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
-observed_origin_main: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
-observed_ls_remote_main: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
+verified_through_commit: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
+observed_head: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
+observed_origin_main: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
+observed_ls_remote_main: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
-result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
-result_runtime: NOT_RUN_ARCHITECTURE_DECISION
-decision_id: D-0049-W
+result: PASS_REMOTE_DOCUMENTAL_REPOSITORY_IMPLEMENTATION
+result_runtime: NOT_RUN_L3_IMPLEMENTATION
+decision_id: D-0050-W
 selected_option: 1
 decision_provenance: direct_operator_message
-parent_decision_id: D-0048-S
-parent_selected_option: 2
-inbound_primary_architecture: WF47_POLLING_FIRST
-we46_primary_path_status: DEPRECATED_AS_PRIMARY_PATH
-we46_template_status: RETAINED_INACTIVE_WEBHOOK_FALLBACK
-we46_live_pass: false
-wf47_callback_query_target: SELECTED_PENDING_L3
-answer_callback_query_status: PENDING_L3_DESIGN
-l3_implementation_authorized: false
+parent_decision_id: D-0049-W
+parent_selected_option: 1
+callback_query_source_guard: IMPLEMENTED_PENDING_L4
+allowed_updates_status: EXPLICIT_PENDING_L4
+parser_options_status: OPTIONS_1_TO_5_IMPLEMENTED_PENDING_L4
+answer_callback_query_status: IMPLEMENTED_PENDING_L4
+receipt_one_item_invariant: PASS_REPOSITORY_SIDE
+fixture_matrix_result: PASS_REPOSITORY_SIDE_A_TO_J
+workflow_template_modified: true
+runtime_workflow_modified: false
+runtime_executed: false
+telegram_api_called: false
+callback_query_live_pass: false
+answer_callback_query_live_pass: false
 l4_runtime_test_authorized: false
 l5_live_activation_authorized: false
-runtime_executed: false
-workflow_modified: false
-telegram_sent: false
-webhook_modified: false
 gate_e_status: OPERATOR_DECISION_PENDING
 gate_e_full_pass: false
 enable_wg48_handoff: false
 n8n_ready: false
 pm34_unblocked: false
+we46_template_status: RETAINED_INACTIVE_WEBHOOK_FALLBACK
+we46_live_pass: false
 timestamp_utc: 2026-07-12
 ```
 
-**Nota:** D-0049-W polling-first architecture verified through `9c328fe` — L0/L1/L2 docs-only; wf47 polling-first selected; We/46 deprecated as primary, retained inactive fallback; **answerCallbackQuery PENDING_L3**; **nessun runtime**; **D-0045-E** resta ultimo PASS scope-limited; **NOT Gate E full PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** D-0050-W L3 repository implementation verified through `9cc2162` — template modified; **runtime workflow instance unchanged**; fixtures A–J PASS repo-side; **callback live PASS=false**; **answerCallbackQuery live PASS=false**; **nessun runtime**; **D-0045-E** resta ultimo PASS scope-limited; **NOT Gate E full PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
 
-**Backfill PENDING_SELF_REFERENCE:** D-0047-G snapshot → `417f136`; D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+**Backfill PENDING_SELF_REFERENCE:** D-0049-W snapshot → `b0bfee4`; D-0047-G snapshot → `417f136`; D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
 
 ---
 
-## Command outputs (verbatim, sanitized — D-0049-W polling-first architecture)
+## Command outputs (verbatim, sanitized — D-0050-W wf47 L3 repository implementation)
 
 ```text
 git log --oneline -8
+9cc2162 feat: harden wf47 callback-query path for D-0050-W
+095933d Update wf47 polling template for callback handling
+b0bfee4 docs: refresh runtime reports for D-0049-W
 9c328fe docs: select polling-first inbound architecture for D-0049-W
 417f136 docs: refresh runtime reports for D-0047-G correction
 5fdf1dd docs: correct D-0046-E provenance and add anti-proxy rule
 375f495 docs: refresh runtime reports for D-0046-E stop
 4273bde docs: record D-0046-E Gate E stop decision
-95b9045 docs: refresh runtime reports for D-0045-E wf48 close
-35cb338 docs: record D-0045-E wf48 external receipt close pass
-f01ad73 docs: refresh runtime reports for wf45-wf47 bounded receipt
 
 git status --short
 
 git rev-parse HEAD
-9c328fe266a520f59e2f29bb44d30f0377aa6b70
+9cc21624d4441a6a0ca676d4ff0f29cc05341243
 
 git rev-parse origin/main
-9c328fe266a520f59e2f29bb44d30f0377aa6b70
+9cc21624d4441a6a0ca676d4ff0f29cc05341243
 
 git branch --show-current
 main
 
 git show --stat HEAD
-commit 9c328fe266a520f59e2f29bb44d30f0377aa6b70
- docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  15 ++-
- docs/runtime/CURRENT_FRONTIER.md                   |  28 +++--
- ...049-w-we-polling-first-architecture-decision.md | 136 +++++++++++++++++++++
- ...low-we-telegram-interactive-decision-buttons.md |   4 +-
- ...kflow-wf-telegram-inbound-polling-getupdates.md |  29 ++++-
- 5 files changed, 196 insertions(+), 16 deletions(-)
+commit 9cc21624d4441a6a0ca676d4ff0f29cc05341243
+ docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  18 ++--
+ docs/runtime/CURRENT_FRONTIER.md                   |  19 +++-
+ ...0050-w-wf47-callback-query-l3-implementation.md | 109 +++++++++++++++++++++
+ ...kflow-wf-telegram-inbound-polling-getupdates.md |  34 ++++++-
+ ...legram-inbound-polling-getupdates.template.json |  14 +--
+ 5 files changed, 171 insertions(+), 23 deletions(-)
 
 git ls-remote origin refs/heads/main
-9c328fe266a520f59e2f29bb44d30f0377aa6b70	refs/heads/main
+9cc21624d4441a6a0ca676d4ff0f29cc05341243	refs/heads/main
 
-git diff --name-only 417f136266978a4b6a64b85f9fa1574f87bed226..HEAD
+git diff --name-only 095933d9d0b9edb3edf42233225aa89d3e9f3f3f3d..HEAD
 docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
 docs/runtime/CURRENT_FRONTIER.md
-docs/sessions/2026-07-12-control-plane-d-0049-w-we-polling-first-architecture-decision.md
-docs/workflow-we-telegram-interactive-decision-buttons.md
+docs/sessions/2026-07-12-control-plane-d-0050-w-wf47-callback-query-l3-implementation.md
 docs/workflow-wf-telegram-inbound-polling-getupdates.md
+workflows/wf-telegram-inbound-polling-getupdates.template.json
 ```
 
-**BASE (record commit 1):** `417f136266978a4b6a64b85f9fa1574f87bed226`
+**BASE (record commit 1):** `095933d9d0b9edb3edf42233225aa89d3e9f3f3f3d`
 
 ---
 
