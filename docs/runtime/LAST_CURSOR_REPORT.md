@@ -13,36 +13,31 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0050w-wf47-callback-query-l3-repository-implementation
-result_cursor: PASS_REPOSITORY_ONLY_IMPLEMENTATION
-result_runtime: NOT_RUN_L3_IMPLEMENTATION
-base_commit: b0bfee43382b2de1a2fd5710fa3004c6c370af71
-real_task_commit: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
-substantive_commit_range: b0bfee43382b2de1a2fd5710fa3004c6c370af71..9cc21624d4441a6a0ca676d4ff0f29cc05341243
-intermediate_substantive_commit: 095933d9d0b9edb3edf42233225aa89d3e9f3f3d
-original_report_commit: 7515fc9d922fb80f2003fbefde87957c18917a04
-commit_convention_status: DEVIATION_RECORDED
-correction_status: CORRECTED_BY_D0051G_PENDING_REPORT
-commit_subject: feat: harden wf47 callback-query path for D-0050-W
+task_ref: d0051g-d0050w-commit-provenance-correction
+result_cursor: PASS_REPORT_ONLY_GOVERNANCE_CORRECTION
+result_runtime: NOT_RUN_AUDIT_CORRECTION
+base_commit: 7515fc9d922fb80f2003fbefde87957c18917a04
+real_task_commit: a2d088912ee83603f5fd96b08921937c7d382914
+commit_subject: docs: correct D-0050-W commit provenance
 rolling_report_commit: PENDING_SELF_REFERENCE
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 branch: main
-decision_id: D-0050-W
+decision_id: D-0051-G
 selected_option: 1
 decision_provenance: direct_operator_message
-parent_decision_id: D-0049-W
-parent_selected_option: 1
-inbound_primary_architecture: WF47_POLLING_FIRST
-callback_query_source_guard: IMPLEMENTED_PENDING_L4
-allowed_updates_status: EXPLICIT_PENDING_L4
-parser_options_status: OPTIONS_1_TO_5_IMPLEMENTED_PENDING_L4
-answer_callback_query_status: IMPLEMENTED_PENDING_L4
-receipt_one_item_invariant: PASS_REPOSITORY_SIDE
-fixture_matrix_result: PASS_REPOSITORY_SIDE_A_TO_J
-workflow_template_modified: true
-runtime_workflow_modified: false
+corrected_task_ref: d0050w-wf47-callback-query-l3-repository-implementation
+corrected_decision_id: D-0050-W
+correction_reason: INTERMEDIATE_SUBSTANTIVE_COMMIT_OMITTED_FROM_REPORTED_BASE
+corrected_base_commit: b0bfee43382b2de1a2fd5710fa3004c6c370af71
+corrected_real_task_commit: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
+corrected_substantive_commit_range: b0bfee43382b2de1a2fd5710fa3004c6c370af71..9cc21624d4441a6a0ca676d4ff0f29cc05341243
+intermediate_substantive_commit: 095933d9d0b9edb3edf42233225aa89d3e9f3f3d
+original_report_commit: 7515fc9d922fb80f2003fbefde87957c18917a04
+corrected_report_commit: a2d088912ee83603f5fd96b08921937c7d382914
+commit_convention_status: DEVIATION_RECORDED
 runtime_executed: false
-telegram_api_called: false
+workflow_template_modified_by_correction: false
+runtime_workflow_modified: false
 callback_query_live_pass: false
 answer_callback_query_live_pass: false
 l4_runtime_test_authorized: false
@@ -50,58 +45,52 @@ l5_live_activation_authorized: false
 enable_wg48_handoff: false
 gate_e_status: OPERATOR_DECISION_PENDING
 gate_e_full_pass: false
-we46_template_status: RETAINED_INACTIVE_WEBHOOK_FALLBACK
-we46_live_pass: false
 n8n_ready: false
 pm34_unblocked: false
 timestamp_utc: 2026-07-12
 ```
 
-- **D-0050-W used two substantive commits:** `095933d` (template implementation) then `9cc2162` (completion + docs); substantive range `b0bfee4..9cc2162`.
-- **`095933d` omitted** from original provenance model (`base_commit` had been `095933d`); **corrected** by D-0051-G.
-- **`7515fc9` remains** in immutable Git history as original rolling-report commit; **no history rewrite**.
-- **Implementation and runtime classifications unchanged** — `PASS_REPOSITORY_ONLY_IMPLEMENTATION` / `NOT_RUN_L3_IMPLEMENTATION`.
-- **Commit 1 — D-0050-W L3 repository implementation (substantive):** `095933d` + `9cc2162`; fixtures A–J PASS repo-side; **NOT** runtime.
-- **Commit 2 (original report):** `7515fc9` — `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md`.
-- **D-0045-E** resta ultimo PASS scope-limited runtime.
-- Snapshot verifica attraverso `9cc2162`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
-- **Backfill PENDING_SELF_REFERENCE:** `d0049w-we-polling-first-architecture-decision` → `rolling_report_commit: b0bfee4` (in HISTORY).
+- **Commit 1 — D-0051-G provenance correction (report-only):** corrected D-0050-W `base_commit` to `b0bfee4`; recorded intermediate `095933d`; `7515fc9` remains in Git history; **no history rewrite**.
+- **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md`; **non** certifica il proprio hash.
+- **D-0050-W implementation unchanged** — `PASS_REPOSITORY_ONLY_IMPLEMENTATION` / `NOT_RUN_L3_IMPLEMENTATION` preserved.
+- Snapshot verifica attraverso `a2d0889`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
 
 **Post-push evidence (commit 1 — real task):**
 
 ```text
 git log --oneline -8
+a2d0889 docs: correct D-0050-W commit provenance
+7515fc9 docs: refresh runtime reports for D-0050-W
 9cc2162 feat: harden wf47 callback-query path for D-0050-W
 095933d Update wf47 polling template for callback handling
 b0bfee4 docs: refresh runtime reports for D-0049-W
 9c328fe docs: select polling-first inbound architecture for D-0049-W
 417f136 docs: refresh runtime reports for D-0047-G correction
 5fdf1dd docs: correct D-0046-E provenance and add anti-proxy rule
-375f495 docs: refresh runtime reports for D-0046-E stop
-4273bde docs: record D-0046-E Gate E stop decision
 
 git status --short
 
 git rev-parse HEAD
-9cc21624d4441a6a0ca676d4ff0f29cc05341243
+a2d088912ee83603f5fd96b08921937c7d382914
 
 git rev-parse origin/main
-9cc21624d4441a6a0ca676d4ff0f29cc05341243
+a2d088912ee83603f5fd96b08921937c7d382914
 
 git branch --show-current
 main
 
 git show --stat HEAD
-commit 9cc21624d4441a6a0ca676d4ff0f29cc05341243
- docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  18 ++--
- docs/runtime/CURRENT_FRONTIER.md                   |  19 +++-
- ...0050-w-wf47-callback-query-l3-implementation.md | 109 +++++++++++++++++++++
- ...kflow-wf-telegram-inbound-polling-getupdates.md |  34 ++++++-
- ...legram-inbound-polling-getupdates.template.json |  14 +--
- 5 files changed, 171 insertions(+), 23 deletions(-)
+commit a2d088912ee83603f5fd96b08921937c7d382914
+ docs/runtime/LAST_CURSOR_REPORT.md  | 16 ++++++++++++----
+ docs/runtime/LAST_HANDOFF_VERIFY.md | 11 ++++++++---
+ 2 files changed, 20 insertions(+), 7 deletions(-)
 
 git ls-remote origin refs/heads/main
-9cc21624d4441a6a0ca676d4ff0f29cc05341243	refs/heads/main
+a2d088912ee83603f5fd96b08921937c7d382914	refs/heads/main
+
+git diff --name-only 7515fc9d922fb80f2003fbefde87957c18917a04..HEAD
+docs/runtime/LAST_CURSOR_REPORT.md
+docs/runtime/LAST_HANDOFF_VERIFY.md
 ```
 
 ---
@@ -124,6 +113,18 @@ git ls-remote origin refs/heads/main
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0050w-wf47-callback-query-l3-repository-implementation
+  real_task_commit: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
+  base_commit: b0bfee43382b2de1a2fd5710fa3004c6c370af71
+  substantive_commit_range: b0bfee43382b2de1a2fd5710fa3004c6c370af71..9cc21624d4441a6a0ca676d4ff0f29cc05341243
+  intermediate_substantive_commit: 095933d9d0b9edb3edf42233225aa89d3e9f3f3d
+  rolling_report_commit: a2d088912ee83603f5fd96b08921937c7d382914
+  supersedes_report_commit: 7515fc9d922fb80f2003fbefde87957c18917a04
+  commit_convention_status: DEVIATION_RECORDED
+  result_cursor: PASS_REPOSITORY_ONLY_IMPLEMENTATION
+  result_runtime: NOT_RUN_L3_IMPLEMENTATION
+  timestamp_utc: 2026-07-12
+
 - task_ref: d0049w-we-polling-first-architecture-decision
   real_task_commit: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
   rolling_report_commit: b0bfee43382b2de1a2fd5710fa3004c6c370af71
