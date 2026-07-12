@@ -138,7 +138,7 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// Build getUpdates params from wf47_polling_state_test + derive open IDs from store (no token/chat in output).\nconst pollRows = $('Data Table - Load wf47 polling state').all().map((i) => i.json);\nconst storeRows = $('Data Table - Load shared decisions').all().map((i) => i.json);\nconst byKey = (k) => {\n  const row = pollRows.find((r) => r && r.key === k);\n  return row ? row.value : null;\n};\nconst lastUpdateId = Number(byKey('last_update_id') || 0);\nconst lastHandled = Number(byKey('last_handled_update_id') || 0);\nlet handledKeys = {};\ntry {\n  const raw = byKey('handled_keys_json') || '{}';\n  handledKeys = typeof raw === 'object' ? raw : JSON.parse(String(raw));\n} catch {\n  handledKeys = {};\n}\nconst openSet = new Set();\nfor (const r of storeRows) {\n  if (r && String(r.status) === 'open' && r.decision_id) {\n    openSet.add(String(r.decision_id));\n  }\n}\nconst open_decision_ids = [...openSet].sort();\nreturn [{\n  json: {\n    offset: lastUpdateId,\n    limit: 10,\n    last_handled_update_id: lastHandled,\n    handled_keys: handledKeys,\n    open_decision_ids,\n    open_decision_ids_source: 'control_plane_decisions_test',\n    store_derivation_bypassed: false,\n    open_decision_ids_count: open_decision_ids.length,\n    state_table: 'wf47_polling_state_test',\n    test_only: true\n  }\n}];"
+        "jsCode": "// Build getUpdates params from wf47_polling_state_test + derive open IDs from store.\nconst pollRows = $('Data Table - Load wf47 polling state').all().map((i) => i.json);\nconst storeRows = $('Data Table - Load shared decisions').all().map((i) => i.json);\nconst byKey = (k) => {\n  const row = pollRows.find((r) => r && r.key === k);\n  return row ? row.value : null;\n};\nconst lastUpdateId = Number(byKey('last_update_id') || 0);\nconst lastHandled = Number(byKey('last_handled_update_id') || 0);\nlet handledKeys = {};\ntry {\n  const raw = byKey('handled_keys_json') || '{}';\n  handledKeys = typeof raw === 'object' ? raw : JSON.parse(String(raw));\n} catch {\n  handledKeys = {};\n}\nconst openSet = new Set();\nfor (const r of storeRows) {\n  if (r && String(r.status) === 'open' && r.decision_id) {\n    openSet.add(String(r.decision_id));\n  }\n}\nconst open_decision_ids = [...openSet].sort();\nreturn [{\n  json: {\n    offset: lastUpdateId,\n    limit: 10,\n    allowed_updates_json: JSON.stringify(['message', 'callback_query']),\n    last_handled_update_id: lastHandled,\n    handled_keys: handledKeys,\n    open_decision_ids,\n    open_decision_ids_source: 'control_plane_decisions_test',\n    store_derivation_bypassed: false,\n    open_decision_ids_count: open_decision_ids.length,\n    state_table: 'wf47_polling_state_test',\n    test_only: true\n  }\n}];"
       },
       "id": "wf000002-0002-4002-8002-000000000002",
       "name": "Build getUpdates request from state",
@@ -163,6 +163,10 @@
             {
               "name": "limit",
               "value": "={{ $json.limit }}"
+            },
+            {
+              "name": "allowed_updates",
+              "value": "={{ $json.allowed_updates_json }}"
             }
           ]
         },
@@ -187,7 +191,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Normalize — no raw chat_id/user_id/message body in output.\nconst build = $('Build getUpdates request from state').first().json;\nconst lastHandled = Number(build.last_handled_update_id || 0);\nconst resp = $input.item.json;\nconst body = resp && resp.body !== undefined ? resp.body : resp;\nconst results = body && Array.isArray(body.result) ? body.result : [];\nconst OPEN = Array.isArray(build.open_decision_ids) ? build.open_decision_ids : [];\nconst items = [];\nfor (const u of results) {\n  const cq = u.callback_query || {};\n  const msg = cq.message || u.message || {};\n  const text = String(cq.data || msg.text || '').trim();\n  let inbound_kind = 'unknown';\n  if (text.startsWith('note:')) inbound_kind = 'note';\n  else if (text.startsWith('dp:')) inbound_kind = 'callback';\n  else if (/^[123]$/.test(text)) inbound_kind = 'plain_option';\n  const uid = u.update_id;\n  items.push({\n    update_id: uid,\n    inbound_kind,\n    inbound_text: text,\n    stale_update_id_guard: uid != null && uid <= lastHandled\n  });\n}\nreturn {\n  json: {\n    http_ok: body && body.ok === true,\n    result_count: results.length,\n    candidates: items,\n    open_decision_ids: OPEN,\n    open_decision_ids_source: build.open_decision_ids_source || null,\n    store_derivation_bypassed: build.store_derivation_bypassed === true,\n    open_decision_ids_count: build.open_decision_ids_count ?? OPEN.length,\n    last_handled_update_id: lastHandled,\n    handled_keys: build.handled_keys,\n    test_only: true\n  }\n};"
+        "jsCode": "// Normalize Telegram updates while preserving only minimal source metadata for auth + callback ack.\nconst build = $('Build getUpdates request from state').first().json;\nconst lastHandled = Number(build.last_handled_update_id || 0);\nconst resp = $input.item.json;\nconst body = resp && resp.body !== undefined ? resp.body : resp;\nconst results = body && Array.isArray(body.result) ? body.result : [];\nconst OPEN = Array.isArray(build.open_decision_ids) ? build.open_decision_ids : [];\nconst candidates = [];\nfor (const u of results) {\n  const cq = u && u.callback_query ? u.callback_query : {};\n  const msg = (cq && cq.message) ? cq.message : (u && u.message ? u.message : {});\n  const text = String(cq.data || msg.text || '').trim();\n  let inbound_kind = 'unknown';\n  if (text.startsWith('note:')) inbound_kind = 'note';\n  else if (text.startsWith('dp:')) inbound_kind = 'callback';\n  else if (/^[1-5]$/.test(text)) inbound_kind = 'plain_option';\n  const updateId = u && u.update_id !== undefined ? u.update_id : null;\n  const sourceChatId = msg && msg.chat && msg.chat.id !== undefined ? msg.chat.id : null;\n  const inlineCallbackSource = !!(\n    cq &&\n    cq.inline_message_id &&\n    !(cq.message && cq.message.chat && cq.message.chat.id !== undefined)\n  );\n  candidates.push({\n    update_id: updateId,\n    inbound_kind,\n    inbound_text: text,\n    stale_update_id_guard: updateId != null && updateId <= lastHandled,\n    callback_query_id: cq && cq.id ? cq.id : null,\n    source_chat_id: sourceChatId,\n    inline_callback_source: inlineCallbackSource\n  });\n}\nreturn {\n  json: {\n    http_ok: body && body.ok === true,\n    result_count: results.length,\n    candidates,\n    open_decision_ids: OPEN,\n    open_decision_ids_source: build.open_decision_ids_source || null,\n    store_derivation_bypassed: build.store_derivation_bypassed === true,\n    open_decision_ids_count: build.open_decision_ids_count ?? OPEN.length,\n    last_handled_update_id: lastHandled,\n    handled_keys: build.handled_keys,\n    test_only: true\n  }\n};"
       },
       "id": "wf000004-0004-4004-8004-000000000004",
       "name": "Normalize Telegram updates",
@@ -201,10 +205,10 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Allowed-chat — read Set node only (edit Set Wf47 UI config in n8n, not Code).\nconst d = $input.item.json;\nconst ui = $('Set Wf47 UI config').first().json;\nconst ALLOWED = String(ui.allowed_chat_id || '').trim();\nconst configured = ALLOWED.length > 0 && ALLOWED.indexOf('CONFIGURE') === -1 && ALLOWED.indexOf('**') === -1;\nreturn {\n  json: {\n    ...d,\n    allowed_chat_configured: configured,\n    chat_filter_ok: configured,\n    block_reason: configured ? null : 'allowed_chat_not_configured'\n  }\n};"
+        "jsCode": "// Authorize each candidate against the configured source chat. Fail closed per candidate.\nconst d = $input.item.json;\nconst ui = $('Set Wf47 UI config').first().json;\nconst allowedChatId = String(ui.allowed_chat_id || '').trim();\nconst configured = allowedChatId.length > 0 && allowedChatId.indexOf('CONFIGURE') === -1 && allowedChatId.indexOf('**') === -1;\nconst candidates = (d.candidates || []).map((candidate) => {\n  let source_chat_authorized = false;\n  let auth_block_reason = null;\n  if (!configured) {\n    auth_block_reason = 'allowed_chat_not_configured';\n  } else if (candidate.inline_callback_source === true) {\n    auth_block_reason = 'inline_callback_source_unsupported';\n  } else if (candidate.source_chat_id === null || candidate.source_chat_id === undefined || String(candidate.source_chat_id).trim() === '') {\n    auth_block_reason = 'source_chat_missing';\n  } else if (String(candidate.source_chat_id) !== String(allowedChatId)) {\n    auth_block_reason = 'source_chat_mismatch';\n  } else {\n    source_chat_authorized = true;\n  }\n  return {\n    ...candidate,\n    source_chat_authorized,\n    auth_block_reason\n  };\n});\nreturn {\n  json: {\n    ...d,\n    candidates,\n    allowed_chat_configured: configured,\n    block_reason: configured ? (d.block_reason || null) : 'allowed_chat_not_configured'\n  }\n};"
       },
       "id": "wf000005-0005-4005-8005-000000000005",
-      "name": "Filter allowed chat placeholder",
+      "name": "Authorize source chat per candidate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -215,7 +219,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Parse Decision Packet — newest non-stale candidate.\nconst d = $input.item.json;\nconst OPEN = Array.isArray(d.open_decision_ids) ? d.open_decision_ids : [];\nconst sorted = [...(d.candidates || [])].sort((a, b) => (b.update_id || 0) - (a.update_id || 0));\nlet best = null;\nfor (const c of sorted) {\n  if (c.stale_update_id_guard) continue;\n  let decision_id = null;\n  let selected_option = null;\n  let note_present = false;\n  if (c.inbound_kind === 'callback') {\n    const m = String(c.inbound_text).match(/^dp:(D-\\d{4}-[A-Z]):([123])$/);\n    if (m) { decision_id = m[1]; selected_option = m[2]; }\n  } else if (c.inbound_kind === 'plain_option' && OPEN.length === 1) {\n    decision_id = OPEN[0];\n    selected_option = c.inbound_text;\n  } else if (c.inbound_kind === 'note') {\n    const nm = String(c.inbound_text).match(/^note:(D-\\d{4}-[A-Z]):(.+)$/);\n    if (nm) {\n      decision_id = nm[1];\n      note_present = true;\n      selected_option = null;\n    }\n  }\n  if (decision_id) {\n    best = { update_id: c.update_id, inbound_kind: c.inbound_kind, decision_id, selected_option, note_present };\n    break;\n  }\n}\nreturn {\n  json: {\n    ...d,\n    parsed: best,\n    parse_ok: !!best\n  }\n};"
+        "jsCode": "// Parse only the latest non-stale candidate in the batch. Do not fall back to older candidates.\nconst d = $input.item.json;\nconst OPEN = Array.isArray(d.open_decision_ids) ? d.open_decision_ids : [];\nconst sorted = [...(d.candidates || [])].sort((a, b) => (Number(b.update_id) || 0) - (Number(a.update_id) || 0));\nconst nonStale = sorted.filter((candidate) => candidate.stale_update_id_guard !== true);\nconst latest = nonStale.length ? nonStale[0] : null;\nfunction parseLatestCandidate(candidate) {\n  if (!candidate) {\n    return { ok: false, block_reason: d.block_reason || 'no_parseable_decision_response', parsed: null };\n  }\n  if (candidate.source_chat_authorized !== true) {\n    return {\n      ok: false,\n      block_reason: candidate.auth_block_reason || 'source_chat_mismatch',\n      parsed: null\n    };\n  }\n  if (candidate.inbound_kind === 'callback') {\n    const m = String(candidate.inbound_text).match(/^dp:(D-\\d{4}-[A-Z]):([1-5])$/);\n    if (m) {\n      return {\n        ok: true,\n        block_reason: null,\n        parsed: {\n          update_id: candidate.update_id,\n          inbound_kind: candidate.inbound_kind,\n          decision_id: m[1],\n          selected_option: m[2],\n          note_present: false,\n          callback_query_id: candidate.callback_query_id || null\n        }\n      };\n    }\n    return { ok: false, block_reason: 'no_parseable_decision_response', parsed: null };\n  }\n  if (candidate.inbound_kind === 'plain_option') {\n    if (OPEN.length === 1) {\n      return {\n        ok: true,\n        block_reason: null,\n        parsed: {\n          update_id: candidate.update_id,\n          inbound_kind: candidate.inbound_kind,\n          decision_id: OPEN[0],\n          selected_option: String(candidate.inbound_text),\n          note_present: false,\n          callback_query_id: null\n        }\n      };\n    }\n    if (OPEN.length > 1) {\n      return { ok: false, block_reason: 'ambiguous_plain_option', parsed: null };\n    }\n    return { ok: false, block_reason: 'no_parseable_decision_response', parsed: null };\n  }\n  if (candidate.inbound_kind === 'note') {\n    const noteMatch = String(candidate.inbound_text).match(/^note:(D-\\d{4}-[A-Z]):(.+)$/);\n    if (noteMatch) {\n      return {\n        ok: true,\n        block_reason: null,\n        parsed: {\n          update_id: candidate.update_id,\n          inbound_kind: candidate.inbound_kind,\n          decision_id: noteMatch[1],\n          selected_option: null,\n          note_present: true,\n          callback_query_id: candidate.callback_query_id || null\n        }\n      };\n    }\n  }\n  return { ok: false, block_reason: 'no_parseable_decision_response', parsed: null };\n}\nconst parsedResult = parseLatestCandidate(latest);\nreturn {\n  json: {\n    ...d,\n    parsed: parsedResult.parsed,\n    parse_ok: parsedResult.ok,\n    block_reason: parsedResult.ok ? null : parsedResult.block_reason,\n    latest_candidate_update_id: latest ? latest.update_id : null,\n    latest_candidate_inbound_kind: latest ? latest.inbound_kind : null,\n    multi_update_batch_detected: nonStale.length > 1,\n    multi_update_batch_behavior: nonStale.length > 1 ? 'latest_non_stale_candidate_only' : 'single_candidate_or_empty'\n  }\n};"
       },
       "id": "wf000006-0006-4006-8006-000000000006",
       "name": "Parse Decision Packet response",
@@ -229,7 +233,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Idempotency using Data Table state (not staticData).\nconst d = $input.item.json;\nconst build = $('Build getUpdates request from state').first().json;\nconst lastHandled = Number(build.last_handled_update_id || 0);\nlet handledKeys = {};\ntry {\n  const hk = build.handled_keys;\n  handledKeys = typeof hk === 'object' && hk ? { ...hk } : JSON.parse(String(hk || '{}'));\n} catch {\n  handledKeys = {};\n}\nconst p = d.parsed;\nlet status = 'blocked';\nlet duplicate_or_stale = false;\nlet block_reason = d.block_reason || 'no_matching_update';\nlet update_id = null;\nlet decision_id = null;\nlet selected_option = null;\nlet note_present = false;\nlet offset_after = Number(build.offset || 0);\nlet persist_state = null;\nif (!d.chat_filter_ok) {\n  block_reason = 'allowed_chat_not_configured';\n} else if (!p) {\n  block_reason = 'no_parseable_decision_response';\n} else {\n  update_id = p.update_id;\n  decision_id = p.decision_id;\n  selected_option = p.selected_option;\n  note_present = !!p.note_present;\n  const open = (d.open_decision_ids || []).includes(decision_id);\n  const slot = selected_option || (note_present ? 'note' : 'unknown');\n  const key = decision_id + ':' + slot + ':' + update_id;\n  if (update_id != null && update_id <= lastHandled) {\n    duplicate_or_stale = true;\n    block_reason = 'stale_old_update_id';\n  } else if (!open) {\n    duplicate_or_stale = true;\n    block_reason = 'stale_or_unknown_decision_id';\n  } else if (handledKeys[key]) {\n    duplicate_or_stale = true;\n    block_reason = 'duplicate_or_double_click';\n  } else if (p.inbound_kind === 'plain_option' || p.inbound_kind === 'callback') {\n    handledKeys[key] = new Date().toISOString();\n    offset_after = update_id + 1;\n    status = 'accepted';\n    block_reason = null;\n    persist_state = {\n      last_update_id: String(offset_after),\n      last_handled_update_id: String(update_id),\n      handled_keys_json: JSON.stringify(handledKeys)\n    };\n  } else if (note_present) {\n    status = 'note_placeholder';\n    block_reason = null;\n  }\n}\nreturn {\n  json: {\n    status,\n    decision_id,\n    selected_option,\n    update_id,\n    duplicate_or_stale,\n    note_present,\n    block_reason,\n    allowed_chat_configured: !!d.allowed_chat_configured,\n    offset_after_placeholder: offset_after,\n    last_handled_update_id: lastHandled,\n    persist_state,\n    test_only: true\n  }\n};"
+        "jsCode": "// Idempotency + auth + callback ack gating using Data Table state (not staticData).\nconst d = $input.item.json;\nconst build = $('Build getUpdates request from state').first().json;\nconst lastHandled = Number(build.last_handled_update_id || 0);\nlet handledKeys = {};\ntry {\n  const hk = build.handled_keys;\n  handledKeys = typeof hk === 'object' && hk ? { ...hk } : JSON.parse(String(hk || '{}'));\n} catch {\n  handledKeys = {};\n}\nconst latestCandidate = [...(d.candidates || [])]\n  .sort((a, b) => (Number(b.update_id) || 0) - (Number(a.update_id) || 0))\n  .find((candidate) => candidate.stale_update_id_guard !== true) || null;\nlet callback_ack_applicable = false;\nlet _callback_query_id_internal = null;\nif (\n  latestCandidate &&\n  latestCandidate.source_chat_authorized === true &&\n  latestCandidate.callback_query_id\n) {\n  callback_ack_applicable = true;\n  _callback_query_id_internal = latestCandidate.callback_query_id;\n}\nconst p = d.parsed;\nlet status = 'blocked';\nlet duplicate_or_stale = false;\nlet block_reason = d.block_reason || (d.allowed_chat_configured === false ? 'allowed_chat_not_configured' : 'no_matching_update');\nlet update_id = null;\nlet decision_id = null;\nlet selected_option = null;\nlet note_present = false;\nlet offset_after = Number(build.offset || 0);\nlet persist_state = null;\nif (d.allowed_chat_configured === false) {\n  block_reason = 'allowed_chat_not_configured';\n} else if (!p) {\n  block_reason = d.block_reason || 'no_parseable_decision_response';\n} else {\n  update_id = p.update_id;\n  decision_id = p.decision_id;\n  selected_option = p.selected_option;\n  note_present = !!p.note_present;\n  const open = (d.open_decision_ids || []).includes(decision_id);\n  const slot = selected_option || (note_present ? 'note' : 'unknown');\n  const key = decision_id + ':' + slot + ':' + update_id;\n  if (update_id != null && update_id <= lastHandled) {\n    duplicate_or_stale = true;\n    block_reason = 'stale_old_update_id';\n  } else if (!open) {\n    duplicate_or_stale = true;\n    block_reason = 'stale_or_unknown_decision_id';\n  } else if (handledKeys[key]) {\n    duplicate_or_stale = true;\n    block_reason = 'duplicate_or_double_click';\n  } else if (p.inbound_kind === 'plain_option' || p.inbound_kind === 'callback') {\n    handledKeys[key] = new Date().toISOString();\n    offset_after = update_id + 1;\n    status = 'accepted';\n    block_reason = null;\n    persist_state = {\n      last_update_id: String(offset_after),\n      last_handled_update_id: String(update_id),\n      handled_keys_json: JSON.stringify(handledKeys)\n    };\n  } else if (note_present) {\n    status = 'note_placeholder';\n    block_reason = null;\n  }\n}\nreturn {\n  json: {\n    status,\n    decision_id,\n    selected_option,\n    update_id,\n    duplicate_or_stale,\n    note_present,\n    block_reason,\n    allowed_chat_configured: !!d.allowed_chat_configured,\n    callback_ack_applicable,\n    _callback_query_id_internal,\n    offset_after_placeholder: offset_after,\n    last_handled_update_id: lastHandled,\n    persist_state,\n    test_only: true\n  }\n};"
       },
       "id": "wf000007-0007-4007-8007-000000000007",
       "name": "Offset dedupe idempotency guard",
@@ -327,12 +331,31 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "// Sanitized receipt — no raw chat_id/user_id/token/message body.\nconst d = $('Offset dedupe idempotency guard').item.json;\nconst build = $('Build getUpdates request from state').first().json;\nreturn {\n  json: {\n    inspect_status: d.status,\n    decision_id: d.decision_id,\n    selected_option: d.selected_option,\n    update_id: d.update_id,\n    duplicate_or_stale: d.duplicate_or_stale,\n    note_present: d.note_present,\n    block_reason: d.block_reason,\n    allowed_chat_configured: d.allowed_chat_configured,\n    offset_after_placeholder: d.offset_after_placeholder,\n    last_handled_update_id: d.last_handled_update_id,\n    open_decision_ids_source: build.open_decision_ids_source || null,\n    store_derivation_bypassed: build.store_derivation_bypassed === true,\n    open_decision_ids_count: build.open_decision_ids_count ?? null,\n    test_only: true\n  }\n};"
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "wf47-if-callback-ack-applicable",
+              "leftValue": "={{ $json.callback_ack_applicable }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       },
-      "id": "wf000008-0008-4008-8008-000000000008",
-      "name": "Build sanitized polling receipt",
-      "type": "n8n-nodes-base.code",
+      "id": "wf000023-0023-4023-8023-000000000023",
+      "name": "IF callback ack applicable",
+      "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
         600,
@@ -341,15 +364,109 @@
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot__CONFIGURE_TELEGRAM_BOT_TOKEN_IN_N8N_UI_OR_CREDENTIAL__/answerCallbackQuery",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ callback_query_id: $json._callback_query_id_internal }) }}",
+        "options": {
+          "timeout": 5000,
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "wf000024-0024-4024-8024-000000000024",
+      "name": "HTTP Request - answerCallbackQuery (CONFIGURE_IN_N8N_UI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        840,
+        260
+      ],
+      "retryOnFail": false,
+      "maxTries": 1,
+      "waitBetweenTries": 0
+    },
+    {
+      "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Read-only inspect — contract fields only.\nconst d = $input.item.json;\nreturn {\n  json: {\n    inspect_status: d.inspect_status,\n    decision_id: d.decision_id || null,\n    selected_option: d.selected_option || null,\n    update_id: d.update_id ?? null,\n    duplicate_or_stale: d.duplicate_or_stale || false,\n    note_present: d.note_present || false,\n    block_reason: d.block_reason || null,\n    allowed_chat_configured: d.allowed_chat_configured === true,\n    offset_after_placeholder: d.offset_after_placeholder ?? null,\n    last_handled_update_id: d.last_handled_update_id ?? null,\n    open_decision_ids_source: d.open_decision_ids_source || null,\n    store_derivation_bypassed: d.store_derivation_bypassed === true,\n    open_decision_ids_count: d.open_decision_ids_count ?? null,\n    test_only: true\n  }\n};"
+        "jsCode": "// Attach sanitized callback ack result while preserving internal callback id for later stripping.\nconst base = $('Offset dedupe idempotency guard').item.json;\nconst resp = $input.item.json;\nconst body = resp && resp.body !== undefined ? resp.body : resp;\nreturn {\n  json: {\n    ...base,\n    callback_ack_applicable: true,\n    callback_ack_skipped: false,\n    callback_ack_ok: body && body.ok === true,\n    callback_ack_http_status: resp && resp.statusCode !== undefined ? resp.statusCode : null\n  }\n};"
+      },
+      "id": "wf000025-0025-4025-8025-000000000025",
+      "name": "Attach sanitized callback ack result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Attach explicit callback-ack skipped fields for non-callback or non-applicable paths.\nconst d = $input.item.json;\nreturn {\n  json: {\n    ...d,\n    callback_ack_applicable: d.callback_ack_applicable === true,\n    callback_ack_skipped: true,\n    callback_ack_ok: null,\n    callback_ack_http_status: null\n  }\n};"
+      },
+      "id": "wf000026-0026-4026-8026-000000000026",
+      "name": "Attach callback ack skipped",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        840,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// IF true/false callback-ack branches are mutually exclusive per execution; emit exactly 1 item.\nconst items = $input.all();\nif (!items.length) return [];\nreturn [{ json: items[items.length - 1].json }];"
+      },
+      "id": "wf000027-0027-4027-8027-000000000027",
+      "name": "Merge callback ack branches (1 item)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Sanitized receipt — strips internal callback fields and keeps only receipt-safe callback ack metadata.\nconst d = $input.item.json;\nconst build = $('Build getUpdates request from state').first().json;\nreturn {\n  json: {\n    inspect_status: d.status,\n    decision_id: d.decision_id,\n    selected_option: d.selected_option,\n    update_id: d.update_id,\n    duplicate_or_stale: d.duplicate_or_stale,\n    note_present: d.note_present,\n    block_reason: d.block_reason,\n    allowed_chat_configured: d.allowed_chat_configured,\n    offset_after_placeholder: d.offset_after_placeholder,\n    last_handled_update_id: d.last_handled_update_id,\n    callback_ack_applicable: d.callback_ack_applicable === true,\n    callback_ack_skipped: d.callback_ack_skipped === true,\n    callback_ack_ok: d.callback_ack_ok === null || d.callback_ack_ok === undefined ? null : d.callback_ack_ok === true,\n    callback_ack_http_status: d.callback_ack_http_status ?? null,\n    open_decision_ids_source: build.open_decision_ids_source || null,\n    store_derivation_bypassed: build.store_derivation_bypassed === true,\n    open_decision_ids_count: build.open_decision_ids_count ?? null,\n    test_only: true\n  }\n};"
+      },
+      "id": "wf000008-0008-4008-8008-000000000008",
+      "name": "Build sanitized polling receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Read-only inspect — same contract plus callback-ack outcome fields only.\nconst d = $input.item.json;\nreturn {\n  json: {\n    inspect_status: d.inspect_status,\n    decision_id: d.decision_id || null,\n    selected_option: d.selected_option || null,\n    update_id: d.update_id ?? null,\n    duplicate_or_stale: d.duplicate_or_stale || false,\n    note_present: d.note_present || false,\n    block_reason: d.block_reason || null,\n    allowed_chat_configured: d.allowed_chat_configured === true,\n    offset_after_placeholder: d.offset_after_placeholder ?? null,\n    last_handled_update_id: d.last_handled_update_id ?? null,\n    callback_ack_applicable: d.callback_ack_applicable === true,\n    callback_ack_skipped: d.callback_ack_skipped === true,\n    callback_ack_ok: d.callback_ack_ok === null || d.callback_ack_ok === undefined ? null : d.callback_ack_ok === true,\n    callback_ack_http_status: d.callback_ack_http_status ?? null,\n    open_decision_ids_source: d.open_decision_ids_source || null,\n    store_derivation_bypassed: d.store_derivation_bypassed === true,\n    open_decision_ids_count: d.open_decision_ids_count ?? null,\n    test_only: true\n  }\n};"
       },
       "id": "wf000009-0009-4009-8009-000000000009",
       "name": "Inspect polling result (read-only)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        840,
+        2280,
         320
       ]
     },
@@ -406,7 +523,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        1080,
+        1800,
         320
       ]
     },
@@ -420,7 +537,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1,
       "position": [
-        1320,
+        2040,
         240
       ]
     }
@@ -518,18 +635,7 @@
       "main": [
         [
           {
-            "node": "Filter allowed chat placeholder",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Filter allowed chat placeholder": {
-      "main": [
-        [
-          {
-            "node": "Parse Decision Packet response",
+            "node": "Authorize source chat per candidate",
             "type": "main",
             "index": 0
           }
@@ -556,7 +662,7 @@
             "index": 0
           },
           {
-            "node": "Build sanitized polling receipt",
+            "node": "IF callback ack applicable",
             "type": "main",
             "index": 0
           }
@@ -620,6 +726,79 @@
         [
           {
             "node": "Inspect polling result (read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorize source chat per candidate": {
+      "main": [
+        [
+          {
+            "node": "Parse Decision Packet response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF callback ack applicable": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - answerCallbackQuery (CONFIGURE_IN_N8N_UI)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Attach callback ack skipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - answerCallbackQuery (CONFIGURE_IN_N8N_UI)": {
+      "main": [
+        [
+          {
+            "node": "Attach sanitized callback ack result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach sanitized callback ack result": {
+      "main": [
+        [
+          {
+            "node": "Merge callback ack branches (1 item)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach callback ack skipped": {
+      "main": [
+        [
+          {
+            "node": "Merge callback ack branches (1 item)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge callback ack branches (1 item)": {
+      "main": [
+        [
+          {
+            "node": "Build sanitized polling receipt",
             "type": "main",
             "index": 0
           }
