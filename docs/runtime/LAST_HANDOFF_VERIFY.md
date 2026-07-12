@@ -33,6 +33,38 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: d0047g-d0046e-governance-correction
+verified_task_commit: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+verified_base_commit: 375f495c1976153e0b68722fddc480c147bf8124
+verified_rolling_report_commit: 417f136266978a4b6a64b85f9fa1574f87bed226
+verified_through_commit: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+observed_head: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+observed_origin_main: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+observed_ls_remote_main: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+branch: main
+workspace_status: clean
+artifact_commit: 417f136266978a4b6a64b85f9fa1574f87bed226
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: NOT_RUN_GOVERNANCE_CORRECTION
+decision_id: D-0047-G
+selected_option: 2
+decision_provenance: direct_operator_message
+d0046e_record_status: VOIDED_MISATTRIBUTED_OPERATOR_CHOICE
+gate_e_status: OPERATOR_DECISION_PENDING
+gate_e_runtime_authorized: false
+gate_e_full_pass: false
+runtime_executed: false
+workflow_modified: false
+enable_wg48_handoff: false
+n8n_ready: false
+pm34_unblocked: false
+anti_proxy_rule_codified: true
+timestamp_utc: 2026-07-12
+```
+
+**Nota:** snapshot D-0047-G governance correction — superseded da D-0049-W architecture decision (2026-07-12).
+
+```yaml
 task_ref: d0046e-gate-e-stop-decision
 verified_task_commit: 4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
 verified_base_commit: 95b904504c7cbe7a94b18bfaa1f845d9459b999f
@@ -195,224 +227,100 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: d0047g-d0046e-governance-correction
-verified_task_commit: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
-verified_base_commit: 375f495c1976153e0b68722fddc480c147bf8124
+task_ref: d0049w-we-polling-first-architecture-decision
+verified_task_commit: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
+verified_base_commit: 417f136266978a4b6a64b85f9fa1574f87bed226
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
-observed_head: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
-observed_origin_main: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
-observed_ls_remote_main: 5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
+verified_through_commit: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
+observed_head: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
+observed_origin_main: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
+observed_ls_remote_main: 9c328fe266a520f59e2f29bb44d30f0377aa6b70
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
-result_runtime: NOT_RUN_GOVERNANCE_CORRECTION
-decision_id: D-0047-G
-selected_option: 2
+result_runtime: NOT_RUN_ARCHITECTURE_DECISION
+decision_id: D-0049-W
+selected_option: 1
 decision_provenance: direct_operator_message
-d0046e_record_status: VOIDED_MISATTRIBUTED_OPERATOR_CHOICE
-gate_e_status: OPERATOR_DECISION_PENDING
-gate_e_runtime_authorized: false
-gate_e_full_pass: false
+parent_decision_id: D-0048-S
+parent_selected_option: 2
+inbound_primary_architecture: WF47_POLLING_FIRST
+we46_primary_path_status: DEPRECATED_AS_PRIMARY_PATH
+we46_template_status: RETAINED_INACTIVE_WEBHOOK_FALLBACK
+we46_live_pass: false
+wf47_callback_query_target: SELECTED_PENDING_L3
+answer_callback_query_status: PENDING_L3_DESIGN
+l3_implementation_authorized: false
+l4_runtime_test_authorized: false
+l5_live_activation_authorized: false
 runtime_executed: false
 workflow_modified: false
+telegram_sent: false
+webhook_modified: false
+gate_e_status: OPERATOR_DECISION_PENDING
+gate_e_full_pass: false
 enable_wg48_handoff: false
 n8n_ready: false
 pm34_unblocked: false
-anti_proxy_rule_codified: true
 timestamp_utc: 2026-07-12
 ```
 
-**Nota:** D-0047-G governance correction verified through `5fdf1dd` — D-0046-E Option 3 **voided** (misattributed GLM recommendation); **Gate E** = `OPERATOR_DECISION_PENDING`; **anti-proxy rule** codified; **nessun runtime**; **D-0045-E** resta ultimo PASS scope-limited; **NOT Gate E full PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** D-0049-W polling-first architecture verified through `9c328fe` — L0/L1/L2 docs-only; wf47 polling-first selected; We/46 deprecated as primary, retained inactive fallback; **answerCallbackQuery PENDING_L3**; **nessun runtime**; **D-0045-E** resta ultimo PASS scope-limited; **NOT Gate E full PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
 
-**Backfill PENDING_SELF_REFERENCE:** D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
-
----
-
-## Command outputs (verbatim, sanitized — D-0047-G governance correction)
-
-```text
-git rev-parse HEAD
-5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
-
-git rev-parse origin/main
-5fdf1dd3d8dbaca0b235188f67bb6c38389d607e
-
-git ls-remote origin refs/heads/main
-5fdf1dd3d8dbaca0b235188f67bb6c38389d607e	refs/heads/main
-
-git status --short
-
-git diff --name-only 375f495c1976153e0b68722fddc480c147bf8124..HEAD
-docs/advisors/GLM_ADVISOR_METHOD.md
-docs/foundation/PROJECT_VISION.md
-docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
-docs/runtime/CURRENT_FRONTIER.md
-docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md
-docs/sessions/2026-07-12-control-plane-d-0047-g-governance-correction.md
-```
-
-**BASE (record commit 1):** `375f495c1976153e0b68722fddc480c147bf8124`
+**Backfill PENDING_SELF_REFERENCE:** D-0047-G snapshot → `417f136`; D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
 
 ---
 
-## Command outputs (verbatim, sanitized — D-0046-E Gate E stop decision)
+## Command outputs (verbatim, sanitized — D-0049-W polling-first architecture)
 
 ```text
-git rev-parse HEAD
-4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
-
-git rev-parse origin/main
-4273bde2ef0bc61f4fe2d56fd658a2eb61a26377
-
-git ls-remote origin refs/heads/main
-4273bde2ef0bc61f4fe2d56fd658a2eb61a26377	refs/heads/main
+git log --oneline -8
+9c328fe docs: select polling-first inbound architecture for D-0049-W
+417f136 docs: refresh runtime reports for D-0047-G correction
+5fdf1dd docs: correct D-0046-E provenance and add anti-proxy rule
+375f495 docs: refresh runtime reports for D-0046-E stop
+4273bde docs: record D-0046-E Gate E stop decision
+95b9045 docs: refresh runtime reports for D-0045-E wf48 close
+35cb338 docs: record D-0045-E wf48 external receipt close pass
+f01ad73 docs: refresh runtime reports for wf45-wf47 bounded receipt
 
 git status --short
 
-git diff --name-only 95b904504c7cbe7a94b18bfaa1f845d9459b999f..HEAD
-docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
-docs/runtime/CURRENT_FRONTIER.md
-docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md
-```
-
-**BASE (record commit 1):** `95b904504c7cbe7a94b18bfaa1f845d9459b999f`
-
----
-
-## Command outputs (verbatim, sanitized — D-0045-E wf48 external receipt close)
-
-```text
 git rev-parse HEAD
-35cb338a2cfbfe7730515eb68300501f94cf01f2
+9c328fe266a520f59e2f29bb44d30f0377aa6b70
 
 git rev-parse origin/main
-35cb338a2cfbfe7730515eb68300501f94cf01f2
+9c328fe266a520f59e2f29bb44d30f0377aa6b70
+
+git branch --show-current
+main
+
+git show --stat HEAD
+commit 9c328fe266a520f59e2f29bb44d30f0377aa6b70
+ docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  15 ++-
+ docs/runtime/CURRENT_FRONTIER.md                   |  28 +++--
+ ...049-w-we-polling-first-architecture-decision.md | 136 +++++++++++++++++++++
+ ...low-we-telegram-interactive-decision-buttons.md |   4 +-
+ ...kflow-wf-telegram-inbound-polling-getupdates.md |  29 ++++-
+ 5 files changed, 196 insertions(+), 16 deletions(-)
 
 git ls-remote origin refs/heads/main
-35cb338a2cfbfe7730515eb68300501f94cf01f2	refs/heads/main
+9c328fe266a520f59e2f29bb44d30f0377aa6b70	refs/heads/main
 
-git status --short
-
-git diff --name-only f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18..HEAD
+git diff --name-only 417f136266978a4b6a64b85f9fa1574f87bed226..HEAD
 docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
 docs/runtime/CURRENT_FRONTIER.md
-docs/sessions/2026-07-12-control-plane-d-0045-e-wf48-external-receipt-close-pass.md
-docs/workflow-wg-telegram-inbound-decision-state-correlation.md
-```
-
-**BASE (record commit 1):** `f01ad73925b8a3c2ed7d50d7f44fbcd75eeafc18`
-
----
-
-## Command outputs (verbatim, sanitized — wf45-wf47 official bounded receipt pass)
-
-```text
-git rev-parse HEAD
-cd2c2e4356b27fc044e9f54470c2264b32dede6e
-
-git rev-parse origin/main
-cd2c2e4356b27fc044e9f54470c2264b32dede6e
-
-git ls-remote origin refs/heads/main
-cd2c2e4356b27fc044e9f54470c2264b32dede6e	refs/heads/main
-
-git status --short
-
-git diff --name-only 6fafa9b187d6886eefadc9cacfb7225563c5c90d..HEAD
-docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
-docs/runtime/CURRENT_FRONTIER.md
-docs/sessions/2026-07-12-control-plane-wf45-wf47-official-bounded-receipt-pass.md
+docs/sessions/2026-07-12-control-plane-d-0049-w-we-polling-first-architecture-decision.md
+docs/workflow-we-telegram-interactive-decision-buttons.md
 docs/workflow-wf-telegram-inbound-polling-getupdates.md
 ```
 
-**BASE (record commit 1):** `6fafa9b187d6886eefadc9cacfb7225563c5c90d`
-
----
-
-## Command outputs (verbatim, sanitized — orchestrator contract codification)
-
-```text
-git rev-parse HEAD
-641d8b1687c65b86b27661b2bddcc8fe77e58941
-
-git rev-parse origin/main
-641d8b1687c65b86b27661b2bddcc8fe77e58941
-
-git ls-remote origin refs/heads/main
-641d8b1687c65b86b27661b2bddcc8fe77e58941	refs/heads/main
-
-git status --short
-
-git diff --name-only 39b53e4495aa628c52890dc297226350d71dfc53..HEAD
-docs/foundation/CURSOR_PROMPT_TEMPLATE.md
-docs/foundation/PROJECT_VISION.md
-```
-
-**BASE (record commit 1):** `39b53e4495aa628c52890dc297226350d71dfc53`
-
----
-
-## Command outputs (verbatim, sanitized — wf47 bounded runtime validation record)
-
-```text
-git rev-parse HEAD
-f55f009e2964c0f86eae5aef88b40d84cb8c4486
-
-git rev-parse origin/main
-f55f009e2964c0f86eae5aef88b40d84cb8c4486
-
-git ls-remote origin refs/heads/main
-f55f009e2964c0f86eae5aef88b40d84cb8c4486	refs/heads/main
-
-git status --short
-
-git diff --name-only 3c40070c785b460b76120505dbbd9cf65bd0b26c..HEAD
-docs/runtime/CURRENT_FRONTIER.md
-docs/sessions/2026-07-11-control-plane-wf47-bounded-runtime-validation.md
-```
-
-**BASE (record commit 1):** `3c40070c785b460b76120505dbbd9cf65bd0b26c`
-
----
-
-## Command outputs (verbatim, sanitized — D-0040-E Gate E preflight NO-GO)
-
-```text
-git rev-parse HEAD
-85a91dad1f8ae40e5e3552c336c399caf00336dc
-
-git rev-parse origin/main
-85a91dad1f8ae40e5e3552c336c399caf00336dc
-
-git ls-remote origin refs/heads/main
-85a91dad1f8ae40e5e3552c336c399caf00336dc	refs/heads/main
-
-git status --short
-
-git diff --name-only 49c228f2433f71149136f3303777aa7d802b633f..HEAD
-docs/runtime/CURRENT_FRONTIER.md
-docs/sessions/2026-07-09-control-plane-d-0040-e-gate-e-preflight-no-go.md
-
-git log --oneline -8
-85a91da docs: record d-0040-e gate e preflight no-go
-49c228f docs: refresh cursor report after handoff clarification
-06332d4 docs: clarify wf47 wf48 handoff authorization
-5884acd docs: refresh wf47 wg48 handoff verification artifacts
-823d025 docs: record wf47 wg48 bounded handoff pass
-0b9fe46 docs: refresh PR4 merge verification artifacts
-b6e293f Merge PR #4: docs GE-02 bounded runtime record
-021c5ca docs: refresh GE-02 runtime verification artifacts
-```
-
-**BASE (preflight commit 1):** `49c228f2433f71149136f3303777aa7d802b633f`
+**BASE (record commit 1):** `417f136266978a4b6a64b85f9fa1574f87bed226`
 
 ---
 
 ## Required fields (per aggiornamento futuro)
-
-Ogni refresh di questo file deve includere nel blocco YAML:
 
 | Campo | Descrizione |
 |-------|-------------|
