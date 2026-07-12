@@ -16,8 +16,13 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 task_ref: d0050w-wf47-callback-query-l3-repository-implementation
 result_cursor: PASS_REPOSITORY_ONLY_IMPLEMENTATION
 result_runtime: NOT_RUN_L3_IMPLEMENTATION
-base_commit: 095933d9d0b9edb3edf42233225aa89d3e9f3f3f3d
+base_commit: b0bfee43382b2de1a2fd5710fa3004c6c370af71
 real_task_commit: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
+substantive_commit_range: b0bfee43382b2de1a2fd5710fa3004c6c370af71..9cc21624d4441a6a0ca676d4ff0f29cc05341243
+intermediate_substantive_commit: 095933d9d0b9edb3edf42233225aa89d3e9f3f3d
+original_report_commit: 7515fc9d922fb80f2003fbefde87957c18917a04
+commit_convention_status: DEVIATION_RECORDED
+correction_status: CORRECTED_BY_D0051G_PENDING_REPORT
 commit_subject: feat: harden wf47 callback-query path for D-0050-W
 rolling_report_commit: PENDING_SELF_REFERENCE
 remote_hash_verbatim: PENDING_SELF_REFERENCE
@@ -52,9 +57,12 @@ pm34_unblocked: false
 timestamp_utc: 2026-07-12
 ```
 
-- **Commit 1 — D-0050-W L3 repository implementation:** session D-0050-W + wf47 template + runbook + `CURRENT_FRONTIER` + `AUTOMATION_ACTIVATION_PLAN`; **NOT_RUN_L3_IMPLEMENTATION** — **NOT** runtime; fixtures A–J PASS repo-side.
-- **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md`; **non** certifica il proprio hash.
-- **D-0049-W Opzione 1** parent; template modified; runtime n8n instance **unchanged**.
+- **D-0050-W used two substantive commits:** `095933d` (template implementation) then `9cc2162` (completion + docs); substantive range `b0bfee4..9cc2162`.
+- **`095933d` omitted** from original provenance model (`base_commit` had been `095933d`); **corrected** by D-0051-G.
+- **`7515fc9` remains** in immutable Git history as original rolling-report commit; **no history rewrite**.
+- **Implementation and runtime classifications unchanged** — `PASS_REPOSITORY_ONLY_IMPLEMENTATION` / `NOT_RUN_L3_IMPLEMENTATION`.
+- **Commit 1 — D-0050-W L3 repository implementation (substantive):** `095933d` + `9cc2162`; fixtures A–J PASS repo-side; **NOT** runtime.
+- **Commit 2 (original report):** `7515fc9` — `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md`.
 - **D-0045-E** resta ultimo PASS scope-limited runtime.
 - Snapshot verifica attraverso `9cc2162`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
 - **Backfill PENDING_SELF_REFERENCE:** `d0049w-we-polling-first-architecture-decision` → `rolling_report_commit: b0bfee4` (in HISTORY).

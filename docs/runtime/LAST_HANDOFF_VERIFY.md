@@ -261,7 +261,12 @@ timestamp_utc: 2026-07-09
 ```yaml
 task_ref: d0050w-wf47-callback-query-l3-repository-implementation
 verified_task_commit: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
-verified_base_commit: 095933d9d0b9edb3edf42233225aa89d3e9f3f3f3d
+verified_base_commit: b0bfee43382b2de1a2fd5710fa3004c6c370af71
+substantive_commit_range: b0bfee43382b2de1a2fd5710fa3004c6c370af71..9cc21624d4441a6a0ca676d4ff0f29cc05341243
+intermediate_substantive_commit: 095933d9d0b9edb3edf42233225aa89d3e9f3f3d
+original_report_commit: 7515fc9d922fb80f2003fbefde87957c18917a04
+commit_convention_status: DEVIATION_RECORDED
+correction_status: CORRECTED_BY_D0051G_PENDING_REPORT
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
 verified_through_commit: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
 observed_head: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
@@ -301,7 +306,7 @@ we46_live_pass: false
 timestamp_utc: 2026-07-12
 ```
 
-**Nota:** D-0050-W L3 repository implementation verified through `9cc2162` — template modified; **runtime workflow instance unchanged**; fixtures A–J PASS repo-side; **callback live PASS=false**; **answerCallbackQuery live PASS=false**; **nessun runtime**; **D-0045-E** resta ultimo PASS scope-limited; **NOT Gate E full PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**. Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** D-0050-W L3 repository implementation verified through `9cc2162` — **two substantive commits** (`095933d`, `9cc2162`); base corrected to `b0bfee4`; original report `7515fc9` remains in Git history; **no history rewrite**; provenance correction pending D-0051-G report commit. Template modified; **runtime workflow instance unchanged**; fixtures A–J PASS repo-side; **callback live PASS=false**; **answerCallbackQuery live PASS=false**; **nessun runtime**; **D-0045-E** resta ultimo PASS scope-limited; **NOT Gate E full PASS**; **PM-34 BLOCKED**; **`n8n_ready=false`**.
 
 **Backfill PENDING_SELF_REFERENCE:** D-0049-W snapshot → `b0bfee4`; D-0047-G snapshot → `417f136`; D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
 
@@ -351,7 +356,7 @@ docs/workflow-wf-telegram-inbound-polling-getupdates.md
 workflows/wf-telegram-inbound-polling-getupdates.template.json
 ```
 
-**BASE (record commit 1):** `095933d9d0b9edb3edf42233225aa89d3e9f3f3f3d`
+**BASE (record commit 1):** `b0bfee43382b2de1a2fd5710fa3004c6c370af71`
 
 ---
 
