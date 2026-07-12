@@ -5,13 +5,20 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-07-12 — D-0047-G governance correction; Gate E OPERATOR_DECISION_PENDING.
+Ultimo aggiornamento: 2026-07-12 — D-0049-W polling-first architecture; Gate E OPERATOR_DECISION_PENDING.
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
+- **D-0049-W polling-first architecture** = **direct operator Opzione 1** (2026-07-12) — `decision_provenance=direct_operator_message`; parent **D-0048-S Opzione 2**:
+  - **L0/L1/L2:** completati **docs-only** — architettura inbound primaria = **wf47 polling-first** (`WF47_POLLING_FIRST`).
+  - **We/46:** **DEPRECATED_AS_PRIMARY_PATH** — template/history **RETAINED_INACTIVE_WEBHOOK_FALLBACK**; **We live PASS=false**; blocker HTTPS **rimosso dal critical path**, resta debito se fallback riaperto.
+  - **wf47:** `callback_query` = **SELECTED_PENDING_L3**; **answerCallbackQuery** = **PENDING_L3_DESIGN** — **non** end-to-end PASS.
+  - **L3/L4/L5:** **non autorizzati** — nessuna implementazione, runtime, workflow, Telegram, webhook, DNS/tunnel change.
+  - **`enable_wg48_handoff=false`**; **PM-34 BLOCKED**; **`n8n_ready=false`**; Gate E full PASS **false**.
+  - Evidenza: `docs/sessions/2026-07-12-control-plane-d-0049-w-we-polling-first-architecture-decision.md`.
 - **D-0047-G governance correction** = **direct operator Opzione 2** (2026-07-12) — `decision_provenance=direct_operator_message`:
   - **Decisione:** non ratificare D-0046-E Option 3; correggere record repository.
   - **D-0046-E Option 3:** `VOIDED_MISATTRIBUTED_OPERATOR_CHOICE` — raccomandazione GLM erroneamente registrata come scelta operatore.
@@ -81,31 +88,31 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 | Asset | Stato | Note |
 |-------|--------|------|
 | **45 / Wd** | **PASS ATTESTATO UTENTE** + Gate D + **D-0041-E** + **official 2026-07-12** | `D-0044-T` open-on-send (`message_id=1205`); fan-out guard `fan_out_items_in=1`. **Inactive** post-test. |
-| **46 / We** | Package-prep **completato**; **live BLOCKED/PENDING** | HTTPS webhook required; **We live PASS NON registrato**. |
-| **47 / Wf** | **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** **2026-07-12** + consolidation **PR #7** | Official receipt **accepted** (`D-0044-T`, `update_id=986228602`); polling state persisted; **non rieseguito** in D-0045-E. **Inactive / not Published.** |
+| **46 / We** | **DEPRECATED_AS_PRIMARY_PATH** (D-0049-W); **RETAINED_INACTIVE_WEBHOOK_FALLBACK** | Package-prep completato; **We live PASS=false**; HTTPS blocker rilevante solo se fallback riaperto. |
+| **47 / Wf** | **PRIMARY_INBOUND_ARCHITECTURE** (D-0049-W) + **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** **2026-07-12** | Polling-first selected; `callback_query`/`answerCallbackQuery` **pending L3**; official receipt **accepted** (`D-0044-T`, `update_id=986228602`); **Inactive / not Published.** |
 | **48 / Wg** | **PASS** + Gate D + **D-0045-E 2026-07-12** | Manual `external_receipt` close `D-0044-T` (`state_persisted=true`); **callable non usato**; `enable_wg48_handoff=false`. **Inactive / not scheduled.** |
 | **49 / Wh** | Rehearsal **PASS**; **inattivo** | Not auto-promoted by Gate D. |
 | **decision-store** | Gates **1–3 PASS** + Gate B/D + **official 2026-07-12** | `D-0044-T` **closed** (D-0045-E); `D-0041-T` closed (hygiene). |
 
 - **Telegram inbound operational automation**: **NOT ACTIVE / NOT RUN**.
-- **We/46 live**: **BLOCKED/PENDING** (HTTPS webhook).
+- **We/46 live**: **DEPRECATED_AS_PRIMARY_PATH** — **We live PASS=false**; retained inactive webhook fallback; HTTPS blocker bypassed on critical path.
 - **Attivazione operativa inbound/loop**: **gate separato** — non deciso; eventuale prossimo runtime = **riuso/riverifica asset esistenti**, non nuovo workflow.
 - Catena completa AUTOMATIZZATA: **NOT RUN**. **PM-34**: **BLOCKED**.
 
 ## Active blockers
 
 - **PM-34**: **BLOCKED**.
-- **We** (HTTPS webhook): **BLOCKED/PENDING**.
+- **We** (HTTPS webhook fallback): **BLOCKED_PENDING_IF_FALLBACK_REOPENED** — non sul critical path (D-0049-W).
 
 ## Next gate
 
-**Not auto-started.** **Gate D closed** (2026-07-02). **D-0047-G** (2026-07-12) corregge attribuzione D-0046-E; Gate E = **OPERATOR_DECISION_PENDING**.
+**Not auto-started.** **Gate D closed** (2026-07-02). **D-0049-W** (2026-07-12) seleziona wf47 polling-first (L0/L1/L2 docs-only); Gate E = **OPERATOR_DECISION_PENDING**.
 
 **Next frontier (non auto-started):**
-1. Gate E **non** riparte automaticamente; **nessuna** scelta operatore valida corrente.
-2. Riapertura Gate E richiede **nuovo Decision Packet esplicito** + **risposta diretta operatore** (condizioni consultive in D-0046-E session §5 = solo riferimento advisory).
-3. In assenza di nuova decisione, il progetto resta allo stato bounded/manual corrente (**D-0045-E** = ultimo PASS scope-limited) fino a altro task strategico.
-4. Nessun blocker tecnico inventato; limiti noti restano separati e non risolti.
+1. **Nessuna implementazione automatica** — L3/L4/L5 richiedono Decision Packet dedicati separati.
+2. Prossimo gate reale, **solo se selezionato dall'operatore:** Decision Packet L3 per implementazione wf47 `callback_query` + design `answerCallbackQuery` — **non** creare quel packet in questo repository durante questo task.
+3. Gate E **non** riparte automaticamente; riapertura richiede **nuovo Decision Packet esplicito** + **risposta diretta operatore**.
+4. **D-0045-E** resta ultimo PASS scope-limited; catena ufficiale fresca wf45→wf47→callable-wf48 **non attestata**; **`enable_wg48_handoff=false`**; **PM-34 BLOCKED**; **`n8n_ready=false`**.
 
 **Gate E** — disposizione corrente: **OPERATOR_DECISION_PENDING** (D-0046-E Option 3 voided). PREP storico in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E full PASS.
 
@@ -145,6 +152,7 @@ Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: 
 - D-0028-A / Gates: `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`, Gate A/B sessions `docs/sessions/2026-06-07-control-plane-gate-*`.
 - D-0032-W field-validation: `docs/sessions/2026-06-12-control-plane-d-0032-w-field-validation-pass.md`.
 - Gate D bounded rehearsal: `docs/sessions/2026-07-02-control-plane-gate-d-rehearsal-pass.md`.
+- D-0049-W polling-first architecture: `docs/sessions/2026-07-12-control-plane-d-0049-w-we-polling-first-architecture-decision.md`.
 - D-0047-G governance correction: `docs/sessions/2026-07-12-control-plane-d-0047-g-governance-correction.md`.
 - D-0046-E Gate E stop (voided): `docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md`.
 - D-0045-E wf48 external receipt close: `docs/sessions/2026-07-12-control-plane-d-0045-e-wf48-external-receipt-close-pass.md`.

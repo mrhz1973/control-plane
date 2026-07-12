@@ -2,7 +2,9 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-we-telegram-interactive-decision-buttons.md`  
-**Status:** Package preparation only. No inbound activation. No runtime.
+**Status:** **DEPRECATED AS PRIMARY INBOUND PATH** (D-0049-W Opzione 1, 2026-07-12). Retained **inactive** as **ALTERNATIVE WEBHOOK PLAN B**. Package preparation only. No inbound activation. No runtime.
+
+> **Architecture disposition (D-0049-W):** We/46 is **no longer the primary inbound path**. wf47 polling-first is selected. This runbook and template remain as **inactive webhook fallback** — not deleted. **We live PASS remains false.** The HTTPS webhook blocker remains relevant **only if this fallback is explicitly reopened** via a new Decision Packet. No template or runtime change occurred in D-0049-W. Historical package-prep and failed-attempt evidence preserved.
 
 ---
 

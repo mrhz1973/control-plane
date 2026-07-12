@@ -141,11 +141,22 @@ Gates E–F: **not PASS** unless separately attested.
 
 ### Gate E — Phase 1 controlled start (kill switch mandatory)
 
-**Status (2026-07-12):** **OPERATOR_DECISION_PENDING** — D-0047-G Opzione 2 corregge attribuzione D-0046-E. Il record D-0046-E STOP (`STOPPED_BY_OPERATOR_DECISION`) era **VOIDED_MISATTRIBUTED_OPERATOR_CHOICE** — raccomandazione GLM «3» registrata erroneamente come scelta operatore. Gate E Phase 1 runtime **non autorizzato** e **non tentato**. **Non** è Gate E full PASS. **Non** auto-avvia Gate E.
+**Status (2026-07-12):** **OPERATOR_DECISION_PENDING** — D-0049-W Opzione 1 seleziona **wf47 polling-first** come architettura inbound primaria (L0/L1/L2 docs-only). We/46 **deprecated as primary path**, retained inactive webhook fallback. **L3/L4/L5 non autorizzati.** Gate E Phase 1 runtime **non autorizzato** e **non tentato**. **Non** è Gate E full PASS. **Non** auto-avvia Gate E.
 
-**Disposition record:** Session `docs/sessions/2026-07-12-control-plane-d-0047-g-governance-correction.md`. D-0046-E session superseded (audit Git `4273bde`/`375f495` non revertiti). Fixture D-0046-T **non creata**. D-0045-E resta ultimo PASS scope-limited runtime.
+**Disposition record:** Session `docs/sessions/2026-07-12-control-plane-d-0049-w-we-polling-first-architecture-decision.md`. Parent D-0048-S Opzione 2. D-0047-G governance correction superseded come ultima decisione strategica inbound. D-0045-E resta ultimo PASS scope-limited runtime. **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`**.
 
 **Future reopening (consultative advisory only):** condizioni operative da review GLM (plain `1` vs `dp:…`, preflight una open row, sequenza handoff temporanea, no retry, fan-out=1) restano **riferimento consultivo** — **non** piano approvato né scelta operatore. Nuovo Decision Packet + risposta diretta operatore richiesti. Procedura storica sotto = riferimento futuro — **non** nuova PREP chain.
+
+#### D-0049-W disposition — polling-first architecture (2026-07-12)
+
+| | |
+|---|---|
+| **Decision** | D-0049-W Opzione 1 — wf47 polling-first primary inbound; parent D-0048-S Opzione 2 |
+| **Levels completed** | L0/L1/L2 **docs-only** |
+| **We/46** | **DEPRECATED_AS_PRIMARY_PATH** — retained inactive webhook fallback; non critical path |
+| **L3** | Implementation (`callback_query`, `answerCallbackQuery`) — **pending separate Decision Packet** |
+| **L4/L5** | Bounded test / live activation — **pending separate Decision Packet** |
+| **Unchanged** | No runtime · **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`** · Gate E **OPERATOR_DECISION_PENDING** |
 
 #### Scope boundary — cosa è cosa
 

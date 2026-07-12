@@ -2,7 +2,30 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-wf-telegram-inbound-polling-getupdates.md`  
-**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Live getUpdates + 47→48 handoff **PASS ATTESTATO UTENTE**. **Disabled Schedule Trigger** versioned in template (Phase 1 ready; **not** activated). **Not** operational automation.
+**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Live getUpdates + 47→48 handoff **PASS ATTESTATO UTENTE**. **Disabled Schedule Trigger** versioned in template (Phase 1 ready; **not** activated). **PRIMARY INBOUND ARCHITECTURE** (D-0049-W Opzione 1, 2026-07-12). **Not** operational automation.
+
+---
+
+## 0. Architecture decision — D-0049-W (docs-only, 2026-07-12)
+
+| Field | Value |
+|-------|--------|
+| **decision_id** | D-0049-W |
+| **selected_option** | 1 |
+| **decision_provenance** | `direct_operator_message` |
+| **inbound_primary_architecture** | `WF47_POLLING_FIRST` |
+| **we46_primary_path_status** | `DEPRECATED_AS_PRIMARY_PATH` |
+| **we46_template_status** | `RETAINED_INACTIVE_WEBHOOK_FALLBACK` |
+
+**Selected as primary inbound path** for message + `callback_query`. **Implementation not performed** in this task.
+
+**L3 pending (not authorized here):**
+- Verify the actual template parsing path for `callback_query`.
+- Design `answerCallbackQuery`, or explicitly document accepted UX degradation in a future Decision Packet.
+
+**Boundaries unchanged:** no webhook · no schedule · no live activation authorized · We/46 retained as inactive fallback.
+
+**Not claimed:** callback button end-to-end PASS · `answerCallbackQuery` implemented (`PENDING_L3_DESIGN`).
 
 ---
 
@@ -35,7 +58,7 @@ Token was configured **only in n8n UI** (HTTP URL corrected there). n8n tunnel w
 
 ## 3. Why polling (context)
 
-**We live** remains **BLOCKED/PENDING** on HTTPS webhook. **Wf live PASS** proved manual `getUpdates` works without public HTTPS. Hardening prepares **repeatable** manual polls before any schedule or production store.
+**We live** remains **DEPRECATED_AS_PRIMARY_PATH** (D-0049-W) — retained inactive webhook fallback; HTTPS blocker bypassed on critical path. **Wf live PASS** proved manual `getUpdates` works without public HTTPS. Hardening prepares **repeatable** manual polls before any schedule or production store.
 
 ---
 
@@ -64,7 +87,7 @@ Token was configured **only in n8n UI** (HTTP URL corrected there). n8n tunnel w
 | Wf47 Data Table ready-import prep | Template in Git with Data Table nodes; **no runtime** from prep task |
 | Wf47 Data Table manual validation | **PASS ATTESTATO UTENTE** (poll 1 accept + poll 2 no re-accept) |
 | n8n Data Table (human-created) | **`wf47_polling_state_test`** — columns: `key`, `value`, `updated_at`, `note` (note added before successful rerun) |
-| We live | **BLOCKED/PENDING** (HTTPS webhook) |
+| We live | **DEPRECATED_AS_PRIMARY_PATH** — retained inactive webhook fallback (D-0049-W) |
 | Template | `workflows/wf-telegram-inbound-polling-getupdates.template.json` (workflow **47**) |
 
 ---
