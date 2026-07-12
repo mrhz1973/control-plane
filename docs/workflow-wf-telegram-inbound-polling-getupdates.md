@@ -2,11 +2,41 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Document:** `docs/workflow-wf-telegram-inbound-polling-getupdates.md`  
-**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Live getUpdates + 47→48 handoff **PASS ATTESTATO UTENTE**. **Disabled Schedule Trigger** versioned in template (Phase 1 ready; **not** activated). **PRIMARY INBOUND ARCHITECTURE** (D-0049-W Opzione 1, 2026-07-12). **Not** operational automation.
+**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Live getUpdates + 47→48 handoff **PASS ATTESTATO UTENTE**. **Disabled Schedule Trigger** versioned in template (Phase 1 ready; **not** activated). **PRIMARY INBOUND ARCHITECTURE** (D-0049-W). **L3 repository implementation PASS** (D-0050-W, 2026-07-12). **Not** operational automation.
 
 ---
 
-## 0. Architecture decision — D-0049-W (docs-only, 2026-07-12)
+## 0. L3 repository implementation — D-0050-W (2026-07-12)
+
+| Field | Value |
+|-------|--------|
+| **decision_id** | D-0050-W |
+| **selected_option** | 1 |
+| **decision_provenance** | `direct_operator_message` |
+| **parent_decision_id** | D-0049-W |
+| **result** | `PASS_REPOSITORY_ONLY_IMPLEMENTATION` |
+
+**Repository implementation PASS** — template hardened; **runtime callback validation NOT RUN**.
+
+| Capability | Repository | Runtime (L4 pending) |
+|------------|------------|----------------------|
+| Source-chat guard | **Implemented** | Pending L4 validation |
+| Parser options 1–5 | **Implemented** | Pending L4 validation |
+| `allowed_updates` explicit | **Implemented** | Pending L4 validation |
+| `answerCallbackQuery` branch | **Implemented** | Pending L4 validation |
+| One-item receipt invariant | **PASS repository-side** (fixtures A–J) | Pending L4 validation |
+
+**Acknowledgement semantics:** `answerCallbackQuery` is **fail-soft and non-authoritative** — ack failure does not alter business classification; stale/duplicate authorized callbacks may ack with `callback_ack_ok=false`.
+
+**Not claimed:** callback-query live PASS · `answerCallbackQuery` live PASS · end-to-end button UX PASS.
+
+**Boundaries unchanged:** `active=false` · Schedule disabled · `enable_wg48_handoff=false` · no webhook · no live activation · We/46 inactive webhook fallback.
+
+**L4/L5:** require separate Decision Packets — **not** authorized here.
+
+---
+
+## 0bis. Architecture decision — D-0049-W (docs-only, 2026-07-12)
 
 | Field | Value |
 |-------|--------|

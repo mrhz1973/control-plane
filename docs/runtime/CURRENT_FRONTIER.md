@@ -5,13 +5,21 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-07-12 — D-0049-W polling-first architecture; Gate E OPERATOR_DECISION_PENDING.
+Ultimo aggiornamento: 2026-07-12 — D-0050-W wf47 L3 repository implementation; Gate E OPERATOR_DECISION_PENDING.
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
+- **D-0050-W wf47 L3 repository implementation** = **direct operator Opzione 1** (2026-07-12) — `decision_provenance=direct_operator_message`; parent **D-0049-W Opzione 1**:
+  - **L3 repository:** completato — template wf47 hardened (`callback_query`, source-chat guard, parser 1–5, explicit `allowed_updates`, `answerCallbackQuery` fail-soft branch, one-item receipt invariant).
+  - **Fixtures A–J:** **PASS repository-side**; **`receipt_one_item_invariant=PASS_REPOSITORY_SIDE`**.
+  - **Runtime:** **NOT RUN** — no n8n import/publish/activation; no Telegram API call; **callback live PASS=false**; **answerCallbackQuery live PASS=false**.
+  - **wf47 runtime instance:** **unchanged** — template modified; workflow remains **inactive/not published**.
+  - **L4/L5:** **non autorizzati** — richiedono Decision Packet separati.
+  - **`enable_wg48_handoff=false`**; **PM-34 BLOCKED**; **`n8n_ready=false`**; Gate E **OPERATOR_DECISION_PENDING**.
+  - Evidenza: `docs/sessions/2026-07-12-control-plane-d-0050-w-wf47-callback-query-l3-implementation.md`.
 - **D-0049-W polling-first architecture** = **direct operator Opzione 1** (2026-07-12) — `decision_provenance=direct_operator_message`; parent **D-0048-S Opzione 2**:
   - **L0/L1/L2:** completati **docs-only** — architettura inbound primaria = **wf47 polling-first** (`WF47_POLLING_FIRST`).
   - **We/46:** **DEPRECATED_AS_PRIMARY_PATH** — template/history **RETAINED_INACTIVE_WEBHOOK_FALLBACK**; **We live PASS=false**; blocker HTTPS **rimosso dal critical path**, resta debito se fallback riaperto.
@@ -89,7 +97,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 |-------|--------|------|
 | **45 / Wd** | **PASS ATTESTATO UTENTE** + Gate D + **D-0041-E** + **official 2026-07-12** | `D-0044-T` open-on-send (`message_id=1205`); fan-out guard `fan_out_items_in=1`. **Inactive** post-test. |
 | **46 / We** | **DEPRECATED_AS_PRIMARY_PATH** (D-0049-W); **RETAINED_INACTIVE_WEBHOOK_FALLBACK** | Package-prep completato; **We live PASS=false**; HTTPS blocker rilevante solo se fallback riaperto. |
-| **47 / Wf** | **PRIMARY_INBOUND_ARCHITECTURE** (D-0049-W) + **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED** **2026-07-12** | Polling-first selected; `callback_query`/`answerCallbackQuery` **pending L3**; official receipt **accepted** (`D-0044-T`, `update_id=986228602`); **Inactive / not Published.** |
+| **47 / Wf** | **L3 REPOSITORY IMPLEMENTATION PASS** (D-0050-W) + **PRIMARY_INBOUND_ARCHITECTURE** (D-0049-W) | Source guard/parser/ack **implemented pending L4**; fixtures A–J PASS repo-side; **Inactive / not Published.** |
 | **48 / Wg** | **PASS** + Gate D + **D-0045-E 2026-07-12** | Manual `external_receipt` close `D-0044-T` (`state_persisted=true`); **callable non usato**; `enable_wg48_handoff=false`. **Inactive / not scheduled.** |
 | **49 / Wh** | Rehearsal **PASS**; **inattivo** | Not auto-promoted by Gate D. |
 | **decision-store** | Gates **1–3 PASS** + Gate B/D + **official 2026-07-12** | `D-0044-T` **closed** (D-0045-E); `D-0041-T` closed (hygiene). |
@@ -106,11 +114,11 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 ## Next gate
 
-**Not auto-started.** **Gate D closed** (2026-07-02). **D-0049-W** (2026-07-12) seleziona wf47 polling-first (L0/L1/L2 docs-only); Gate E = **OPERATOR_DECISION_PENDING**.
+**Not auto-started.** **Gate D closed** (2026-07-02). **D-0050-W** (2026-07-12) completa L3 repository wf47; Gate E = **OPERATOR_DECISION_PENDING**.
 
 **Next frontier (non auto-started):**
-1. **Nessuna implementazione automatica** — L3/L4/L5 richiedono Decision Packet dedicati separati.
-2. Prossimo gate reale, **solo se selezionato dall'operatore:** Decision Packet L3 per implementazione wf47 `callback_query` + design `answerCallbackQuery` — **non** creare quel packet in questo repository durante questo task.
+1. **L4 bounded runtime test** richiede **Decision Packet dedicato separato** — **non** auto-creato né auto-eseguito.
+2. Source-chat guard, parser 1–5, `allowed_updates`, `answerCallbackQuery` — **pending L4 runtime validation**.
 3. Gate E **non** riparte automaticamente; riapertura richiede **nuovo Decision Packet esplicito** + **risposta diretta operatore**.
 4. **D-0045-E** resta ultimo PASS scope-limited; catena ufficiale fresca wf45→wf47→callable-wf48 **non attestata**; **`enable_wg48_handoff=false`**; **PM-34 BLOCKED**; **`n8n_ready=false`**.
 
@@ -152,6 +160,7 @@ Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: 
 - D-0028-A / Gates: `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`, Gate A/B sessions `docs/sessions/2026-06-07-control-plane-gate-*`.
 - D-0032-W field-validation: `docs/sessions/2026-06-12-control-plane-d-0032-w-field-validation-pass.md`.
 - Gate D bounded rehearsal: `docs/sessions/2026-07-02-control-plane-gate-d-rehearsal-pass.md`.
+- D-0050-W wf47 L3 repository implementation: `docs/sessions/2026-07-12-control-plane-d-0050-w-wf47-callback-query-l3-implementation.md`.
 - D-0049-W polling-first architecture: `docs/sessions/2026-07-12-control-plane-d-0049-w-we-polling-first-architecture-decision.md`.
 - D-0047-G governance correction: `docs/sessions/2026-07-12-control-plane-d-0047-g-governance-correction.md`.
 - D-0046-E Gate E stop (voided): `docs/sessions/2026-07-12-control-plane-d-0046-e-gate-e-stop-decision.md`.
