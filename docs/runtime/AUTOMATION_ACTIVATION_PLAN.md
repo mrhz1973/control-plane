@@ -141,11 +141,25 @@ Gates E–F: **not PASS** unless separately attested.
 
 ### Gate E — Phase 1 controlled start (kill switch mandatory)
 
-**Status (2026-07-17):** **OPERATOR_DECISION_PENDING** — D-0052-W Opzione 1 = **L4 callback scope-limited PASS** (harness); D-0053-G Opzione 2 = hashes-only export governance. L5 **blocked** (`WF47_OFFICIAL_INSTANCE_ABSENT`). Gate E Phase 1 runtime **non autorizzato** come full PASS. **Non** auto-avvia Gate E.
+**Status (2026-07-17):** **OPERATOR_DECISION_PENDING** — D-0054-W Opzione 1 = official wf47 inventory restore (**configuration-only**, `NOT_RUN_CONFIGURATION_ONLY`); inventory absence blocker resolved; L5 **still unauthorized**. Gate E Phase 1 runtime **non autorizzato** come full PASS. **Non** auto-avvia Gate E.
 
-**Disposition record:** Session `docs/sessions/2026-07-17-control-plane-d-0052-w-l4-callback-pass-d0053g-option2.md`. **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`**.
+**Disposition record:** Session `docs/sessions/2026-07-17-control-plane-d-0054-w-wf47-official-restore-configuration-only.md`. **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`**.
 
 **Future reopening (consultative advisory only):** condizioni operative da review GLM restano **riferimento consultivo** — **non** piano approvato né scelta operatore. Nuovo Decision Packet + risposta diretta operatore richiesti.
+
+#### D-0054-W disposition — wf47 official inventory restore (2026-07-17)
+
+| | |
+|---|---|
+| **D-0054-W** | Option 1 — `direct_operator_message`; `task_kind=wf47_official_inventory_restore` |
+| **result_runtime** | `NOT_RUN_CONFIGURATION_ONLY` — **not** a runtime PASS |
+| **result_ui** | `PASS_ATTESTATO_UTENTE_CONFIGURATION_ONLY` |
+| **Source** | Live canonical template `workflows/wf-telegram-inbound-polling-getupdates.template.json` @ `eea0b4a`; historical export **not** used |
+| **Inventory** | `PRESENT_IN_FINAL_N8N_LIST` · local id `XALAlPKvMQ5GzUva` · inactive · unpublished · Schedule disabled |
+| **L5 inventory blocker** | `prior=WF47_OFFICIAL_INSTANCE_ABSENT` · `l5_inventory_blocker_resolved=true` · **`l5_activation_authorized=false`** |
+| **wf48 callable ref** | `PLACEHOLDER_NOT_CONFIGURED` · validation `NOT_IN_SCOPE` |
+| **Executions** | `workflow_execute_count=0` · `functional_test_executed=false` |
+| **Unchanged** | **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`** · Gate E **OPERATOR_DECISION_PENDING** |
 
 #### D-0052-W / D-0053-G disposition (2026-07-17)
 
@@ -154,7 +168,7 @@ Gates E–F: **not PASS** unless separately attested.
 | **D-0052-W** | Option 1 — `PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_L4_CALLBACK` (`D-0052-T` option 5; ack API OK; spinner UX not claimed) |
 | **D-0053-G** | Option 2 — originals outside Git; SHA-256 only in repo; **no** workflow JSON / template / redacted export committed |
 | **L4** | **Completed** (harness-scoped, user-attested) |
-| **L5** | **Blocked** — official wf47 absent from final inventory; **`l5_activation_authorized=false`** |
+| **L5 (historical D-0052)** | Official wf47 was **absent** at D-0052 teardown; **current** inventory = D-0054-W present; L5 still **unauthorized** |
 | **Parser** | Repository 1–5; live option **5** PASS; option **4** `NOT_TESTED` |
 | **Unchanged** | **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`** · Gate E **OPERATOR_DECISION_PENDING** |
 
@@ -165,7 +179,7 @@ Gates E–F: **not PASS** unless separately attested.
 | **Decision** | D-0050-W Opzione 1 — wf47 callback-query L3 repository; parent D-0049-W Opzione 1 |
 | **L3 repository** | **Completed** — template hardened; fixtures A–J PASS repo-side |
 | **L4** | Superseded as “pending” by D-0052-W harness PASS (2026-07-17) |
-| **L5** | Still blocked — see D-0052-W inventory finding |
+| **L5** | Inventory restore = D-0054-W (configuration-only); activation still unauthorized |
 | **Unchanged** | **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`** · Gate E **OPERATOR_DECISION_PENDING** |
 
 #### Scope boundary — cosa è cosa

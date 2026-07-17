@@ -2,11 +2,46 @@
 
 **Repository:** `mrhz1973/control-plane`
 **Document:** `docs/workflow-wf-telegram-inbound-polling-getupdates.md`
-**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Live getUpdates + 47→48 handoff **PASS ATTESTATO UTENTE**. **Disabled Schedule Trigger** versioned in template. **PRIMARY INBOUND ARCHITECTURE** (D-0049-W). **L3 repository PASS** (D-0050-W). **L4 harness callback PASS** (D-0052-W, 2026-07-17). **Not** operational automation.
+**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Live getUpdates + 47→48 handoff **PASS ATTESTATO UTENTE**. **Disabled Schedule Trigger** versioned in template. **PRIMARY INBOUND ARCHITECTURE** (D-0049-W). **L3 repository PASS** (D-0050-W). **L4 harness callback PASS** (D-0052-W, 2026-07-17). **Official inventory restored** (D-0054-W, configuration-only). **Not** operational automation.
 
 ---
 
-## 0. L4 harness callback PASS — D-0052-W (2026-07-17)
+## 0. Official inventory restore — D-0054-W (2026-07-17, configuration-only)
+
+| Field | Value |
+|-------|--------|
+| **decision_id** | D-0054-W |
+| **selected_option** | 1 |
+| **decision_provenance** | `direct_operator_message` |
+| **task_kind** | `wf47_official_inventory_restore` |
+| **result_runtime** | `NOT_RUN_CONFIGURATION_ONLY` |
+| **result_ui** | `PASS_ATTESTATO_UTENTE_CONFIGURATION_ONLY` |
+| **functional_test_executed** | `false` |
+
+**Operator UI restore** (Cursor did not import or configure n8n). Session: [2026-07-17-control-plane-d-0054-w-wf47-official-restore-configuration-only.md](sessions/2026-07-17-control-plane-d-0054-w-wf47-official-restore-configuration-only.md).
+
+| Field | Value |
+|-------|--------|
+| Template source | `workflows/wf-telegram-inbound-polling-getupdates.template.json` @ `eea0b4a` |
+| Historical export used | `false` |
+| Official local id | `XALAlPKvMQ5GzUva` |
+| Inventory status | **`PRESENT_IN_FINAL_N8N_LIST`** |
+| Active / Published | `false` / `false` |
+| Schedule disabled | `true` |
+| `enable_wg48_handoff` | `false` |
+| Hardened marker | Present — `Collapse shared decisions load fan-out (1 item per run)` |
+| wf48 Execute Workflow ref | `PLACEHOLDER_NOT_CONFIGURED` (validation `NOT_IN_SCOPE`) |
+| Executions | `0` |
+| `l5_inventory_blocker_resolved` | `true` (prior: `WF47_OFFICIAL_INSTANCE_ABSENT`) |
+| `l5_activation_authorized` | `false` |
+
+**Not claimed:** runtime PASS · functional test · L5 · Gate E · getUpdates/callback/ack on restored official instance · callable wf48 validation.
+
+**Next live test:** not auto-authorized; requires a separate direct-operator Decision Packet.
+
+---
+
+## 0bis. L4 harness callback PASS — D-0052-W (2026-07-17)
 
 | Field | Value |
 |-------|--------|
@@ -26,13 +61,13 @@
 | `answerCallbackQuery` API | `callback_ack_ok=true` — **PASS_API_CALL_ONLY** |
 | Spinner UX | `NOT_DIRECTLY_OBSERVED` / `NOT_CLAIMED` |
 | One-item receipt | `receipt_one_item_live_pass=true` |
-| Official wf47 inventory | **`ABSENT_FROM_FINAL_N8N_LIST`** — L5 blocker |
+| Official wf47 inventory (at D-0052 teardown) | **`ABSENT_FROM_FINAL_N8N_LIST`** — historical L5 inventory blocker; **current** inventory = §0 D-0054-W present |
 
 **Not claimed:** Gate E · L5 · spinner removal · option 4 runtime · every option 1–5 runtime · operational activation.
 
 ---
 
-## 0bis. L3 repository implementation — D-0050-W (2026-07-12)
+## 0ter. L3 repository implementation — D-0050-W (2026-07-12)
 
 | Field | Value |
 |-------|--------|
@@ -42,7 +77,7 @@
 | **parent_decision_id** | D-0049-W |
 | **result** | `PASS_REPOSITORY_ONLY_IMPLEMENTATION` |
 
-**Repository implementation PASS** — template hardened; fixtures A–J PASS repo-side. L4 harness validation recorded under §0 (D-0052-W).
+**Repository implementation PASS** — template hardened; fixtures A–J PASS repo-side. L4 harness validation recorded under §0bis (D-0052-W). Official inventory restore under §0 (D-0054-W).
 
 | Capability | Repository | L4 harness (D-0052-W) |
 |------------|------------|------------------------|
@@ -58,7 +93,7 @@
 
 ---
 
-## 0ter. Architecture decision — D-0049-W (docs-only, 2026-07-12)
+## 0quater. Architecture decision — D-0049-W (docs-only, 2026-07-12)
 
 | Field | Value |
 |-------|--------|
@@ -71,7 +106,7 @@
 
 **Selected as primary inbound path** for message + `callback_query`. **Implementation not performed** in the D-0049-W task itself.
 
-**Later layers (not part of D-0049-W):** L3 repository = D-0050-W (§0bis); L4 harness callback = D-0052-W (§0). L5 still blocked (`WF47_OFFICIAL_INSTANCE_ABSENT`).
+**Later layers (not part of D-0049-W):** L3 repository = D-0050-W (§0ter); L4 harness callback = D-0052-W (§0bis); official inventory restore = D-0054-W (§0). L5 still unauthorized (`l5_activation_authorized=false`).
 
 **Boundaries unchanged:** no webhook · no permanent schedule · We/46 retained as inactive fallback · **`l5_activation_authorized=false`**.
 

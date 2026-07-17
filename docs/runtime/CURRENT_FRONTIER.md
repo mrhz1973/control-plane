@@ -5,33 +5,41 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-07-17 — D-0052-W L4 callback PASS + D-0053-G Option 2; Gate E OPERATOR_DECISION_PENDING.
+Ultimo aggiornamento: 2026-07-17 — D-0054-W wf47 official inventory restore (configuration-only); Gate E OPERATOR_DECISION_PENDING.
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
+- **D-0054-W wf47 official inventory restore** = **direct operator Opzione 1** (2026-07-17) — `decision_provenance=direct_operator_message`; `task_kind=wf47_official_inventory_restore`:
+  - **Classification:** `result_runtime=NOT_RUN_CONFIGURATION_ONLY` · `result_ui=PASS_ATTESTATO_UTENTE_CONFIGURATION_ONLY` · `functional_test_executed=false` · **not** a runtime PASS.
+  - Operator restored official wf47 from live canonical template `workflows/wf-telegram-inbound-polling-getupdates.template.json` at `eea0b4a`; **historical export not used**.
+  - **Inventory now:** `wf47_official_inventory_status=PRESENT_IN_FINAL_N8N_LIST` · local id `XALAlPKvMQ5GzUva` · inactive · unpublished · Schedule disabled · `enable_wg48_handoff=false` · `workflow_execute_count=0`.
+  - Hardened marker present: `Collapse shared decisions load fan-out (1 item per run)`; UI endpoints/chat/Data Tables configured with existing values unchanged; no credential rotation; wf48 Execute Workflow reference = `PLACEHOLDER_NOT_CONFIGURED` (not validated).
+  - **`prior_l5_activation_blocker=WF47_OFFICIAL_INSTANCE_ABSENT`** · **`l5_inventory_blocker_resolved=true`** · **`l5_activation_authorized=false`** (next live test requires a separate Decision Packet; **not** auto-started).
+  - **NOT** Gate E · **NOT** L5 · **`n8n_ready=false`** · **PM-34 BLOCKED** · Cursor runtime actions = 0.
+  - Evidenza: `docs/sessions/2026-07-17-control-plane-d-0054-w-wf47-official-restore-configuration-only.md`.
 - **D-0052-W L4 callback PASS** = **direct operator Opzione 1** (2026-07-17) — `decision_provenance=direct_operator_message`; `result_runtime=PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_L4_CALLBACK`:
   - Dedicated harnesses: `D-0052-T` option **5** accepted (`update_id=986228604`); `callback_ack_ok=true` (API call only); receipt one-item live PASS; wf48 `external_receipt` closed `state_persisted=true`.
   - **Parser:** repository supports 1–5; **option 5 live PASS**; **option 4 NOT_TESTED**.
   - **Spinner UX:** `NOT_DIRECTLY_OBSERVED` / `NOT_CLAIMED`.
-  - **Inventory:** three D-0052 harnesses inactive; official wf45 restored; official wf48 inactive; **`wf47_official_inventory_status=ABSENT_FROM_FINAL_N8N_LIST`**; **`l5_activation_blocker=WF47_OFFICIAL_INSTANCE_ABSENT`**; **`l5_activation_authorized=false`**.
+  - **Historical inventory finding (D-0052):** at teardown, official wf47 was **`ABSENT_FROM_FINAL_N8N_LIST`** (`l5_activation_blocker=WF47_OFFICIAL_INSTANCE_ABSENT`). **Superseded for current inventory by D-0054-W** (present); historical fact preserved.
   - **NOT** Gate E full PASS · **NOT** L5 · **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`**.
   - Evidenza: `docs/sessions/2026-07-17-control-plane-d-0052-w-l4-callback-pass-d0053g-option2.md`.
 - **D-0053-G export governance** = **direct operator Opzione 2** (2026-07-17) — `decision_provenance=direct_operator_message`:
   - Original n8n exports remain **outside Git** (private local storage); GitHub records **SHA-256 only**.
   - **No** original/redacted/derived workflow JSON committed; **no** `workflows/**` change; **no** PROJECT_VISION §10 exception.
   - Hashes (orchestrator-verified): 45=`2d5fbffe…ede3c0` · 47=`af5b2627…04870e` · 48=`8477aa2f…245181`.
-  - Evidenza: stessa session combinata sopra.
+  - Evidenza: stessa session combinata D-0052/D-0053.
 - **D-0050-W wf47 L3 repository implementation** = **direct operator Opzione 1** (2026-07-12) — parent **D-0049-W Opzione 1**:
   - **L3 repository:** template wf47 hardened; fixtures A–J PASS repo-side.
-  - L4 runtime ora **attestato** via D-0052-W (harness); L5 **blocked** (official wf47 absent).
+  - L4 runtime attestato via D-0052-W (harness); inventory restore via D-0054-W (configuration-only); L5 **still unauthorized**.
   - Evidenza: `docs/sessions/2026-07-12-control-plane-d-0050-w-wf47-callback-query-l3-implementation.md`.
 - **D-0049-W polling-first architecture** = **direct operator Opzione 1** (2026-07-12) — `decision_provenance=direct_operator_message`; parent **D-0048-S Opzione 2**:
   - **L0/L1/L2:** completati **docs-only** — architettura inbound primaria = **wf47 polling-first** (`WF47_POLLING_FIRST`).
   - **We/46:** **DEPRECATED_AS_PRIMARY_PATH** — template/history **RETAINED_INACTIVE_WEBHOOK_FALLBACK**; **We live PASS=false**; blocker HTTPS **rimosso dal critical path**, resta debito se fallback riaperto.
-  - **Superseded later:** L3 repository = D-0050-W; L4 harness callback = D-0052-W; L5 still blocked (official wf47 absent).
+  - **Superseded later:** L3 repository = D-0050-W; L4 harness callback = D-0052-W; official inventory restore = D-0054-W; L5 still unauthorized.
   - **`enable_wg48_handoff=false`**; **PM-34 BLOCKED**; **`n8n_ready=false`**; Gate E full PASS **false**.
   - Evidenza: `docs/sessions/2026-07-12-control-plane-d-0049-w-we-polling-first-architecture-decision.md`.
 - **D-0047-G governance correction** = **direct operator Opzione 2** (2026-07-12) — `decision_provenance=direct_operator_message`:
@@ -104,7 +112,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 |-------|--------|------|
 | **45 / Wd** | **PASS ATTESTATO UTENTE** + Gate D + **D-0041-E** + **official 2026-07-12** | `D-0044-T` open-on-send (`message_id=1205`); fan-out guard `fan_out_items_in=1`. **Inactive** post-test. |
 | **46 / We** | **DEPRECATED_AS_PRIMARY_PATH** (D-0049-W); **RETAINED_INACTIVE_WEBHOOK_FALLBACK** | Package-prep completato; **We live PASS=false**; HTTPS blocker rilevante solo se fallback riaperto. |
-| **47 / Wf** | **L3 PASS** (D-0050-W) + **L4 harness PASS** (D-0052-W option 5) + polling-first (D-0049-W) | Official instance **ABSENT_FROM_FINAL_N8N_LIST** (L5 blocker); dedicated harness inactive; option 4 **NOT_TESTED**. |
+| **47 / Wf** | **L3 PASS** (D-0050-W) + **L4 harness PASS** (D-0052-W option 5) + polling-first (D-0049-W) + **D-0054-W inventory restore** | Official instance **PRESENT_IN_FINAL_N8N_LIST** (`XALAlPKvMQ5GzUva`, inactive/unpublished); configuration-only; option 4 **NOT_TESTED**. |
 | **48 / Wg** | **PASS** + Gate D + **D-0045-E** + **D-0052-W** | Manual `external_receipt` close `D-0052-T` option 5 (`state_persisted=true`); callable non usato; **Inactive / not scheduled.** |
 | **49 / Wh** | Rehearsal **PASS**; **inattivo** | Not auto-promoted by Gate D. |
 | **decision-store** | Gates **1–3 PASS** + Gate B/D + **official 2026-07-12** | `D-0044-T` **closed** (D-0045-E); `D-0041-T` closed (hygiene). |
@@ -118,17 +126,17 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 
 - **PM-34**: **BLOCKED**.
 - **We** (HTTPS webhook fallback): **BLOCKED_PENDING_IF_FALLBACK_REOPENED** — non sul critical path (D-0049-W).
-- **L5 activation:** **`WF47_OFFICIAL_INSTANCE_ABSENT`** — official canonical wf47 missing from final n8n inventory (D-0052-W).
+- **L5 activation:** inventory absence blocker **resolved** by D-0054-W (`l5_inventory_blocker_resolved=true`); **`l5_activation_authorized=false`** — next live test requires a separate direct-operator Decision Packet (**not** auto-started).
 
 ## Next gate
 
-**Not auto-started.** **Gate D closed** (2026-07-02). **D-0052-W** (2026-07-17) = L4 callback scope-limited PASS; Gate E = **OPERATOR_DECISION_PENDING**.
+**Not auto-started.** **Gate D closed** (2026-07-02). **D-0054-W** (2026-07-17) = official wf47 inventory restore (**configuration-only**); Gate E = **OPERATOR_DECISION_PENDING**.
 
 **Next frontier (non auto-started):**
-1. **L5** requires restore/reimport of official wf47 **plus** a separate Decision Packet — **`l5_activation_authorized=false`**.
+1. **L5** inventory present; live activation still **unauthorized** — requires a separate Decision Packet — **`l5_activation_authorized=false`**.
 2. Option 4 individual runtime validation remains **NOT_TESTED** (repository supports 1–5).
 3. Gate E **non** riparte automaticamente; riapertura richiede **nuovo Decision Packet esplicito** + **risposta diretta operatore**.
-4. **D-0052-W** = latest scope-limited runtime PASS (L4 callback harness); callable 47→48 fresca **non attestata**; **`enable_wg48_handoff=false`**; **PM-34 BLOCKED**; **`n8n_ready=false`**.
+4. Latest scope-limited **runtime** PASS remains **D-0052-W** (L4 harness); D-0054-W is **configuration-only** (`NOT_RUN_CONFIGURATION_ONLY`); callable 47→48 fresca **non attestata**; **`enable_wg48_handoff=false`**; **PM-34 BLOCKED**; **`n8n_ready=false`**.
 
 **Gate E** — disposizione corrente: **OPERATOR_DECISION_PENDING** (D-0046-E Option 3 voided). PREP storico in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E full PASS.
 
@@ -168,6 +176,7 @@ Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: 
 - D-0028-A / Gates: `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`, Gate A/B sessions `docs/sessions/2026-06-07-control-plane-gate-*`.
 - D-0032-W field-validation: `docs/sessions/2026-06-12-control-plane-d-0032-w-field-validation-pass.md`.
 - Gate D bounded rehearsal: `docs/sessions/2026-07-02-control-plane-gate-d-rehearsal-pass.md`.
+- D-0054-W wf47 official inventory restore (configuration-only): `docs/sessions/2026-07-17-control-plane-d-0054-w-wf47-official-restore-configuration-only.md`.
 - D-0052-W L4 callback PASS + D-0053-G Option 2: `docs/sessions/2026-07-17-control-plane-d-0052-w-l4-callback-pass-d0053g-option2.md`.
 - D-0050-W wf47 L3 repository implementation: `docs/sessions/2026-07-12-control-plane-d-0050-w-wf47-callback-query-l3-implementation.md`.
 - D-0049-W polling-first architecture: `docs/sessions/2026-07-12-control-plane-d-0049-w-we-polling-first-architecture-decision.md`.
