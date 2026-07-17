@@ -1,7 +1,7 @@
 # Wf47 → Wg operationalization plan (no-runtime)
 
-**Repository:** `mrhz1973/control-plane`  
-**Document:** `docs/workflow-wf47-wg-operationalization-plan.md`  
+**Repository:** `mrhz1973/control-plane`
+**Document:** `docs/workflow-wf47-wg-operationalization-plan.md`
 **Status:** **PREP PASS** (plan + checklist) + **final bounded manual runtime rehearsal PASS ATTESTATO UTENTE** + **bounded automatic 47→48 handoff PASS ATTESTATO UTENTE** (2026-07-09). Workflows 47/48/49 remain **manual / inactive / off**. Not operational activation.
 
 This document is **canonical** for the Wf47 → Wg operationalization path. The checklist ([workflow-wf47-wg-operationalization-checklist.md](workflow-wf47-wg-operationalization-checklist.md)) is only a minimum readiness pointer and does not duplicate governance.
@@ -206,7 +206,8 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
   - Noisy test rows removed (including **D-GE-SENDOK-*** and unused random test IDs)
   - `wf47_polling_state_test` after run: `last_update_id = 986228601`, `last_handled_update_id = 986228600`
   - `wg_decision_state_test` inspected and **left untouched**
-- **Limitation (do not over-claim):** tested path passed with `selected_option=1`. Current wf47/wf48 tested parsing path appears limited to options **1/2/3**. **Do not** claim full future robustness for Decision Packets using options **4/5**.
+- **Limitation (historical 2026-07-09 arc):** that bounded handoff passed with `selected_option=1` on a **1/2/3** tested path.
+- **Parser status after D-0050-W / D-0052-W (2026-07-17):** repository parser supports options **1–5**. D-0052-W L4 harness **runtime-validated option 5**. Option **4** was **not** individually runtime-tested. **Do not** write that all options 1–5 were runtime validated.
 - **Boundaries unchanged:** PM-34 **BLOCKED** · `n8n_ready` **false** · `pm34_unblocked` **false** · `enable_wg48_handoff` **false** (restored) · wf40/41/42 untouched · no production activation · Cursor **did not** run n8n.
 
 ---
@@ -249,7 +250,7 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 | Plan document complete | This file + frontier PREP entry |
 | **Next gate identified** | Bounded automatic **47→48** handoff **PASS ATTESTATO UTENTE** recorded (2026-07-09, `D-3045-T`); operational automation remains **NOT ACTIVE** |
 
-**Status:** bounded automatic **47→48** test-only handoff **PASS ATTESTATO UTENTE** (`update_id` **986228600**, `selected_option` **1**). Telegram inbound operational automation **NOT ACTIVE / NOT RUN**. PM-34 **BLOCKED**. `enable_wg48_handoff` **false** (restored). No Gate E full PASS. No global PASS runtime. Parsing limitation: options **1/2/3** tested path only — options **4/5** not claimed robust.
+**Status:** bounded automatic **47→48** test-only handoff **PASS ATTESTATO UTENTE** (`update_id` **986228600**, `selected_option` **1**). **D-0052-W** (2026-07-17): L4 callback harness **PASS** option **5** + wf48 `external_receipt` close; official wf47 **absent** from final inventory (**L5 blocker**). Telegram inbound operational automation **NOT ACTIVE / NOT RUN**. PM-34 **BLOCKED**. `enable_wg48_handoff` **false**. No Gate E full PASS. No global PASS runtime. Parser: repository **1–5**; live option **5** PASS; option **4** **NOT_TESTED**.
 
 ---
 

@@ -1,12 +1,38 @@
 # Wf runbook — Telegram inbound polling / getUpdates
 
-**Repository:** `mrhz1973/control-plane`  
-**Document:** `docs/workflow-wf-telegram-inbound-polling-getupdates.md`  
-**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Live getUpdates + 47→48 handoff **PASS ATTESTATO UTENTE**. **Disabled Schedule Trigger** versioned in template (Phase 1 ready; **not** activated). **PRIMARY INBOUND ARCHITECTURE** (D-0049-W). **L3 repository implementation PASS** (D-0050-W, 2026-07-12). **Not** operational automation.
+**Repository:** `mrhz1973/control-plane`
+**Document:** `docs/workflow-wf-telegram-inbound-polling-getupdates.md`
+**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Live getUpdates + 47→48 handoff **PASS ATTESTATO UTENTE**. **Disabled Schedule Trigger** versioned in template. **PRIMARY INBOUND ARCHITECTURE** (D-0049-W). **L3 repository PASS** (D-0050-W). **L4 harness callback PASS** (D-0052-W, 2026-07-17). **Not** operational automation.
 
 ---
 
-## 0. L3 repository implementation — D-0050-W (2026-07-12)
+## 0. L4 harness callback PASS — D-0052-W (2026-07-17)
+
+| Field | Value |
+|-------|--------|
+| **decision_id** | D-0052-W |
+| **selected_option** | 1 |
+| **decision_provenance** | `direct_operator_message` |
+| **result_runtime** | `PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_L4_CALLBACK` |
+
+**User-attested** (Cursor did not run runtime). Dedicated harnesses; session: [2026-07-17-control-plane-d-0052-w-l4-callback-pass-d0053g-option2.md](sessions/2026-07-17-control-plane-d-0052-w-l4-callback-pass-d0053g-option2.md).
+
+| Capability | Result |
+|------------|--------|
+| Source-chat / allowed chat | Configured; authorized callback accepted |
+| Parser option **5** | **Live PASS** (`dp:D-0052-T:5`, `update_id=986228604`) |
+| Parser option **4** | **NOT_TESTED** |
+| Repository parser support | Options **1–5** (do not claim all individually runtime-tested) |
+| `answerCallbackQuery` API | `callback_ack_ok=true` — **PASS_API_CALL_ONLY** |
+| Spinner UX | `NOT_DIRECTLY_OBSERVED` / `NOT_CLAIMED` |
+| One-item receipt | `receipt_one_item_live_pass=true` |
+| Official wf47 inventory | **`ABSENT_FROM_FINAL_N8N_LIST`** — L5 blocker |
+
+**Not claimed:** Gate E · L5 · spinner removal · option 4 runtime · every option 1–5 runtime · operational activation.
+
+---
+
+## 0bis. L3 repository implementation — D-0050-W (2026-07-12)
 
 | Field | Value |
 |-------|--------|
@@ -16,27 +42,23 @@
 | **parent_decision_id** | D-0049-W |
 | **result** | `PASS_REPOSITORY_ONLY_IMPLEMENTATION` |
 
-**Repository implementation PASS** — template hardened; **runtime callback validation NOT RUN**.
+**Repository implementation PASS** — template hardened; fixtures A–J PASS repo-side. L4 harness validation recorded under §0 (D-0052-W).
 
-| Capability | Repository | Runtime (L4 pending) |
-|------------|------------|----------------------|
-| Source-chat guard | **Implemented** | Pending L4 validation |
-| Parser options 1–5 | **Implemented** | Pending L4 validation |
-| `allowed_updates` explicit | **Implemented** | Pending L4 validation |
-| `answerCallbackQuery` branch | **Implemented** | Pending L4 validation |
-| One-item receipt invariant | **PASS repository-side** (fixtures A–J) | Pending L4 validation |
+| Capability | Repository | L4 harness (D-0052-W) |
+|------------|------------|------------------------|
+| Source-chat guard | **Implemented** | Exercised (authorized chat) |
+| Parser options 1–5 | **Implemented** | Option **5** live; option **4** not tested |
+| `allowed_updates` explicit | **Implemented** | Preflight confirmed |
+| `answerCallbackQuery` branch | **Implemented** | API call OK; spinner UX not claimed |
+| One-item receipt invariant | **PASS repository-side** | **PASS live** |
 
-**Acknowledgement semantics:** `answerCallbackQuery` is **fail-soft and non-authoritative** — ack failure does not alter business classification; stale/duplicate authorized callbacks may ack with `callback_ack_ok=false`.
+**Acknowledgement semantics:** `answerCallbackQuery` is **fail-soft and non-authoritative** — ack failure does not alter business classification.
 
-**Not claimed:** callback-query live PASS · `answerCallbackQuery` live PASS · end-to-end button UX PASS.
-
-**Boundaries unchanged:** `active=false` · Schedule disabled · `enable_wg48_handoff=false` · no webhook · no live activation · We/46 inactive webhook fallback.
-
-**L4/L5:** require separate Decision Packets — **not** authorized here.
+**Boundaries unchanged:** `active=false` · Schedule disabled · `enable_wg48_handoff=false` · no webhook · We/46 inactive webhook fallback · **L5 not authorized**.
 
 ---
 
-## 0bis. Architecture decision — D-0049-W (docs-only, 2026-07-12)
+## 0ter. Architecture decision — D-0049-W (docs-only, 2026-07-12)
 
 | Field | Value |
 |-------|--------|
@@ -47,15 +69,11 @@
 | **we46_primary_path_status** | `DEPRECATED_AS_PRIMARY_PATH` |
 | **we46_template_status** | `RETAINED_INACTIVE_WEBHOOK_FALLBACK` |
 
-**Selected as primary inbound path** for message + `callback_query`. **Implementation not performed** in this task.
+**Selected as primary inbound path** for message + `callback_query`. **Implementation not performed** in the D-0049-W task itself.
 
-**L3 pending (not authorized here):**
-- Verify the actual template parsing path for `callback_query`.
-- Design `answerCallbackQuery`, or explicitly document accepted UX degradation in a future Decision Packet.
+**Later layers (not part of D-0049-W):** L3 repository = D-0050-W (§0bis); L4 harness callback = D-0052-W (§0). L5 still blocked (`WF47_OFFICIAL_INSTANCE_ABSENT`).
 
-**Boundaries unchanged:** no webhook · no schedule · no live activation authorized · We/46 retained as inactive fallback.
-
-**Not claimed:** callback button end-to-end PASS · `answerCallbackQuery` implemented (`PENDING_L3_DESIGN`).
+**Boundaries unchanged:** no webhook · no permanent schedule · We/46 retained as inactive fallback · **`l5_activation_authorized=false`**.
 
 ---
 

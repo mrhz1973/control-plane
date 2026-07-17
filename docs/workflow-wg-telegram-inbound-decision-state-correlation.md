@@ -1,7 +1,7 @@
 # Wg runbook — inbound Decision Packet state correlation (TEST ONLY)
 
-**Repository:** `mrhz1973/control-plane`  
-**Document:** `docs/workflow-wg-telegram-inbound-decision-state-correlation.md`  
+**Repository:** `mrhz1973/control-plane`
+**Document:** `docs/workflow-wg-telegram-inbound-decision-state-correlation.md`
 **Status:** Wg fixture manual validation **PASS ATTESTATO UTENTE**. **External receipt mode** added for live 47→48 handoff (implementation ready; runtime gate pending reimport). Not operational automation. No schedule.
 
 ---
@@ -70,8 +70,8 @@ No `chat_id`, `user_id`, token, or message body in table or Git.
 
 ## 5. Template — workflow 48
 
-**File:** `workflows/wg-telegram-inbound-decision-state-correlation.template.json`  
-**Name:** `48 - Wg Telegram Inbound Decision State Correlation TEST ONLY - TEMPLATE`  
+**File:** `workflows/wg-telegram-inbound-decision-state-correlation.template.json`
+**Name:** `48 - Wg Telegram Inbound Decision State Correlation TEST ONLY - TEMPLATE`
 **active:** `false` — Manual Trigger only.
 
 **Human configures in n8n UI only:**
@@ -280,5 +280,24 @@ Final `control_plane_decisions_test` row: `status: closed`, `closed_at: 2026-06-
 | Workflow state | **48 inactive** post-run (operator-attested) |
 
 **Proves:** manual receipt→close contract on `control_plane_decisions_test`. **Does not prove:** callable automatic 47→48 in same run; Gate E full PASS; inbound operational automation.
+
+---
+
+## 12ter. D-0052-W wf48 external receipt close (option 5) — PASS ATTESTATO UTENTE SCOPE LIMITED L4 (2026-07-17)
+
+**Status:** **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_L4_CALLBACK** companion close (user-attested; Cursor did not run runtime). Session: [2026-07-17-control-plane-d-0052-w-l4-callback-pass-d0053g-option2.md](sessions/2026-07-17-control-plane-d-0052-w-l4-callback-pass-d0053g-option2.md).
+
+**Decision:** D-0052-W Opzione 1 — after harness wf47 accepted `D-0052-T` option **5**; **48/Wg** manual `external_receipt`; `enable_wg48_handoff=false`.
+
+| Aspect | Value |
+|--------|--------|
+| Receipt | `D-0052-T` / option `5` / `update_id` **986228604** |
+| Output | `inspect_status: closed`, `prior_status: open`, `state_persisted: true`, `test_only: true` |
+| Second click / second wf47 business run | **false** |
+| callable 47→48 | **false** |
+
+**Parser claim boundary:** repository supports options 1–5; this arc runtime-validated option **5** only; option **4** **NOT_TESTED**. **Do not** claim all options 1–5 individually runtime-tested.
+
+**Proves:** manual receipt→close for option 5 after L4 callback harness. **Does not prove:** Gate E; L5; callable automatic handoff; operational automation.
 
 ---

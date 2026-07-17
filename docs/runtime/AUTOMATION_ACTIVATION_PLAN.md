@@ -1,8 +1,8 @@
 # D-0028-A Automation Activation Plan
 
-**Repository:** `mrhz1973/control-plane`  
-**Date:** 2026-06-07  
-**Decision:** D-0028-A **Option 2** — docs-only progressive activation plan  
+**Repository:** `mrhz1973/control-plane`
+**Date:** 2026-06-07
+**Decision:** D-0028-A **Option 2** — docs-only progressive activation plan
 **Status:** Plan only. **No runtime.** **No n8n execution.** **Option 4 not started.**
 
 **Purpose:** Prepare a concrete, gate-separated path toward future **D-0028-A Option 4** (controlled activation) without executing it. Parent rules: [`PROJECT_VISION.md`](../foundation/PROJECT_VISION.md), [`CURRENT_FRONTIER.md`](CURRENT_FRONTIER.md).
@@ -141,11 +141,22 @@ Gates E–F: **not PASS** unless separately attested.
 
 ### Gate E — Phase 1 controlled start (kill switch mandatory)
 
-**Status (2026-07-12):** **OPERATOR_DECISION_PENDING** — D-0050-W Opzione 1 completa **L3 repository implementation** wf47 (callback-query path). L4 bounded runtime test e L5 live activation **pending separate Decision Packets**. Gate E Phase 1 runtime **non autorizzato** e **non tentato**. **Non** è Gate E full PASS. **Non** auto-avvia Gate E.
+**Status (2026-07-17):** **OPERATOR_DECISION_PENDING** — D-0052-W Opzione 1 = **L4 callback scope-limited PASS** (harness); D-0053-G Opzione 2 = hashes-only export governance. L5 **blocked** (`WF47_OFFICIAL_INSTANCE_ABSENT`). Gate E Phase 1 runtime **non autorizzato** come full PASS. **Non** auto-avvia Gate E.
 
-**Disposition record:** Session `docs/sessions/2026-07-12-control-plane-d-0050-w-wf47-callback-query-l3-implementation.md`. Parent D-0049-W Opzione 1. D-0045-E resta ultimo PASS scope-limited runtime. **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`**.
+**Disposition record:** Session `docs/sessions/2026-07-17-control-plane-d-0052-w-l4-callback-pass-d0053g-option2.md`. **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`**.
 
 **Future reopening (consultative advisory only):** condizioni operative da review GLM restano **riferimento consultivo** — **non** piano approvato né scelta operatore. Nuovo Decision Packet + risposta diretta operatore richiesti.
+
+#### D-0052-W / D-0053-G disposition (2026-07-17)
+
+| | |
+|---|---|
+| **D-0052-W** | Option 1 — `PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_L4_CALLBACK` (`D-0052-T` option 5; ack API OK; spinner UX not claimed) |
+| **D-0053-G** | Option 2 — originals outside Git; SHA-256 only in repo; **no** workflow JSON / template / redacted export committed |
+| **L4** | **Completed** (harness-scoped, user-attested) |
+| **L5** | **Blocked** — official wf47 absent from final inventory; **`l5_activation_authorized=false`** |
+| **Parser** | Repository 1–5; live option **5** PASS; option **4** `NOT_TESTED` |
+| **Unchanged** | **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`** · Gate E **OPERATOR_DECISION_PENDING** |
 
 #### D-0050-W disposition — wf47 L3 repository implementation (2026-07-12)
 
@@ -153,10 +164,9 @@ Gates E–F: **not PASS** unless separately attested.
 |---|---|
 | **Decision** | D-0050-W Opzione 1 — wf47 callback-query L3 repository; parent D-0049-W Opzione 1 |
 | **L3 repository** | **Completed** — template hardened; fixtures A–J PASS repo-side |
-| **L4** | Bounded runtime test — **pending separate operator decision** |
-| **L5** | Live activation — **pending separate operator decision** |
-| **Runtime validation** | Source-chat/ack/parser/`allowed_updates` — **pending L4** |
-| **Unchanged** | No runtime · **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`** · Gate E **OPERATOR_DECISION_PENDING** |
+| **L4** | Superseded as “pending” by D-0052-W harness PASS (2026-07-17) |
+| **L5** | Still blocked — see D-0052-W inventory finding |
+| **Unchanged** | **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`** · Gate E **OPERATOR_DECISION_PENDING** |
 
 #### Scope boundary — cosa è cosa
 
