@@ -13,90 +13,95 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0052w-l4-callback-pass-d0053g-option2
+task_ref: d0054w-wf47-official-inventory-restore
 result_cursor: PASS_DOCS_ONLY
-result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_L4_CALLBACK
-base_commit: 97d420c0231e678edc9b440d61923fe3346cb93c
-real_task_commit: 861d41ed0845a7f70e64d17a804e047af560e77f
-commit_subject: docs: record D-0052 L4 callback pass and D-0053 decision
+result_runtime: NOT_RUN_CONFIGURATION_ONLY
+result_ui: PASS_ATTESTATO_UTENTE_CONFIGURATION_ONLY
+task_kind: wf47_official_inventory_restore
+base_commit: eea0b4a5ee2adc66c24dd5bd76d4be4d38bdbce1
+real_task_commit: 3dab99f1d5a936c2fc57b928e8a83bd94e54e84a
+commit_subject: docs: record D-0054 wf47 inventory restore
 rolling_report_commit: PENDING_SELF_REFERENCE
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 branch: main
-decision_id: D-0052-W
+decision_id: D-0054-W
 selected_option: 1
 decision_provenance: direct_operator_message
-export_governance_decision_id: D-0053-G
-export_governance_selected_option: 2
-export_governance_provenance: direct_operator_message
-original_exports_committed: false
-redacted_exports_committed: false
-derived_templates_committed: false
-workflow_files_modified: false
-callback_query_live_pass: true
-answer_callback_query_api_call_ok: true
-spinner_removed_observation: NOT_DIRECTLY_OBSERVED
-parser_option_5_live_pass: true
-parser_option_4_live_pass: NOT_TESTED
-receipt_one_item_live_pass: true
-wf47_official_inventory_status: ABSENT_FROM_FINAL_N8N_LIST
-l5_activation_blocker: WF47_OFFICIAL_INSTANCE_ABSENT
+n8n_ui_modification_by_operator: true
+configuration_only: true
+functional_test_executed: false
+workflow_execute_count: 0
+runtime_executed_by_cursor: false
+runtime_actions_by_cursor: 0
+wf47_official_inventory_status: PRESENT_IN_FINAL_N8N_LIST
+wf47_official_local_id: XALAlPKvMQ5GzUva
+wf47_official_active: false
+wf47_official_published: false
+wf47_schedule_disabled: true
+hardened_marker_node_present: true
+prior_l5_activation_blocker: WF47_OFFICIAL_INSTANCE_ABSENT
+l5_inventory_blocker_resolved: true
 l5_activation_authorized: false
+wg48_execute_workflow_reference_status: PLACEHOLDER_NOT_CONFIGURED
+wg48_execute_workflow_reference_validation: NOT_IN_SCOPE
 enable_wg48_handoff: false
+gate_e_status: OPERATOR_DECISION_PENDING
 gate_e_full_pass: false
 n8n_ready: false
 pm34_unblocked: false
+parser_option_5_live_pass: true
+parser_option_4_live_pass: NOT_TESTED
+spinner_removed_observation: NOT_DIRECTLY_OBSERVED
 timestamp_utc: 2026-07-17
 ```
 
-- **Commit 1 — D-0052-W / D-0053-G docs record:** L4 callback scope-limited PASS (user-attested) + export governance Option 2 (hashes only; originals outside Git).
+- **Commit 1 — D-0054-W docs record:** official wf47 inventory restore (**configuration-only**); `NOT_RUN_CONFIGURATION_ONLY`; **not** a runtime PASS.
 - **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md` + handoff; **non** certifica il proprio hash.
-- **Runtime actions by Cursor:** `0`. Session: `docs/sessions/2026-07-17-control-plane-d-0052-w-l4-callback-pass-d0053g-option2.md`.
-- Snapshot verifica attraverso `861d41e`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
+- **Runtime actions by Cursor:** `0`. Session: `docs/sessions/2026-07-17-control-plane-d-0054-w-wf47-official-restore-configuration-only.md`.
+- Snapshot verifica attraverso `3dab99f`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
 
 **Post-push evidence (commit 1 — real task):**
 
 ```text
 git log --oneline -8
+3dab99f docs: record D-0054 wf47 inventory restore
+eea0b4a docs: refresh runtime reports for D-0052 and D-0053
 861d41e docs: record D-0052 L4 callback pass and D-0053 decision
 97d420c docs: handoff D-0052-W operator decision pending
 7a7eb9b docs: refresh runtime reports for D-0051-G
 a2d0889 docs: correct D-0050-W commit provenance
 7515fc9 docs: refresh runtime reports for D-0050-W
 9cc2162 feat: harden wf47 callback-query path for D-0050-W
-095933d Update wf47 polling template for callback handling
-b0bfee4 docs: refresh runtime reports for D-0049-W
 
 git status --short
 
 git rev-parse HEAD
-861d41ed0845a7f70e64d17a804e047af560e77f
+3dab99f1d5a936c2fc57b928e8a83bd94e54e84a
 
 git rev-parse origin/main
-861d41ed0845a7f70e64d17a804e047af560e77f
+3dab99f1d5a936c2fc57b928e8a83bd94e54e84a
 
 git branch --show-current
 main
 
 git show --stat HEAD
-commit 861d41ed0845a7f70e64d17a804e047af560e77f
- docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  28 ++--
- docs/runtime/CURRENT_FRONTIER.md                   |  41 +++--
- ...ane-d-0052-w-l4-callback-pass-d0053g-option2.md | 179 +++++++++++++++++++++
- ...kflow-wf-telegram-inbound-polling-getupdates.md |  70 +++++---
- docs/workflow-wf47-wg-operationalization-plan.md   |   9 +-
- ...-telegram-inbound-decision-state-correlation.md |  27 +++-
- 6 files changed, 295 insertions(+), 59 deletions(-)
+commit 3dab99f1d5a936c2fc57b928e8a83bd94e54e84a
+ docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  22 +++-
+ docs/runtime/CURRENT_FRONTIER.md                   |  29 +++--
+ ...4-w-wf47-official-restore-configuration-only.md | 139 +++++++++++++++++++++
+ ...kflow-wf-telegram-inbound-polling-getupdates.md |  49 +++++++--
+ docs/workflow-wf47-wg-operationalization-plan.md   |   3 +-
+ 5 files changed, 220 insertions(+), 22 deletions(-)
 
 git ls-remote origin refs/heads/main
-861d41ed0845a7f70e64d17a804e047af560e77f	refs/heads/main
+3dab99f1d5a936c2fc57b928e8a83bd94e54e84a	refs/heads/main
 
-git diff --name-only 97d420c0231e678edc9b440d61923fe3346cb93c..HEAD
+git diff --name-only eea0b4a5ee2adc66c24dd5bd76d4be4d38bdbce1..HEAD
 docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
 docs/runtime/CURRENT_FRONTIER.md
-docs/sessions/2026-07-17-control-plane-d-0052-w-l4-callback-pass-d0053g-option2.md
+docs/sessions/2026-07-17-control-plane-d-0054-w-wf47-official-restore-configuration-only.md
 docs/workflow-wf-telegram-inbound-polling-getupdates.md
 docs/workflow-wf47-wg-operationalization-plan.md
-docs/workflow-wg-telegram-inbound-decision-state-correlation.md
 ```
 
 ---
@@ -119,6 +124,15 @@ docs/workflow-wg-telegram-inbound-decision-state-correlation.md
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0052w-l4-callback-pass-d0053g-option2
+  real_task_commit: 861d41ed0845a7f70e64d17a804e047af560e77f
+  base_commit: 97d420c0231e678edc9b440d61923fe3346cb93c
+  rolling_report_commit: eea0b4a5ee2adc66c24dd5bd76d4be4d38bdbce1
+  remote_hash_verbatim: eea0b4a5ee2adc66c24dd5bd76d4be4d38bdbce1
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_L4_CALLBACK
+  timestamp_utc: 2026-07-17
+
 - task_ref: d0051g-d0050w-commit-provenance-correction
   real_task_commit: a2d088912ee83603f5fd96b08921937c7d382914
   base_commit: 7515fc9d922fb80f2003fbefde87957c18917a04
