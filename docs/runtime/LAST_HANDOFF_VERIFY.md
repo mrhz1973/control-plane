@@ -33,6 +33,46 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: d0051g-d0050w-commit-provenance-correction
+verified_task_commit: a2d088912ee83603f5fd96b08921937c7d382914
+verified_base_commit: 7515fc9d922fb80f2003fbefde87957c18917a04
+verified_rolling_report_commit: 7a7eb9b5870995404c0a25870d6dec4e9f1830b8
+verified_through_commit: a2d088912ee83603f5fd96b08921937c7d382914
+observed_head: a2d088912ee83603f5fd96b08921937c7d382914
+observed_origin_main: a2d088912ee83603f5fd96b08921937c7d382914
+observed_ls_remote_main: a2d088912ee83603f5fd96b08921937c7d382914
+branch: main
+workspace_status: clean
+artifact_commit: 7a7eb9b5870995404c0a25870d6dec4e9f1830b8
+result: PASS_REMOTE_DOCUMENTAL_REPORT_ONLY_GOVERNANCE_CORRECTION
+result_runtime: NOT_RUN_AUDIT_CORRECTION
+decision_id: D-0051-G
+selected_option: 1
+decision_provenance: direct_operator_message
+corrected_task_ref: d0050w-wf47-callback-query-l3-repository-implementation
+corrected_base_commit: b0bfee43382b2de1a2fd5710fa3004c6c370af71
+corrected_real_task_commit: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
+intermediate_substantive_commit: 095933d9d0b9edb3edf42233225aa89d3e9f3f3d
+original_report_commit: 7515fc9d922fb80f2003fbefde87957c18917a04
+commit_convention_status: DEVIATION_RECORDED
+runtime_executed: false
+workflow_template_modified_by_correction: false
+runtime_workflow_modified: false
+callback_query_live_pass: false
+answer_callback_query_live_pass: false
+l4_runtime_test_authorized: false
+l5_live_activation_authorized: false
+gate_e_status: OPERATOR_DECISION_PENDING
+gate_e_full_pass: false
+enable_wg48_handoff: false
+n8n_ready: false
+pm34_unblocked: false
+timestamp_utc: 2026-07-12
+```
+
+**Nota:** snapshot D-0051-G provenance correction — rolling report `7a7eb9b` backfilled; superseded da D-0052-W / D-0053-G docs record (2026-07-17).
+
+```yaml
 task_ref: d0050w-wf47-callback-query-l3-repository-implementation
 verified_task_commit: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
 verified_base_commit: b0bfee43382b2de1a2fd5710fa3004c6c370af71
@@ -294,88 +334,98 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: d0051g-d0050w-commit-provenance-correction
-verified_task_commit: a2d088912ee83603f5fd96b08921937c7d382914
-verified_base_commit: 7515fc9d922fb80f2003fbefde87957c18917a04
+task_ref: d0052w-l4-callback-pass-d0053g-option2
+verified_task_commit: 861d41ed0845a7f70e64d17a804e047af560e77f
+verified_base_commit: 97d420c0231e678edc9b440d61923fe3346cb93c
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: a2d088912ee83603f5fd96b08921937c7d382914
-observed_head: a2d088912ee83603f5fd96b08921937c7d382914
-observed_origin_main: a2d088912ee83603f5fd96b08921937c7d382914
-observed_ls_remote_main: a2d088912ee83603f5fd96b08921937c7d382914
+verified_through_commit: 861d41ed0845a7f70e64d17a804e047af560e77f
+observed_head: 861d41ed0845a7f70e64d17a804e047af560e77f
+observed_origin_main: 861d41ed0845a7f70e64d17a804e047af560e77f
+observed_ls_remote_main: 861d41ed0845a7f70e64d17a804e047af560e77f
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
-result: PASS_REMOTE_DOCUMENTAL_REPORT_ONLY_GOVERNANCE_CORRECTION
-result_runtime: NOT_RUN_AUDIT_CORRECTION
-decision_id: D-0051-G
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_L4_CALLBACK
+decision_id: D-0052-W
 selected_option: 1
 decision_provenance: direct_operator_message
-corrected_task_ref: d0050w-wf47-callback-query-l3-repository-implementation
-corrected_base_commit: b0bfee43382b2de1a2fd5710fa3004c6c370af71
-corrected_real_task_commit: 9cc21624d4441a6a0ca676d4ff0f29cc05341243
-intermediate_substantive_commit: 095933d9d0b9edb3edf42233225aa89d3e9f3f3d
-original_report_commit: 7515fc9d922fb80f2003fbefde87957c18917a04
-commit_convention_status: DEVIATION_RECORDED
-runtime_executed: false
-workflow_template_modified_by_correction: false
-runtime_workflow_modified: false
-callback_query_live_pass: false
-answer_callback_query_live_pass: false
-l4_runtime_test_authorized: false
-l5_live_activation_authorized: false
-gate_e_status: OPERATOR_DECISION_PENDING
-gate_e_full_pass: false
+export_governance_decision_id: D-0053-G
+export_governance_selected_option: 2
+export_governance_provenance: direct_operator_message
+original_exports_committed: false
+redacted_exports_committed: false
+derived_templates_committed: false
+workflow_files_modified: false
+callback_query_live_pass: true
+answer_callback_query_api_call_ok: true
+spinner_removed_observation: NOT_DIRECTLY_OBSERVED
+parser_option_5_live_pass: true
+parser_option_4_live_pass: NOT_TESTED
+receipt_one_item_live_pass: true
+wf47_official_inventory_status: ABSENT_FROM_FINAL_N8N_LIST
+l5_activation_blocker: WF47_OFFICIAL_INSTANCE_ABSENT
+l5_activation_authorized: false
 enable_wg48_handoff: false
+gate_e_full_pass: false
 n8n_ready: false
 pm34_unblocked: false
-timestamp_utc: 2026-07-12
+timestamp_utc: 2026-07-17
 ```
 
-**Nota:** D-0051-G provenance correction verified through `a2d0889` — report-only; D-0050-W implementation unchanged; `7515fc9` remains visible; **no history rewrite**; **NOT** verified through commit 2 (this report). Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** D-0052-W / D-0053-G verified through commit 1 `861d41e` — docs-only; runtime = user-attested scope-limited L4 callback; **NOT** verified through commit 2 (this report). Commit 2 = artefatti verifica/report/handoff; `artifact_commit: PENDING_SELF_REFERENCE`.
 
-**Backfill PENDING_SELF_REFERENCE:** D-0050-W snapshot → `a2d0889`; D-0049-W snapshot → `b0bfee4`; D-0047-G snapshot → `417f136`; D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+**Backfill PENDING_SELF_REFERENCE:** D-0051-G snapshot → `7a7eb9b`; D-0050-W snapshot → `a2d0889`; D-0049-W snapshot → `b0bfee4`; D-0047-G snapshot → `417f136`; D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
 
 ---
 
-## Command outputs (verbatim, sanitized — D-0051-G D-0050-W provenance correction)
+## Command outputs (verbatim, sanitized — D-0052-W / D-0053-G commit 1)
 
 ```text
 git log --oneline -8
+861d41e docs: record D-0052 L4 callback pass and D-0053 decision
+97d420c docs: handoff D-0052-W operator decision pending
+7a7eb9b docs: refresh runtime reports for D-0051-G
 a2d0889 docs: correct D-0050-W commit provenance
 7515fc9 docs: refresh runtime reports for D-0050-W
 9cc2162 feat: harden wf47 callback-query path for D-0050-W
 095933d Update wf47 polling template for callback handling
 b0bfee4 docs: refresh runtime reports for D-0049-W
-9c328fe docs: select polling-first inbound architecture for D-0049-W
-417f136 docs: refresh runtime reports for D-0047-G correction
-5fdf1dd docs: correct D-0046-E provenance and add anti-proxy rule
 
 git status --short
 
 git rev-parse HEAD
-a2d088912ee83603f5fd96b08921937c7d382914
+861d41ed0845a7f70e64d17a804e047af560e77f
 
 git rev-parse origin/main
-a2d088912ee83603f5fd96b08921937c7d382914
+861d41ed0845a7f70e64d17a804e047af560e77f
 
 git branch --show-current
 main
 
 git show --stat HEAD
-commit a2d088912ee83603f5fd96b08921937c7d382914
- docs/runtime/LAST_CURSOR_REPORT.md  | 16 ++++++++++++----
- docs/runtime/LAST_HANDOFF_VERIFY.md | 11 ++++++++---
- 2 files changed, 20 insertions(+), 7 deletions(-)
+commit 861d41ed0845a7f70e64d17a804e047af560e77f
+ docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  28 ++--
+ docs/runtime/CURRENT_FRONTIER.md                   |  41 +++--
+ ...ane-d-0052-w-l4-callback-pass-d0053g-option2.md | 179 +++++++++++++++++++++
+ ...kflow-wf-telegram-inbound-polling-getupdates.md |  70 +++++---
+ docs/workflow-wf47-wg-operationalization-plan.md   |   9 +-
+ ...-telegram-inbound-decision-state-correlation.md |  27 +++-
+ 6 files changed, 295 insertions(+), 59 deletions(-)
 
 git ls-remote origin refs/heads/main
-a2d088912ee83603f5fd96b08921937c7d382914	refs/heads/main
+861d41ed0845a7f70e64d17a804e047af560e77f	refs/heads/main
 
-git diff --name-only 7515fc9d922fb80f2003fbefde87957c18917a04..HEAD
-docs/runtime/LAST_CURSOR_REPORT.md
-docs/runtime/LAST_HANDOFF_VERIFY.md
+git diff --name-only 97d420c0231e678edc9b440d61923fe3346cb93c..HEAD
+docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
+docs/runtime/CURRENT_FRONTIER.md
+docs/sessions/2026-07-17-control-plane-d-0052-w-l4-callback-pass-d0053g-option2.md
+docs/workflow-wf-telegram-inbound-polling-getupdates.md
+docs/workflow-wf47-wg-operationalization-plan.md
+docs/workflow-wg-telegram-inbound-decision-state-correlation.md
 ```
 
-**BASE (record commit 1):** `7515fc9d922fb80f2003fbefde87957c18917a04`
+**BASE (record commit 1):** `97d420c0231e678edc9b440d61923fe3346cb93c`
 
 ---
 
