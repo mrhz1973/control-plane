@@ -33,6 +33,48 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: d0055w-d0058w-wf47-option4-pass-wf48-manual-close
+verified_task_commit: 48537b3e19ea60a120f29c263ace6fd9a773d258
+verified_base_commit: 356094921e04f9be5396dea3de658345343b391e
+verified_rolling_report_commit: c241d3b0acf5786aa027bb1b1ae5005296621c0f
+verified_through_commit: 48537b3e19ea60a120f29c263ace6fd9a773d258
+observed_head: 48537b3e19ea60a120f29c263ace6fd9a773d258
+observed_origin_main: 48537b3e19ea60a120f29c263ace6fd9a773d258
+observed_ls_remote_main: 48537b3e19ea60a120f29c263ace6fd9a773d258
+branch: main
+workspace_status: clean
+artifact_commit: c241d3b0acf5786aa027bb1b1ae5005296621c0f
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF47_OFFICIAL_PLAIN_OPTION_4
+decision_provenance: direct_operator_message
+d0055_result: BLOCKED_CONFIGURATION_AUTH
+d0056_result: BLOCKED_CONFIGURATION_AUTH
+d0057_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF47_OFFICIAL_PLAIN_OPTION_4
+d0058_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF48_MANUAL_EXTERNAL_RECEIPT_OPTION_4
+wf47_official_plain_option_4_scope_limited_pass: true
+parser_option_4_live_pass: true
+parser_option_5_live_pass: true
+functional_test_executed: true
+wf48_manual_external_receipt_close_pass: true
+official_wf48_option_4_pass: false
+fixture_decision_id: D-0055-T
+fixture_final_status: closed
+fixture_selected_option: 4
+fixture_update_id: 986228607
+enable_wg48_handoff: false
+l5_activation_authorized: false
+gate_e_status: OPERATOR_DECISION_PENDING
+gate_e_full_pass: false
+n8n_ready: false
+pm34_unblocked: false
+runtime_executed_by_cursor: false
+runtime_actions_by_cursor: 0
+timestamp_utc: 2026-07-18
+```
+
+**Nota:** snapshot D-0055…D-0058 — rolling report / artifact `c241d3b` backfilled; superseded da D-0059-W (2026-07-18).
+
+```yaml
 task_ref: redaction-policy-operator-responsibility
 verified_task_commit: b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
 verified_base_commit: be0cd7685ff6362f9879f660061e3c05e549a594
@@ -442,144 +484,88 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: d0055w-d0058w-wf47-option4-pass-wf48-manual-close
-verified_task_commit: 48537b3e19ea60a120f29c263ace6fd9a773d258
-verified_base_commit: 356094921e04f9be5396dea3de658345343b391e
+task_ref: d0059w-wf48-parser-1-5-canonization
+verified_task_commit: 4c67225d1996c07616a5a2089add976d65b9b4a4
+verified_base_commit: c241d3b0acf5786aa027bb1b1ae5005296621c0f
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: 48537b3e19ea60a120f29c263ace6fd9a773d258
-observed_head: 48537b3e19ea60a120f29c263ace6fd9a773d258
-observed_origin_main: 48537b3e19ea60a120f29c263ace6fd9a773d258
-observed_ls_remote_main: 48537b3e19ea60a120f29c263ace6fd9a773d258
+verified_through_commit: 4c67225d1996c07616a5a2089add976d65b9b4a4
+observed_head: 4c67225d1996c07616a5a2089add976d65b9b4a4
+observed_origin_main: 4c67225d1996c07616a5a2089add976d65b9b4a4
+observed_ls_remote_main: 4c67225d1996c07616a5a2089add976d65b9b4a4
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
-result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
-result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF47_OFFICIAL_PLAIN_OPTION_4
+result: PASS_REMOTE_REPOSITORY_ONLY_IMPLEMENTATION
+result_runtime: NOT_RUN_REPOSITORY_ONLY_CANONIZATION
+decision_id: D-0059-W
+selected_option: 1
 decision_provenance: direct_operator_message
-d0055_result: BLOCKED_CONFIGURATION_AUTH
-d0056_result: BLOCKED_CONFIGURATION_AUTH
-d0057_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF47_OFFICIAL_PLAIN_OPTION_4
-d0058_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF48_MANUAL_EXTERNAL_RECEIPT_OPTION_4
-wf47_official_plain_option_4_scope_limited_pass: true
-parser_option_4_live_pass: true
-parser_option_5_live_pass: true
-functional_test_executed: true
-wf48_manual_external_receipt_close_pass: true
-official_wf48_option_4_pass: false
-fixture_decision_id: D-0055-T
-fixture_final_status: closed
-fixture_selected_option: 4
-fixture_update_id: 986228607
+wf48_parser_1_5_repository_canonized: true
+wf48_parser_locations_updated: 3
+repository_fixture_pass: true
+export_created: false
+official_wf48_option_4_runtime_pass: false
+official_wf48_option_5_runtime_pass: false
 enable_wg48_handoff: false
 l5_activation_authorized: false
 gate_e_status: OPERATOR_DECISION_PENDING
 gate_e_full_pass: false
-n8n_ready: false
 pm34_unblocked: false
+n8n_ready: false
 runtime_executed_by_cursor: false
 runtime_actions_by_cursor: 0
 timestamp_utc: 2026-07-18
 ```
 
-**Nota:** D-0055…D-0058 verified through commit 1 `48537b3` — docs-only; **NOT** verified through commit 2 (this report). Commit 2 = artefatti verifica/report/handoff; `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** D-0059-W verified through commit 1 `4c67225` — repository-only; **NOT** verified through commit 2 (this report). Commit 2 = artefatti verifica/report/handoff; `artifact_commit: PENDING_SELF_REFERENCE`.
 
-**Backfill PENDING_SELF_REFERENCE:** redaction-policy snapshot → `3560949`; D-0054-W snapshot → `be0cd76`; D-0052-W / D-0053-G snapshot → `eea0b4a`; D-0051-G snapshot → `7a7eb9b`; D-0050-W snapshot → `a2d0889`; D-0049-W snapshot → `b0bfee4`; D-0047-G snapshot → `417f136`; D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+**Backfill PENDING_SELF_REFERENCE:** D-0055…D-0058 snapshot → `c241d3b`; redaction-policy snapshot → `3560949`; D-0054-W snapshot → `be0cd76`; D-0052-W / D-0053-G snapshot → `eea0b4a`; D-0051-G snapshot → `7a7eb9b`; D-0050-W snapshot → `a2d0889`; D-0049-W snapshot → `b0bfee4`; D-0047-G snapshot → `417f136`; D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
 
 ---
 
-## Command outputs (verbatim — D-0055…D-0058 commit 1)
+## Command outputs (verbatim — D-0059-W commit 1)
 
 ```text
 git log --oneline -8
+4c67225 feat: canonize wf48 parser options 1-5
+c241d3b docs: refresh runtime reports for D-0055 through D-0058
 48537b3 docs: record D-0055 wf47 option 4 pass and D-0058 close
 3560949 docs: refresh runtime reports for redaction policy update
 b5da3a6 docs: move redaction policy to operator responsibility
 be0cd76 docs: refresh runtime reports for D-0054
 3dab99f docs: record D-0054 wf47 inventory restore
 eea0b4a docs: refresh runtime reports for D-0052 and D-0053
-861d41e docs: record D-0052 L4 callback pass and D-0053 decision
-97d420c docs: handoff D-0052-W operator decision pending
 
 git status --short
 
 git rev-parse HEAD
-48537b3e19ea60a120f29c263ace6fd9a773d258
+4c67225d1996c07616a5a2089add976d65b9b4a4
 
 git rev-parse origin/main
-48537b3e19ea60a120f29c263ace6fd9a773d258
+4c67225d1996c07616a5a2089add976d65b9b4a4
 
 git branch --show-current
 main
 
 git show --stat HEAD
-commit 48537b3e19ea60a120f29c263ace6fd9a773d258
- docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  18 +-
- docs/runtime/CURRENT_FRONTIER.md                   |  46 ++--
- ...58-w-wf47-option4-pass-and-wf48-manual-close.md | 257 +++++++++++++++++++++
- ...kflow-wf-telegram-inbound-polling-getupdates.md |  45 +++-
- docs/workflow-wf47-wg-operationalization-plan.md   |   9 +-
- ...-telegram-inbound-decision-state-correlation.md |  21 ++
- 6 files changed, 355 insertions(+), 41 deletions(-)
+commit 4c67225d1996c07616a5a2089add976d65b9b4a4
+ docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  21 ++++-
+ docs/runtime/CURRENT_FRONTIER.md                   |  28 +++---
+ ...-plane-d-0059-w-wf48-parser-1-5-canonization.md | 105 +++++++++++++++++++++
+ docs/workflow-wf47-wg-operationalization-plan.md   |   5 +-
+ ...-telegram-inbound-decision-state-correlation.md |  40 +++++++-
+ ...nbound-decision-state-correlation.template.json |   6 +-
+ 6 files changed, 180 insertions(+), 25 deletions(-)
 
 git ls-remote origin refs/heads/main
-48537b3e19ea60a120f29c263ace6fd9a773d258	refs/heads/main
+4c67225d1996c07616a5a2089add976d65b9b4a4	refs/heads/main
 
-git diff --name-only 356094921e04f9be5396dea3de658345343b391e..HEAD
+git diff --name-only c241d3b0acf5786aa027bb1b1ae5005296621c0f..HEAD
 docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
 docs/runtime/CURRENT_FRONTIER.md
-docs/sessions/2026-07-18-control-plane-d-0055-w-d-0058-w-wf47-option4-pass-and-wf48-manual-close.md
-docs/workflow-wf-telegram-inbound-polling-getupdates.md
+docs/sessions/2026-07-18-control-plane-d-0059-w-wf48-parser-1-5-canonization.md
 docs/workflow-wf47-wg-operationalization-plan.md
 docs/workflow-wg-telegram-inbound-decision-state-correlation.md
+workflows/wg-telegram-inbound-decision-state-correlation.template.json
 ```
 
-**BASE (record commit 1):** `356094921e04f9be5396dea3de658345343b391e`
-
----
-
-## Required fields (per aggiornamento futuro)
-
-| Campo | Descrizione |
-|-------|-------------|
-| `task_ref` | Riferimento task verificato |
-| `verified_task_commit` | Commit 1 del task (sostanza) |
-| `verified_rolling_report_commit` | Commit 2 rolling report, se applicabile |
-| `verified_through_commit` | Ultimo commit remoto verificato con hash coerenti |
-| `observed_head` / `observed_origin_main` / `observed_ls_remote_main` | Output osservati al momento della verifica |
-| `branch` | Deve essere `main` |
-| `workspace_status` | `clean` o descrizione dirty |
-| `artifact_commit` | `PENDING_SELF_REFERENCE` fino a backfill al task successivo |
-| `result` / `result_runtime` | Esito Cursor / runtime |
-| `timestamp_utc` | Data verifica |
-
-Sezione **Command outputs** = output testuale verbatim (non tabelle riassuntive).
-
----
-
-## Fallback logic
-
-```
-aggio control
-    │
-    ├─ report Cursor in chat con output post-push completi? → PASS remoto
-    │
-    ├─ leggi LAST_HANDOFF_VERIFY.md su GitHub
-    │       │
-    │       ├─ HEAD remoto == verified_through_commit
-    │       │   AND observed_head == observed_origin_main == observed_ls_remote_main
-    │       │   AND branch main AND workspace clean
-    │       │       → PASS remoto fino a verified_through_commit
-    │       │
-    │       └─ HEAD remoto > verified_through_commit (artefatto stale)
-    │               → verify-only Cursor (non shell utente)
-    │
-    ├─ leggi LAST_CURSOR_REPORT.md (contesto task)
-    │
-    ├─ prompt Cursor verify-only
-    │
-    └─ shell utente (fallback finale)
-```
-
-**Nota:** il commit che aggiorna questo file è verificabile tramite output post-push del task corrente o backfill al task successivo — **non** tramite auto-riferimento nel medesimo snapshot.
-
-**Futuro:** [`AUTOMATIC_POST_PUSH_VERIFIER.md`](AUTOMATIC_POST_PUSH_VERIFIER.md) — worker/n8n popolerà questo file automaticamente; fino ad allora aggiornamento manuale o via Cursor task.
