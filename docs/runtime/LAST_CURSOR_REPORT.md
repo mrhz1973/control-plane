@@ -13,95 +13,75 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0054w-wf47-official-inventory-restore
+task_ref: redaction-policy-operator-responsibility
 result_cursor: PASS_DOCS_ONLY
-result_runtime: NOT_RUN_CONFIGURATION_ONLY
-result_ui: PASS_ATTESTATO_UTENTE_CONFIGURATION_ONLY
-task_kind: wf47_official_inventory_restore
-base_commit: eea0b4a5ee2adc66c24dd5bd76d4be4d38bdbce1
-real_task_commit: 3dab99f1d5a936c2fc57b928e8a83bd94e54e84a
-commit_subject: docs: record D-0054 wf47 inventory restore
+result_runtime: NOT_RUN_POLICY_UPDATE
+base_commit: be0cd7685ff6362f9879f660061e3c05e549a594
+real_task_commit: b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
+commit_subject: docs: move redaction policy to operator responsibility
 rolling_report_commit: PENDING_SELF_REFERENCE
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 branch: main
-decision_id: D-0054-W
-selected_option: 1
 decision_provenance: direct_operator_message
-n8n_ui_modification_by_operator: true
-configuration_only: true
-functional_test_executed: false
-workflow_execute_count: 0
-runtime_executed_by_cursor: false
-runtime_actions_by_cursor: 0
-wf47_official_inventory_status: PRESENT_IN_FINAL_N8N_LIST
-wf47_official_local_id: XALAlPKvMQ5GzUva
-wf47_official_active: false
-wf47_official_published: false
-wf47_schedule_disabled: true
-hardened_marker_node_present: true
-prior_l5_activation_blocker: WF47_OFFICIAL_INSTANCE_ABSENT
-l5_inventory_blocker_resolved: true
-l5_activation_authorized: false
-wg48_execute_workflow_reference_status: PLACEHOLDER_NOT_CONFIGURED
-wg48_execute_workflow_reference_validation: NOT_IN_SCOPE
+policy_change: redaction_moved_to_operator_responsibility
+project_vision_version: 2.18
+secrets_policy_version: v2.16
 enable_wg48_handoff: false
-gate_e_status: OPERATOR_DECISION_PENDING
 gate_e_full_pass: false
 n8n_ready: false
 pm34_unblocked: false
-parser_option_5_live_pass: true
-parser_option_4_live_pass: NOT_TESTED
-spinner_removed_observation: NOT_DIRECTLY_OBSERVED
-timestamp_utc: 2026-07-17
+timestamp_utc: 2026-07-18
 ```
 
-- **Commit 1 — D-0054-W docs record:** official wf47 inventory restore (**configuration-only**); `NOT_RUN_CONFIGURATION_ONLY`; **not** a runtime PASS.
-- **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md` + handoff; **non** certifica il proprio hash.
-- **Runtime actions by Cursor:** `0`. Session: `docs/sessions/2026-07-17-control-plane-d-0054-w-wf47-official-restore-configuration-only.md`.
-- Snapshot verifica attraverso `3dab99f`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
+- **Commit 1 — policy update:** PROJECT_VISION §10 v2.18; redazione a cura operatore; «no secrets in Git» deprecato come prescrizione operativa in runbook/rolling reports.
+- **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md`; **non** certifica il proprio hash.
+- **Runtime actions by Cursor:** `0`. Nessun workflow JSON modificato.
+- Snapshot verifica attraverso `b5da3a6`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
 
 **Post-push evidence (commit 1 — real task):**
 
 ```text
 git log --oneline -8
+b5da3a6 docs: move redaction policy to operator responsibility
+be0cd76 docs: refresh runtime reports for D-0054
 3dab99f docs: record D-0054 wf47 inventory restore
 eea0b4a docs: refresh runtime reports for D-0052 and D-0053
 861d41e docs: record D-0052 L4 callback pass and D-0053 decision
 97d420c docs: handoff D-0052-W operator decision pending
 7a7eb9b docs: refresh runtime reports for D-0051-G
 a2d0889 docs: correct D-0050-W commit provenance
-7515fc9 docs: refresh runtime reports for D-0050-W
-9cc2162 feat: harden wf47 callback-query path for D-0050-W
 
 git status --short
 
 git rev-parse HEAD
-3dab99f1d5a936c2fc57b928e8a83bd94e54e84a
+b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
 
 git rev-parse origin/main
-3dab99f1d5a936c2fc57b928e8a83bd94e54e84a
+b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
 
 git branch --show-current
 main
 
 git show --stat HEAD
-commit 3dab99f1d5a936c2fc57b928e8a83bd94e54e84a
- docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  22 +++-
- docs/runtime/CURRENT_FRONTIER.md                   |  29 +++--
- ...4-w-wf47-official-restore-configuration-only.md | 139 +++++++++++++++++++++
- ...kflow-wf-telegram-inbound-polling-getupdates.md |  49 +++++++--
- docs/workflow-wf47-wg-operationalization-plan.md   |   3 +-
- 5 files changed, 220 insertions(+), 22 deletions(-)
+commit b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
+ docs/foundation/PROJECT_VISION.md                    | 20 +++++++++++++-------
+ docs/runtime/LAST_CURSOR_REPORT.md                   |  2 +-
+ docs/runtime/LAST_HANDOFF_VERIFY.md                  |  2 +-
+ ...orkflow-wf-telegram-inbound-polling-getupdates.md | 12 ++++++------
+ docs/workflow-wf47-wg-operationalization-plan.md     |  2 +-
+ ...wg-telegram-inbound-decision-state-correlation.md |  2 +-
+ 6 files changed, 23 insertions(+), 17 deletions(-)
 
 git ls-remote origin refs/heads/main
-3dab99f1d5a936c2fc57b928e8a83bd94e54e84a	refs/heads/main
+b5da3a658267d5a62877cdb121a6d1f2fb31ff7e	refs/heads/main
 
-git diff --name-only eea0b4a5ee2adc66c24dd5bd76d4be4d38bdbce1..HEAD
-docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
-docs/runtime/CURRENT_FRONTIER.md
-docs/sessions/2026-07-17-control-plane-d-0054-w-wf47-official-restore-configuration-only.md
+git diff --name-only be0cd7685ff6362f9879f660061e3c05e549a594..HEAD
+docs/foundation/PROJECT_VISION.md
+docs/runtime/LAST_CURSOR_REPORT.md
+docs/runtime/LAST_HANDOFF_VERIFY.md
 docs/workflow-wf-telegram-inbound-polling-getupdates.md
 docs/workflow-wf47-wg-operationalization-plan.md
+docs/workflow-wg-telegram-inbound-decision-state-correlation.md
 ```
 
 ---
@@ -124,6 +104,15 @@ docs/workflow-wf47-wg-operationalization-plan.md
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0054w-wf47-official-inventory-restore
+  real_task_commit: 3dab99f1d5a936c2fc57b928e8a83bd94e54e84a
+  base_commit: eea0b4a5ee2adc66c24dd5bd76d4be4d38bdbce1
+  rolling_report_commit: be0cd7685ff6362f9879f660061e3c05e549a594
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: NOT_RUN_CONFIGURATION_ONLY
+  result_ui: PASS_ATTESTATO_UTENTE_CONFIGURATION_ONLY
+  timestamp_utc: 2026-07-17
+
 - task_ref: d0052w-l4-callback-pass-d0053g-option2
   real_task_commit: 861d41ed0845a7f70e64d17a804e047af560e77f
   base_commit: 97d420c0231e678edc9b440d61923fe3346cb93c
