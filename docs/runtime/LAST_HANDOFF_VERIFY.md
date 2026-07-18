@@ -33,6 +33,33 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: redaction-policy-operator-responsibility
+verified_task_commit: b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
+verified_base_commit: be0cd7685ff6362f9879f660061e3c05e549a594
+verified_rolling_report_commit: 356094921e04f9be5396dea3de658345343b391e
+verified_through_commit: b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
+observed_head: b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
+observed_origin_main: b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
+observed_ls_remote_main: b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
+branch: main
+workspace_status: clean
+artifact_commit: 356094921e04f9be5396dea3de658345343b391e
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
+result_runtime: NOT_RUN_POLICY_UPDATE
+decision_provenance: direct_operator_message
+policy_change: redaction_moved_to_operator_responsibility
+project_vision_version: 2.18
+secrets_policy_version: v2.16
+enable_wg48_handoff: false
+gate_e_full_pass: false
+n8n_ready: false
+pm34_unblocked: false
+timestamp_utc: 2026-07-18
+```
+
+**Nota:** snapshot redaction-policy-operator-responsibility — rolling report / artifact `3560949` backfilled; superseded da D-0055…D-0058 docs record (2026-07-18).
+
+```yaml
 task_ref: d0054w-wf47-official-inventory-restore
 verified_task_commit: 3dab99f1d5a936c2fc57b928e8a83bd94e54e84a
 verified_base_commit: eea0b4a5ee2adc66c24dd5bd76d4be4d38bdbce1
@@ -415,83 +442,98 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: redaction-policy-operator-responsibility
-verified_task_commit: b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
-verified_base_commit: be0cd7685ff6362f9879f660061e3c05e549a594
+task_ref: d0055w-d0058w-wf47-option4-pass-wf48-manual-close
+verified_task_commit: 48537b3e19ea60a120f29c263ace6fd9a773d258
+verified_base_commit: 356094921e04f9be5396dea3de658345343b391e
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
-observed_head: b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
-observed_origin_main: b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
-observed_ls_remote_main: b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
+verified_through_commit: 48537b3e19ea60a120f29c263ace6fd9a773d258
+observed_head: 48537b3e19ea60a120f29c263ace6fd9a773d258
+observed_origin_main: 48537b3e19ea60a120f29c263ace6fd9a773d258
+observed_ls_remote_main: 48537b3e19ea60a120f29c263ace6fd9a773d258
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY
-result_runtime: NOT_RUN_POLICY_UPDATE
+result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF47_OFFICIAL_PLAIN_OPTION_4
 decision_provenance: direct_operator_message
-policy_change: redaction_moved_to_operator_responsibility
-project_vision_version: 2.18
-secrets_policy_version: v2.16
+d0055_result: BLOCKED_CONFIGURATION_AUTH
+d0056_result: BLOCKED_CONFIGURATION_AUTH
+d0057_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF47_OFFICIAL_PLAIN_OPTION_4
+d0058_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF48_MANUAL_EXTERNAL_RECEIPT_OPTION_4
+wf47_official_plain_option_4_scope_limited_pass: true
+parser_option_4_live_pass: true
+parser_option_5_live_pass: true
+functional_test_executed: true
+wf48_manual_external_receipt_close_pass: true
+official_wf48_option_4_pass: false
+fixture_decision_id: D-0055-T
+fixture_final_status: closed
+fixture_selected_option: 4
+fixture_update_id: 986228607
 enable_wg48_handoff: false
+l5_activation_authorized: false
+gate_e_status: OPERATOR_DECISION_PENDING
 gate_e_full_pass: false
 n8n_ready: false
 pm34_unblocked: false
+runtime_executed_by_cursor: false
+runtime_actions_by_cursor: 0
 timestamp_utc: 2026-07-18
 ```
 
-**Nota:** redaction-policy-operator-responsibility verified through commit 1 `b5da3a6` — docs-only policy update; **NOT** verified through commit 2 (this report). Commit 2 = artefatti verifica/report; `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** D-0055…D-0058 verified through commit 1 `48537b3` — docs-only; **NOT** verified through commit 2 (this report). Commit 2 = artefatti verifica/report/handoff; `artifact_commit: PENDING_SELF_REFERENCE`.
 
-**Backfill PENDING_SELF_REFERENCE:** D-0054-W snapshot → `be0cd76`; D-0052-W / D-0053-G snapshot → `eea0b4a`; D-0051-G snapshot → `7a7eb9b`; D-0050-W snapshot → `a2d0889`; D-0049-W snapshot → `b0bfee4`; D-0047-G snapshot → `417f136`; D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+**Backfill PENDING_SELF_REFERENCE:** redaction-policy snapshot → `3560949`; D-0054-W snapshot → `be0cd76`; D-0052-W / D-0053-G snapshot → `eea0b4a`; D-0051-G snapshot → `7a7eb9b`; D-0050-W snapshot → `a2d0889`; D-0049-W snapshot → `b0bfee4`; D-0047-G snapshot → `417f136`; D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
 
 ---
 
-## Command outputs (verbatim — redaction policy commit 1)
+## Command outputs (verbatim — D-0055…D-0058 commit 1)
 
 ```text
 git log --oneline -8
+48537b3 docs: record D-0055 wf47 option 4 pass and D-0058 close
+3560949 docs: refresh runtime reports for redaction policy update
 b5da3a6 docs: move redaction policy to operator responsibility
 be0cd76 docs: refresh runtime reports for D-0054
 3dab99f docs: record D-0054 wf47 inventory restore
 eea0b4a docs: refresh runtime reports for D-0052 and D-0053
 861d41e docs: record D-0052 L4 callback pass and D-0053 decision
 97d420c docs: handoff D-0052-W operator decision pending
-7a7eb9b docs: refresh runtime reports for D-0051-G
-a2d0889 docs: correct D-0050-W commit provenance
 
 git status --short
 
 git rev-parse HEAD
-b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
+48537b3e19ea60a120f29c263ace6fd9a773d258
 
 git rev-parse origin/main
-b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
+48537b3e19ea60a120f29c263ace6fd9a773d258
 
 git branch --show-current
 main
 
 git show --stat HEAD
-commit b5da3a658267d5a62877cdb121a6d1f2fb31ff7e
- docs/foundation/PROJECT_VISION.md                    | 20 +++++++++++++-------
- docs/runtime/LAST_CURSOR_REPORT.md                   |  2 +-
- docs/runtime/LAST_HANDOFF_VERIFY.md                  |  2 +-
- ...orkflow-wf-telegram-inbound-polling-getupdates.md | 12 ++++++------
- docs/workflow-wf47-wg-operationalization-plan.md     |  2 +-
- ...wg-telegram-inbound-decision-state-correlation.md |  2 +-
- 6 files changed, 23 insertions(+), 17 deletions(-)
+commit 48537b3e19ea60a120f29c263ace6fd9a773d258
+ docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  18 +-
+ docs/runtime/CURRENT_FRONTIER.md                   |  46 ++--
+ ...58-w-wf47-option4-pass-and-wf48-manual-close.md | 257 +++++++++++++++++++++
+ ...kflow-wf-telegram-inbound-polling-getupdates.md |  45 +++-
+ docs/workflow-wf47-wg-operationalization-plan.md   |   9 +-
+ ...-telegram-inbound-decision-state-correlation.md |  21 ++
+ 6 files changed, 355 insertions(+), 41 deletions(-)
 
 git ls-remote origin refs/heads/main
-b5da3a658267d5a62877cdb121a6d1f2fb31ff7e	refs/heads/main
+48537b3e19ea60a120f29c263ace6fd9a773d258	refs/heads/main
 
-git diff --name-only be0cd7685ff6362f9879f660061e3c05e549a594..HEAD
-docs/foundation/PROJECT_VISION.md
-docs/runtime/LAST_CURSOR_REPORT.md
-docs/runtime/LAST_HANDOFF_VERIFY.md
+git diff --name-only 356094921e04f9be5396dea3de658345343b391e..HEAD
+docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
+docs/runtime/CURRENT_FRONTIER.md
+docs/sessions/2026-07-18-control-plane-d-0055-w-d-0058-w-wf47-option4-pass-and-wf48-manual-close.md
 docs/workflow-wf-telegram-inbound-polling-getupdates.md
 docs/workflow-wf47-wg-operationalization-plan.md
 docs/workflow-wg-telegram-inbound-decision-state-correlation.md
 ```
 
-**BASE (record commit 1):** `be0cd7685ff6362f9879f660061e3c05e549a594`
+**BASE (record commit 1):** `356094921e04f9be5396dea3de658345343b391e`
 
 ---
 
