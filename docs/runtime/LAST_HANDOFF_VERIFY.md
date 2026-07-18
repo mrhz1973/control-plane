@@ -33,6 +33,47 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: d0065w-wf47-wf48-runtime-pass-and-workflow-authoring-boundary
+verified_task_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
+verified_base_commit: cc550d227f2483207665362d2857c7d5b99bf2c6
+verified_rolling_report_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
+verified_through_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
+observed_head: 1eb2be6af07196506b6849c19ecd36509a3f810f
+observed_origin_main: 1eb2be6af07196506b6849c19ecd36509a3f810f
+observed_ls_remote_main: 1eb2be6af07196506b6849c19ecd36509a3f810f
+branch: main
+workspace_status: clean
+artifact_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
+result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_D0062_D0063_OPERATOR_ATTESTED
+decision_id: D-0065-W
+decision_provenance: direct_operator_message
+cursor_authored_or_modified_workflow: false
+workflows_path_touched: false
+cursor_independent_n8n_verification: false
+runtime_evidence_source: direct_operator_attestation
+governance_workflow_authoring_boundary_canonized: true
+cursor_routing_repository_based: true
+d0062_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_FRESH_CALLABLE_WF47_TO_OFFICIAL_WF48
+d0063_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_SCHEDULED_WF47_TO_OFFICIAL_WF48
+d0064_wf48_callable_publication_dependency: true
+teardown_instruction_issued: true
+teardown_final_state_independently_verified: false
+teardown_final_runtime_state: NOT_VERIFIED_IN_SUPPLIED_EVIDENCE
+enable_wg48_handoff: false
+l5_activation_authorized: false
+gate_e_status: OPERATOR_DECISION_PENDING
+gate_e_full_pass: false
+pm34_unblocked: false
+n8n_ready: false
+runtime_executed_by_cursor: false
+runtime_actions_by_cursor: 0
+timestamp_utc: 2026-07-18
+```
+
+**Nota:** snapshot D-0065-W independently repository-verified through `1eb2be6` (D-0066-E verify-only / D-0067-W backfill). Prior teardown gap was historical at D-0065 time; superseded by D-0067-W closure.
+
+```yaml
 task_ref: d0059w-wf48-parser-1-5-canonization
 verified_task_commit: 4c67225d1996c07616a5a2089add976d65b9b4a4
 verified_base_commit: c241d3b0acf5786aa027bb1b1ae5005296621c0f
@@ -520,33 +561,34 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: d0065w-wf47-wf48-runtime-pass-and-workflow-authoring-boundary
+task_ref: d0067w-d0066e-teardown-verification-closure
 verified_task_commit: PENDING_SELF_REFERENCE
-verified_base_commit: cc550d227f2483207665362d2857c7d5b99bf2c6
+verified_base_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: 4c67225d1996c07616a5a2089add976d65b9b4a4
-observed_head: PENDING_SELF_REFERENCE
-observed_origin_main: PENDING_SELF_REFERENCE
-observed_ls_remote_main: PENDING_SELF_REFERENCE
+verified_through_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
+observed_head: 1eb2be6af07196506b6849c19ecd36509a3f810f
+observed_origin_main: 1eb2be6af07196506b6849c19ecd36509a3f810f
+observed_ls_remote_main: 1eb2be6af07196506b6849c19ecd36509a3f810f
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_PENDING_INDEPENDENT_VERIFY
-result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_D0062_D0063_OPERATOR_ATTESTED
-decision_id: D-0065-W
+result_runtime: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+decision_id: D-0067-W
+related_decision_id: D-0066-E
+selected_option: "3"
 decision_provenance: direct_operator_message
+mandate: operator_runtime_inventory_plus_cursor_verify_only
 cursor_authored_or_modified_workflow: false
 workflows_path_touched: false
 cursor_independent_n8n_verification: false
+teardown_direct_n8n_observation_by_cursor: false
 runtime_evidence_source: direct_operator_attestation
-governance_workflow_authoring_boundary_canonized: true
-cursor_routing_repository_based: true
-d0062_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_FRESH_CALLABLE_WF47_TO_OFFICIAL_WF48
-d0063_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_SCHEDULED_WF47_TO_OFFICIAL_WF48
-d0064_wf48_callable_publication_dependency: true
-teardown_instruction_issued: true
-teardown_final_state_independently_verified: false
-teardown_final_runtime_state: NOT_VERIFIED_IN_SUPPLIED_EVIDENCE
+d0066_verify_only_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+teardown_operator_inspection_completed: true
+teardown_inventory_cursor_documentally_verified: true
+teardown_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+teardown_evidence_gap: CLOSED
 enable_wg48_handoff: false
 l5_activation_authorized: false
 gate_e_status: OPERATOR_DECISION_PENDING
@@ -558,14 +600,27 @@ runtime_actions_by_cursor: 0
 timestamp_utc: 2026-07-18
 ```
 
-**Nota:** D-0065-W is a **docs-only** commit recording operator-attested D-0062/D-0063/D-0064 evidence and governance rules. Cursor did **not** independently verify n8n. `verified_through_commit` remains the last independently verified commit (`4c67225` / D-0059 substantive). This artifact commit is **not** upgraded to independently verified merely because Cursor created it; `artifact_commit` / observed HEAD fields remain `PENDING_SELF_REFERENCE`. Authoritative current HEAD after push = `git ls-remote origin main`. Awaits independent verify-only / shell confirmation.
+**Nota:** D-0067-W docs-only persistence of D-0066-E teardown closure. `verified_through_commit` = `1eb2be6` (independently repository-verified D-0065 commit observed during D-0066 verify-only). This D-0067 artifact commit is **not** self-certified (`artifact_commit: PENDING_SELF_REFERENCE`). Runtime evidence remains operator-attested; Cursor did not independently observe n8n.
 
-**Backfill PENDING_SELF_REFERENCE:** D-0059-W snapshot → `9d4c46a`; D-0055…D-0058 snapshot → `c241d3b`; redaction-policy snapshot → `3560949`; D-0054-W snapshot → `be0cd76`; D-0052-W / D-0053-G snapshot → `eea0b4a`.
+**Backfill PENDING_SELF_REFERENCE:** D-0065-W snapshot → `1eb2be6`; D-0059-W snapshot → `9d4c46a`; D-0055…D-0058 snapshot → `c241d3b`; redaction-policy snapshot → `3560949`.
 
 ---
 
-## Command outputs (verbatim — filled after push)
+## Command outputs (verbatim — D-0066-E verify-only against 1eb2be6)
 
 ```text
-(see final Cursor report post-push block)
+git rev-parse HEAD
+1eb2be6af07196506b6849c19ecd36509a3f810f
+
+git rev-parse origin/main
+1eb2be6af07196506b6849c19ecd36509a3f810f
+
+git ls-remote origin refs/heads/main
+1eb2be6af07196506b6849c19ecd36509a3f810f	refs/heads/main
+
+git branch --show-current
+main
+
+git status --short
+(empty)
 ```

@@ -4,7 +4,7 @@
 > Lo stato si LEGGE da qui, NON si ricostruisce cercando tra i session log.
 > Questo file è uno stato compatto, non un archivio storico. Evidenza completa in `docs/sessions/`, Git history, `LAST_CURSOR_REPORT.md` e `LAST_HANDOFF_VERIFY.md`.
 
-Ultimo aggiornamento: 2026-07-18 — D-0065-W docs record D-0062/D-0063/D-0064 + workflow-authoring boundary + repository-based Cursor routing; Gate E `OPERATOR_DECISION_PENDING`.
+Ultimo aggiornamento: 2026-07-18 — D-0067-W persist D-0066-E teardown verification closure; Gate E `OPERATOR_DECISION_PENDING`.
 
 ---
 
@@ -19,110 +19,69 @@ Ultimo aggiornamento: 2026-07-18 — D-0065-W docs record D-0062/D-0063/D-0064 +
 - Nessun loop operativo permanente dichiarato.
 - Nessuna autorizzazione permanente di Schedule wf47.
 
+## D-0067-W / D-0066-E — teardown verification closure
+
+- **D-0066-E** selected_option `"3"` · `decision_provenance=direct_operator_message` · `mandate=operator_runtime_inventory_plus_cursor_verify_only`.
+- Operator completed read-only n8n inspection (`inspection_timestamp_utc=2026-07-18T18:30:27Z`).
+- Cursor verify-only: `PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION` at HEAD `1eb2be6af07196506b6849c19ecd36509a3f810f`.
+- **D-0067-W** docs-only persistence of that closure.
+
+```yaml
+teardown_operator_inspection_completed: true
+teardown_inventory_cursor_documentally_verified: true
+teardown_direct_n8n_observation_by_cursor: false
+teardown_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+teardown_evidence_gap: CLOSED
+```
+
+**Provenance limitation:** runtime evidence is entirely operator-attested. Cursor did **not** authenticate screenshot pixels and did **not** independently observe n8n. The PASS documents consistency between the operator attestation and repository records, not direct runtime verification by Cursor.
+
+Operator-attested teardown inventory (documentally verified):
+
+- **wf45:** inactive, unpublished, Schedule disabled, no autonomous trigger.
+- **wf47:** inactive, unpublished, Schedule disabled, `enable_wg48_handoff=false`.
+- **wf48:** inactive; `published=true` only as `triggerless_callable_only`; no autonomous trigger; Schedule disabled.
+- **wf40/42:** active, published, unchanged; **wf41:** off, unchanged.
+- No duplicate/temp wf47/wf48 copies (including D-0052/D-0058).
+- Store `control_plane_decisions_test`: `open_count=0`; `D-0062-T4`/`D-0063-T4` closed option `"4"`.
+- Inspection safety: no Telegram; executions `0`; runtime mutations `0`.
+
+Evidence: `docs/sessions/2026-07-18-control-plane-d-0066-e-d-0067-w-teardown-verification-closure.md`.
+
 ## D-0065-W — governance + evidence reconciliation (docs-only)
 
 - Decision provenance: `direct_operator_message`.
-- Task: record D-0062/D-0063/D-0064 operator-attested runtime evidence; canonize GPT-B/Cursor n8n authoring boundary; remove color-based Cursor routing from canonical instructions.
-- Cursor did **not** author or modify any workflow; `workflows/**` untouched.
-- Cursor did **not** independently verify n8n runtime.
-- Evidence session: `docs/sessions/2026-07-18-control-plane-d-0062-e-d-0065-w-wf47-wf48-runtime-pass-and-workflow-authoring-boundary.md`.
+- Recorded D-0062/D-0063/D-0064 operator-attested runtime evidence; canonized GPT-B/Cursor n8n authoring boundary; repository-based Cursor routing.
+- Commit independently repository-verified: `1eb2be6af07196506b6849c19ecd36509a3f810f`.
+- Session: `docs/sessions/2026-07-18-control-plane-d-0062-e-d-0065-w-wf47-wf48-runtime-pass-and-workflow-authoring-boundary.md`.
 
-## D-0062-E — fresh callable wf47 → official wf48
+## D-0062-E / D-0063-E / D-0064-E (compact)
 
-```yaml
-result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_FRESH_CALLABLE_WF47_TO_OFFICIAL_WF48
-decision_id: D-0062-T4
-selected_option: "4"
-update_id: 986228609
-wf45_telegram_send_ok: true
-wf45_message_id: 1213
-wf45_http_status: 200
-wf45_classifier_validated: false
-wf45_open_action: insert
-wf45_fan_out_items_in: 1
-wf47_inspect_status: accepted
-wf48_inspect_status: closed
-wf48_prior_status: open
-wf48_state_persisted: true
-store_final: closed
-open_count_after: 0
-```
-
-**Limitation:** `update_id` **986228609** is numerically equal to the `update_id` previously recorded for **D-0060-T5**. Do **not** claim globally unique / non-reused update_id, or freshness proven solely by update_id. Allowed freshness claim: new decision `D-0062-T4`, new wf45 open/send, newly exercised callable wf47→official wf48 path.
-
-## D-0063-E — bounded scheduled wf47 → official wf48
-
-Initial scheduled run (no PASS):
-
-```yaml
-inspect_status: blocked
-block_reason: allowed_chat_not_configured
-allowed_chat_configured: false
-open_decision_ids_count: 1
-```
-
-Published wf47 lacked usable `allowed_chat_id`; guard failed closed; configuration corrected from a previous successful execution; no additional Telegram option message required for the successful run.
-
-Successful scheduled pickup + official wf48 via Execute Workflow:
-
-```yaml
-result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_SCHEDULED_WF47_TO_OFFICIAL_WF48
-decision_id: D-0063-T4
-selected_option: "4"
-update_id: 986228610
-wf47_inspect_status: accepted
-wf48_inspect_status: closed
-wf48_prior_status: open
-wf48_state_persisted: true
-```
-
-Later scheduled scan (not a second PASS / not a second close):
-
-```yaml
-inspect_status: blocked
-block_reason: no_parseable_decision_response
-open_decision_ids_count: 0
-last_handled_update_id: 986228610
-```
-
-## D-0064-E — official wf48 callable publication dependency
-
-- wf47 could not be published while Execute Workflow referenced an unpublished official wf48.
-- Direct operator decision: publish official wf48 as a **triggerless callable sub-workflow** so wf47 can call it.
-- No autonomous Schedule on wf48; no Telegram Trigger; no public webhook; no autonomous trigger.
-- Do **not** describe wf48 as autonomous permanent automation.
-
-## Teardown evidence boundary
-
-```yaml
-teardown_instruction_issued: true
-teardown_final_state_independently_verified: false
-teardown_final_runtime_state: NOT_VERIFIED_IN_SUPPLIED_EVIDENCE
-```
-
-Instructed after D-0063: disable wf47 Schedule; restore `enable_wg48_handoff=false`; stop recurring wf47 executions; no additional Telegram; wf48 may remain published only as triggerless callable. Final teardown state **not** independently verified in supplied evidence — do not infer completion from conversational continuation.
+- **D-0062:** fresh callable wf47→official wf48 scope-limited PASS (`D-0062-T4` / `"4"` / `update_id=986228609`); update_id uniqueness **not** claimed.
+- **D-0063:** bounded scheduled wf47→official wf48 PASS (`D-0063-T4` / `"4"` / `update_id=986228610`); initial `allowed_chat_not_configured` fail-closed then corrected.
+- **D-0064:** official wf48 published as triggerless callable dependency (not autonomous automation).
 
 ## Prior arcs (compact)
 
-- **D-0060-W / D-0061-W:** official wf48 options 4/5 manual `external_receipt` PASS; collapse fan-out canonized. Session: `docs/sessions/2026-07-18-control-plane-d-0060-w-d-0061-w-wf48-official-options-4-5-runtime-pass.md`.
-- **D-0059-W:** repository parser 1–5 canonization. Session: `docs/sessions/2026-07-18-control-plane-d-0059-w-wf48-parser-1-5-canonization.md`.
+- **D-0060-W / D-0061-W:** official wf48 options 4/5 manual `external_receipt` PASS; collapse fan-out canonized.
+- **D-0059-W:** repository parser 1–5 canonization.
 
 ## Inbound / decision-store asset state
 
 | Asset | Current state |
 |---|---|
-| **45 / Wd** | D-0062 fresh open/send (`D-0062-T4`, `message_id=1213`); prior scope-limited history; **not** permanent end-to-end automation. |
+| **45 / Wd** | Inactive/unpublished after D-0066 teardown inventory; D-0062 fresh open/send history retained; **not** permanent automation. |
 | **46 / We** | `DEPRECATED_AS_PRIMARY_PATH`; retained inactive webhook fallback; We live PASS=false. |
-| **47 / Wf** | D-0062 manual callable PASS; D-0063 bounded scheduled pickup PASS; permanent Schedule **not** authorized; safe default `enable_wg48_handoff=false`; final teardown state **not** independently verified from supplied evidence. |
-| **48 / Wg** | Official callable close PASS (D-0062/D-0063); published as triggerless callable dependency (D-0064); **no** autonomous trigger claim; parser 1–5 + collapse canonized. |
+| **47 / Wf** | Inactive/unpublished; Schedule disabled; `enable_wg48_handoff=false`; permanent Schedule **not** authorized; D-0062/D-0063 PASS history retained. |
+| **48 / Wg** | Inactive; published **only** as triggerless callable (D-0064/D-0066); no autonomous trigger; parser 1–5 + collapse canonized. |
 | **49 / Wh** | Rehearsal PASS history; inactive. |
-| **decision-store** | `D-0062-T4` closed; `D-0063-T4` closed; observed final `open_count=0`. |
+| **decision-store** | `D-0062-T4` closed option `"4"`; `D-0063-T4` closed option `"4"`; `open_count=0`. |
 
 ## Claim boundaries
 
-**Claimed:** D-0062 fresh callable path; D-0063 bounded scheduled path; option 4 correlated/persisted; official wf48 callable path worked; `allowed_chat` fail-closed then corrected; fixtures closed; observed `open_count=0`; GPT-B owns n8n authoring; Cursor prohibited from independent workflow authoring; Cursor routing repository-based.
+**Claimed:** D-0066 option 3; operator read-only inventory complete; Cursor documental teardown verification PASS; teardown evidence gap **CLOSED**; wf47/wf48 safe teardown states per inventory; decision-store coherent; no inspection mutation; prior D-0062/D-0063 scope-limited PASSes; GPT-B owns n8n authoring.
 
-**Not claimed:** globally unique / non-reused D-0062 `update_id`; permanent polling loop; permanent wf47 Schedule; Gate E full; L5; `l5_activation_authorized=true`; `n8n_ready=true`; PM-34 unlocked; complete DP→implementation→verification automation; Telegram Trigger; public webhook; autonomous wf48; independently verified final teardown; independent n8n verification by Cursor.
+**Not claimed:** Cursor independently observed n8n; Cursor authenticated screenshot pixels; new functional/callable/E2E PASS; L5; Gate E full; permanent Schedule; `n8n_ready=true`; PM-34 unlocked; autonomous wf48.
 
 ## Active blockers and next gate
 
@@ -130,8 +89,7 @@ Instructed after D-0063: disable wf47 Schedule; restore `enable_wg48_handoff=fal
 - **L5:** `l5_activation_authorized=false`.
 - **Gate E:** `OPERATOR_DECISION_PENDING` / full **NOT_CLAIMED**.
 - Permanent Schedule authorization: **no**.
-- Teardown final state: **NOT_VERIFIED_IN_SUPPLIED_EVIDENCE**.
-- Next real gate: dedicated Decision Packet (e.g. independently verify teardown / Gate E / L5) — **not** auto-started.
+- Next real gate: dedicated Decision Packet (Gate E / L5) — **not** auto-started.
 
 ## Do-not-do
 
@@ -142,3 +100,4 @@ Instructed after D-0063: disable wf47 Schedule; restore `enable_wg48_handoff=fal
 - NO L5 or Gate E full PASS declaration without dedicated decision and evidence.
 - NO Cursor autonomous n8n workflow authoring.
 - NO color-based Cursor routing in canonical instructions.
+- NO describing D-0066/D-0067 as independent n8n runtime verification by Cursor.

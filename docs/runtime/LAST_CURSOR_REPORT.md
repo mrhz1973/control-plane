@@ -13,32 +13,31 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0065w-wf47-wf48-runtime-pass-and-workflow-authoring-boundary
+task_ref: d0067w-d0066e-teardown-verification-closure
 result_cursor: PASS_DOCS_ONLY
-result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_D0062_D0063_OPERATOR_ATTESTED
-base_commit: cc550d227f2483207665362d2857c7d5b99bf2c6
+result_runtime: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+base_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
 real_task_commit: PENDING_SELF_REFERENCE
-commit_subject: docs: record wf47-wf48 passes and workflow authoring boundary
+commit_subject: docs: record D-0066 teardown verification closure
 rolling_report_commit: PENDING_SELF_REFERENCE
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 branch: main
-decision_id: D-0065-W
+decision_id: D-0067-W
+related_decision_id: D-0066-E
+selected_option: "3"
 decision_provenance: direct_operator_message
-task_kind: docs_only_governance_and_runtime_evidence_reconciliation
+mandate: operator_runtime_inventory_plus_cursor_verify_only
+task_kind: docs_only_teardown_verification_closure
 cursor_authored_or_modified_workflow: false
 workflows_path_touched: false
 cursor_independent_n8n_verification: false
+teardown_direct_n8n_observation_by_cursor: false
 runtime_evidence_source: direct_operator_attestation
-governance_workflow_authoring_boundary_canonized: true
-cursor_routing_repository_based: true
-color_based_cursor_routing_removed_from_canonical: true
-d0062_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_FRESH_CALLABLE_WF47_TO_OFFICIAL_WF48
-d0063_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_SCHEDULED_WF47_TO_OFFICIAL_WF48
-d0064_wf48_callable_publication_dependency: true
-d0062_update_id_limitation_recorded: true
-teardown_instruction_issued: true
-teardown_final_state_independently_verified: false
-teardown_final_runtime_state: NOT_VERIFIED_IN_SUPPLIED_EVIDENCE
+d0066_verify_only_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+teardown_operator_inspection_completed: true
+teardown_inventory_cursor_documentally_verified: true
+teardown_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+teardown_evidence_gap: CLOSED
 enable_wg48_handoff: false
 l5_activation_authorized: false
 gate_e_status: OPERATOR_DECISION_PENDING
@@ -50,17 +49,11 @@ runtime_actions_by_cursor: 0
 timestamp_utc: 2026-07-18
 ```
 
-- **Single docs-only commit:** governance (PROJECT_VISION v2.19, CURSOR_PROMPT_TEMPLATE, HANDOFF_TEMPLATE) + frontier + session D-0062…D-0065 + this report + handoff verify + handoff.
-- **Single-commit docs-only:** `real_task_commit` and `rolling_report_commit` remain `PENDING_SELF_REFERENCE` in LATEST (self-hash impossible in the same commit). Authoritative task commit = `HEAD` / `origin/main` / `git ls-remote origin main` after push. Next task backfills HISTORY.
-- **Cursor did not author or modify any workflow**; `workflows/**` untouched.
-- **Runtime evidence** from direct operator attestations (D-0062/D-0063/D-0064); Cursor did **not** independently verify n8n.
-- Session: `docs/sessions/2026-07-18-control-plane-d-0062-e-d-0065-w-wf47-wf48-runtime-pass-and-workflow-authoring-boundary.md`.
-
-**Post-push evidence (filled after push in final report; LATEST.real_task_commit set at commit time):**
-
-```text
-(see final Cursor report post-push block)
-```
+- **D-0067-W docs-only:** persist D-0066-E operator inventory + Cursor verify-only teardown closure.
+- **D-0066-E verify-only** (prior turn): `PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION` against HEAD `1eb2be6`; inventory completeness/coherence PASS; zero mutations.
+- **Provenance:** operator-attested n8n inspection; Cursor did **not** authenticate screenshot pixels or independently observe n8n.
+- **Single-commit docs-only:** `real_task_commit` / `rolling_report_commit` remain `PENDING_SELF_REFERENCE`; authoritative task commit = `HEAD` / `origin/main` / `ls-remote` after push.
+- Session: `docs/sessions/2026-07-18-control-plane-d-0066-e-d-0067-w-teardown-verification-closure.md`.
 
 ---
 
@@ -83,6 +76,16 @@ timestamp_utc: 2026-07-18
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0065w-wf47-wf48-runtime-pass-and-workflow-authoring-boundary
+  real_task_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
+  base_commit: cc550d227f2483207665362d2857c7d5b99bf2c6
+  rolling_report_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
+  remote_hash_verbatim: 1eb2be6af07196506b6849c19ecd36509a3f810f
+  verification_result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_D0062_D0063_OPERATOR_ATTESTED
+  timestamp_utc: 2026-07-18
+
 - task_ref: d0059w-wf48-parser-1-5-canonization
   real_task_commit: 4c67225d1996c07616a5a2089add976d65b9b4a4
   base_commit: c241d3b0acf5786aa027bb1b1ae5005296621c0f
@@ -117,14 +120,5 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS_DOCS_ONLY
   result_runtime: NOT_RUN_CONFIGURATION_ONLY
   result_ui: PASS_ATTESTATO_UTENTE_CONFIGURATION_ONLY
-  timestamp_utc: 2026-07-17
-
-- task_ref: d0052w-l4-callback-pass-d0053g-option2
-  real_task_commit: 861d41ed0845a7f70e64d17a804e047af560e77f
-  base_commit: 97d420c0231e678edc9b440d61923fe3346cb93c
-  rolling_report_commit: eea0b4a5ee2adc66c24dd5bd76d4be4d38bdbce1
-  remote_hash_verbatim: eea0b4a5ee2adc66c24dd5bd76d4be4d38bdbce1
-  result_cursor: PASS_DOCS_ONLY
-  result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_L4_CALLBACK
   timestamp_utc: 2026-07-17
 ```
