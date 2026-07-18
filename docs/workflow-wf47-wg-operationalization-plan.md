@@ -207,9 +207,10 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
   - `wf47_polling_state_test` after run: `last_update_id = 986228601`, `last_handled_update_id = 986228600`
   - `wg_decision_state_test` inspected and **left untouched**
 - **Limitation (historical 2026-07-09 arc):** that bounded handoff passed with `selected_option=1` on a **1/2/3** tested path.
-- **Parser status after D-0057-W (2026-07-18):** repository wf47 supports options **1–5**. Live: option **5** (D-0052 harness) · option **4** (D-0057 official plain). Official/template **wf48** still parser **1–3**; temp 1–5 close (D-0058) deleted — canonize wf48 1–5 = separate repo arc.
+- **Parser status after D-0059-W (2026-07-18):** repository **wf47** and **wf48** templates both support options **1–5**. Live: option **5** (D-0052 harness) · option **4** (D-0057 official plain wf47). **Repository contract wf48 1–5 = complete** (D-0059; three parser points). **Live official wf48 validation 4/5 = not run.** Callable 47→48 **not** revalidated.
 - **D-0054-W official inventory restore (2026-07-17):** configuration-only UI restore; `NOT_RUN_CONFIGURATION_ONLY`; inventory present; **not** a runtime PASS.
 - **D-0055…D-0058 (2026-07-18):** 401 blocked then official wf47 option 4 PASS; fixture closed via temporary wf48; teardown complete; **not** L5 / Gate E.
+- **D-0059-W (2026-07-18):** template wf48 canonized 1–5 repository-only; `NOT_RUN_REPOSITORY_ONLY_CANONIZATION`; no export; no runtime.
 - **Boundaries unchanged:** PM-34 **BLOCKED** · `n8n_ready` **false** · `pm34_unblocked` **false** · `enable_wg48_handoff` **false** · wf40/41/42 untouched · no production activation · Cursor **did not** run n8n.
 
 ---
@@ -252,7 +253,7 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 | Plan document complete | This file + frontier PREP entry |
 | **Next gate identified** | Bounded automatic **47→48** handoff **PASS ATTESTATO UTENTE** recorded (2026-07-09, `D-3045-T`); operational automation remains **NOT ACTIVE** |
 
-**Status:** bounded automatic **47→48** test-only handoff **PASS ATTESTATO UTENTE** (`update_id` **986228600**, `selected_option` **1**). **D-0057-W** (2026-07-18): official wf47 plain option **4** scope-limited PASS; **D-0058-W**: fixture close via temporary wf48 1–5 (`official_wf48_option_4_pass=false`). Official wf48 parser still **1–3**. L5 **unauthorized**. Telegram inbound operational automation **NOT ACTIVE / NOT RUN**. PM-34 **BLOCKED**. `enable_wg48_handoff` **false**. No Gate E full PASS. Parser live: option **4** + option **5**.
+**Status:** bounded automatic **47→48** test-only handoff **PASS ATTESTATO UTENTE** (`update_id` **986228600**, `selected_option` **1**). **D-0057-W** (2026-07-18): official wf47 plain option **4** scope-limited PASS; **D-0058-W**: fixture close via temporary wf48 1–5 (`official_wf48_option_4_pass=false`). **D-0059-W**: official/template wf48 parser **1–5** repository canonization complete; live official wf48 option 4/5 **not run**. L5 **unauthorized**. Telegram inbound operational automation **NOT ACTIVE / NOT RUN**. PM-34 **BLOCKED**. `enable_wg48_handoff` **false**. No Gate E full PASS. Parser live (wf47): option **4** + option **5**.
 
 ---
 

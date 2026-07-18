@@ -51,7 +51,7 @@ Create in n8n UI (not in Git). Suggested columns:
 |--------|---------|
 | `decision_id` | Primary key, e.g. `D-9998-T` |
 | `status` | `open` \| `closed` \| `stale` \| `blocked` |
-| `selected_option` | `1` \| `2` \| `3` when closed |
+| `selected_option` | `1` \| `2` \| `3` \| `4` \| `5` when closed (D-0059-W repository canonization) |
 | `created_at` | ISO timestamp |
 | `closed_at` | ISO when closed |
 | `update_id` | Last Telegram `update_id` applied (number as string ok) |
@@ -137,11 +137,21 @@ If `manual_receipt_json` is missing or invalid, workflow returns deterministic `
 | **Manual / fixtures** | Manual Trigger → **Set Wg test scenario** → Build sanitized inbound test input → … |
 | **Callable from 47** | **When Executed by Another Workflow** → **Normalize Wf47 callable receipt** → Data Table load → **Correlate inbound to decision state** |
 
+### Parser options 1–5 — three repository points (D-0059-W)
+
+Official/template wf48 allows `selected_option` **`"1"`…`"5"`** (number or string coerced via `String(...)`). Canonization is **repository-only**; live official option 4/5 runtime PASS remains **false**.
+
+| # | Node | Role | Predicate |
+|---|------|------|-----------|
+| 1 | **Normalize Wf47 callable receipt** | Callable receipt normalization | `['1', '2', '3', '4', '5'].includes(String(receipt.selected_option))` |
+| 2 | **Build sanitized inbound test input** (`scenario=external_receipt`) | External receipt normalization | `['1', '2', '3', '4', '5'].includes(String(receipt.selected_option))` |
+| 3 | **Correlate inbound to decision state** | State correlation / open-row close | `['1', '2', '3', '4', '5'].includes(String(selected_option))` |
+
 - Callable path does **not** use **Set Wg test scenario** (that node runs only on the Manual Trigger branch).
 - **Normalize Wf47 callable receipt** maps incoming receipt to the same item shape as **Build sanitized inbound test input** (proven `external_receipt` contract).
 - **Correlate inbound to decision state** reads from callable adapter **or** manual build node — both entry points reach correlation.
 - Manual `external_receipt` + `manual_receipt_json` remains available and independent.
-- **active: false** · no Telegram · no schedule · **wg_decision_state_test** only.
+- **active: false** · no Telegram · no schedule · shared store `control_plane_decisions_test` · **`enable_wg48_handoff=false`**.
 
 Phase 2: operator wires `CONFIGURE_48_WORKFLOW_REFERENCE_IN_N8N_UI` on 47 and sets `enable_wg48_handoff=true` only for the test window.
 
@@ -314,11 +324,33 @@ Final `control_plane_decisions_test` row: `status: closed`, `closed_at: 2026-06-
 | Output | `inspect_status: closed`, `prior_status: open`, `state_persisted: true`, `test_only: true` |
 | Store final | `status=closed`; `closed_at=2026-07-17T23:43:24.362Z` |
 | Path | temporary copy only · **`official_wf48_option_4_pass=false`** |
-| Official/template wf48 parser | remains canonical **1–3** |
+| Official/template wf48 parser (at D-0058) | remained canonical **1–3** until D-0059-W |
 | Temp copy JSON in Git | **false** (outside repository; deleted in teardown) |
 
-**Pending:** separate repository arc to canonize official/template wf48 parser options **1–5**.
+**Historical pending at D-0058:** separate repository arc to canonize official/template wf48 parser options **1–5** — **resolved** by D-0059-W (template only; live official 4/5 still not run).
 
 **Proves:** manual external_receipt close for option 4 on shared store via temporary 1–5 copy. **Does not prove:** official wf48 option 4; Gate E; L5; callable automatic handoff.
+
+---
+
+## 12quinquies. D-0059-W wf48 parser 1–5 repository canonization (2026-07-18)
+
+**Status:** **PASS_REPOSITORY_ONLY_IMPLEMENTATION** / **`result_runtime=NOT_RUN_REPOSITORY_ONLY_CANONIZATION`**. Session: [2026-07-18-control-plane-d-0059-w-wf48-parser-1-5-canonization.md](sessions/2026-07-18-control-plane-d-0059-w-wf48-parser-1-5-canonization.md).
+
+**Decision:** D-0059-W Opzione 1 — `direct_operator_message`; `task_kind=repository_only_wf48_parser_canonization`.
+
+| Aspect | Value |
+|--------|--------|
+| Template | `workflows/wg-telegram-inbound-decision-state-correlation.template.json` |
+| Parser locations updated | **3** (callable + external_receipt + correlation) |
+| Repository contract 1–5 | **Complete** |
+| Fixture static 4/5 accept · 6/0 reject | **PASS** |
+| Export created | **false** |
+| Official live option 4/5 runtime | **false** / **false** (not run) |
+| Callable 47→48 validated | **false** |
+| `enable_wg48_handoff` | **false** |
+| Cursor runtime actions | **0** |
+
+**Proves:** repository template accepts options 1–5 at all three parser points. **Does not prove:** live official wf48 option 4 or 5; Gate E; L5; callable automatic handoff; operational automation.
 
 ---

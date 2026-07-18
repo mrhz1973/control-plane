@@ -141,11 +141,24 @@ Gates E–F: **not PASS** unless separately attested.
 
 ### Gate E — Phase 1 controlled start (kill switch mandatory)
 
-**Status (2026-07-18):** **OPERATOR_DECISION_PENDING** — D-0057-W = official wf47 plain option **4** scope-limited PASS; D-0058-W = fixture close via temporary wf48 1–5. L5 **still unauthorized**. Gate E Phase 1 runtime **non autorizzato** come full PASS. **Non** auto-avvia Gate E.
+**Status (2026-07-18):** **OPERATOR_DECISION_PENDING** — D-0059-W = wf48 template parser **1–5** repository canonization (`NOT_RUN_REPOSITORY_ONLY_CANONIZATION`); live official wf48 4/5 **not run**; L5 **still unauthorized**. Gate E Phase 1 **non autorizzato** come full PASS. **Non** auto-avvia Gate E.
 
-**Disposition record:** Session `docs/sessions/2026-07-18-control-plane-d-0055-w-d-0058-w-wf47-option4-pass-and-wf48-manual-close.md`. **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`**.
+**Disposition record:** Session `docs/sessions/2026-07-18-control-plane-d-0059-w-wf48-parser-1-5-canonization.md`. **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`**.
 
 **Future reopening (consultative advisory only):** condizioni operative da review GLM restano **riferimento consultivo** — **non** piano approvato né scelta operatore. Nuovo Decision Packet + risposta diretta operatore richiesti.
+
+#### D-0059-W disposition — wf48 parser 1–5 repository canonization (2026-07-18)
+
+| | |
+|---|---|
+| **D-0059-W** | Option 1 — `direct_operator_message`; `task_kind=repository_only_wf48_parser_canonization` |
+| **result_cursor** | `PASS_REPOSITORY_ONLY_IMPLEMENTATION` |
+| **result_runtime** | `NOT_RUN_REPOSITORY_ONLY_CANONIZATION` |
+| **Repository contract 1–5** | **Complete** — 3 locations (callable + external_receipt + correlation) |
+| **Live official wf48 validation 4/5** | **Not run** — `official_wf48_option_4_runtime_pass=false` · `official_wf48_option_5_runtime_pass=false` |
+| **Callable 47→48** | **Not validated** |
+| **Export** | **None created** |
+| **Unchanged** | **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`** · Gate E **OPERATOR_DECISION_PENDING** · **`l5_activation_authorized=false`** |
 
 #### D-0055-W … D-0058-W disposition — official plain option 4 + manual close (2026-07-18)
 
@@ -154,8 +167,8 @@ Gates E–F: **not PASS** unless separately attested.
 | **D-0055-W / D-0056-W** | Option 1 each — `BLOCKED_CONFIGURATION_AUTH` (HTTP 401); `D-0055-T` stayed open |
 | **D-0057-W** | Option 1 — `PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF47_OFFICIAL_PLAIN_OPTION_4` (`D-0055-T` / option **4** / `update_id=986228607`) |
 | **D-0058-W** | Option 1 — temporary wf48 external_receipt close; `official_wf48_option_4_pass=false` |
-| **Parser** | Option **4** live PASS (official wf47); option **5** preserved (D-0052); official wf48 still **1–3** |
-| **Pending** | Canonize official/template wf48 parser **1–5** (separate repo arc) |
+| **Parser** | Option **4** live PASS (official wf47); option **5** preserved (D-0052); **template** wf48 later canonized 1–5 by D-0059-W; live official wf48 4/5 still not run |
+| **Pending (historical at D-0058)** | Template wf48 1–5 — **resolved** by D-0059-W repository-only |
 | **L5 / Gate E** | **`l5_activation_authorized=false`** · Gate E **OPERATOR_DECISION_PENDING** · not full PASS |
 | **Unchanged** | **`enable_wg48_handoff=false`** · **PM-34 BLOCKED** · **`n8n_ready=false`** |
 

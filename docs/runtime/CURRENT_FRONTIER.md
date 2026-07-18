@@ -5,20 +5,23 @@
 > Questo file è un **file di stato compatto**, NON un archivio storico.
 > Evidenza: `docs/runtime/LAST_CURSOR_REPORT.md`, `docs/runtime/LAST_HANDOFF_VERIFY.md`, `docs/sessions/`, Git history.
 
-Ultimo aggiornamento: 2026-07-18 — D-0055…D-0058 wf47 official plain option 4 PASS + wf48 manual close; Gate E OPERATOR_DECISION_PENDING.
+Ultimo aggiornamento: 2026-07-18 — D-0059-W wf48 parser 1–5 repository canonization; Gate E OPERATOR_DECISION_PENDING.
 
 ---
 
 ## Stato operativo attuale
 
 - Foundation: completa. Workflow **40/42**: **ATTIVO** (unchanged). Workflow **41**: off.
-- **D-0055-W … D-0058-W wf47 official plain option 4 + fixture close** = **direct operator Opzione 1** each (2026-07-18) — `decision_provenance=direct_operator_message`:
-  - **D-0055-W / D-0056-W:** official wf47 runs → `BLOCKED_CONFIGURATION_AUTH` (HTTP 401 Unauthorized); `D-0055-T` remained open; option 4 **not** validated in those runs.
-  - **D-0057-W:** credential/URL recovery (operator `getMe` OK; getUpdates URL replaced on official wf47 only) → `inspect_status=accepted` · `D-0055-T` · option **4** · `update_id=986228607` · `inbound_kind=plain_option` · polling state advanced · **`result_runtime=PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF47_OFFICIAL_PLAIN_OPTION_4`**.
-  - **D-0058-W:** close via **temporary** wf48 external_receipt 1–5 copy (not official wf48) → `D-0055-T` **closed** · `selected_option=4` · `closed_at=2026-07-17T23:43:24.362Z` · `wf48_manual_external_receipt_close_pass=true` · **`official_wf48_option_4_pass=false`**.
-  - **Parser now:** option **4** live PASS (official wf47) · option **5** live PASS preserved (D-0052 harness) · official/template wf48 still canonical **1–3** (canonize 1–5 = separate repo arc).
-  - **Teardown:** temporary 45/47/48 copies deleted; official 45/47/48 retained inactive/unpublished; `enable_wg48_handoff=false`.
-  - **NOT** L5 · **NOT** Gate E full PASS · no callable 47→48 · **`l5_activation_authorized=false`** · **`n8n_ready=false`** · **PM-34 BLOCKED** · Cursor runtime = 0.
+- **D-0059-W wf48 parser 1–5 repository canonization** = **direct operator Opzione 1** (2026-07-18) — `decision_provenance=direct_operator_message`; `task_kind=repository_only_wf48_parser_canonization`:
+  - Template `workflows/wg-telegram-inbound-decision-state-correlation.template.json` updated in **3** locations (callable normalization, external_receipt normalization, state correlation) to allow options **1–5**.
+  - Validations: JSON parse PASS · fixture 4/5 accept · 6/0 reject · `active=false` · **no export created** · **`result_runtime=NOT_RUN_REPOSITORY_ONLY_CANONIZATION`**.
+  - **`wf48_parser_1_5_repository_canonized=true`** · repository contract complete.
+  - **`official_wf48_option_4_runtime_pass=false`** · **`official_wf48_option_5_runtime_pass=false`** — live official wf48 not run.
+  - **NOT** L5 · **NOT** Gate E · callable 47→48 **not** validated · **`enable_wg48_handoff=false`** · **`l5_activation_authorized=false`** · **`n8n_ready=false`** · **PM-34 BLOCKED** · Cursor runtime = 0.
+  - Evidenza: `docs/sessions/2026-07-18-control-plane-d-0059-w-wf48-parser-1-5-canonization.md`.
+- **D-0055-W … D-0058-W wf47 official plain option 4 + fixture close** = **direct operator Opzione 1** each (2026-07-18):
+  - D-0055/D-0056: `BLOCKED_CONFIGURATION_AUTH` (401); D-0057: official wf47 plain option **4** PASS; D-0058: close via **temporary** wf48 1–5 (`official_wf48_option_4_pass=false` at that time).
+  - **Repository pendenza wf48 parser 1–5:** **risolta** by D-0059-W (template); live official 4/5 still **not run**.
   - Evidenza: `docs/sessions/2026-07-18-control-plane-d-0055-w-d-0058-w-wf47-option4-pass-and-wf48-manual-close.md`.
 - **D-0054-W wf47 official inventory restore** = **direct operator Opzione 1** (2026-07-17) — `task_kind=wf47_official_inventory_restore`; `result_runtime=NOT_RUN_CONFIGURATION_ONLY`; inventory `PRESENT_IN_FINAL_N8N_LIST`; **not** a runtime PASS. Evidenza: `docs/sessions/2026-07-17-control-plane-d-0054-w-wf47-official-restore-configuration-only.md`.
 - **D-0052-W L4 callback PASS** = **direct operator Opzione 1** (2026-07-17) — `result_runtime=PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_L4_CALLBACK`:
@@ -113,7 +116,7 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 | **45 / Wd** | **PASS ATTESTATO UTENTE** + Gate D + **D-0041-E** + **official 2026-07-12** | `D-0044-T` open-on-send (`message_id=1205`); fan-out guard `fan_out_items_in=1`. **Inactive** post-test. |
 | **46 / We** | **DEPRECATED_AS_PRIMARY_PATH** (D-0049-W); **RETAINED_INACTIVE_WEBHOOK_FALLBACK** | Package-prep completato; **We live PASS=false**; HTTPS blocker rilevante solo se fallback riaperto. |
 | **47 / Wf** | **L3 PASS** + **L4 harness option 5** (D-0052) + **D-0054 inventory** + **D-0057 official plain option 4** | Official present, inactive/unpublished; `parser_option_4_live_pass=true`; Schedule disabled; `enable_wg48_handoff=false`. |
-| **48 / Wg** | **PASS** + Gate D + **D-0045-E** + **D-0052** + **D-0058 manual temp close** | Official parser still **1–3**; option 4 close via **temporary** copy only (`official_wf48_option_4_pass=false`); inactive. |
+| **48 / Wg** | **PASS** + Gate D + closes + **D-0059 template 1–5** | Repository parser **1–5** canonized; **live** official option 4/5 **not run**; inactive/unpublished. |
 | **49 / Wh** | Rehearsal **PASS**; **inattivo** | Not auto-promoted by Gate D. |
 | **decision-store** | Gates **1–3 PASS** + Gate B/D + **official** + **D-0058** | `D-0055-T` **closed** (option 4, `update_id=986228607`); prior `-T` hygiene preserved. |
 
@@ -133,9 +136,9 @@ Costruito e in gran parte **test-PASSato**; **NON attivo** come loop operativo.
 **Not auto-started.** **Gate D closed** (2026-07-02). Latest scope-limited runtime = **D-0057-W** (official wf47 plain option 4) + **D-0058-W** (temp wf48 close). Gate E = **OPERATOR_DECISION_PENDING**.
 
 **Next frontier (non auto-started):**
-1. **L5** still **unauthorized** — **`l5_activation_authorized=false`** — requires a separate Decision Packet (**not** auto-started).
-2. **Official/template wf48 parser 1–5 canonization** = separate repository arc (temp 1–5 copy deleted; official remains 1–3).
-3. Gate E **non** riparte automaticamente; riapertura richiede **nuovo Decision Packet esplicito** + **risposta diretta operatore**.
+1. **L5** still **unauthorized** — **`l5_activation_authorized=false`**.
+2. **Live official wf48** validation of options 4/5 = **not run** (template contract 1–5 complete via D-0059-W).
+3. Gate E **non** riparte automaticamente; richiede Decision Packet + risposta diretta operatore.
 4. Callable 47→48 fresca **non attestata**; **`enable_wg48_handoff=false`**; **PM-34 BLOCKED**; **`n8n_ready=false`**.
 
 **Gate E** — disposizione corrente: **OPERATOR_DECISION_PENDING** (D-0046-E Option 3 voided). PREP storico in [`AUTOMATION_ACTIVATION_PLAN.md`](AUTOMATION_ACTIVATION_PLAN.md) § Gate E. **Non** è Gate E full PASS.
@@ -177,6 +180,7 @@ Gates C / E / F: **not PASS** unless separately attested. Boundaries unchanged: 
 - D-0028-A / Gates: `docs/runtime/AUTOMATION_ACTIVATION_PLAN.md`, Gate A/B sessions `docs/sessions/2026-06-07-control-plane-gate-*`.
 - D-0032-W field-validation: `docs/sessions/2026-06-12-control-plane-d-0032-w-field-validation-pass.md`.
 - Gate D bounded rehearsal: `docs/sessions/2026-07-02-control-plane-gate-d-rehearsal-pass.md`.
+- D-0059-W wf48 parser 1–5 repository canonization: `docs/sessions/2026-07-18-control-plane-d-0059-w-wf48-parser-1-5-canonization.md`.
 - D-0055…D-0058 wf47 official plain option 4 + wf48 manual close: `docs/sessions/2026-07-18-control-plane-d-0055-w-d-0058-w-wf47-option4-pass-and-wf48-manual-close.md`.
 - D-0054-W wf47 official inventory restore (configuration-only): `docs/sessions/2026-07-17-control-plane-d-0054-w-wf47-official-restore-configuration-only.md`.
 - D-0052-W L4 callback PASS + D-0053-G Option 2: `docs/sessions/2026-07-17-control-plane-d-0052-w-l4-callback-pass-d0053g-option2.md`.
