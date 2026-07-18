@@ -301,3 +301,24 @@ Final `control_plane_decisions_test` row: `status: closed`, `closed_at: 2026-06-
 **Proves:** manual receipt→close for option 5 after L4 callback harness. **Does not prove:** Gate E; L5; callable automatic handoff; operational automation.
 
 ---
+
+## 12quater. D-0058-W temporary wf48 close (option 4) — PASS ATTESTATO UTENTE SCOPE LIMITED (2026-07-18)
+
+**Status:** **PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF48_MANUAL_EXTERNAL_RECEIPT_OPTION_4** (user-attested; Cursor did not run runtime). Session: [2026-07-18-control-plane-d-0055-w-d-0058-w-wf47-option4-pass-and-wf48-manual-close.md](sessions/2026-07-18-control-plane-d-0055-w-d-0058-w-wf47-option4-pass-and-wf48-manual-close.md).
+
+**Decision:** D-0058-W Opzione 1 — after D-0057-W official wf47 accepted `D-0055-T` option **4**; close via **temporary** wf48 external_receipt **1–5** copy (not official 48); `enable_wg48_handoff=false`.
+
+| Aspect | Value |
+|--------|--------|
+| Receipt | `D-0055-T` / option `4` / `update_id` **986228607** |
+| Output | `inspect_status: closed`, `prior_status: open`, `state_persisted: true`, `test_only: true` |
+| Store final | `status=closed`; `closed_at=2026-07-17T23:43:24.362Z` |
+| Path | temporary copy only · **`official_wf48_option_4_pass=false`** |
+| Official/template wf48 parser | remains canonical **1–3** |
+| Temp copy JSON in Git | **false** (outside repository; deleted in teardown) |
+
+**Pending:** separate repository arc to canonize official/template wf48 parser options **1–5**.
+
+**Proves:** manual external_receipt close for option 4 on shared store via temporary 1–5 copy. **Does not prove:** official wf48 option 4; Gate E; L5; callable automatic handoff.
+
+---

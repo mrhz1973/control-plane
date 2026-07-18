@@ -2,11 +2,32 @@
 
 **Repository:** `mrhz1973/control-plane`
 **Document:** `docs/workflow-wf-telegram-inbound-polling-getupdates.md`
-**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Live getUpdates + 47→48 handoff **PASS ATTESTATO UTENTE**. **Disabled Schedule Trigger** versioned in template. **PRIMARY INBOUND ARCHITECTURE** (D-0049-W). **L3 repository PASS** (D-0050-W). **L4 harness callback PASS** (D-0052-W, 2026-07-17). **Official inventory restored** (D-0054-W, configuration-only). **Not** operational automation.
+**Status:** Wf47 Data Table manual validation **PASS ATTESTATO UTENTE**. Live getUpdates + 47→48 handoff **PASS ATTESTATO UTENTE**. **Disabled Schedule Trigger** versioned in template. **PRIMARY INBOUND ARCHITECTURE** (D-0049-W). **L3 repository PASS** (D-0050-W). **L4 harness callback PASS** (D-0052-W). **Official inventory restored** (D-0054-W). **Official plain option 4 PASS** (D-0057-W, scope-limited). **Not** operational automation.
 
 ---
 
-## 0. Official inventory restore — D-0054-W (2026-07-17, configuration-only)
+## 0. Official plain option 4 PASS — D-0055-W … D-0057-W (2026-07-18)
+
+| Field | Value |
+|-------|--------|
+| **D-0055-W / D-0056-W** | Option 1 · `BLOCKED_CONFIGURATION_AUTH` (HTTP 401) |
+| **D-0057-W** | Option 1 · `PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_WF47_OFFICIAL_PLAIN_OPTION_4` |
+| **decision_provenance** | `direct_operator_message` |
+| **Fixture** | `D-0055-T` · plain option **4** · `update_id=986228607` |
+| **parser_option_4_live_pass** | `true` |
+| **parser_option_5_live_pass** | `true` (D-0052 preserved) |
+| **functional_test_executed** | `true` (D-0057) |
+| **callback_ack** | `not_applicable` (plain_option path) |
+| **enable_wg48_handoff** | `false` |
+| **l5_activation_authorized** | `false` |
+
+Session: [2026-07-18-control-plane-d-0055-w-d-0058-w-wf47-option4-pass-and-wf48-manual-close.md](sessions/2026-07-18-control-plane-d-0055-w-d-0058-w-wf47-option4-pass-and-wf48-manual-close.md).
+
+**Not claimed:** L5 · Gate E · callable 47→48 · spinner UX · official wf48 option 4.
+
+---
+
+## 0bis. Official inventory restore — D-0054-W (2026-07-17, configuration-only)
 
 | Field | Value |
 |-------|--------|
@@ -41,7 +62,7 @@
 
 ---
 
-## 0bis. L4 harness callback PASS — D-0052-W (2026-07-17)
+## 0ter. L4 harness callback PASS — D-0052-W (2026-07-17)
 
 | Field | Value |
 |-------|--------|
@@ -56,8 +77,8 @@
 |------------|--------|
 | Source-chat / allowed chat | Configured; authorized callback accepted |
 | Parser option **5** | **Live PASS** (`dp:D-0052-T:5`, `update_id=986228604`) |
-| Parser option **4** | **NOT_TESTED** |
-| Repository parser support | Options **1–5** (do not claim all individually runtime-tested) |
+| Parser option **4** | **NOT_TESTED in this arc** — later official plain option 4 PASS = §0 D-0057-W |
+| Repository parser support | Options **1–5** |
 | `answerCallbackQuery` API | `callback_ack_ok=true` — **PASS_API_CALL_ONLY** |
 | Spinner UX | `NOT_DIRECTLY_OBSERVED` / `NOT_CLAIMED` |
 | One-item receipt | `receipt_one_item_live_pass=true` |
@@ -67,7 +88,7 @@
 
 ---
 
-## 0ter. L3 repository implementation — D-0050-W (2026-07-12)
+## 0quater. L3 repository implementation — D-0050-W (2026-07-12)
 
 | Field | Value |
 |-------|--------|
@@ -77,12 +98,12 @@
 | **parent_decision_id** | D-0049-W |
 | **result** | `PASS_REPOSITORY_ONLY_IMPLEMENTATION` |
 
-**Repository implementation PASS** — template hardened; fixtures A–J PASS repo-side. L4 harness validation recorded under §0bis (D-0052-W). Official inventory restore under §0 (D-0054-W).
+**Repository implementation PASS** — template hardened; fixtures A–J PASS repo-side. L4 harness = §0ter (D-0052-W). Inventory restore = §0bis (D-0054-W). Official plain option 4 = §0 (D-0057-W).
 
-| Capability | Repository | L4 harness (D-0052-W) |
-|------------|------------|------------------------|
+| Capability | Repository | Live (post D-0057) |
+|------------|------------|---------------------|
 | Source-chat guard | **Implemented** | Exercised (authorized chat) |
-| Parser options 1–5 | **Implemented** | Option **5** live; option **4** not tested |
+| Parser options 1–5 | **Implemented** | Option **5** (D-0052 harness); option **4** (D-0057 official) |
 | `allowed_updates` explicit | **Implemented** | Preflight confirmed |
 | `answerCallbackQuery` branch | **Implemented** | API call OK; spinner UX not claimed |
 | One-item receipt invariant | **PASS repository-side** | **PASS live** |
@@ -93,7 +114,7 @@
 
 ---
 
-## 0quater. Architecture decision — D-0049-W (docs-only, 2026-07-12)
+## 0quinquies. Architecture decision — D-0049-W (docs-only, 2026-07-12)
 
 | Field | Value |
 |-------|--------|
@@ -106,7 +127,7 @@
 
 **Selected as primary inbound path** for message + `callback_query`. **Implementation not performed** in the D-0049-W task itself.
 
-**Later layers (not part of D-0049-W):** L3 repository = D-0050-W (§0ter); L4 harness callback = D-0052-W (§0bis); official inventory restore = D-0054-W (§0). L5 still unauthorized (`l5_activation_authorized=false`).
+**Later layers (not part of D-0049-W):** L3 = D-0050-W (§0quater); L4 harness = D-0052-W (§0ter); inventory restore = D-0054-W (§0bis); official plain option 4 = D-0057-W (§0). L5 still unauthorized.
 
 **Boundaries unchanged:** no webhook · no permanent schedule · We/46 retained as inactive fallback · **`l5_activation_authorized=false`**.
 
