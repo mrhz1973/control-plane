@@ -117,6 +117,20 @@
     },
     {
       "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Collapse Data Table load fan-out: Load returns 1 item per store row (returnAll).\n// Correlate reads the complete row set directly from Data Table - Load shared decision state.\nconst loaded = $input.all();\nconst rowCount = loaded.length;\nreturn [{\n  json: {\n    store_rows_loaded: rowCount,\n    fan_out_collapsed: rowCount > 1,\n    collapse_output_items: 1,\n    test_only: true,\n    note: 'Wg48: collapsed shared decision state load fan-out before correlation'\n  }\n}];"
+      },
+      "id": "wg000020-0020-4020-8020-000000000020",
+      "name": "Collapse shared state load fan-out",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        360
+      ]
+    },
+    {
+      "parameters": {
         "mode": "runOnceForEachItem",
         "jsCode": "// Correlate inbound to shared store control_plane_decisions_test (CLOSE ON REPLY). No raw Telegram identifiers.\nlet callableRows = [];\ntry { callableRows = $('Normalize Wf47 callable receipt').all(); } catch (e) { callableRows = []; }\n\nlet manualRows = [];\ntry { manualRows = $('Build sanitized inbound test input').all(); } catch (e) { manualRows = []; }\n\nconst inb = (callableRows.length ? callableRows[0].json : manualRows[0].json);\nconst rows = $('Data Table - Load shared decision state').all().map((i) => i.json);\nconst findRow = (id) => rows.find((r) => r && String(r.decision_id) === String(id));\nlet correlation_status = 'blocked';\nlet block_reason = 'malformed_response';\nlet decision_id = inb.decision_id || null;\nlet selected_option = inb.selected_option || null;\nlet update_id = inb.update_id ?? null;\nlet note_present = !!inb.note_present;\nlet persist_row = null;\nconst now = new Date().toISOString();\nif (inb.response_kind === 'malformed' || !decision_id) {\n  block_reason = 'malformed_response';\n} else if (inb.response_kind === 'note') {\n  const row = findRow(decision_id);\n  if (!row) {\n    block_reason = 'unknown_decision_id';\n  } else {\n    correlation_status = 'note_recorded';\n    block_reason = null;\n    const preview = String(inb.note_preview_sanitized || inb.inbound_text || '').slice(0, 80);\n    persist_row = {\n      decision_id,\n      status: String(row.status || 'open'),\n      selected_option: row.selected_option || '',\n      created_at: row.created_at || now,\n      closed_at: row.closed_at || '',\n      update_id: String(update_id || row.update_id || ''),\n      note_preview: preview,\n      source: 'TEST ONLY',\n      updated_at: now,\n      created_by: row.created_by || 'wd',\n      source_workflow: row.source_workflow || '',\n      packet_kind: row.packet_kind || ''\n    };\n  }\n} else if (inb.response_kind === 'option') {\n  const row = findRow(decision_id);\n  if (!row) {\n    block_reason = 'unknown_decision_id';\n  } else if (String(row.status) === 'closed') {\n    if (update_id != null && String(row.update_id) === String(update_id)) {\n      block_reason = 'duplicate_or_already_closed';\n    } else {\n      block_reason = 'already_closed_or_stale';\n    }\n  } else if (String(row.status) === 'open' && ['1', '2', '3', '4', '5'].includes(String(selected_option))) {\n    correlation_status = 'closed';\n    block_reason = null;\n    persist_row = {\n      decision_id,\n      status: 'closed',\n      selected_option: String(selected_option),\n      created_at: row.created_at || now,\n      closed_at: now,\n      update_id: String(update_id),\n      note_preview: row.note_preview || '',\n      source: 'TEST ONLY',\n      updated_at: now,\n      created_by: row.created_by || 'wd',\n      source_workflow: row.source_workflow || '',\n      packet_kind: row.packet_kind || ''\n    };\n  } else {\n    block_reason = 'malformed_response';\n  }\n}\nreturn {\n  json: {\n    correlation_status,\n    block_reason,\n    decision_id,\n    selected_option,\n    update_id,\n    note_present,\n    prior_status: decision_id ? (findRow(decision_id)?.status || 'missing') : 'missing',\n    persist_row,\n    test_only: true\n  }\n};"
       },
@@ -309,6 +323,17 @@
       ]
     },
     "Data Table - Load shared decision state": {
+      "main": [
+        [
+          {
+            "node": "Collapse shared state load fan-out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse shared state load fan-out": {
       "main": [
         [
           {
