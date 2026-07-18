@@ -33,6 +33,42 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: d0059w-wf48-parser-1-5-canonization
+verified_task_commit: 4c67225d1996c07616a5a2089add976d65b9b4a4
+verified_base_commit: c241d3b0acf5786aa027bb1b1ae5005296621c0f
+verified_rolling_report_commit: 9d4c46a43e8b6fc60705d414b63f44b2fdb223f7
+verified_through_commit: 4c67225d1996c07616a5a2089add976d65b9b4a4
+observed_head: 4c67225d1996c07616a5a2089add976d65b9b4a4
+observed_origin_main: 4c67225d1996c07616a5a2089add976d65b9b4a4
+observed_ls_remote_main: 4c67225d1996c07616a5a2089add976d65b9b4a4
+branch: main
+workspace_status: clean
+artifact_commit: 9d4c46a43e8b6fc60705d414b63f44b2fdb223f7
+result: PASS_REMOTE_REPOSITORY_ONLY_IMPLEMENTATION
+result_runtime: NOT_RUN_REPOSITORY_ONLY_CANONIZATION
+decision_id: D-0059-W
+selected_option: 1
+decision_provenance: direct_operator_message
+wf48_parser_1_5_repository_canonized: true
+wf48_parser_locations_updated: 3
+repository_fixture_pass: true
+export_created: false
+official_wf48_option_4_runtime_pass: false
+official_wf48_option_5_runtime_pass: false
+enable_wg48_handoff: false
+l5_activation_authorized: false
+gate_e_status: OPERATOR_DECISION_PENDING
+gate_e_full_pass: false
+pm34_unblocked: false
+n8n_ready: false
+runtime_executed_by_cursor: false
+runtime_actions_by_cursor: 0
+timestamp_utc: 2026-07-18
+```
+
+**Nota:** snapshot D-0059-W — rolling report / artifact `9d4c46a` backfilled; superseded da D-0065-W (2026-07-18). Last independently verified through commit remains `4c67225`.
+
+```yaml
 task_ref: d0055w-d0058w-wf47-option4-pass-wf48-manual-close
 verified_task_commit: 48537b3e19ea60a120f29c263ace6fd9a773d258
 verified_base_commit: 356094921e04f9be5396dea3de658345343b391e
@@ -484,28 +520,33 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: d0059w-wf48-parser-1-5-canonization
-verified_task_commit: 4c67225d1996c07616a5a2089add976d65b9b4a4
-verified_base_commit: c241d3b0acf5786aa027bb1b1ae5005296621c0f
+task_ref: d0065w-wf47-wf48-runtime-pass-and-workflow-authoring-boundary
+verified_task_commit: PENDING_SELF_REFERENCE
+verified_base_commit: cc550d227f2483207665362d2857c7d5b99bf2c6
 verified_rolling_report_commit: PENDING_SELF_REFERENCE
 verified_through_commit: 4c67225d1996c07616a5a2089add976d65b9b4a4
-observed_head: 4c67225d1996c07616a5a2089add976d65b9b4a4
-observed_origin_main: 4c67225d1996c07616a5a2089add976d65b9b4a4
-observed_ls_remote_main: 4c67225d1996c07616a5a2089add976d65b9b4a4
+observed_head: PENDING_SELF_REFERENCE
+observed_origin_main: PENDING_SELF_REFERENCE
+observed_ls_remote_main: PENDING_SELF_REFERENCE
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
-result: PASS_REMOTE_REPOSITORY_ONLY_IMPLEMENTATION
-result_runtime: NOT_RUN_REPOSITORY_ONLY_CANONIZATION
-decision_id: D-0059-W
-selected_option: 1
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_PENDING_INDEPENDENT_VERIFY
+result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_D0062_D0063_OPERATOR_ATTESTED
+decision_id: D-0065-W
 decision_provenance: direct_operator_message
-wf48_parser_1_5_repository_canonized: true
-wf48_parser_locations_updated: 3
-repository_fixture_pass: true
-export_created: false
-official_wf48_option_4_runtime_pass: false
-official_wf48_option_5_runtime_pass: false
+cursor_authored_or_modified_workflow: false
+workflows_path_touched: false
+cursor_independent_n8n_verification: false
+runtime_evidence_source: direct_operator_attestation
+governance_workflow_authoring_boundary_canonized: true
+cursor_routing_repository_based: true
+d0062_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_FRESH_CALLABLE_WF47_TO_OFFICIAL_WF48
+d0063_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_SCHEDULED_WF47_TO_OFFICIAL_WF48
+d0064_wf48_callable_publication_dependency: true
+teardown_instruction_issued: true
+teardown_final_state_independently_verified: false
+teardown_final_runtime_state: NOT_VERIFIED_IN_SUPPLIED_EVIDENCE
 enable_wg48_handoff: false
 l5_activation_authorized: false
 gate_e_status: OPERATOR_DECISION_PENDING
@@ -517,55 +558,14 @@ runtime_actions_by_cursor: 0
 timestamp_utc: 2026-07-18
 ```
 
-**Nota:** D-0059-W verified through commit 1 `4c67225` — repository-only; **NOT** verified through commit 2 (this report). Commit 2 = artefatti verifica/report/handoff; `artifact_commit: PENDING_SELF_REFERENCE`.
+**Nota:** D-0065-W is a **docs-only** commit recording operator-attested D-0062/D-0063/D-0064 evidence and governance rules. Cursor did **not** independently verify n8n. `verified_through_commit` remains the last independently verified commit (`4c67225` / D-0059 substantive). This artifact commit is **not** upgraded to independently verified merely because Cursor created it; `artifact_commit` / observed HEAD fields remain `PENDING_SELF_REFERENCE`. Authoritative current HEAD after push = `git ls-remote origin main`. Awaits independent verify-only / shell confirmation.
 
-**Backfill PENDING_SELF_REFERENCE:** D-0055…D-0058 snapshot → `c241d3b`; redaction-policy snapshot → `3560949`; D-0054-W snapshot → `be0cd76`; D-0052-W / D-0053-G snapshot → `eea0b4a`; D-0051-G snapshot → `7a7eb9b`; D-0050-W snapshot → `a2d0889`; D-0049-W snapshot → `b0bfee4`; D-0047-G snapshot → `417f136`; D-0046-E snapshot → `375f495`; D-0045-E snapshot → `95b9045`; wf45→wf47 snapshot → `f01ad73`; orchestrator contract snapshot → `6fafa9b`; wf47 bounded runtime validation snapshot → `39b53e4`; wf47→wf48 bounded handoff snapshot → `5884acd`; D-0040-E snapshot → `0411f3e`.
+**Backfill PENDING_SELF_REFERENCE:** D-0059-W snapshot → `9d4c46a`; D-0055…D-0058 snapshot → `c241d3b`; redaction-policy snapshot → `3560949`; D-0054-W snapshot → `be0cd76`; D-0052-W / D-0053-G snapshot → `eea0b4a`.
 
 ---
 
-## Command outputs (verbatim — D-0059-W commit 1)
+## Command outputs (verbatim — filled after push)
 
 ```text
-git log --oneline -8
-4c67225 feat: canonize wf48 parser options 1-5
-c241d3b docs: refresh runtime reports for D-0055 through D-0058
-48537b3 docs: record D-0055 wf47 option 4 pass and D-0058 close
-3560949 docs: refresh runtime reports for redaction policy update
-b5da3a6 docs: move redaction policy to operator responsibility
-be0cd76 docs: refresh runtime reports for D-0054
-3dab99f docs: record D-0054 wf47 inventory restore
-eea0b4a docs: refresh runtime reports for D-0052 and D-0053
-
-git status --short
-
-git rev-parse HEAD
-4c67225d1996c07616a5a2089add976d65b9b4a4
-
-git rev-parse origin/main
-4c67225d1996c07616a5a2089add976d65b9b4a4
-
-git branch --show-current
-main
-
-git show --stat HEAD
-commit 4c67225d1996c07616a5a2089add976d65b9b4a4
- docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  21 ++++-
- docs/runtime/CURRENT_FRONTIER.md                   |  28 +++---
- ...-plane-d-0059-w-wf48-parser-1-5-canonization.md | 105 +++++++++++++++++++++
- docs/workflow-wf47-wg-operationalization-plan.md   |   5 +-
- ...-telegram-inbound-decision-state-correlation.md |  40 +++++++-
- ...nbound-decision-state-correlation.template.json |   6 +-
- 6 files changed, 180 insertions(+), 25 deletions(-)
-
-git ls-remote origin refs/heads/main
-4c67225d1996c07616a5a2089add976d65b9b4a4	refs/heads/main
-
-git diff --name-only c241d3b0acf5786aa027bb1b1ae5005296621c0f..HEAD
-docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
-docs/runtime/CURRENT_FRONTIER.md
-docs/sessions/2026-07-18-control-plane-d-0059-w-wf48-parser-1-5-canonization.md
-docs/workflow-wf47-wg-operationalization-plan.md
-docs/workflow-wg-telegram-inbound-decision-state-correlation.md
-workflows/wg-telegram-inbound-decision-state-correlation.template.json
+(see final Cursor report post-push block)
 ```
-

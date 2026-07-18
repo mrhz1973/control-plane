@@ -1,9 +1,9 @@
 # HANDOFF TEMPLATE — control-plane
 
-**Repository:** `mrhz1973/control-plane`  
-**Documento:** `docs/foundation/HANDOFF_TEMPLATE.md`  
-**Versione:** 1.0 — 2026-07-10  
-**Lingua:** Italiano  
+**Repository:** `mrhz1973/control-plane`
+**Documento:** `docs/foundation/HANDOFF_TEMPLATE.md`
+**Versione:** 1.1 — 2026-07-18
+**Lingua:** Italiano
 **Ruolo:** scheletro obbligatorio riutilizzabile per handoff conformi a `PROJECT_VISION.md` §11.3.
 
 ---
@@ -25,8 +25,8 @@ Il template previene handoff non conformi che costringono la nuova chat a ricost
 
 ## Titolo / topic
 
-**Titolo:** `<TOPIC_BREVE>`  
-**Ruolo produttore:** `<Claude | GPT-B | altro>`  
+**Titolo:** `<TOPIC_BREVE>`
+**Ruolo produttore:** `<Claude | GPT-B | altro>`
 **Path canonico:** `docs/handoffs/YYYY-MM-DD-HHMM-<topic>-handoff-<ruolo>.md`
 
 ---
@@ -50,14 +50,14 @@ Tutti i file vanno letti dal **repo vivo** a HEAD dichiarato nell'handoff, **mai
 
 ## Contatore turni
 
-**Contatore sessione corrente:** `<N>/20` (soglia §11.2)  
+**Contatore sessione corrente:** `<N>/20` (soglia §11.2)
 **Nuova chat:** riparte da contatore **0**.
 
 ---
 
 ## HEAD osservato
 
-**HEAD verificato:** `<sha_completo>`  
+**HEAD verificato:** `<sha_completo>`
 **Branch:** `main` (salvo eccezione documentata)
 
 ### Provenienza (obbligatoria)
@@ -143,6 +143,12 @@ La nuova chat deve trattare `docs/foundation/PROJECT_VISION.md` come **entry poi
 - wf40/41/42 untouched (salvo task esplicito)
 - No schedule permanenti · no webhook pubblici · no Telegram Trigger (salvo gate)
 - Gate E full PASS = NO (salvo attestazione separata)
+- GPT-B owns n8n workflow authoring and UI instructions.
+- Cursor does not independently create or modify workflows.
+- Cursor may only persist a complete GPT-B-supplied artifact verbatim under explicit authorization.
+- Human operator executes supervised n8n UI actions.
+- Claude verifies; GLM remains read-only.
+- Cursor workspaces are identified by repository/path/branch/task, not by colors.
 
 ---
 

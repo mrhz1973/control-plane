@@ -13,97 +13,58 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0059w-wf48-parser-1-5-canonization
-result_cursor: PASS_REPOSITORY_ONLY_IMPLEMENTATION
-result_runtime: NOT_RUN_REPOSITORY_ONLY_CANONIZATION
-base_commit: c241d3b0acf5786aa027bb1b1ae5005296621c0f
-real_task_commit: 4c67225d1996c07616a5a2089add976d65b9b4a4
-commit_subject: feat: canonize wf48 parser options 1-5
+task_ref: d0065w-wf47-wf48-runtime-pass-and-workflow-authoring-boundary
+result_cursor: PASS_DOCS_ONLY
+result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_D0062_D0063_OPERATOR_ATTESTED
+base_commit: cc550d227f2483207665362d2857c7d5b99bf2c6
+real_task_commit: PENDING_SELF_REFERENCE
+commit_subject: docs: record wf47-wf48 passes and workflow authoring boundary
 rolling_report_commit: PENDING_SELF_REFERENCE
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 branch: main
-decision_id: D-0059-W
-selected_option: 1
+decision_id: D-0065-W
 decision_provenance: direct_operator_message
-task_kind: repository_only_wf48_parser_canonization
-template_path: workflows/wg-telegram-inbound-decision-state-correlation.template.json
-wf48_parser_1_5_repository_canonized: true
-wf48_parser_locations_expected: 3
-wf48_parser_locations_updated: 3
-wf48_callable_normalization_1_5: true
-wf48_external_receipt_normalization_1_5: true
-wf48_state_correlation_1_5: true
-json_parse_pass: true
-repository_fixture_pass: true
-template_active: false
-export_created: false
-runtime_executed_by_cursor: false
-runtime_actions_by_cursor: 0
-official_wf48_option_4_runtime_pass: false
-official_wf48_option_5_runtime_pass: false
+task_kind: docs_only_governance_and_runtime_evidence_reconciliation
+cursor_authored_or_modified_workflow: false
+workflows_path_touched: false
+cursor_independent_n8n_verification: false
+runtime_evidence_source: direct_operator_attestation
+governance_workflow_authoring_boundary_canonized: true
+cursor_routing_repository_based: true
+color_based_cursor_routing_removed_from_canonical: true
+d0062_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_FRESH_CALLABLE_WF47_TO_OFFICIAL_WF48
+d0063_result: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_SCHEDULED_WF47_TO_OFFICIAL_WF48
+d0064_wf48_callable_publication_dependency: true
+d0062_update_id_limitation_recorded: true
+teardown_instruction_issued: true
+teardown_final_state_independently_verified: false
+teardown_final_runtime_state: NOT_VERIFIED_IN_SUPPLIED_EVIDENCE
 enable_wg48_handoff: false
 l5_activation_authorized: false
 gate_e_status: OPERATOR_DECISION_PENDING
 gate_e_full_pass: false
 pm34_unblocked: false
 n8n_ready: false
+runtime_executed_by_cursor: false
+runtime_actions_by_cursor: 0
 timestamp_utc: 2026-07-18
 ```
 
-- **Commit 1 — D-0059-W repository canonization:** template wf48 parser options **1–5** in three nodes; session + frontier + runbook + activation plan; **no export**; runtime **not** run.
-- **Commit 2 (questo report):** `LAST_CURSOR_REPORT.md` + `LAST_HANDOFF_VERIFY.md` + handoff; **non** certifica il proprio hash.
-- **Runtime actions by Cursor:** `0`. Session: `docs/sessions/2026-07-18-control-plane-d-0059-w-wf48-parser-1-5-canonization.md`.
-- Snapshot verifica attraverso `4c67225d1996c07616a5a2089add976d65b9b4a4`; `rolling_report_commit: PENDING_SELF_REFERENCE`.
+- **Single docs-only commit:** governance (PROJECT_VISION v2.19, CURSOR_PROMPT_TEMPLATE, HANDOFF_TEMPLATE) + frontier + session D-0062…D-0065 + this report + handoff verify + handoff.
+- **Single-commit docs-only:** `real_task_commit` and `rolling_report_commit` remain `PENDING_SELF_REFERENCE` in LATEST (self-hash impossible in the same commit). Authoritative task commit = `HEAD` / `origin/main` / `git ls-remote origin main` after push. Next task backfills HISTORY.
+- **Cursor did not author or modify any workflow**; `workflows/**` untouched.
+- **Runtime evidence** from direct operator attestations (D-0062/D-0063/D-0064); Cursor did **not** independently verify n8n.
+- Session: `docs/sessions/2026-07-18-control-plane-d-0062-e-d-0065-w-wf47-wf48-runtime-pass-and-workflow-authoring-boundary.md`.
 
-**Post-push evidence (commit 1 — real task):**
+**Post-push evidence (filled after push in final report; LATEST.real_task_commit set at commit time):**
 
 ```text
-git log --oneline -8
-4c67225 feat: canonize wf48 parser options 1-5
-c241d3b docs: refresh runtime reports for D-0055 through D-0058
-48537b3 docs: record D-0055 wf47 option 4 pass and D-0058 close
-3560949 docs: refresh runtime reports for redaction policy update
-b5da3a6 docs: move redaction policy to operator responsibility
-be0cd76 docs: refresh runtime reports for D-0054
-3dab99f docs: record D-0054 wf47 inventory restore
-eea0b4a docs: refresh runtime reports for D-0052 and D-0053
-
-git status --short
-
-git rev-parse HEAD
-4c67225d1996c07616a5a2089add976d65b9b4a4
-
-git rev-parse origin/main
-4c67225d1996c07616a5a2089add976d65b9b4a4
-
-git branch --show-current
-main
-
-git show --stat HEAD
-commit 4c67225d1996c07616a5a2089add976d65b9b4a4
- docs/runtime/AUTOMATION_ACTIVATION_PLAN.md         |  21 ++++-
- docs/runtime/CURRENT_FRONTIER.md                   |  28 +++---
- ...-plane-d-0059-w-wf48-parser-1-5-canonization.md | 105 +++++++++++++++++++++
- docs/workflow-wf47-wg-operationalization-plan.md   |   5 +-
- ...-telegram-inbound-decision-state-correlation.md |  40 +++++++-
- ...nbound-decision-state-correlation.template.json |   6 +-
- 6 files changed, 180 insertions(+), 25 deletions(-)
-
-git ls-remote origin refs/heads/main
-4c67225d1996c07616a5a2089add976d65b9b4a4\trefs/heads/main
-
-git diff --name-only c241d3b0acf5786aa027bb1b1ae5005296621c0f..HEAD
-docs/runtime/AUTOMATION_ACTIVATION_PLAN.md
-docs/runtime/CURRENT_FRONTIER.md
-docs/sessions/2026-07-18-control-plane-d-0059-w-wf48-parser-1-5-canonization.md
-docs/workflow-wf47-wg-operationalization-plan.md
-docs/workflow-wg-telegram-inbound-decision-state-correlation.md
-workflows/wg-telegram-inbound-decision-state-correlation.template.json
+(see final Cursor report post-push block)
 ```
 
 ---
 
-## Rules## Rules
+## Rules
 
 - **PASS** richiede che `real_task_commit` risulti nella chain di `origin/main`.
 - Il **GitHub raw** può essere **stale** (cache/CDN): in caso di divergenza, **vince l'hash remoto** (`git ls-remote` / `git rev-parse origin/main`).
@@ -111,8 +72,9 @@ workflows/wg-telegram-inbound-decision-state-correlation.template.json
 - I campi `rolling_report_commit` e `remote_hash_verbatim` del LATEST restano `PENDING_SELF_REFERENCE` finché quel LATEST è il più recente; si backfillano in HISTORY al task successivo. **Non** esiste un commit finalize-hash dedicato (`PROJECT_VISION.md` §8.1).
 - Un **SUCCESS** dichiarato **senza** l'output git richiesto **non** è PASS.
 - **Orchestratore:** se il report Cursor include già l'output post-push verbatim completo (`PROJECT_VISION.md` §8.1), **non** chiedere shell manuale all'utente; leggere anche `docs/runtime/LAST_HANDOFF_VERIFY.md` durante `aggio control`; verify-only Cursor se manca/stale; shell utente = fallback finale.
-- **Policy materiali sensibili v2.16:** repo non-confidenziale secondo `PROJECT_VISION.md` §10 v2.18. **Redazione a cura dell'operatore** (token, ID, credenziali, identificatori Telegram, ecc.) prima di incollare in chat o autorizzare commit. Nessuna clausola esplicita «no secrets» / «redazione obbligatoria» nei prompt Cursor o nei session log futuri. Controllo compensativo: rotazione credenziali a fine progetto (`docs/ROTATION_CHECKLIST.md`). Tolleranze chat_id e identificatori tailnet invariate (§10).
-- **Two-commit convention:** quando un task reale deve essere referenziato dal rolling report, Cursor crea prima il commit reale (commit 1), cattura l'hash con `git rev-parse HEAD`, e solo dopo crea il commit docs/report (commit 2). Cursor **non** deve mai predire o inventare il proprio hash futuro.
+- **Policy materiali sensibili v2.16:** repo non-confidenziale secondo `PROJECT_VISION.md` §10 v2.19. **Redazione a cura dell'operatore**.
+- **Workflow-authoring boundary:** GPT-B owns n8n authoring; Cursor does not independently create/modify workflows (`PROJECT_VISION.md` §2.1–§2.2).
+- **Cursor routing:** repository/path/branch/task — color labels non-canonical (`PROJECT_VISION.md` §2.3).
 
 ---
 
@@ -121,6 +83,15 @@ workflows/wg-telegram-inbound-decision-state-correlation.template.json
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0059w-wf48-parser-1-5-canonization
+  real_task_commit: 4c67225d1996c07616a5a2089add976d65b9b4a4
+  base_commit: c241d3b0acf5786aa027bb1b1ae5005296621c0f
+  rolling_report_commit: 9d4c46a43e8b6fc60705d414b63f44b2fdb223f7
+  remote_hash_verbatim: 9d4c46a43e8b6fc60705d414b63f44b2fdb223f7
+  result_cursor: PASS_REPOSITORY_ONLY_IMPLEMENTATION
+  result_runtime: NOT_RUN_REPOSITORY_ONLY_CANONIZATION
+  timestamp_utc: 2026-07-18
+
 - task_ref: d0055w-d0058w-wf47-option4-pass-wf48-manual-close
   real_task_commit: 48537b3e19ea60a120f29c263ace6fd9a773d258
   base_commit: 356094921e04f9be5396dea3de658345343b391e
@@ -156,13 +127,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS_DOCS_ONLY
   result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_L4_CALLBACK
   timestamp_utc: 2026-07-17
-
-- task_ref: d0051g-d0050w-commit-provenance-correction
-  real_task_commit: a2d088912ee83603f5fd96b08921937c7d382914
-  base_commit: 7515fc9d922fb80f2003fbefde87957c18917a04
-  rolling_report_commit: 7a7eb9b5870995404c0a25870d6dec4e9f1830b8
-  result_cursor: PASS_REPORT_ONLY_GOVERNANCE_CORRECTION
-  result_runtime: NOT_RUN_AUDIT_CORRECTION
-  timestamp_utc: 2026-07-12
 ```
-

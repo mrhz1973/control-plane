@@ -1,7 +1,7 @@
 # CURSOR PROMPT TEMPLATE — control-plane
 
-**Repository:** `mrhz1973/control-plane`  
-**Documento:** `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`  
+**Repository:** `mrhz1973/control-plane`
+**Documento:** `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`
 **Ruolo:** contratto di formattazione per prompt destinati a Cursor. Non è un cambiamento runtime.
 
 ---
@@ -17,8 +17,17 @@
 ### B. Comandi di ritorno umano e routing metadata fuori dal prompt
 
 - Comandi umani di ritorno (es. `aggio control`, `format`, e simili) **non** vanno nel corpo copiabile del prompt Cursor e **non** vanno nei report Cursor.
-- Metadati di routing (modalità, modello, finestra operativa) restano **fuori** dal corpo del prompt quando sono istruzioni per l'orchestratore e non per Cursor.
-- Rimando: [PROJECT_VISION.md](PROJECT_VISION.md) §8.
+- Metadati di routing (modalità, modello, repository, branch, task) restano **fuori** dal corpo del prompt quando sono istruzioni per l'orchestratore e non per Cursor.
+- Rimando: [PROJECT_VISION.md](PROJECT_VISION.md) §8 e §2.3.
+
+### C. Routing workspace Cursor (repository-based)
+
+- Identificare la finestra/workspace Cursor per: **repository full name**, **path locale** se necessario, **branch**, **task/progetto**.
+- **Non** identificare Cursor tramite colori UI.
+- Le etichette colore sono **non canoniche** e non devono essere usate in istruzioni GPT-B future, prompt Cursor, handoff o report.
+- Esempio di routing fuori dal prompt copiabile:
+
+> Finestra corretta: Cursor aperto sul repository `mrhz1973/control-plane`. Usa Agent con Auto / Composer 2.5. Non inviare il task a repository diversi.
 
 ---
 
@@ -55,7 +64,7 @@ You are working in the current Cursor workspace. Before editing, verify that thi
 
 Fuori dal prompt, GPT-B può scrivere ad esempio:
 
-> Finestra corretta: Cursor CONTROL PLANE arancione. Usa Agent con Auto / Composer 2.5. NON mandare in GIS. NON mandare in DEV.
+> Finestra corretta: Cursor aperto sul repository mrhz1973/control-plane. Usa Agent con Auto / Composer 2.5. Non inviare il task a repository diversi.
 
 Poi GPT-B fornisce **un solo** prompt copiabile.
 
@@ -64,6 +73,28 @@ Niente prompt duplicati salvo un vero decision gate.
 Quando GPT-B corregge o integra un prompt Cursor, restituisce sempre un
 unico prompt completo e pronto da incollare. Sono vietati patch, frammenti
 o istruzioni che costringano l'utente a ricomporre manualmente il prompt.
+
+---
+
+## 3bis. Workflow-authoring boundary
+
+Regola permanente (`PROJECT_VISION.md` §2.1–§2.2):
+
+- **GPT-B** è l'autore autorevole dei workflow n8n e delle istruzioni UI/runtime per l'operatore umano.
+- **Cursor** non crea, non progetta, non genera e non modifica autonomamente workflow n8n.
+- `workflows/**` è **vietato di default** nei prompt Cursor.
+- Cursor può toccare `workflows/**` **solo** se il prompt dichiara esplicitamente:
+
+  `PERSIST VERBATIM GPT-B-SUPPLIED WORKFLOW ARTIFACT`
+
+  e fornisce l'artefatto completo o una patch/hash esatta di GPT-B.
+
+- In quel caso Cursor può soltanto: scrivere verbatim; validare JSON; verificare path/filename; riportare diff; commit/push.
+- Cursor **non** inferisce dettagli mancanti e **non** «migliora» la logica del workflow.
+- Inconsistenza o dettaglio mancante → `BLOCKED_WORKFLOW_AUTHORING_RESERVED_TO_GPT_B`.
+- Cursor **non** opera la UI n8n. Claude verifica; GLM resta read-only.
+
+Ogni prompt Cursor che tocchi workflow deve richiamare questo confine (per riferimento a questo template / PROJECT_VISION), senza reinventarlo.
 
 ---
 
@@ -82,13 +113,14 @@ Il corpo copiabile deve includere, in ordine logico:
    git rev-parse HEAD
    git rev-parse origin/main
    ```
-   L'umano apre normalmente solo la finestra/repo Cursor corretta. **Non** chiedere all'umano fetch/pull/status di routine prima di ogni task.
+   L'umano apre normalmente solo il workspace Cursor sul repository corretto. **Non** chiedere all'umano fetch/pull/status di routine prima di ogni task.
 2. Hash `origin/main` atteso, quando rilevante; fermarsi se repo/branch/pull non coincidono.
 3. Goal del task.
-4. Allowed paths e azioni vietate.
-5. Comandi di validazione pre-commit.
-6. Istruzioni di commit selettivo e push.
-7. Contratto di report finale con output git **verbatim** e evidenza richiesta.
+4. Allowed paths e azioni vietate — incluso, salvo autorizzazione verbatim esplicita: **no** `workflows/**`, **no** authoring/refactor workflow n8n, **no** operazione UI n8n.
+5. Richiamo del workflow-authoring boundary quando il task è vicino a n8n/workflow.
+6. Comandi di validazione pre-commit.
+7. Istruzioni di commit selettivo e push.
+8. Contratto di report finale con output git **verbatim** e evidenza richiesta.
 
 **Report finale Cursor (obbligatorio dopo commit/push):** termina con evidenza e output git verbatim, **non** con comandi di ritorno chat/orchestratore. Deve includere **sempre** l'output testuale verbatim di:
 
@@ -120,6 +152,8 @@ Il PASS remoto si chiude su `HEAD` = `origin/main` = `git ls-remote origin main`
 - Tabelle markdown per output git finali.
 - Riassunti al posto di output git verbatim.
 - Prompt alternativi senza un vero decision gate.
+- Istruzioni che chiedono a Cursor di inventare/progettare/generare/migliorare workflow n8n senza artefatto GPT-B verbatim.
+- Routing basato su colori UI della finestra Cursor.
 
 ---
 
@@ -139,7 +173,7 @@ Per evitare burocrazia e moltiplicazione di documenti (PROJECT_VISION §7.9), i 
 
 - Questo file è **subordinato** a `docs/foundation/PROJECT_VISION.md`.
 - In caso di conflitto, vince `PROJECT_VISION.md`.
-- Questo file **non** autorizza: runtime n8n/VPS, modifiche workflow, deploy, tag, rollback, provider API key, segreti, sblocco PM-34, o mutazione di `pm34_unblocked` / `n8n_ready`.
+- Questo file **non** autorizza: runtime n8n/VPS, modifiche workflow autonome, deploy, tag, rollback, provider API key, segreti, sblocco PM-34, o mutazione di `pm34_unblocked` / `n8n_ready`.
 
 ---
 

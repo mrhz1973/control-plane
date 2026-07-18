@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`
 **Documento:** `docs/foundation/PROJECT_VISION.md`
-**Versione:** 2.18 — 2026-07-18 (redazione a cura operatore / policy materiali sensibili)
-**Versione precedente:** 2.17 — 2026-07-11 (sostituita)
+**Versione:** 2.19 — 2026-07-18 (n8n workflow-authoring reserved to GPT-B; Cursor routing by repository)
+**Versione precedente:** 2.18 — 2026-07-18 (sostituita)
 **Lingua:** Italiano
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
@@ -77,6 +77,42 @@ Il **model path target ufficiale** è **Codex CLI diretto via OAuth ChatGPT Plus
 
 Questa foundation v2.2 prevale come destinazione architetturale: Codex CLI orchestratore, Cursor implementatore, Ollama classificatore. Documenti precedenti che citano «Codex via OpenClaw» come path default restano utili come storico e sicurezza.
 
+### 2.1 Ruoli operativi supervisionati (metodo corrente)
+
+Nel metodo supervisionato corrente i ruoli generali sono:
+
+| Ruolo | Responsabilità |
+|---|---|
+| **GPT-B** | Orchestratore human-facing, autore Decision Packet, guida runtime e **autore autorevole dei workflow n8n** |
+| **Cursor** | Implementatore repository/codice per task esplicitamente autorizzati nel prompt Cursor |
+| **Claude** | Verificatore/reviewer indipendente |
+| **GLM** | Advisor consultivo read-only |
+| **Operatore umano** | Decisore di progetto e operatore supervisionato della UI/runtime n8n |
+
+**Eccezione esplicita a «Cursor implementa»:** Cursor resta l'implementatore di codice/repository; **GPT-B** è l'autore autorevole degli artefatti workflow n8n e delle istruzioni UI/runtime verso l'operatore umano. Claude può ispezionare e verificare artefatti workflow ma non diventa silenziosamente autore. GLM non scrive, non committa e non modifica workflow.
+
+### 2.2 Confine di authoring n8n (permanente)
+
+1. GPT-B progetta e scrive i workflow n8n di questo progetto.
+2. «Workflow authoring» include: creare workflow; cambiare topologia; aggiungere/rimuovere/ricablare nodi; scrivere o cambiare JavaScript nei Code node; scrivere o cambiare expression; scegliere trigger; definire schedule; definire relazioni Execute Workflow; definire routing Telegram; definire handling Data Table; scegliere comportamento Activate/Publish; preparare JSON importabile completo; preparare istruzioni UI esatte per l'operatore.
+3. Cursor **non** deve autonomamente: inventare, progettare o generare workflow JSON da requisiti; modificare logica nodi; refactorizzare workflow JSON; «migliorare» un workflow fornito da GPT-B; cambiare topologia, expression, schedule, trigger, credenziali, Activate/Publish; inferire dettagli workflow mancanti.
+4. Cursor può toccare `workflows/**` **solo** sotto un prompt futuro che dichiara esplicitamente `PERSIST VERBATIM GPT-B-SUPPLIED WORKFLOW ARTIFACT` e fornisce l'artefatto completo o una patch/hash esatta di GPT-B.
+5. In quel caso ristretto Cursor può soltanto: scrivere i bytes/testo forniti verbatim; validare sintassi JSON; verificare path/filename attesi; riportare il diff; committare e pushare.
+6. Cursor non altera semanticamente l'artefatto fornito. Inconsistenza o dettaglio mancante → `BLOCKED_WORKFLOW_AUTHORING_RESERVED_TO_GPT_B`.
+7. L'operatore umano esegue azioni supervisionate in n8n UI seguendo istruzioni GPT-B. Cursor **non** opera la UI n8n.
+8. Nessun handoff o prompt Cursor futuro può descrivere Cursor come designer autonomo di workflow n8n.
+
+### 2.3 Identificazione workspace Cursor (routing)
+
+I workspace/finestre Cursor si identificano per:
+
+- nome completo del repository;
+- path locale del repository quando necessario;
+- branch corrente;
+- nome task/progetto.
+
+**Non** identificare una finestra Cursor tramite colori UI. Le etichette colore sono **non canoniche** e non devono comparire in istruzioni GPT-B future, prompt Cursor, handoff o report.
+
 ---
 
 ## 3. Stato operativo reale al momento della foundation
@@ -141,7 +177,7 @@ Ruolo futuro: nodo always-on a basso consumo, fallback Ollama leggero, OpenClaw 
 
 ### 4.4 PC lavoro
 
-Il PC lavoro è macchina operativa umana, non nodo produzione del loop. Può servire per docs-only, controllo GitHub e lavoro supervisionato. Non deve diventare nodo runtime automatico, né ospitare OpenClaw/Ollama in produzione, né ricevere prompt destinati a `GIS`, `DEV` o altri repo quando il flusso è `CONTROL PLANE`.
+Il PC lavoro è macchina operativa umana, non nodo produzione del loop. Può servire per docs-only, controllo GitHub e lavoro supervisionato. Non deve diventare nodo runtime automatico, né ospitare OpenClaw/Ollama in produzione, né ricevere prompt destinati a repository diversi da `mrhz1973/control-plane` quando il flusso è control-plane.
 
 ---
 
@@ -173,7 +209,8 @@ Il PC lavoro è macchina operativa umana, non nodo produzione del loop. Può ser
 - **n8n** non ragiona come AI: applica regole, polling, routing, deduplica e gate.
 - **Codex** ragiona e produce il prossimo prompt operativo.
 - **Ollama** non decide strategia: classifica rischio, ambiguità, route e approvazione richiesta.
-- **Cursor CLI** non decide la rotta: implementa quanto autorizzato.
+- **Cursor CLI** non decide la rotta: implementa quanto autorizzato sul repository/codice; **non** è l'autore autonomo dei workflow n8n (vedi §2.1–§2.2).
+- **GPT-B** (metodo supervisionato corrente) è l'autore autorevole dei workflow n8n e delle istruzioni UI verso l'operatore.
 - **Telegram** non è archivio: è interfaccia decisionale umana strutturata via Decision Packet.
 - **GitHub** è il registro verificabile di stato e risultati.
 
@@ -485,7 +522,7 @@ I prompt Cursor/implementatore includono l'**aggiornamento locale sicuro del rep
 | `mrhz1973/cursor-coordinate-converter` | Repo GIS / benchmark operativo; repo osservato per test e cicli reali |
 | `mrhz1973/alina-lavoro` | Repo sorgente di molte regole architetturali e operative; fuori scope runtime del control-plane salvo richiesta esplicita |
 
-Regola: non confondere finestre/repo. Prompt destinati a `CONTROL PLANE` non vanno mandati in `GIS`, `DEV` o `ALINA`.
+Regola: non confondere finestre/repo. Identificare Cursor per repository (`mrhz1973/control-plane`), path, branch e task — **non** per colori UI. Prompt destinati a `mrhz1973/control-plane` non vanno mandati ad altri repository (`dev-method`, `cursor-coordinate-converter`, `alina-lavoro`, ecc.).
 
 ---
 
@@ -506,6 +543,8 @@ Regola: non confondere finestre/repo. Prompt destinati a `CONTROL PLANE` non van
 - **n8n non chiama provider API a pagamento per default** (sezione 7.5).
 - Nessun deploy/tag/rollback senza decisione esplicita.
 - Runtime, VPS, n8n UI/import/export, credenziali, OAuth e runner automatico sono gate reali.
+- **Authoring n8n reserved to GPT-B** (sezione 2.1–2.2): Cursor non crea/modifica autonomamente workflow; persistenza verbatim solo se esplicitamente autorizzata.
+- **Routing Cursor** (sezione 2.3): repository/path/branch/task; etichette colore non canoniche.
 - **Ogni componente automatico deve avere fallback graceful al manuale** (sezione 7.6).
 - **Gate umani sono Decision Packet, non prose libere** (sezione 7.7).
 - **Anti-burocrazia / momentum** (sezione 7.9): la sicurezza abilita il progresso; PREP PASS solo se rimuove un blocco reale; per una catena confinata, dopo 1 rehearsal di import/reimport + massimo 2 run manuali ripetuti si avanza al prossimo gate reale o si marca BLOCKED con blocker concreto; test opzionali solo con rischio nominato; test non deterministici vietati come PASS.
@@ -710,6 +749,7 @@ In una frase: **sto costruendo una fabbrica, non un singolo prodotto.** La fabbr
 | 2.16 | 2026-07-10 | §11.3: `HANDOFF_TEMPLATE.md` scheletro obbligatorio; read-set nuova chat (FRONTIER → PROJECT_VISION → CURSOR_PROMPT_TEMPLATE → LAST_CURSOR_REPORT → LAST_HANDOFF_VERIFY → handoff); repo vivo a HEAD dichiarato; verifica hash via shell Claude o output verbatim Cursor §8.1. |
 | 2.17 | 2026-07-11 | Provenienza decisioni / regola anti-proxy advisor (§7.7 e correlati): scelta Decision Packet solo da messaggio diretto operatore. |
 | 2.18 | 2026-07-18 | §10: redazione spostata a responsabilità operatore; clausole «no secrets» / redazione obbligatoria deprecate nei prompt Cursor e session log; «no secrets in Git» deprecato come prescrizione operativa in runbook/rolling reports; rotazione credenziali a fine progetto resta controllo compensativo; tolleranze chat_id e tailnet invariate. PM-34 BLOCKED · `n8n_ready=false` invariati. |
+| 2.19 | 2026-07-18 | §2.1–§2.3: ruoli supervisionati (GPT-B autore n8n; Cursor implementatore repo; Claude verifica; GLM read-only; operatore UI); confine authoring n8n permanente + `BLOCKED_WORKFLOW_AUTHORING_RESERVED_TO_GPT_B`; routing Cursor per repository/path/branch/task (colori UI non canonici). §5/§9/§10 allineati. Codex target e safety invarianti preservati. |
 
 ---
 
