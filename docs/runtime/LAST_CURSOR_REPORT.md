@@ -13,35 +13,35 @@ file è l'artefatto persistente di quell'hash, non una sua sostituzione.
 ## LATEST
 
 ```yaml
-task_ref: d0067w-d0066e-teardown-verification-closure
+task_ref: d0070w-d0069e-gate-e-closure
 result_cursor: PASS_DOCS_ONLY
-result_runtime: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
-base_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
+result_runtime: NOT_RUN_DECISION_PERSISTENCE
+base_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
 real_task_commit: PENDING_SELF_REFERENCE
-commit_subject: docs: record D-0066 teardown verification closure
+commit_subject: docs: record D-0069 Gate E closure
 rolling_report_commit: PENDING_SELF_REFERENCE
 remote_hash_verbatim: PENDING_SELF_REFERENCE
 branch: main
-decision_id: D-0067-W
-related_decision_id: D-0066-E
-selected_option: "3"
+decision_id: D-0070-W
+related_decision_id: D-0069-E
+selected_option: "1"
 decision_provenance: direct_operator_message
-mandate: operator_runtime_inventory_plus_cursor_verify_only
-task_kind: docs_only_teardown_verification_closure
+operator_decision_timestamp_utc: "2026-07-18T19:53:25Z"
+task_kind: docs_only_gate_e_closure
 cursor_authored_or_modified_workflow: false
 workflows_path_touched: false
 cursor_independent_n8n_verification: false
-teardown_direct_n8n_observation_by_cursor: false
-runtime_evidence_source: direct_operator_attestation
-d0066_verify_only_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
-teardown_operator_inspection_completed: true
-teardown_inventory_cursor_documentally_verified: true
-teardown_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+runtime_evidence_source: operator_attested
+Gate_E_full: PASS
+Gate_E_status: CLOSED
+gate_e_closure_basis: cumulative_existing_evidence
+new_runtime_executed_for_closure: false
+d0068_verify_only_result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
+d0068_verified_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
 teardown_evidence_gap: CLOSED
 enable_wg48_handoff: false
 l5_activation_authorized: false
-gate_e_status: OPERATOR_DECISION_PENDING
-gate_e_full_pass: false
+L5_PASS: NOT_CLAIMED
 pm34_unblocked: false
 n8n_ready: false
 runtime_executed_by_cursor: false
@@ -49,11 +49,12 @@ runtime_actions_by_cursor: 0
 timestamp_utc: 2026-07-18
 ```
 
-- **D-0067-W docs-only:** persist D-0066-E operator inventory + Cursor verify-only teardown closure.
-- **D-0066-E verify-only** (prior turn): `PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION` against HEAD `1eb2be6`; inventory completeness/coherence PASS; zero mutations.
-- **Provenance:** operator-attested n8n inspection; Cursor did **not** authenticate screenshot pixels or independently observe n8n.
+- **D-0070-W docs-only:** persist D-0069-E Gate E closure (option `"1"`) + contextual rolling backfill of D-0067 via D-0068-V.
+- **Gate E:** `PASS` / `CLOSED` on `cumulative_existing_evidence`; **no new runtime** for closure.
+- **Provenance:** runtime evidence remains operator-attested; Cursor did **not** independently observe n8n or authenticate screenshot pixels.
+- **L5 separation:** `l5_activation_authorized: false` · `L5_PASS: NOT_CLAIMED`.
 - **Single-commit docs-only:** `real_task_commit` / `rolling_report_commit` remain `PENDING_SELF_REFERENCE`; authoritative task commit = `HEAD` / `origin/main` / `ls-remote` after push.
-- Session: `docs/sessions/2026-07-18-control-plane-d-0066-e-d-0067-w-teardown-verification-closure.md`.
+- Session: `docs/sessions/2026-07-18-control-plane-d-0069-e-d-0070-w-gate-e-closure.md`.
 
 ---
 
@@ -76,6 +77,16 @@ timestamp_utc: 2026-07-18
 Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history + `docs/sessions/`.
 
 ```yaml
+- task_ref: d0067w-d0066e-teardown-verification-closure
+  real_task_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+  base_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
+  rolling_report_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+  remote_hash_verbatim: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+  verification_result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
+  result_cursor: PASS_DOCS_ONLY
+  result_runtime: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+  timestamp_utc: 2026-07-18
+
 - task_ref: d0065w-wf47-wf48-runtime-pass-and-workflow-authoring-boundary
   real_task_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
   base_commit: cc550d227f2483207665362d2857c7d5b99bf2c6
@@ -112,13 +123,4 @@ Solo le **5 entry più recenti**, compatte. Cronologia precedente: Git history +
   result_cursor: PASS_DOCS_ONLY
   result_runtime: NOT_RUN_POLICY_UPDATE
   timestamp_utc: 2026-07-18
-
-- task_ref: d0054w-wf47-official-inventory-restore
-  real_task_commit: 3dab99f1d5a936c2fc57b928e8a83bd94e54e84a
-  base_commit: eea0b4a5ee2adc66c24dd5bd76d4be4d38bdbce1
-  rolling_report_commit: be0cd7685ff6362f9879f660061e3c05e549a594
-  result_cursor: PASS_DOCS_ONLY
-  result_runtime: NOT_RUN_CONFIGURATION_ONLY
-  result_ui: PASS_ATTESTATO_UTENTE_CONFIGURATION_ONLY
-  timestamp_utc: 2026-07-17
 ```

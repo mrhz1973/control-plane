@@ -71,7 +71,7 @@ runtime_actions_by_cursor: 0
 timestamp_utc: 2026-07-18
 ```
 
-**Nota:** snapshot D-0065-W independently repository-verified through `1eb2be6` (D-0066-E verify-only / D-0067-W backfill). Prior teardown gap was historical at D-0065 time; superseded by D-0067-W closure.
+**Nota:** snapshot D-0065-W independently repository-verified through `1eb2be6` (D-0066-E verify-only / D-0067-W backfill). Prior teardown gap was historical at D-0065 time; superseded by D-0067-W closure. Historical Gate E pending state at D-0065 time; superseded by D-0069-E / D-0070-W Gate E PASS/CLOSED.
 
 ```yaml
 task_ref: d0059w-wf48-parser-1-5-canonization
@@ -562,17 +562,17 @@ timestamp_utc: 2026-07-09
 
 ```yaml
 task_ref: d0067w-d0066e-teardown-verification-closure
-verified_task_commit: PENDING_SELF_REFERENCE
+verified_task_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
 verified_base_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
-verified_rolling_report_commit: PENDING_SELF_REFERENCE
-verified_through_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
-observed_head: 1eb2be6af07196506b6849c19ecd36509a3f810f
-observed_origin_main: 1eb2be6af07196506b6849c19ecd36509a3f810f
-observed_ls_remote_main: 1eb2be6af07196506b6849c19ecd36509a3f810f
+verified_rolling_report_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+verified_through_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+observed_head: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+observed_origin_main: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+observed_ls_remote_main: 38915b43c7c6dad26fed6274c6f4939222c1a7be
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
-result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_PENDING_INDEPENDENT_VERIFY
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
 result_runtime: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
 decision_id: D-0067-W
 related_decision_id: D-0066-E
@@ -585,14 +585,33 @@ cursor_independent_n8n_verification: false
 teardown_direct_n8n_observation_by_cursor: false
 runtime_evidence_source: direct_operator_attestation
 d0066_verify_only_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+d0068_verify_only_result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
 teardown_operator_inspection_completed: true
 teardown_inventory_cursor_documentally_verified: true
 teardown_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
 teardown_evidence_gap: CLOSED
+backfill_status: COMPLETED_CONTEXTUALLY_IN_D0070W
+previous_verified_through_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
+new_verified_through_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+backfill_basis: D-0068-V
+gate_e_transition:
+  previous_Gate_E_full: NOT_CLAIMED
+  new_Gate_E_full: PASS
+  previous_Gate_E_status: OPERATOR_DECISION_PENDING
+  new_Gate_E_status: CLOSED
+  selected_option: "1"
+  decision_provenance: direct_operator_message
+  operator_decision_timestamp_utc: "2026-07-18T19:53:25Z"
+  persistence_commit: PENDING_SELF_REFERENCE
+  related_decision_id: D-0069-E
+  persistence_task_id: D-0070-W
+  gate_e_closure_basis: cumulative_existing_evidence
+  new_runtime_executed_for_closure: false
+Gate_E_full: PASS
+Gate_E_status: CLOSED
 enable_wg48_handoff: false
 l5_activation_authorized: false
-gate_e_status: OPERATOR_DECISION_PENDING
-gate_e_full_pass: false
+L5_PASS: NOT_CLAIMED
 pm34_unblocked: false
 n8n_ready: false
 runtime_executed_by_cursor: false
@@ -600,23 +619,23 @@ runtime_actions_by_cursor: 0
 timestamp_utc: 2026-07-18
 ```
 
-**Nota:** D-0067-W docs-only persistence of D-0066-E teardown closure. `verified_through_commit` = `1eb2be6` (independently repository-verified D-0065 commit observed during D-0066 verify-only). This D-0067 artifact commit is **not** self-certified (`artifact_commit: PENDING_SELF_REFERENCE`). Runtime evidence remains operator-attested; Cursor did not independently observe n8n.
+**Nota:** D-0067-W docs persistence independently verified by D-0068-V through `38915b43`. Contextual rolling backfill completed in D-0070-W (`backfill_status: COMPLETED_CONTEXTUALLY_IN_D0070W`). `verified_through_commit` = `38915b43` (D-0067 commit) — **not** the new D-0070-W commit (`artifact_commit` / `gate_e_transition.persistence_commit` remain `PENDING_SELF_REFERENCE`). Gate E transition to PASS/CLOSED recorded from D-0069-E option `"1"`. Runtime evidence remains operator-attested; Cursor did not independently observe n8n. L5 remains unauthorized.
 
-**Backfill PENDING_SELF_REFERENCE:** D-0065-W snapshot → `1eb2be6`; D-0059-W snapshot → `9d4c46a`; D-0055…D-0058 snapshot → `c241d3b`; redaction-policy snapshot → `3560949`.
+**Backfill PENDING_SELF_REFERENCE:** D-0067-W snapshot → `38915b43` (via D-0068-V / D-0070-W); D-0065-W snapshot → `1eb2be6`; D-0059-W snapshot → `9d4c46a`; D-0055…D-0058 snapshot → `c241d3b`; redaction-policy snapshot → `3560949`.
 
 ---
 
-## Command outputs (verbatim — D-0066-E verify-only against 1eb2be6)
+## Command outputs (verbatim — D-0068-V verify-only against 38915b43)
 
 ```text
 git rev-parse HEAD
-1eb2be6af07196506b6849c19ecd36509a3f810f
+38915b43c7c6dad26fed6274c6f4939222c1a7be
 
 git rev-parse origin/main
-1eb2be6af07196506b6849c19ecd36509a3f810f
+38915b43c7c6dad26fed6274c6f4939222c1a7be
 
 git ls-remote origin refs/heads/main
-1eb2be6af07196506b6849c19ecd36509a3f810f	refs/heads/main
+38915b43c7c6dad26fed6274c6f4939222c1a7be	refs/heads/main
 
 git branch --show-current
 main
