@@ -1,10 +1,10 @@
 # PROJECT VISION — Foundation
 
-**Repository:** `mrhz1973/control-plane`  
-**Documento:** `docs/foundation/PROJECT_VISION.md`  
-**Versione:** 2.18 — 2026-07-12 (provenienza decisioni / anti-proxy advisor)
+**Repository:** `mrhz1973/control-plane`
+**Documento:** `docs/foundation/PROJECT_VISION.md`
+**Versione:** 2.18 — 2026-07-18 (redazione a cura operatore / policy materiali sensibili)
 **Versione precedente:** 2.17 — 2026-07-11 (sostituita)
-**Lingua:** Italiano  
+**Lingua:** Italiano
 **Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
 
 ---
@@ -492,9 +492,13 @@ Regola: non confondere finestre/repo. Prompt destinati a `CONTROL PLANE` non van
 ## 10. Invarianti permanenti
 
 - GitHub è fonte di verità.
-- Repo dichiaratamente non confidenziale (decisione utente 2026-07-02): segreti e identificatori possono comparire nei file committati. Controllo compensativo: rotazione totale delle credenziali a fine progetto secondo docs/ROTATION_CHECKLIST.md. Rischio accettato dall'utente a verbale.
-- Identificatori tailnet (IP CGNAT `100.x`, hostname `*.ts.net`) **tollerati** per decisione 2026-07-02 (repo pubblico consapevole): non-secret by policy; `tools/redaction-check.sh` li segnala come **WARN informativo non bloccante**. I veri segreti restano vietati e bloccanti.
-- Eccezione chat_id (gate esplicito 2026-05-31): il chat_id Telegram è AMMESSO negli asset di configurazione del repo (workflow JSON e CSV seed in data-tables/). Il token Telegram e tutti gli altri segreti restano vietati. La redazione del chat_id nel corpo dei messaggi Telegram (DECISION_PACKET_FORMAT §6) resta invariata.
+- **Repo dichiaratamente non confidenziale** (decisione utente 2026-07-02, confermata): segreti e identificatori possono comparire nei file committati. Rischio accettato dall'utente a verbale.
+- **Controllo compensativo:** rotazione totale delle credenziali a fine progetto secondo `docs/ROTATION_CHECKLIST.md`.
+- **Redazione a cura dell'operatore (2026-07-18):** la redazione di token, ID, credenziali, identificatori Telegram, `source_chat_id`, `callback_query_id`, `user_id`, `chat_id` e materiali analoghi è responsabilità dell'operatore **prima** di incollare materiale in chat o di autorizzare un commit. Caso per caso; non clausola-per-prompt.
+- **Prompt Cursor e session log:** non devono contenere clausole esplicite «no secrets» / «redazione obbligatoria». L'operatore redige; i documenti non ripetono prescrizioni di redazione nei log di sessione.
+- **Clausole «no secrets in Git» in runbook e rolling reports:** deprecate come **prescrizioni operative**. Restano come policy generale affidata alla responsabilità dell'operatore (questo §10), non come checklist da ripetere in ogni prompt o session log.
+- Identificatori tailnet (IP CGNAT `100.x`, hostname `*.ts.net`) **tollerati** per decisione 2026-07-02 (repo pubblico consapevole): non-secret by policy; tolleranza invariata.
+- Tolleranza / eccezione chat_id (gate esplicito 2026-05-31, invariata): il chat_id Telegram è ammesso negli asset di configurazione del repo (workflow JSON e CSV seed in `data-tables/`) secondo le decisioni precedenti; la redazione del chat_id nel corpo dei messaggi Telegram (DECISION_PACKET_FORMAT §6) resta invariata. Ogni altra redazione resta a cura dell'operatore come sopra.
 - Workflow `40` è produzione e non si modifica in silenzio.
 - Workflow `41` è backup off e non si cancella in silenzio.
 - PM-34 real worker resta bloccato finché non esiste una prova reale e un gate esplicito.
@@ -704,6 +708,8 @@ In una frase: **sto costruendo una fabbrica, non un singolo prodotto.** La fabbr
 | 2.14 | 2026-07-02 | §10: invariante segreti riformulato — nessun segreto in Git (token, chat_id, credenziali, OAuth, PAT, webhook secret, API key); **tailnet identifiers: tolerated / non-secret by policy decision 2026-07-02** (repo pubblico consapevole, WARN non bloccante); **true secrets remain forbidden and blocking**; `tools/redaction-check.sh` aggiornato in commit tools separato. Eccezione chat_id 2026-05-31 invariata. |
 | 2.15 | 2026-07-02 | §10: decisione serale 2026-07-02 — repo dichiaratamente non confidenziale; regole segreti rimosse dal canone; `tools/redaction-check.sh` rimosso in commit tools separato; controllo compensativo = rotazione totale credenziali a fine progetto (`docs/ROTATION_CHECKLIST.md`); rischio accettato dall'utente a verbale. Altri invarianti §10 invariati. |
 | 2.16 | 2026-07-10 | §11.3: `HANDOFF_TEMPLATE.md` scheletro obbligatorio; read-set nuova chat (FRONTIER → PROJECT_VISION → CURSOR_PROMPT_TEMPLATE → LAST_CURSOR_REPORT → LAST_HANDOFF_VERIFY → handoff); repo vivo a HEAD dichiarato; verifica hash via shell Claude o output verbatim Cursor §8.1. |
+| 2.17 | 2026-07-11 | Provenienza decisioni / regola anti-proxy advisor (§7.7 e correlati): scelta Decision Packet solo da messaggio diretto operatore. |
+| 2.18 | 2026-07-18 | §10: redazione spostata a responsabilità operatore; clausole «no secrets» / redazione obbligatoria deprecate nei prompt Cursor e session log; «no secrets in Git» deprecato come prescrizione operativa in runbook/rolling reports; rotazione credenziali a fine progetto resta controllo compensativo; tolleranze chat_id e tailnet invariate. PM-34 BLOCKED · `n8n_ready=false` invariati. |
 
 ---
 

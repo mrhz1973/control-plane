@@ -223,7 +223,7 @@ During the **first live manual gate** (47 → manual sanitized receipt → 48):
 | **`control_plane_state`** or production Data Table | No proof on production store yet |
 | **PM-34 unlock** | Full autonomous chain not gated |
 | **Mutation of workflow 40 / 41 / 42** | Production polling and MVP paths frozen |
-| **Secrets in Git** | Token, credential id/content, webhook URL, API key, OAuth, PAT, CoT, tokenized URLs |
+| **Esposizione credenziali nel repo** | Redazione a cura operatore (PROJECT_VISION §10 v2.18); rotazione a fine progetto come controllo compensativo. Non è più hard blocker a priori. |
 | **Activating wf49 for production** | Wh is test-only integration proof |
 
 ---

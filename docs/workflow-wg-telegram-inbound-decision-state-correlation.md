@@ -235,7 +235,7 @@ Wg now reads and writes the **shared store `control_plane_decisions_test`** (Dat
 
 **Outcomes (unchanged):** option+open → `closed`; note+open → `note_recorded` (status stays open); `unknown_decision_id` (Wg only acts on rows Wd opened); `duplicate_or_already_closed`; `already_closed_or_stale`; `malformed_response`.
 
-**Boundaries:** `active: false` · no Telegram · no schedule · no `control_plane_state` · no `data-tables/**` · no CSV seed · no table creation in repo · no PM-34 · no wf40/41/42 · no secrets.
+**Boundaries:** `active: false` · no Telegram · no schedule · no `control_plane_state` · no `data-tables/**` · no CSV seed · no table creation in repo · no PM-34 · no wf40/41/42. Redazione credenziali a cura operatore (PROJECT_VISION §10 v2.18); rotazione a fine progetto come controllo compensativo.
 
 ---
 

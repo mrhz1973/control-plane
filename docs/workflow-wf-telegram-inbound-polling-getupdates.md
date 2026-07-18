@@ -133,7 +133,7 @@ After **Wf live PASS** (manual workflow 47, one-shot `getUpdates`), this runbook
 | getUpdates | HTTP **200**, `body.ok=true` |
 | Test response | `dp:D-9998-T:1` |
 | Sanitized receipt | `inspect_status: accepted`, `decision_id: D-9998-T`, `selected_option: 1` |
-| Boundaries | No public webhook; no Telegram Trigger; no schedule; no PM-34; no wf40/41 mutation; no GitHub write by workflow; no secrets/raw chat_id/user_id in Git |
+| Boundaries | No public webhook; no Telegram Trigger; no schedule; no PM-34; no wf40/41 mutation; no GitHub write by workflow; redazione credenziali a cura operatore (PROJECT_VISION §10 v2.18) |
 
 Token was configured **only in n8n UI** (HTTP URL corrected there). n8n tunnel was closed after test.
 
@@ -307,7 +307,7 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 
 **Technical caution — getUpdates exclusive consumer:** Telegram `getUpdates` is an **exclusive** consumer path per bot. If a webhook is set, or another workflow/process polls the same token, scheduled polling can conflict or consume updates unpredictably. Resolve before Phase 2.
 
-**Hard constraints:** NO Telegram Trigger · NO public webhook · NO production Data Table · NO `control_plane_state` · NO **48** scheduled · NO **49** active · NO PM-34 · NO workflow 40/41/42 mutation · NO secrets in Git.
+**Hard constraints:** NO Telegram Trigger · NO public webhook · NO production Data Table · NO `control_plane_state` · NO **48** scheduled · NO **49** active · NO PM-34 · NO workflow 40/41/42 mutation. Redazione credenziali a cura operatore (PROJECT_VISION §10 v2.18); rotazione a fine progetto come controllo compensativo.
 
 ### Phase 2 schedule runtime — PASS ATTESTATO UTENTE (2026-06-01)
 
@@ -328,7 +328,7 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 - **Phase 2 runtime:** operator must set `enable_wg48_handoff=true` only for the test window and **manually wire/select** workflow **48 - Wg** on **Execute Workflow - Wg48 TEST ONLY (CONFIGURE_IN_N8N_UI)** (`CONFIGURE_48_WORKFLOW_REFERENCE_IN_N8N_UI` — **no hardcoded workflow id in Git**).
 - **Handoff payload:** only **accepted** sanitized receipts (`inspect_status: accepted`); blocked / no-parseable / duplicate paths do not call 48.
 - **wf47 vs wf48 contract:** **47/Wf** accepts the receipt, advances offset/dedupe, and persists **`wf47_polling_state_test`** only. **48/Wg** applies the choice and transitions the decision row from **open** to **closed** (`selected_option`, `closed_at`, `update_id`). With `enable_wg48_handoff=false`, a receipt `accepted` does **not** modify `control_plane_decisions_test` status.
-- **Boundaries:** NO Telegram Trigger · NO public webhook · NO production Data Table · NO `control_plane_state` · NO PM-34 · NO workflow 40/41/42 mutation · NO secrets in Git.
+- **Boundaries:** NO Telegram Trigger · NO public webhook · NO production Data Table · NO `control_plane_state` · NO PM-34 · NO workflow 40/41/42 mutation. Redazione credenziali a cura operatore (PROJECT_VISION §10 v2.18); rotazione a fine progetto come controllo compensativo.
 
 ### Controlled 47→48 handoff runtime — PASS ATTESTATO UTENTE (2026-06-01)
 
@@ -375,7 +375,7 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 | **45** open-on-send | `D-0044-T`; `telegram_send_ok=true`; `message_id=1205`; `fan_out_items_in=1` |
 | **47** attempt 1 | **blocked** — `allowed_chat_not_configured`; derivation OK (`open_decision_ids_count=1`) |
 | **47** attempt 2 | **blocked** — `no_parseable_decision_response`; HTTP 404 on getUpdates (sanitized); root cause = invalid endpoint, not store correlation |
-| Operator fix | getUpdates endpoint corrected in n8n UI (no secrets in Git) |
+| Operator fix | getUpdates endpoint corrected in n8n UI (redazione a cura operatore; §10 v2.18) |
 | **47** verification | **accepted** — `D-0044-T`, `selected_option=1`, `update_id=986228602`, `offset_after_placeholder=986228603` |
 | Polling state | `wf47_polling_state_test` updated (`last_update_id=986228603`, `last_handled_update_id=986228602`) |
 | Decision store | **D-0044-T remains open** — intentional; close is **48/Wg** scope, not tested |
@@ -388,13 +388,13 @@ Prior `staticData` path: **PARTIAL/BLOCKED** (section 7) — superseded for repe
 
 - Poll 1: accepted TEST ONLY decision.
 - Poll 2: did not re-accept same update (blocked, empty parse).
-- No secrets; workflow inactive/off.
+- Workflow inactive/off. Redazione credenziali a cura operatore (PROJECT_VISION §10 v2.18).
 
 ---
 
 ## 12. BLOCKED criteria
 
-- Real `chat_id` / token committed to Git.
+- Redazione credenziali a cura operatore (PROJECT_VISION §10 v2.18); rotazione a fine progetto come controllo compensativo.
 - Schedule activated without explicit gate.
 - Missing stale or duplicate guards.
 - PM-34, wf40/41, production Data Table, or GitHub touched.

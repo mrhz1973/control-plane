@@ -26,7 +26,7 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
   3. **`LAST_CURSOR_REPORT.md`** su GitHub
   4. Prompt **Cursor verify-only** (git read-only, zero edit)
   5. Shell manuale utente = **fallback finale**
-- **Policy materiali sensibili v2.15:** il repo è trattato come non-confidenziale secondo `PROJECT_VISION.md` §10; non stampare o introdurre token, API key, OAuth material, PAT, URL con token, credential material o runtime dump non previsto. Chat_id e identificatori tailnet seguono le eccezioni/tolleranze documentate in `PROJECT_VISION.md` §10. Controllo compensativo finale: rotazione credenziali secondo `docs/ROTATION_CHECKLIST.md`.
+- **Policy materiali sensibili v2.16:** repo non-confidenziale secondo `PROJECT_VISION.md` §10 v2.18. **Redazione a cura dell'operatore** (token, ID, credenziali, identificatori Telegram, ecc.) prima di incollare in chat o autorizzare commit. Nessuna clausola esplicita «no secrets» / «redazione obbligatoria» nei prompt Cursor o nei session log futuri. Controllo compensativo: rotazione credenziali a fine progetto (`docs/ROTATION_CHECKLIST.md`). Tolleranze chat_id e identificatori tailnet invariate (§10).
 
 ---
 
