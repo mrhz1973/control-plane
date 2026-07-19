@@ -33,6 +33,48 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: d0070w-d0069e-gate-e-closure
+verified_task_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+verified_base_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+verified_rolling_report_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+verified_through_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+observed_head: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+observed_origin_main: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+observed_ls_remote_main: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+branch: main
+workspace_status: clean
+artifact_commit: 218cb99b4a4a97429b44c2e5a9232497a0948450
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
+result_runtime: NOT_RUN_DECISION_PERSISTENCE
+decision_id: D-0070-W
+related_decision_id: D-0069-E
+selected_option: "1"
+decision_provenance: direct_operator_message
+verification_task: D-0071-V
+verification_type: documental_repository_verify_only
+actor_relation: intra_actor_self_verify
+independent_third_party_verification: false
+cursor_observed_n8n: false
+cursor_authenticated_screenshot_pixels: false
+runtime_executed: false
+Gate_E_full: PASS
+Gate_E_status: CLOSED
+gate_e_closure_basis: cumulative_existing_evidence
+L5_PASS: NOT_CLAIMED
+l5_activation_authorized: false
+pm34_unblocked: false
+n8n_ready: false
+enable_wg48_handoff: false
+backfill_status: COMPLETED_CONTEXTUALLY_IN_D0077W
+previous_verified_through_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+new_verified_through_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+backfill_basis: D-0071-V
+timestamp_utc: 2026-07-19
+```
+
+**Nota:** snapshot D-0070-W certified by D-0071-V through `cafd3e5`. Moved from Latest during D-0080-W. `artifact_commit` backfilled to `218cb99` (D-0077-W commit that wrote the previous Latest). Superseded as Latest by D-0077-W snapshot certified via D-0078-V.
+
+```yaml
 task_ref: d0067w-d0066e-teardown-verification-closure
 verified_task_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
 verified_base_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
@@ -622,24 +664,24 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: d0070w-d0069e-gate-e-closure
-verified_task_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
-verified_base_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
-verified_rolling_report_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
-verified_through_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
-observed_head: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
-observed_origin_main: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
-observed_ls_remote_main: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+task_ref: d0077w-d0074e-l5-bounded-pilot-persistence
+verified_task_commit: 218cb99b4a4a97429b44c2e5a9232497a0948450
+verified_base_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+verified_rolling_report_commit: 218cb99b4a4a97429b44c2e5a9232497a0948450
+verified_through_commit: 218cb99b4a4a97429b44c2e5a9232497a0948450
+observed_head: 218cb99b4a4a97429b44c2e5a9232497a0948450
+observed_origin_main: 218cb99b4a4a97429b44c2e5a9232497a0948450
+observed_ls_remote_main: 218cb99b4a4a97429b44c2e5a9232497a0948450
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
-result_runtime: NOT_RUN_DECISION_PERSISTENCE
-decision_id: D-0070-W
-related_decision_id: D-0069-E
+result_runtime: PASS_ATTESTATO_UTENTE_SCOPE_LIMITED_L5_BOUNDED_OPERATIONAL_PILOT
+decision_id: D-0077-W
+related_decision_id: D-0074-E
 selected_option: "1"
 decision_provenance: direct_operator_message
-verification_task: D-0071-V
+verification_task: D-0078-V
 verification_type: documental_repository_verify_only
 actor_relation: intra_actor_self_verify
 independent_third_party_verification: false
@@ -651,19 +693,22 @@ Gate_E_status: CLOSED
 gate_e_closure_basis: cumulative_existing_evidence
 L5_PASS: NOT_CLAIMED
 l5_activation_authorized: false
+l5_runtime_authorized: false
+l5_bounded_pilot_runtime_authorized_current: false
 pm34_unblocked: false
 n8n_ready: false
 enable_wg48_handoff: false
-backfill_status: COMPLETED_CONTEXTUALLY_IN_D0077W
-previous_verified_through_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
-new_verified_through_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
-backfill_basis: D-0071-V
+backfill_status: COMPLETED_CONTEXTUALLY_IN_D0080W
+previous_verified_through_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+new_verified_through_commit: 218cb99b4a4a97429b44c2e5a9232497a0948450
+backfill_basis: D-0078-V
+d0078v_f1_status: CLOSED_CONTEXTUALLY_IN_D0080W
 timestamp_utc: 2026-07-19
 ```
 
-**Nota:** Latest snapshot certifies **only** through `cafd3e5` (D-0070-W certified by D-0071-V). Contextual rolling backfill completed in D-0077-W (`backfill_status: COMPLETED_CONTEXTUALLY_IN_D0077W`; `38915b43` → `cafd3e5`). `artifact_commit: PENDING_SELF_REFERENCE` because this snapshot is written by D-0077-W — **do not** set it to `cafd3e5`. The new D-0077-W commit is **not** self-certified and must **not** appear as Latest verified before D-0078-V. D-0078-V is required to verify the new HEAD; if performed by Cursor on Cursor's own D-0077 commit, provenance is `intra_actor_self_verify` (not independent third-party).
+**Nota:** Latest snapshot certifies **only** through `218cb99` (D-0077-W certified by D-0078-V). Contextual rolling backfill completed in D-0080-W (`backfill_status: COMPLETED_CONTEXTUALLY_IN_D0080W`; `cafd3e5` → `218cb99`). `artifact_commit: PENDING_SELF_REFERENCE` because this snapshot is written by D-0080-W. The new D-0080-W commit is **not** self-certified and must **not** appear as Latest verified before its verify-only. If that verify-only is performed by Cursor on Cursor's own D-0080 commit, provenance is `intra_actor_self_verify` (not independent third-party).
 
-**Backfill PENDING_SELF_REFERENCE:** D-0070-W snapshot → `cafd3e5` (via D-0071-V / D-0077-W); D-0067-W snapshot `artifact_commit`/`persistence_commit` → `cafd3e5`; D-0065-W → `1eb2be6`; D-0059-W → `9d4c46a`; D-0055…D-0058 → `c241d3b`.
+**Backfill PENDING_SELF_REFERENCE:** D-0077-W snapshot → `218cb99` (via D-0078-V / D-0080-W); D-0070-W `artifact_commit` → `218cb99`; D-0067-W → `cafd3e5`; D-0065-W → `1eb2be6`.
 
 ---
 
