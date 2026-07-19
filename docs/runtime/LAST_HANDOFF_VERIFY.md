@@ -33,6 +33,67 @@ Fonte canonica regole: `docs/foundation/PROJECT_VISION.md` §8.1 (Handoff / post
 ## Previous snapshot (backfilled)
 
 ```yaml
+task_ref: d0067w-d0066e-teardown-verification-closure
+verified_task_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+verified_base_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
+verified_rolling_report_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+verified_through_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+observed_head: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+observed_origin_main: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+observed_ls_remote_main: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+branch: main
+workspace_status: clean
+artifact_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
+result_runtime: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+decision_id: D-0067-W
+related_decision_id: D-0066-E
+selected_option: "3"
+decision_provenance: direct_operator_message
+mandate: operator_runtime_inventory_plus_cursor_verify_only
+cursor_authored_or_modified_workflow: false
+workflows_path_touched: false
+cursor_independent_n8n_verification: false
+teardown_direct_n8n_observation_by_cursor: false
+runtime_evidence_source: direct_operator_attestation
+d0066_verify_only_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+d0068_verify_only_result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
+teardown_operator_inspection_completed: true
+teardown_inventory_cursor_documentally_verified: true
+teardown_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
+teardown_evidence_gap: CLOSED
+backfill_status: COMPLETED_CONTEXTUALLY_IN_D0070W
+previous_verified_through_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
+new_verified_through_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+backfill_basis: D-0068-V
+gate_e_transition:
+  previous_Gate_E_full: NOT_CLAIMED
+  new_Gate_E_full: PASS
+  previous_Gate_E_status: OPERATOR_DECISION_PENDING
+  new_Gate_E_status: CLOSED
+  selected_option: "1"
+  decision_provenance: direct_operator_message
+  operator_decision_timestamp_utc: "2026-07-18T19:53:25Z"
+  persistence_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+  related_decision_id: D-0069-E
+  persistence_task_id: D-0070-W
+  gate_e_closure_basis: cumulative_existing_evidence
+  new_runtime_executed_for_closure: false
+Gate_E_full: PASS
+Gate_E_status: CLOSED
+enable_wg48_handoff: false
+l5_activation_authorized: false
+L5_PASS: NOT_CLAIMED
+pm34_unblocked: false
+n8n_ready: false
+runtime_executed_by_cursor: false
+runtime_actions_by_cursor: 0
+timestamp_utc: 2026-07-18
+```
+
+**Nota:** snapshot D-0067-W (verified through `38915b43` by D-0068-V). Moved from Latest during D-0077-W. Contextual backfill of `artifact_commit` / `gate_e_transition.persistence_commit` → `cafd3e5` (D-0070-W commit). `verified_task_commit` remains `38915b43` (D-0067 commit). Superseded as Latest by D-0070-W snapshot certified via D-0071-V.
+
+```yaml
 task_ref: d0065w-wf47-wf48-runtime-pass-and-workflow-authoring-boundary
 verified_task_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
 verified_base_commit: cc550d227f2483207665362d2857c7d5b99bf2c6
@@ -561,67 +622,48 @@ timestamp_utc: 2026-07-09
 ## Latest verified snapshot
 
 ```yaml
-task_ref: d0067w-d0066e-teardown-verification-closure
-verified_task_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
-verified_base_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
-verified_rolling_report_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
-verified_through_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
-observed_head: 38915b43c7c6dad26fed6274c6f4939222c1a7be
-observed_origin_main: 38915b43c7c6dad26fed6274c6f4939222c1a7be
-observed_ls_remote_main: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+task_ref: d0070w-d0069e-gate-e-closure
+verified_task_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+verified_base_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+verified_rolling_report_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+verified_through_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+observed_head: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+observed_origin_main: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+observed_ls_remote_main: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
 branch: main
 workspace_status: clean
 artifact_commit: PENDING_SELF_REFERENCE
 result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
-result_runtime: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
-decision_id: D-0067-W
-related_decision_id: D-0066-E
-selected_option: "3"
+result_runtime: NOT_RUN_DECISION_PERSISTENCE
+decision_id: D-0070-W
+related_decision_id: D-0069-E
+selected_option: "1"
 decision_provenance: direct_operator_message
-mandate: operator_runtime_inventory_plus_cursor_verify_only
-cursor_authored_or_modified_workflow: false
-workflows_path_touched: false
-cursor_independent_n8n_verification: false
-teardown_direct_n8n_observation_by_cursor: false
-runtime_evidence_source: direct_operator_attestation
-d0066_verify_only_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
-d0068_verify_only_result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
-teardown_operator_inspection_completed: true
-teardown_inventory_cursor_documentally_verified: true
-teardown_result: PASS_REMOTE_DOCUMENTAL_TEARDOWN_VERIFICATION
-teardown_evidence_gap: CLOSED
-backfill_status: COMPLETED_CONTEXTUALLY_IN_D0070W
-previous_verified_through_commit: 1eb2be6af07196506b6849c19ecd36509a3f810f
-new_verified_through_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
-backfill_basis: D-0068-V
-gate_e_transition:
-  previous_Gate_E_full: NOT_CLAIMED
-  new_Gate_E_full: PASS
-  previous_Gate_E_status: OPERATOR_DECISION_PENDING
-  new_Gate_E_status: CLOSED
-  selected_option: "1"
-  decision_provenance: direct_operator_message
-  operator_decision_timestamp_utc: "2026-07-18T19:53:25Z"
-  persistence_commit: PENDING_SELF_REFERENCE
-  related_decision_id: D-0069-E
-  persistence_task_id: D-0070-W
-  gate_e_closure_basis: cumulative_existing_evidence
-  new_runtime_executed_for_closure: false
+verification_task: D-0071-V
+verification_type: documental_repository_verify_only
+actor_relation: intra_actor_self_verify
+independent_third_party_verification: false
+cursor_observed_n8n: false
+cursor_authenticated_screenshot_pixels: false
+runtime_executed: false
 Gate_E_full: PASS
 Gate_E_status: CLOSED
-enable_wg48_handoff: false
-l5_activation_authorized: false
+gate_e_closure_basis: cumulative_existing_evidence
 L5_PASS: NOT_CLAIMED
+l5_activation_authorized: false
 pm34_unblocked: false
 n8n_ready: false
-runtime_executed_by_cursor: false
-runtime_actions_by_cursor: 0
-timestamp_utc: 2026-07-18
+enable_wg48_handoff: false
+backfill_status: COMPLETED_CONTEXTUALLY_IN_D0077W
+previous_verified_through_commit: 38915b43c7c6dad26fed6274c6f4939222c1a7be
+new_verified_through_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
+backfill_basis: D-0071-V
+timestamp_utc: 2026-07-19
 ```
 
-**Nota:** D-0067-W docs persistence independently verified by D-0068-V through `38915b43`. Contextual rolling backfill completed in D-0070-W (`backfill_status: COMPLETED_CONTEXTUALLY_IN_D0070W`). `verified_through_commit` = `38915b43` (D-0067 commit) — **not** the new D-0070-W commit (`artifact_commit` / `gate_e_transition.persistence_commit` remain `PENDING_SELF_REFERENCE`). Gate E transition to PASS/CLOSED recorded from D-0069-E option `"1"`. Runtime evidence remains operator-attested; Cursor did not independently observe n8n. L5 remains unauthorized.
+**Nota:** Latest snapshot certifies **only** through `cafd3e5` (D-0070-W certified by D-0071-V). Contextual rolling backfill completed in D-0077-W (`backfill_status: COMPLETED_CONTEXTUALLY_IN_D0077W`; `38915b43` → `cafd3e5`). `artifact_commit: PENDING_SELF_REFERENCE` because this snapshot is written by D-0077-W — **do not** set it to `cafd3e5`. The new D-0077-W commit is **not** self-certified and must **not** appear as Latest verified before D-0078-V. D-0078-V is required to verify the new HEAD; if performed by Cursor on Cursor's own D-0077 commit, provenance is `intra_actor_self_verify` (not independent third-party).
 
-**Backfill PENDING_SELF_REFERENCE:** D-0067-W snapshot → `38915b43` (via D-0068-V / D-0070-W); D-0065-W snapshot → `1eb2be6`; D-0059-W snapshot → `9d4c46a`; D-0055…D-0058 snapshot → `c241d3b`; redaction-policy snapshot → `3560949`.
+**Backfill PENDING_SELF_REFERENCE:** D-0070-W snapshot → `cafd3e5` (via D-0071-V / D-0077-W); D-0067-W snapshot `artifact_commit`/`persistence_commit` → `cafd3e5`; D-0065-W → `1eb2be6`; D-0059-W → `9d4c46a`; D-0055…D-0058 → `c241d3b`.
 
 ---
 
