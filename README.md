@@ -7,10 +7,15 @@ Repository di **documentazione** del control-plane, **export n8n redatti** e **r
 | Doc | Ruolo |
 |-----|--------|
 | [docs/runtime/CURRENT_FRONTIER.md](docs/runtime/CURRENT_FRONTIER.md) | Stato runtime autorevole — **LEGGI PRIMA DI PROPORRE** |
-| [docs/foundation/PROJECT_VISION.md](docs/foundation/PROJECT_VISION.md) | Foundation e invarianti canoniche |
-| [docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md](docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md) | **Target accettato 2026-08-25**: GPT Web backlog → planner pool → Cursor loop; planning/docs-only |
+| [docs/foundation/PROJECT_VISION.md](docs/foundation/PROJECT_VISION.md) | Foundation v3 e invarianti canoniche |
+| [docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md](docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md) | Target accettato 2026-08-25: GPT Web backlog → planner pool → Cursor loop; planning/docs-only |
+| [docs/contracts/backlog-item-v1.md](docs/contracts/backlog-item-v1.md) | Contratto strategico GPT Web → planner |
+| [docs/contracts/planner-routing-policy-v1.md](docs/contracts/planner-routing-policy-v1.md) | Selezione planner con preference + availability/quota + fallback policy |
+| [docs/contracts/execution-packet-v1.md](docs/contracts/execution-packet-v1.md) | Contratto planner → Cursor |
+| [docs/contracts/execution-checkpoint-v1.md](docs/contracts/execution-checkpoint-v1.md) | Rollover/resume persistente delle sessioni Cursor |
+| [docs/foundation/CURSOR_PROMPT_TEMPLATE.md](docs/foundation/CURSOR_PROMPT_TEMPLATE.md) | Contratto dell'esecuzione Cursor e report finale |
 | [docs/runtime/AUTOMATION_ACTIVATION_PLAN.md](docs/runtime/AUTOMATION_ACTIVATION_PLAN.md) | Scala di attivazione, gate A–F |
-| [docs/advisors/GLM_ADVISOR_METHOD.md](docs/advisors/GLM_ADVISOR_METHOD.md) | metodo storico/standing per GLM Advisor; il nuovo target multi-planner richiede migrazione gated |
+| [docs/advisors/GLM_ADVISOR_METHOD.md](docs/advisors/GLM_ADVISOR_METHOD.md) | metodo storico/standing per GLM Advisor; la v3 estende GLM a planner/executor solo dopo verification dedicata |
 
 Lo stato runtime corrente vive **SOLO** nel frontier. Il nuovo operating model è una **direzione architetturale accettata**, non un'autorizzazione runtime: PM-34, L5, schedule permanenti e workflow produzione restano invariati finché non esiste un gate dedicato.
 
@@ -30,12 +35,11 @@ Dettagli e gestione delle finestre di contesto: [MULTI_PLANNER_CURSOR_LOOP_OPERA
 
 ## Invarianti stabili
 
-- **Repo non-confidenziale** (`PROJECT_VISION.md` §10, v2.15): controllo compensativo = rotazione totale a fine progetto — [`docs/ROTATION_CHECKLIST.md`](docs/ROTATION_CHECKLIST.md); `tools/redaction-check.sh` **rimosso**
+- **Repo non-confidenziale** (`PROJECT_VISION.md` §8.3): controllo compensativo = rotazione totale a fine progetto — [`docs/ROTATION_CHECKLIST.md`](docs/ROTATION_CHECKLIST.md)
 - Workflow produzione mai mutati in silenzio
-- GPT Web/GPT-B resta autore autorevole degli artefatti workflow n8n finché la foundation non viene cambiata con gate esplicito
+- GPT Web/GPT-B resta autore autorevole degli artefatti workflow n8n
 - Attivazioni solo via Decision Packet
-- **PM-34 BLOCKED** · **`n8n_ready=false`**
-- **L5_PASS NOT_CLAIMED** · nessun permanent loop/schedule autorizzato
+- La v3 **non** sblocca PM-34, L5, permanent loop/schedule o nuovi runtime; valori correnti nel `CURRENT_FRONTIER`
 - GitHub, non la memoria di una chat, resta la memoria persistente del progetto
 
 ## Context / handoff principle
