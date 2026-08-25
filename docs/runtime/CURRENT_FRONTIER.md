@@ -8,17 +8,18 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `WIKI-LLM-LEAN-CONSOLIDATION` |
 | **ACTIVE WORK** | GitHub issue **#10 — Wiki-LLM lean consolidation — reduce stale/duplicate repository surface** |
-| **BLOCCO ATTIVO** | `L3A5-FINAL-DELETE-GATE-VERIFICATION` |
+| **BLOCCO ATTIVO** | `L3A6-IMMUTABLE-LINK-REWRITE` |
 | **STATO BLOCCO** | IN_PROGRESS |
-| **GATE CORRENTE** | `PR14_FINAL_DELETE_GATE_VERIFY_REQUIRED` |
-| **NEXT** | re-census read-only su PR #14 per i 5 candidati preview `DELETE_READY`; verificare evidence/current-claim safety e recovery anchor; **nessuna cancellazione fisica o branch deletion** |
+| **GATE CORRENTE** | `L3A6_SURVIVING_TREE_LINK_REWRITE_PR` |
+| **NEXT** | risolvere material surviving-tree links dei 5 archive candidates e preparare rewrite plan completo per eventuali history-only refs; **nessuna physical deletion** |
 | **NEXT WORKSTREAM** | issue **#8 — Architecture v3 evidence track** dopo chiusura issue #10 |
 | **BOOTSTRAP 9.5 VERIFY** | PASS — clone locale reale; `CORE_BOOT_SUFFICIENT=true`; preload foundation/history/report/handoff/PM/session = false; zero write/runtime |
 | **L2 CENSUS** | PASS — reference/consumer/rebuild census completo; pre-L3A `DELETE_CANDIDATE=[]` |
 | **L3A / PR #12** | MERGED — squash `fd88d5f176607bddf746433cfae332c700498129`; canonical extraction PASS; 0 physical deletions/runtime assets |
 | **POST-L3A RECENSUS** | PASS — owner migration PASS; compatibility pointers keep-value medium/medium-high |
-| **L3A.5 / PR #14** | OPEN DRAFT — HEAD `2f8053ce30c41fa46fc2942f5df2e9b6b44dc083`; 9 docs/policy paths; 0 deletes/runtime assets; `ACTIVE_LOOKING_STALE_COLLISIONS=0`; canonical links resolved |
-| **DELETE-GATE PREVIEW** | 5 candidates: `MVP_STATUS`, `MVP_CRITERIA`, `POST_MVP_BACKLOG`, `PLAN_OUTPUT_INGESTION`, `V4_POLLING_LATENCY`; preview only, not deletion authorization |
+| **L3A.5 / PR #14** | MERGED — squash `25319715e35d4f1774b3b8a936d114feed9e1bb8` |
+| **FINAL DELETE-GATE VERIFY** | PASS — current/runtime/rebuild/live-gate/current-claim checks verdi; immutable recovery anchor verificato per tutti i 5; `DELETE_READY_FINAL=[]` soltanto per surviving-tree material link risk |
+| **5 ARCHIVE CANDIDATES** | `MVP_STATUS` · `MVP_CRITERIA` · `POST_MVP_BACKLOG` · `PLAN_OUTPUT_INGESTION` · `V4_POLLING_LATENCY` |
 | **LAST VERIFIED THROUGH** | `91847807bbc4d7b7f63d8e3b3fc48fdfc72f4699` — D-0081-V PASS, `intra_actor_self_verify` |
 | **PR #11** | MERGED — squash `feb755913712807ecbfe5aac5df662409e234c8e`; docs-only wiki-LLM lean foundation |
 | **OPENCLAW v3 RUNTIME** | NOT_VERIFIED / NOT_ACTIVATED |
@@ -36,9 +37,9 @@
 ## Boundaries operative correnti
 
 - Foundation v3.1 wiki-LLM lean è canonica su `main`.
-- L2, L3A e re-census post-L3A sono PASS.
-- L3A.5 ha eliminato le collisioni active-looking nel preview, ma L3B resta chiuso fino al final delete-gate verify per path specifici.
-- Nessuna cancellazione fisica, branch deletion o runtime mutation è autorizzata dal preview `DELETE_READY`.
+- L2, L3A, L3A.5 e final delete-gate verify sono PASS.
+- L3B physical deletion resta **NON AUTORIZZATA** fino a nuovo re-census post-L3A.6.
+- Nessuna cancellazione fisica, branch deletion o runtime mutation è autorizzata da L3A.6.
 - Nessun provider/runtime wiring v3 è ancora promosso a PASS.
 - Nessuna modifica credenziali/OAuth/billing senza gate esplicito.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
@@ -47,7 +48,6 @@
 ## Puntatori
 
 - Active work / cleanup backlog: GitHub issue **#10**
-- L3A.5 review: GitHub PR **#14**
 - Foundation/invarianti: `docs/foundation/PROJECT_VISION.md`
 - Lean method: `docs/foundation/WIKI_LLM_LEAN_METHOD.md`
 - Audit: `docs/audits/WIKI_LLM_LEAN_REDUCTION_AUDIT.md`
