@@ -1,196 +1,103 @@
 # HANDOFF TEMPLATE — control-plane
 
-**Repository:** `mrhz1973/control-plane`  
-**Documento:** `docs/foundation/HANDOFF_TEMPLATE.md`  
-**Versione:** **3.0 — 2026-08-25**  
-**Lingua:** Italiano  
-**Ruolo:** scheletro canonico per rollover GPT Web / nuova chat conforme a `PROJECT_VISION.md` v3 §1 e §7.  
-**Runtime autorizzato da questo documento:** **NO**
+**Versione:** **4.0 — wiki-LLM lean**
+**Ruolo:** seed/pointer di rollover, **non LIVE STATE**.
+**Runtime autorizzato:** **NO**.
 
----
+## Principio
 
-## 0. Principio
+La nuova chat deve ricostruire lo stato dal repo vivo con il CORE BOOT del `README.md`.
 
-La memoria del progetto vive su **GitHub**, non nella context window.
+L'handoff **non deve duplicare**:
 
-Un handoff deve permettere alla nuova chat di continuare senza chiedere:
+- CURRENT_FRONTIER;
+- PROJECT_VISION;
+- issue/backlog body;
+- LAST_CURSOR_REPORT;
+- cronologia PM/session;
+- runtime state già persistito.
 
-- a che punto eravamo;
-- quale repo/branch/HEAD usare;
-- quali gate sono aperti;
-- quali invarianti sono ancora vere;
-- qual è il prossimo passo concreto.
+Se GitHub è avanzato dopo l'handoff, GitHub prevale.
 
-`handoff ora` è kill switch manuale. I **20 prompt utente** restano hard ceiling storico, non obiettivo da raggiungere; il rollover può e deve avvenire prima se il contesto degrada.
+## Seed ordinario — formato preferito
 
----
+Nella maggior parte dei rollover basta questo blocco:
 
-## 1. Come usare questo file
+```text
+BOOTSTRAP control-plane.
+Repo: mrhz1973/control-plane
+Esegui esclusivamente CORE BOOT dal README AI-BOOT e segui AUTO-VIA.
+```
 
-1. Creare `docs/handoffs/YYYY-MM-DD-HHMM-<topic>-handoff-<ruolo>.md`.
-2. Compilare tutte le sezioni applicabili; usare `N/A` o `UNKNOWN` invece di inventare dati.
-3. Persistire l'handoff su GitHub prima di chiudere la chat quando possibile.
-4. La nuova chat legge **repo vivo** e verifica lo stato corrente; non usa la narrativa della vecchia chat come source of truth.
-5. Un handoff/checkpoint **non è un PASS** e non auto-certifica il proprio commit (`PROJECT_VISION.md` §11.3).
+Non serve creare un nuovo file handoff se **tutto** lo stato necessario è già nel frontier + ACTIVE WORK + evidence puntata.
 
----
+## Quando creare un handoff file
 
-## 2. Titolo / identità
+Creare `docs/handoffs/YYYY-MM-DD-HHMM-<topic>-handoff-<ruolo>.md` solo se esiste almeno uno di questi casi:
 
-**Titolo:** `<TOPIC_BREVE>`  
-**Ruolo produttore:** `<GPT Web | altro>`  
-**Path canonico:** `docs/handoffs/YYYY-MM-DD-HHMM-<topic>-handoff-<ruolo>.md`  
-**Issue/Backlog correlato:** `<#issue | N/A>`
+1. informazione necessaria non ancora persistita altrove;
+2. transizione tra fasi che richiede un checkpoint narrativo una tantum;
+3. decisione recente ancora in attesa di normalizzazione nel frontier/backlog;
+4. stato locale importante che non appartiene al LIVE STATE globale;
+5. rischio concreto che la nuova chat non possa determinare il prossimo passo dal CORE BOOT.
 
----
+## Template handoff esteso — solo se necessario
 
-## 3. Entry point / read-set nuova chat
+```markdown
+# Handoff — <topic>
 
-Ordine minimo canonico v3:
+Repository: mrhz1973/control-plane
+Producer: <GPT Web | altro>
+Reason: <context rollover | phase transition | other>
+Active work: <issue/path/ref>
 
-1. `docs/runtime/CURRENT_FRONTIER.md`
-2. `docs/foundation/PROJECT_VISION.md`
-3. `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`
-4. contratto specifico del lavoro, se esiste:
-   - `docs/contracts/backlog-item-v1.md`
-   - `docs/contracts/planner-routing-policy-v1.md`
-   - `docs/contracts/execution-packet-v1.md`
-   - `docs/contracts/execution-checkpoint-v1.md`
-5. `docs/foundation/CURSOR_PROMPT_TEMPLATE.md` quando l'esecutore è Cursor
-6. `docs/runtime/LAST_CURSOR_REPORT.md` e `docs/runtime/LAST_HANDOFF_VERIFY.md` quando pertinenti
-7. handoff corrente
-8. issue/backlog corrente
-9. documenti storici solo se necessari
+## Delta non ancora ricavabile dal repo vivo
+- <solo fatti realmente mancanti>
 
-`CURRENT_FRONTIER.md` vince sullo stato runtime; `PROJECT_VISION.md` vince sull'architettura/foundation.
+## Stato locale non globale
+- macchina/workspace: <...>
+- branch/head noto: <...>
+- clean/stale/unknown: <...>
 
----
+## Gate reale
+- <gate oppure NONE>
 
-## 4. Contesto / rollover
+## next_action
+<un solo passo concreto>
 
-**Motivo handoff:** `<handoff ora | hard ceiling | context degradation | cambio fase | altro>`  
-**Contatore sessione corrente:** `<N/20 | UNKNOWN>`  
-**Nuova chat:** contatore `0`.
+## Bootstrap nuova chat
+BOOTSTRAP control-plane. Esegui esclusivamente CORE BOOT dal README AI-BOOT e segui AUTO-VIA.
+```
 
----
+## Regole
 
-## 5. Git state
+- usare `UNKNOWN` invece di inventare;
+- non auto-certificare l'HEAD/commit che contiene l'handoff;
+- un handoff non è PASS;
+- non copiare interi documenti canonici dentro l'handoff;
+- non usare il numero di prompt come ragione per gonfiare l'handoff: i 20 prompt restano hard ceiling, ma il seed deve restare piccolo;
+- handoff vecchi = history/checkpoint, non stato corrente.
 
-**Repository:** `mrhz1973/control-plane`  
-**Branch target:** `main`  
-**Remote HEAD osservato prima della persistenza handoff:** `<sha | UNKNOWN>`  
-**Provenienza osservazione:** `<git ls-remote/report Cursor verbatim/GitHub connector — navigation only>`  
-**Ultimo commit documentally verified-through:** `<sha | UNKNOWN>`  
-**Verification evidence:** `<task/session ref | N/A>`  
-**Local workspace known state:** `<clean/synced/stale/UNKNOWN>`
+## Relazione con Execution Checkpoint
 
-### Regola di provenienza
+Per task Cursor incompleti, il vero resume operativo è:
 
-- `git ls-remote` / report Cursor verbatim conforme a `PROJECT_VISION.md` §11 può supportare un PASS remoto.
-- GitHub connector/API può indicare lo stato corrente per navigazione/orchestrazione, ma **non sostituisce** il PASS terminale quando il task lo richiede.
-- L'handoff stesso non auto-certifica il commit che lo contiene; usare `artifact_commit: PENDING_SELF_REFERENCE` se necessario.
+```text
+Execution Packet
++ latest Execution Checkpoint
++ live Git
+```
 
----
+Non creare un secondo handoff narrativo che duplichi il checkpoint.
 
-## 6. Stato strategico / architettura corrente
+## Relazione con `agg`
 
-`<riassunto breve della foundation e della fase attuale>`
+`agg` è refresh dopo un pass Cursor e normalmente **non crea handoff**:
 
----
+```text
+remote HEAD → CURRENT_FRONTIER → ACTIVE WORK → LAST_CURSOR_REPORT se necessario → AUTO-VIA
+```
 
-## 7. Stato runtime autorevole
+## Manutenzione
 
-Riportare solo una sintesi coerente con `CURRENT_FRONTIER.md`, per esempio:
-
-- workflow rilevanti;
-- PM-34;
-- `n8n_ready`;
-- L5 / schedule / loop;
-- autorizzazioni runtime;
-- provider/runtime v3 verificati o ancora target.
-
-Se lo stato cambia dopo la creazione dell'handoff, la nuova chat deve fidarsi di `CURRENT_FRONTIER.md`, non di questo snapshot.
-
----
-
-## 8. Ultimo risultato utile
-
-`<ultimo arco chiuso con evidenza e significato>`
-
----
-
-## 9. Decisioni consolidate / non consolidate
-
-### Consolidate
-
-- `<decisione>`
-
-### Non consolidate / ancora da verificare
-
-- `<decisione/capacità>`
-
----
-
-## 10. Gate aperti reali
-
-- `<gate 1>`
-- `<gate 2>`
-
-Nessuna pausa senza gate reale.
-
----
-
-## 11. Prossimo passo tattico
-
-`<una azione concreta e bounded>`
-
-Se è necessario un sync locale, metterlo prima di qualsiasi smoke/runtime test.
-
----
-
-## 12. Artefatti / issue da leggere
-
-| Need | Path / ref | Nota |
-|---|---|---|
-| Stato | `docs/runtime/CURRENT_FRONTIER.md` | autorevole runtime |
-| Foundation | `docs/foundation/PROJECT_VISION.md` | entry point canonico |
-| Operating model | `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md` | architettura v3 |
-| Cursor | `docs/foundation/CURSOR_PROMPT_TEMPLATE.md` | execution contract |
-| Git evidence | `docs/runtime/LAST_CURSOR_REPORT.md` / `LAST_HANDOFF_VERIFY.md` | storico/rolling; può essere stale |
-| Backlog | `<issue/ref>` | lavoro aperto |
-| Handoff | `<questo path>` | snapshot rollover |
-
-Aggiungere contratti/packet/checkpoint pertinenti al task.
-
----
-
-## 13. Invarianti v3 — checklist minima
-
-- GPT Web = strategic orchestrator + backlog owner.
-- GitHub = source of truth.
-- n8n = workflow/policy/gate, non planner LLM.
-- OpenClaw = provider/auth/quota broker target; capacità runtime solo quando verificate.
-- Planner pool = Qwen 3.8 37B / GLM 5.3 / Codex OAuth secondo routing policy/evidence.
-- GLM può essere Advisor / Planner / Cursor Executor **solo nel mode esplicito e verificato**.
-- Cursor = execution harness; loop sempre task-bounded.
-- Bugbot = reviewer, non router; cloud Autofix non default.
-- Telegram = human gate.
-- GPT Web resta autore autorevole dei workflow n8n; Cursor non li ridisegna autonomamente.
-- Nessun permanent schedule/loop, PM-34 unlock, L5 activation o runtime sensibile senza gate esplicito.
-- Stato concreto di PM-34/L5/workflow/`n8n_ready` si legge sempre da `CURRENT_FRONTIER.md`.
-- Nuove sessioni ripartono da GitHub + handoff/packet/checkpoint, non dalla cronologia chat.
-
----
-
-## 14. Starter nuova chat
-
-Usare un blocco breve che dica alla nuova chat di:
-
-1. leggere il read-set §3 dal repo vivo;
-2. riferire HEAD/stato/gate correnti senza ricostruzione narrativa;
-3. leggere l'issue/backlog indicata;
-4. eseguire direttamente il `next_action` dell'handoff se non emerge un gate più nuovo dal repo.
-
----
-
-**Fine template.**
+Aggiornare questo template solo se cambia il protocollo di rollover. Stato/gate/NEXT non devono mai essere persistiti qui.

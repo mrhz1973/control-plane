@@ -1,70 +1,209 @@
 # control-plane
 
-Repository di **documentazione** del control-plane, **export n8n redatti** e **runbook di rebuild**. Nessun codice runtime applicativo. Foundation del team AI con **GPT Web** come orchestratore strategico, **GitHub/n8n** come control-plane persistente e **Cursor** come execution harness.
+Repository del control-plane AI-assisted. **GitHub è la memoria persistente; la chat non è lo stato del progetto.**
 
-## START HERE
+<!-- AI-BOOT: START -->
+## AI BOOT — control-plane
+
+**Ruolo:** bootloader minimale per GPT Web / nuove sessioni.
+**Metodo:** wiki-LLM lean + AUTO-VIA.
+**Questo blocco governa il bootstrap.** Foundation, evidence e storico si leggono solo on demand.
+
+### Autorità remota
+
+Autorità finale sulla HEAD quando tecnicamente disponibile:
+
+```bash
+git ls-remote origin refs/heads/main
+```
+
+Se `ls-remote` non è disponibile nel runtime dell'agente, usare GitHub/API come fallback dichiarato. Non inventare la HEAD e non dichiarare il fallback equivalente a una verifica terminale quando un PASS remoto la richiede.
+
+### CORE BOOT — obbligatorio e piccolo
+
+Eseguire **solo**:
+
+1. verificare `origin/main` con `git ls-remote origin refs/heads/main` oppure fallback GitHub dichiarato;
+2. leggere **solo** questo blocco `<!-- AI-BOOT: START --> … <!-- AI-BOOT: END -->` del `README.md`;
+3. leggere `docs/runtime/CURRENT_FRONTIER.md` completo — deve restare piccolo;
+4. leggere il solo **ACTIVE WORK pointer** indicato dal frontier:
+   - issue GitHub → issue corrente;
+   - Backlog Item / Execution Packet / Checkpoint → solo il path esplicitamente indicato;
+   - `NONE/N/A` → step 4 = N/A.
+
+Poi il CORE BOOT è completo. Riportare soltanto:
+
+- `origin/main` osservato + provenienza;
+- workstream/blocco corrente;
+- gate corrente;
+- `NEXT`;
+- eventuale conflitto reale tra fonti.
+
+### Payload vietati nel CORE BOOT
+
+Non precaricare:
+
+- `PROJECT_VISION.md` completo;
+- `MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`;
+- contratti non puntati dal frontier;
+- `CURSOR_PROMPT_TEMPLATE.md`;
+- `HANDOFF_TEMPLATE.md` o vecchi handoff;
+- `LAST_CURSOR_REPORT.md` / `LAST_HANDOFF_VERIFY.md`;
+- `OPERATING_MEMORY.md`;
+- session log;
+- PM storici / runtime-packets storici;
+- workflow export;
+- directory listing o ricerche esplorative dell'intero repo;
+- documenti storici salvo dipendenza concreta.
+
+Principio: **prima stato minimo → poi una sola lettura necessaria al gate reale.**
+
+### AUTO-VIA
+
+Dopo CORE BOOT:
+
+- se `NEXT` è tecnicamente determinato, nello scope corrente e non richiede una decisione umana reale → **procedere direttamente**;
+- caricare on demand soltanto metodo/contratto/evidence necessari a quel passo;
+- non chiedere un nuovo `vai` per passaggi meccanici già determinati;
+- AUTO-VIA non amplia lo scope e non trasforma un gate umano in decisione tecnica.
+
+STOP soltanto per gate reale, ad esempio:
+
+- scelta strategica con più opzioni non equivalenti;
+- credenziali/OAuth/billing mutation;
+- distruttivo o irreversibile;
+- deploy/runtime/produzione non già autorizzato;
+- scope expansion;
+- fallback non equivalente;
+- conflitto tra fonti vive;
+- policy violation;
+- loop non convergente.
+
+### `agg` — refresh dopo un pass Cursor
+
+`agg` significa **aggiornamento minimo evidence-aware**, non reboot completo.
+
+Eseguire:
+
+1. refresh `origin/main`;
+2. rileggere `CURRENT_FRONTIER.md`;
+3. rileggere ACTIVE WORK pointer se presente;
+4. leggere `docs/runtime/LAST_CURSOR_REPORT.md` **una sola volta** soltanto se il gate/NEXT dipende dal pass Cursor appena concluso;
+5. leggere evidence aggiuntiva solo se esplicitamente puntata e necessaria;
+6. applicare AUTO-VIA.
+
+Se report/evidence e frontier confliggono: **CURRENT_FRONTIER prevale per LIVE STATE**; dichiarare l'evidence stale/conflicting, non ricostruire lo stato dalla narrativa.
+
+`agg` non equivale a handoff e non precarica foundation/storico.
+
+### Precedenza delle fonti
+
+```text
+remote Git / repo vivo
+        >
+CURRENT_FRONTIER           = LIVE STATE
+        >
+ACTIVE WORK                = task/backlog corrente
+        >
+contratto specifico        = scope/metodo del job
+        >
+Execution Checkpoint       = resume task incompleto
+        >
+LAST_CURSOR_REPORT / verify = EVIDENCE
+        >
+handoff                    = STABLE SEED / checkpoint storico
+        >
+session/PM/history         = AUDIT/HISTORY
+        >
+memoria chat
+```
+
+Per architettura/invarianti, quando necessario: `docs/foundation/PROJECT_VISION.md` è canonico.
+Per stato runtime: `docs/runtime/CURRENT_FRONTIER.md` è sempre canonico.
+
+### ON DEMAND — aprire solo quando serve
+
+| Bisogno | Fonte |
+|---|---|
+| Foundation / ruoli / hard policy | `docs/foundation/PROJECT_VISION.md` — sezione pertinente |
+| Operating model multi-planner | `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md` — sezione pertinente |
+| Backlog / routing / packet / checkpoint | solo contratto o istanza pertinente |
+| Esecuzione Cursor | `docs/foundation/CURSOR_PROMPT_TEMPLATE.md` |
+| GLM mode | `docs/advisors/GLM_ADVISOR_METHOD.md` — mode pertinente |
+| Evidenza ultimo pass Cursor | `docs/runtime/LAST_CURSOR_REPORT.md` una volta |
+| Handoff | solo per seed/resume quando il frontier/task non basta |
+| Storia/audit | session log / PM / runtime-packets solo su necessità concreta |
+| Workflow/runtime asset | solo file, diff, range o export necessari al task |
+
+### Context guard
+
+- non riversare grandi documenti o diff nel dialogo;
+- non duplicare nel contesto ciò che resta leggibile nel repo;
+- usare range/simboli/path mirati quando possibile;
+- 20 prompt utente restano hard ceiling storico per GPT Web, ma il bootstrap lean deve rendere il rollover molto più economico;
+- `handoff ora` resta kill switch manuale.
+
+### Handoff v4
+
+L'handoff ordinario è **seed/pointer**, non copia rolling del LIVE STATE.
+Una nuova chat normalmente deve poter partire con:
+
+```text
+BOOTSTRAP control-plane. Esegui esclusivamente CORE BOOT e segui AUTO-VIA.
+```
+
+Un handoff esteso si usa solo quando esiste stato non ancora persistito nel frontier/active work/evidence.
+
+### Manutenzione
+
+Aggiornare questo blocco solo se cambiano:
+
+- CORE BOOT;
+- precedenza fonti;
+- AUTO-VIA;
+- `agg`;
+- context guard / navigazione on-demand.
+
+HEAD, gate, runtime, task e NEXT vivono nel frontier/active work, non qui.
+<!-- AI-BOOT: END -->
+
+## Per gli umani — START HERE
 
 | Doc | Ruolo |
-|-----|--------|
-| [docs/runtime/CURRENT_FRONTIER.md](docs/runtime/CURRENT_FRONTIER.md) | Stato runtime autorevole — **LEGGI PRIMA DI PROPORRE** |
-| [docs/foundation/PROJECT_VISION.md](docs/foundation/PROJECT_VISION.md) | Foundation v3 e invarianti canoniche |
-| [docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md](docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md) | Target accettato 2026-08-25: GPT Web backlog → planner pool → Cursor loop; planning/docs-only |
-| [docs/contracts/backlog-item-v1.md](docs/contracts/backlog-item-v1.md) | Contratto strategico GPT Web → planner |
-| [docs/contracts/planner-routing-policy-v1.md](docs/contracts/planner-routing-policy-v1.md) | Selezione planner con preference + availability/quota + fallback policy |
-| [docs/contracts/execution-packet-v1.md](docs/contracts/execution-packet-v1.md) | Contratto planner → Cursor |
-| [docs/contracts/execution-checkpoint-v1.md](docs/contracts/execution-checkpoint-v1.md) | Rollover/resume persistente delle sessioni Cursor |
-| [docs/foundation/CURSOR_PROMPT_TEMPLATE.md](docs/foundation/CURSOR_PROMPT_TEMPLATE.md) | Contratto dell'esecuzione Cursor e report finale |
-| [docs/runtime/AUTOMATION_ACTIVATION_PLAN.md](docs/runtime/AUTOMATION_ACTIVATION_PLAN.md) | Scala di attivazione, gate A–F |
-| [docs/advisors/GLM_ADVISOR_METHOD.md](docs/advisors/GLM_ADVISOR_METHOD.md) | metodo storico/standing per GLM Advisor; la v3 estende GLM a planner/executor solo dopo verification dedicata |
+|---|---|
+| [docs/runtime/CURRENT_FRONTIER.md](docs/runtime/CURRENT_FRONTIER.md) | **LIVE STATE** compatto — unica autorità sullo stato operativo corrente |
+| [docs/foundation/PROJECT_VISION.md](docs/foundation/PROJECT_VISION.md) | Foundation **v3.1** e invarianti |
+| [docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md](docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md) | Operating model multi-planner → Cursor, on demand |
+| [docs/contracts/backlog-item-v1.md](docs/contracts/backlog-item-v1.md) | GPT Web → planner |
+| [docs/contracts/execution-packet-v1.md](docs/contracts/execution-packet-v1.md) | planner → Cursor |
+| [docs/contracts/execution-checkpoint-v1.md](docs/contracts/execution-checkpoint-v1.md) | resume Cursor |
+| [docs/foundation/CURSOR_PROMPT_TEMPLATE.md](docs/foundation/CURSOR_PROMPT_TEMPLATE.md) | execution contract Cursor |
 
-Lo stato runtime corrente vive **SOLO** nel frontier. Il nuovo operating model è una **direzione architetturale accettata**, non un'autorizzazione runtime: PM-34, L5, schedule permanenti e workflow produzione restano invariati finché non esiste un gate dedicato.
+## Architettura target v3
 
-## Architettura target
+`GPT Web → GitHub backlog → n8n policy/gates → OpenClaw broker → Qwen/GLM/Codex planner → Execution Packet → Cursor bounded loop → Bugbot → GitHub`
 
-- **GPT Web Plus** = orchestratore strategico e owner del backlog GitHub
-- **GitHub** = source of truth: backlog, decisioni, Execution Packet, checkpoint, risultati
-- **n8n su VPS** = workflow engine, policy deterministica, gate, Telegram I/O
-- **OpenClaw** = provider/auth/quota broker; non strategic orchestrator
-- **Planner pool** = Codex OAuth / GLM 5.3 / Qwen 3.8 37B locale
-- **Cursor** = execution harness: Agent, loop task-bounded, subagent, terminale, test, Git; GLM BYOK dove verificato
-- **Bugbot** = reviewer/quality gate, non router
-- **Telegram** = gate umano via Decision Packet
-- **Tailscale** = trasporto privato VPS ↔ nodo locale
-
-Dettagli e gestione delle finestre di contesto: [MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md](docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md).
+Dettaglio e capability runtime effettivamente verificate: leggere il frontier e l'ACTIVE WORK corrente.
 
 ## Invarianti stabili
 
-- **Repo non-confidenziale** (`PROJECT_VISION.md` §8.3): controllo compensativo = rotazione totale a fine progetto — [`docs/ROTATION_CHECKLIST.md`](docs/ROTATION_CHECKLIST.md)
-- Workflow produzione mai mutati in silenzio
-- GPT Web/GPT-B resta autore autorevole degli artefatti workflow n8n
-- Attivazioni solo via Decision Packet
-- La v3 **non** sblocca PM-34, L5, permanent loop/schedule o nuovi runtime; valori correnti nel `CURRENT_FRONTIER`
-- GitHub, non la memoria di una chat, resta la memoria persistente del progetto
+- GitHub = source of truth.
+- GPT Web = orchestratore strategico / backlog owner.
+- n8n = workflow/policy/gate; non planner LLM.
+- OpenClaw = provider/auth/quota broker target.
+- Cursor = execution harness; loop task-bounded.
+- Workflow produzione mai mutati in silenzio.
+- Runtime/credential/PM-34/L5/permanent schedule/loop richiedono i gate correnti indicati nel frontier.
 
-## Context / handoff principle
+## Runtime / rebuild / export — solo on demand
 
-La fine di una context window non deve interrompere il progetto. GPT Web, planner e Cursor devono poter aprire una nuova sessione leggendo dal repository vivo:
+Lo stato corrente **non** si ricava dai vecchi runbook/status document.
 
-- stato autorevole;
-- Backlog Item / Execution Packet;
-- ultimo checkpoint;
-- HEAD/branch;
-- test/findings;
-- gate aperti;
-- singolo prossimo step.
-
-Restano validi `handoff ora` e il limite foundation dei 20 prompt utente come hard bound; il nuovo operating model introduce anche **Execution Checkpoint** per il rollover delle sessioni Cursor.
-
-## Export / redazione
-
-- [workflows/README.md](workflows/README.md) — regole export e redazione
-- [docs/RUNTIME_GATES.md](docs/RUNTIME_GATES.md) — un gate runtime alla volta
-
-## Rebuild principle
-
-If the VPS dies, docs and redacted exports here must be enough to recreate n8n workflows, credentials (in UI), and watched-repo behavior. See [docs/N8N_REBUILD.md](docs/N8N_REBUILD.md).
+- stato e gate correnti → `docs/runtime/CURRENT_FRONTIER.md`;
+- hard policy → `docs/foundation/PROJECT_VISION.md`;
+- workflow/export asset → `workflows/**` e relativo file specifico solo quando il task lo richiede;
+- `docs/N8N_REBUILD.md`, `docs/RUNTIME_GATES.md`, `docs/WORKFLOW_EXPORT_STATUS.md`, `docs/N8N_WORKFLOW_NAMING.md` e `docs/TELEGRAM_SETUP.md` contengono ancora materiale operativo utile **mescolato a snapshot storici** e sono sotto consolidamento in issue **#10**; non usarli come LIVE STATE.
 
 ## Storico
 
-Era PM (maggio 2026): [docs/PM_INDEX_ARCHIVE.md](docs/PM_INDEX_ARCHIVE.md)
+Il materiale PM/session/runtime-packet resta evidence/history e **non fa parte del bootstrap**. `docs/PM_INDEX_ARCHIVE.md` è un indice storico, non una fonte corrente. La riduzione fisica dello storico è tracciata da issue **#10** e richiede recovery anchor + reference/evidence census prima di cancellazioni.
