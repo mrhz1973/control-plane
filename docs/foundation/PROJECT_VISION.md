@@ -181,22 +181,40 @@ Contratto completo: `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`.
 
 ## 7. Hard policy e gate
 
-Azioni recuperabili già autorizzate dal packet possono procedere senza micro-conferme.
+### 7.0 Gate model (canonical)
 
-Fermarsi/escalare per almeno:
+**One runtime action per gate.** Do not implicitly batch:
+
+- workflow import into n8n;
+- Execute / node execution that mutates external systems;
+- deploy / tag / rollback;
+- schedule or trigger activation;
+- workflow delete;
+- VPS / n8n host mutation;
+- credential / OAuth / billing mutation.
+
+Each of those is its own authorized step unless a Decision Packet explicitly batches them.
+
+**Safe preparatory and docs-only work.** If the next step is technically determined, in scope, recoverable, and does not open a runtime gate, follow AUTO-VIA: do not ask for micro-confirmations (`vai`) between mechanical steps.
+
+**Docs/status batching.** Multiple documentation or status-index updates may be batched in one commit when they do not open a runtime gate.
+
+**Real gate required** for at least:
 
 - `git reset`, `git clean`, `git push --force`;
-- cancellazioni/distruttivo non autorizzati;
-- credential/OAuth/billing mutation;
-- deploy/tag/rollback non autorizzati;
-- runtime n8n/VPS non autorizzato;
-- produzione/schedule/trigger non autorizzati;
-- scope drift;
-- fallback non equivalente;
-- dati/sistemi esterni fuori scope;
-- permanent schedule/loop non autorizzato;
-- conflitto tra fonti vive;
-- loop non convergente.
+- unauthorized destructive deletes;
+- credential / OAuth / billing mutation;
+- unauthorized deploy / tag / rollback;
+- unauthorized n8n / VPS runtime mutation;
+- unauthorized production / schedule / trigger activation;
+- scope expansion / drift;
+- non-equivalent fallback;
+- external data/systems out of scope;
+- unauthorized permanent schedule / loop;
+- conflict between live sources;
+- non-convergent loop.
+
+Azioni recuperabili già autorizzate dal packet possono procedere senza micro-conferme oltre a quanto sopra.
 
 ### 7.1 Runtime boundary
 
@@ -425,5 +443,6 @@ Current factual values are read from the frontier.
 | 2.19 | 2026-07-18 | ultima v2; old Codex→Ollama→Cursor target |
 | 3.0 | 2026-08-25 | multi-planner/OpenClaw broker/Execution Packet/Cursor loop foundation |
 | **3.1** | **2026-08-25** | wiki-LLM lean: bootstrap delegated to README AI-BOOT, LIVE STATE only in frontier, handoff seed-only, AUTO-VIA/`agg`, foundation deduplicated, historical cleanup issue #10 |
+| 3.1 L3A | 2026-08-25 | §7.0 gate model: one runtime action per gate; docs-only AUTO-VIA; docs batching; real-gate list (extracted from legacy RUNTIME_GATES; no rolling state) |
 
 Storia dettagliata: Git history; non duplicarla nella context window.
