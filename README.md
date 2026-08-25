@@ -197,12 +197,23 @@ Dettaglio e capability runtime effettivamente verificate: leggere il frontier e 
 
 ## Runtime / rebuild / export — solo on demand
 
-Lo stato corrente **non** si ricava dai vecchi runbook/status document.
+Lo stato corrente **non** si ricostruisce da compatibility pointer o da cronologie MVP/PM.
 
-- stato e gate correnti → `docs/runtime/CURRENT_FRONTIER.md`;
-- hard policy → `docs/foundation/PROJECT_VISION.md`;
-- workflow/export asset → `workflows/**` e relativo file specifico solo quando il task lo richiede;
-- `docs/N8N_REBUILD.md`, `docs/RUNTIME_GATES.md`, `docs/WORKFLOW_EXPORT_STATUS.md`, `docs/N8N_WORKFLOW_NAMING.md` e `docs/TELEGRAM_SETUP.md` contengono ancora materiale operativo utile **mescolato a snapshot storici** e sono sotto consolidamento in issue **#10**; non usarli come LIVE STATE.
+| Need | Current owner |
+|---|---|
+| LIVE STATE / gate / authorization flags | `docs/runtime/CURRENT_FRONTIER.md` |
+| Hard runtime / gate policy | `docs/foundation/PROJECT_VISION.md` (§7) |
+| Recovery / rebuild method | `docs/N8N_REBUILD.md` |
+| Workflow asset / export / import policy | `workflows/README.md` (+ asset sotto `workflows/**`) |
+| Telegram setup / secrets method | `docs/TELEGRAM_SETUP.md` |
+
+Compatibility / history (non current owners):
+
+- `docs/RUNTIME_GATES.md` — superseded policy pointer → PROJECT_VISION §7 + frontier
+- `docs/WORKFLOW_EXPORT_STATUS.md` — superseded inventory pointer → `workflows/README` + `workflows/**` + frontier
+- `docs/HANDOFF_N8N_GATE.md` — historical evidence pointer → `HANDOFF_TEMPLATE` + `workflows/README` + `N8N_REBUILD`
+
+`docs/N8N_WORKFLOW_NAMING.md` e `docs/OBSERVABILITY.md` restano sotto consolidamento issue **#10** (NEEDS_REVIEW); non sono LIVE STATE.
 
 ## Storico
 

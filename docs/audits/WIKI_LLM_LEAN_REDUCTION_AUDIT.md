@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-25
 **Scope:** repository semantics/context efficiency only; no runtime activation.
-**Branch:** `docs/wiki-llm-lean-bootstrap`
+**Branch:** `docs/wiki-llm-lean-l3a-canonical-extraction` (L3A); originally drafted on `docs/wiki-llm-lean-bootstrap`
 **Deletion performed by this audit:** **NONE**.
 
 ## 1. Executive finding
@@ -255,7 +255,36 @@ Score target is reached when all are true:
 - **Foundation/architecture quality:** strong.
 - **Bootstrap before this branch:** too heavy.
 - **Bootstrap on this branch:** target-quality design.
-- **Repository semantic hygiene:** still below target because legacy `active/current/handoff/status` material remains discoverable.
-- **Deletion readiness:** NOT YET — reference/evidence census required first.
+- **Repository semantic hygiene:** improved by L3A (below); remaining MVP/PM/NEEDS_REVIEW surfaces still discoverable.
+- **Deletion readiness:** NOT YET — re-census required after L3A merge; `DELETE_CANDIDATE` still empty.
 
 No deletions are authorized or implied by this audit.
+
+## 10. L3A canonical extraction (2026-08-25)
+
+**L2 census:** PASS (reference/consumer/rebuild census; `DELETE_CANDIDATE=[]` pre-L3A).
+
+**Physical deletions in L3A:** NONE. **Branch deletions:** NONE.
+
+### Rules migrated to canonical owners
+
+| Rule / method | Destination |
+|---|---|
+| One runtime action per gate; docs-only AUTO-VIA; docs batching; real-gate list | `PROJECT_VISION` §7.0 |
+| Durable n8n recovery / import-inactive / Execute Command prerequisite | `docs/N8N_REBUILD.md` (lean) |
+| Telegram secrets/setup method | `docs/TELEGRAM_SETUP.md` (lean) |
+| Workflow export/import/asset policy + n8n 2.x note | `workflows/README.md` |
+
+### Legacy docs declassified to compatibility / history
+
+| Path | New status |
+|---|---|
+| `docs/RUNTIME_GATES.md` | `SUPERSEDED_AS_POLICY_OWNER` |
+| `docs/WORKFLOW_EXPORT_STATUS.md` | `SUPERSEDED_AS_CURRENT_INVENTORY` |
+| `docs/HANDOFF_N8N_GATE.md` | `HISTORICAL_EVIDENCE_POINTER` |
+| `docs/N8N_REBUILD.md` | lean recovery method (not LIVE STATE) |
+| `docs/TELEGRAM_SETUP.md` | lean setup/security method (not LIVE STATE) |
+
+**Still NEEDS_REVIEW (not rewritten in L3A):** `docs/OBSERVABILITY.md`, `docs/N8N_WORKFLOW_NAMING.md`, MVP/PM clusters.
+
+**Required after L3A merge:** re-census inbound references before any L3B physical reduction.

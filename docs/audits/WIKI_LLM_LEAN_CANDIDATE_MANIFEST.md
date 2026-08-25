@@ -62,17 +62,18 @@ These files describe the May-2026 MVP era and contain runtime/status language th
 
 ## D. Legacy n8n/rebuild/status cluster
 
-| Path | Initial class | Unique value / risk | Before removal/rewrite |
+| Path | Initial class | L3A action / current class | Notes |
 |---|---|---|---|
-| `docs/N8N_REBUILD.md` | MERGE_THEN_SUPERSEDE | contains real rebuild procedure mixed with May-2026 v4/MVP state | extract a current rebuild runbook driven by current workflow inventory/frontier; retain historical drill evidence separately |
-| `docs/WORKFLOW_EXPORT_STATUS.md` | MERGE_THEN_SUPERSEDE | historical export inventory + runtime snapshots | reconcile with `workflows/README.md` and actual current exports |
-| `workflows/README.md` | KEEP_RUNTIME / NEEDS_REVIEW | current export-policy owner but contains long historical workflow narratives | split policy/current inventory from history; do not remove until rebuild/export dependency review |
-| `docs/N8N_WORKFLOW_NAMING.md` | NEEDS_REVIEW | may contain durable naming rules mixed with old runtime names | extract durable convention if still used |
-| `docs/TELEGRAM_SETUP.md` | NEEDS_REVIEW | setup/runbook + old active status/evidence | preserve credential/setup instructions; move status/evidence out |
-| `docs/OBSERVABILITY.md` | NEEDS_REVIEW | possible durable operations method + old MVP references | evaluate against current v3 observability needs |
-| `docs/RUNTIME_GATES.md` | KEEP_CANONICAL / NEEDS_REVIEW | potentially current hard runtime-gate method | ensure no stale workflow-specific assumptions; retain if generic/current |
-| `docs/AUTOMATION_GUARDRAILS.md` | NEEDS_REVIEW | possible durable safety rules | compare to PROJECT_VISION hard policy; merge duplicates |
-| `docs/ROTATION_CHECKLIST.md` | KEEP_CANONICAL / NEEDS_REVIEW | current compensating-control pointer from foundation | retain unless policy is replaced explicitly |
+| `docs/N8N_REBUILD.md` | MERGE_THEN_SUPERSEDE | **lean recovery method** (KEEP runbook, not LIVE STATE) | May/MVP chronology removed; points to frontier + `workflows/**` |
+| `docs/WORKFLOW_EXPORT_STATUS.md` | MERGE_THEN_SUPERSEDE | `SUPERSEDED_AS_CURRENT_INVENTORY` | pointer only; assets stay in `workflows/**` |
+| `workflows/README.md` | KEEP_RUNTIME / NEEDS_REVIEW | **KEEP_CANONICAL owner** for export/import policy | lean rewrite in L3A; history stripped |
+| `docs/N8N_WORKFLOW_NAMING.md` | NEEDS_REVIEW | NEEDS_REVIEW | not rewritten in L3A |
+| `docs/TELEGRAM_SETUP.md` | NEEDS_REVIEW | **lean setup/security method** | Day1/Day2/MVP chronology removed |
+| `docs/OBSERVABILITY.md` | NEEDS_REVIEW | NEEDS_REVIEW | not rewritten in L3A |
+| `docs/RUNTIME_GATES.md` | KEEP_CANONICAL / NEEDS_REVIEW | `SUPERSEDED_AS_POLICY_OWNER` | policy moved to `PROJECT_VISION` §7.0 |
+| `docs/HANDOFF_N8N_GATE.md` | KEEP_EVIDENCE / ARCHIVE_CANDIDATE | `HISTORICAL_EVIDENCE_POINTER` | unique n8n 2.x / inactive-import rules migrated |
+| `docs/AUTOMATION_GUARDRAILS.md` | NEEDS_REVIEW | NEEDS_REVIEW | not rewritten in L3A |
+| `docs/ROTATION_CHECKLIST.md` | KEEP_CANONICAL / NEEDS_REVIEW | KEEP_CANONICAL | compensating control; referenced by `workflows/README` |
 
 ---
 
@@ -245,3 +246,13 @@ recovery_via_git_history: confirmed
 ```
 
 Until then the candidate stays merge/archive/evidence, not delete.
+
+---
+
+## O. L3A record (2026-08-25)
+
+- **L2 census:** PASS; **`DELETE_CANDIDATE` still empty** pre- and post-L3A (no physical deletion).
+- **L3A scope:** canonical extraction + legacy declassification only; no branch deletion; no workflow JSON/tool/script changes.
+- **Migrated rules:** gate model → `PROJECT_VISION` §7.0; recovery → lean `N8N_REBUILD`; Telegram method → lean `TELEGRAM_SETUP`; export/import owner → lean `workflows/README`.
+- **Declassified to compatibility/history:** `RUNTIME_GATES`, `WORKFLOW_EXPORT_STATUS`, `HANDOFF_N8N_GATE`.
+- **Re-census required** after L3A merge before any L3B physical reduction.
