@@ -8,12 +8,13 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `WIKI-LLM-LEAN-CONSOLIDATION` |
 | **ACTIVE WORK** | GitHub issue **#10 — Wiki-LLM lean consolidation — reduce stale/duplicate repository surface** |
-| **BLOCCO ATTIVO** | `L2-REFERENCE-EVIDENCE-REBUILD-CENSUS` |
+| **BLOCCO ATTIVO** | `L3A-CANONICAL-EXTRACTION` |
 | **STATO BLOCCO** | IN_PROGRESS |
-| **GATE CORRENTE** | `L2_REFERENCE_EVIDENCE_REBUILD_CENSUS` |
-| **NEXT** | completare census read-only dei cluster legacy MVP/rebuild/export/PLAN/PM/contracts; separare runbook/regole ancora correnti da snapshot/evidence storiche; promuovere a `DELETE_CANDIDATE` solo dopo delete gate completo; **nessuna cancellazione fisica in L2** |
+| **GATE CORRENTE** | `L3A_CANONICAL_EXTRACTION_PR` |
+| **NEXT** | preparare PR docs-only L3A: estrarre policy/runbook ancora validi nei proprietari canonici, trasformare fonti legacy pericolose in lean runbook/compatibility pointer, correggere inbound links; **nessuna cancellazione fisica o branch deletion** |
 | **NEXT WORKSTREAM** | issue **#8 — Architecture v3 evidence track** dopo chiusura issue #10 |
-| **BOOTSTRAP 9.5 VERIFY** | PASS — clone locale reale su `576655e7665b1577d03df4f4b6404427a5860b31`; `CORE_BOOT_SUFFICIENT=true`; preload foundation/history/report/handoff/PM/session = false; zero write/runtime |
+| **BOOTSTRAP 9.5 VERIFY** | PASS — clone locale reale; `CORE_BOOT_SUFFICIENT=true`; preload foundation/history/report/handoff/PM/session = false; zero write/runtime |
+| **L2 CENSUS** | PASS — reference/consumer/rebuild census completo; `DELETE_CANDIDATE=[]`; L3 separata in L3A semantic deconfliction → L3B physical reduction dopo re-census |
 | **LAST VERIFIED THROUGH** | `91847807bbc4d7b7f63d8e3b3fc48fdfc72f4699` — D-0081-V PASS, `intra_actor_self_verify` |
 | **PR #11** | MERGED — squash `feb755913712807ecbfe5aac5df662409e234c8e`; docs-only wiki-LLM lean foundation |
 | **OPENCLAW v3 RUNTIME** | NOT_VERIFIED / NOT_ACTIVATED |
@@ -31,7 +32,9 @@
 ## Boundaries operative correnti
 
 - Foundation v3.1 wiki-LLM lean è canonica su `main`.
-- L2 è census/documentazione soltanto: nessuna cancellazione fisica o branch deletion senza gate dedicato.
+- L2 census è PASS; nessun file ha ancora superato il delete gate completo.
+- L3A è docs-only e reversibile: nessuna cancellazione fisica, branch deletion o runtime mutation.
+- L3B physical reduction si apre solo dopo re-census post-L3A.
 - Nessun provider/runtime wiring v3 è ancora promosso a PASS.
 - Nessuna modifica credenziali/OAuth/billing senza gate esplicito.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
