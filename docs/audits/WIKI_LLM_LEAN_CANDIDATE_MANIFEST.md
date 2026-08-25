@@ -1,7 +1,7 @@
 # WIKI-LLM LEAN — CANDIDATE MANIFEST
 
-**Date:** 2026-08-25  
-**Purpose:** pre-deletion classification for issue #10.  
+**Date:** 2026-08-25
+**Purpose:** pre-deletion classification for issue #10.
 **Physical deletions authorized by this file:** **NONE**.
 
 Classification vocabulary:

@@ -1,7 +1,7 @@
 # WIKI-LLM LEAN METHOD — control-plane
 
-**Status:** canonical method candidate on `docs/wiki-llm-lean-bootstrap`  
-**Purpose:** keep project state recoverable while minimizing context, duplicate authority and stale semantic sources.  
+**Status:** canonical method candidate on `docs/wiki-llm-lean-bootstrap`
+**Purpose:** keep project state recoverable while minimizing context, duplicate authority and stale semantic sources.
 **Runtime authority:** none.
 
 ## 1. Design target

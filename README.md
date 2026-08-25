@@ -5,8 +5,8 @@ Repository del control-plane AI-assisted. **GitHub è la memoria persistente; la
 <!-- AI-BOOT: START -->
 ## AI BOOT — control-plane
 
-**Ruolo:** bootloader minimale per GPT Web / nuove sessioni.  
-**Metodo:** wiki-LLM lean + AUTO-VIA.  
+**Ruolo:** bootloader minimale per GPT Web / nuove sessioni.
+**Metodo:** wiki-LLM lean + AUTO-VIA.
 **Questo blocco governa il bootstrap.** Foundation, evidence e storico si leggono solo on demand.
 
 ### Autorità remota
@@ -118,7 +118,7 @@ session/PM/history         = AUDIT/HISTORY
 memoria chat
 ```
 
-Per architettura/invarianti, quando necessario: `docs/foundation/PROJECT_VISION.md` è canonico.  
+Per architettura/invarianti, quando necessario: `docs/foundation/PROJECT_VISION.md` è canonico.
 Per stato runtime: `docs/runtime/CURRENT_FRONTIER.md` è sempre canonico.
 
 ### ON DEMAND — aprire solo quando serve
@@ -145,7 +145,7 @@ Per stato runtime: `docs/runtime/CURRENT_FRONTIER.md` è sempre canonico.
 
 ### Handoff v4
 
-L'handoff ordinario è **seed/pointer**, non copia rolling del LIVE STATE.  
+L'handoff ordinario è **seed/pointer**, non copia rolling del LIVE STATE.
 Una nuova chat normalmente deve poter partire con:
 
 ```text

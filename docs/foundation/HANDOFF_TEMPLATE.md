@@ -1,7 +1,7 @@
 # HANDOFF TEMPLATE — control-plane
 
-**Versione:** **4.0 — wiki-LLM lean**  
-**Ruolo:** seed/pointer di rollover, **non LIVE STATE**.  
+**Versione:** **4.0 — wiki-LLM lean**
+**Ruolo:** seed/pointer di rollover, **non LIVE STATE**.
 **Runtime autorizzato:** **NO**.
 
 ## Principio

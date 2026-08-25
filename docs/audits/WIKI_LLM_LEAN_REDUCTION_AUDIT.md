@@ -1,8 +1,8 @@
 # WIKI-LLM LEAN REDUCTION AUDIT — control-plane
 
-**Date:** 2026-08-25  
-**Scope:** repository semantics/context efficiency only; no runtime activation.  
-**Branch:** `docs/wiki-llm-lean-bootstrap`  
+**Date:** 2026-08-25
+**Scope:** repository semantics/context efficiency only; no runtime activation.
+**Branch:** `docs/wiki-llm-lean-bootstrap`
 **Deletion performed by this audit:** **NONE**.
 
 ## 1. Executive finding

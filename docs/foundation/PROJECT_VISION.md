@@ -1,9 +1,9 @@
 # PROJECT VISION — control-plane Foundation
 
-**Repository:** `mrhz1973/control-plane`  
-**Versione:** **3.1 — wiki-LLM lean — 2026-08-25**  
-**Precedente:** 3.0 — 2026-08-25  
-**Ruolo:** architettura e invarianti fondative. **Non LIVE STATE, non bootstrap manuale, non cronologia.**  
+**Repository:** `mrhz1973/control-plane`
+**Versione:** **3.1 — wiki-LLM lean — 2026-08-25**
+**Precedente:** 3.0 — 2026-08-25
+**Ruolo:** architettura e invarianti fondative. **Non LIVE STATE, non bootstrap manuale, non cronologia.**
 **Runtime autorizzato da questo documento:** **NO**.
 
 ## 0. Visione in una frase

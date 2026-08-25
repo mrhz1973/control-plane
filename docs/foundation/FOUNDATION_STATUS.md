@@ -1,7 +1,7 @@
 # FOUNDATION STATUS — COMPATIBILITY POINTER
 
-**Status:** `SUPERSEDED_AS_ACTIVE_INDEX_BY_WIKI_LLM_LEAN`  
-**Updated:** 2026-08-25  
+**Status:** `SUPERSEDED_AS_ACTIVE_INDEX_BY_WIKI_LLM_LEAN`
+**Updated:** 2026-08-25
 **Runtime authority:** **NONE**.
 
 This file used to duplicate architecture, contracts, context-rollover rules and historical evidence summaries.

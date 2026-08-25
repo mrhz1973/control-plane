@@ -1,6 +1,6 @@
 # CURRENT FRONTIER — LIVE STATE
 
-> **Unica fonte canonica dello stato operativo vivo.**  
+> **Unica fonte canonica dello stato operativo vivo.**
 > Deve restare piccolo. Non contiene cronologia, narrativa, HEAD remota corrente o copie di foundation/evidence.
 
 | Campo | Valore |

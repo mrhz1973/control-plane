@@ -1,7 +1,7 @@
 # OPERATING MEMORY — SUPERSEDED HISTORICAL POINTER
 
-**Status:** `SUPERSEDED_BY_WIKI_LLM_LEAN`  
-**Superseded:** 2026-08-25  
+**Status:** `SUPERSEDED_BY_WIKI_LLM_LEAN`
+**Superseded:** 2026-08-25
 **Runtime authority:** **NONE**.
 
 This file previously mixed:
