@@ -3,7 +3,7 @@
 **Status:** `HISTORICAL_DECISION_POINTER`
 **Runtime authority:** **NONE**.
 **Current gate authority:** **NONE**.
-**Recommended-NEXT authority:** **NONE**.
+**NEXT authority:** **NONE** (does not recommend or own NEXT).
 
 ## Current owners
 
@@ -24,7 +24,7 @@ Security rules that remain current were moved to `PROJECT_VISION` §7 during L3A
 
 ## What this file was
 
-May-2026 decision/design notes for moving from polling to a real GitHub → n8n public HTTPS webhook path (v5), including tunnel/proxy options and “recommended next gate” language.
+May-2026 decision/design notes for moving from polling to a real GitHub → n8n public HTTPS webhook path (v5), including tunnel/proxy options and former “what to do next” guidance that competed with the live frontier.
 
 That chronology is **historical**. It must not declare webhook/v5/public HTTPS as current NEXT.
 
