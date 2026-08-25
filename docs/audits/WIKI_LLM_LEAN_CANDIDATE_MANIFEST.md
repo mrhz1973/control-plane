@@ -372,4 +372,4 @@ Exhaustive plan for HISTORY_EVIDENCE refs that would break if the five archive c
 - **SOURCE_PATHS / ACTION:**
   - docs/decision-packets/2026-05-21-criterion-1-latency-closure-decision.md → DONE_IN_L3A6 (immutable permalink applied)
 
-**HISTORY_LINK_REWRITE_PLAN_COMPLETE:** 	rue (exhaustive mechanical census; remaining history relative links scheduled REWRITE_IN_L3B; D-C1-A already rewritten in L3A.6).
+**HISTORY_LINK_REWRITE_PLAN_COMPLETE:** `true` (exhaustive mechanical census; remaining history relative links scheduled REWRITE_IN_L3B; D-C1-A already rewritten in L3A.6).
