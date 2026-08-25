@@ -9,9 +9,9 @@
 | **WORKSTREAM ATTIVO** | `WIKI-LLM-LEAN-CONSOLIDATION` |
 | **ACTIVE WORK** | GitHub issue **#10 — Wiki-LLM lean consolidation — reduce stale/duplicate repository surface** |
 | **BLOCCO ATTIVO** | `L3B-ATOMIC-HISTORICAL-REDUCTION` |
-| **STATO BLOCCO** | WAITING_HUMAN_DESTRUCTIVE_GATE |
-| **GATE CORRENTE** | `L3B_PHYSICAL_DELETE_EXPLICIT_AUTHORIZATION_REQUIRED` |
-| **NEXT** | dopo autorizzazione umana esplicita: creare una sola modifica atomica con 5 file deletion + 28 history-link rewrite + audit update; verificare zero broken links; **nessuna deletion prima del gate** |
+| **STATO BLOCCO** | AUTHORIZED / IMPLEMENTATION_PENDING |
+| **GATE CORRENTE** | `L3B_PHYSICAL_DELETE_AUTHORIZED` |
+| **NEXT** | eseguire sulla branch L3B una sola modifica atomica: 5 file deletion + 28 history/evidence rewrite + 2 audit update; verificare `BROKEN_LINKS_AFTER_L3B=0`; nessuna altra deletion/runtime mutation autorizzata |
 | **NEXT WORKSTREAM** | issue **#8 — Architecture v3 evidence track** dopo chiusura issue #10 |
 | **BOOTSTRAP 9.5 VERIFY** | PASS — `CORE_BOOT_SUFFICIENT=true`; preload foundation/history/report/handoff/PM/session = false |
 | **L2 CENSUS** | PASS |
@@ -19,6 +19,7 @@
 | **L3A.5 / PR #14** | MERGED / PASS — active-looking stale collisions = 0 |
 | **L3A.6 / PR #16** | MERGED / PASS — squash `d24fc0ee99c7c45948d852d1bcc3dde161521aa7`; immutable link rewrite complete; no physical deletions/runtime changes |
 | **FINAL PREDELETE REVERIFY** | PASS — 5/5 `DELETE_READY_FINAL`; A–I green; history plan 29/29; `UNPLANNED_HISTORY_REFS=[]`; atomic L3B simulation → zero broken links |
+| **L3B AUTHORIZATION** | EXPLICIT HUMAN GATE RECEIVED — exact 5 delete + 28 history/evidence rewrite + audit update only |
 | **L3B DELETE SET** | `MVP_STATUS` · `MVP_CRITERIA` · `POST_MVP_BACKLOG` · `PLAN_OUTPUT_INGESTION` · `V4_POLLING_LATENCY` |
 | **L3B REWRITE SET** | 28 history/evidence Markdown sources; immutable baseline `777504f7c46e5e724b6ad5f8586a98d43bab7ce8` |
 | **LAST VERIFIED THROUGH** | `91847807bbc4d7b7f63d8e3b3fc48fdfc72f4699` — D-0081-V PASS, `intra_actor_self_verify` |
@@ -38,10 +39,11 @@
 
 - Foundation v3.1 wiki-LLM lean è canonica su `main`.
 - L2, L3A, L3A.5, L3A.6 e final predelete reverify sono PASS.
-- I 5 target sono `DELETE_READY_FINAL`, ma **la physical deletion non è autorizzata** senza gate umano esplicito.
-- La futura L3B deve essere atomica: 5 delete + tutti i rewrite history previsti + audit update nello stesso change set; broken links finali = 0.
+- I 5 target sono `DELETE_READY_FINAL` e la physical deletion L3B è **AUTORIZZATA** esclusivamente nel change set atomico certificato.
+- L3B deve essere atomica: 5 delete + tutti i 28 rewrite history previsti + 2 audit update nello stesso change set; broken links finali = 0.
 - Compatibility pointers da mantenere: `docs/RUNTIME_GATES.md`, `docs/WORKFLOW_EXPORT_STATUS.md`, `docs/HANDOFF_N8N_GATE.md`.
-- Nessuna branch deletion o runtime/provider mutation è autorizzata.
+- Nessuna ulteriore file deletion o branch deletion è autorizzata.
+- Nessuna runtime/provider mutation è autorizzata.
 - Nessuna modifica credenziali/OAuth/billing senza gate esplicito.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
 - GPT Web resta autore autorevole dei workflow n8n; Cursor non li ridisegna autonomamente.
@@ -49,6 +51,7 @@
 ## Puntatori
 
 - Active work: GitHub issue **#10**
+- L3B branch: `docs/wiki-llm-lean-l3b-atomic-historical-reduction`
 - Foundation/invarianti: `docs/foundation/PROJECT_VISION.md`
 - Lean method: `docs/foundation/WIKI_LLM_LEAN_METHOD.md`
 - Audit: `docs/audits/WIKI_LLM_LEAN_REDUCTION_AUDIT.md`
