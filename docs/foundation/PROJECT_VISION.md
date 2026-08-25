@@ -191,9 +191,12 @@ Contratto completo: `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`.
 - schedule or trigger activation;
 - workflow delete;
 - VPS / n8n host mutation;
-- credential / OAuth / billing mutation.
+- credential / OAuth / billing mutation;
+- public webhook / Telegram Trigger / naked public n8n HTTPS exposure.
 
 Each of those is its own authorized step unless a Decision Packet explicitly batches them.
+
+**Public exposure / webhook security.** Do not expose n8n on a naked or unauthenticated public URL. A real public HTTPS endpoint (tunnel, reverse proxy, or equivalent) that can receive external webhooks is a separate runtime/security gate. Webhook secrets, bot tokens, and production webhook URLs must not be treated as Git source-of-truth secrets; configure them in n8n credentials / approved secret stores. Current exposure state: **only `CURRENT_FRONTIER.md`**.
 
 **Safe preparatory and docs-only work.** If the next step is technically determined, in scope, recoverable, and does not open a runtime gate, follow AUTO-VIA: do not ask for micro-confirmations (`vai`) between mechanical steps.
 
@@ -444,5 +447,6 @@ Current factual values are read from the frontier.
 | 3.0 | 2026-08-25 | multi-planner/OpenClaw broker/Execution Packet/Cursor loop foundation |
 | **3.1** | **2026-08-25** | wiki-LLM lean: bootstrap delegated to README AI-BOOT, LIVE STATE only in frontier, handoff seed-only, AUTO-VIA/`agg`, foundation deduplicated, historical cleanup issue #10 |
 | 3.1 L3A | 2026-08-25 | §7.0 gate model: one runtime action per gate; docs-only AUTO-VIA; docs batching; real-gate list (extracted from legacy RUNTIME_GATES; no rolling state) |
+| 3.1 L3A.5 | 2026-08-25 | §7.0 public webhook / naked HTTPS exposure gate + secrets-out-of-Git (from PUBLIC_WEBHOOK_GATE declassification) |
 
 Storia dettagliata: Git history; non duplicarla nella context window.
