@@ -4,13 +4,20 @@
 > Lo stato si LEGGE da qui, NON si ricostruisce cercando tra i session log.
 > Questo file è uno stato compatto, non un archivio storico. Evidenza completa in `docs/sessions/`, Git history, `LAST_CURSOR_REPORT.md` e `LAST_HANDOFF_VERIFY.md`.
 
-Ultimo aggiornamento: 2026-08-25 — D-0081-V PASS certifica documentalmente D-0080-W through `91847807...`; migrazione architettura multi-planner/Cursor in draft PR #9, docs-only.
+Ultimo aggiornamento: 2026-08-25 — D-0081-V PASS; foundation v3 multi-planner → Cursor bounded loop merged on `main` via PR #9.
 
 ---
 
 ## Stato operativo attuale
 
-- Foundation su `main` resta quella precedente finché la draft PR #9 non viene mergiata; la nuova architettura multi-planner/Cursor è già accettata dall'operatore ma ancora in migrazione docs-only.
+- **Foundation v3 è canonica su `main`.** Target: GPT Web backlog → n8n policy → OpenClaw broker → Qwen/GLM/Codex planner → Execution Packet → n8n gate → Cursor bounded loop → Bugbot → GitHub.
+- Contratti v3 presenti: `backlog-item-v1`, `planner-routing-policy-v1`, `execution-packet-v1`, `execution-checkpoint-v1`.
+- GPT Web resta strategic orchestrator e owner del backlog GitHub.
+- OpenClaw è target provider/auth/quota broker; runtime wiring v3 **non ancora verificato/attivato**.
+- Planner pool target: Qwen 3.8 37B locale / GLM 5.3 / Codex OAuth.
+- Cursor è execution harness target; GLM BYOK inside Cursor e Codex advisor path richiedono ancora smoke dedicati.
+- Bugbot è reviewer, non router; cloud Autofix non default.
+- Context rollover/checkpoint è requisito canonico; 20 prompt GPT Web = hard ceiling con handoff anticipato su degrado.
 - Workflow **40/42 attivi** e invariati; workflow **41 off**.
 - **PM-34 BLOCKED**.
 - **`n8n_ready=false`**.
@@ -24,6 +31,55 @@ Ultimo aggiornamento: 2026-08-25 — D-0081-V PASS certifica documentalmente D-0
 - **wf47** inactive / unpublished / Schedule disabled / `enable_wg48_handoff=false`.
 - Nessun loop operativo permanente dichiarato.
 - **D-0081-V:** `PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED` through `91847807bbc4d7b7f63d8e3b3fc48fdfc72f4699`, `actor_relation=intra_actor_self_verify`, independent third-party verification `false`.
+
+## Foundation v3 — accepted multi-planner / Cursor operating model
+
+Merged on `main` via PR #9 on 2026-08-25.
+
+Canonical target:
+
+```text
+GPT Web
+  ↓ Backlog Item / GitHub
+n8n
+  ↓ deterministic policy/gates
+OpenClaw
+  ↓ provider/auth/quota broker
+Qwen 3.8 37B | GLM 5.3 | Codex OAuth
+  ↓ planner-generated Execution Packet
+n8n gate
+  ↓
+Cursor bounded execution loop
+  ↓
+Bugbot review
+  ↓
+GitHub
+```
+
+Important boundaries:
+
+- GPT Web writes strategic backlog; planner writes Execution Packet; Cursor implements.
+- Planner selection combines backlog semantic preference with deterministic provider/quota/fallback policy.
+- No dedicated always-on Qwen router in the primary path.
+- Qwen 3.8 37B may be loaded per job and reused as advisor/reviewer while resident.
+- GLM has explicit modes: Advisor / Planner / Cursor Executor.
+- Codex OAuth is not assumed to be a native Cursor model; external advisor path via OpenClaw/CLI/MCP is a separate evidence track.
+- Cursor loop is task-bounded and must stop/escalate on scope drift, risk gates, max rounds or unresolved blockers.
+- Execution Checkpoint is required for incomplete task context rollover.
+- Runtime activation requires later evidence and Decision Packets; foundation v3 itself authorizes none.
+
+Primary docs:
+
+- `docs/foundation/PROJECT_VISION.md`
+- `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`
+- `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`
+- `docs/advisors/GLM_ADVISOR_METHOD.md`
+- `docs/contracts/backlog-item-v1.md`
+- `docs/contracts/planner-routing-policy-v1.md`
+- `docs/contracts/execution-packet-v1.md`
+- `docs/contracts/execution-checkpoint-v1.md`
+
+Migration/evidence backlog remains GitHub issue #8.
 
 ## D-0081-V — repository verify-only of D-0080-W
 
@@ -56,13 +112,13 @@ Verified:
 
 Evidence: `docs/sessions/2026-08-25-control-plane-d-0081-v-d0080w-repository-verify-pass.md`.
 
-**Meaning:** the historical repository gate immediately after D-0080-W is now CLOSED. This does not authorize any runtime or permanent automation.
+**Meaning:** the historical repository gate immediately after D-0080-W is CLOSED. This does not authorize any runtime or permanent automation.
 
 ## D-0079-E / D-0080-W — permanent L5 deferred pending endurance evidence
 
 - **D-0079-E** selected_option `"3"` · `decision_provenance=direct_operator_message` · `operator_decision_date_utc=2026-07-19` · `operator_decision_timestamp_utc=NOT_CAPTURED_EXACTLY`.
 - **D-0080-W** docs-only: persist deferral + create L5 Scope Document + endurance evidence plan + contextual D-0078-V backfill + close D-0078-V-F1 wording.
-- **D-0081-V** now verifies D-0080-W through `91847807...` with intra-actor provenance.
+- **D-0081-V** verifies D-0080-W through `91847807...` with intra-actor provenance.
 
 ```yaml
 decision_id: D-0079-E
@@ -182,19 +238,20 @@ teardown_direct_n8n_observation_by_cursor: false
 
 ## Claim boundaries
 
-**Claimed:** D-0081-V documentally verifies D-0080-W through `91847807...` with intra-actor provenance; D-0079-E option `"3"` selected directly by operator; permanent L5 deferred; scope and endurance evidence requirements defined (planning only); D-0078-V verified `218cb99`; D-0078-V-F1 wording closed; bounded pilot PASS retained; Gate E PASS/CLOSED; GPT-B owns n8n authoring under the current main foundation.
+**Claimed:** foundation v3 merged/canonical docs-only; D-0081-V documentally verifies D-0080-W through `91847807...` with intra-actor provenance; D-0079-E option `"3"` selected directly by operator; permanent L5 deferred; scope and endurance evidence requirements defined (planning only); D-0078-V verified `218cb99`; D-0078-V-F1 wording closed; bounded pilot PASS retained; Gate E PASS/CLOSED; GPT Web owns n8n authoring under foundation v3.
 
-**Not claimed:** independent third-party verification; permanent L5 PASS; runtime authorization; endurance runtime authorization; permanent Schedule; autonomous wf48; PM-34 unlock; `n8n_ready=true`; permanent automation from D-0081-V.
+**Not claimed:** v3 runtime path operational; OpenClaw provider wiring verified; Codex OAuth planner smoke; GLM planner smoke; Qwen planner smoke; GLM Cursor executor smoke; Cursor bounded loop smoke; Bugbot loop smoke; independent third-party verification; permanent L5 PASS; runtime authorization; endurance runtime authorization; permanent Schedule; autonomous wf48; PM-34 unlock; `n8n_ready=true`.
 
 ## Active blockers and next gate
 
 - **Historical D-0080 repository verify gate:** **CLOSED by D-0081-V PASS**.
+- **Foundation v3 docs migration:** **MERGED / CANONICAL** via PR #9.
 - **PM-34:** `BLOCKED`.
 - **L5:** `L5_PASS: NOT_CLAIMED` · activation/runtime/endurance authorization **false** · permanent assessment **DEFERRED_PENDING_ENDURANCE_EVIDENCE**.
 - **Gate E:** **CLOSED** (`Gate_E_full: PASS`).
 - Permanent Schedule authorization: **no**.
-- **Immediate repository work:** complete/review/merge the accepted docs-only architecture migration in GitHub issue #8 / draft PR #9, preserving all runtime invariants.
-- **Next runtime Decision Packet remains separate:** approval/authorization of the bounded endurance evidence package; it is **not** auto-started by the architecture migration. Permanent L5 claim and permanent Schedule remain later separate gates.
+- **Immediate implementation evidence track:** issue #8 — verify current environment and the v3 components in bounded/read-only smoke order: OpenClaw/provider state → planner packet generation → GLM inside Cursor → Cursor bounded loop → Bugbot review/checkpoint.
+- **Next runtime Decision Packet remains separate:** approval/authorization of the bounded endurance evidence package; it is **not** auto-started by foundation v3. Permanent L5 claim and permanent Schedule remain later separate gates.
 
 ## Do-not-do
 
@@ -209,4 +266,4 @@ teardown_direct_n8n_observation_by_cursor: false
 - NO color-based Cursor routing in canonical instructions.
 - NO describing D-0071-V / D-0078-V / D-0081-V as independent third-party verification.
 - NO autonomous wf48.
-- NO treating D-0081-V as runtime evidence or runtime authorization.
+- NO treating D-0081-V or foundation v3 docs as runtime evidence or runtime authorization.
