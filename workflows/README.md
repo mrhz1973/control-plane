@@ -17,8 +17,8 @@ Identify the concrete file from the authorizing task + frontier. Do not pick “
 
 ## 2. Naming (durable)
 
-When citing n8n workflows, use **numeric ID + display name** (example: `40` + UI name).
-Detailed historical registries may exist elsewhere; they are not LIVE STATE. Current IDs/states: frontier.
+Naming METHOD owner: `docs/N8N_WORKFLOW_NAMING.md` (numeric ID + display name and related conventions).
+This README does **not** duplicate that method and does **not** carry a live workflow inventory. Current IDs/states: frontier.
 
 ## 3. Security / commit posture
 

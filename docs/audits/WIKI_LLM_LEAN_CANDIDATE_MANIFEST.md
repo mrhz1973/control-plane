@@ -45,18 +45,20 @@ Classification vocabulary:
 
 ## C. Legacy MVP state cluster
 
-These files describe the May-2026 MVP era and contain runtime/status language that is not current LIVE STATE.
+These files describe the May-2026 MVP era. After **L3A.5** the first two are historical pointers only (no current-state language).
 
-| Path | Initial class | Unique value / risk | Before removal |
-|---|---|---|---|
-| `docs/MVP_STATUS.md` | ARCHIVE_CANDIDATE | historical consolidated scorecard + many PM links; falsely labels itself current today | preserve closure decision/evidence pointers; update inbound links |
-| `docs/MVP_CRITERIA.md` | ARCHIVE_CANDIDATE | historical definition of 5 MVP criteria | verify no current gate still derives from MVP definition |
-| `docs/END_TO_END_CYCLES.md` | KEEP_EVIDENCE / ARCHIVE_CANDIDATE | evidence/definition for closed C3 cycles | preserve cycle hashes/Telegram attestation anchors if current claims rely on them |
-| `docs/HANDOFF_N8N_GATE.md` | KEEP_EVIDENCE / ARCHIVE_CANDIDATE | closed old MVP handoff-via-n8n design/runtime evidence | workflow README/history links need rewrite |
-| `docs/POST_MVP_BACKLOG.md` | ARCHIVE_CANDIDATE | old backlog replaced by GitHub issues/frontier | check for unique unresolved work before removal |
-| `docs/V4_POLLING_LATENCY.md` | ARCHIVE_CANDIDATE | old C1 latency evidence | preserve only if current audit claim references D-C1-A |
+| Path | Class after L3A.5 | Notes |
+|---|---|---|
+| `docs/MVP_STATUS.md` | `HISTORICAL_MVP_STATUS` pointer | no current-state authority; full snapshot in Git history |
+| `docs/MVP_CRITERIA.md` | `HISTORICAL_MVP_ACCEPTANCE_EVIDENCE` pointer | not v3.1 acceptance criteria |
+| `docs/END_TO_END_CYCLES.md` | KEEP_EVIDENCE / ARCHIVE_CANDIDATE | not rewritten in L3A.5 |
+| `docs/HANDOFF_N8N_GATE.md` | `HISTORICAL_EVIDENCE_POINTER` | L3A |
+| `docs/POST_MVP_BACKLOG.md` | ARCHIVE_CANDIDATE | body not rewritten in L3A.5; not LIVE STATE; inbound from canonical owners cleared of semantic dependency |
+| `docs/V4_POLLING_LATENCY.md` | ARCHIVE_CANDIDATE / KEEP_EVIDENCE | same |
+| `docs/PUBLIC_WEBHOOK_GATE.md` | `HISTORICAL_DECISION_POINTER` | durable public-HTTPS/webhook rules → `PROJECT_VISION` §7; no recommended NEXT |
 
-**Group decision:** no file in this cluster is eligible for direct deletion before an inbound-reference rewrite. They should not remain discoverable as current-state documents after L3.
+**Group decision:** physical deletion still requires a later delete-gate census after L3A.5. History/session links may remain.
+
 
 ---
 
@@ -67,7 +69,7 @@ These files describe the May-2026 MVP era and contain runtime/status language th
 | `docs/N8N_REBUILD.md` | MERGE_THEN_SUPERSEDE | **lean recovery method** (KEEP runbook, not LIVE STATE) | May/MVP chronology removed; points to frontier + `workflows/**` |
 | `docs/WORKFLOW_EXPORT_STATUS.md` | MERGE_THEN_SUPERSEDE | `SUPERSEDED_AS_CURRENT_INVENTORY` | pointer only; assets stay in `workflows/**` |
 | `workflows/README.md` | KEEP_RUNTIME / NEEDS_REVIEW | **KEEP_CANONICAL owner** for export/import policy | lean rewrite in L3A; history stripped |
-| `docs/N8N_WORKFLOW_NAMING.md` | NEEDS_REVIEW | NEEDS_REVIEW | not rewritten in L3A |
+| `docs/N8N_WORKFLOW_NAMING.md` | NEEDS_REVIEW | **naming METHOD** (L3A.5) | current inventory removed; live state → frontier; method owned here, not duplicated in `workflows/README` |
 | `docs/TELEGRAM_SETUP.md` | NEEDS_REVIEW | **lean setup/security method** | Day1/Day2/MVP chronology removed |
 | `docs/OBSERVABILITY.md` | NEEDS_REVIEW | NEEDS_REVIEW | not rewritten in L3A |
 | `docs/RUNTIME_GATES.md` | KEEP_CANONICAL / NEEDS_REVIEW | `SUPERSEDED_AS_POLICY_OWNER` | policy moved to `PROJECT_VISION` §7.0 |
@@ -256,3 +258,18 @@ Until then the candidate stays merge/archive/evidence, not delete.
 - **Migrated rules:** gate model → `PROJECT_VISION` §7.0; recovery → lean `N8N_REBUILD`; Telegram method → lean `TELEGRAM_SETUP`; export/import owner → lean `workflows/README`.
 - **Declassified to compatibility/history:** `RUNTIME_GATES`, `WORKFLOW_EXPORT_STATUS`, `HANDOFF_N8N_GATE`.
 - **Re-census required** after L3A merge before any L3B physical reduction.
+
+---
+
+## P. L3A.5 semantic collision cleanup (2026-08-25)
+
+- **PR #12 / L3A:** MERGED PASS (canonical extraction).
+- **Post-L3A re-census:** PASS; **`DELETE_READY` pre-L3A.5 = []**.
+- **Four material stale collisions addressed:**
+  1. `MVP_STATUS` self-declared current state → historical pointer
+  2. `MVP_CRITERIA` current-state pointer to MVP_STATUS → historical acceptance evidence pointer
+  3. `N8N_WORKFLOW_NAMING` Current CONTROL PLANE / Active inventory → naming METHOD only
+  4. `PUBLIC_WEBHOOK_GATE` Recommended next gate → historical decision pointer; durable rules → `PROJECT_VISION` §7
+- **Physical deletions:** NONE. **Branch deletions:** NONE.
+- **L3A compatibility pointers kept:** `RUNTIME_GATES`, `WORKFLOW_EXPORT_STATUS`, `HANDOFF_N8N_GATE`.
+- **Required after L3A.5:** mechanical delete-gate re-census before any L3B physical reduction. Do not promote `DELETE_READY` without proof.

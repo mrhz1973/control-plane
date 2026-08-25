@@ -205,6 +205,7 @@ Lo stato corrente **non** si ricostruisce da compatibility pointer o da cronolog
 | Hard runtime / gate policy | `docs/foundation/PROJECT_VISION.md` (§7) |
 | Recovery / rebuild method | `docs/N8N_REBUILD.md` |
 | Workflow asset / export / import policy | `workflows/README.md` (+ asset sotto `workflows/**`) |
+| n8n workflow naming method | `docs/N8N_WORKFLOW_NAMING.md` (not LIVE STATE / not inventory) |
 | Telegram setup / secrets method | `docs/TELEGRAM_SETUP.md` |
 
 Compatibility / history (non current owners):
@@ -212,8 +213,10 @@ Compatibility / history (non current owners):
 - `docs/RUNTIME_GATES.md` — superseded policy pointer → PROJECT_VISION §7 + frontier
 - `docs/WORKFLOW_EXPORT_STATUS.md` — superseded inventory pointer → `workflows/README` + `workflows/**` + frontier
 - `docs/HANDOFF_N8N_GATE.md` — historical evidence pointer → `HANDOFF_TEMPLATE` + `workflows/README` + `N8N_REBUILD`
+- `docs/MVP_STATUS.md` / `docs/MVP_CRITERIA.md` / `docs/PUBLIC_WEBHOOK_GATE.md` — historical pointers only
+- `docs/POST_MVP_BACKLOG.md` / `docs/PLAN_OUTPUT_INGESTION.md` / `docs/V4_POLLING_LATENCY.md` — archive/evidence candidates (not LIVE STATE)
 
-`docs/N8N_WORKFLOW_NAMING.md` e `docs/OBSERVABILITY.md` restano sotto consolidamento issue **#10** (NEEDS_REVIEW); non sono LIVE STATE.
+`docs/OBSERVABILITY.md` resta sotto consolidamento issue **#10** (NEEDS_REVIEW); non è LIVE STATE.
 
 ## Storico
 

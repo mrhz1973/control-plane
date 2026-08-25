@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-25
 **Scope:** repository semantics/context efficiency only; no runtime activation.
-**Branch:** `docs/wiki-llm-lean-l3a-canonical-extraction` (L3A); originally drafted on `docs/wiki-llm-lean-bootstrap`
+**Branch:** `docs/wiki-llm-lean-l3a5-collision-cleanup` (L3A.5); prior L3A on `docs/wiki-llm-lean-l3a-canonical-extraction`; originally drafted on `docs/wiki-llm-lean-bootstrap`
 **Deletion performed by this audit:** **NONE**.
 
 ## 1. Executive finding
@@ -285,6 +285,16 @@ No deletions are authorized or implied by this audit.
 | `docs/N8N_REBUILD.md` | lean recovery method (not LIVE STATE) |
 | `docs/TELEGRAM_SETUP.md` | lean setup/security method (not LIVE STATE) |
 
-**Still NEEDS_REVIEW (not rewritten in L3A):** `docs/OBSERVABILITY.md`, `docs/N8N_WORKFLOW_NAMING.md`, MVP/PM clusters.
+**Still NEEDS_REVIEW after L3A (pre-L3A.5):** `docs/OBSERVABILITY.md`, `docs/N8N_WORKFLOW_NAMING.md`, MVP/PM clusters.
 
 **Required after L3A merge:** re-census inbound references before any L3B physical reduction.
+
+## 11. L3A.5 semantic collision cleanup (2026-08-25)
+
+- **PR #12 / L3A:** MERGED PASS.
+- **Post-L3A re-census:** PASS; `DELETE_READY` pre-L3A.5 = `[]`.
+- **Collisions fixed:** `MVP_STATUS`, `MVP_CRITERIA`, `N8N_WORKFLOW_NAMING` inventory, `PUBLIC_WEBHOOK_GATE` recommended-NEXT.
+- **Naming METHOD retained** in `docs/N8N_WORKFLOW_NAMING.md` (no live inventory).
+- **Public webhook security** folded into `PROJECT_VISION` §7.0.
+- **Physical deletions:** NONE.
+- **Next:** delete-gate re-census after L3A.5 merge; do not start L3B deletes without proof.
