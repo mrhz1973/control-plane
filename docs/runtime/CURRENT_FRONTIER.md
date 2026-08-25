@@ -5,15 +5,16 @@
 
 | Campo | Valore |
 |---|---|
-| **FOUNDATION** | v3.1 wiki-LLM lean — CANDIDATE in PR #11 until merge |
+| **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `WIKI-LLM-LEAN-CONSOLIDATION` |
 | **ACTIVE WORK** | GitHub issue **#10 — Wiki-LLM lean consolidation — reduce stale/duplicate repository surface** |
-| **BLOCCO ATTIVO** | `LEAN-CANONICAL-RECONCILIATION` |
+| **BLOCCO ATTIVO** | `POST-MERGE-LEAN-BOOTSTRAP-VALIDATION` |
 | **STATO BLOCCO** | IN_PROGRESS |
-| **GATE CORRENTE** | `PR11_LOCAL_READ_ONLY_VERIFY_REQUIRED` |
-| **NEXT** | sync locale `main`, fetch PR #11 branch, verify docs-only diff + CORE BOOT semantics; **zero edits/runtime**; riportare report a GPT Web |
+| **GATE CORRENTE** | `POST_MERGE_LOCAL_SYNC_AND_CORE_BOOT_VERIFY_REQUIRED` |
+| **NEXT** | sync locale `main` al remoto vivo; eseguire fresh CORE BOOT usando solo remote HEAD + README AI-BOOT + CURRENT_FRONTIER + issue #10; verificare `git diff --check` sul commit range post-merge; **zero edits/runtime**; riportare report a GPT Web |
 | **NEXT WORKSTREAM** | issue **#8 — Architecture v3 evidence track** dopo chiusura del consolidation gate |
 | **LAST VERIFIED THROUGH** | `91847807bbc4d7b7f63d8e3b3fc48fdfc72f4699` — D-0081-V PASS, `intra_actor_self_verify` |
+| **PR #11** | MERGED — squash `feb755913712807ecbfe5aac5df662409e234c8e`; docs-only wiki-LLM lean foundation |
 | **OPENCLAW v3 RUNTIME** | NOT_VERIFIED / NOT_ACTIVATED |
 | **PLANNER SMOKE** | Qwen 3.8 37B: NOT_RUN · GLM 5.3: NOT_RUN · Codex OAuth: NOT_RUN |
 | **CURSOR v3 SMOKE** | GLM BYOK: NOT_RUN · bounded loop: NOT_RUN · Bugbot loop: NOT_RUN · checkpoint resume: NOT_RUN |
@@ -28,7 +29,7 @@
 
 ## Boundaries operative correnti
 
-- PR #11 è docs-only; nessuna cancellazione storica fisica nella PR di bootstrap/reconciliation.
+- Foundation v3.1 wiki-LLM lean è canonica su `main`; la riduzione fisica dello storico non è ancora autorizzata.
 - Nessun provider/runtime wiring v3 è ancora promosso a PASS.
 - Nessuna modifica credenziali/OAuth/billing senza gate esplicito.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
@@ -37,10 +38,11 @@
 ## Puntatori
 
 - Active work / cleanup backlog: GitHub issue **#10**
-- Draft implementation: PR **#11** / branch `docs/wiki-llm-lean-bootstrap`
+- Merged lean implementation: PR **#11**
 - Foundation/invarianti: `docs/foundation/PROJECT_VISION.md`
 - Lean method: `docs/foundation/WIKI_LLM_LEAN_METHOD.md`
 - Audit: `docs/audits/WIKI_LLM_LEAN_REDUCTION_AUDIT.md`
+- Candidate manifest: `docs/audits/WIKI_LLM_LEAN_CANDIDATE_MANIFEST.md`
 - Next architecture evidence backlog after lean gate: GitHub issue **#8**
 - Ultimo PASS D-0081-V: `docs/sessions/2026-08-25-control-plane-d-0081-v-d0080w-repository-verify-pass.md`
 - Evidence Cursor rolling: `docs/runtime/LAST_CURSOR_REPORT.md` — **on demand**, può essere stale rispetto al frontier
