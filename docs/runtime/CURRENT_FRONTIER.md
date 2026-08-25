@@ -8,14 +8,15 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `WIKI-LLM-LEAN-CONSOLIDATION` |
 | **ACTIVE WORK** | GitHub issue **#10 — Wiki-LLM lean consolidation — reduce stale/duplicate repository surface** |
-| **BLOCCO ATTIVO** | `L3A-POST-IMPLEMENT-RECENSUS` |
+| **BLOCCO ATTIVO** | `L3A5-STALE-COLLISION-INBOUND-RESOLUTION` |
 | **STATO BLOCCO** | IN_PROGRESS |
-| **GATE CORRENTE** | `PR12_L3A_READ_ONLY_RECENSUS_REQUIRED` |
-| **NEXT** | verificare PR **#12** HEAD `875f2f63f0e82d9fe3f7c2048bdcc02d81fadab4` con re-census read-only: inbound canonical/runtime/history, owner migration, stale semantic claims e delete-gate readiness; **zero edits/runtime/deletions**; riportare a GPT Web |
+| **GATE CORRENTE** | `L3A5_SEMANTIC_COLLISION_CLEANUP_PR` |
+| **NEXT** | eliminare le 4 collisioni active-looking residue (`MVP_STATUS`, `MVP_CRITERIA`, `N8N_WORKFLOW_NAMING`, `PUBLIC_WEBHOOK_GATE`) e risolvere inbound canonical links dei candidati archive; **nessuna cancellazione fisica o branch deletion** |
 | **NEXT WORKSTREAM** | issue **#8 — Architecture v3 evidence track** dopo chiusura issue #10 |
 | **BOOTSTRAP 9.5 VERIFY** | PASS — clone locale reale; `CORE_BOOT_SUFFICIENT=true`; preload foundation/history/report/handoff/PM/session = false; zero write/runtime |
-| **L2 CENSUS** | PASS — reference/consumer/rebuild census completo; `DELETE_CANDIDATE=[]`; L3 separata in L3A semantic deconfliction → L3B physical reduction dopo re-census |
-| **PR #12 L3A** | DRAFT / MERGEABLE — docs-only canonical extraction; HEAD `875f2f63f0e82d9fe3f7c2048bdcc02d81fadab4`; 10 modified paths; 0 deletions; re-census required before merge |
+| **L2 CENSUS** | PASS — reference/consumer/rebuild census completo; pre-L3A `DELETE_CANDIDATE=[]` |
+| **L3A / PR #12** | MERGED — squash `fd88d5f176607bddf746433cfae332c700498129`; canonical extraction PASS; 10 docs/policy paths; 0 physical deletions/runtime assets |
+| **POST-L3A RECENSUS** | PASS — owner migration PASS; `DELETE_READY=[]`; 4 active-looking stale collisions; compatibility pointers keep-value medium/medium-high |
 | **LAST VERIFIED THROUGH** | `91847807bbc4d7b7f63d8e3b3fc48fdfc72f4699` — D-0081-V PASS, `intra_actor_self_verify` |
 | **PR #11** | MERGED — squash `feb755913712807ecbfe5aac5df662409e234c8e`; docs-only wiki-LLM lean foundation |
 | **OPENCLAW v3 RUNTIME** | NOT_VERIFIED / NOT_ACTIVATED |
@@ -33,10 +34,9 @@
 ## Boundaries operative correnti
 
 - Foundation v3.1 wiki-LLM lean è canonica su `main`.
-- L2 census è PASS; nessun file ha ancora superato il delete gate completo.
-- L3A implementation è su PR #12; il merge richiede re-census read-only PASS.
-- L3A resta docs-only e reversibile: nessuna cancellazione fisica, branch deletion o runtime mutation.
-- L3B physical reduction si apre solo dopo re-census post-L3A e delete gate completo.
+- L2 census e L3A canonical extraction sono PASS; post-L3A re-census = PASS ma `DELETE_READY=[]`.
+- L3A.5 è docs-only e reversibile: risolve collisioni semantiche e inbound links; nessuna cancellazione fisica, branch deletion o runtime mutation.
+- L3B physical reduction si apre solo dopo un ulteriore re-census che dimostri il delete gate completo per path specifici.
 - Nessun provider/runtime wiring v3 è ancora promosso a PASS.
 - Nessuna modifica credenziali/OAuth/billing senza gate esplicito.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
@@ -45,7 +45,6 @@
 ## Puntatori
 
 - Active work / cleanup backlog: GitHub issue **#10**
-- L3A implementation: PR **#12** / branch `docs/wiki-llm-lean-l3a-canonical-extraction`
 - Foundation/invarianti: `docs/foundation/PROJECT_VISION.md`
 - Lean method: `docs/foundation/WIKI_LLM_LEAN_METHOD.md`
 - Audit: `docs/audits/WIKI_LLM_LEAN_REDUCTION_AUDIT.md`
