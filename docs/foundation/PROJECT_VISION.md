@@ -1,472 +1,599 @@
 # PROJECT VISION — Foundation
 
-**Repository:** `mrhz1973/control-plane`
-**Documento:** `docs/foundation/PROJECT_VISION.md`
-**Versione:** 2.19 — 2026-07-18 (n8n workflow-authoring reserved to GPT-B; Cursor routing by repository)
-**Versione precedente:** 2.18 — 2026-07-18 (sostituita)
-**Lingua:** Italiano
-**Ruolo del documento:** entry point canonico del progetto control-plane. Da leggere all'inizio di ogni sessione umana o AI prima di interpretare PM, handoff, session log o decisioni locali.
+**Repository:** `mrhz1973/control-plane`  
+**Documento:** `docs/foundation/PROJECT_VISION.md`  
+**Versione:** **3.0 — 2026-08-25**  
+**Versione precedente:** 2.19 — 2026-07-18  
+**Stato:** foundation target accettata; runtime separatamente gated  
+**Ruolo:** entry point canonico del progetto. Leggere prima di interpretare documenti storici, PM, session log o vecchi diagrammi.
+
+> La v3 consolida il nuovo modello multi-planner + Cursor bounded loop accettato dall'operatore il 2026-08-25. La v2.19 resta recuperabile nella Git history; la v3 non autorizza implicitamente PM-34, L5, schedule permanenti, loop permanenti o modifiche runtime.
 
 ---
 
-## 0. Cos'è questo progetto in una frase
+## 0. Il progetto in una frase
 
-`control-plane` è il sistema personale che deve trasformare il lavoro AI-assisted da una sequenza manuale di chat, prompt, copia/incolla e controlli a un loop semi-autonomo: GitHub resta la fonte di verità, n8n osserva e governa, Codex ragiona sul prossimo passo, Ollama classifica il rischio, Cursor implementa, Telegram chiede intervento umano solo quando serve davvero.
+`control-plane` è un sistema personale di sviluppo AI-assisted in cui **GPT Web governa strategia e backlog, GitHub conserva la verità, n8n governa workflow e gate, OpenClaw fa da broker di provider/auth/quota, Codex/GLM/Qwen generano Execution Packet, Cursor implementa in loop task-bounded, Bugbot verifica e Telegram interviene solo sui gate reali**.
 
-La destinazione non è una singola notifica Telegram e non è un singolo PM: la destinazione è un **team AI locale e confinato** che lavora su repository selezionati con costi prevedibili, senza provider API key a consumo, e con gate umani sulle operazioni realmente rischiose.
-
----
-
-## 1. Principio di valore
-
-Il progetto esiste per eliminare micro-interazioni meccaniche ripetute:
-
-- ricostruire il contesto a ogni nuova chat;
-- chiedere continuamente `aggio` per verificare GitHub;
-- copiare e incollare prompt tra orchestratore e implementatore;
-- aprire GitHub solo per capire cosa è cambiato;
-- decidere manualmente ogni volta quale agente deve fare il prossimo passo;
-- subire conferme inutili per azioni già autorizzate e recuperabili.
-
-La domanda guida ereditata dal low-touch loop è:
-
-> **Quante micro-interazioni umane elimina questo componente?**
-
-Un componente che non riduce tempo, ambiguità, errori ripetuti, token o lavoro manuale non appartiene alla strada critica del progetto.
-
-### 1.1 Esempi concreti di micro-interazioni eliminate per fase
-
-La tabella seguente è un riferimento operativo del principio: per ogni componente, quale azione manuale viene tolta.
-
-| Componente | Micro-interazione eliminata | Stato |
-|---|---|---|
-| Workflow 40 polling | Apertura manuale GitHub per vedere nuovi commit | ATTIVO |
-| Telegram base | Verifica manuale "è arrivato il commit?" | ATTIVO |
-| Diff summary Telegram (workflow 42) | Apertura GitHub per leggere cosa è cambiato | ATTIVO |
-| Codex CLI (OAuth ChatGPT Plus) | Pensare manualmente il prossimo prompt | NON ATTIVO |
-| Ollama classifier | Decidere manualmente se un task è sicuro | NON ATTIVO |
-| Cursor CLI | Copiare/incollare il prompt nell'IDE | NON ATTIVO |
-| Auto-aggio (futuro) | Scrivere `aggio` per ogni completamento | NON ATTIVO |
-| Decision Packet su Telegram | Decidere a prosa libera, in modo ambiguo | NON ATTIVO |
-| Handoff via N turni | Capire manualmente quando una chat satura | NON ATTIVO |
-| Uploader esito verifier via sftp | copia-incolla manuale output verifica post-task | ATTIVO (manuale one-shot) |
-
-Ogni nuovo componente che si propone deve aggiungere una riga a questa tabella.
+Obiettivo: eliminare micro-interazioni meccaniche senza concentrare tutto il consumo su un solo modello o abbonamento e senza perdere controllo sulle azioni rischiose.
 
 ---
 
-## 2. Architettura target completa
+## 1. Fonti canoniche e ordine di lettura
 
-Componenti con ruoli rigidi. Nessun componente deve assorbire silenziosamente il ruolo di un altro.
+### 1.1 Source of truth
 
-| Componente | Ruolo target | Dove gira / vive |
-|---|---|---|
-| **GitHub** | Source of truth: codice, piani, documenti, stato verificabile | Cloud |
-| **n8n** | Control-plane operativo: scheduler, polling/webhook, gate, Telegram I/O, stato, routing esterno | VPS IONOS |
-| **Codex CLI (OAuth ChatGPT Plus, ephemeral)** | Orchestratore operativo: legge contesto e genera il prossimo prompt strutturato | PC Ryzen casa, ephemeral single-shot |
-| **Ollama** | Classifier / risk scorer / prompt compressor locale. Non implementa codice | PC Ryzen primario; Dell fallback futuro |
-| **Cursor CLI** | Implementatore: esegue task, modifica file, valida, committa e pusha | PC Ryzen fase 1; Dell futuro per job headless |
-| **Telegram** | Canale umano: notifica, gate, escalation e Decision Packet | Bot dedicato gestito da n8n |
-| **Tailscale** | Trasporto privato VPS ↔ nodo locale | Rete cifrata e autenticata |
+**GitHub è la source of truth.** Nessun agente deve ricostruire lo stato reale da memoria conversazionale quando il repository può essere letto.
 
-### Confine importante
+### 1.2 Read-set operativo di una nuova sessione
 
-Il **model path target ufficiale** è **Codex CLI diretto via OAuth ChatGPT Plus** (ephemeral single-shot sul Ryzen): orchestratore tattico, non implementatore, non worker n8n-ready. La scelta deriva da discovery v1 e dal **Codex bridge V2 PASS** (wrapper locale, fail-closed, senza provider API key a consumo).
+Ordine minimo:
 
-**OpenClaw gateway** resta **backlog / transport confinato opzionale** (loopback, browser bridge storico) — **non** è il model path target.
+1. `docs/runtime/CURRENT_FRONTIER.md` — stato runtime autorevole;
+2. `docs/foundation/PROJECT_VISION.md` — foundation corrente;
+3. `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md` — dettaglio del nuovo modello operativo;
+4. contratto specifico del lavoro (`Backlog Item`, `Execution Packet`, `Execution Checkpoint`, routing);
+5. `docs/foundation/CURSOR_PROMPT_TEMPLATE.md` quando l'esecutore è Cursor;
+6. `docs/runtime/LAST_CURSOR_REPORT.md` e `docs/runtime/LAST_HANDOFF_VERIFY.md` quando pertinenti;
+7. ultimo handoff/checkpoint del task;
+8. documenti storici solo se realmente necessari.
 
-Questa foundation v2.2 prevale come destinazione architetturale: Codex CLI orchestratore, Cursor implementatore, Ollama classificatore. Documenti precedenti che citano «Codex via OpenClaw» come path default restano utili come storico e sicurezza.
+Non leggere decine di session log per default.
 
-### 2.1 Ruoli operativi supervisionati (metodo corrente)
+### 1.3 Stato runtime
 
-Nel metodo supervisionato corrente i ruoli generali sono:
+`PROJECT_VISION.md` descrive **architettura e invarianti**, non deve duplicare uno snapshot runtime destinato a diventare stale.
 
-| Ruolo | Responsabilità |
-|---|---|
-| **GPT-B** | Orchestratore human-facing, autore Decision Packet, guida runtime e **autore autorevole dei workflow n8n** |
-| **Cursor** | Implementatore repository/codice per task esplicitamente autorizzati nel prompt Cursor |
-| **Claude** | Verificatore/reviewer indipendente |
-| **GLM** | Advisor consultivo read-only |
-| **Operatore umano** | Decisore di progetto e operatore supervisionato della UI/runtime n8n |
+Lo stato reale — PM-34, L5, workflow attivi/inattivi, schedule, autorizzazioni, ultimo gate — vive in `docs/runtime/CURRENT_FRONTIER.md`.
 
-**Eccezione esplicita a «Cursor implementa»:** Cursor resta l'implementatore di codice/repository; **GPT-B** è l'autore autorevole degli artefatti workflow n8n e delle istruzioni UI/runtime verso l'operatore umano. Claude può ispezionare e verificare artefatti workflow ma non diventa silenziosamente autore. GLM non scrive, non committa e non modifica workflow.
-
-### 2.2 Confine di authoring n8n (permanente)
-
-1. GPT-B progetta e scrive i workflow n8n di questo progetto.
-2. «Workflow authoring» include: creare workflow; cambiare topologia; aggiungere/rimuovere/ricablare nodi; scrivere o cambiare JavaScript nei Code node; scrivere o cambiare expression; scegliere trigger; definire schedule; definire relazioni Execute Workflow; definire routing Telegram; definire handling Data Table; scegliere comportamento Activate/Publish; preparare JSON importabile completo; preparare istruzioni UI esatte per l'operatore.
-3. Cursor **non** deve autonomamente: inventare, progettare o generare workflow JSON da requisiti; modificare logica nodi; refactorizzare workflow JSON; «migliorare» un workflow fornito da GPT-B; cambiare topologia, expression, schedule, trigger, credenziali, Activate/Publish; inferire dettagli workflow mancanti.
-4. Cursor può toccare `workflows/**` **solo** sotto un prompt futuro che dichiara esplicitamente `PERSIST VERBATIM GPT-B-SUPPLIED WORKFLOW ARTIFACT` e fornisce l'artefatto completo o una patch/hash esatta di GPT-B.
-5. In quel caso ristretto Cursor può soltanto: scrivere i bytes/testo forniti verbatim; validare sintassi JSON; verificare path/filename attesi; riportare il diff; committare e pushare.
-6. Cursor non altera semanticamente l'artefatto fornito. Inconsistenza o dettaglio mancante → `BLOCKED_WORKFLOW_AUTHORING_RESERVED_TO_GPT_B`.
-7. L'operatore umano esegue azioni supervisionate in n8n UI seguendo istruzioni GPT-B. Cursor **non** opera la UI n8n.
-8. Nessun handoff o prompt Cursor futuro può descrivere Cursor come designer autonomo di workflow n8n.
-
-### 2.3 Identificazione workspace Cursor (routing)
-
-I workspace/finestre Cursor si identificano per:
-
-- nome completo del repository;
-- path locale del repository quando necessario;
-- branch corrente;
-- nome task/progetto.
-
-**Non** identificare una finestra Cursor tramite colori UI. Le etichette colore sono **non canoniche** e non devono comparire in istruzioni GPT-B future, prompt Cursor, handoff o report.
+Questa revisione v3 è **docs/design only** e non modifica da sola alcuno di quei valori.
 
 ---
 
-## 3. Stato operativo reale al momento della foundation
+## 2. Architettura target v3
 
-Questa sezione distingue la visione da ciò che è già vero.
+```text
+                        OPERATORE
+                           │
+                           ▼
+                    GPT WEB PLUS
+              STRATEGIC ORCHESTRATOR
+                           │
+                  Backlog Item
+                           │
+                           ▼
+                        GitHub
+                  SOURCE OF TRUTH
+                           │
+                           ▼
+                          n8n
+               WORKFLOW / POLICY / GATES
+                           │
+                           ▼
+                       OpenClaw
+              PROVIDER / AUTH / QUOTA BROKER
+                           │
+             ┌─────────────┼─────────────┐
+             │             │             │
+             ▼             ▼             ▼
+      Qwen 3.8 37B      GLM 5.3        Codex
+         locale          API/piano       OAuth
+             │             │             │
+             └─────────────┼─────────────┘
+                           │
+                 PLANNER SELEZIONATO
+                           │
+                           ▼
+                   Execution Packet
+                           │
+                           ▼
+                  n8n deterministic gate
+                    /             \
+             AUTO-ELIGIBLE      TELEGRAM
+                  │               GATE
+                  ▼                │
+             ╔══════════╗◄─────────┘ after approval
+             ║  CURSOR  ║
+             ║ EXECUTION║
+             ║   LOOP   ║
+             ╚════╤═════╝
+                  │
+        ┌─────────┼─────────┐
+        │         │         │
+   Cursor native  GLM      advisor tools
+      models      BYOK     Codex / Qwen
+        │         │         │
+        └─────────┼─────────┘
+                  │
+               tests
+                  │
+                  ▼
+               Bugbot
+                  │
+            ┌─────┴─────┐
+            │           │
+          PASS         ISSUE
+            │           │
+            ▼           └──► Cursor bounded loop
+          GitHub
+```
 
-| Area | Stato reale |
-|---|---|
-| **Workflow n8n produzione** | `40 - CP v4 multirepo + classifier bridge - ACTIVE`, polling 1 minuto |
-| **Workflow backup** | `41` backup off, da conservare finché non c'è decisione esplicita |
-| **C1 latency** | PARTIAL con eccezione operativa accettata: SLA 1–5 minuti, non strict `<30s` |
-| **C2–C5 MVP** | PASS secondo snapshot MVP |
-| **Webhook v5 pubblico** | Non configurato / non attivo |
-| **PM-34 real worker** | Bloccato: nessun Codex real worker n8n-ready |
-| **OpenClaw gateway (Ryzen)** | **PASS** (2026-05-25) loopback manual — [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md) |
-| **OpenClaw agent `main` Step A** | **BLOCKED** (2026-05-25) — liveness via gateway blocked by **no OpenAI provider API key** policy; gateway PASS unchanged. [session](../sessions/2026-05-25-control-plane-openclaw-agent-step-a-provider-api-key-blocked.md) |
-| **Codex OAuth/CLI** | Login/setup verificati in track PM-30/33; worker non abilitato |
-| **Ollama classifier (Ryzen)** | **PASS** (2026-05-25) API smoke; **contract** [classifier-wrapper-v1](../contracts/classifier-wrapper-v1.md) (design only, no runtime). `ollama run` non idoneo; non n8n / non PM-34 unlock |
-| **Cursor Agent CLI (Ryzen)** | **PASS** (2026-05-25) — install + auth + models; plan smoke read-only su `PROJECT_VISION.md`; worker/`--force`/`--yolo`/`--print` non usati. [session](../sessions/2026-05-25-control-plane-cursor-agent-cli-install-auth-plan-smoke-pass.md) · headless/n8n loop ancora **non** provato |
-| **Tailscale VPS ↔ Ryzen** | **PASS** — mesh privata operativa (`ubuntu` ↔ `asusdesktop`); ping privato bidirezionale; n8n invariato su loopback; nessun Funnel né porta pubblica. [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md) · [FOUNDATION_STATUS](FOUNDATION_STATUS.md) |
-
-Regola: non confondere documento di visione con runtime già attivo. La visione può descrivere la destinazione, ma ogni attivazione reale resta verificabile da GitHub, n8n e output Telegram.
+**Tailscale** resta il trasporto privato VPS ↔ nodo locale quando il runtime lo richiede.
 
 ---
 
-## 4. Le macchine (visione, non specifiche complete)
+## 3. Ruoli canonici
 
-Il dettaglio hardware completo vivrà in `docs/foundation/ARCHITECTURE.md` (futuro). Qui solo i ruoli.
+### 3.1 GPT Web — strategic orchestrator / backlog owner
 
-### 4.1 VPS IONOS
+GPT Web resta l'interfaccia principale con l'operatore e l'orchestratore strategico.
+
+Responsabilità:
+
+- leggere GitHub vivo prima di fidarsi della memoria chat;
+- governare direzione, priorità e backlog;
+- creare il **Backlog Item** con objective, scope, acceptance, rischio/complessità e planner preference;
+- mantenere le invarianti foundation;
+- preparare Decision Packet per i gate veri;
+- essere autore autorevole dei workflow n8n e delle istruzioni UI/runtime n8n secondo §9;
+- non essere obbligato a produrre ogni dettaglio del prompt operativo Cursor.
+
+GPT Web decide **cosa** deve entrare nel processo. Il planner selezionato traduce quel contratto in un Execution Packet.
+
+### 3.2 GitHub — memoria persistente e audit
+
+GitHub conserva almeno:
+
+- backlog;
+- decisioni;
+- foundation/policy;
+- planner selection/fallback evidence;
+- Execution Packet;
+- Execution Checkpoint;
+- risultati test/review;
+- commit/diff;
+- handoff;
+- stato autorevole.
+
+Una singola chat, una sessione planner o una context window Cursor devono essere sostituibili.
+
+### 3.3 n8n — workflow engine / deterministic policy gate
+
+n8n:
+
+- osserva eventi;
+- deduplica;
+- legge stato/backlog;
+- chiama il broker/provider path autorizzato;
+- applica policy deterministiche;
+- decide `CURSOR_LOOP` vs `TELEGRAM_GATE`;
+- conserva/coordina stato operativo;
+- non diventa il planner LLM.
+
+Le hard policy hanno precedenza sul giudizio di qualsiasi modello.
+
+### 3.4 OpenClaw — provider/auth/quota broker
+
+OpenClaw entra nella strada target come **broker**, non come strategic orchestrator e non come implementatore.
 
 Ruolo:
 
-- ospita n8n in modalità 24/7;
-- osserva GitHub tramite polling o futuro webhook;
-- gestisce Telegram e deduplica;
-- decide quando chiamare nodi locali via Tailscale;
-- conserva il control-plane operativo.
+- adapter provider;
+- autenticazione;
+- Codex OAuth quando verificato nel runtime reale;
+- GLM/Z.AI quando configurato;
+- accesso al modello locale quando configurato;
+- disponibilità/rate-limit/usage state quando esposti;
+- failover tecnico **solo** entro la policy autorizzata;
+- interfaccia comune per planner e futuri advisor Cursor.
 
-Non deve:
+OpenClaw non deve inventare silenziosamente la strategia del progetto.
 
-- ospitare modelli LLM pesanti;
-- diventare implementatore;
-- contenere provider API key se non autorizzate esplicitamente;
-- eseguire codice di repository target come worker AI.
+### 3.5 Planner pool — Codex / GLM / Qwen
 
-### 4.2 PC Ryzen casa — nodo AI primario fase 1
+Il planner selezionato trasforma un `Backlog Item` in un `Execution Packet`.
 
-Ruolo target fase 1:
+#### Codex OAuth
 
-- Ollama primario con modello classifier più ricco (`qwen3:14b` o equivalente sostenibile);
-- Codex CLI via OAuth ChatGPT Plus, ephemeral single-shot, senza provider API key a consumo;
-- OpenClaw confinato su loopback locale solo come transport/backlog opzionale;
-- Cursor CLI per esecuzione task;
-- Tailscale per raggiungibilità privata da n8n.
+Preferenza tipica:
 
-Se il Ryzen è offline, n8n non deve inventare esecuzione: deve applicare il principio di **fallback graceful** (vedi sezione 7.6) e degradare a Telegram gate o modalità manuale.
+- architettura;
+- debugging difficile;
+- reasoning ad alto valore;
+- task complessi;
+- advisor senior.
 
-### 4.3 Dell Latitude 5430 — nodo always-on/fallback futuro
+Target auth: subscription/OAuth dove supportato e verificato; nessuna assunzione che Codex OAuth sia un modello nativo del picker Cursor.
 
-Ruolo futuro: nodo always-on a basso consumo, fallback Ollama leggero, OpenClaw come transport/browser bridge opzionale confinato (non model path), Cursor CLI job worker. Non attivato in fase 1.
+#### GLM 5.3
 
-### 4.4 PC lavoro
+Preferenza tipica:
 
-Il PC lavoro è macchina operativa umana, non nodo produzione del loop. Può servire per docs-only, controllo GitHub e lavoro supervisionato. Non deve diventare nodo runtime automatico, né ospitare OpenClaw/Ollama in produzione, né ricevere prompt destinati a repository diversi da `mrhz1973/control-plane` quando il flusso è control-plane.
+- planning medio/ordinario;
+- overflow Codex;
+- review/second opinion;
+- implementazione dentro Cursor tramite BYOK/API quando la configurazione reale lo supporta.
 
----
+GLM non è più fondativamente limitato al solo ruolo read-only della v2.19: nella v3 può essere **planner** e, dopo verifica, **motore di implementazione Cursor**. I gate di scrittura restano definiti dal ruolo executor/Execution Packet, non dal nome del modello.
 
-## 5. Loop target fase 1
+#### Qwen 3.8 37B locale
+
+Preferenza tipica:
+
+- planner locale senza consumo provider;
+- task semplici/medi quando adeguato;
+- generazione Execution Packet;
+- advisor/reviewer locale nello stesso job quando è già caricato.
+
+Qwen 3.8 37B **non è un router daemon obbligatorio** e non deve restare residente 24/7 solo per scegliere Codex vs GLM. Può essere caricato per il job e scaricato quando serve restituire RAM/VRAM a Cursor e al sistema.
+
+Non viene introdotto un secondo modello locale piccolo obbligatorio nella strada principale.
+
+### 3.6 Cursor — execution harness
+
+Cursor è il centro dell'esecuzione tecnica.
+
+Riceve un **Execution Packet** già delimitato e può usare:
+
+- Agent;
+- `/goal` / `/loop` o equivalente verificato nella versione installata;
+- subagent;
+- terminale/filesystem;
+- test;
+- Git;
+- tool/MCP autorizzati;
+- modelli Cursor;
+- GLM BYOK dove verificato;
+- advisor Codex/Qwen tramite tool esterni dove verificato.
+
+Il loop Cursor è **task-bounded**. Cursor non riceve autonomia generale sul progetto.
+
+### 3.7 Bugbot — reviewer
+
+Bugbot è reviewer/quality gate, non router e non strategic orchestrator.
+
+Target:
 
 ```text
-[1] Commit su repo osservato
-    ↓
-[2] n8n workflow 40 rileva commit / piano / evento
-    ↓
-[3] n8n deduplica, raccoglie metadata e prepara payload
-    ↓
-[4] n8n chiama via Tailscale il nodo Ryzen
-    ↓
-[5] Codex CLI legge il contesto e genera il prossimo prompt operativo
-    ↓
-[6] Ollama classifica rischio, routing e necessità di approvazione
-    ↓
-[7A] Se low-risk e dentro policy: Cursor CLI riceve il prompt ed esegue
-[7B] Se medium/high/ambiguo: Decision Packet su Telegram (sezione 7.7)
-    ↓
-[8] Cursor CLI modifica, valida, committa e pusha
-    ↓
-[9] n8n rileva il nuovo commit e il loop ricomincia
+Cursor → tests → Bugbot
+                 ├─ PASS → GitHub
+                 └─ ISSUE → Cursor bounded fix loop
 ```
 
-### Ruoli nel loop
+Autofix cloud non è default. Il numero di review/fix round deve essere limitato; default iniziale di design: `max_review_rounds = 3`, poi escalation.
 
-- **n8n** non ragiona come AI: applica regole, polling, routing, deduplica e gate.
-- **Codex** ragiona e produce il prossimo prompt operativo.
-- **Ollama** non decide strategia: classifica rischio, ambiguità, route e approvazione richiesta.
-- **Cursor CLI** non decide la rotta: implementa quanto autorizzato sul repository/codice; **non** è l'autore autonomo dei workflow n8n (vedi §2.1–§2.2).
-- **GPT-B** (metodo supervisionato corrente) è l'autore autorevole dei workflow n8n e delle istruzioni UI verso l'operatore.
-- **Telegram** non è archivio: è interfaccia decisionale umana strutturata via Decision Packet.
-- **GitHub** è il registro verificabile di stato e risultati.
+### 3.8 Telegram — human gate
 
----
+Telegram è interfaccia decisionale, non archivio.
 
-## 6. I tre sistemi di livelli
+Interviene per gate reali, inclusi:
 
-Questi livelli sono distinti. Non vanno sovrapposti.
+- distruttivo/irreversibile;
+- scope expansion;
+- produzione/deploy/runtime sensibile;
+- auth/credential/billing;
+- rischio alto;
+- fallback non equivalente;
+- policy violation;
+- loop/review non convergente;
+- ambiguità/confidence insufficiente secondo policy.
 
-### 6.1 Livelli memoria / contesto AI — 0/1/2/3
+### 3.9 Operatore umano
 
-Derivati dalla metodologia LLM Wiki / token efficiency.
-
-| Livello | Fonte | Scopo |
-|---|---|---|
-| **Livello 0** | Regole permanenti (`ORCHESTRATOR_RULES`, `AI_RULES`, `WORKFLOW`, `COMMANDS`) | Policy canoniche |
-| **Livello 1** | Stato autorevole (`PROJECT_STATE`, `CHECKPOINT`, `MVP_STATUS` dove presente) | Stato progetto e audit |
-| **Livello 2** | `LLMS.md`, `docs/wiki/` | Memoria derivata AI-friendly e token-efficient |
-| **Livello 3 futuro** | Indice locale / embeddings / Ollama | Ricerca semantica locale, runtime-gated |
-
-Regola: Livello 2 non sostituisce Livello 0/1. Se divergono, vince il canonico.
-
-Quando `docs/LLMS.md` o `docs/wiki/` verranno realmente introdotti,
-dovranno riportare una sintesi token-efficient di questa regola, senza
-duplicarne il testo completo e senza sostituire `PROJECT_VISION.md` come
-fonte canonica.
-
-### 6.2 Livelli automazione operativa — A/B/C
-
-Derivati dal low-touch loop.
-
-| Livello | Nome | Descrizione |
-|---|---|---|
-| **A** | Manuale-supervisionata | Utente/orchestratore guida quasi ogni step; baseline sicura |
-| **B** | MVP Low-Touch | Il sistema elimina copia/incolla, aggio manuale e triage meccanico; utente interviene sui gate |
-| **C** | Futuro semi-autonomo | Task low-risk avanzano entro perimetri definiti; Telegram per decisioni reali |
-
-Target del progetto: arrivare prima a un **B utile**, non saltare direttamente a C.
-
-### 6.3 Livelli rischio classifier — low/medium/high
-
-Derivati dallo schema PM-17/Ollama classifier.
-
-| Rischio | Significato operativo | Azione target |
-|---|---|---|
-| **low** | Docs-only, metadata, riepiloghi, task confinati e reversibili | Può procedere automaticamente se policy consente |
-| **medium** | Modifiche codice/config/workflow non distruttive ma significative | Telegram gate via Decision Packet |
-| **high** | Deploy, rollback, secrets, OAuth, billing, destructive ops, force push, dati sensibili | Sempre gate umano esplicito via Decision Packet |
+L'operatore è il decisore finale sui gate. Una decisione operatore è valida solo quando deriva da un suo messaggio diretto/azione esplicita, non da una raccomandazione incollata di un advisor.
 
 ---
 
-## 7. Regole operative ereditate dai documenti reali
+## 4. Oggetti di lavoro persistenti
 
-### 7.1 GitHub source of truth
+### 4.1 Backlog Item
 
-L'orchestratore non deve fidarsi della memoria della chat quando GitHub può essere letto. Lo stato reale è ciò che risulta da repository, commit, documenti e output runtime osservabile.
+Contratto strategico scritto da GPT Web.
 
-**Verifica implementatore (Composer 2.5 Fast / modello implementatore):** un SUCCESS dichiarato in chat **non** equivale a PASS. Un task è PASS solo con output verificabile: hash commit, diff reale, `git status` pulito, `git log`, verifica su GitHub. Il SUCCESS testuale da solo è insufficiente; GitHub resta fonte di verità.
+Canonico: `docs/contracts/backlog-item-v1.md`.
 
-**Guardia retry/accesso (operativa, non componente):** un singolo fallimento di fetch/accesso **non** prova che una risorsa sia irraggiungibile (es. GitHub raw, `web_fetch`, API, pagine remote, file o endpoint remoti leggibili). Prima di concludere «non riesco a leggere X» o «X non è raggiungibile», **riprovare almeno una volta**. Non trascinare per tutta la sessione un assunto negativo non riverificato. Riverificare quando: lo stato può essere cambiato; l'utente afferma il contrario; una fonte alternativa suggerisce che la risorsa esiste; la prima richiesta può essere fallita per rete/cache/auth temporanea.
+Non è il prompt Cursor completo.
 
-**Guardia hash remoto vince sul raw (operativa):** il PASS post-Cursor richiede l'**hash remoto su `main`**. Fonte primaria: `git ls-remote origin main` oppure `git rev-parse origin/main`. Il **GitHub raw è secondario**, best-effort, e può essere **stale** per cache/CDN. Se l'hash remoto conferma e il raw diverge, **non** declassare il PASS. Nessun PASS senza hash remoto. Solo se il remoto **non** mostra il commit, usare l'output locale per distinguere push mancato, branch sbagliato o commit mai fatto.
+### 4.2 Planner Selection
 
-### 7.2 LLMS-first e token efficiency
+La selezione combina:
 
-Ogni agente deve leggere prima l'entry point compatto, poi i documenti specifici:
+1. preferenza semantica indicata da GPT Web nel Backlog Item;
+2. disponibilità/quota/resource state osservabile;
+3. fallback policy deterministica.
 
-1. `docs/foundation/PROJECT_VISION.md` per la visione del control-plane;
-2. eventuale `docs/LLMS.md` / `docs/wiki/current-state.md` quando verranno creati nel repo;
-3. documento specifico del task o del componente;
-4. file storici solo quando servono davvero.
+Canonico: `docs/contracts/planner-routing-policy-v1.md`.
 
-Non leggere file storici enormi per default se la risposta sta nei documenti di livello superiore.
+Non serve un LLM separato solo per routing.
 
-### 7.3 Aggressive autonomy controllata
+### 4.3 Execution Packet
 
-Per azioni recuperabili e già autorizzate dal prompt, l'implementatore non deve bloccare il progetto con conferme ripetitive. Deve eseguire, validare, committare, pushare e riportare.
+Il planner effettivo produce il task operativo completo per Cursor.
 
-Deve invece fermarsi per:
+Canonico: `docs/contracts/execution-packet-v1.md`.
+
+Il planner non auto-autorizza il proprio packet: n8n/policy decide se può entrare nel Cursor loop o deve essere gated.
+
+### 4.4 Execution Checkpoint
+
+Stato persistente di un job Cursor incompleto.
+
+Canonico: `docs/contracts/execution-checkpoint-v1.md`.
+
+Permette il rollover di context window senza usare la vecchia chat come memoria.
+
+---
+
+## 5. Planner routing e utilizzo dei pool
+
+Principio economico: **massimizzare il lavoro mensile distribuendo il carico sui pool già disponibili senza degradare silenziosamente la qualità**.
+
+### 5.1 Preferenze indicative
+
+```text
+low/simple      → Qwen / GLM / Codex secondo backlog + risorse
+medium          → GLM / Codex; Qwen quando considerato adeguato
+high/complex    → Codex / equivalente GLM / gate
+```
+
+La preferenza reale viene scritta nel Backlog Item da GPT Web.
+
+### 5.2 Quota state
+
+Il runtime futuro può distinguere concettualmente:
+
+```text
+healthy
+conserve
+exhausted
+unknown
+```
+
+Le soglie numeriche non sono canonizzate in foundation: vanno calibrate con evidenza reale prima dell'attivazione.
+
+### 5.3 Fallback
+
+- low risk: fallback ordinato consentito se il Backlog Item lo permette;
+- medium: fallback equivalente o gate;
+- high: nessuna degradazione silenziosa; equivalente verificato oppure gate.
+
+Ogni fallback registra planner richiesto, planner usato e motivo.
+
+---
+
+## 6. Cursor execution loop e consumo
+
+### 6.1 Principio
+
+Cursor conserva il proprio harness anche quando il modello di inferenza non è un modello Cursor.
+
+Target prioritario da verificare:
+
+```text
+Cursor harness
+    + GLM 5.3 BYOK
+    + bounded /goal /loop
+```
+
+Questo permette di usare terminale, edit, test, Git e subagent Cursor scaricando parte dell'inferenza sul pool GLM.
+
+### 6.2 Modelli Cursor
+
+Restano disponibili per task/subagent dove danno vantaggio concreto.
+
+Non devono essere usati per forza per ogni micro-step se GLM BYOK è adeguato e verificato.
+
+### 6.3 Codex/Qwen advisor
+
+Track separato:
+
+```text
+Cursor → tool/MCP/CLI → OpenClaw → Codex OAuth
+Cursor → tool/local API → Qwen 3.8 37B
+```
+
+Queste capacità sono target, non claimed attive finché non esiste smoke/evidence dedicata.
+
+### 6.4 Loop bounds
+
+Ogni Execution Packet deve definire:
+
+- goal singolo;
+- allowed/forbidden scope;
+- stop conditions;
+- validation/acceptance;
+- max round;
+- review limit;
+- escalation;
+- checkpoint policy.
+
+Loop infinito vietato.
+
+---
+
+## 7. Context window, handoff e nuove sessioni
+
+Questa è un'invariante architetturale.
+
+### 7.1 Principio
+
+**La memoria del progetto vive su GitHub, non nella context window.**
+
+Ogni attore deve poter essere sostituito da una nuova sessione senza perdere task, HEAD, scope, acceptance, test, findings, gate e next action.
+
+### 7.2 GPT Web rollover
+
+- `handoff ora` = kill switch manuale;
+- **20 prompt utente = hard ceiling storico**, non obiettivo da raggiungere;
+- handoff anticipato se compaiono ripetizioni, perdita di vincoli, confusione di repo/HEAD o crescita eccessiva del contesto;
+- mantenere sempre margine sufficiente per produrre un handoff completo;
+- nuova chat legge il repo vivo.
+
+Path handoff resta:
+
+`docs/handoffs/YYYY-MM-DD-HHMM-<topic>-handoff.md`
+
+Usare `docs/foundation/HANDOFF_TEMPLATE.md`.
+
+### 7.3 Planner rollover
+
+Codex/GLM/Qwen sono per default sessioni task-oriented.
+
+Una nuova planner session legge:
+
+1. Backlog Item;
+2. policy/foundation necessarie;
+3. stato repo/diff pertinente;
+4. packet/checkpoint precedente se il task è già iniziato.
+
+Non richiede la cronologia completa del planner precedente.
+
+### 7.4 Cursor rollover
+
+Prima di chiudere una sessione Cursor incompleta deve essere scritto un Execution Checkpoint.
+
+Nuova sessione:
+
+```text
+Execution Packet
++ latest Execution Checkpoint
++ live Git state
+→ continue from next_action
+```
+
+Se Git live contraddice il checkpoint, Git live vince e la divergenza viene riportata.
+
+### 7.5 Handoff quality
+
+Un handoff/checkpoint è incompleto se una nuova sessione deve chiedere:
+
+- a che punto eravamo?;
+- quale commit?;
+- quali file?;
+- quali test sono passati/falliti?;
+- quali findings restano?;
+- qual è il prossimo passo concreto?.
+
+---
+
+## 8. Hard policy e gate
+
+### 8.1 Aggressive autonomy controllata
+
+Per azioni recuperabili già autorizzate dall'Execution Packet, l'implementatore deve eseguire senza conferme meccaniche ripetitive.
+
+Fermarsi/escalare per almeno:
 
 - `git reset`, `git clean`, `git push --force`;
-- segreti, credenziali, OAuth material, token, API key;
-- billing o nuovi servizi a pagamento;
+- distruttivo/cancellazioni non autorizzate;
+- segreti/credenziali/OAuth/billing mutation;
 - deploy/tag/rollback non autorizzati;
-- modifiche runtime n8n/VPS non autorizzate;
-- cancellazioni o scope drift;
-- conflitti non risolvibili;
-- operazioni che toccano dati personali o sistemi esterni.
+- runtime n8n/VPS non autorizzato;
+- scope drift;
+- conflitto non risolvibile;
+- dati personali/sistemi esterni fuori scope;
+- permanent schedule/loop non autorizzato.
 
-### 7.3.1 Utente decisore, orchestratore esecutore
+### 8.2 Runtime boundary
 
-Specializzazione operativa di §7.3 e §7.7. I gate reali di §7.3
-(segreti, credenziali, deploy, runtime non autorizzato, irreversibili)
-restano fermi.
+La foundation v3 **non modifica automaticamente**:
 
-- L'utente decide tramite Decision Packet (§7.7) con 2–5 opzioni numerate;
-  risponde normalmente solo con `1`, `2`, `3`, `4` o `5`.
-- L'orchestratore svolge direttamente tutto il lavoro accessibile tramite
-  i suoi strumenti. Non delega all'utente letture, confronti, verifiche,
-  ricerca, copia/incolla o controlli nodo-per-nodo che può svolgere da solo.
-- Quando un'azione locale è inevitabile (non accessibile agli strumenti
-  dell'orchestratore), viene richiesta una sola azione compatta.
-- Dopo una decisione o conferma (`vai`, `procedi`, `next`, numero del
-  Decision Packet), l'orchestratore completa l'intero scope autorizzato
-  fino al prossimo gate reale.
-- **Regola anti-proxy (provenienza decisioni):** una scelta Decision Packet
-  è valida **solo** se proviene da un messaggio diretto dell'utente che
-  contiene un'opzione ammessa (`1`–`5`) o una ratifica diretta inequivocabile.
-  Raccomandazioni advisor, materiale citato/copiato, report incollati,
-  simulazioni, esempi e scelte scritte da un altro modello **non** sono
-  decisioni operatore. L'orchestratore mantiene `OPERATOR_DECISION_PENDING`
-  finché non esiste la risposta diretta dell'utente. Una ratifica ex-post
-  va registrata come tale con `decision_provenance=direct_operator_message`.
-  Un numero raccomandato nel testo advisor **non** può essere inferito come
-  scelta dell'utente anche se l'utente ha incollato quel testo in chat.
+- PM-34;
+- `n8n_ready`;
+- L5 status;
+- activation/runtime/endurance authorization;
+- permanent Schedule;
+- permanent loop;
+- workflow produzione;
+- webhook pubblico / Telegram Trigger;
+- credenziali;
+- provider runtime config.
 
-### 7.4 n8n template-first
+Valori correnti: leggere `CURRENT_FRONTIER.md`.
 
-Quando si progetta un workflow n8n:
+### 8.3 Repository policy storica preservata
 
-- preferire template JSON importabile + doc companion;
-- template inattivo by default (`active: false`);
-- nessun segreto o chat_id reale in Git;
-- import, execute e schedule activation sono gate separati;
-- workflow export devono essere redatti prima di commit.
+- repo `control-plane` dichiarato non-confidenziale secondo decisioni precedenti;
+- controllo compensativo: rotazione credenziali a fine progetto secondo `docs/ROTATION_CHECKLIST.md`;
+- redazione dei materiali prima di condivisione/commit resta responsabilità operatore secondo la policy consolidata precedente;
+- tailnet identifiers e chat_id mantengono le tolleranze già deliberate;
+- `alina-lavoro` non viene toccato come app/runtime dal control-plane salvo scope esplicito futuro.
 
-### 7.5 n8n no provider APIs by default
+### 8.4 Workflow storici
 
-Regola architetturale, non solo economica:
-
-n8n è workflow orchestration, queue, polling, GitHub, notification e file coordination. n8n **non deve** chiamare provider AI API a pagamento (OpenAI, Anthropic, OpenRouter, ecc.) come comportamento di default.
-
-Quando il loop ha bisogno di "intelligenza AI", il flusso è: n8n → (via Tailscale) → nodo locale (Ollama / Codex CLI diretto) → ritorno
-
-Mai:
-n8n → API OpenAI pagata → ritorno
-
-L'uso di API pagate richiede un gate manuale esplicito e una decisione di costo registrata. Per default tutto passa per modelli locali (Ollama) o per OAuth ChatGPT Plus (Codex CLI diretto).
-
-### 7.6 Fallback graceful
-
-Invariante architetturale derivato dal low-touch loop.
-
-**Principio:** se un componente automatico fallisce, il loop torna sempre alla modalità manuale-supervisionata (livello A) senza perdita di stato. GitHub è la safety net — tutto è recuperabile dai commit.
-
-Esempi pratici:
-
-- Se Ollama classifier non risponde → il task non viene auto-promosso a low-risk; default safe = Telegram gate manuale.
-- Se Tailscale è down → n8n non può raggiungere il nodo locale; default safe = Telegram all'utente "loop runtime offline, gestisci manualmente".
-- Se Codex CLI esaurisce quota o errori OAuth → default safe = ChatGPT in modalità manuale dall'utente.
-- Se Cursor CLI fallisce un task → il prompt resta su GitHub come plan; default safe = utente apre Cursor IDE manualmente.
-- Se n8n crash sul VPS → polling si ferma; default safe = utente nota dal silenzio Telegram e ripristina.
-
-In tutti i casi: **niente è perso**, perché lo stato vero è su GitHub.
-
-### 7.6.1 Conseguenza progettuale
-
-Ogni nuovo componente automatico che si propone deve rispondere a tre domande:
-
-1. Cosa succede se questo componente fallisce?
-2. Il sistema torna manuale in modo pulito o resta in stato indeterminato?
-3. Lo stato è recuperabile da GitHub o ho introdotto stato fuori da GitHub?
-
-Se risposte non chiare, il componente non è pronto per produzione.
-
-### 7.7 Decision Packet — formato canonico dei gate umani
-
-Quando il loop genera un gate umano (rischio medium/high, ambiguità, decisione strategica), l'interfaccia con l'utente è il **Decision Packet**, non una domanda in prosa libera.
-
-**Regole del Decision Packet:**
-
-- struttura strutturata, non libera;
-- max 2-5 opzioni numerate;
-- raccomandazione esplicita dell'orchestratore;
-- l'utente risponde con **numero o parola corta**, mai prosa;
-- canale: Telegram (notifica e risposta).
-
-**Campi canonici minimi** (versione ridotta del format completo):
-
-| Campo | Contenuto |
-|---|---|
-| **ID** | Identificatore univoco (es. `D-NNNN-X`) |
-| **Kind** | `automation` / `meta` / `runtime` |
-| **Contesto** | 1-2 frasi: cosa è successo |
-| **Perché serve decisione** | Perché il sistema non può procedere da solo |
-| **Opzioni** | 2-5 alternative numerate |
-| **Raccomandazione** | Quale opzione è suggerita e perché |
-| **Rischio principale** | Cosa può andare male con l'opzione raccomandata |
-| **Micro-interazioni eliminate** | Cosa risparmia all'utente |
-| **Scelta richiesta** | "Scrivi: 1 / 2 / 3" |
-| **Cosa NON viene fatto** | Senza decisione, cosa resta fermo |
-
-Il format completo esteso (13 campi) sarà documentato in un file separato `docs/foundation/DECISION_PACKET_FORMAT.md` quando il primo Decision Packet operativo arriverà a Telegram.
-
-**Conseguenza:** il "Telegram gate" della sezione 5 non è una domanda generica. È sempre un Decision Packet strutturato.
-
-### 7.8 Docs ROI Gate
-
-Ogni nuovo documento deve ridurre almeno una di queste cose: token, tempo utente, ambiguità, errori ripetuti, lavoro manuale futuro. Altrimenti è burocrazia.
-
-`PROJECT_VISION.md` supera il gate perché evita di ricostruire la destinazione del progetto da decine di session log e PM.
-
-### 7.9 Anti-burocrazia / momentum
-
-La sicurezza esiste per **abilitare il progresso**, non per creare preparazione indefinita. Regole operative:
-
-- **PREP PASS è ammesso solo quando rimuove un blocco reale.** Un PREP che non toglie un blocco concreto è burocrazia (vedi §7.8).
-- Per **una singola catena di feature confinata**, non creare documenti ripetuti di pre-pass / pre-pre-pass a meno che **non compaia un nuovo rischio concreto e nominato**.
-- Dopo che una feature ha avuto:
-  - **1 prova di import/reimport (rehearsal)**, e
-  - **massimo 2 run manuali ripetuti**,
-  il progetto deve fare **una** di queste due cose:
-  - **avanzare al prossimo gate reale**, oppure
-  - marcare **BLOCKED con un blocker concreto**.
-- I **test opzionali non sono default**: richiedono un **rischio nominato** per essere eseguiti.
-- I **test non deterministici sono vietati come evidenza di PASS**.
-- Il **PASS** deve basarsi su **output atteso deterministico**, **evidenza di hash/commit**, oppure **output runtime esplicitamente attestato dall'utente**.
-
-Questa regola non sostituisce i gate di sicurezza (runtime, segreti, PM-34, workflow di produzione): li mantiene, ma vieta di moltiplicare documenti e pre-pass quando non c'è un blocco reale da rimuovere.
+- workflow `40` è produzione e non viene mutato in silenzio;
+- workflow `41` è backup/off secondo stato storico e non viene cancellato in silenzio;
+- ogni stato corrente di altri workflow si legge dal frontier, non da questo file.
 
 ---
 
-## 8. Comandi e convenzioni
+## 9. Authoring n8n — boundary permanente
 
-### 8.1 Comandi Git minimi sempre validi
+GPT Web/GPT-B resta autore autorevole degli artefatti workflow n8n e delle istruzioni UI/runtime n8n.
 
-Da qualunque clone operativo:
+Cursor **non** deve autonomamente:
+
+- inventare/progettare workflow JSON;
+- cambiare topologia/nodi/expression/Code node;
+- scegliere schedule/trigger;
+- cambiare Activate/Publish;
+- inferire dettagli workflow mancanti;
+- migliorare semanticamente un workflow fornito.
+
+Cursor può toccare `workflows/**` solo con autorizzazione esplicita:
+
+`PERSIST VERBATIM GPT-B-SUPPLIED WORKFLOW ARTIFACT`
+
+e artefatto/patch/hash completo fornito da GPT Web.
+
+In quel caso Cursor può persistere verbatim, validare sintassi/path, riportare diff e fare Git; non ridisegna la logica.
+
+Inconsistenza → `BLOCKED_WORKFLOW_AUTHORING_RESERVED_TO_GPT_B`.
+
+L'operatore esegue le azioni UI n8n supervisionate quando necessarie.
+
+---
+
+## 10. n8n / provider boundary
+
+n8n è workflow/control plane, non endpoint AI a consumo diretto.
+
+Target v3:
+
+```text
+n8n → Tailscale/local broker → OpenClaw → provider selezionato
+```
+
+Non:
+
+```text
+n8n → provider API arbitrario/in-line senza broker/policy → risultato
+```
+
+L'uso runtime di GLM/Codex/Qwen attraverso il broker deve essere coerente con il routing policy e con le autorizzazioni/costi già approvati. Questa foundation definisce il target ma non attiva nuove chiamate runtime.
+
+---
+
+## 11. Git verification e PASS
+
+Un `SUCCESS` testuale non equivale a PASS.
+
+### 11.1 Preflight minimo implementatore
 
 ```bash
-git rev-parse --show-toplevel
-git remote -v
+git fetch --prune origin
+git status --short
 git branch --show-current
-git status --short
-git log --oneline -5
-```
-
-Prima di modificare:
-
-```bash
-git fetch origin main
+git remote -v
 git pull --ff-only origin main
+git ls-remote origin main
+git rev-parse HEAD
+git rev-parse origin/main
 ```
 
-Solo se workspace pulito.
+Workspace dirty inatteso, repo/branch errato, pull/auth/conflict = gate diagnostico reale.
 
-Prima di chiudere:
-
-```bash
-git diff --check
-git status --short
-git log --oneline -5
-```
-
-Commit sempre selettivo. Mai `git add .`.
-
-**Post-push verification (obbligatoria dopo `git push origin main`):**
+### 11.2 Post-push evidence
 
 ```bash
 git log --oneline -5
@@ -478,281 +605,199 @@ git show --stat HEAD
 git ls-remote origin main
 ```
 
-Il report finale Cursor deve contenere l'**output testuale verbatim** di questi comandi, non una tabella e non un riassunto. Un SUCCESS senza questi output **non** vale PASS.
+PASS remoto richiede coerenza di HEAD/origin/remote, branch corretto, workspace pulito e test/acceptance richiesti.
 
-**Handoff / post-push verification invariant (anti-regressione):**
+Il report finale Cursor deve includere output verbatim secondo `CURSOR_PROMPT_TEMPLATE.md`.
 
-- Dopo ogni task Cursor che fa commit/push, il **report finale Cursor** deve includere sempre l'output verbatim dei comandi post-push elencati sopra, **incluso** `git ls-remote origin main`.
-- Il **PASS remoto** si chiude quando: `git rev-parse HEAD` = `git rev-parse origin/main` = hash da `git ls-remote origin main`; `git branch --show-current` = `main`; `git status --short` = workspace pulito.
-- **Orchestratore (GPT):** se il report Cursor contiene già questi output completi e coerenti, **non** chiedere all'utente di rieseguire PowerShell o shell locale per verifica hash. Chiudere il PASS remoto **direttamente** dal report Cursor, da `docs/runtime/LAST_HANDOFF_VERIFY.md` (durante `aggio control`), e/o da `docs/runtime/LAST_CURSOR_REPORT.md` su GitHub.
-- Se gli output post-push **mancano** o sono **incompleti/ambigui**, l'orchestratore **non** deve chiedere subito shell manuale all'utente: preparare prima un **prompt Cursor verify-only** (solo i comandi post-push, nessuna modifica file).
-- **Shell manuale utente** = **fallback finale** soltanto: Cursor non disponibile; repo locale non accessibile da Cursor; output Cursor ancora ambiguo dopo retry verify-only.
-- Ogni **handoff**, **prompt Cursor** e **report post-task** deve ricordare questa invariante. L'obiettivo low-touch: eliminare micro-interazioni meccaniche ripetute (es. chiedere `git ls-remote` all'utente dopo ogni `aggio control` quando Cursor ha già stampato l'output).
+Se l'output è completo, GPT Web non chiede all'operatore di ripetere shell manualmente.
 
-**Artefatto handoff verification (`docs/runtime/LAST_HANDOFF_VERIFY.md`):** snapshot persistente dell'ultimo stato remoto verificato, leggibile dall'orchestratore durante `aggio control` **prima** di escalare shell utente. Usa **`verified_through_commit`** (non auto-certifica il proprio commit; `artifact_commit: PENDING_SELF_REFERENCE` fino a backfill). `LAST_CURSOR_REPORT.md` resta il rolling report per task Cursor.
+Se manca, prima `verify-only` Cursor; shell manuale utente è fallback finale.
 
-**Report rolling Cursor (obbligatorio dopo ogni push di task reale):** dopo il push del commit reale, Cursor deve catturare verbatim `git ls-remote origin main`, `git log --oneline -5` e `git status --short`, e scriverli in `docs/runtime/LAST_CURSOR_REPORT.md`. Il report registra il commit reale (commit 1). Il commit leggero che aggiorna solo il report (commit 2) **non** si ri-registra: `LATEST.real_task_commit` resta lo SHA del commit 1. I campi `rolling_report_commit` e `remote_hash_verbatim` del blocco LATEST restano `PENDING_SELF_REFERENCE` finché quel LATEST è il più recente, e vengono backfillati con lo SHA del rispettivo commit-report quando il LATEST viene archiviato in HISTORY al task successivo. Non esiste un commit finalize-hash dedicato. Il report **non** sostituisce `git ls-remote`, ma rende persistente su GitHub l'evidenza dell'hash per handoff e verificatore.
+### 11.3 Checkpoint != PASS
 
-### 8.2 Script npm
+Execution Checkpoint e handoff registrano stato osservato, ma non auto-certificano il proprio commit né sostituiscono l'evidenza finale.
 
-I comandi `npm run aggio`, `npm run checkpoint`, `npm run finito`, `npm run deploy` appartengono alla metodologia di altri repo solo se quel repo contiene effettivamente `package.json` e script corrispondenti. Nel `control-plane` non vanno assunti per default: verificare sempre il repository prima di usarli.
+---
 
-### 8.3 Convenzione chat del progetto
+## 12. Fallback graceful
 
-Ogni risposta operativa deve terminare con una riga finale:
+Se un componente fallisce, il sistema deve degradare a modalità manuale-supervisionata senza perdere stato.
+
+Esempi:
+
+- planner preferred unavailable → fallback consentito dalla policy oppure Telegram;
+- OpenClaw unavailable → manual/provider path gated, senza inventare esecuzione;
+- Qwen non caricabile/resource pressure alto → altro planner se policy consente;
+- Codex quota/auth unavailable → GLM/Qwen equivalente o gate;
+- GLM unavailable → Codex/Qwen secondo policy;
+- Cursor fallisce/non converge → checkpoint + gate/manual;
+- Bugbot review non converge → Telegram;
+- Tailscale down → nodo locale offline, ritorno manuale;
+- n8n down → GitHub conserva stato e recovery.
+
+Niente deve dipendere da stato che esiste solo in RAM/chat.
+
+---
+
+## 13. Decision Packet e provenienza decisioni
+
+I gate umani sono Decision Packet strutturati, non domande vaghe.
+
+Regole:
+
+- 2–5 opzioni numerate;
+- raccomandazione esplicita;
+- rischio principale;
+- cosa resta fermo senza decisione;
+- risposta operatore corta;
+- Telegram come canale target quando il runtime è attivo.
+
+**Anti-proxy:** raccomandazioni di Codex/GLM/Qwen/Bugbot/Claude o testo incollato non sono una decisione dell'operatore. Una scelta operativa nasce solo da un messaggio/azione diretta dell'operatore.
+
+---
+
+## 14. Livelli operativi e rischio
+
+### 14.1 Automazione
+
+| Livello | Nome | Descrizione |
+|---|---|---|
+| A | Manuale-supervisionata | baseline sicura; operatore/orchestratore guida |
+| B | Low-touch | sistema elimina copia/incolla/triage meccanico; gate reali all'utente |
+| C | Semi-autonomo confinato | task low-risk avanzano entro packet/policy; Telegram sui gate |
+
+Target: arrivare prima a un **B utile**, poi estendere in modo evidence-driven.
+
+### 14.2 Rischio
+
+| Rischio | Azione target |
+|---|---|
+| low | può essere auto-eligible se tutte le policy consentono |
+| medium | packet/policy decide; fallback solo adeguato; gate quando richiesto |
+| high | human gate / autorizzazione esplicita; no silent degradation |
+
+---
+
+## 15. Anti-burocrazia / token efficiency
+
+Un componente/documento deve ridurre almeno uno tra:
+
+- token;
+- tempo utente;
+- ambiguità;
+- errori ripetuti;
+- lavoro manuale futuro.
+
+Regole:
+
+- non creare nuovi documenti quando un contratto esistente può essere aggiornato;
+- preferire entry point compatti + riferimenti;
+- PREP solo se rimuove un blocker concreto;
+- test opzionali solo con rischio nominato;
+- test non deterministici non valgono come evidence di PASS;
+- una catena confinata non deve moltiplicare pre-pass senza nuovo rischio reale.
+
+La v3 riduce il vecchio `PROJECT_VISION` usando contratti separati e Git history anziché duplicare tutta la storia in ogni context window.
+
+---
+
+## 16. Routing workspace Cursor
+
+Identificare Cursor con:
+
+- repository full name;
+- path locale quando necessario;
+- branch;
+- task ID.
+
+Colori/etichette UI non sono canonici.
+
+---
+
+## 17. Migrazione v3
+
+Backlog autorevole della migrazione: **GitHub issue #8 — `Architecture migration — multi-planner → Cursor bounded loop`**.
+
+Documento dettagliato: `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`.
+
+Ordine generale:
+
+1. foundation/contratti docs-only;
+2. verifiche provider/broker reali;
+3. smoke planner read-only;
+4. GLM inside Cursor verification;
+5. bounded Cursor loop smoke;
+6. Bugbot review smoke;
+7. checkpoint/rollover smoke;
+8. solo dopo evidence, eventuali modifiche n8n/OpenClaw runtime tramite gate separati.
+
+Questa sezione **non** sblocca runtime.
+
+---
+
+## 18. Convenzione operativa chat
+
+Ogni risposta operativa del progetto termina con una riga:
 
 - `NEXT: <prossimo step concreto>`
-- `WAIT: <gate reale o input atteso>`
-- `DONE: <chiuso, nessun next>`
+- `WAIT: <gate reale>`
+- `DONE: <chiuso>`
 
-`WAIT` generico è vietato. `NEXT` non deve proporre nuovi PM se non richiesti.
+`WAIT` generico è vietato.
 
-`docs/foundation/CURSOR_PROMPT_TEMPLATE.md` definisce il formato dei prompt Cursor: metadati di routing (mode/model/repo/branch) restano **fuori** dal corpo copiabile del prompt; comandi di ritorno umano (`aggio control`, `format`, ecc.) restano **fuori** del prompt copiabile.
+Comandi utente consolidati:
 
-I prompt Cursor/implementatore includono l'**aggiornamento locale sicuro del repo** nel corpo eseguibile (fetch, status, pull `--ff-only`, verifica hash remoto): l'umano **non** esegue fetch/pull/status di routine prima di ogni task, salvo gate diagnostici reali (workspace dirty, repo/branch errato, pull rifiutato, auth, conflitto, clone mancante).
-
----
-
-## 9. Repository e ruoli
-
-| Repo | Ruolo |
-|---|---|
-| `mrhz1973/control-plane` | Repo principale di orchestrazione, runtime docs, foundation, n8n state e direzione progetto |
-| `mrhz1973/dev-method` | Repo metodo / AI-assisted development; repo osservato per flussi futuri |
-| `mrhz1973/cursor-coordinate-converter` | Repo GIS / benchmark operativo; repo osservato per test e cicli reali |
-| `mrhz1973/alina-lavoro` | Repo sorgente di molte regole architetturali e operative; fuori scope runtime del control-plane salvo richiesta esplicita |
-
-Regola: non confondere finestre/repo. Identificare Cursor per repository (`mrhz1973/control-plane`), path, branch e task — **non** per colori UI. Prompt destinati a `mrhz1973/control-plane` non vanno mandati ad altri repository (`dev-method`, `cursor-coordinate-converter`, `alina-lavoro`, ecc.).
+- `vai` / `procedi` / `next` → continuare fino al prossimo gate reale;
+- `aggio X` → leggere/verificare X, riferire, indicare NEXT;
+- `vai X` → leggere/verificare X e procedere nello scope senza pausa artificiale;
+- `handoff ora` → scrivere/persistire handoff e chiudere il contesto corrente.
 
 ---
 
-## 10. Invarianti permanenti
+## 19. Claim boundary v3
 
-- GitHub è fonte di verità.
-- **Repo dichiaratamente non confidenziale** (decisione utente 2026-07-02, confermata): segreti e identificatori possono comparire nei file committati. Rischio accettato dall'utente a verbale.
-- **Controllo compensativo:** rotazione totale delle credenziali a fine progetto secondo `docs/ROTATION_CHECKLIST.md`.
-- **Redazione a cura dell'operatore (2026-07-18):** la redazione di token, ID, credenziali, identificatori Telegram, `source_chat_id`, `callback_query_id`, `user_id`, `chat_id` e materiali analoghi è responsabilità dell'operatore **prima** di incollare materiale in chat o di autorizzare un commit. Caso per caso; non clausola-per-prompt.
-- **Prompt Cursor e session log:** non devono contenere clausole esplicite «no secrets» / «redazione obbligatoria». L'operatore redige; i documenti non ripetono prescrizioni di redazione nei log di sessione.
-- **Clausole «no secrets in Git» in runbook e rolling reports:** deprecate come **prescrizioni operative**. Restano come policy generale affidata alla responsabilità dell'operatore (questo §10), non come checklist da ripetere in ogni prompt o session log.
-- Identificatori tailnet (IP CGNAT `100.x`, hostname `*.ts.net`) **tollerati** per decisione 2026-07-02 (repo pubblico consapevole): non-secret by policy; tolleranza invariata.
-- Tolleranza / eccezione chat_id (gate esplicito 2026-05-31, invariata): il chat_id Telegram è ammesso negli asset di configurazione del repo (workflow JSON e CSV seed in `data-tables/`) secondo le decisioni precedenti; la redazione del chat_id nel corpo dei messaggi Telegram (DECISION_PACKET_FORMAT §6) resta invariata. Ogni altra redazione resta a cura dell'operatore come sopra.
-- Workflow `40` è produzione e non si modifica in silenzio.
-- Workflow `41` è backup off e non si cancella in silenzio.
-- PM-34 real worker resta bloccato finché non esiste una prova reale e un gate esplicito.
-- `pm34_unblocked=false` e `n8n_ready=false` restano default sicuri finché non vengono cambiati da gate reale.
-- **n8n non chiama provider API a pagamento per default** (sezione 7.5).
-- Nessun deploy/tag/rollback senza decisione esplicita.
-- Runtime, VPS, n8n UI/import/export, credenziali, OAuth e runner automatico sono gate reali.
-- **Authoring n8n reserved to GPT-B** (sezione 2.1–2.2): Cursor non crea/modifica autonomamente workflow; persistenza verbatim solo se esplicitamente autorizzata.
-- **Routing Cursor** (sezione 2.3): repository/path/branch/task; etichette colore non canoniche.
-- **Ogni componente automatico deve avere fallback graceful al manuale** (sezione 7.6).
-- **Gate umani sono Decision Packet, non prose libere** (sezione 7.7).
-- **Anti-burocrazia / momentum** (sezione 7.9): la sicurezza abilita il progresso; PREP PASS solo se rimuove un blocco reale; per una catena confinata, dopo 1 rehearsal di import/reimport + massimo 2 run manuali ripetuti si avanza al prossimo gate reale o si marca BLOCKED con blocker concreto; test opzionali solo con rischio nominato; test non deterministici vietati come PASS.
-- `alina-lavoro` non viene toccato come app/runtime dal control-plane.
+### Claimed
 
----
+- GPT Web = strategic orchestrator/backlog owner;
+- GitHub = source of truth;
+- OpenClaw = target provider/auth/quota broker;
+- planner pool = Qwen 3.8 37B / GLM 5.3 / Codex OAuth;
+- planner produce Execution Packet;
+- n8n policy gate dopo il planner;
+- Cursor = target execution harness con bounded loop;
+- GLM BYOK dentro Cursor = track prioritario da verificare;
+- Codex/Qwen advisor Cursor = track da verificare;
+- Bugbot = reviewer, non router;
+- context rollover + Execution Checkpoint = requisito fondativo;
+- contratti v1 di backlog/routing/packet/checkpoint = foundation design.
 
-## 11. Handoff e saturazione contesto
+### Non claimed
 
-Il progetto deve sopravvivere alla saturazione delle chat.
-
-### 11.1 Politica attuale (priorità 1)
-
-**Kill switch manuale.** Quando vedi che la chat degenera (proposte fuori contesto, ripetizioni, perdita di regole), scrivi `handoff ora`. L'orchestratore deve immediatamente scrivere il documento di handoff e chiudere il contesto senza avviare nuovi PM.
-
-### 11.2 Politica attuale (priorità 2)
-
-**Handoff automatico ogni N turni.** Default: ogni **20 prompt utente**, l'orchestratore produce un handoff e chiude la chat. Il prossimo prompt deve essere fatto in una nuova chat che parte da questo `PROJECT_VISION.md` + l'ultimo handoff.
-
-### 11.3 Documento di handoff — contenuto minimo
-
-Path canonico: `docs/handoffs/YYYY-MM-DD-HHMM-<topic>-handoff.md`
-
-**Scheletro obbligatorio:** `docs/foundation/HANDOFF_TEMPLATE.md` — ogni handoff committato deve seguire quella struttura (placeholder compilati, nessuna sezione omessa).
-
-Contenuto minimo:
-
-- HEAD / hash remoto osservato tramite `git ls-remote origin main` (o equivalente);
-- ultimo commit verificato su `main`;
-- eventuale divergenza raw/hash come nota secondaria, **non** un FAIL se l'hash remoto conferma;
-- stato reale del workflow/runtime;
-- ultimo risultato utile;
-- decisioni recenti non ancora consolidate;
-- gate aperti reali;
-- prossimo passo tattico, se già deciso;
-- contatore turni (per la regola dei 20);
-- riferimento a `PROJECT_VISION.md` come entry point della nuova chat;
-- `docs/runtime/LAST_CURSOR_REPORT.md` se esiste, in particolare `LATEST.real_task_commit`;
-- `docs/runtime/LAST_HANDOFF_VERIFY.md` se esiste, in particolare `verified_through_commit`;
-- hash remoto da `git ls-remote origin main` diretto quando possibile;
-- **mai** usare report incollati in chat come verifica primaria del PASS;
-- **regola orchestratore:** se l'ultimo report Cursor include già l'output post-push verbatim completo (`§8.1`), **non** chiedere all'utente shell manuale; in assenza di output, prompt Cursor verify-only prima del fallback utente (`§8.1` Handoff / post-push verification invariant).
-
-**Read-set orchestratore — nuova chat (ordine operativo):**
-
-1. `docs/runtime/CURRENT_FRONTIER.md`
-2. `docs/foundation/PROJECT_VISION.md`
-3. `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`
-4. `docs/runtime/LAST_CURSOR_REPORT.md`
-5. `docs/runtime/LAST_HANDOFF_VERIFY.md`
-6. handoff corrente (path canonico dello stesso arco)
-
-`PROJECT_VISION.md` resta **entry point canonico** (§11.2); il **read-set operativo** della nuova chat segue però l'ordine **FRONTIER → PROJECT_VISION → CURSOR_PROMPT_TEMPLATE → LAST_CURSOR_REPORT → LAST_HANDOFF_VERIFY → handoff**. I file vanno letti dal **repo vivo** a HEAD dichiarato nell'handoff, **mai** da copie incollate in chat. La verifica hash è demandata a **shell Claude** (`git ls-remote origin main`) o a **output verbatim Cursor** §8.1 — non a narrativa chat o letture web.
-
-### 11.4 Backlog futuro — handoff via Ollama stimatore
-
-Quando il loop sarà stabile, Ollama potrà essere usato per stimare i token consumati nella chat orchestratore e triggerare handoff automatico al **50%** del context window. Non implementato adesso. Sarà un componente runtime-gated dedicato.
+- provider OpenClaw runtime già configurati/verificati nella versione corrente;
+- quota thresholds già calibrate;
+- Qwen planner smoke PASS;
+- GLM planner smoke PASS;
+- Codex planner smoke PASS nel nuovo broker path;
+- GLM custom subagent Cursor PASS;
+- Codex OAuth selezionabile nativamente in Cursor;
+- Cursor bounded loop production-ready;
+- Bugbot runtime integrato;
+- n8n modificato per v3;
+- PM-34/L5/schedule/permanent loop autorizzati.
 
 ---
 
-## 12. Prossimi passi tattici verso la visione
+## 20. Changelog
 
-Questa sezione contiene tattiche, non la visione. Possono cambiare senza cambiare l'architettura target.
-
-**Completati (foundation):**
-
-1. **Foundation v2.0** — entry point canonico (`PROJECT_VISION.md` + `FOUNDATION_STATUS.md`).
-2. **Tailscale VPS ↔ PC Ryzen** — **COMPLETATO (PASS 2026-05-23)** — mesh privata operativa (`ubuntu` ↔ `asusdesktop`); ping privato bidirezionale; n8n resta su `127.0.0.1:5678`; nessuna porta pubblica / Funnel. Evidenza: [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md).
-3. **Cursor Agent CLI preflight (Ryzen)** — **COMPLETATO (PASS 2026-05-25)** — install (`agent` / `cursor-agent`), login, models discovery, smoke `agent --mode plan` (Composer 2.5 Fast) lettura read-only di questo documento; workspace pulito; worker/`--force`/`--yolo` non usati. Evidenza: [session](../sessions/2026-05-25-control-plane-cursor-agent-cli-install-auth-plan-smoke-pass.md). Gate write/agent-mode commit resta separato.
-4. **Ollama classifier API smoke (Ryzen)** — **COMPLETATO (PASS 2026-05-25)** — `qwen3:14b`; API-only; multi-case low/medium/high. [session](../sessions/2026-05-25-control-plane-ollama-qwen3-classifier-api-smoke-pass.md).
-5. **Classifier wrapper contract** — **COMPLETATO (design 2026-05-25)** — [classifier-wrapper-v1](../contracts/classifier-wrapper-v1.md). [session](../sessions/2026-05-25-control-plane-classifier-wrapper-contract-design.md).
-6. **Local path preflight** — **COMPLETATO (read-only 2026-05-25)** — [session](../sessions/2026-05-25-control-plane-openclaw-codex-local-path-readonly-preflight.md).
-7. **OpenClaw gateway loopback (manual)** — **COMPLETATO (PASS 2026-05-25)** — [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md).
-8. **OpenClaw agent Step A liveness** — **BLOCKED (2026-05-25)** — read-only ping via gateway; agent `main` did not complete; pending scope + embedded fallback + OpenAI provider API key missing; **policy: no provider API key**. [session](../sessions/2026-05-25-control-plane-openclaw-agent-step-a-provider-api-key-blocked.md).
-9. **Diff-summary Telegram MVP workflow 42** — **COMPLETATO/ATTIVO (PASS 2026-05-27)** — target `cursor-coordinate-converter`, nuovo commit automatico `727db3e`, 1 Telegram, 0 duplicati. [session](../sessions/2026-05-27-control-plane-workflow-42-final-new-commit-automatic-pass.md).
-
-**Prossimo passo tattico:**
-
-**Codex CLI direct path** — real worker discovery/preflight docs+runtime-gated; no provider API key, no PM-34 unlock without proof and explicit gate.
-
-**Backlog tattico:**
-
-10. **Loop end-to-end manuale**: simulare il ciclo completo senza auto-esecuzione permanente.
-11. **Loop automatico minimo**: solo dopo prove reali e confini chiari, collegare i pezzi per task low-risk.
-12. **Dell fallback fase 2**: attivare il Dell come nodo always-on/fallback solo dopo che il loop sul Ryzen produce valore reale.
-
-Nessun passo tattico crea automaticamente un nuovo PM o sblocca PM-34. Le attivazioni runtime restano gate espliciti.
-
----
-
-## 13. Parte semplice — spiegazione non tecnica
-
-Sto costruendo un piccolo **team automatico** di intelligenze artificiali per i miei progetti di programmazione.
-
-Oggi, quando lavoro con AI, devo fare troppe cose a mano: spiegare il contesto da capo a ogni nuova chat, copiare prompt da uno strumento all'altro, controllare GitHub per capire cosa è cambiato, decidere ogni volta chi deve fare il prossimo passo, incollare istruzioni, verificare il risultato e ricominciare.
-
-Il sistema che voglio costruire toglie via questa fatica meccanica:
-
-1. **GitHub** (un servizio online gratuito dove tengo tutto il mio codice, come un Google Drive per programmatori) registra cosa è cambiato. Salvare un pezzo nuovo si chiama **commit**.
-
-2. **n8n** (un servizio che gira 24/7 sul mio server online, automatizza flussi di lavoro) si accorge del cambiamento e avvia il flusso.
-
-3. **Codex** (è ChatGPT 5.5 di OpenAI, ci accedo con il mio abbonamento ChatGPT Plus che pago già) ragiona sul prossimo passo da fare.
-
-4. **Ollama** (un'AI gratuita che gira tutta sul mio computer di casa, illimitata) controlla se quel passo è sicuro o rischioso.
-
-5. **Cursor** (un'AI specializzata nello scrivere codice, abbonamento mensile fisso) esegue il lavoro tecnico.
-
-6. **Telegram** mi chiama solo se serve una decisione vera, con una scelta strutturata di 2-3 opzioni numerate: rispondo con un numero, non con prosa.
-
-7. Il risultato torna su GitHub e il ciclo riparte.
-
-### Perché tre AI invece di una sola?
-
-Tecnicamente potrei usare una sola AI grande, ma costerebbe di più e funzionerebbe peggio. Ognuna è specializzata:
-
-* **Codex/GPT** ragiona benissimo ma è lenta e ha un limite di messaggi al giorno. La uso solo dove serve vero cervello: decidere il prossimo passo.
-
-* **Ollama** gira sul mio computer di casa, gratis e illimitata. Non è furba come GPT, ma è perfetta per il controllo rapido "questa cosa è rischiosa o no?".
-
-* **Cursor** è specializzata nel programmare, abbonamento fisso, può lavorare quanto vuole senza farmi pagare di più.
-
-Mettere tutto su una sola AI sarebbe come avere un meccanico che fa anche da contabile e da architetto: lo può fare, ma fa peggio tutti e tre i lavori e mi costa di più.
-
-### Cosa NON sto facendo
-
-* **Non pago AI "a uso"**: tutto passa per abbonamenti fissi che ho già (ChatGPT Plus, Cursor Pro Plus). Evito le "API a consumo" dove paghi ogni richiesta e i costi esplodono.
-
-* **Non espongo il mio computer a internet**: tutto passa per una rete privata cifrata (Tailscale, un tunnel sicuro tra il mio server e casa). Il mio computer non è raggiungibile da estranei.
-
-* **Non sostituisco il mio cervello**: io decido la rotta e le cose critiche. Le AI fanno il lavoro ripetitivo e tecnico.
-
-* **Non rischio di perdere lavoro**: se qualcosa si rompe, il sistema torna automaticamente al lavoro manuale e tutto resta su GitHub. Niente va perso.
-
-### A che punto sono adesso
-
-Ho passato molti mesi a costruire le fondamenta. Tutti i pezzi singoli funzionano: la rete privata è attiva, le tre AI sono installate e collaudate, gli abbonamenti girano senza pagare API a consumo, e il primo "ponte" tra le AI è stato testato su un compito reale.
-
-La prima cosa utile è già arrivata: quando faccio un cambiamento, mi arriva su Telegram un riassunto in italiano di cosa è cambiato. Sembra poco, ma è la prima azione manuale che il sistema mi ha tolto: non devo più aprire GitHub solo per capire cos'è successo.
-
-Ho anche eseguito per la prima volta il giro completo su un caso reale, con me a fare da filo tra i passaggi: è arrivata una richiesta vera (migliorare la documentazione di un mio progetto), Codex ha ragionato sul da farsi e ha deciso che stavolta serviva intervenire, e Cursor ha scritto la modifica. È andato a buon fine. Era un giro manuale-supervisionato: ogni passaggio l'ho innescato io. Il giro che si avvia da solo, senza che io faccia da filo, è la tappa successiva. (In un altro caso, Codex ha invece deciso correttamente che non serviva toccare nulla: anche saper dire "non serve fare niente" è parte del valore.)
-
-### Dove voglio arrivare, in quattro tappe
-
-1. **Oggi**: i pezzi funzionano, ma li collego a mano io. Il sistema mi avvisa e mi assiste, ma il filo conduttore sono io.
-
-2. **Prossima tappa**: il giro completo (cambiamento → Codex ragiona → Ollama controlla → Cursor esegue) gira con me come supervisore, ma con molte meno azioni manuali ripetute.
-
-3. **Più avanti**: per i compiti semplici e sicuri, il sistema procede da solo dentro confini chiari; mi chiama su Telegram solo per le decisioni vere.
-
-4. **In futuro**: un secondo computer sempre acceso fa da riserva, e il sistema continua a lavorare anche quando io non ci sono.
-
-Vado una tappa alla volta, senza saltare passaggi: ogni automazione nuova entra solo dopo che ho la prova che funziona e che è sicura.
-
-### Perché vale la pena
-
-Senza questo sistema, ogni ora di lavoro reale costa mezz'ora di amministrazione meccanica: ricaricare il contesto, copiare prompt, controllare a mano. Con questo sistema, scrivo bene le regole una volta sola e poi non le rifaccio più: le AI sanno già chi sono, cosa voglio e come lavoro.
-
-E c'è di più: questa stessa fondazione, una volta funzionante, posso copiarla su un progetto nuovo cambiando solo i dettagli.
-
-In una frase: **sto costruendo una fabbrica, non un singolo prodotto.** La fabbrica produce piccoli sistemi di assistenza AI riutilizzabili per progetti software. Il primo che esce dalla fabbrica sono io, su questo progetto. I prossimi potranno essere altri.
-
----
-
-## 14. Backlog futuro non vincolante
-
-- Dell Latitude come nodo always-on completo.
-- Routing inter-macchina n8n: Ryzen primario, Dell fallback, Telegram se offline.
-- Livello 3 di memoria: embeddings/indice locale via Ollama.
-- Handoff automatico quando il contesto chat è saturo (Ollama come stimatore al 50%).
-- Decision Packet Format esteso (13 campi) in documento separato dedicato.
-- ARCHITECTURE.md separato con specifiche hardware complete.
-- Report qualità post-task e metriche su tempo risparmiato.
-- Miglioramento della sintesi commit/diff Telegram con classifier locale o Codex quando utile.
-- OpenClaw come transport/browser bridge opzionale confinato, non model path target.
-- Triangolo ruoli AI operativo (chiarimento non vincolante): **Claude** = consigliere strategico / reviewer esterno (non implementatore, non worker n8n); **ChatGPT** = orchestratore-B / interfaccia principale con l'utente; **Codex CLI** = orchestratore-A target nel loop locale (ephemeral, ragionamento read-only; non worker automatico finché non gated esplicitamente).
-
----
-
-## 15. Changelog
-
-| Versione | Data | Modifiche |
+| Versione | Data | Modifica |
 |---|---|---|
-| 1.0 | 2026-05-25 | Prima foundation. Architettura target Codex+Ollama+Cursor+Tailscale, livelli 0/1/2/3 e A/B/C, decisioni 23 maggio. |
-| 2.0 | 2026-05-25 | Integrato Decision Packet (sezione 7.7), fallback graceful (sezione 7.6), n8n no provider APIs (sezione 7.5), tabella micro-interazioni eliminate (sezione 1.1). Spostati dettagli hardware Dell/Ryzen completi a futuro `ARCHITECTURE.md`. Parte semplice arricchita con menzione Decision Packet e fallback. |
-| 2.1 | 2026-05-27 | Marcato Diff-summary Telegram MVP come ATTIVO dopo workflow 42 PASS su nuovo commit automatico senza duplicati. |
-| 2.2 | 2026-05-27 | Riallineata architettura target a Codex CLI diretto via OAuth ChatGPT Plus; OpenClaw resta transport/backlog opzionale. Corretto header versione dopo v2.1 e spostato Diff-summary Telegram MVP nei completati tattici. |
-| 2.3 | 2026-05-29 | Aggiunta in §7.1 guardia retry/accesso accanto a SUCCESS testuale != PASS (operativa, non componente). |
-| 2.4 | 2026-05-29 | Aggiunta regola verifica hash remoto: PASS post-Cursor sull'hash remoto di `main`, raw GitHub secondario (può essere stale); §8.1 blocco post-push verification; §11.3 handoff con hash remoto; report post-push verbatim. |
-| 2.5 | 2026-05-29 | Introdotto `docs/runtime/LAST_CURSOR_REPORT.md` come report rolling post-push. §8.1: cattura verbatim ls-remote, log, status nel report. §11.3: handoff/verificatore leggono hash dal report remoto o da git ls-remote, non dalla chat. |
-| 2.6 | 2026-05-29 | Aggiunto `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`: contratto formato prompt Cursor; metadati routing fuori dal corpo copiabile. §8.3 puntatore. |
-| 2.7 | 2026-05-29 | §8.3: preflight implementatore con aggiornamento locale sicuro nel prompt Cursor; comandi ritorno umano fuori dal prompt copiabile. Allineato `CURSOR_PROMPT_TEMPLATE.md`. |
-| 2.8 | 2026-05-30 | Riscritta §13 (parte semplice) per riflettere lo stato reale: foundation completata, workflow 42 attivo, prima catena wf42 → Codex → Cursor eseguita in modalità manuale/supervisionata (PASS, commit d040896 su repo GIS); catena automatizzata senza filo umano resta tappa successiva. Roadmap a 4 tappe, framing "fabbrica non prodotto". Nessun cambiamento di visione o invariante. |
-| 2.9 | 2026-05-31 | Aggiunta §7.9 anti-burocrazia / momentum e relativo invariante in §10: PREP PASS solo se rimuove un blocco reale; per catena confinata, dopo 1 rehearsal import/reimport + max 2 run manuali ripetuti avanzare al prossimo gate reale o marcare BLOCKED con blocker concreto; test opzionali solo con rischio nominato; test non deterministici vietati come PASS; PASS su output deterministico / hash-commit / runtime attestato dall'utente. Eccezione chat_id invariata. |
+| 2.19 | 2026-07-18 | Ultima foundation v2: GPT-B n8n authoring, Cursor implementer, Codex→Ollama→Cursor target. |
+| **3.0** | **2026-08-25** | Nuovo target accettato: GPT Web backlog → n8n → OpenClaw broker → Qwen/GLM/Codex planner → Execution Packet → n8n gate → Cursor bounded loop → Bugbot → GitHub. GLM può diventare planner/executor via BYOK dopo verifica. Qwen 3.8 37B è planner locale, non router obbligatorio. Context rollover/checkpoint formalizzato; dettagli spostati in operating model e contratti v1. Runtime invariants/gate preservati. |
 
-| 2.10 | 2026-06-02 | §8.1: chiarito che rolling_report_commit/remote_hash_verbatim del LATEST restano PENDING_SELF_REFERENCE e si backfillano all'archiviazione in HISTORY; nessun commit finalize-hash dedicato. Allinea PROJECT_VISION alla pratica già in uso. |
-| 2.11 | 2026-06-07 | §8.1: invariante handoff/post-push verification anti-regressione — Cursor stampa output git verbatim; orchestratore non chiede shell utente se output presente; verify-only Cursor prima del fallback manuale. §11.3: puntatore orchestratore. |
-| 2.12 | 2026-06-07 | §8.1 / §11.3: introdotto `docs/runtime/LAST_HANDOFF_VERIFY.md` — artefatto handoff/`aggio control` con `verified_through_commit`; `LAST_CURSOR_REPORT.md` resta rolling task report. |
-| 2.13 | 2026-06-12 | §1.1: D-0032-W manual one-shot verifier result uploader field-validated; invocazione canonica con bypass PowerShell solo di processo documentata; PM-34 resta BLOCKED; `n8n_ready=false`; nessuno schedule/loop. |
-| 2.14 | 2026-07-02 | §10: invariante segreti riformulato — nessun segreto in Git (token, chat_id, credenziali, OAuth, PAT, webhook secret, API key); **tailnet identifiers: tolerated / non-secret by policy decision 2026-07-02** (repo pubblico consapevole, WARN non bloccante); **true secrets remain forbidden and blocking**; `tools/redaction-check.sh` aggiornato in commit tools separato. Eccezione chat_id 2026-05-31 invariata. |
-| 2.15 | 2026-07-02 | §10: decisione serale 2026-07-02 — repo dichiaratamente non confidenziale; regole segreti rimosse dal canone; `tools/redaction-check.sh` rimosso in commit tools separato; controllo compensativo = rotazione totale credenziali a fine progetto (`docs/ROTATION_CHECKLIST.md`); rischio accettato dall'utente a verbale. Altri invarianti §10 invariati. |
-| 2.16 | 2026-07-10 | §11.3: `HANDOFF_TEMPLATE.md` scheletro obbligatorio; read-set nuova chat (FRONTIER → PROJECT_VISION → CURSOR_PROMPT_TEMPLATE → LAST_CURSOR_REPORT → LAST_HANDOFF_VERIFY → handoff); repo vivo a HEAD dichiarato; verifica hash via shell Claude o output verbatim Cursor §8.1. |
-| 2.17 | 2026-07-11 | Provenienza decisioni / regola anti-proxy advisor (§7.7 e correlati): scelta Decision Packet solo da messaggio diretto operatore. |
-| 2.18 | 2026-07-18 | §10: redazione spostata a responsabilità operatore; clausole «no secrets» / redazione obbligatoria deprecate nei prompt Cursor e session log; «no secrets in Git» deprecato come prescrizione operativa in runbook/rolling reports; rotazione credenziali a fine progetto resta controllo compensativo; tolleranze chat_id e tailnet invariate. PM-34 BLOCKED · `n8n_ready=false` invariati. |
-| 2.19 | 2026-07-18 | §2.1–§2.3: ruoli supervisionati (GPT-B autore n8n; Cursor implementatore repo; Claude verifica; GLM read-only; operatore UI); confine authoring n8n permanente + `BLOCKED_WORKFLOW_AUTHORING_RESERVED_TO_GPT_B`; routing Cursor per repository/path/branch/task (colori UI non canonici). §5/§9/§10 allineati. Codex target e safety invarianti preservati. |
+Per la storia completa v1–v2.19 usare Git history del file; non duplicarla nella context window corrente.
 
 ---
 
 **Fine documento.**
 
-_Convenzione: aggiornare questo documento solo quando cambia la visione o un invariante fondativo. Non usarlo come session log. Aggiungere riga al changelog (sezione 15) a ogni revisione significativa._
+_Convenzione: modificare PROJECT_VISION solo quando cambia la visione o un'invariante fondativa. Stato runtime e cronologia operativa restano fuori da questo file._
