@@ -4,13 +4,13 @@
 > Lo stato si LEGGE da qui, NON si ricostruisce cercando tra i session log.
 > Questo file è uno stato compatto, non un archivio storico. Evidenza completa in `docs/sessions/`, Git history, `LAST_CURSOR_REPORT.md` e `LAST_HANDOFF_VERIFY.md`.
 
-Ultimo aggiornamento: 2026-07-19 — D-0080-W persist D-0079-E option 3; permanent L5 deferred pending endurance evidence.
+Ultimo aggiornamento: 2026-08-25 — D-0081-V PASS certifica documentalmente D-0080-W through `91847807...`; migrazione architettura multi-planner/Cursor in draft PR #9, docs-only.
 
 ---
 
 ## Stato operativo attuale
 
-- Foundation completa. **PROJECT_VISION v2.19:** GPT-B owns n8n workflow authoring; Cursor is repository/code implementer; Cursor routing is repository/path/branch/task (color labels non-canonical).
+- Foundation su `main` resta quella precedente finché la draft PR #9 non viene mergiata; la nuova architettura multi-planner/Cursor è già accettata dall'operatore ma ancora in migrazione docs-only.
 - Workflow **40/42 attivi** e invariati; workflow **41 off**.
 - **PM-34 BLOCKED**.
 - **`n8n_ready=false`**.
@@ -23,11 +23,46 @@ Ultimo aggiornamento: 2026-07-19 — D-0080-W persist D-0079-E option 3; permane
 - Scope/evidence plan: `docs/runtime/L5_PERMANENT_SCOPE_AND_ENDURANCE_PLAN.md` (planning only).
 - **wf47** inactive / unpublished / Schedule disabled / `enable_wg48_handoff=false`.
 - Nessun loop operativo permanente dichiarato.
+- **D-0081-V:** `PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED` through `91847807bbc4d7b7f63d8e3b3fc48fdfc72f4699`, `actor_relation=intra_actor_self_verify`, independent third-party verification `false`.
+
+## D-0081-V — repository verify-only of D-0080-W
+
+D-0081-V è stato eseguito da Cursor il 2026-08-25 come task strettamente read-only e ha certificato documentalmente il commit D-0080-W `91847807...`.
+
+```yaml
+verification_task: D-0081-V
+verification_type: documental_repository_verify_only
+result: PASS_REMOTE_DOCUMENTAL_DOCS_ONLY_VERIFIED
+actor_relation: intra_actor_self_verify
+independent_third_party_verification: false
+certified_commit: 91847807bbc4d7b7f63d8e3b3fc48fdfc72f4699
+previous_verified_through_commit: 218cb99b4a4a97429b44c2e5a9232497a0948450
+new_verified_through_commit: 91847807bbc4d7b7f63d8e3b3fc48fdfc72f4699
+runtime_executed: false
+runtime_actions_by_cursor: 0
+files_modified_by_verification: 0
+commits_created_by_verification: 0
+pushes_by_verification: 0
+```
+
+Verified:
+
+- local `main` clean;
+- `HEAD == origin/main == ls-remote main == 91847807...` at verification time;
+- exact D-0080 delta = six expected docs paths;
+- `git diff --check` PASS;
+- no `workflows/**`, `tools/**`, `scripts/**` or executable runtime assets changed;
+- all 15 documental invariants requested by D-0081-V PASS.
+
+Evidence: `docs/sessions/2026-08-25-control-plane-d-0081-v-d0080w-repository-verify-pass.md`.
+
+**Meaning:** the historical repository gate immediately after D-0080-W is now CLOSED. This does not authorize any runtime or permanent automation.
 
 ## D-0079-E / D-0080-W — permanent L5 deferred pending endurance evidence
 
 - **D-0079-E** selected_option `"3"` · `decision_provenance=direct_operator_message` · `operator_decision_date_utc=2026-07-19` · `operator_decision_timestamp_utc=NOT_CAPTURED_EXACTLY`.
 - **D-0080-W** docs-only: persist deferral + create L5 Scope Document + endurance evidence plan + contextual D-0078-V backfill + close D-0078-V-F1 wording.
+- **D-0081-V** now verifies D-0080-W through `91847807...` with intra-actor provenance.
 
 ```yaml
 decision_id: D-0079-E
@@ -55,8 +90,7 @@ d0078v_actor_relation: intra_actor_self_verify
 d0078v_independent_third_party_verification: false
 backfill_status: COMPLETED_CONTEXTUALLY_IN_D0080W
 previous_verified_through_commit: cafd3e5d435a2a24aa38e95becaab217ec3cc09d
-new_verified_through_commit: 218cb99b4a4a97429b44c2e5a9232497a0948450
-backfill_basis: D-0078-V
+new_verified_through_commit_after_d0081v: 91847807bbc4d7b7f63d8e3b3fc48fdfc72f4699
 
 finding_id: D-0078-V-F1
 previous_status: OPEN_NON_BLOCKING
@@ -67,9 +101,7 @@ runtime_impact: none
 
 **Meaning:** permanent L5 activation deferred; bounded pilot PASS remains valid in original scope; Scope Document and endurance package defined for planning only; no endurance runtime authorized by D-0079-E; any endurance execution and permanent claim require later explicit Decision Packets.
 
-**Next real gate:** Scope Document review / authorization of the bounded endurance evidence package (separate Decision Packet). Immediate repository task after this commit: verify-only of D-0080 HEAD.
-
-Evidence: `docs/sessions/2026-07-19-control-plane-d-0079-e-d-0080-w-l5-permanent-deferred.md`.
+Evidence: `docs/sessions/2026-07-19-control-plane-d-0079-e-d-0080-w-l5-permanent-deferred.md` + D-0081-V session above.
 
 ## D-0074-E / D-0077-W — bounded L5 operational pilot
 
@@ -150,18 +182,19 @@ teardown_direct_n8n_observation_by_cursor: false
 
 ## Claim boundaries
 
-**Claimed:** D-0079-E option `"3"` selected directly by operator; permanent L5 deferred; scope and endurance evidence requirements defined (planning only); D-0078-V verified `218cb99` with intra-actor provenance; `verified_through_commit` contextually advanced to `218cb99`; D-0078-V-F1 wording closed; bounded pilot PASS retained; Gate E PASS/CLOSED; GPT-B owns n8n authoring.
+**Claimed:** D-0081-V documentally verifies D-0080-W through `91847807...` with intra-actor provenance; D-0079-E option `"3"` selected directly by operator; permanent L5 deferred; scope and endurance evidence requirements defined (planning only); D-0078-V verified `218cb99`; D-0078-V-F1 wording closed; bounded pilot PASS retained; Gate E PASS/CLOSED; GPT-B owns n8n authoring under the current main foundation.
 
-**Not claimed:** permanent L5 PASS; runtime authorization; endurance runtime authorization; permanent Schedule; autonomous wf48; PM-34 unlock; `n8n_ready=true`; independent third-party verification; verification of the new D-0080 commit before its verify-only.
+**Not claimed:** independent third-party verification; permanent L5 PASS; runtime authorization; endurance runtime authorization; permanent Schedule; autonomous wf48; PM-34 unlock; `n8n_ready=true`; permanent automation from D-0081-V.
 
 ## Active blockers and next gate
 
+- **Historical D-0080 repository verify gate:** **CLOSED by D-0081-V PASS**.
 - **PM-34:** `BLOCKED`.
 - **L5:** `L5_PASS: NOT_CLAIMED` · activation/runtime/endurance authorization **false** · permanent assessment **DEFERRED_PENDING_ENDURANCE_EVIDENCE**.
 - **Gate E:** **CLOSED** (`Gate_E_full: PASS`).
 - Permanent Schedule authorization: **no**.
-- **Immediate next repository task:** verify-only of the new D-0080-W HEAD (same-actor Cursor → `intra_actor_self_verify`).
-- **Next runtime Decision Packet:** approval/authorization of the bounded endurance evidence package — **not** auto-started. Permanent L5 claim and permanent Schedule remain later separate gates.
+- **Immediate repository work:** complete/review/merge the accepted docs-only architecture migration in GitHub issue #8 / draft PR #9, preserving all runtime invariants.
+- **Next runtime Decision Packet remains separate:** approval/authorization of the bounded endurance evidence package; it is **not** auto-started by the architecture migration. Permanent L5 claim and permanent Schedule remain later separate gates.
 
 ## Do-not-do
 
@@ -174,6 +207,6 @@ teardown_direct_n8n_observation_by_cursor: false
 - NO treating the bounded pilot PASS as L5_PASS or permanent automation.
 - NO Cursor autonomous n8n workflow authoring.
 - NO color-based Cursor routing in canonical instructions.
-- NO describing D-0071-V / D-0078-V as independent third-party verification.
+- NO describing D-0071-V / D-0078-V / D-0081-V as independent third-party verification.
 - NO autonomous wf48.
-- NO claiming D-0080 self-certifies before its verify-only.
+- NO treating D-0081-V as runtime evidence or runtime authorization.
