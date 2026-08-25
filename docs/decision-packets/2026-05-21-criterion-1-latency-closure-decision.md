@@ -12,7 +12,7 @@
 | **Criterion 1** | Remains **PARTIAL** — not technical PASS |
 | **MVP outcome** | **Operational MVP accepted with C1 latency exception** |
 
-**Packet date:** 2026-05-21  
+**Packet date:** 2026-05-21
 **Docs-only:** This packet does not run n8n, SSH, Docker, webhooks, v5, or Telegram.
 
 ---
@@ -25,7 +25,7 @@
 | Only non-PASS criterion | **Criterion 1** — push → Telegram &lt;30s (accepted exception) |
 | Active path | v4 one-minute polling — working, deduped |
 | Strict &lt;30s | Not guaranteed by v4; needs separate technical gate (likely [PUBLIC_WEBHOOK_GATE.md](../PUBLIC_WEBHOOK_GATE.md) → v5 → GitHub webhook) |
-| Current C1 documentation | **PARTIAL** — SLA best-effort **1–5 minutes** ([MVP_CRITERIA.md](../MVP_CRITERIA.md) §1, [V4_POLLING_LATENCY.md](../V4_POLLING_LATENCY.md)) |
+| Current C1 documentation | **PARTIAL** — SLA best-effort **1–5 minutes** ([MVP_CRITERIA.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_CRITERIA.md) §1, [V4_POLLING_LATENCY.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/V4_POLLING_LATENCY.md)) |
 | v5 / webhook | **Off** — not in scope until user chooses Option B |
 
 ---
@@ -85,7 +85,7 @@ Recorded in docs commit `docs: record D-C1-A operational MVP acceptance`.
 
 ## Effects applied (D-C1-A)
 
-- [MVP_STATUS.md](../MVP_STATUS.md) and [MVP_CRITERIA.md](../MVP_CRITERIA.md) updated: **operational MVP accepted with C1 exception**.
+- [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) and [MVP_CRITERIA.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_CRITERIA.md) updated: **operational MVP accepted with C1 exception**.
 - Criterion 1 status stays **PARTIAL** — not relabeled as PASS.
 - MVP labeled **accepted-with-exception**, **not** strict **5/5 PASS**.
 - No webhook, v5, or schedule changes from this decision.
@@ -96,7 +96,7 @@ Recorded in docs commit `docs: record D-C1-A operational MVP acceptance`.
 
 - **No** MVP closure docs change until strict path is validated.
 - Next work: runtime gate sequence per [PUBLIC_WEBHOOK_GATE.md](../PUBLIC_WEBHOOK_GATE.md) and [RUNTIME_GATES.md](../RUNTIME_GATES.md).
-- Optional: run [V4_POLLING_LATENCY.md](../V4_POLLING_LATENCY.md) measurement first to baseline polling before webhook investment.
+- Optional: run [V4_POLLING_LATENCY.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/V4_POLLING_LATENCY.md) measurement first to baseline polling before webhook investment.
 
 ---
 
@@ -112,8 +112,8 @@ Recorded in docs commit `docs: record D-C1-A operational MVP acceptance`.
 
 | Doc | Role |
 |-----|------|
-| [MVP_CRITERIA.md](../MVP_CRITERIA.md) §1 | Canonical criterion text |
-| [MVP_STATUS.md](../MVP_STATUS.md) | Current scorecard |
-| [V4_POLLING_LATENCY.md](../V4_POLLING_LATENCY.md) | Optional measurement (Option B prep) |
+| [MVP_CRITERIA.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_CRITERIA.md) §1 | Canonical criterion text |
+| [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) | Current scorecard |
+| [V4_POLLING_LATENCY.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/V4_POLLING_LATENCY.md) | Optional measurement (Option B prep) |
 | [PUBLIC_WEBHOOK_GATE.md](../PUBLIC_WEBHOOK_GATE.md) | Strict path prerequisites |
 | [WORKFLOW_EXPORT_STATUS.md](../WORKFLOW_EXPORT_STATUS.md) | v4 active / v5 inactive exports |

@@ -273,3 +273,103 @@ Until then the candidate stays merge/archive/evidence, not delete.
 - **Physical deletions:** NONE. **Branch deletions:** NONE.
 - **L3A compatibility pointers kept:** `RUNTIME_GATES`, `WORKFLOW_EXPORT_STATUS`, `HANDOFF_N8N_GATE`.
 - **Required after L3A.5:** mechanical delete-gate re-census before any L3B physical reduction. Do not promote `DELETE_READY` without proof.
+
+---
+
+## Q. L3A.6 immutable link rewrite (2026-08-25)
+
+- **PR #14 / L3A.5:** MERGED PASS (squash 25319715e35d4f1774b3b8a936d114feed9e1bb8).
+- **Final delete-gate verify:** PASS — A–G / recovery / immutable anchor verdi; DELETE_READY_FINAL=[] pre-L3A.6 **only** for surviving-tree **material** link risk.
+- **Recovery baseline:** 777504f7c46e5e724b6ad5f8586a98d43bab7ce8
+- **Immutable URLs (pre-cleanup snapshots):**
+  - MVP_STATUS.md → https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md
+  - MVP_CRITERIA.md → https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_CRITERIA.md
+  - POST_MVP_BACKLOG.md → https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md
+  - PLAN_OUTPUT_INGESTION.md → https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/PLAN_OUTPUT_INGESTION.md
+  - V4_POLLING_LATENCY.md → https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/V4_POLLING_LATENCY.md
+- **L3A.6 material rewrites:** README lean baseline pointer; END_TO_END_CYCLES, OBSERVABILITY, PLAN_WATCHER_GATE_C relative→immutable; D-C1-A decision packet relative→immutable.
+- **Physical deletions:** NONE. **L3B:** still blocked until post-L3A.6 re-census.
+
+## L3B_HISTORY_LINK_REWRITE_PLAN
+
+Exhaustive plan for HISTORY_EVIDENCE refs that would break if the five archive candidates were deleted without rewrite. No broken history links permitted after L3B.
+
+### TARGET: docs/MVP_STATUS.md
+
+- **HISTORY_REF_COUNT:** 21
+- **IMMUTABLE_REPLACEMENT:** https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md
+- **SOURCE_PATHS / ACTION:**
+  - docs/decision-packets/2026-05-21-criterion-1-latency-closure-decision.md → DONE_IN_L3A6 (immutable permalink applied)
+  - docs/PM70_OPENCLAW_HANDOFF_LINK_HYGIENE.md → REWRITE_IN_L3B
+  - docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md → REWRITE_IN_L3B
+  - docs/runtime-packets/pm-14-promote-41-to-40-gate.md → REWRITE_IN_L3B
+  - docs/runtime-packets/pm-15-post-promotion-regression-gate.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-first-edit-json-draft.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-readonly-first-edit-plan.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-redacted-export-commit.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-redacted-export-hygiene.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-final-n8n-cleanup.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-n8n-numeric-workflow-rename.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-backlog.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-gate-b.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-decision-a.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-design.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-pm09-final-docs-close.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-raw-github-url-import-preference.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-22-control-plane-pm58-openclaw-bridge-artifact-lifecycle-design.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-22-control-plane-pm64-pm68-openclaw-governance-cleanup-batch.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-23-control-plane-pm34-artifact-validation-readiness-audit.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-23-control-plane-pm80-openclaw-runtime-evidence-capture-design.md → REWRITE_IN_L3B
+
+### TARGET: docs/MVP_CRITERIA.md
+
+- **HISTORY_REF_COUNT:** 1
+- **IMMUTABLE_REPLACEMENT:** https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_CRITERIA.md
+- **SOURCE_PATHS / ACTION:**
+  - docs/decision-packets/2026-05-21-criterion-1-latency-closure-decision.md → DONE_IN_L3A6 (immutable permalink applied)
+
+### TARGET: docs/POST_MVP_BACKLOG.md
+
+- **HISTORY_REF_COUNT:** 19
+- **IMMUTABLE_REPLACEMENT:** https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md
+- **SOURCE_PATHS / ACTION:**
+  - docs/PM11_CANDIDATE_41_HANDOFF_FILE.md → REWRITE_IN_L3B
+  - docs/PM16_AUTOMATION_ROUTER_LAYER.md → REWRITE_IN_L3B
+  - docs/plans/2026-05-21_1700_control-plane_pm10-automation-next-step.plan.md → REWRITE_IN_L3B
+  - docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md → REWRITE_IN_L3B
+  - docs/runtime-packets/pm-12-candidate-41-handoff-file-import-gate.md → REWRITE_IN_L3B
+  - docs/runtime-packets/pm-15-post-promotion-regression-gate.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-first-edit-json-draft.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-readonly-first-edit-plan.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-redacted-export-commit.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-final-n8n-cleanup.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-n8n-numeric-workflow-rename.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-backlog.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-gate-b.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-decision-a.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-design.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-pm09-final-docs-close.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-raw-github-url-import-preference.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-pm12-candidate-41-runtime-packet.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-pm13-candidate-41-redacted-export-prep.md → REWRITE_IN_L3B
+
+### TARGET: docs/PLAN_OUTPUT_INGESTION.md
+
+- **HISTORY_REF_COUNT:** 6
+- **IMMUTABLE_REPLACEMENT:** https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/PLAN_OUTPUT_INGESTION.md
+- **SOURCE_PATHS / ACTION:**
+  - docs/plans/README.md → REWRITE_IN_L3B
+  - docs/runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-backlog.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-gate-b.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-decision-a.md → REWRITE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-design.md → REWRITE_IN_L3B
+
+### TARGET: docs/V4_POLLING_LATENCY.md
+
+- **HISTORY_REF_COUNT:** 1
+- **IMMUTABLE_REPLACEMENT:** https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/V4_POLLING_LATENCY.md
+- **SOURCE_PATHS / ACTION:**
+  - docs/decision-packets/2026-05-21-criterion-1-latency-closure-decision.md → DONE_IN_L3A6 (immutable permalink applied)
+
+**HISTORY_LINK_REWRITE_PLAN_COMPLETE:** 	rue (exhaustive mechanical census; remaining history relative links scheduled REWRITE_IN_L3B; D-C1-A already rewritten in L3A.6).

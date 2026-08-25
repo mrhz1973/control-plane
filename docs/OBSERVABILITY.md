@@ -1,8 +1,8 @@
 # Observability and audit (docs-first)
 
-**PM-04** — [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md). **No runtime by default** from this guide.
+**PM-04** — [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md). **No runtime by default** from this guide.
 
-**Related:** [MVP_STATUS.md](MVP_STATUS.md), [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [N8N_REBUILD.md](N8N_REBUILD.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [workflows/README.md](../workflows/README.md).
+**Related:** [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md), [WORKFLOW_EXPORT_STATUS.md](WORKFLOW_EXPORT_STATUS.md), [N8N_REBUILD.md](N8N_REBUILD.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [workflows/README.md](../workflows/README.md).
 
 ---
 
@@ -112,5 +112,5 @@ Copy for a **docs-only** record after a future gated manual test (fill in; do no
 ## Post-MVP posture (unchanged by this doc)
 
 - **No automatic next runtime gate** from observability work alone.
-- Strict C1 &lt;30s, multirepo promotion, new workflows: [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) — each **optional**, **gated**.
+- Strict C1 &lt;30s, multirepo promotion, new workflows: [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) — each **optional**, **gated**.
 - Observability stays **docs-first** until a backlog item explicitly requires runtime.

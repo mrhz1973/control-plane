@@ -213,8 +213,9 @@ Compatibility / history (non current owners):
 - `docs/RUNTIME_GATES.md` — superseded policy pointer → PROJECT_VISION §7 + frontier
 - `docs/WORKFLOW_EXPORT_STATUS.md` — superseded inventory pointer → `workflows/README` + `workflows/**` + frontier
 - `docs/HANDOFF_N8N_GATE.md` — historical evidence pointer → `HANDOFF_TEMPLATE` + `workflows/README` + `N8N_REBUILD`
-- `docs/MVP_STATUS.md` / `docs/MVP_CRITERIA.md` / `docs/PUBLIC_WEBHOOK_GATE.md` — historical pointers only
-- `docs/POST_MVP_BACKLOG.md` / `docs/PLAN_OUTPUT_INGESTION.md` / `docs/V4_POLLING_LATENCY.md` — archive/evidence candidates (not LIVE STATE)
+- `docs/PUBLIC_WEBHOOK_GATE.md` — historical decision pointer → PROJECT_VISION §7 + frontier
+
+MVP-era archive candidates (`MVP_STATUS`, `MVP_CRITERIA`, `POST_MVP_BACKLOG`, `PLAN_OUTPUT_INGESTION`, `V4_POLLING_LATENCY`) are **not** LIVE STATE. Full pre-cleanup snapshots: Git recovery baseline [`777504f7c46e5e724b6ad5f8586a98d43bab7ce8`](https://github.com/mrhz1973/control-plane/tree/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs).
 
 `docs/OBSERVABILITY.md` resta sotto consolidamento issue **#10** (NEEDS_REVIEW); non è LIVE STATE.
 
