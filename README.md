@@ -171,9 +171,9 @@ HEAD, gate, runtime, task e NEXT vivono nel frontier/active work, non qui.
 
 | Doc | Ruolo |
 |---|---|
-| [docs/runtime/CURRENT_FRONTIER.md](docs/runtime/CURRENT_FRONTIER.md) | LIVE STATE compatto |
-| [docs/foundation/PROJECT_VISION.md](docs/foundation/PROJECT_VISION.md) | Foundation v3 e invarianti |
-| [docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md](docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md) | Operating model multi-planner → Cursor |
+| [docs/runtime/CURRENT_FRONTIER.md](docs/runtime/CURRENT_FRONTIER.md) | **LIVE STATE** compatto — unica autorità sullo stato operativo corrente |
+| [docs/foundation/PROJECT_VISION.md](docs/foundation/PROJECT_VISION.md) | Foundation **v3.1** e invarianti |
+| [docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md](docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md) | Operating model multi-planner → Cursor, on demand |
 | [docs/contracts/backlog-item-v1.md](docs/contracts/backlog-item-v1.md) | GPT Web → planner |
 | [docs/contracts/execution-packet-v1.md](docs/contracts/execution-packet-v1.md) | planner → Cursor |
 | [docs/contracts/execution-checkpoint-v1.md](docs/contracts/execution-checkpoint-v1.md) | resume Cursor |
@@ -195,12 +195,15 @@ Dettaglio e capability runtime effettivamente verificate: leggere il frontier e 
 - Workflow produzione mai mutati in silenzio.
 - Runtime/credential/PM-34/L5/permanent schedule/loop richiedono i gate correnti indicati nel frontier.
 
-## Runtime / rebuild / export
+## Runtime / rebuild / export — solo on demand
 
-- `workflows/README.md` — export/redazione.
-- `docs/N8N_REBUILD.md` — rebuild.
-- `docs/RUNTIME_GATES.md` — gate runtime.
+Lo stato corrente **non** si ricava dai vecchi runbook/status document.
+
+- stato e gate correnti → `docs/runtime/CURRENT_FRONTIER.md`;
+- hard policy → `docs/foundation/PROJECT_VISION.md`;
+- workflow/export asset → `workflows/**` e relativo file specifico solo quando il task lo richiede;
+- `docs/N8N_REBUILD.md`, `docs/RUNTIME_GATES.md`, `docs/WORKFLOW_EXPORT_STATUS.md`, `docs/N8N_WORKFLOW_NAMING.md` e `docs/TELEGRAM_SETUP.md` contengono ancora materiale operativo utile **mescolato a snapshot storici** e sono sotto consolidamento in issue **#10**; non usarli come LIVE STATE.
 
 ## Storico
 
-Il materiale PM/session/runtime-packet resta evidence/history e **non fa parte del bootstrap**. Indice storico: `docs/PM_INDEX_ARCHIVE.md`.
+Il materiale PM/session/runtime-packet resta evidence/history e **non fa parte del bootstrap**. `docs/PM_INDEX_ARCHIVE.md` è un indice storico, non una fonte corrente. La riduzione fisica dello storico è tracciata da issue **#10** e richiede recovery anchor + reference/evidence census prima di cancellazioni.
