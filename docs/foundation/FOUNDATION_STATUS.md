@@ -1,130 +1,184 @@
 # Foundation status
 
-**Updated:** 2026-05-29  
-**Aligned to:** [PROJECT_VISION](PROJECT_VISION.md) v2.7 — Cursor prompt preflight + safe local repo update  
-**HEAD before this reconcile:** `c5f5dd8` (`docs: update rolling Cursor report`)
+**Updated:** 2026-08-25  
+**Aligned to:** [PROJECT_VISION](PROJECT_VISION.md) v3.0  
+**Status role:** compact foundation/migration index — **NOT runtime source of truth**
 
 ---
 
-## Document hierarchy
+## 0. Authority
 
 | Document | Role |
-|----------|------|
-| **[PROJECT_VISION.md](PROJECT_VISION.md)** | Entry point canonico / livello superiore — source of truth per destinazione e invarianti |
-| **FOUNDATION_STATUS.md** (this file) | Stato sintetico operativo — non alternativa alla vision |
+|---|---|
+| [CURRENT_FRONTIER.md](../runtime/CURRENT_FRONTIER.md) | **Runtime state authority**: gates, workflow state, PM-34/L5, next real runtime gate |
+| [PROJECT_VISION.md](PROJECT_VISION.md) | **Foundation authority**: architecture and invariants |
+| [MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md](MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md) | Detailed v3 target accepted 2026-08-25; docs/design only |
+| `FOUNDATION_STATUS.md` | Compact compatibility/index document only |
 
-Leggere sempre **PROJECT_VISION** prima di interpretare questo file.
-
----
-
-## Operational snapshot (v2.7)
-
-| Area | Status | Notes |
-|------|--------|--------|
-| **GitHub** | Source of truth | Codice, docs, session log verificabili |
-| **Workflow 40** | **ATTIVO** (produzione) | Polling multirepo; **non modificato** in silenzio |
-| **Workflow 41** | Backup off | **Conservare** — non cancellare senza decisione esplicita |
-| **Workflow 42** (diff-summary Telegram) | **ATTIVO** / PASS | Diff summary su commit osservati |
-| **Telegram base** | **ATTIVO** | Notifiche commit / gate umano |
-| **Codex CLI direct path** | Target model path | OAuth ChatGPT Plus, ephemeral — **non** worker automatico |
-| **Cursor CLI** | **NON** worker automatico | Implementazione sotto supervisione umana |
-| **Ollama classifier** | **NON** nel loop operativo automatico | API smoke / contract design only |
-| **OpenClaw** | Backlog / transport opzionale confinato | **Non** model path target (superseded come default) |
-| **PM-34 real worker** | **BLOCCATO** | Nessun unlock senza prova reale + gate esplicito |
-| **Safe defaults** | Unchanged | `pm34_unblocked=false`, `n8n_ready=false` |
-| **Provider API key path** | **NO** | Nessuna chiave provider in Git o loop default |
-| **n8n runtime / VPS** | Out of scope for docs tasks | Nessun deploy/tag/rollback da task docs |
+Do not reconstruct current runtime from this file.
 
 ---
 
-## Docs contracts (current)
+## 1. Foundation v3 target
 
-| Document | Role |
-|----------|------|
-| **[LAST_CURSOR_REPORT.md](../runtime/LAST_CURSOR_REPORT.md)** | Report rolling post-push su GitHub. `LATEST.real_task_commit` = commit del task reale (commit 1), **non** il commit che aggiorna solo il report (commit 2). Evidenza hash per handoff/verificatore; non sostituisce `git ls-remote`. |
-| **[CURSOR_PROMPT_TEMPLATE.md](CURSOR_PROMPT_TEMPLATE.md)** | Contratto formato prompt Cursor. Metadati di routing (`CURSOR MODE` / `MODEL` / `REPO` / `BRANCH`) e comandi ritorno umano (`aggio control`, `format`, ecc.) restano **fuori** dal corpo copiabile. Preflight implementatore include aggiornamento locale sicuro (fetch/pull `--ff-only`/verifica hash) eseguibile da Cursor; l'umano non fa fetch/pull/status di routine salvo gate diagnostici. Subordinato a PROJECT_VISION. |
+```text
+GPT Web
+  ↓ Backlog Item
+GitHub
+  ↓
+n8n
+  ↓
+OpenClaw broker
+  ↓
+Qwen 3.8 37B | GLM 5.3 | Codex OAuth
+  ↓ Execution Packet
+n8n deterministic gate
+  ↓
+Cursor bounded execution loop
+  ↓
+Bugbot review
+  ↓
+GitHub
+```
 
-Questi contratti **non** attivano runtime, n8n, PM-34, provider API key, deploy, tag o rollback.
+Roles:
 
----
-
-## Manual supervision evidence (not worker activation)
-
-Questi commit dimostrano pattern **manual-supervised** (wf42 → Codex → Cursor / GitHub bus / docs foundation). **Non** attivano Codex CLI o Cursor CLI in §1.1 PROJECT_VISION.
-
-| Commit | Session / meaning |
-|--------|-------------------|
-| `f17ad1e` | [First wf42 → Codex CLI manual PASS](../sessions/2026-05-27-control-plane-first-wf42-to-codex-cli-manual-pass.md) |
-| `6b5e100` | [First wf42 → Codex → Cursor manual e2e PASS](../sessions/2026-05-27-control-plane-first-wf42-codex-cursor-manual-e2e-pass.md) |
-| `4a539fc` | Codex prompt artifact bus test (`docs/runtime/codex-prompts/…`) |
-| `f482360` | [Codex prompt artifact consumed by Cursor PASS](../sessions/2026-05-27-control-plane-codex-prompt-artifact-consumed-by-cursor-pass.md) |
-| `becab46` / `c27aadb` | Repeatability run: Codex artifact bus -> Cursor -> real commits (role triangle, verification guard) |
-| `ef0afe8` | Rolling Cursor report su GitHub (`docs/runtime/LAST_CURSOR_REPORT.md`) + PROJECT_VISION v2.5 |
-| `f2ee6d2` | Contratto formato prompt Cursor (`docs/foundation/CURSOR_PROMPT_TEMPLATE.md`) + PROJECT_VISION v2.6 |
-| `840d289` | Popolamento LATEST nel report rolling (commit report-only; `real_task_commit` resta `f2ee6d2`) |
-
-**Codex artifact helper v1 (manual-supervised):** script locale [`scripts/codex-artifact.ps1`](../../scripts/codex-artifact.ps1) — percorso test reale: file prompt input -> `codex.cmd exec --ephemeral --sandbox read-only` -> artifact in `docs/runtime/codex-prompts/` (es. `2026-05-28-helper-v1-status-note.md`). **Valore:** riduce la micro-interazione di ricostruire manualmente il comando Codex artifact. **Stato:** helper manual-supervised only; **non** attiva Codex CLI worker; **non** sblocca PM-34; **non** cambia `pm34_unblocked` / `n8n_ready`; **non** tocca workflow 40/41; no n8n runtime; no provider API key; no deploy/tag/rollback.
-
----
-
-## External benchmark — GIS Tool
-
-**Verification (read-only):** commit `4a98a33` present on `origin/main` of `mrhz1973/cursor-coordinate-converter` after `git fetch origin main` (local clone was behind; not present until fetch).
-
-| Field | Value |
-|-------|--------|
-| Repo | `mrhz1973/cursor-coordinate-converter` |
-| Commit verified | `4a98a33` — `feat: improve offline map download and JPG export` |
-| Cycle observed | ChatGPT prompt → Cursor implementa → commit/push → deploy Firebase quando autorizzato → test browser utente PASS |
-| Firebase PASS (user) | https://gistoolmarty-33cf8.web.app |
-| VPS | Non aggiornato |
-| Value for control-plane | Riduce micro-interazione “utente deve ricordare/eseguire deploy manuale” nel flusso GIS |
-| Does **not** prove | Codex CLI attivo, Cursor CLI headless, n8n worker automatico, PM-34 unlock |
+- **GPT Web** = strategic orchestrator + backlog owner;
+- **GitHub** = source of truth + context continuity;
+- **n8n** = workflow/policy/gate;
+- **OpenClaw** = provider/auth/quota broker;
+- **Qwen / GLM / Codex** = planner/prompt generators;
+- **Cursor** = execution harness;
+- **Bugbot** = reviewer;
+- **Telegram** = human gate;
+- **Tailscale** = private transport to local node where required.
 
 ---
 
-## Next tactical step
+## 2. Current v3 contracts
 
-**Codex CLI direct path discovery/preflight** — solo quando esplicitamente scoped; ancora **no** PM-34 unlock e **no** n8n runtime. Nessun nuovo lavoro runtime da questo reconcile.
+| Contract | Role |
+|---|---|
+| [backlog-item-v1.md](../contracts/backlog-item-v1.md) | GPT Web strategic work object |
+| [planner-routing-policy-v1.md](../contracts/planner-routing-policy-v1.md) | semantic preference + provider state + deterministic fallback policy |
+| [execution-packet-v1.md](../contracts/execution-packet-v1.md) | planner → Cursor implementation contract |
+| [execution-checkpoint-v1.md](../contracts/execution-checkpoint-v1.md) | Cursor context rollover/resume state |
+| [CURSOR_PROMPT_TEMPLATE.md](CURSOR_PROMPT_TEMPLATE.md) | Cursor execution/preflight/loop/report contract |
 
-Vincoli invariati:
-
-- n8n runtime
-- workflow 40/41 mutation
-- PM-34 unlock
-- provider API key
-- deploy / tag / rollback
-
-Artifact policy: ASCII-safe, newline at EOF, no JSON wrapper obbligatorio (vedi `f482360`, helper v1 enforce EOF).
+These contracts are design/foundation artifacts. They do not authorize runtime by themselves.
 
 ---
 
-## Superseded as active next step (historical only)
+## 3. Context-window continuity
 
-| Former next step | Status |
-|------------------|--------|
-| Artifact bus helper v1 repeat-use as **primary** forward work | **Superseded** — helper v1 resta disponibile; passo tattico corrente = Codex CLI preflight quando scoped |
-| n8n payload synthetic validation / preflight dry-run **examples** as primary forward work | **Superseded** — design phase closed on paper (2026-05-26 batch) |
-| OpenClaw/Codex bridge as **default** model path | **Superseded** by PROJECT_VISION v2.2+ — Codex CLI direct; OpenClaw = optional transport/backlog |
+Foundation v3 makes context rollover a first-class requirement.
+
+### GPT Web
+
+- `handoff ora` remains the manual kill switch;
+- 20 user prompts remain the historical hard ceiling;
+- early handoff is required when context quality degrades;
+- new chat reads live GitHub state.
+
+### Planner
+
+A new Codex/GLM/Qwen planner session reads Backlog Item + relevant repo state + packet/checkpoint, not the old planner transcript.
+
+### Cursor
+
+An incomplete session persists an Execution Checkpoint before rollover. The next Cursor session resumes from:
+
+```text
+Execution Packet + latest Execution Checkpoint + live Git state
+```
 
 ---
 
-## Design-phase evidence (local bridge + n8n payload — closed on paper)
+## 4. Historical evidence retained
 
-Compact index; detail in linked sessions. **Does not authorize** n8n runtime, PM-34 unlock, or unattended automation.
+The following evidence remains useful as historical proof of components already explored/tested. It must not be confused with the current v3 target or with current runtime authorization.
 
-| Layer | Status | Pointer |
-|-------|--------|---------|
-| Tailscale VPS ↔ Ryzen | PASS | [session](../sessions/2026-05-23-control-plane-tailscale-vps-ryzen-private-mesh-pass.md) |
-| Cursor Agent CLI install/auth smoke | PASS | [session](../sessions/2026-05-25-control-plane-cursor-agent-cli-install-auth-plan-smoke-pass.md) |
-| Ollama classifier API | PASS (API only) | [session](../sessions/2026-05-25-control-plane-ollama-qwen3-classifier-api-smoke-pass.md) |
-| OpenClaw gateway loopback | PASS (manual) | [session](../sessions/2026-05-25-control-plane-openclaw-gateway-loopback-runtime-pass.md) |
-| OpenClaw agent Step A | BLOCKED (no provider API key) | [session](../sessions/2026-05-25-control-plane-openclaw-agent-step-a-provider-api-key-blocked.md) |
-| Codex bridge V2 + local wrapper integration | PASS (local, n8n-free) | [closeout](../decision-packets/n8n-free-local-integration-readiness-closeout.md) |
-| n8n payload contract + synthetic examples | DOCS COMPLETE | [closeout](../decision-packets/n8n-payload-contract-closeout.md) |
-| n8n read-only runtime inspection Tier A | PASS (list-only) | [pass](../sessions/2026-05-26-control-plane-n8n-read-only-runtime-inspection-tier-a-pass.md) |
-| n8n payload preflight dry-run design | DOCS COMPLETE (superseded as next step) | [packet](../decision-packets/n8n-payload-preflight-dry-run-design-packet.md) |
+| Layer | Historical evidence status | Meaning in v3 |
+|---|---|---|
+| Tailscale VPS ↔ Ryzen | PASS | private transport evidence retained |
+| Cursor Agent CLI install/auth smoke | PASS | prior Cursor harness evidence retained; current `/goal`/`/loop` track still requires dedicated current-version verification |
+| Ollama/Qwen classifier API | PASS | old classifier track retained as evidence; **not** mandatory v3 routing layer |
+| OpenClaw gateway loopback | PASS (manual) | broker/gateway evidence retained; current provider capabilities must be re-verified |
+| OpenClaw agent Step A | historical BLOCKED on old provider-key path | **not a current architectural conclusion**; v3 explicitly reopens OpenClaw as broker with Codex OAuth/GLM/local provider verification |
+| Codex CLI OAuth/manual path | prior PASS evidence | Codex remains planner candidate; v3 routes it through the broker target when verified |
+| Codex artifact → Cursor manual cycle | PASS evidence | proves planner-artifact → implementer pattern, now generalized to Execution Packet |
+| Workflow 42 Telegram diff summary | prior PASS/active evidence | current state must still be read from CURRENT_FRONTIER |
 
-**Invarianti invariati:** Workflow 40/41 untouched by design tasks; `pm34_unblocked=false`; `n8n_ready=false`; no provider API keys; no public Funnel.
+Historical session logs and PM documents are evidence, not forward authority.
 
-Entry point: [PROJECT_VISION](PROJECT_VISION.md).
+---
+
+## 5. What v3 explicitly supersedes
+
+The following statements from older foundation snapshots are **superseded as target architecture**:
+
+1. `Codex CLI direct path is the only/default model path`;
+2. `OpenClaw is only optional backlog/transport and not in model path`;
+3. `Ollama classifier is a mandatory step between planner and Cursor`;
+4. `GLM is foundation-wide read-only advisor only`;
+5. `Cursor receives prompts only from one Codex planner`;
+6. `context rollover is mainly a 20-turn GPT handoff concern`.
+
+They remain valid only as historical descriptions of the phase in which they were written.
+
+---
+
+## 6. What does NOT change automatically
+
+Foundation v3 does not itself authorize or change:
+
+- PM-34 / `n8n_ready`;
+- L5 state or authorization;
+- permanent schedule/loop;
+- production workflow mutation;
+- public webhook / Telegram Trigger;
+- credentials/provider runtime configuration;
+- runtime activation of OpenClaw/Codex/GLM/Qwen;
+- Bugbot integration;
+- Cursor autonomous production loop.
+
+Read exact values from `CURRENT_FRONTIER.md`.
+
+---
+
+## 7. Migration backlog
+
+Authoritative migration tracker: **GitHub issue #8 — `Architecture migration — multi-planner → Cursor bounded loop`**.
+
+Current docs/design sequence:
+
+- [x] persist accepted operating model;
+- [x] create Backlog Item contract;
+- [x] create planner routing policy;
+- [x] create Execution Packet contract;
+- [x] create Execution Checkpoint contract;
+- [x] consolidate PROJECT_VISION v3;
+- [x] adapt Cursor prompt contract to packet/checkpoint model;
+- [ ] verify current OpenClaw provider capabilities on the installed runtime;
+- [ ] planner smoke tests (Qwen / GLM / Codex), read-only;
+- [ ] verify GLM BYOK as Cursor main Agent/custom subagent where supported;
+- [ ] verify current Cursor bounded `/goal` + `/loop` behavior;
+- [ ] verify Bugbot review without automatic cloud Autofix;
+- [ ] only after evidence, design/authorize runtime wiring.
+
+---
+
+## 8. Stable safety boundaries
+
+- GitHub remains source of truth.
+- GPT Web/GPT-B remains authoritative n8n workflow author.
+- Cursor does not autonomously redesign `workflows/**`.
+- Production workflows are never silently mutated.
+- Human decisions use direct operator provenance and Decision Packets.
+- Destructive/credential/billing/runtime/permanent automation changes remain real gates.
+- Fallback must be graceful and recoverable from GitHub.
+
+---
+
+**Entry point:** [PROJECT_VISION.md](PROJECT_VISION.md)  
+**Runtime state:** [CURRENT_FRONTIER.md](../runtime/CURRENT_FRONTIER.md)
