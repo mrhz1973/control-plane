@@ -4,7 +4,7 @@
 
 **Criterion (Italian):** Utente ha completato almeno 3 cicli reali end-to-end: handoff → implementer → commit → notifica.
 
-**Related:** [MVP_CRITERIA.md](MVP_CRITERIA.md) §3, [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) (criterion 2 **PASS** 2026-05-20), [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md), [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md).
+**Related:** [MVP_CRITERIA.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_CRITERIA.md) §3, [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) (criterion 2 **PASS** 2026-05-20), [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md), [PUBLIC_WEBHOOK_GATE.md](PUBLIC_WEBHOOK_GATE.md).
 
 **Criterion 2 vs criterion 3:** MVP criterion 2 PASS (handoff via n8n + Telegram `Prompt ready: yes`) is a **prerequisite** for credible handoff steps in cycles, but the 2026-05-20 handoff manual test **alone** does **not** count as a Cycle PASS — no implementer work, no commit pushed to a watched repo, no push-triggered notifica cycle completed.
 
@@ -135,7 +135,7 @@ Add one section per cycle below (or append rows in your local log). **Never** pu
 
 ## Cycle log (fill at runtime)
 
-Record **real** cycles here when they happen. **Criterion 3 closed** — Cycles 1–3 **PASS** (3/3); operational MVP accepted with C1 exception ([MVP_STATUS.md](MVP_STATUS.md)). See [Repo eligibility](#repo-eligibility-for-end-to-end-cycles) above.
+Record **real** cycles here when they happen. **Criterion 3 closed** — Cycles 1–3 **PASS** (3/3); operational MVP accepted with C1 exception ([MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md)). See [Repo eligibility](#repo-eligibility-for-end-to-end-cycles) above.
 
 ### Cycle 1 — PASS
 
@@ -454,9 +454,9 @@ FINAL REPORT (required):
 2. All four steps are evidenced for each;
 3. At least **two different repos** or **two clearly distinct tasks** are recommended (not mandatory in MVP text, but avoids three copies of the same trivial change);
 4. No token, chat_id, webhook URL, or secret appears in committed records;
-5. [MVP_CRITERIA.md](MVP_CRITERIA.md) §3 status updated to **PASS** after review.
+5. [MVP_CRITERIA.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_CRITERIA.md) §3 status updated to **PASS** after review.
 
-**Current tracker status:** **3 / 3 PASS** — Cycle 1 **PASS** (GIS `34d543d`); Cycle 2 **PASS** (dev-method `5ce0a25`); Cycle 3 **PASS** (dev-method `0be529d`); **criterion 3 closed** (see [MVP_STATUS.md](MVP_STATUS.md)).
+**Current tracker status:** **3 / 3 PASS** — Cycle 1 **PASS** (GIS `34d543d`); Cycle 2 **PASS** (dev-method `5ce0a25`); Cycle 3 **PASS** (dev-method `0be529d`); **criterion 3 closed** (see [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md)).
 
 ---
 
@@ -490,5 +490,5 @@ FINAL REPORT (required):
 ## After three PASS cycles
 
 1. ~~Replace `_pending_` fields~~ — **Done** (Cycles 1–3 logged).
-2. ~~Set [MVP_CRITERIA.md](MVP_CRITERIA.md) §3 to **PASS**~~ — **Done** (2026-05-20); operational MVP **D-C1-A** (2026-05-21).
+2. ~~Set [MVP_CRITERIA.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_CRITERIA.md) §3 to **PASS**~~ — **Done** (2026-05-20); operational MVP **D-C1-A** (2026-05-21).
 3. Optional: add one line in [TELEGRAM_SETUP.md](TELEGRAM_SETUP.md) noting criterion 3 closure date.

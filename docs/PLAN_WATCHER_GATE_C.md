@@ -2,7 +2,7 @@
 
 **Docs index.** Records PM-09 final runtime state in active **`40`**. Still **v4 polling** — not v5/webhook. No new runtime authorized by this document alone.
 
-**Related:** [PLAN_OUTPUT_INGESTION.md](PLAN_OUTPUT_INGESTION.md), [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [OBSERVABILITY.md](OBSERVABILITY.md), [plans/README.md](plans/README.md), [PM-09 docs close](sessions/2026-05-21-control-plane-pm09-final-docs-close.md).
+**Related:** [PLAN_OUTPUT_INGESTION.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/PLAN_OUTPUT_INGESTION.md), [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md), [RUNTIME_GATES.md](RUNTIME_GATES.md), [OBSERVABILITY.md](OBSERVABILITY.md), [plans/README.md](plans/README.md), [PM-09 docs close](sessions/2026-05-21-control-plane-pm09-final-docs-close.md).
 
 ---
 
@@ -36,7 +36,7 @@ Gate C covers **detection and normalization**. Gate D covers **Telegram delivery
 | In scope | Out of scope |
 |----------|--------------|
 | Commits touching `docs/plans/*.plan.md` in watched repos (v1: **control-plane** primary) | GIS handoff branch logic (separate path in active **`40`**) |
-| Parse YAML front matter per [Gate B schema](PLAN_OUTPUT_INGESTION.md#required-yaml-front-matter) | Full plan body pasted into Telegram message text only (Gate D uses summary + `.md` file) |
+| Parse YAML front matter per [Gate B schema](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/PLAN_OUTPUT_INGESTION.md#required-yaml-front-matter) | Full plan body pasted into Telegram message text only (Gate D uses summary + `.md` file) |
 | Emit `plan_detected` normalized event | Cursor IDE provider API |
 | Dedupe by plan path + content/commit identity | v5 webhook, strict C1 reopen |
 | Skip `sample: true` files | ALINA LAVORO, dev-method, GIS repo changes |
@@ -84,7 +84,7 @@ Normalized event **`plan_detected`** — internal shape for n8n Code node / IF b
 }
 ```
 
-Gate D consumes `plan_detected` to build Telegram payload per [PLAN_OUTPUT_INGESTION.md § Desired Telegram payload](PLAN_OUTPUT_INGESTION.md#desired-telegram-payload-brief).
+Gate D consumes `plan_detected` to build Telegram payload per [PLAN_OUTPUT_INGESTION.md § Desired Telegram payload](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/PLAN_OUTPUT_INGESTION.md#desired-telegram-payload-brief).
 
 **Gate C** emits `plan_detected`; **Gate D** sends Telegram (validated 2026-05-21).
 

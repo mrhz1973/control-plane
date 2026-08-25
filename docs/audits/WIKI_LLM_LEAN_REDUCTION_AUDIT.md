@@ -298,3 +298,11 @@ No deletions are authorized or implied by this audit.
 - **Public webhook security** folded into `PROJECT_VISION` §7.0.
 - **Physical deletions:** NONE.
 - **Next:** delete-gate re-census after L3A.5 merge; do not start L3B deletes without proof.
+
+## 12. L3A.6 immutable link rewrite (2026-08-25)
+
+- **PR #14:** MERGED PASS.
+- **Final delete-gate verify:** PASS; blocker was surviving-tree **material** links only.
+- **L3A.6:** rewrote material/legacy relative links to immutable baseline `777504f7…`; README lean recovery pointer; D-C1-A packet immutable; exhaustive `L3B_HISTORY_LINK_REWRITE_PLAN` recorded in candidate manifest (`HISTORY_LINK_REWRITE_PLAN_COMPLETE=true`).
+- **Physical deletions:** NONE.
+- **Next:** post-L3A.6 delete-gate re-census; L3B may delete the five only after history rewrites execute or are co-scheduled.
