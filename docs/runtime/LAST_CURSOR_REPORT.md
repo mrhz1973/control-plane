@@ -5,8 +5,8 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0010-Z_ZAI_GLM53_LIVE_SMOKE_GLOBAL
-result_cursor: BLOCKED_LIVE_PROVIDER_HTTP500
+task_ref: D-0010-Z_ZAI_GLM53_SINGLE_LIVE_VERIFICATION
+result_cursor: COMPLETED_ONE_BOUNDED_REQUEST_OUTCOME_HTTP500
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
 report_persistence_commit: pending_this_commit
@@ -14,44 +14,45 @@ report_persistence_commit: pending_this_commit
 repo_head_observed_at_task: f44af1b9488a380fffdeddb146fb8f3d304886e3
 workspace_at_start: clean
 active_work: github:issue/8
-operator_gate: live smoke authorized in-band 2026-08-26 (exactly one bounded request)
+operator_gate: live single-request authorized in-band 2026-08-26 (one zai/glm-5.3 request via zai:default, Global Coding Plan, zero retry, zero fallback)
 
-live_smoke_type: single_bounded_provider_model_request
-vps: ionos-n8n
-provider: zai
-auth_profile_intent: zai:default
-model: zai/glm-5.3
-surface: zai-coding-global
-baseUrl_configured: https://api.z.ai/api/coding/paas/v4
-request_url_observed: https://api.z.ai/api/coding/paas/v4/chat/completions
-execution_mode: local
-thinking: low
-retry_count: 0
-fallback_count: 0
-prompt_class: minimal_bounded_text
+live_request:
+  count: 1
+  method: POST
+  url: https://api.z.ai/api/coding/paas/v4/chat/completions
+  provider: zai
+  model: glm-5.3
+  auth_profile_selection: automatic (prefers zai:default)
+  thinking: low
+  status: 500
+  elapsed_ms: 412
+  content_type: application/json
+  retry: 0
+  fallback: 0
+  transport_error: none
+  outcome: 500 Internal service error — no text output
 
-HTTP_STATUS: 500
-ERROR_CLASS: Internal service error
-ELAPSED_MS: 193
-EXIT_CODE: 1
-TEXT_OUTPUT: none
+post_request_state:
+  baseUrl_unchanged: https://api.z.ai/api/coding/paas/v4
+  primary_model_unchanged: zai/glm-5.3
+  gateway: inactive
+  port_18789: free
+  config_mutation: false
+  auth_mutation: false
+  runtime_mutation: false
+  network_mutation: false
 
-interpretation: credential repair local PASS remains valid; repaired documented-format zai:default key on Global Coding Plan surface still returns HTTP 500 on first live glm-5.3 request — malformed-credential-alone no longer sufficient as sole explanation for Global surface failure
+MATERIAL_FINDING:
+  uniform_http500_persists_with_documented_format_credential_on_global_coding_plan
+  malformed_zai_manual_credential_no_longer_sole_explanation_for_http500
+  remaining_discriminators_include_model_variant_vs_host_geography_vs_key_binding
+  prior_local_windows_evidence_shows_same_format_key_family_succeeding_on_same_endpoint_with_glm-5.1
 
-provider_model_request_count: 1
-credential_mutation: false
-config_mutation: false
-runtime_mutation: false
-network_mutation: false
-daemon_or_service_mutation: false
-gateway_service: inactive unchanged
-gateway_ports: 18789 free
+provider_model_request_count: 1 (exactly as authorized)
+secret_exposed: false
+secret_logged: false
+secret_persisted: false
+secret_derived_data_persisted: false
 
-SECRET_VALUE_DISPLAYED: false
-SECRET_VALUE_LOGGED: false
-SECRET_VALUE_PERSISTED: false
-SECRET_VALUE_HASHED: false
-AUTHORIZATION_DATA_EXPOSED: false
-
-NEXT_RECOMMENDED_GATE: real human gate — provider/account support verification or bounded diagnostic on profile selection (zai:manual residual) before any further provider/model request
+NEXT_RECOMMENDED_GATE: real human gate to select the next bounded discriminator (e.g. glm-5.1 vs glm-5.3 on same host/key, or same model from a different egress) or escalate to provider support with sanitized evidence; no further requests without new authorization
 ```
