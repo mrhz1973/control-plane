@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8** |
-| **BLOCCO ATTIVO** | `ZAI-APPLICATION-LAYER-IP-RISK-CONTROL-SUSPECT` |
-| **STATO BLOCCO** | `TRANSPORT_PATH_ELIMINATED / AUTHENTICATED_HTTP500_PERSISTS_ON_DATACENTER_EGRESS / SUPPORT_ESCALATION_OR_ALTERNATE_EGRESS_UNSELECTED` |
-| **GATE CORRENTE** | `ZAI_UNAUTHENTICATED_EGRESS_DIAGNOSTIC_CONSUMED_PASS` — next: real human gate for Z.AI support escalation or alternate-egress test |
-| **NEXT** | real human gate: (a) escalate to Z.AI support with sanitized evidence (datacenter IP `217.160.71.145` → authenticated HTTP 500; residential IP `95.249.154.241` → authenticated SUCCESS; unauthenticated path OK from both), or (b) authorize bounded test from alternate VPS egress (e.g. Tailscale exit). No further probes without new authorization. |
+| **BLOCCO ATTIVO** | `ZAI-SUPPORT-ESCALATION-DRAFT-READY` |
+| **STATO BLOCCO** | `SUPPORT_ESCALATION_PACKET_PREPARED / AWAITING_EXTERNAL_SUBMISSION_GATE` |
+| **GATE CORRENTE** | `AWAITING_EXTERNAL_SUBMISSION_GATE` — operator reviews and submits `docs/runtime/ISSUE_8_ZAI_SUPPORT_ESCALATION_DRAFT.md` to Z.AI Support; no external contact performed by automation |
+| **NEXT** | real human gate: operator submits sanitized escalation draft to Z.AI Support through official channel. No further probes, authenticated requests, or runtime/config/auth/network changes without new authorization. |
 | **VPS OPENCLAW** | `2026.8.1-beta.3` (5831b80) · gateway inactive (unchanged) · node runtime `/opt/openclaw-node/current` v24.19.0 |
 | **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` (active generation, unchanged) |
 | **CODEX VPS** | OAuth PASS · direct smoke PASS |
@@ -29,7 +29,7 @@
 | **OPENCLAW UPSTREAM GLM 5.3 SUPPORT** | merged PR #123523 / issue #123522 confirm first-class GLM 5.3 Coding Plan support |
 | **OPERATOR AUTHORIZATION** | 2026-08-26 · issue #8 comment `5429724710` (diagnostic matrix, consumed) · 2026-08-26 in-band gate: credential repair `zai-coding-global` authorized and completed |
 | **ROOT CAUSE CLASSIFICATION** | `APPLICATION_LAYER_IP_OR_RISK_CONTROL_SUSPECT` (updated 2026-08-26): transport/unauthenticated path eliminated (VPS reaches `api.z.ai`, TLS OK, coding prefix returns expected HTTP 401); credential format and model variant eliminated; cross-host asymmetry on **authenticated** requests only — datacenter egress `217.160.71.145` (VPS IONOS) → HTTP 500; residential egress `95.249.154.241` (Windows) → SUCCESS with same key family. Plausible cause: Z.AI application-layer risk control keyed on datacenter/source IP. Historical malformed `zai:manual` remains a real defect (bypassed via `zai:default`) but does not explain authenticated HTTP 500. |
-| **EGRESS DIAGNOSTIC** | COMPLETE `2026-08-26` · unauthenticated only · DNS same on both · TCP/TLS functional on VPS · coding prefix HTTP 401 from both · egress IPs differ (VPS datacenter vs Windows residential) · zero authenticated requests |
+| **SUPPORT ESCALATION** | `SUPPORT_ESCALATION_PACKET_PREPARED` · draft `docs/runtime/ISSUE_8_ZAI_SUPPORT_ESCALATION_DRAFT.md` · **NOT submitted** · `AWAITING_EXTERNAL_SUBMISSION_GATE` |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
 | **Gate E / L5_PASS** | PASS-CLOSED / NOT_CLAIMED |
 | **L5 runtime** | activation `false` · runtime `false` · endurance `false` |
@@ -43,7 +43,8 @@
 - The malformed legacy `zai:manual` profile was preserved (not deleted): credential deletion requires a separate gate. It must not be reused.
 - Secret handling: key entered by the operator in an interactive terminal only; never printed, logged, hashed, measured, persisted in GitHub or exposed in-band.
 - Unauthenticated egress diagnostic completed 2026-08-26: DNS/TCP/TLS/unauthenticated HTTP path functional from VPS; coding prefix returns HTTP 401 (expected) from both VPS and Windows. Transport layer eliminated as failure cause. Authenticated HTTP 500 remains specific to datacenter egress IP `217.160.71.145`.
-- Zero additional authenticated provider/model requests beyond the two individually authorized live tests. `NO_MORE_MANUAL_ONE_OFF_PROBES` remains in force.
+- Support escalation draft prepared 2026-08-27 at `docs/runtime/ISSUE_8_ZAI_SUPPORT_ESCALATION_DRAFT.md` (sanitized; no API keys, Authorization values, or credential-derived data). **Not submitted** to Z.AI; external submission requires operator gate.
+- Zero additional authenticated provider/model requests. `NO_MORE_MANUAL_ONE_OFF_PROBES` remains in force.
 - No gateway/service activation, daemon install, n8n/Docker/Tailscale/firewall/reverse-proxy mutation, channel/skill/hook installation or any production/runtime wiring was performed. Gateway remains inactive with port `18789` free.
 - Cursor BYOK (dashboard key `Cursor`) and OpenClaw Z.AI auth (dashboard key `Control Plane`) remain logically separate integrations.
 - Planner-generated Cursor Execution Packets remain governed by `docs/contracts/execution-packet-v1.md` and `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`.
@@ -55,6 +56,7 @@
 - Active work: issue **#8**
 - Operator authorization audit: issue **#8**, comment `5429724710`
 - Historical autodetect matrix packet: `docs/runtime/ISSUE_8_ZAI_AUTODETECTION_PACKET.yaml`
+- Support escalation draft (not submitted): `docs/runtime/ISSUE_8_ZAI_SUPPORT_ESCALATION_DRAFT.md`
 - Future research: issue **#18** (`DEFERRED`)
 - Future production quota/time-window policy: issue **#19** (`DEFERRED`)
 - Planner routing: `docs/contracts/planner-routing-policy-v1.md`
