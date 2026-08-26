@@ -5,62 +5,68 @@
 ## LATEST
 
 ```yaml
-task_ref: GLM_ZAI_52_DIRECT_SMOKE_EXACT
-result_cursor: BLOCKED
+task_ref: GLM_ZAI_CODING_PLAN_ENDPOINT_BINDING_REMEDIATION
+result_cursor: PASS
 reported_via: cursor_direct_persistence
+independent_verification: cursor_runtime_evidence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: abf168d394e38425d33775169c1635d47423b85f
+repo_head_observed_at_task: 1e9f482e4c3f7f3f3f8ece919af363cd884a0d01
 workspace: clean
 
-OPENCLAW_VERSION: 2026.8.1-beta.3 (5831b80)
-MODEL_USED: zai/glm-5.2
+OPENCLAW_VERSION: 2026.8.1-beta.3
+ZAI_PLUGIN_VERSION: 2026.8.1-beta.3
 
-EXACT_GLM52_MODEL_REF_VISIBLE: true
+GENERAL_PROVIDER_ID: zai
+GENERAL_BASE_ENDPOINT: https://api.z.ai/api/paas/v4
 
-STORED_KEY_STRUCTURAL_STATUS: single_nonduplicated_candidate
-DOUBLE_PASTE_PATTERN: false
+CODING_PLAN_PROVIDER_ID: zai
+CODING_PLAN_BASE_ENDPOINT: https://api.z.ai/api/coding/paas/v4
+CODING_PLAN_AUTH_METHOD: api_key
+CODING_PLAN_PROFILE_BINDING_RULE: provider remains zai; profile zai:manual retained; models.providers.zai.baseUrl selects Coding Plan surface (auth-choice zai-coding-global)
 
-DIRECT_COMMAND_FORM: "openclaw infer model run --local --model zai/glm-5.2 --prompt <text>"
+CURRENT_PROVIDER_BINDING: zai
+CURRENT_BASE_ENDPOINT: https://api.z.ai/api/paas/v4
+CURRENT_PROFILE_BINDING: zai:manual
 
-GLM52_SMOKE_INVOCATION_COUNT: 1
-AUTOMATIC_RETRY_COUNT: 0
-GLM53_INVOCATION_COUNT_THIS_TASK: 0
-CODEX_INVOCATION_COUNT: 0
-QWEN_INVOCATION_COUNT: 0
+CONFIG_MUTATION_APPLIED: true
+MUTATION_SCOPE: models.providers.zai.baseUrl only
 
-SMOKE_EXIT_CODE: 1
-SMOKE_RESPONSE_RECEIVED: false
-SMOKE_MARKER_MATCH: false
-SANITIZED_PROVIDER_ERROR: "500 Internal service error (provider=zai model=glm-5.2)"
-OBSERVED_REQUEST_URL_SANITIZED: "https://api.z.ai/api/paas/v4/chat/completions"
-
-BLOCKER: BLOCKED_ZAI_PROVIDER_HTTP_500_INTERNAL_SERVICE_ERROR
+PROVIDER_BINDING_AFTER: zai
+BASE_ENDPOINT_AFTER: https://api.z.ai/api/coding/paas/v4
 
 ZAI_PROFILE_PRESENT_AFTER: true
-ZAI_PROVIDER_AFTER: available
+ZAI_PROFILE_ID_AFTER: zai:manual
+ZAI_AUTH_TYPE_AFTER: api_key
+
+EXACT_GLM53_MODEL_REF_VISIBLE_AFTER: true
 EXACT_GLM52_MODEL_REF_VISIBLE_AFTER: true
+
+CREDENTIAL_REENTRY: false
+AUTH_SECRET_CHANGED: false
+AUTH_SECRET_VALUE_READ: false
+
+MODEL_INVOCATION_COUNT: 0
+PROVIDER_REQUEST_COUNT: 0
+CODEX_INVOCATION_COUNT: 0
+QWEN_INVOCATION_COUNT: 0
 
 PORT_18789_AFTER: free
 GATEWAY_RUNNING_AFTER: false
 
-AUTH_MUTATION: false
-CONFIG_MUTATION: false
-ENDPOINT_MUTATION: false
 CORE_PLUGIN_MUTATION: false
-GATEWAY_MUTATION: false
 SERVICE_MUTATION: false
 N8N_MUTATION: false
 DOCKER_MUTATION: false
 TAILSCALE_MUTATION: false
 SECRET_VALUES_PERSISTED: false
 
-NEXT_GATE_CLASSIFICATION: GLM_ZAI_ENDPOINT_PRODUCT_COMPATIBILITY_GATE_REQUIRED
+NEXT_GATE_CLASSIFICATION: GLM_ZAI_CODING_PLAN_POST_REMEDIATION_SMOKE_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-Exact `zai/glm-5.2` was locally visible. Exactly one direct/local smoke on VPS `ionos-n8n` via OpenClaw `2026.8.1-beta.3`. Provider returned HTTP 500 Internal service error on general `…/api/paas/v4/chat/completions`; no text; marker not matched. No retry. No 5.3/5.1/5 fallback. No auth/config/endpoint mutation. Gateway remained inactive.
+Installed OpenClaw docs (`docs/providers/zai.md`) and `@openclaw/zai-provider@2026.8.1-beta.3` establish: general `zai-global` → `https://api.z.ai/api/paas/v4`; Coding Plan Global `zai-coding-global` → `https://api.z.ai/api/coding/paas/v4`. Prior smokes hit the general path. Authored `models.providers.zai.baseUrl` was unset (catalog default = general). Minimal remediation: set baseUrl to Coding Plan Global. Credential `zai:manual` preserved; no key re-entry; no model/provider request; gateway off. Smoke deferred to separate gate.
 
 ## Completion persistence invariant
 
