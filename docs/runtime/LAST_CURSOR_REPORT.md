@@ -9,7 +9,7 @@ task_ref: D-0014-W_WINDOWS_OPENCLAW_PRIVATE_FALLBACK_BROKER
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
-report_persistence_commit: PENDING_SELF_REFERENCE
+report_persistence_commit: d8717314b70bb73e674b70397ee86b47d9fb8abf
 
 repo_head_observed_at_task: 33904f4049f5c097de941f8e24731102e84e8680
 workspace_at_start: clean
