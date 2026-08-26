@@ -2,189 +2,267 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`  
-**Versione:** 1.0 — 2026-08-27  
-**Ruolo:** standard canonico di presentazione all'operatore dei prompt destinati a Cursor.  
-**Relazione:** complementare a `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`; non modifica scope, gate o runtime.
+**Versione:** 2.0 — 2026-08-27  
+**Stato:** CANONICAL  
+**Ruolo:** standard permanente per come GPT Web/orchestratore costruisce e presenta i prompt destinati a Cursor.  
+**Relazione:** complementare a `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`, `docs/contracts/execution-packet-v1.md`, `docs/contracts/planner-routing-policy-v1.md` e `docs/runtime/CURRENT_FRONTIER.md`.
 
 ---
 
-## 0. Decisione operatore
+## 0. Principio fondamentale — TASK DELTA, non secondo manuale
 
-L'operatore ha stabilito che ogni prompt operativo da consegnare a Cursor deve essere presentato in chat come **un unico blocco cliccabile/copabile**, chiaramente separato dalla spiegazione dell'orchestratore.
+Ogni prompt operativo destinato a Cursor deve essere un **TASK DELTA**.
 
-Questo standard riguarda la **presentazione user-facing** del prompt. Il contenuto tecnico resta governato da:
+Il prompt deve contenere solo **cosa Cursor deve fare nel pass corrente**. Il metodo stabile del progetto resta nel repository e **non va ricopiato ogni volta**.
 
-- `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`;
-- `docs/contracts/execution-packet-v1.md`;
-- `docs/contracts/planner-routing-policy-v1.md`;
-- `docs/runtime/CURRENT_FRONTIER.md`.
+Quindi il prompt non deve riscrivere sistematicamente:
 
----
+- preflight Git completo se già definito dal metodo canonico;
+- regole generali di review/deploy/QA;
+- OPSEC/secret policy già canonica;
+- checkpoint/closure/reporting boilerplate già canonico;
+- regole di `finito`, connector, bundle, evidence o gate già persistite;
+- spiegazioni generali del progetto.
 
-## 1. Regola obbligatoria di presentazione
+Quando una regola è già canonica, usare formule concise come:
 
-Quando GPT Web/orchestratore deve consegnare un prompt da incollare in Cursor:
+> `Segui la regola canonica pertinente al gate corrente.`
 
-1. dare prima, fuori dal prompt, solo il minimo contesto utile all'operatore;
-2. presentare **un singolo blocco copiabile** con titolo esplicito:
-   `INCOLLA IN CURSOR — <TASK-ID> — <scopo breve>`;
-3. non spezzare il prompt operativo in più blocchi o frammenti;
-4. non mescolare commenti dell'orchestratore dentro il blocco;
-5. dopo il prompt, fornire separatamente un secondo blocco copiabile contenente soltanto:
-   `agg`;
-6. il messaggio dell'orchestratore deve comunque terminare con il protocollo di progetto `NEXT:`, `WAIT:` o `DONE:`.
+Si aggiunge soltanto il **delta specifico del pass**.
 
 ---
 
-## 2. Struttura raccomandata del blocco Cursor
+## 1. Modalità Cursor — obbligatoria prima del blocco
 
-Il blocco user-facing deve essere leggibile e operativo. Salvo task molto piccoli, usare questa struttura:
+Prima del blocco copiabile del prompt deve sempre comparire una delle due righe:
+
+- **`MODALITÀ CURSOR: AGENT`** — Cursor deve eseguire modifiche, test, commit, evidence, push, deploy o altre azioni operative autorizzate.
+- **`MODALITÀ CURSOR: PLAN`** — Cursor deve solo analizzare/progettare e non deve modificare file/runtime/stato.
+
+La modalità è **fuori dal blocco** e non va confusa con il contenuto del task.
+
+---
+
+## 2. Forma canonica del TASK DELTA
+
+Il blocco operativo deve essere unico, cliccabile/copabile e racchiuso concettualmente tra:
 
 ```text
-<TITOLO / TASK / CONTINUE CONTEXT se necessario>
-
-ROLE:
-<ruolo Cursor / workstream>
-
-TASK / PR / ISSUE:
-<riferimento persistente>
-
-CANONICAL CONTEXT:
-<fonti GitHub da leggere>
-
-OBJECTIVE:
-<single bounded goal>
-
-AUTHORIZED / ALLOWED:
-- ...
-
-FORBIDDEN:
-- ...
-
-PREFLIGHT:
-- repository / branch / HEAD / workspace checks
-
-EXECUTE:
-1. ...
-2. ...
-3. ...
-
-VALIDATE:
-- ...
-
-ACCEPTANCE:
-- ...
-
-LOOP POLICY:
-- bounded implement -> test -> fix -> test
-- max rounds
-
-STOP ONLY IF:
-- real gate / blocker nominato
-
-FINALIZATION:
-- selective staging
-- commit/push
-- exact-head verification
-- LAST_CURSOR_REPORT / CURRENT_FRONTIER persistence when required
-
-FINAL REPORT:
-- verbatim Git outputs required by cursor-standard-v3
+=== INIZIO PROMPT CURSOR ===
+...
+=== FINE PROMPT CURSOR ===
 ```
 
-Il contenuto può essere più corto se il task lo consente, ma non deve perdere scope, acceptance, stop conditions o riferimenti canonici richiesti dal contratto Cursor.
+I campi vanno presentati in questo ordine logico:
+
+1. **BLOCK-ID / TASK** — identificatore canonico del lavoro.
+2. **CATEGORY** — `ROUTINE` oppure `DELICATO`.
+3. **CLOSURE** — per esempio `NONE`, `STANDARD_RUNTIME_BUNDLE` o altro closure canonico realmente applicabile.
+4. **Stato di partenza verificabile** — build LIVE, SHA/blob/candidate solo quando realmente noti da GitHub. **Mai inventarli.**
+5. **OBIETTIVO** — risultato concreto e bounded del pass.
+6. **PRECHECK** — solo delta/precondizioni specifiche; il resto richiama il metodo canonico.
+7. **SCOPE** — funzioni/UI/path/runtime che il pass può toccare.
+8. **PRESERVARE** — comportamento esistente che non deve cambiare.
+9. **OUT OF SCOPE** — ciò che non deve essere implementato incidentalmente.
+10. **ACCEPTANCE** — test osservabili e numerati; descrivono il comportamento, non semplicemente “funziona”.
+11. **STOP** — mismatch base, working tree incompatibile, gate fallito, candidate/blob differente, QA/test fallito o altro blocker reale → STOP, non improvvisare.
+12. **OVERRIDE DEL PASS** — solo eccezioni/istruzioni aggiuntive non già nel metodo canonico; se non esistono, `NONE`.
+13. **EVIDENCE / GIT** — soltanto ciò che il gate corrente richiede; richiamare il metodo canonico per il boilerplate.
+14. **OUTPUT** — una riga finale precisa che consenta all'orchestratore di usare `agg`.
 
 ---
 
-## 3. Pattern visivo canonico per GPT Web
-
-La risposta all'operatore deve avere questa forma concettuale:
+## 3. Template canonico
 
 ```text
-<breve stato / spiegazione, se necessaria>
+=== INIZIO PROMPT CURSOR ===
 
-[blocco copiabile]
-INCOLLA IN CURSOR — D-NNNN-X — <titolo>
+BLOCK-ID: <ID>
+CATEGORY: <ROUTINE | DELICATO>
+CLOSURE: <NONE | STANDARD_RUNTIME_BUNDLE | ...>
 
-...prompt completo...
-[/blocco]
+STATO DI PARTENZA
+<solo build/SHA/blob/candidate realmente noti e verificabili; omettere ciò che non è noto>
 
-[blocco copiabile]
+OBIETTIVO
+<risultato preciso del pass>
+
+PRECHECK
+- verificare origin/main secondo metodo canonico;
+- working copy canonica e clean;
+- verificare la baseline richiesta solo se realmente nota/persistita;
+- mismatch → STOP.
+
+SCOPE
+<funzioni / UI / dati / workflow / runtime interessati>
+
+PRESERVARE
+<comportamenti esistenti che non devono cambiare>
+
+OUT OF SCOPE
+<cose esplicitamente escluse>
+
+ACCEPTANCE
+1. <test osservabile>
+2. <test osservabile>
+3. <regressione da verificare>
+4. <console/network/storage/runtime check se pertinente>
+
+STOP
+- <condizione reale 1>
+- <condizione reale 2>
+- nessun PASS/deploy/review/finito se il gate non lo consente;
+- non improvvisare fuori scope per far passare il task.
+
+OVERRIDE DEL PASS
+<solo istruzioni non già coperte dal metodo canonico>
+oppure:
+NONE.
+
+EVIDENCE / GIT
+Segui la regola canonica pertinente al gate corrente.
+<aggiungere solo candidate/review package/diff/deploy evidence specifici di questo pass>
+
+OUTPUT
+PASS — <status line precisa>
+oppure:
+STOP — <finding preciso>
+
+=== FINE PROMPT CURSOR ===
+```
+
+---
+
+## 4. Regole per la modalità PLAN
+
+Con **`MODALITÀ CURSOR: PLAN`** si usa lo stesso TASK DELTA, ma il contenuto deve rendere esplicito che:
+
+- non sono autorizzate modifiche a file/runtime/stato;
+- `SCOPE` riguarda analisi/discovery/progettazione;
+- `ACCEPTANCE` riguarda evidenza o piano prodotto;
+- `EVIDENCE / GIT` non autorizza commit/push salvo esplicita istruzione del pass;
+- `OUTPUT` deve descrivere il piano/finding, non un’implementazione.
+
+---
+
+## 5. Regole anti-mega-prompt / anti-frizione
+
+- Non trasformare il prompt in un secondo manuale operativo.
+- Non ricopiare regole canoniche già nel repository.
+- Non inventare SHA, blob, build LIVE, candidate o stato di partenza.
+- Non aggiungere sezioni generiche che non cambiano il comportamento del pass.
+- Non spezzare il prompt in più blocchi che l’operatore deve ricomporre.
+- Non duplicare una versione breve e poi una versione lunga dello stesso prompt.
+- Se il task è già in corso, descrivere solo il delta residuo/fix corrente.
+- Se esiste un unico fix residuo, concentrarsi su quel fix e sulle acceptance correlate.
+- Non fermarsi a docs-only quando il gate corrente autorizza già implementazione e non esiste un blocker reale.
+- Se il gate corrente richiede review/deploy/QA/closure, richiamare la regola canonica pertinente invece di riscriverla tutta.
+
+---
+
+## 6. Presentazione user-facing obbligatoria
+
+Quando GPT Web/orchestratore consegna il prompt all’operatore:
+
+1. mostra prima la modalità:
+   `MODALITÀ CURSOR: AGENT` oppure `MODALITÀ CURSOR: PLAN`;
+2. mostra **un solo blocco cliccabile/copabile** con il TASK DELTA completo;
+3. non mescola spiegazioni dell’orchestratore dentro il blocco;
+4. dopo il prompt mostra un secondo blocco copiabile contenente soltanto:
+
+```text
 agg
-[/blocco]
-
-NEXT: <prossimo step concreto>
 ```
 
-Il pulsante/capacità di copia è parte dell'esperienza di presentazione: l'operatore non deve selezionare manualmente pezzi del prompt sparsi nella risposta.
+5. quando Cursor conclude, non è necessario copiare il suo riepilogo nella chat se stato/evidence sono stati persistiti correttamente su GitHub: l’operatore usa `agg`.
 
 ---
 
-## 4. Regole anti-frizione
+## 7. Esempio canonico — D-0015-W
 
-- Non inviare prima una versione riassunta e poi una seconda versione completa dello stesso prompt.
-- Non richiedere all'operatore di ricomporre sezioni separate.
-- Non inserire comandi `agg`, `next`, `format`, ecc. dentro il prompt Cursor salvo che facciano realmente parte del task esecutivo; `agg` resta fuori e separato.
-- Non fermarsi a una fase docs-only quando un gate già autorizza l'implementazione e non esiste un blocker reale.
-- Quando il task precedente è già in corso, usare un header tipo `CONTINUE <TASK/PR> — <correzione/scopo>` invece di rispiegare il progetto da zero.
-- Se esiste un unico fix residuo, il prompt deve concentrarsi su quel fix e sulle verifiche finali, non rigenerare un piano generale.
-
----
-
-## 5. Esempio minimale
+**MODALITÀ CURSOR: AGENT**
 
 ```text
-INCOLLA IN CURSOR — D-0015-W — HARDEN FALLBACK + N8N PRIVATE ROUTING
+=== INIZIO PROMPT CURSOR ===
 
-ROLE:
-HARNESS / CONTROL-PLANE EXECUTION
+BLOCK-ID: D-0015-W
+CATEGORY: DELICATO
+CLOSURE: NONE
 
-TASK:
-D-0015-W
+OBIETTIVO
+Rendere persistente/idempotente l'avvio del fallback Windows OpenClaw già operativo e verificare la raggiungibilità privata dal runtime n8n fino al punto precedente a un eventuale nuovo gate credenziale/workflow.
 
-CANONICAL CONTEXT:
-Read CURRENT_FRONTIER, task issue, Execution Packet and latest checkpoint/report.
+PRECHECK
+- verifica origin/main secondo metodo canonico;
+- working copy canonica e clean;
+- usa CURRENT_FRONTIER come stato vivo;
+- verifica che D-0014-W risulti PASS e che il gate D-0015-W sia autorizzato;
+- mismatch → STOP.
 
-OBJECTIVE:
-Complete the already-authorized bounded implementation.
+SCOPE
+- autostart non distruttivo dell'OpenClaw Windows esistente;
+- mantenimento loopback + Tailscale Serve;
+- verifica `/health` dal runtime/container n8n;
+- discovery metadata-only di auth mode e di eventuale binding n8n già esistente;
+- identificazione del workflow/insertion point necessario al fallback.
 
-AUTHORIZED:
-- ...
+PRESERVARE
+- Windows resta fallback, VPS resta canonical primary;
+- OpenClaw resta loopback-only;
+- Tailscale Serve resta tailnet-only;
+- nessun Funnel/public exposure;
+- stato Z.AI/VPS invariato.
 
-FORBIDDEN:
-- ...
+OUT OF SCOPE
+- creazione/copia/rotazione di credenziali;
+- modifica di `gateway.auth.mode`;
+- workflow n8n inventato autonomamente;
+- nuovi probe modello/provider;
+- PM-34, L5, endurance o schedule permanente.
 
-EXECUTE:
-1. ...
+ACCEPTANCE
+1. OpenClaw Windows riparte tramite meccanismo user-level idempotente senza duplicare processi.
+2. Gateway resta su `127.0.0.1:18789` e Tailscale Serve resta privato.
+3. Il runtime/container n8n raggiunge `/health` del fallback con esito positivo.
+4. È determinato, senza leggere valori segreti, se esiste già un binding n8n utilizzabile.
+5. È identificato il punto esatto del workflow n8n dove andrà applicato il routing fallback.
+6. Nessuna richiesta provider/modello viene eseguita per validare il trasporto.
 
-VALIDATE:
-- ...
+STOP
+- per completare il wiring serve creare/copiare/modificare una credenziale;
+- serve modificare `gateway.auth.mode`;
+- serve inventare autonomamente logica n8n non fornita da GPT Web;
+- serve esposizione pubblica o ampliamento scope;
+- acceptance tecnica fallisce dopo il bounded loop previsto dal metodo canonico.
 
-STOP ONLY IF:
-- real gate ...
+OVERRIDE DEL PASS
+Se manca un binding n8n sicuro, completa prima autostart, transport health e discovery del workflow target; poi STOP con:
+`BLOCKED_N8N_OPENCLAW_CREDENTIAL_BINDING_REQUIRED`.
 
-FINALIZATION:
-Persist evidence, commit/push, exact-head verification.
-```
+EVIDENCE / GIT
+Segui la regola canonica pertinente al gate corrente.
+Persisti solamente lo stato/evidence richiesto per D-0015-W; niente documenti PREP ridondanti.
 
-Poi, separatamente:
+OUTPUT
+PASS — D-0015-W NON-CREDENTIAL STAGE COMPLETE
+oppure:
+STOP — <finding preciso>
 
-```text
-agg
+=== FINE PROMPT CURSOR ===
 ```
 
 ---
 
-## 6. Precedenza
+## 8. Precedenza
 
-Questo documento governa **come GPT Web presenta all'operatore il prompt Cursor**.
+Questo documento governa la **forma e la densità user-facing del prompt Cursor**.
 
-In caso di conflitto sul contenuto tecnico o sull'autorizzazione:
+In caso di conflitto:
 
-1. `CURRENT_FRONTIER.md` per live state/gate;
-2. foundation/contracts del control-plane;
-3. Execution Packet/task contract;
-4. questo documento per la sola presentazione user-facing.
+1. `docs/runtime/CURRENT_FRONTIER.md` — live state/gate;
+2. foundation/contracts del control-plane — metodo stabile;
+3. Execution Packet/task contract — scope/acceptance specifici;
+4. questo documento — presentazione e regola TASK DELTA.
 
 Nessuna regola di formattazione può ampliare scope o autorizzazioni.
 
