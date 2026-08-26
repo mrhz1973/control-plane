@@ -5,67 +5,59 @@
 ## LATEST
 
 ```yaml
-task_ref: GLM_ZAI_VPS_DIRECT_SMOKE_EXACT_53
-result_cursor: BLOCKED
+task_ref: GLM_ZAI_VPS_CREDENTIAL_REFRESH
+result_cursor: PASS
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: a42db816e57b4ca1adc83f1fc36894359aa63ca6
+repo_head_observed_at_task: e31a7eff241d572b9ef435965a589d782b8796ca
 workspace: clean
 
-OPENCLAW_VERSION_BEFORE: 2026.8.1-beta.3 (5831b80)
-OPENCLAW_VERSION_AFTER: 2026.8.1-beta.3 (5831b80)
-
-ZAI_PLUGIN_VERSION_BEFORE: 2026.8.1-beta.3
-ZAI_PLUGIN_VERSION_AFTER: 2026.8.1-beta.3
+OPENCLAW_VERSION: 2026.8.1-beta.3 (5831b80)
+ZAI_PLUGIN_VERSION: 2026.8.1-beta.3
 
 ZAI_AUTH_BEFORE: configured
 ZAI_PROFILE_PRESENT_BEFORE: true
 ZAI_PROVIDER_BEFORE: available
-EXACT_GLM53_MODEL_REF_VISIBLE_BEFORE: true
 
-DIRECT_LOCAL_COMMAND_SUPPORTED: true
-EXPLICIT_MODEL_SELECTION_SUPPORTED: true
-DIRECT_COMMAND_FORM: "openclaw infer model run --local --model <provider/model> --prompt <text>"
+SECURE_INTERACTIVE_AUTH_SUPPORTED: true
+AUTH_COMMAND_FORM: "read -s into shell var; printf | openclaw models auth paste-api-key --provider zai"
 
-MODEL_USED: zai/glm-5.3
-
-GLM53_MODEL_INVOCATION_COUNT: 1
-CODEX_INVOCATION_COUNT: 0
-QWEN_INVOCATION_COUNT: 0
-AUTOMATIC_RETRY_COUNT: 0
-
-SMOKE_EXIT_CODE: 1
-SMOKE_RESPONSE_RECEIVED: false
-SMOKE_MARKER_MATCH: false
-
-BLOCKER: BLOCKED_ZAI_AUTH_401_TOKEN_EXPIRED_OR_INCORRECT
-SANITIZED_PROVIDER_ERROR: "401 token expired or incorrect (provider=zai model=glm-5.3)"
+AUTH_REFRESH_COMMAND_STARTED: true
+AUTH_REFRESH_EXIT_CODE: 0
+ZAI_CREDENTIAL_REFRESHED: true
 
 ZAI_AUTH_AFTER: configured
 ZAI_PROFILE_PRESENT_AFTER: true
 ZAI_PROVIDER_AFTER: available
 EXACT_GLM53_MODEL_REF_VISIBLE_AFTER: true
 
+MODEL_INVOCATION_COUNT: 0
+CODEX_INVOCATION_COUNT: 0
+QWEN_INVOCATION_COUNT: 0
+
 PORT_18789_AFTER: free
 GATEWAY_RUNNING_AFTER: false
 
-AUTH_MUTATION: false
+AUTH_MUTATION: true
 CONFIG_MUTATION: false
 GATEWAY_MUTATION: false
 SERVICE_MUTATION: false
+CORE_PLUGIN_MUTATION: false
 N8N_MUTATION: false
 DOCKER_MUTATION: false
 TAILSCALE_MUTATION: false
-CORE_PLUGIN_MUTATION: false
 SECRET_VALUES_PERSISTED: false
+WINDOWS_CREDENTIAL_STATE_COPIED: false
 
-NEXT_GATE_CLASSIFICATION: GLM_ZAI_VPS_CREDENTIAL_REFRESH_GATE_REQUIRED
+NOTE: "Masked login/--force abandoned per operator; stdin paste-api-key path used. No model smoke."
+
+NEXT_GATE_CLASSIFICATION: GLM_ZAI_VPS_DIRECT_SMOKE_RETRY_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-Exactly one direct/local smoke of `zai/glm-5.3` on VPS `ionos-n8n` via OpenClaw `2026.8.1-beta.3` + `@openclaw/zai-provider@2026.8.1-beta.3`. Precheck confirmed exact model visible, profile `zai:manual` present, gateway inactive, port 18789 free. Invocation used `infer model run --local --model zai/glm-5.3`. Provider returned HTTP 401 (token expired or incorrect); no text output; marker not matched. No retry. No Codex/Qwen. Auth/config/core/plugin unchanged. Gateway remained inactive.
+Z.AI credential refresh on VPS `ionos-n8n` for OpenClaw `2026.8.1-beta.3`. Operator entered key only in visible SSH console via silent `read -s`, piped to `models auth paste-api-key --provider zai` (no key in argv). Exit 0. Profile `zai:manual` present; provider available; exact `zai/glm-5.3` visible. Gateway inactive; port 18789 free. No model/Codex/Qwen invocation. No secrets persisted to GitHub.
 
 ## Completion persistence invariant
 
