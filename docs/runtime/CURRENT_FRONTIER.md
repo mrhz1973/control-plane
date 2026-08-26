@@ -7,33 +7,26 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8** |
-| **BLOCCO ATTIVO** | `ZAI-OFFICIAL-ENDPOINT-AUTODETECT-DIAGNOSIS` |
-| **STATO BLOCCO** | `BLOCKED / ALL_FOUR_OFFICIAL_PRIMARY_SURFACES_HTTP500 / BOUNDED_READ_ONLY_DIAGNOSTIC_LOOP_COMPLETE` |
-| **GATE CORRENTE** | `ZAI_CREDENTIAL_IDENTITY_INDETERMINATE_AND_STORED_KEY_FORMAT_INVALID` |
-| **NEXT** | real human gate: repair/re-enter `zai:manual` with a full documented Z.AI `{32-hex-id}.{16-alnum-secret}` key, then re-run read-only dashboard Key ID identity match before any provider/model request or provider-side support escalation. Do not issue another provider/model request and do not change auth/billing/config/profile/baseUrl/model catalog/runtime without a new explicit authorization. |
-| **VPS OPENCLAW** | `2026.8.1-beta.3`; gateway inactive |
-| **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` |
+| **BLOCCO ATTIVO** | `ZAI-LIVE-VERIFICATION-AWAITING-RUNTIME-AUTHORIZATION` |
+| **STATO BLOCCO** | `LOCAL_REPAIR_COMPLETE / LIVE_PROVIDER_VALIDATION_NOT_AUTHORIZED` |
+| **GATE CORRENTE** | `ZAI_CREDENTIAL_REPAIR_COMPLETE_LOCAL_PASS` — next: explicit runtime authorization for one bounded live `zai/glm-5.3` request before broader usage or support escalation |
+| **NEXT** | real human gate: authorize (or deny) a single bounded live `zai/glm-5.3` verification request through the repaired `zai:default` credential on `https://api.z.ai/api/coding/paas/v4`. Credential repair/configuration and model invocation remain separate gates. |
+| **VPS OPENCLAW** | `2026.8.1-beta.3` (5831b80) · gateway inactive (unchanged) · node runtime `/opt/openclaw-node/current` v24.19.0 |
+| **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` (active generation, unchanged) |
 | **CODEX VPS** | OAuth PASS · direct smoke PASS |
-| **CURRENT Z.AI PROFILE** | provider `zai` · profile `zai:manual` · auth `api_key` |
-| **CURRENT BIGMODEL CN BASE URL** | `https://open.bigmodel.cn/api/coding/paas/v4` |
-| **CURRENT API STYLE / ADAPTER** | `openai-completions` · `zai openai-completions wrapZaiStreamFn` |
-| **OFFICIAL CONFIG DELTA DIAGNOSIS** | PASS · `CURRENT_CONFIG_SEMANTICALLY_MATCHES_OFFICIAL_CODING_PLAN_CN` |
-| **REGIONAL GLM 5.3 SMOKE** | BLOCKED · exact `zai/glm-5.3` · observed effective model `zai/glm-5.3` · exact URL `https://open.bigmodel.cn/api/coding/paas/v4/chat/completions` · HTTP 500 · one invocation · zero retry/fallback · no mutation |
-| **REGIONAL GLM 5.3 EVIDENCE** | commit `57534fc5f9787d94a377a6fe901c7123495bd0f5`; blocker `BLOCKED_BIGMODEL_CN_GLM53_HTTP500` |
-| **OPENCLAW UPSTREAM GLM 5.3 SUPPORT** | merged PR #123523 / issue #123522 confirm first-class GLM 5.3 Coding Plan support; maintainer evidence reports a live Coding Plan completion HTTP 200 and a live isolated OpenClaw agent path with `zai/glm-5.3` |
-| **OPENCLAW ZAI ENDPOINT DETECTOR** | current `extensions/zai/detect.ts` probes General Global `glm-5.2`, General CN `glm-5.2`, Coding Global `glm-5.3`, Coding CN `glm-5.3`; each request uses `stream=false`, `max_tokens=1`, message `ping`; it stops at first success |
-| **FALLBACK PROBE RULE** | detector tries `glm-5.1` / `glm-4.7` only after model-unsupported evidence (404 or supported model-error codes/patterns). Generic HTTP 500 does not trigger those fallback candidates. With all primary probes returning 500, the bounded primary matrix is exactly four requests. |
-| **PRIMARY AUTODETECT MATRIX** | BLOCKED · General Global `glm-5.2` HTTP 500 · General CN `glm-5.2` HTTP 500 · Coding Global `glm-5.3` HTTP 500 · Coding CN `glm-5.3` HTTP 500 · exactly four requests · zero retry/redirect · stop `ALL_OFFICIAL_PRIMARY_SURFACES_FAILED` |
-| **BOUNDED DIAGNOSTIC LOOP** | COMPLETE `3/3` · zero post-matrix provider/model calls · round 1 installed detector/routing/profile metadata match · round 2 NTP/DNS/TLS pass · round 3 deterministic synthesis · no remediation applied |
-| **OPERATOR AUTHORIZATION** | 2026-08-26 · issue #8 comment `5429724710` · authorized primary matrix and bounded read-only loop consumed |
-| **ROOT CAUSE CLASSIFICATION** | `STORED_ZAI_MANUAL_CREDENTIAL_NOT_IN_DOCUMENTED_ZAI_KEY_FORMAT` plus prior `PROVIDER_OR_ACCOUNT_SPECIFIC_UPSTREAM_FAILURE_ACROSS_ALL_OFFICIAL_PRIMARY_SURFACES`; local static endpoint/model/request mapping, profile metadata, clock, DNS and TLS do not explain the uniform HTTP 500 result once the nonconforming stored key is considered |
-| **CANDIDATE REMEDIATION** | `ZAI_MANUAL_CREDENTIAL_REPAIR_OR_REENTRY_THEN_DASHBOARD_KEY_ID_MATCH` · not applied · requires the current real human gate |
-| **Z.AI CREDENTIAL IDENTITY** | read-only diagnostic 2026-08-26 · `ZAI_MANUAL_KEY_ID_MATCH = CANNOT_SAFELY_DETERMINE` · stored `profile.key` length `5` · no dot · not `{32-hex}.{16-alnum}` · no extractable API Key ID · operator supplied dashboard key names/metadata only (`Cursor` last used 2026-08-19; `Control Plane` created 2026-08-26 not used) · sanitized dashboard Key IDs not in-band |
-| **Z.AI CREDENTIAL** | preserved unchanged by this pass; secret must not be printed, logged, hashed, measured or persisted |
-| **GLM TEST QUOTA/BILLING POLICY** | TEST PHASE: token conservation and incidental billing for minimal diagnostic text requests are non-blocking per operator. Invocation counts remain bounded for diagnostic determinism. PRODUCTION PHASE: quota-aware routing deferred to issue #19. |
-| **VPS NETWORK** | port `18789` free · gateway false |
-| **PLANNER / TEST INVOCATIONS** | current task: Codex planner `4` turns through schema-valid packet r4 · Z.AI primary probes `4` · post-matrix provider/model calls `0`; prior evidence counts remain GLM OpenClaw `8`, direct raw BigModel control `1`, Qwen `0` |
-| **LATEST EVIDENCE** | credential-identity read-only diagnostic in `docs/runtime/LAST_CURSOR_REPORT.md`; stored `zai:manual` is not a documented-format Z.AI key; prior matrix packet `docs/runtime/ISSUE_8_ZAI_AUTODETECTION_PACKET.yaml` remains valid for the four HTTP 500 surfaces |
+| **CURRENT ZAI PROFILE** | provider `zai` · profile `zai:default` · auth `api_key` · credential in documented `{32-hex}.{16-alnum}` format (metadata-verified, value withheld) |
+| **LEGACY ZAI PROFILE** | `zai:manual` still present, nonconforming (len 5, no dot), not reused; removal not authorized by this gate |
+| **AUTH PROFILE ORDER** | none (automatic; selection prefers `zai:default`) |
+| **CURRENT ZAI BASE URL** | `https://api.z.ai/api/coding/paas/v4` (Global Coding Plan — repaired from CN) |
+| **CURRENT API STYLE / ADAPTER** | `openai-completions` |
+| **ZAI MODEL CATALOG** | `glm-5.3`, `glm-5.2`, `glm-5-turbo`, `glm-5v-turbo`, `glm-5.1` (+ catalog defaults visible in `models list`) |
+| **PRIMARY MODEL** | `zai/glm-5.3` · alias `GLM` · allowed models: `openai/gpt-5.6-sol`, `zai/glm-5.3` |
+| **CREDENTIAL REPAIR** | COMPLETE `2026-08-26` · official path `openclaw onboard --auth-choice zai-coding-global` with skip-daemon/channels/skills/hooks/search/bootstrap/ui/health · key entered by operator in interactive terminal only · local validation PASS |
+| **REPAIR EVIDENCE** | `docs/runtime/LAST_CURSOR_REPORT.md` · provider/model requests during repair+verification: `0` |
+| **REGIONAL GLM 5.3 SMOKE** | historical: BLOCKED on CN endpoint (commit `57534fc5f9787d94a377a6fe901c7123495bd0f5`, blocker `BLOCKED_BIGMODEL_CN_GLM53_HTTP500`); current state: not re-attempted — awaiting runtime authorization on repaired Global surface |
+| **OPENCLAW UPSTREAM GLM 5.3 SUPPORT** | merged PR #123523 / issue #123522 confirm first-class GLM 5.3 Coding Plan support |
+| **OPERATOR AUTHORIZATION** | 2026-08-26 · issue #8 comment `5429724710` (diagnostic matrix, consumed) · 2026-08-26 in-band gate: credential repair `zai-coding-global` authorized and completed |
+| **ROOT CAUSE CLASSIFICATION** | `STORED_ZAI_MANUAL_CREDENTIAL_NOT_IN_DOCUMENTED_ZAI_KEY_FORMAT` (confirmed) — repaired via new `zai:default` profile with documented-format key; prior four-surface HTTP 500 matrix remains explained by the nonconforming stored bearer value |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
 | **Gate E / L5_PASS** | PASS-CLOSED / NOT_CLAIMED |
 | **L5 runtime** | activation `false` · runtime `false` · endurance `false` |
@@ -43,14 +36,14 @@
 
 ## Boundaries operative correnti
 
-- The operator-authorized official Z.AI primary endpoint detector matrix was consumed exactly once on 2026-08-26: four ordered calls, all HTTP 500, zero retry/redirect.
-- The already-stored `zai:manual` credential may be used only in-process. Never print/persist API key, token, Authorization values, secret fragments, secret length or secret hashes.
-- No config/auth/profile/baseUrl/model-catalog mutation, credential refresh/re-entry/replacement, onboarding write, plugin/core upgrade, `doctor --fix`, gateway/service activation, n8n/Docker/Tailscale/firewall/reverse-proxy mutation, runtime wiring or permanent scheduling is authorized by this gate.
-- `NO_MORE_MANUAL_ONE_OFF_PROBES`: no further Z.AI/provider/model call is authorized after the exhausted matrix.
-- The required task-bounded Cursor diagnostic loop completed all three read-only rounds with zero additional provider/model calls. It excluded observed local static routing/profile/clock/DNS/TLS faults and identified only a provider/account-plan support verification candidate; it applied no remediation.
-- A bounded read-only credential-identity diagnostic completed with zero provider/model calls: stored `zai:manual` cannot yield a documented Z.AI API Key ID (length `5`, no dot, secret store empty, env fallbacks unset), and sanitized dashboard Key IDs for `Cursor` / `Control Plane` were not available in-band for comparison. Result: `ZAI_MANUAL_KEY_ID_MATCH = CANNOT_SAFELY_DETERMINE`.
-- A new real human gate is required before credential repair/re-entry, contacting support with any non-sanitized account data, changing credentials/auth/billing/config, implementing remediation or issuing another provider/model request.
-- Planner-generated Cursor Execution Packets remain governed by `docs/contracts/execution-packet-v1.md` and `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`; GPT Web remains strategic backlog owner rather than silent implementer-prompt author.
+- Credential repair completed 2026-08-26 via the official `zai-coding-global` onboard path: new profile `zai:default` with documented-format key, baseUrl `https://api.z.ai/api/coding/paas/v4`, primary model `zai/glm-5.3`, alias `GLM`.
+- The malformed legacy `zai:manual` profile was preserved (not deleted): credential deletion requires a separate gate. It must not be reused.
+- Secret handling: key entered by the operator in an interactive terminal only; never printed, logged, hashed, measured, persisted in GitHub or exposed in-band.
+- Zero provider/model requests were issued during repair and read-only verification. Repair and invocation are separate gates.
+- `NO_MORE_MANUAL_ONE_OFF_PROBES` remains in force: no endpoint probing; a live request, when authorized, must target the repaired Global Coding Plan surface with `zai/glm-5.3` exactly.
+- No gateway/service activation, daemon install, n8n/Docker/Tailscale/firewall/reverse-proxy mutation, channel/skill/hook installation or any production/runtime wiring was performed. Gateway remains inactive with port `18789` free.
+- Cursor BYOK (dashboard key `Cursor`) and OpenClaw Z.AI auth (dashboard key `Control Plane`) remain logically separate integrations.
+- Planner-generated Cursor Execution Packets remain governed by `docs/contracts/execution-packet-v1.md` and `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`.
 - Issue #8 remains an evidence backlog; `CURRENT_FRONTIER.md` owns live state. Issue #19 remains DEFERRED for production quota-aware policy.
 - No PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop or public Telegram Trigger implicit.
 
@@ -58,7 +51,7 @@
 
 - Active work: issue **#8**
 - Operator authorization audit: issue **#8**, comment `5429724710`
-- Current execution packet: `docs/runtime/ISSUE_8_ZAI_AUTODETECTION_PACKET.yaml`
+- Historical autodetect matrix packet: `docs/runtime/ISSUE_8_ZAI_AUTODETECTION_PACKET.yaml`
 - Future research: issue **#18** (`DEFERRED`)
 - Future production quota/time-window policy: issue **#19** (`DEFERRED`)
 - Planner routing: `docs/contracts/planner-routing-policy-v1.md`

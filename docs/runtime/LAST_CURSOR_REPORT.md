@@ -5,81 +5,56 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0008-Z_ZAI_CREDENTIAL_IDENTITY_DIAGNOSTIC
-result_cursor: PASS_READ_ONLY_DIAGNOSTIC
+task_ref: D-0009-Z_ZAI_CODING_GLOBAL_CREDENTIAL_REPAIR
+result_cursor: PASS_LOCAL_INTEGRATION_REPAIR_READ_ONLY_VERIFIED
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
-report_persistence_commit: 69c0c2fc52d326c51023c908f8855b6152cc2f88
+report_persistence_commit: pending_this_commit
 
-repo_head_observed_at_task: c81579ccca2a174cc4e9c2de229834cef62f6eac
+repo_head_observed_at_task: 0d4af30c9d29a80605f6bee14a9c8866ef8d46ec
 workspace_at_start: clean
 active_work: github:issue/8
-operator_evidence_ref: github:issue/8#issuecomment-5430877624
+operator_gate: repair authorized in-band 2026-08-26 (zai-coding-global, Control Plane dashboard key, terminal-only entry)
 
-diagnostic_type: read_only_credential_identity
-goal: determine which Z.AI dashboard API Key ID corresponds to stored OpenClaw auth profile zai:manual
-authorization_scope: identity extraction and local comparison only; not provider/model authorization
+repair_type: vps_openclaw_zai_coding_global_onboard_official_path
+vps: ionos-n8n
+openclaw_core: 2026.8.1-beta.3 (5831b80) unchanged
+zai_provider_plugin: 2026.8.1-beta.3 (active generation) unchanged
+node_runtime: /opt/openclaw-node/current v24.19.0 (system node v18 cannot run core)
 
-ZAI_MANUAL_KEY_ID_MATCH: CANNOT_SAFELY_DETERMINE
+onboard_command_surface: zai-coding-global
+skip_flags: daemon channels skills hooks search bootstrap ui health
+secret_entry: operator interactive terminal (ssh -t) — never in chat
+secret_exposed: false
+secret_logged: false
+secret_persisted_in_github: false
 
-ZAI_DOCUMENTED_KEY_STRUCTURE: "{32-hex-id}.{16-alnum-secret}"
-ZAI_EXPECTED_FULL_KEY_LENGTH_CLASS: approximately_49_chars_when_complete
-
-STORE_RESOLVED:
-  path: /root/.openclaw/state/openclaw.sqlite
-  table: auth_profile_stores
-  store_key: shared
-  profile_id: zai:manual
+POST_REPAIR_LOCAL_VERIFICATION:
   provider: zai
+  baseUrl: https://api.z.ai/api/coding/paas/v4
+  baseUrl_matches_expected_global_coding_plan: true
+  auth_profile_created: zai:default
   auth_type: api_key
-  profile_present: true
-
-STORED_CREDENTIAL_FORMAT_ANALYSIS:
-  key_length: 5
-  contains_dot: false
-  matches_id_dot_secret: false
-  matches_id_only_32hex: false
-  charset_class: ascii_printable_digits_and_punctuation_only
-  unique_char_count: 4
-  secret_store_entries_row_count: 0
-  env_fallback_keys_checked: ZAI_API_KEY UNSET; GLM_API_KEY UNSET; BIGMODEL_API_KEY UNSET
-  alternate_agent_store_profile: missing
-  openclaw_models_status_label_length: 16
-  openclaw_cli_list_confirms: "zai:manual [zai/api_key]"
-
-EXTRACTED_API_KEY_ID:
-  extractable: false
-  reason: stored profile.key is not in documented Z.AI id.secret format and is far shorter than a valid full key
-
-OPERATOR_DASHBOARD_KEYS_AVAILABLE_FOR_MATCH:
-  cursor_key:
-    name: Cursor
-    created: 2026-07-01
-    last_used: 2026-08-19
-    sanitized_32hex_key_id_supplied: false
-  control_plane_key:
-    name: Control Plane
-    created: 2026-08-26
-    last_used_ui: Not used
-    sanitized_32hex_key_id_supplied: false
-
-COMPARISON_OUTCOME:
-  cursor_key_id_compare: not_performed_missing_extracted_id_and_missing_dashboard_id
-  control_plane_key_id_compare: not_performed_missing_extracted_id_and_missing_dashboard_id
-  neither_known_key_ruled_out: false
-  interpretation: cannot map zai:manual to Cursor vs Control Plane dashboard keys without a valid extracted API Key ID and without sanitized dashboard Key ID values in-band
-
-MATERIAL_FINDING:
-  stored_openclaw_zai_manual_credential_does_not_match_documented_zai_api_key_format
-  prior_four_surface_http500_probes_likely_used_nonconforming_short_stored_value_as_bearer
-  this materially weakens provider_only_upstream_failure_as_sole_explanation
+  credential_format: matches documented {32-hex}.{16-alnum} structure (metadata check only, value withheld)
+  legacy_profile_zai_manual: still present, still nonconforming, not reused, removal not authorized by this gate
+  auth_profile_order_override: none (automatic selection prefers zai:default)
+  model_catalog_contains: glm-5.3 glm-5.2 glm-5-turbo glm-5v-turbo glm-5.1
+  primary_model: zai/glm-5.3
+  alias: GLM -> zai/glm-5.3
+  allowed_models: openai/gpt-5.6-sol, zai/glm-5.3
+  gateway_service: inactive (unchanged, required by frontier)
+  gateway_ports: 18789 free
+  residual_processes: none
 
 provider_model_request_count: 0
-credential_mutation: false
-config_mutation: false
-profile_mutation: false
+credential_mutation: true (authorized repair — new zai:default profile written via official onboard path; malformed zai:manual preserved not deleted)
+config_mutation: true (authorized repair — baseUrl CN->Global, zai catalog populated, primary model set)
 runtime_mutation: false
 network_mutation: false
+daemon_or_service_mutation: false
+
+LOCAL_VALIDATION: PASS
+LIVE_PROVIDER_VALIDATION: BLOCKED (requires new explicit runtime authorization per policy; repair and invocation are separate gates)
 
 SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
@@ -88,5 +63,5 @@ SECRET_VALUE_HASHED: false
 SECRET_VALUE_MEASURED: false
 AUTHORIZATION_DATA_EXPOSED: false
 
-NEXT_RECOMMENDED_GATE: real human gate to re-enter or repair zai:manual with a full documented-format Z.AI key before any further provider/model request or provider-side support escalation
+NEXT_RECOMMENDED_GATE: explicit runtime authorization for a single bounded live zai/glm-5.3 verification request through the repaired credential, before any broader provider usage or support escalation
 ```
