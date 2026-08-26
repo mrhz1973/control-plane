@@ -1,0 +1,186 @@
+{
+  "name": "60 - OpenClaw broker fallback resolver - tailnet private - GPT-Web authored",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "d0015-0001-4001-8001-000000000001",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -900,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "d0015-0002-4002-8002-000000000002",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const incoming = $input.first()?.json ?? {};\nreturn [{\n  json: {\n    ...incoming,\n    openclawRoutingContract: 'D-0015-W',\n    primaryName: 'vps_canonical',\n    primaryBaseUrl: 'https://ubuntu.tailc01234.ts.net',\n    primaryHealthUrl: 'https://ubuntu.tailc01234.ts.net/health',\n    fallbackName: 'windows_private_fallback',\n    fallbackBaseUrl: 'https://asusdesktop.tailc01234.ts.net',\n    fallbackHealthUrl: 'https://asusdesktop.tailc01234.ts.net/health',\n    privateOnly: true\n  }\n}];"
+      },
+      "id": "d0015-0003-4003-8003-000000000003",
+      "name": "Set canonical broker candidates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -660,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.primaryHealthUrl }}",
+        "authentication": "none",
+        "options": {
+          "timeout": 2500,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "d0015-0004-4004-8004-000000000004",
+      "name": "Primary VPS OpenClaw health",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -420,
+        80
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "https://asusdesktop.tailc01234.ts.net/health",
+        "authentication": "none",
+        "options": {
+          "timeout": 2500,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "d0015-0005-4005-8005-000000000005",
+      "name": "Windows fallback OpenClaw health",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -180,
+        80
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Set canonical broker candidates').first().json;\nconst primary = $('Primary VPS OpenClaw health').first()?.json ?? {};\nconst fallback = $('Windows fallback OpenClaw health').first()?.json ?? {};\n\nfunction statusOf(v) {\n  const candidates = [\n    v?.statusCode,\n    v?.status,\n    v?.response?.statusCode,\n    v?.response?.status\n  ];\n  for (const c of candidates) {\n    const n = Number(c);\n    if (Number.isFinite(n) && n > 0) return n;\n  }\n  return 0;\n}\nfunction healthy(s) { return s >= 200 && s < 300; }\n\nconst primaryStatus = statusOf(primary);\nconst fallbackStatus = statusOf(fallback);\n\nlet selected = 'none';\nlet selectedBaseUrl = '';\nlet reason = 'NO_HEALTHY_PRIVATE_BROKER';\n\nif (healthy(primaryStatus)) {\n  selected = base.primaryName;\n  selectedBaseUrl = base.primaryBaseUrl;\n  reason = 'PRIMARY_HEALTHY';\n} else if (healthy(fallbackStatus)) {\n  selected = base.fallbackName;\n  selectedBaseUrl = base.fallbackBaseUrl;\n  reason = 'PRIMARY_UNAVAILABLE_FALLBACK_HEALTHY';\n}\n\nreturn [{\n  json: {\n    ...base,\n    brokerSelected: selected,\n    selectedBaseUrl,\n    reason,\n    primaryStatus,\n    fallbackStatus,\n    primaryHealthy: healthy(primaryStatus),\n    fallbackHealthy: healthy(fallbackStatus),\n    failClosed: selected === 'none',\n    privateOnly: true,\n    generatedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "d0015-0006-4006-8006-000000000006",
+      "name": "Resolve primary or Windows fallback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        60,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "GPT-Web authored D-0015-W routing contract.\n\nPRIMARY: canonical VPS OpenClaw health.\nFALLBACK: Windows OpenClaw via Tailscale Serve only.\n\nNo public ingress, no Funnel, no credential mutation, no provider/model call.\nThis workflow only resolves a private broker endpoint from health state.\nIf both are unhealthy it fails closed by returning brokerSelected=none.\nActual authenticated OpenClaw API invocation must use an already-existing safe auth binding; otherwise stop at the credential gate.",
+        "height": 260,
+        "width": 520
+      },
+      "id": "d0015-0007-4007-8007-000000000007",
+      "name": "NOTE - private fallback contract",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Set canonical broker candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set canonical broker candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set canonical broker candidates": {
+      "main": [
+        [
+          {
+            "node": "Primary VPS OpenClaw health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Primary VPS OpenClaw health": {
+      "main": [
+        [
+          {
+            "node": "Windows fallback OpenClaw health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Windows fallback OpenClaw health": {
+      "main": [
+        [
+          {
+            "node": "Resolve primary or Windows fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": true
+  },
+  "pinData": {},
+  "tags": []
+}
