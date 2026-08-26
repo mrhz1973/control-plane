@@ -2,10 +2,11 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`  
-**Versione:** 3.0 — 2026-08-25  
+**Versione:** 3.1 — 2026-08-27  
 **Ruolo:** contratto di formattazione per gli **Execution Packet** destinati a Cursor nel modello multi-planner. Non è un cambiamento runtime.
 
-**Target operating model:** `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`.
+**Target operating model:** `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`.  
+**User-facing handoff canonico:** `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` — **TASK DELTA v2.0**.
 
 ---
 
@@ -35,9 +36,12 @@ Questo documento definisce il contratto dell'ultimo passaggio.
 
 - Il prompt/Execution Packet Cursor porta **solo il delta necessario al task**.
 - Il boilerplate permanente si richiama per riferimento a questo file e alla foundation; non va reinserito integralmente a ogni giro.
+- Il prompt user-facing consegnato all'operatore deve seguire `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`: **TASK DELTA**, non secondo manuale operativo.
+- Prima del blocco user-facing va sempre indicato `MODALITÀ CURSOR: AGENT` oppure `MODALITÀ CURSOR: PLAN` secondo il pass.
 - Repository state, checkpoint e artefatti canonici si leggono dal **repo vivo**, non dalla cronologia della chat planner.
 - Ogni Execution Packet deve poter essere riusato da una nuova sessione Cursor insieme all'ultimo **Execution Checkpoint**.
 - È vietato dipendere da frasi come "come abbiamo detto sopra" o da contenuto disponibile soltanto nella sessione del planner.
+- SHA/build/blob/candidate possono comparire nel TASK DELTA solo se realmente noti e verificabili; **mai inventarli**.
 
 ---
 
@@ -125,13 +129,17 @@ Regole:
 
 L'utente non deve eseguire fetch/pull/status di routine al posto di Cursor.
 
+Nel **TASK DELTA user-facing** non è necessario ricopiare tutti questi comandi: è sufficiente richiamare il metodo canonico e specificare solo baseline/override realmente pertinenti al pass.
+
 ---
 
 ## 5. Corpo operativo del task
 
 Il corpo destinato a Cursor deve iniziare direttamente con l'istruzione eseguibile, non con una lunga spiegazione del progetto.
 
-Pattern:
+Il seguente pattern descrive la semantica del task/Execution Packet, ma **non obbliga GPT Web a ricopiarne tutto il boilerplate nel prompt user-facing**. La presentazione all'operatore segue il TASK DELTA definito da `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`.
+
+Pattern semantico:
 
 ```text
 You are working in the current Cursor workspace.
@@ -344,7 +352,9 @@ Se il report contiene già questi output coerenti, l'orchestratore non chiede sh
 - n8n workflow authoring autonomo da Cursor o planner;
 - destructive Git non autorizzato;
 - Autofix cloud implicito;
-- dichiarare PASS senza evidenza richiesta.
+- dichiarare PASS senza evidenza richiesta;
+- mega-prompt user-facing che ricopiano il metodo stabile già persistito;
+- inventare baseline/SHA/blob/candidate non verificati.
 
 ---
 
@@ -373,6 +383,7 @@ La regola foundation `handoff ora` e il limite massimo storico di 20 prompt uten
 - `docs/runtime/CURRENT_FRONTIER.md` = stato runtime autorevole.
 - `docs/foundation/PROJECT_VISION.md` = foundation/invarianti canoniche esistenti.
 - `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md` = target architetturale accettato 2026-08-25, planning/docs-only.
+- `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` = forma user-facing canonica: **TASK DELTA + MODALITÀ CURSOR + agg separato**.
 - Questo file = contratto operativo dell'Execution Packet destinato a Cursor.
 
 Nessuno di questi documenti, da solo, autorizza PM-34, L5, schedule permanente o runtime non già autorizzato.
