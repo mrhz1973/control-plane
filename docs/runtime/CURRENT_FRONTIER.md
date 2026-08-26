@@ -7,29 +7,29 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8** |
-| **BLOCCO ATTIVO** | `GLM-BIGMODEL-CN-OFFICIAL-OPENCLAW-CONFIG-DELTA` |
-| **STATO BLOCCO** | `AUTO_VIA / READ_ONLY_OFFICIAL_CONFIG_COMPARISON_PENDING` |
-| **GATE CORRENTE** | `GLM_BIGMODEL_CN_OFFICIAL_OPENCLAW_CODING_PLAN_CONFIG_DELTA_DIAGNOSIS_AUTO_VIA` |
-| **NEXT** | execute a strict read-only comparison between the current VPS OpenClaw/Z.AI configuration and BigModel's current official OpenClaw onboarding path `智谱 -> Coding-Plan-CN`; determine whether `zai:manual`/provider/profile/model/baseUrl semantics differ from the official generated Coding Plan configuration; zero provider/model requests and zero mutation; if a concrete delta is proven, stop at a bounded remediation gate |
+| **BLOCCO ATTIVO** | `GLM-BIGMODEL-CN-PROVIDER-CLIENT-SPECIFIC-SUPPORT` |
+| **STATO BLOCCO** | `HUMAN_GATE_REQUIRED / PROVIDER_CLIENT_SPECIFIC_SUPPORT` |
+| **GATE CORRENTE** | `GLM_BIGMODEL_CN_PROVIDER_CLIENT_SPECIFIC_SUPPORT_GATE_REQUIRED` |
+| **NEXT** | provider/client-specific support or vendor-side verification using sanitized evidence only; no additional GLM/provider request, no credential/config/runtime mutation, and no unsupported local remediation is authorized by AUTO-VIA |
 | **VPS OPENCLAW** | `2026.8.1-beta.3`; gateway inactive |
 | **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` |
 | **CODEX VPS** | OAuth PASS · direct smoke PASS |
 | **CURSOR VERSION** | `3.15.6` |
-| **CURSOR STORED BASE URL** | `https://open.bigmodel.cn/api/coding/paas/v4` |
-| **CURSOR BYOK FLAG** | `useOpenAIKey=false`; `availableAPIKeyModels=[]` |
-| **CURSOR GLM CATALOG** | `glm-5.2` under first-party vendor `ZAI` |
-| **CURSOR LIVE EVIDENCE CAPTURE** | BLOCKED before request · `SAFE_CAPTURE_METHOD_AVAILABLE=false` · `CURSOR_GLM_REQUEST_COUNT=0` |
-| **CURSOR WORKING WIRE PATH** | still unknown |
-| **OPENCLAW BIGMODEL CN PATH** | `https://open.bigmodel.cn/api/coding/paas/v4/chat/completions` |
+| **CURRENT Z.AI PROFILE** | provider `zai` · profile `zai:manual` · auth `api_key` |
+| **CURRENT BIGMODEL CN BASE URL** | `https://open.bigmodel.cn/api/coding/paas/v4` |
+| **CURRENT API STYLE / ADAPTER** | `openai-completions` · `zai openai-completions wrapZaiStreamFn` |
+| **OFFICIAL CODING-PLAN-CN SEMANTICS** | provider `zai` / label `Z.AI` · product `coding-cn` / `Coding-Plan-CN` · same base URL · same API style · same adapter |
+| **OFFICIAL DEFAULT MODEL** | `glm-5.3`; current authored `zai.models=[]` and current agent primary `openai/gpt-5.6-sol`; this is not a provider-adapter mismatch |
+| **OFFICIAL CONFIG DELTA DIAGNOSIS** | PASS · `CURRENT_CONFIG_SEMANTICALLY_MATCHES_OFFICIAL_CODING_PLAN_CN` |
+| **PROVEN CONFIG DELTAS** | provider none · product none · baseUrl none · API style none · adapter none · headers none · payload none · product/region mapping none; profile id name differs only (`zai:manual` vs default pattern) |
 | **OPENCLAW GLM 5.2 BIGMODEL CN SMOKE** | BLOCKED · one invocation · HTTP 500 · zero retry/fallback |
-| **DIRECT BIGMODEL CN API CONTROL** | BLOCKED · exactly one raw HTTPS POST bypassing OpenClaw infer/adapter · `glm-5.2` · HTTP 500 `内部服务器错误` · zero retry · sanitized provider trace id captured |
-| **ROOT CAUSE CLASSIFICATION** | raw direct API HTTP 500 observed, but NOT sufficient to prove account/key/Coding-Plan failure because current BigModel Coding Plan documentation restricts plan use to supported tools/product environments and explicitly supports OpenClaw; raw direct API is therefore not an equivalent Coding Plan control. Highest-value next discriminator is official OpenClaw `Coding-Plan-CN` config semantics vs current `zai:manual` setup. |
-| **OFFICIAL BIGMODEL OPENCLAW PATH** | current docs: provider `智谱`, product/profile `Coding-Plan-CN`, Coding endpoint `https://open.bigmodel.cn/api/coding/paas/v4`; supported Coding Plan models include `GLM-5.2`, `GLM-5-Turbo`, `GLM-4.7` |
-| **Z.AI CREDENTIAL** | OpenClaw profile `zai:manual` preserved; no re-entry/change; secret not exposed/persisted |
-| **GLM TEST QUOTA POLICY** | TEST PHASE: token conservation non-blocking / low priority. PRODUCTION PHASE: quota-aware routing remains required and deferred to issue #19. Bounded counts are for diagnostic determinism, not conservation. |
+| **DIRECT BIGMODEL CN RAW CONTROL** | BLOCKED · exactly one raw HTTPS POST · HTTP 500 · zero retry; NOT a supported-tool equivalence test |
+| **ROOT CAUSE CLASSIFICATION** | local current OpenClaw/Z.AI configuration is semantically aligned with the official `Coding-Plan-CN` path; no bounded local config remediation is evidence-supported. Remaining blocker is provider/client-specific behavior/support verification. |
+| **Z.AI CREDENTIAL** | preserved; no re-entry/change; secret not read/exposed/persisted during latest diagnosis |
+| **GLM TEST QUOTA POLICY** | TEST PHASE: token conservation non-blocking / low priority. PRODUCTION PHASE: quota-aware routing remains deferred to issue #19. |
 | **VPS NETWORK** | port `18789` free · gateway false |
-| **PLANNER / TEST INVOCATIONS** | Codex `1` · GLM `7` OpenClaw historical smoke attempts · direct raw BigModel control `1` · Qwen `0` |
-| **LATEST EVIDENCE** | `GLM_BIGMODEL_CN_DIRECT_API_CONTROL_REQUEST = BLOCKED`; evidence commit `3348a7c94574b724ce77b86e767ba6a9ca6c2017`; direct endpoint HTTP 500; OpenClaw infer bypassed; no retry/mutation/secret exposure |
+| **PLANNER / TEST INVOCATIONS** | Codex `1` · GLM `7` OpenClaw historical smoke attempts · direct raw BigModel control `1` · Qwen `0`; latest diagnosis `0` provider/model requests |
+| **LATEST EVIDENCE** | `GLM_BIGMODEL_CN_OFFICIAL_OPENCLAW_CODING_PLAN_CONFIG_DELTA_DIAGNOSIS = PASS`; evidence commit `419fc0bcad7aa87a57c9e2bbb5729325b7e810b2`; zero requests/mutations/secrets |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
 | **Gate E / L5_PASS** | PASS-CLOSED / NOT_CLAIMED |
 | **L5 runtime** | activation `false` · runtime `false` · endurance `false` |
@@ -39,13 +39,13 @@
 
 ## Boundaries operative correnti
 
-- The direct control request executed exactly once and returned HTTP 500 while bypassing OpenClaw infer/adapter. This proves only that the raw direct request failed; it does not establish that the Coding Plan account/key is unusable in an officially supported tool.
-- Current BigModel Coding Plan documentation states the subscription is limited to officially supported tools/product environments and explicitly lists OpenClaw as supported. Current OpenClaw guidance instructs selecting provider `智谱` and `Coding-Plan-CN`, with Coding endpoint `https://open.bigmodel.cn/api/coding/paas/v4`.
-- Therefore the previous classification `DIRECT_BIGMODEL_CN_API_OR_ACCOUNT_PLAN_PATH_BLOCKED_INDEPENDENT_OF_OPENCLAW_INFER` is narrowed: the raw direct request is not an authoritative Coding Plan equivalence test.
-- AUTO-VIA now permits only strict read-only inspection/comparison of the installed OpenClaw/Z.AI configuration, plugin code/schema/help and sanitized current state against the official `智谱 -> Coding-Plan-CN` onboarding semantics. No provider/model request is authorized by this AUTO-VIA step.
-- No API key/token/Authorization value may be read, printed, hashed, measured or persisted. Sanitized field names/types/profile/provider identifiers are allowed.
-- No auth/config/endpoint/profile/model mutation, credential re-entry/refresh, onboarding/config wizard execution that writes state, plugin/core upgrade, doctor --fix, gateway/service activation, n8n/Docker/Tailscale/firewall/reverse-proxy mutation, runtime wiring or billing mutation is authorized.
-- If a concrete local config/profile/provider delta is proven, STOP at `GLM_BIGMODEL_CN_OFFICIAL_OPENCLAW_CONFIG_REMEDIATION_GATE_REQUIRED` and persist evidence. If no concrete delta is found, STOP at a provider/client-specific support or officially supported clean-profile reconstruction gate; do not make another GLM request automatically.
+- The latest read-only diagnosis proves that the current `zai:manual` setup uses the same provider, Coding CN base URL, API style, request adapter, header-name set, payload transform, product semantics and region mapping as the installed official `Coding-Plan-CN` onboarding path.
+- The profile-id difference is naming only; auth type is equivalent. The official onboarding default model is `glm-5.3`, but explicit prior `zai/glm-5.2` testing does not reveal an adapter/config mismatch.
+- Therefore no further local config/profile/endpoint remediation is justified by current evidence.
+- The previous raw direct HTTP 500 remains non-authoritative for Coding Plan because raw direct API is not a supported-tool equivalence test.
+- AUTO-VIA stops here at `GLM_BIGMODEL_CN_PROVIDER_CLIENT_SPECIFIC_SUPPORT_GATE_REQUIRED`.
+- No additional provider/model request, retry, credential change, config/profile/endpoint/model mutation, plugin/core upgrade, `doctor --fix`, gateway/service activation, n8n/Docker/Tailscale/firewall/reverse-proxy mutation, runtime wiring or billing action is implicitly authorized.
+- Any support/vendor escalation must use sanitized evidence only; do not expose API keys, tokens or Authorization values.
 - Issue #8 remains an evidence backlog; `CURRENT_FRONTIER.md` owns live state. Issue #19 remains DEFERRED for production quota-aware policy.
 - No PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop or public Telegram Trigger implicit.
 
