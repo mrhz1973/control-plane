@@ -65,7 +65,8 @@ Dopo CORE BOOT:
 - se `NEXT` è tecnicamente determinato, nello scope corrente e non richiede una decisione umana reale → **procedere direttamente**;
 - caricare on demand soltanto metodo/contratto/evidence necessari a quel passo;
 - non chiedere un nuovo `vai` per passaggi meccanici già determinati;
-- AUTO-VIA non amplia lo scope e non trasforma un gate umano in decisione tecnica.
+- AUTO-VIA non amplia lo scope e non trasforma un gate umano in decisione tecnica;
+- la persistenza docs-only dell'evidence di un task già eseguito è bookkeeping recuperabile e non apre da sola un nuovo gate runtime.
 
 STOP soltanto per gate reale, ad esempio:
 
@@ -91,6 +92,10 @@ Eseguire:
 4. leggere `docs/runtime/LAST_CURSOR_REPORT.md` **una sola volta** soltanto se il gate/NEXT dipende dal pass Cursor appena concluso;
 5. leggere evidence aggiuntiva solo se esplicitamente puntata e necessaria;
 6. applicare AUTO-VIA.
+
+**Cursor completion persistence invariant:** se il risultato dell'ultimo pass Cursor serve a determinare gate/NEXT, il task Cursor non è evidence-complete finché il report finale non è persistito in `docs/runtime/LAST_CURSOR_REPORT.md` con `task_ref`, risultato, evidence deterministica, mutazioni rilevanti e next-gate/blocker, senza secret. Questa persistenza docs-only deve essere prevista come ultimo step del task Cursor.
+
+Se `LAST_CURSOR_REPORT.md` non corrisponde al pass Cursor atteso, `agg` classifica **`EVIDENCE_NOT_PERSISTED`**. Non deve dedurre che il task non sia stato eseguito. Se l'operatore fornisce nello stesso messaggio il report Cursor completo mancante, GPT Web può persisterlo docs-only, marcarlo `operator-relayed` / non indipendentemente verificato e proseguire con AUTO-VIA.
 
 Se report/evidence e frontier confliggono: **CURRENT_FRONTIER prevale per LIVE STATE**; dichiarare l'evidence stale/conflicting, non ricostruire lo stato dalla narrativa.
 
