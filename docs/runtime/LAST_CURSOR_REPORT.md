@@ -5,75 +5,60 @@
 ## LATEST
 
 ```yaml
-task_ref: GLM_ZAI_CODING_PLAN_DEFAULT_53_PROVIDER_VERIFICATION
-result_cursor: BLOCKED
+task_ref: GLM_BIGMODEL_CN_CODING_ENDPOINT_REMEDIATION
+result_cursor: PASS
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: d7937e1fddfd021a6492b4fc80f560bd7d45e345
+repo_head_observed_at_task: d0a324f971a915e151dd022f23fc0001159b38ea
 workspace: clean
 
 OPENCLAW_VERSION: 2026.8.1-beta.3
 ZAI_PLUGIN_VERSION: 2026.8.1-beta.3
 
-MODEL_USED: zai/glm-5.3
-
 ZAI_PROFILE_PRESENT_BEFORE: true
 ZAI_PROFILE_ID_BEFORE: zai:manual
-ZAI_PROVIDER_BEFORE: available
+ZAI_AUTH_TYPE_BEFORE: api_key
 
-EFFECTIVE_ZAI_BASE_ENDPOINT_BEFORE: https://api.z.ai/api/coding/paas/v4
-EXACT_GLM53_MODEL_REF_VISIBLE_BEFORE: true
+ZAI_BASE_ENDPOINT_BEFORE: https://api.z.ai/api/coding/paas/v4
+ZAI_BASE_ENDPOINT_AFTER: https://open.bigmodel.cn/api/coding/paas/v4
 
-GLM53_CODING_PLAN_VERIFICATION_INVOCATION_COUNT: 1
-AUTOMATIC_RETRY_COUNT: 0
-
-GLM52_INVOCATION_COUNT_THIS_TASK: 0
-GLM51_INVOCATION_COUNT_THIS_TASK: 0
-GLM5_INVOCATION_COUNT_THIS_TASK: 0
-
-CODEX_INVOCATION_COUNT: 0
-QWEN_INVOCATION_COUNT: 0
-
-SMOKE_EXIT_CODE: 1
-SMOKE_RESPONSE_RECEIVED: true
-SMOKE_MARKER_MATCH: false
-SANITIZED_PROVIDER_ERROR: "500 Internal service error (provider=zai model=glm-5.3)"
-OBSERVED_REQUEST_URL_SANITIZED: "https://api.z.ai/api/coding/paas/v4/chat/completions"
-
-ROOT_CAUSE_CLASSIFICATION: PROVIDER_SIDE_OR_ACCOUNT_PLAN_SERVICE_BLOCKER
-BLOCKER: BLOCKED_ZAI_CODING_PLAN_DEFAULT_53_HTTP500
+CONFIG_MUTATION_APPLIED: true
+MUTATION_SCOPE: models.providers.zai.baseUrl only
 
 ZAI_PROFILE_PRESENT_AFTER: true
 ZAI_PROFILE_ID_AFTER: zai:manual
-ZAI_PROVIDER_AFTER: available
+ZAI_AUTH_TYPE_AFTER: api_key
 
-EFFECTIVE_ZAI_BASE_ENDPOINT_AFTER: https://api.z.ai/api/coding/paas/v4
 EXACT_GLM53_MODEL_REF_VISIBLE_AFTER: true
+EXACT_GLM52_MODEL_REF_VISIBLE_AFTER: true
+
+CREDENTIAL_REENTRY: false
+AUTH_SECRET_CHANGED: false
+AUTH_SECRET_VALUE_READ: false
+
+PROVIDER_REQUEST_COUNT: 0
+MODEL_INVOCATION_COUNT: 0
+CODEX_INVOCATION_COUNT: 0
+QWEN_INVOCATION_COUNT: 0
 
 PORT_18789_AFTER: free
 GATEWAY_RUNNING_AFTER: false
 
-AUTH_MUTATION: false
-CONFIG_MUTATION: false
-ENDPOINT_MUTATION: false
-CREDENTIAL_REENTRY: false
 CORE_PLUGIN_MUTATION: false
-GATEWAY_MUTATION: false
 SERVICE_MUTATION: false
 N8N_MUTATION: false
 DOCKER_MUTATION: false
 TAILSCALE_MUTATION: false
-
 SECRET_VALUES_PERSISTED: false
 
-NEXT_GATE_CLASSIFICATION: GLM_ZAI_PROVIDER_ACCOUNT_PLAN_SUPPORT_GATE_REQUIRED
+NEXT_GATE_CLASSIFICATION: GLM_BIGMODEL_CN_POST_REMEDIATION_SMOKE_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-Exactly one local smoke: `openclaw infer model run --local --model zai/glm-5.3` with the required marker prompt. Effective baseUrl was Coding Plan. Transport hit `https://api.z.ai/api/coding/paas/v4/chat/completions` and returned provider HTTP 500 for the Coding Plan default model. No retry, no alternate GLM, no auth/config/endpoint mutation. Gateway remained off. Local stack already diagnosed consistent; this confirms provider-side/account/plan service blocker for current evidence.
+Bounded remediation only: `models.providers.zai.baseUrl` changed from `https://api.z.ai/api/coding/paas/v4` to `https://open.bigmodel.cn/api/coding/paas/v4`. Profile `zai:manual` preserved; no credential re-entry; no provider/model request; gateway remained off. PASS does not prove GLM works — smoke requires a separate gate.
 
 ## Completion persistence invariant
 
