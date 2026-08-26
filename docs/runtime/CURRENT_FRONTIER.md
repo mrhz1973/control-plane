@@ -7,26 +7,23 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8 — Architecture v3 evidence track — OpenClaw → planners → Cursor bounded loop** |
-| **BLOCCO ATTIVO** | `CODEX-VPS-DIRECT-SMOKE` |
-| **STATO BLOCCO** | `AUTHORIZED / ONE_BOUNDED_MODEL_INVOCATION_PENDING` |
-| **GATE CORRENTE** | `CODEX_VPS_DIRECT_SMOKE_AUTHORIZED` |
-| **NEXT** | execute exactly one minimal direct Codex smoke on VPS through authenticated OpenClaw; read-only command discovery allowed first; no retry, gateway/service, GLM/Z.AI, n8n wiring, or broader runtime activation |
+| **BLOCCO ATTIVO** | `GLM-ZAI-VPS-CREDENTIAL-CONFIG` |
+| **STATO BLOCCO** | `HUMAN_GATE_REQUIRED / CREDENTIAL_CONFIG` |
+| **GATE CORRENTE** | `GLM_ZAI_VPS_CREDENTIAL_CONFIG_GATE_REQUIRED` |
+| **NEXT** | authorize bounded GLM/Z.AI credential configuration on VPS OpenClaw, then read-only provider verification; no gateway/service, n8n wiring, Codex retry, Qwen mutation, or broader runtime activation |
 | **PLACEMENT DECISION** | ACCEPTED — OpenClaw target canonico sul VPS IONOS come broker 24/7; Cursor/Bugbot/Ollama-Qwen restano locali |
 | **ISOLATED NODE 24** | PASS — `v24.19.0`; `/opt/openclaw-node/current`; system Node/npm unchanged |
 | **VPS OPENCLAW** | PASS — `openclaw@2026.7.1-2` at `/opt/openclaw-app`; gateway non attivo |
 | **CODEX OAUTH VPS** | PASS |
-| **AUTH CLASSIFICATION** | configured |
-| **PROFILE** | present |
-| **PROVIDER** | usable |
-| **OAUTH TUNNEL** | closed |
-| **LOCAL / VPS 1455** | free |
+| **CODEX DIRECT SMOKE VPS** | PASS — exactly one local inference; exit `0`; marker matched; no retry |
+| **CODEX PROVIDER AFTER SMOKE** | configured / usable |
 | **VPS NETWORK** | port `18789` free · gateway false |
-| **PLANNER INVOCATION COUNT** | `0` before authorized smoke |
+| **PLANNER INVOCATION COUNT** | `1` total Codex VPS smoke invocation |
+| **LATEST EVIDENCE** | `CODEX_VPS_DIRECT_SMOKE = PASS`; evidence commit `ef6a5a43eeb2a1bd13f02f9be68887b414c7ae15` |
 | **SECRET / WINDOWS AUTH GUARD** | persisted secrets `false` · Windows auth copied `false` |
-| **LATEST EVIDENCE** | local sync evidence PASS at `9dd4412d8b5816cfddf844f4100a07bb488846e9`; OAuth PASS evidence at `1c932240591311aea8320173a7599d270e4b8e71` |
 | **AGG EVIDENCE RULE** | CANONICAL — Cursor pass needed by `agg` must persist final report; stale/missing => `EVIDENCE_NOT_PERSISTED` |
-| **OPENCLAW v3 RUNTIME** | TARGET_VPS / INSTALLED / CODEX_AUTHENTICATED / GATEWAY_NOT_ACTIVATED |
-| **PLANNER SMOKE** | Codex VPS: AUTHORIZED_ONE_BOUNDED_INVOCATION · GLM VPS: BLOCKED_MISSING_AUTH · Qwen 3.8 37B: BLOCKED_MISSING_MODEL |
+| **OPENCLAW v3 RUNTIME** | TARGET_VPS / INSTALLED / CODEX_AUTHENTICATED_AND_SMOKE_PASS / GATEWAY_NOT_ACTIVATED |
+| **PLANNER SMOKE** | Codex VPS: PASS · GLM VPS: BLOCKED_MISSING_AUTH · Qwen 3.8 37B: BLOCKED_MISSING_MODEL |
 | **PM-34** | BLOCKED |
 | **n8n_ready** | `false` |
 | **Gate E** | PASS / CLOSED |
@@ -38,12 +35,11 @@
 
 ## Boundaries operative correnti
 
-- L'operatore ha autorizzato esattamente **una** minimal direct Codex smoke invocation sul VPS tramite OpenClaw autenticato.
-- Prima dell'unica invocazione sono consentiti solo discovery/preflight read-only per determinare il comando locale corretto e confermare provider/auth/gateway invariati.
-- Nessun retry automatico o seconda invocazione se il primo smoke fallisce o è inconcludente.
-- Nessun gateway/service, GLM/Z.AI, n8n/Docker/Tailscale mutation, firewall/reverse proxy/public exposure, runtime wiring, billing, Qwen o broader runtime activation.
-- Nessuna modifica a credenziali/auth; nessun secret/token in GitHub o log persistenti.
-- Dopo il singolo smoke: verify provider/auth read-only, gateway `false`, port `18789` free, persist `LAST_CURSOR_REPORT.md`, quindi STOP sul prossimo gate.
+- `CODEX_VPS_DIRECT_SMOKE` è PASS: una sola invocazione locale OpenClaw, exit `0`, risposta marker corretta, zero retry; provider Codex resta usable; gateway resta false; port `18789` free.
+- Il prossimo gate è umano e riguarda esclusivamente configurazione credenziali GLM/Z.AI sul VPS OpenClaw e verifica provider immediatamente successiva.
+- Nessun gateway/service, n8n/Docker/Tailscale mutation, firewall/reverse proxy/public exposure, runtime wiring, billing, Qwen o broader runtime activation è autorizzato.
+- Nessuna seconda invocazione Codex è autorizzata da questo frontier update.
+- Nessun secret/token deve entrare in GitHub o log persistenti.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
 - WF40/42 invariati; WF41 off; wf47 invariato (inactive/unpublished, Schedule disabled, `enable_wg48_handoff=false`).
 
