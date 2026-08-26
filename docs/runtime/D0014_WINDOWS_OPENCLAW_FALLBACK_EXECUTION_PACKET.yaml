@@ -1,0 +1,136 @@
+schema: execution-packet-v1
+packet_id: EP-D-0014-W-r1
+packet_revision: 1
+task_id: D-0014-W
+source_backlog_ref: "github:issue/20#issuecomment-5431799606"
+source_backlog_commit: 33904f4049f5c097de941f8e24731102e84e8680
+generated_at: "2026-08-26T22:30:00Z"
+routing:
+  schema: planner-selection-v1
+  task_id: D-0014-W
+  preferred: codex
+  selected: glm
+  fallback_used: true
+  fallback_reason: "Preferred Codex planner bridge not separately invocable in this Cursor executor session; packet composed deterministically from canonical backlog, gate 5431799606, and live preflight HEAD per equivalent-or-gate policy."
+  risk: medium
+  complexity: medium
+  provider_state_ref: docs/runtime/CURRENT_FRONTIER.md
+  policy_result: PROCEED
+planner:
+  requested: codex
+  used: glm
+  fallback_used: true
+  fallback_reason: "Preferred Codex planner bridge not separately invocable in this Cursor executor session; packet composed deterministically from canonical backlog, gate 5431799606, and live preflight HEAD per equivalent-or-gate policy."
+  provider_state_ref: docs/runtime/CURRENT_FRONTIER.md
+executor: cursor
+repository: mrhz1973/control-plane
+branch_target: main
+expected_base_head: 33904f4049f5c097de941f8e24731102e84e8680
+goal: >-
+  Make the existing Windows OpenClaw installation operational as a PRIVATE fallback broker reachable from the VPS/control-plane over Tailscale only, using loopback bind plus Tailscale Serve when compatible, without public exposure and without changing VPS credentials or Z.AI diagnosis state.
+preflight:
+  - Run canonical repository/branch preflight and require clean main at expected_base_head.
+  - Confirm issue #20 comment 5431799606 authorizes bounded implementation.
+  - Confirm Windows OpenClaw and Tailscale are available on the operator workstation.
+  - Never display, copy, hash, derive, measure, log, or persist gateway tokens, API keys, Authorization headers, or other secrets.
+allowed_paths:
+  - docs/runtime/LAST_CURSOR_REPORT.md
+  - docs/runtime/CURRENT_FRONTIER.md
+  - docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_EXECUTION_PACKET.yaml
+  - docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_STATUS.md
+  - docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_GATE.md
+  - docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_EXECUTION_CHECKPOINT.md
+forbidden_paths:
+  - workflows/**
+  - tools/**
+  - Any VPS OpenClaw credential/auth/provider config mutation.
+  - Any Z.AI credential/auth/billing mutation or provider/model probe not required for transport validation.
+  - Any public listener, NAT, port-forward, Funnel, or reverse-proxy exposure.
+  - Any n8n workflow authoring by Cursor.
+  - Any secret persistence in GitHub.
+steps:
+  - "Inventory actual Windows OpenClaw version, config metadata, gateway/process state, port 18789, and Tailscale state; capture sanitized rollback snapshot locally only."
+  - "Set gateway.bind=loopback and gateway.tailscale.mode=serve with resetOnExit=true; prefer official OpenClaw Tailscale Serve automation over LAN/public bind."
+  - "Restart the existing Windows OpenClaw gateway/process with --bind loopback --tailscale serve --port 18789; do not install a new public service unless strictly required."
+  - "Verify local gateway health and that OpenClaw listens only on loopback while Tailscale Serve exposes HTTPS/WSS on the tailnet hostname."
+  - "Verify no Tailscale Funnel and no ordinary public/LAN OpenClaw listener on 18789."
+  - "From VPS ionos-n8n (ubuntu tailnet node), perform bounded private HTTPS and WebSocket transport/health validation over MagicDNS/Tailscale Serve only; prefer transport checks over Z.AI model probes."
+  - "Persist sanitized evidence, rollback instructions, and canonical Git updates; do not mutate VPS OpenClaw provider/credential configuration."
+validation:
+  - Windows gateway health returns OK locally after restart.
+  - tailscale serve status shows tailnet-only proxy to http://127.0.0.1:18789 and funnel is absent.
+  - Local port 18789 listens on 127.0.0.1 only; direct tailnet TCP to :18789 is refused/closed.
+  - VPS reaches https://<windows-magicdns>/ with HTTP 2xx and WSS connect ok over the private tailnet path.
+  - No secret or Authorization value is printed, logged, hashed, measured, or persisted in GitHub.
+  - No VPS credential/auth/billing mutation and no extra Z.AI provider/model request occurs.
+acceptance:
+  - Existing Windows OpenClaw gateway is running with loopback bind and Tailscale Serve enabled.
+  - Private tailnet-only access works from VPS to the Windows OpenClaw transport/health surface.
+  - No Tailscale Funnel or ordinary public/LAN OpenClaw exposure exists.
+  - Rollback state is documented deterministically and pre-change config snapshot exists locally.
+  - CURRENT_FRONTIER.md and LAST_CURSOR_REPORT.md reflect the verified live result; docs-only commit pushed with clean/equal main refs.
+loop:
+  enabled: true
+  stop_when:
+    - Acceptance criteria satisfied.
+    - A real hard-stop gate is reached.
+    - Maximum three implementation/fix rounds are exhausted.
+  max_rounds: 3
+  on_exhaustion: blocked
+risk_assessment:
+  level: medium
+  reasons:
+    - Changes Windows gateway bind/Tailscale exposure for private fallback reachability.
+    - Cross-host private connectivity validation over Tailscale.
+  scope_expansion: false
+  destructive: false
+  production_sensitive: true
+  credentials_or_billing: false
+gate_recommendation:
+  required: false
+  reason: >-
+    Issue #20 comment 5431799606 already authorizes bounded private fallback implementation; credential/auth/billing mutation, public exposure, VPS provider mutation, or extra Z.AI probes still require a new real gate.
+context:
+  read_set:
+    - docs/runtime/CURRENT_FRONTIER.md
+    - docs/runtime/BACKLOG_D0014_WINDOWS_OPENCLAW_FALLBACK.md
+    - docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_PLANNER_BRIEF.md
+    - docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_EXECUTION_PACKET_REQUEST.md
+    - docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_GATE.md
+    - GitHub issue #20 comment 5431799606
+    - OpenClaw gateway/tailscale docs in installed runtime
+  checkpoint_policy: required
+  checkpoint_contract: docs/contracts/execution-checkpoint-v1.md
+review:
+  bugbot: disabled
+  max_review_rounds: 0
+  autofix_cloud: false
+final_report_contract: docs/foundation/CURSOR_PROMPT_TEMPLATE.md
+status: READY_FOR_EXECUTION
+
+execution_result:
+  result: PASS
+  implementation_rounds: 1
+  windows_openclaw_version: "2026.5.20"
+  topology: loopback_plus_tailscale_serve
+  windows_tailnet_hostname: asusdesktop.tailc01234.ts.net
+  windows_tailnet_ipv4: 100.110.35.23
+  vps_tailnet_hostname: ubuntu
+  vps_tailnet_ipv4: 100.114.7.53
+  gateway_bind: loopback
+  gateway_port: 18789
+  tailscale_mode: serve
+  tailscale_serve_target: "http://127.0.0.1:18789"
+  funnel_enabled: false
+  local_listen_addresses: ["127.0.0.1:18789"]
+  direct_tailnet_18789: closed_or_refused
+  local_gateway_health: OK
+  vps_https_root_http_code: 200
+  vps_wss_connect: ok
+  vps_wss_connect_ms: 225
+  zai_provider_model_requests: 0
+  credential_mutation: false
+  vps_openclaw_mutation: false
+  rollback_local_snapshot: "~/.openclaw/openclaw.json.rollback-d0014-w"
+  pre_change_tailscale_mode: off
+  pre_change_serve_target: "http://127.0.0.1:8765"

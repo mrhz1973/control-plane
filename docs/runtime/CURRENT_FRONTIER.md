@@ -6,11 +6,11 @@
 |---|---|
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
-| **ACTIVE WORK** | GitHub issue **#20** `D-0014-W` — Windows OpenClaw private fallback broker; issue **#8** remains parallel provider wait |
-| **BLOCCO ATTIVO** | `WINDOWS-OPENCLAW-FALLBACK-IMPLEMENTATION-PACKET` |
-| **STATO BLOCCO** | `OPERATOR_IMPLEMENTATION_AUTHORIZED / EXECUTION_PACKET_REQUIRED / NOT_YET_EXECUTED / ZAI_SUPPORT_WAIT_PARALLEL` |
-| **GATE CORRENTE** | `WINDOWS_FALLBACK_BOUNDED_IMPLEMENTATION_AUTHORIZED` — operator explicitly rejected docs-only and authorized FALLBACK 1 implementation; authorization evidence issue #20 comment `5431799606`. Stop only at hard-stop gates still listed below. |
-| **NEXT** | Preferred planner **Codex** generates one v3 Cursor Execution Packet for bounded implementation; Cursor then inspects current state and proceeds in the same task to make existing Windows OpenClaw privately reachable from VPS over Tailscale, using least-change execution and no public exposure. |
+| **ACTIVE WORK** | GitHub issue **#20** `D-0014-W` — Windows OpenClaw private fallback broker **OPERATIONAL**; issue **#8** remains parallel provider wait |
+| **BLOCCO ATTIVO** | `WINDOWS-OPENCLAW-FALLBACK-BROKER` |
+| **STATO BLOCCO** | `IMPLEMENTATION_PASS / WINDOWS_PRIVATE_FALLBACK_OPERATIONAL / ZAI_SUPPORT_WAIT_PARALLEL` |
+| **GATE CORRENTE** | `WINDOWS_FALLBACK_TRANSPORT_PASS — next real gate: production wiring, service hardening, or scope expansion only with new authorization` |
+| **NEXT** | keep Windows fallback running privately over Tailscale Serve; use VPS→Windows transport for fallback orchestration when needed; do not promote Windows to canonical primary; do not mutate VPS Z.AI credentials or issue extra Z.AI probes while awaiting issue #8 support response |
 | **PARALLEL ZAI SUPPORT** | issue #8 · sanitized escalation submitted 2026-08-27 · `AWAITING_ZAI_SUPPORT_RESPONSE`; no additional Z.AI probes authorized merely to validate fallback transport |
 | **VPS OPENCLAW** | `2026.8.1-beta.3` (5831b80) · gateway inactive (unchanged) · node runtime `/opt/openclaw-node/current` v24.19.0 |
 | **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` (active generation, unchanged) |
@@ -31,7 +31,7 @@
 | **OPERATOR AUTHORIZATION** | 2026-08-26 · issue #8 comment `5429724710` (diagnostic matrix, consumed) · 2026-08-26 in-band gate: credential repair `zai-coding-global` authorized and completed · 2026-08-27 issue #8 comment `5431664542`: sanitized support escalation scope authorized · 2026-08-27 issue #20 comment `5431799606`: bounded Windows fallback implementation authorized after operator explicitly rejected docs-only |
 | **ROOT CAUSE CLASSIFICATION** | `APPLICATION_LAYER_IP_OR_RISK_CONTROL_SUSPECT` (updated 2026-08-26): transport/unauthenticated path eliminated (VPS reaches `api.z.ai`, TLS OK, coding prefix returns expected HTTP 401); credential format and model variant eliminated; cross-host asymmetry on **authenticated** requests only — datacenter egress `217.160.71.145` (VPS IONOS) → HTTP 500; residential egress `95.249.154.241` (Windows) → SUCCESS with same key family. Plausible cause: Z.AI application-layer risk control keyed on datacenter/source IP. Historical malformed `zai:manual` remains a real defect (bypassed via `zai:default`) but does not explain authenticated HTTP 500. |
 | **SUPPORT ESCALATION** | `SUBMITTED` on `2026-08-27` via email to `user_feedback@z.ai` · sanitized draft `docs/runtime/ISSUE_8_ZAI_SUPPORT_ESCALATION_DRAFT.md` · submission evidence issue #8 comment `5431709978` · `AWAITING_ZAI_RESPONSE` |
-| **WINDOWS FALLBACK** | issue #20 `D-0014-W` · implementation authorized · preferred planner Codex · target topology `n8n/VPS control-plane -> Tailscale/private -> Windows OpenClaw` · Windows remains fallback, not canonical primary |
+| **WINDOWS FALLBACK** | issue #20 `D-0014-W` · **PASS** 2026-08-27 · OpenClaw `2026.5.20` · loopback `127.0.0.1:18789` · Tailscale Serve `https://asusdesktop.tailc01234.ts.net/` → loopback gateway · VPS `ubuntu` private HTTPS/WSS reachability PASS · no Funnel/public exposure · Windows remains fallback |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
 | **Gate E / L5_PASS** | PASS-CLOSED / NOT_CLAIMED |
 | **L5 runtime** | activation `false` · runtime `false` · endurance `false` |
@@ -41,8 +41,7 @@
 
 ## Boundaries operative correnti
 
-- Operator selected **FALLBACK 1** and then explicitly rejected a docs-only phase on 2026-08-27. Bounded implementation of the existing Windows OpenClaw as a PRIVATE fallback broker is authorized by issue #20 comment `5431799606`.
-- Within that authorization Cursor may inspect current Windows OpenClaw/Tailscale state, start/restart the existing OpenClaw gateway/process if required, apply the minimum non-destructive bind/listen change for Tailscale-private reachability, apply the minimum Windows Firewall/Tailscale-private rule if strictly required, validate local health plus VPS-to-Windows private reachability, and persist sanitized rollback/evidence.
+- Operator selected **FALLBACK 1** and bounded implementation completed 2026-08-27 under issue #20 comment `5431799606`. Windows OpenClaw is privately reachable from VPS over Tailscale Serve with loopback bind; no public exposure; no credential/auth/billing mutation; no VPS OpenClaw provider mutation; no extra Z.AI probe for transport validation.
 - New human gate remains mandatory for credential/auth/billing mutation or secret extraction, public listener/port exposure/NAT/reverse proxy, destructive action, autonomous n8n workflow authoring by Cursor, VPS OpenClaw credential/provider mutation, promotion of Windows to canonical primary, PM-34/L5/endurance/permanent scheduling, extra Z.AI provider/model probes not needed for transport/health validation, or any scope expansion.
 - Canonical primary target remains OpenClaw on VPS; Windows is an operational fallback only.
 - Credential repair completed 2026-08-26 via the official `zai-coding-global` onboard path: new profile `zai:default` with documented-format key, baseUrl `https://api.z.ai/api/coding/paas/v4`, primary model `zai/glm-5.3`, alias `GLM`.
@@ -61,7 +60,8 @@
 - Windows fallback backlog: `docs/runtime/BACKLOG_D0014_WINDOWS_OPENCLAW_FALLBACK.md`
 - Windows fallback planner brief: `docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_PLANNER_BRIEF.md`
 - Windows fallback packet request: `docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_EXECUTION_PACKET_REQUEST.md`
-- Windows fallback gate: `docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_GATE.md`
+- Windows fallback execution packet: `docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_EXECUTION_PACKET.yaml`
+- Windows fallback status: `docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_STATUS.md`
 - Windows fallback implementation authorization: issue **#20**, comment `5431799606`
 - Parallel Z.AI support/evidence: issue **#8**
 - Support submission evidence: issue **#8**, comment `5431709978`

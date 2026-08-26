@@ -5,40 +5,75 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0013-Z_ZAI_SUPPORT_ESCALATION_PACKET_PREP
-result_cursor: PASS_SUPPORT_PACKET_PREPARED_NOT_SUBMITTED
+task_ref: D-0014-W_WINDOWS_OPENCLAW_PRIVATE_FALLBACK_BROKER
+result_cursor: PASS
 reported_via: cursor_direct_persistence
-independent_verification: cursor_documental_only
-report_persistence_commit: pending_this_commit
+independent_verification: cursor_runtime_evidence
+report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 7dfa08b03556b5074702487c29248407d4193398
+repo_head_observed_at_task: 33904f4049f5c097de941f8e24731102e84e8680
 workspace_at_start: clean
-active_work: github:issue/8
-operator_gate: support escalation packet preparation authorized in-band 2026-08-27 (draft only, no external submission)
+execution_packet: docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_EXECUTION_PACKET.yaml
+execution_packet_revision: 1
+operator_gate_ref: github:issue/20#issuecomment-5431799606
 
-packet_path: docs/runtime/ISSUE_8_ZAI_SUPPORT_ESCALATION_DRAFT.md
-packet_status: SUPPORT_ESCALATION_PACKET_PREPARED
-external_submission: false
-zai_contacted: false
+planner_requested: codex
+planner_used: glm
+planner_fallback_used: true
+implementation_rounds: 1
 
-packet_includes:
-  - vps_ionos_environment_and_openclaw_versions
-  - coding_plan_global_endpoint
-  - local_config_pass_without_credential_values
-  - authenticated_vps_http500_glm53_and_glm51
-  - cross_host_windows_success_glm51
-  - unauthenticated_egress_diagnostic_dns_tcp_tls_401
-  - eset_tls_caveat
-  - root_cause_as_hypothesis_application_layer_ip_risk_control_suspect
-  - precise_questions_for_zai_support
+WINDOWS_OPENCLAW_VERSION: 2026.5.20
+WINDOWS_OPENCLAW_PATH: C:\Users\mrhz\AppData\Roaming\npm\openclaw
+WINDOWS_CONFIG_PATH: ~/.openclaw/openclaw.json
+
+TOPOLOGY: loopback_plus_tailscale_serve
+GATEWAY_BIND: loopback
+GATEWAY_PORT: 18789
+TAILSCALE_MODE: serve
+TAILSCALE_SERVE_TARGET: http://127.0.0.1:18789
+TAILNET_HOSTNAME: asusdesktop.tailc01234.ts.net
+TAILNET_IPV4: 100.110.35.23
+VPS_TAILNET_HOSTNAME: ubuntu
+VPS_TAILNET_IPV4: 100.114.7.53
+
+PRE_CHANGE_STATE:
+  gateway_tailscale_mode: off
+  tailscale_serve_target: http://127.0.0.1:8765
+  rollback_local_snapshot: ~/.openclaw/openclaw.json.rollback-d0014-w
+
+POST_CHANGE_STATE:
+  gateway_running: true
+  local_listen: 127.0.0.1:18789
+  local_gateway_health: OK
+  tailscale_serve_enabled: true
+  funnel_enabled: false
+  direct_tailnet_tcp_18789: closed_or_refused
+
+PRIVATE_REACHABILITY_FROM_VPS:
+  https_root_http_code: 200
+  https_health_http_code: 200
+  wss_connect: ok
+  wss_connect_ms: 225
 
 provider_model_request_count: 0
-authenticated_requests: 0
-network_mutations: false
-config_auth_runtime_mutations: false
-secret_exposed: false
-secret_logged: false
-secret_persisted: false
+zai_provider_model_requests: 0
+credential_mutation: false
+vps_openclaw_mutation: false
+config_mutation: true
+profile_mutation: false
+runtime_mutation: true
+network_mutation: true
+network_mutation_scope: tailnet_private_serve_only
 
-NEXT_RECOMMENDED_GATE: AWAITING_EXTERNAL_SUBMISSION_GATE — operator reviews draft and submits to Z.AI Support through official channel; no further probes without new authorization
+SECRET_VALUE_DISPLAYED: false
+SECRET_VALUE_LOGGED: false
+SECRET_VALUE_PERSISTED: false
+SECRET_VALUE_HASHED: false
+SECRET_VALUE_MEASURED: false
+AUTHORIZATION_DATA_EXPOSED: false
+
+N8N_WORKFLOW_MUTATION: false
+WINDOWS_PROMOTED_TO_PRIMARY: false
+
+NEXT_REAL_GATE: production wiring, Windows gateway OS service hardening, or scope expansion requires new explicit authorization
 ```
