@@ -10,7 +10,7 @@ result_cursor: PASS_NON_CREDENTIAL_STAGE_COMPLETE
 next_gate: BLOCKED_N8N_OPENCLAW_CREDENTIAL_BINDING_REQUIRED
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
-report_persistence_commit: PENDING_SELF_REFERENCE
+report_persistence_commit: 233a4b8fa296e2a94bde60b9c917ee2083ac327a
 
 repo_head_observed_at_task: a7629e46c9d64d52248d6823ac142562852bedbf
 workspace_at_start: clean
