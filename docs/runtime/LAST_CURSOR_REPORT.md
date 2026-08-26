@@ -5,46 +5,45 @@
 ## LATEST
 
 ```yaml
-task_ref: VPS_CODEX_OAUTH_LOGIN_AND_VERIFY
-result_cursor: BLOCKED
-result_runtime: BLOCKED_OAUTH_SINGLE_ATTEMPT_FAILED
+task_ref: VPS_CODEX_OAUTH_STALE_PROCESS_RECHECK_READONLY
+result_cursor: PASS
+result_runtime: PASS_READONLY_STALE_PROCESS_RECHECK
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-operator_stop: true
-oauth_retry_forbidden: true
+repo_head_observed_at_task: 218a0d76a0881b14de106337762efc576b63705a
+workspace: clean
 
-FIRST_OAUTH_INVOCATION_COUNT: 1
-RETRY_OAUTH_INVOCATION_COUNT: 0
-OAUTH_PROCESS_STILL_RUNNING: true
-OAUTH_PROCESS_STILL_RUNNING_DETAIL:
-  local:
-    - cmd.exe wrapper vps_codex_oauth_login.cmd
-    - ssh -tt ionos-n8n openclaw models auth login --provider openai-codex
-  vps:
-    - openclaw / openclaw-models PIDs observed during status check
-  action_taken: REPORT_ONLY_NO_KILL_NO_RETRY
+LOCAL_OAUTH_WRAPPER_RUNNING: true
+LOCAL_OAUTH_SSH_RUNNING: true
+LOCAL_OAUTH_PROCESS_COUNT: 2
+LOCAL_OAUTH_PROCESS_SANITIZED:
+  - cmd.exe wrapper vps_codex_oauth_login.cmd
+  - ssh.exe associated with ionos-n8n openai-codex login
 
-CODEX_AUTH_BEFORE: missing
-CODEX_AUTH_AFTER: missing
-CODEX_OAUTH_LOGIN: FAILED_OPERATOR_STOPPED
-CODEX_AUTH_PROFILE_PRESENT: false
-CODEX_PROVIDER_EFFECTIVE: missing
+VPS_OAUTH_LOGIN_RUNNING: false
+VPS_OAUTH_PROCESS_COUNT: 0
+
+CODEX_AUTH_CURRENT: missing
+CODEX_PROVIDER_CURRENT: missing
 
 PORT_18789: free
 GATEWAY_RUNNING: false
-PLANNER_INVOCATION_COUNT: 0
 
-WINDOWS_AUTH_STATE_COPIED: false
-SECRET_VALUES_EXPOSED: false
+mutations: 0
+processes_stopped: 0
+oauth_invocations: 0
+planner_invocations: 0
+secret_values_exposed: false
 
-NEXT_GATE_CLASSIFICATION: OAUTH_HEADLESS_CALLBACK_RECOVERY_GATE_REQUIRED
+STALE_OAUTH_PROCESS_STATE: PRESENT
+NEXT_GATE_CLASSIFICATION: STALE_OAUTH_PROCESS_CLEANUP_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-OAuth VPS interrotto dall'operatore. Nessun retry. Nessun token/callback/code esposto nel report. Auth Codex sul VPS resta `missing`. Processi OAuth locali/VPS ancora osservati al momento del check — solo report, nessun kill/retry.
+Recheck read-only: processi OAuth locali ancora presenti; nessun login OpenClaw attivo sul VPS; auth Codex ancora `missing`; porta 18789 libera. Nessun kill/retry/OAuth/gateway mutation.
 
 ## Completion persistence invariant
 
