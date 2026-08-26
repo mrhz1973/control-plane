@@ -5,54 +5,59 @@
 ## LATEST
 
 ```yaml
-task_ref: VPS_CODEX_OAUTH_STALE_PROCESS_CLEANUP
-result_cursor: PASS
+task_ref: VPS_CODEX_OAUTH_CALLBACK_TUNNEL_RECOVERY
+result_cursor: BLOCKED
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 6b547856ed50b787e415053a7306b298f9499182
+repo_head_observed_at_task: 5fe85c86b8cea9b0759d84ecb0540925a816a217
 workspace: clean
 
-CMD_MATCH_COUNT: 1
-SSH_MATCH_COUNT: 1
-CMD_PID: 77468
-SSH_PID: 20676
-SSH_PARENT_PID: 77468
-PROCESS_TREE_MATCH: true
-CMD_IDENTITY_RECHECK: PASS
-SSH_IDENTITY_RECHECK: PASS
+LOCAL_1455_BEFORE: 0
+STALE_CMD_COUNT: 0
+STALE_SSH_COUNT: 0
+VPS_1455_BEFORE: free
+VPS_OAUTH_PROCESS_COUNT_BEFORE: 0
 
-SSH_TERMINATED: true
-CMD_TERMINATION: TERMINATED
+CODEX_AUTH_BEFORE: missing
 
-LOCAL_OAUTH_WRAPPER_RUNNING: false
-LOCAL_OAUTH_SSH_RUNNING: false
-LOCAL_OAUTH_PROCESS_COUNT: 0
+SSH_TUNNEL_BIND: true
+LOGIN_INVOCATION_COUNT: 1
+CODEX_OAUTH_LOGIN: FAIL
 
-VPS_OAUTH_LOGIN_RUNNING: false
-VPS_OAUTH_PROCESS_COUNT: 0
+CODEX_AUTH_AFTER: missing
+CODEX_AUTH_PROFILE_PRESENT: false
+CODEX_PROVIDER_EFFECTIVE: missing
 
-CODEX_AUTH_CURRENT: missing
-CODEX_PROVIDER_CURRENT: missing
+AUTH_STATE_CHANGED: false
+AUTH_STATE_PATHS_CHANGED: []
+UNEXPECTED_CONFIG_PATHS_CHANGED: []
+
+LOCAL_1455_AFTER: false
+OAUTH_TUNNEL_SSH_REMAINS: false
+VPS_1455_AFTER: free
+VPS_OAUTH_PROCESS_COUNT_AFTER: 0
 
 PORT_18789: free
 GATEWAY_RUNNING: false
 
-processes_stopped: 2
-unrelated_processes_stopped: 0
-oauth_invocations: 0
-planner_invocations: 0
-auth_mutations: 0
-vps_processes_stopped: 0
-secret_values_exposed: false
+PLANNER_INVOCATION_COUNT: 0
+WINDOWS_AUTH_STATE_COPIED: false
+SECRET_VALUES_PERSISTED: false
+GLM_CONFIG_CHANGED: false
+N8N_MUTATION: false
+DOCKER_MUTATION: false
+TAILSCALE_MUTATION: false
+FIREWALL_CHANGE: false
+GATEWAY_CHANGE: false
 
-NEXT_GATE_CLASSIFICATION: OAUTH_HEADLESS_CALLBACK_RECOVERY_GATE_REQUIRED
+NEXT_GATE_CLASSIFICATION: BLOCKED_CALLBACK_TUNNEL_OAUTH_FAILED
 ```
 
 ## Evidence boundary
 
-Cleanup autorizzato: terminati solo il wrapper `cmd.exe` (`vps_codex_oauth_login.cmd`, PID 77468) e il figlio `ssh.exe` OAuth (PID 20676, parent 77468). Nessun kill generico, nessun kill VPS, nessun retry OAuth, nessuna mutazione auth/gateway. Post-verify locale e VPS a zero processi OAuth; Codex auth ancora `missing`; porta 18789 libera.
+Tunnel bind `127.0.0.1:1455` → VPS `127.0.0.1:1455` established once with `ExitOnForwardFailure=yes`. Exactly one OAuth invocation. Session exited without Codex auth becoming configured; auth remained `missing`. Tunnel closed afterward; local/VPS 1455 free; no OAuth process remains; gateway off. No second OAuth, no secrets persisted. Post-exit URL recovery also unavailable (`BLOCKED_CURRENT_OAUTH_URL_NOT_SURFACED`).
 
 ## Completion persistence invariant
 
