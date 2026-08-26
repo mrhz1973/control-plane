@@ -5,37 +5,43 @@
 ## LATEST
 
 ```yaml
-task_ref: GLM_ZAI_CREDENTIAL_REMEDIATION_DOUBLE_PASTE_FIX
-result_cursor: PASS
+task_ref: GLM_ZAI_POST_REMEDIATION_SMOKE_EXACT_53
+result_cursor: BLOCKED
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: d81dd054bd52e03b6f5555242feed8f802d1000d
+repo_head_observed_at_task: 73ccec5c63f141a6eaf8941acd762c8461849d24
 workspace: clean
 
 OPENCLAW_VERSION: 2026.8.1-beta.3 (5831b80)
+MODEL_USED: zai/glm-5.3
 
-ZAI_PROFILE_PRESENT_BEFORE: true
-ZAI_PROFILE_ID_BEFORE: zai:manual
-ZAI_AUTH_TYPE_BEFORE: api_key
-STORED_KEY_STRUCTURAL_STATUS_BEFORE: malformed_double_paste
+STORED_KEY_STRUCTURAL_STATUS_BEFORE: single_nonduplicated_candidate
+DOUBLE_PASTE_PATTERN_BEFORE: false
 
-AUTH_REMEDIATION_EXIT_CODE: 0
-AUTH_UX: "silent read-s once; structural check; auto-save via stdin paste-api-key; no Y confirm"
+DIRECT_COMMAND_FORM: "openclaw infer model run --local --model zai/glm-5.3 --prompt <text>"
+OBSERVED_REQUEST_URL_SANITIZED: "https://api.z.ai/api/paas/v4/chat/completions"
+
+POST_REMEDIATION_SMOKE_INVOCATION_COUNT: 1
+AUTOMATIC_RETRY_COUNT: 0
+CODEX_INVOCATION_COUNT: 0
+QWEN_INVOCATION_COUNT: 0
+
+SMOKE_EXIT_CODE: 1
+SMOKE_RESPONSE_RECEIVED: false
+SMOKE_MARKER_MATCH: false
+SANITIZED_PROVIDER_ERROR: "500 Internal service error (provider=zai model=glm-5.3)"
+
+BLOCKER: BLOCKED_ZAI_PROVIDER_HTTP_500_INTERNAL_SERVICE_ERROR
 
 ZAI_PROFILE_PRESENT_AFTER: true
-ZAI_PROFILE_ID_AFTER: zai:manual
-ZAI_AUTH_TYPE_AFTER: api_key
 ZAI_PROVIDER_AFTER: available
 EXACT_GLM53_MODEL_REF_VISIBLE_AFTER: true
-
-STORED_KEY_STRUCTURAL_STATUS_AFTER: single_nonduplicated_candidate
-DOUBLE_PASTE_PATTERN_AFTER: false
 
 PORT_18789_AFTER: free
 GATEWAY_RUNNING_AFTER: false
 
-AUTH_MUTATION: true
+AUTH_MUTATION: false
 CONFIG_MUTATION: false
 ENDPOINT_MUTATION: false
 CORE_PLUGIN_MUTATION: false
@@ -44,20 +50,14 @@ SERVICE_MUTATION: false
 N8N_MUTATION: false
 DOCKER_MUTATION: false
 TAILSCALE_MUTATION: false
-
-PROVIDER_REQUEST_COUNT: 0
-MODEL_INVOCATION_COUNT: 0
-CODEX_INVOCATION_COUNT: 0
-QWEN_INVOCATION_COUNT: 0
-
 SECRET_VALUES_PERSISTED: false
 
-NEXT_GATE_CLASSIFICATION: GLM_ZAI_POST_REMEDIATION_SMOKE_GATE_REQUIRED
+NEXT_GATE_CLASSIFICATION: GLM_ZAI_ENDPOINT_PRODUCT_COMPATIBILITY_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-Replaced malformed double-pasted Z.AI credential for profile `zai:manual` on VPS `ionos-n8n`. Operator pasted once in visible console (hidden input); local structural check passed; key piped via stdin to `models auth paste-api-key --provider zai` (exit 0). Postcheck: stored credential is single nonduplicated candidate; profile/provider/`zai/glm-5.3` preserved; gateway off; port free. No model invocation, provider probe, or endpoint change. PASS proves local structural repair only, not provider acceptance.
+Exactly one post-remediation smoke of `zai/glm-5.3` on VPS `ionos-n8n`. Precheck: repaired credential structurally single/nonduplicated; profile present; gateway off. Provider returned HTTP 500 Internal service error on general `…/api/paas/v4/chat/completions`; no text; marker not matched. No retry. No auth/config/endpoint mutation. Auth profile remains present locally.
 
 ## Completion persistence invariant
 
