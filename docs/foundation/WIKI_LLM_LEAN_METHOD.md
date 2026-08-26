@@ -96,6 +96,8 @@ Proceed automatically when all are true:
 
 AUTO-VIA stops on a real decision/gate, not on generic caution.
 
+Docs-only persistence of evidence for a task already executed is recoverable bookkeeping and does not by itself open a new runtime gate.
+
 ## 7. `agg`
 
 After a Cursor pass:
@@ -110,6 +112,32 @@ remote HEAD
 ```
 
 Never reboot the full project for `agg`.
+
+### 7.1 Cursor completion persistence invariant
+
+If the result of a Cursor pass is needed to determine the next gate/NEXT, that pass is not **evidence-complete** until the final report is persisted in `docs/runtime/LAST_CURSOR_REPORT.md`.
+
+Minimum persisted fields:
+
+- exact `task_ref`;
+- `PASS|BLOCKED|FAILED`;
+- deterministic evidence relevant to acceptance;
+- observed repo HEAD/workspace when pertinent;
+- runtime mutations performed or explicitly zero;
+- exact `NEXT_GATE_CLASSIFICATION` or blocker;
+- no secrets/tokens.
+
+The persistence step is docs-only bookkeeping and must be included as the final closure step of future Cursor tasks whenever `agg` will depend on their result.
+
+If `agg` finds a stale/mismatched `LAST_CURSOR_REPORT`, classify:
+
+```text
+EVIDENCE_NOT_PERSISTED
+```
+
+Do **not** infer that the task was not executed.
+
+If the operator supplies the complete missing Cursor report in the same message, GPT Web may persist it docs-only, mark it `operator-relayed` / not independently verified, and continue AUTO-VIA. Otherwise issue a bounded verify/persist-only Cursor step.
 
 ## 8. Handoff
 
@@ -178,6 +206,8 @@ The control-plane reaches the target when:
 - fresh CORE BOOT loads only the bootloader + lean frontier + one active pointer;
 - no active-looking stale document competes with frontier/foundation;
 - `agg` needs no broad repo scan;
+- every Cursor pass needed by `agg` persists its final evidence before closure;
+- a stale/missing Cursor report is classified as `EVIDENCE_NOT_PERSISTED`, not as proof of non-execution;
 - an incomplete Cursor job resumes from packet/checkpoint, not chat;
 - historical files are excluded by default and clearly classified;
 - canonical docs do not repeat the same state;
