@@ -8,20 +8,20 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `WIKI-LLM-LEAN-CONSOLIDATION` |
 | **ACTIVE WORK** | GitHub issue **#10 — Wiki-LLM lean consolidation — reduce stale/duplicate repository surface** |
-| **BLOCCO ATTIVO** | `L3B-ATOMIC-HISTORICAL-REDUCTION` |
-| **STATO BLOCCO** | AUTHORIZED / IMPLEMENTATION_PENDING |
-| **GATE CORRENTE** | `L3B_PHYSICAL_DELETE_AUTHORIZED` |
-| **NEXT** | eseguire sulla branch L3B una sola modifica atomica: 5 file deletion + 24 Markdown-link rewrite + classificazione di 4 source refs come `NOOP_PLAINTEXT_ONLY` + 2 audit update; verificare `BROKEN_LINKS_AFTER_L3B=0`; nessuna altra deletion/runtime mutation autorizzata |
+| **BLOCCO ATTIVO** | `L3B-POST-MERGE-VERIFY` |
+| **STATO BLOCCO** | IN_PROGRESS |
+| **GATE CORRENTE** | `L3B_POSTMERGE_RECENSUS_REQUIRED` |
+| **NEXT** | eseguire re-census read-only su `main` dopo PR #17: confermare 5 target assenti dal tree, zero Markdown links verso i target, zero nuovi broken relative links, recovery baseline 5/5, audit/manifest coerenti; nessun altro cleanup/deletion |
 | **NEXT WORKSTREAM** | issue **#8 — Architecture v3 evidence track** dopo chiusura issue #10 |
 | **BOOTSTRAP 9.5 VERIFY** | PASS — `CORE_BOOT_SUFFICIENT=true`; preload foundation/history/report/handoff/PM/session = false |
 | **L2 CENSUS** | PASS |
 | **L3A / PR #12** | MERGED / PASS — canonical extraction |
 | **L3A.5 / PR #14** | MERGED / PASS — active-looking stale collisions = 0 |
-| **L3A.6 / PR #16** | MERGED / PASS — squash `d24fc0ee99c7c45948d852d1bcc3dde161521aa7`; immutable link rewrite complete; no physical deletions/runtime changes |
-| **FINAL PREDELETE REVERIFY** | PASS — 5/5 `DELETE_READY_FINAL`; A–I green; history plan 29/29; `UNPLANNED_HISTORY_REFS=[]`; atomic L3B simulation → zero broken links |
-| **L3B AUTHORIZATION** | EXPLICIT HUMAN GATE RECEIVED — 5 delete + history/evidence rewrite set + audit update only; no scope expansion |
-| **L3B DELETE SET** | `MVP_STATUS` · `MVP_CRITERIA` · `POST_MVP_BACKLOG` · `PLAN_OUTPUT_INGESTION` · `V4_POLLING_LATENCY` |
-| **L3B HISTORY SOURCE SET** | 28 source refs totali = 24 file con 47 Markdown relative links da riscrivere + 4 file `NOOP_PLAINTEXT_ONLY`; immutable baseline `777504f7c46e5e724b6ad5f8586a98d43bab7ce8` |
+| **L3A.6 / PR #16** | MERGED / PASS — squash `d24fc0ee99c7c45948d852d1bcc3dde161521aa7`; immutable link rewrite complete |
+| **FINAL PREDELETE REVERIFY** | PASS — 5/5 `DELETE_READY_FINAL`; history plan 29/29; `UNPLANNED_HISTORY_REFS=[]` |
+| **L3B / PR #17** | MERGED — squash `ec32557266fd3aa7751a12db009c52a65554a9a9`; 5 deletions + 24 Markdown rewrite files + 4 `NOOP_PLAINTEXT_ONLY` + 2 audit updates |
+| **L3B PR-LEVEL VERIFY** | PASS — 31 paths = 5 D + 26 M; one atomic commit; no runtime/tool/script/workflow JSON/export changes; global link check reports 0 target broken links, 0 new relative broken links, recovery 5/5 |
+| **L3B RECOVERY BASELINE** | `777504f7c46e5e724b6ad5f8586a98d43bab7ce8` + Git history |
 | **LAST VERIFIED THROUGH** | `91847807bbc4d7b7f63d8e3b3fc48fdfc72f4699` — D-0081-V PASS, `intra_actor_self_verify` |
 | **OPENCLAW v3 RUNTIME** | NOT_VERIFIED / NOT_ACTIVATED |
 | **PLANNER SMOKE** | Qwen 3.8 37B: NOT_RUN · GLM 5.3: NOT_RUN · Codex OAuth: NOT_RUN |
@@ -38,12 +38,9 @@
 ## Boundaries operative correnti
 
 - Foundation v3.1 wiki-LLM lean è canonica su `main`.
-- L2, L3A, L3A.5, L3A.6 e final predelete reverify sono PASS.
-- I 5 target sono `DELETE_READY_FINAL` e la physical deletion L3B è **AUTORIZZATA** esclusivamente nel change set atomico certificato.
-- Il census L3B ha raffinato il piano: 28 source refs totali, ma solo 24 source file contengono Markdown links riscrivibili; 4 contengono esclusivamente inline-code/plain path references e restano byte-invariati, classificati `NOOP_PLAINTEXT_ONLY`.
-- L3B deve essere atomica: 5 delete + 24 rewrite effettivi + 4 NOOP registrati nel manifest + 2 audit update; broken links finali = 0.
-- Compatibility pointers da mantenere: `docs/RUNTIME_GATES.md`, `docs/WORKFLOW_EXPORT_STATUS.md`, `docs/HANDOFF_N8N_GATE.md`.
+- L2, L3A, L3A.5, L3A.6 e L3B sono completate; PR #17 è mergiata.
 - Nessuna ulteriore file deletion o branch deletion è autorizzata.
+- Compatibility pointers da mantenere: `docs/RUNTIME_GATES.md`, `docs/WORKFLOW_EXPORT_STATUS.md`, `docs/HANDOFF_N8N_GATE.md`.
 - Nessuna runtime/provider mutation è autorizzata.
 - Nessuna modifica credenziali/OAuth/billing senza gate esplicito.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
@@ -52,11 +49,11 @@
 ## Puntatori
 
 - Active work: GitHub issue **#10**
-- L3B branch: `docs/wiki-llm-lean-l3b-atomic-historical-reduction`
+- L3B merged review: GitHub PR **#17**
 - Foundation/invarianti: `docs/foundation/PROJECT_VISION.md`
 - Lean method: `docs/foundation/WIKI_LLM_LEAN_METHOD.md`
 - Audit: `docs/audits/WIKI_LLM_LEAN_REDUCTION_AUDIT.md`
-- Candidate manifest + exact L3B history rewrite plan: `docs/audits/WIKI_LLM_LEAN_CANDIDATE_MANIFEST.md`
+- Candidate manifest: `docs/audits/WIKI_LLM_LEAN_CANDIDATE_MANIFEST.md`
 - Recovery baseline pre-cleanup: `777504f7c46e5e724b6ad5f8586a98d43bab7ce8` + Git history
 - Next architecture evidence backlog: GitHub issue **#8**
 - Evidence Cursor rolling: `docs/runtime/LAST_CURSOR_REPORT.md` — on demand
