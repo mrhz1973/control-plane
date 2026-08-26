@@ -9,7 +9,7 @@ task_ref: D-0008-Z_ZAI_CREDENTIAL_IDENTITY_DIAGNOSTIC
 result_cursor: PASS_READ_ONLY_DIAGNOSTIC
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
-report_persistence_commit: PENDING_SELF_REFERENCE
+report_persistence_commit: 69c0c2fc52d326c51023c908f8855b6152cc2f88
 
 repo_head_observed_at_task: c81579ccca2a174cc4e9c2de229834cef62f6eac
 workspace_at_start: clean
