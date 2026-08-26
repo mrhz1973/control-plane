@@ -11,7 +11,7 @@
 | **BLOCCO ATTIVO** | `L3B-ATOMIC-HISTORICAL-REDUCTION` |
 | **STATO BLOCCO** | AUTHORIZED / IMPLEMENTATION_PENDING |
 | **GATE CORRENTE** | `L3B_PHYSICAL_DELETE_AUTHORIZED` |
-| **NEXT** | eseguire sulla branch L3B una sola modifica atomica: 5 file deletion + 28 history/evidence rewrite + 2 audit update; verificare `BROKEN_LINKS_AFTER_L3B=0`; nessuna altra deletion/runtime mutation autorizzata |
+| **NEXT** | eseguire sulla branch L3B una sola modifica atomica: 5 file deletion + 24 Markdown-link rewrite + classificazione di 4 source refs come `NOOP_PLAINTEXT_ONLY` + 2 audit update; verificare `BROKEN_LINKS_AFTER_L3B=0`; nessuna altra deletion/runtime mutation autorizzata |
 | **NEXT WORKSTREAM** | issue **#8 — Architecture v3 evidence track** dopo chiusura issue #10 |
 | **BOOTSTRAP 9.5 VERIFY** | PASS — `CORE_BOOT_SUFFICIENT=true`; preload foundation/history/report/handoff/PM/session = false |
 | **L2 CENSUS** | PASS |
@@ -19,9 +19,9 @@
 | **L3A.5 / PR #14** | MERGED / PASS — active-looking stale collisions = 0 |
 | **L3A.6 / PR #16** | MERGED / PASS — squash `d24fc0ee99c7c45948d852d1bcc3dde161521aa7`; immutable link rewrite complete; no physical deletions/runtime changes |
 | **FINAL PREDELETE REVERIFY** | PASS — 5/5 `DELETE_READY_FINAL`; A–I green; history plan 29/29; `UNPLANNED_HISTORY_REFS=[]`; atomic L3B simulation → zero broken links |
-| **L3B AUTHORIZATION** | EXPLICIT HUMAN GATE RECEIVED — exact 5 delete + 28 history/evidence rewrite + audit update only |
+| **L3B AUTHORIZATION** | EXPLICIT HUMAN GATE RECEIVED — 5 delete + history/evidence rewrite set + audit update only; no scope expansion |
 | **L3B DELETE SET** | `MVP_STATUS` · `MVP_CRITERIA` · `POST_MVP_BACKLOG` · `PLAN_OUTPUT_INGESTION` · `V4_POLLING_LATENCY` |
-| **L3B REWRITE SET** | 28 history/evidence Markdown sources; immutable baseline `777504f7c46e5e724b6ad5f8586a98d43bab7ce8` |
+| **L3B HISTORY SOURCE SET** | 28 source refs totali = 24 file con 47 Markdown relative links da riscrivere + 4 file `NOOP_PLAINTEXT_ONLY`; immutable baseline `777504f7c46e5e724b6ad5f8586a98d43bab7ce8` |
 | **LAST VERIFIED THROUGH** | `91847807bbc4d7b7f63d8e3b3fc48fdfc72f4699` — D-0081-V PASS, `intra_actor_self_verify` |
 | **OPENCLAW v3 RUNTIME** | NOT_VERIFIED / NOT_ACTIVATED |
 | **PLANNER SMOKE** | Qwen 3.8 37B: NOT_RUN · GLM 5.3: NOT_RUN · Codex OAuth: NOT_RUN |
@@ -40,7 +40,8 @@
 - Foundation v3.1 wiki-LLM lean è canonica su `main`.
 - L2, L3A, L3A.5, L3A.6 e final predelete reverify sono PASS.
 - I 5 target sono `DELETE_READY_FINAL` e la physical deletion L3B è **AUTORIZZATA** esclusivamente nel change set atomico certificato.
-- L3B deve essere atomica: 5 delete + tutti i 28 rewrite history previsti + 2 audit update nello stesso change set; broken links finali = 0.
+- Il census L3B ha raffinato il piano: 28 source refs totali, ma solo 24 source file contengono Markdown links riscrivibili; 4 contengono esclusivamente inline-code/plain path references e restano byte-invariati, classificati `NOOP_PLAINTEXT_ONLY`.
+- L3B deve essere atomica: 5 delete + 24 rewrite effettivi + 4 NOOP registrati nel manifest + 2 audit update; broken links finali = 0.
 - Compatibility pointers da mantenere: `docs/RUNTIME_GATES.md`, `docs/WORKFLOW_EXPORT_STATUS.md`, `docs/HANDOFF_N8N_GATE.md`.
 - Nessuna ulteriore file deletion o branch deletion è autorizzata.
 - Nessuna runtime/provider mutation è autorizzata.
