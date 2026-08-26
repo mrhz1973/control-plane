@@ -5,50 +5,54 @@
 ## LATEST
 
 ```yaml
-task_ref: GLM_ZAI_CODING_PLAN_POST_REMEDIATION_52_SMOKE
-result_cursor: BLOCKED
+task_ref: GLM_ZAI_CODING_PLAN_HTTP500_READ_ONLY_DIAGNOSIS
+result_cursor: PASS
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 50e4bb1fc866c3bb056f87201b0a2ef6e3c87cf2
+repo_head_observed_at_task: 732093320632b5a6cb183386d4db19cc708eb6a9
 workspace: clean
 
 OPENCLAW_VERSION: 2026.8.1-beta.3
 ZAI_PLUGIN_VERSION: 2026.8.1-beta.3
 
-MODEL_USED: zai/glm-5.2
+EFFECTIVE_ZAI_BASE_ENDPOINT: https://api.z.ai/api/coding/paas/v4
 
-ZAI_PROFILE_PRESENT_BEFORE: true
-ZAI_PROFILE_ID_BEFORE: zai:manual
-ZAI_PROVIDER_BEFORE: available
+GLM53_PLUGIN_DECLARED: true
+GLM52_PLUGIN_DECLARED: true
+GLM51_PLUGIN_DECLARED: true
+GLM5_PLUGIN_DECLARED: true
 
-EFFECTIVE_ZAI_BASE_ENDPOINT_BEFORE: https://api.z.ai/api/coding/paas/v4
-EXACT_GLM52_MODEL_REF_VISIBLE_BEFORE: true
+GLM52_CODING_PLAN_EXPLICITLY_SUPPORTED: true
+GLM52_GENERAL_API_EXPLICITLY_SUPPORTED: true
+GLM52_CODING_PLAN_SUPPORT_EVIDENCE: "docs/providers/zai.md: catalog labels glm-5.2 as General API default; Coding Plan default is glm-5.3; Note states Z.AI currently routes Coding Plan requests for GLM-5.2 and GLM-5.1 to GLM-5.3. Plugin detect.js coding probes verify glm-5.3 then glm-5.1/glm-4.7 fallbacks — not glm-5.2."
+GLM52_MODEL_ID_SENT_TO_PROVIDER: glm-5.2
 
-CODING_PLAN_GLM52_SMOKE_INVOCATION_COUNT: 1
-AUTOMATIC_RETRY_COUNT: 0
+CODING_PLAN_DEFAULT_MODEL: glm-5.3
+CODING_PLAN_DOCUMENTED_MODEL_SET: "glm-5.3 (default); auto-detect fallbacks glm-5.1 then glm-4.7; glm-5.2/glm-5.1 Coding Plan requests documented as routed to glm-5.3"
+CODING_PLAN_MODEL_SELECTION_RULE: "Coding Plan onboard/preset selects ZAI_CODING_DEFAULT_MODEL_ID=glm-5.3 when baseUrl is coding/paas; general selects glm-5.2"
+GLM52_ENTITLEMENT_COMPATIBILITY: undocumented
 
-GLM53_INVOCATION_COUNT_THIS_TASK: 0
-GLM51_INVOCATION_COUNT_THIS_TASK: 0
-GLM5_INVOCATION_COUNT_THIS_TASK: 0
+REQUEST_API_STYLE: openai-completions
+REQUEST_PATH: "{baseUrl}/chat/completions"
+REQUEST_MODEL_FIELD: "model=<requested id> (glm-5.2)"
+REQUEST_MESSAGES_FORMAT: "OpenAI chat messages[]"
+REQUEST_STREAM_SETTING: "infer path uses provider stream wrapper; detect probes use stream=false"
+REQUEST_OPTIONAL_FIELDS: "thinking/reasoning_effort by model family; tool_stream default true; no coding-vs-general payload fork beyond baseUrl"
+
+REQUEST_CONTRACT_MATCH: true
+REQUEST_CONTRACT_MISMATCH: none
+
+EXISTING_PROVIDER_ERROR_DETAIL_AVAILABLE: false
+SANITIZED_EXISTING_PROVIDER_ERROR_DETAIL: none
+
+ROOT_CAUSE_CLASSIFICATION: LOCAL_STACK_CONSISTENT_PROVIDER_HTTP500_UNEXPLAINED
+
+PROVIDER_REQUEST_COUNT: 0
+MODEL_INVOCATION_COUNT: 0
 CODEX_INVOCATION_COUNT: 0
 QWEN_INVOCATION_COUNT: 0
-
-SMOKE_EXIT_CODE: 1
-SMOKE_RESPONSE_RECEIVED: true
-SMOKE_MARKER_MATCH: false
-SANITIZED_PROVIDER_ERROR: "500 Internal service error (provider=zai model=glm-5.2)"
-OBSERVED_REQUEST_URL_SANITIZED: "https://api.z.ai/api/coding/paas/v4/chat/completions"
-
-ZAI_PROFILE_PRESENT_AFTER: true
-ZAI_PROFILE_ID_AFTER: zai:manual
-ZAI_PROVIDER_AFTER: available
-EFFECTIVE_ZAI_BASE_ENDPOINT_AFTER: https://api.z.ai/api/coding/paas/v4
-EXACT_GLM52_MODEL_REF_VISIBLE_AFTER: true
-
-PORT_18789_AFTER: free
-GATEWAY_RUNNING_AFTER: false
 
 AUTH_MUTATION: false
 CONFIG_MUTATION: false
@@ -60,16 +64,17 @@ SERVICE_MUTATION: false
 N8N_MUTATION: false
 DOCKER_MUTATION: false
 TAILSCALE_MUTATION: false
-
 SECRET_VALUES_PERSISTED: false
 
-BLOCKER: BLOCKED_ZAI_PROVIDER_HTTP_500_INTERNAL_SERVICE_ERROR
-NEXT_GATE_CLASSIFICATION: BLOCKED_ZAI_PROVIDER_HTTP_500_INTERNAL_SERVICE_ERROR
+PORT_18789_AFTER: free
+GATEWAY_RUNNING_AFTER: false
+
+NEXT_GATE_CLASSIFICATION: GLM_ZAI_PROVIDER_SIDE_VERIFICATION_OR_SUPPORT_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-Exactly one local smoke: `openclaw infer model run --local --model zai/glm-5.2` with the required marker prompt. Effective baseUrl remained Coding Plan (`/api/coding/paas/v4`). Transport hit `https://api.z.ai/api/coding/paas/v4/chat/completions` and returned provider HTTP 500. No retry, no fallback model, no auth/config/endpoint mutation. Gateway remained off.
+Read-only diagnosis only. Effective baseUrl remains Coding Plan. Catalog/docs: glm-5.2 = General API default; glm-5.3 = Coding Plan default; Coding Plan glm-5.2 requests documented as routed to glm-5.3. Offline plugin/core trace: same openai-completions `/chat/completions` contract for general vs Coding Plan aside from baseUrl; no local request-contract mismatch found. Prior smoke error detail remains only generic HTTP 500. No provider/model call in this task. Root cause: local stack consistent; provider HTTP 500 unexplained locally.
 
 ## Completion persistence invariant
 
