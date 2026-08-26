@@ -7,20 +7,20 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8** |
-| **BLOCCO ATTIVO** | `GLM-ZAI-VPS-DIRECT-SMOKE-RETRY` |
-| **STATO BLOCCO** | `AUTHORIZED / ONE_BOUNDED_MODEL_INVOCATION_PENDING` |
-| **GATE CORRENTE** | `GLM_ZAI_VPS_DIRECT_SMOKE_RETRY_AUTHORIZED` |
-| **NEXT** | execute exactly one new direct smoke invocation of exact `zai/glm-5.3` after successful Z.AI auth refresh; no automatic retry or fallback |
+| **BLOCCO ATTIVO** | `GLM-ZAI-PROVIDER-AUTH-REJECTED-AFTER-REFRESH` |
+| **STATO BLOCCO** | `HUMAN_GATE_REQUIRED / PROVIDER_AUTH_DIAGNOSIS` |
+| **GATE CORRENTE** | `GLM_ZAI_PROVIDER_AUTH_REJECTED_AFTER_REFRESH_GATE_REQUIRED` |
+| **NEXT** | bounded diagnosis of Z.AI credential/provider compatibility after a newly refreshed credential was still rejected by the provider; no further credential mutation or model invocation until diagnosis is complete |
 | **VPS OPENCLAW** | `2026.8.1-beta.3`; gateway inactive |
 | **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` |
 | **CODEX VPS** | OAuth PASS · direct smoke PASS |
 | **GLM 5.3 REF** | `zai/glm-5.3` visible |
-| **Z.AI AUTH REFRESH** | PASS · exit `0` · profile present · provider available · zero model invocations during refresh |
-| **PREVIOUS GLM 5.3 SMOKE** | BLOCKED on provider HTTP 401 before refresh; exactly one invocation; no retry |
+| **Z.AI AUTH REFRESH** | PASS locally · profile present · provider listed available |
+| **GLM 5.3 POST-REFRESH SMOKE** | BLOCKED · exactly one invocation · provider returned HTTP 401 · no retry |
 | **VPS NETWORK** | port `18789` free · gateway false |
-| **PLANNER INVOCATIONS** | Codex `1` · GLM `1` before authorized retry · Qwen `0` |
-| **LATEST EVIDENCE** | `GLM_ZAI_VPS_CREDENTIAL_REFRESH = PASS`; evidence commit `2ceee3f76c08763a9f63d9145181e9b5d4aa64bb` |
-| **PLANNER SMOKE** | Codex PASS · GLM retry authorized exactly once · Qwen 3.8 37B blocked missing model |
+| **PLANNER INVOCATIONS** | Codex `1` · GLM `2` total smoke attempts · Qwen `0` |
+| **LATEST EVIDENCE** | `GLM_ZAI_VPS_DIRECT_SMOKE_RETRY_EXACT_53 = BLOCKED`; evidence commit `a3f0635173ba092f68ddc7b3ba1f38c921dea31d`; blocker `BLOCKED_ZAI_AUTH_401_TOKEN_EXPIRED_OR_INCORRECT` |
+| **PLANNER SMOKE** | Codex PASS · GLM blocked pending provider/auth diagnosis · Qwen 3.8 37B blocked missing model |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
 | **Gate E / L5_PASS** | PASS-CLOSED / NOT_CLAIMED |
 | **L5 runtime** | activation `false` · runtime `false` · endurance `false` |
@@ -30,11 +30,10 @@
 
 ## Boundaries operative correnti
 
-- Z.AI auth refresh completato PASS; stato locale post-refresh coerente e nessuna model invocation durante il refresh.
-- L'operatore ha autorizzato esattamente una nuova minimal direct smoke invocation dell'esatto `zai/glm-5.3` esclusivamente per verificare end-to-end la credenziale aggiornata.
-- Nessun retry automatico o seconda invocation è autorizzato se il nuovo smoke fallisce o è inconcludente.
-- Nessun fallback a GLM 5.2/5.1/5 o altri modelli, Codex/Qwen invocation, gateway/service activation, auth/config/core/plugin mutation, n8n/Docker/Tailscale mutation, firewall/reverse proxy, runtime wiring, billing o broader runtime activation è autorizzato.
-- Dopo la singola invocation: postcheck read-only, persist `LAST_CURSOR_REPORT.md`, quindi STOP sul successivo gate reale.
+- Il refresh credenziale Z.AI ha completato correttamente il salvataggio locale, ma il provider ha rifiutato anche la successiva singola smoke invocation con HTTP 401.
+- Questo stato non giustifica un terzo smoke o un altro refresh alla cieca.
+- Il prossimo passo richiede diagnosi bounded della compatibilità tra credenziale, provider/endpoint Z.AI atteso da OpenClaw e accesso al modello/piano; nessun secret deve essere esposto o persistito.
+- Nessuna nuova model invocation, credential mutation, fallback GLM, Codex/Qwen invocation, gateway/service activation, auth/config/core/plugin mutation, n8n/Docker/Tailscale mutation, firewall/reverse proxy, runtime wiring, billing o broader runtime activation è autorizzata.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
 
 ## Puntatori
