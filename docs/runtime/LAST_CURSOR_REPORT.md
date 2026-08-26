@@ -5,22 +5,30 @@
 ## LATEST
 
 ```yaml
-task_ref: VPS_CODEX_OAUTH_STALE_PROCESS_RECHECK_READONLY
+task_ref: VPS_CODEX_OAUTH_STALE_PROCESS_CLEANUP
 result_cursor: PASS
-result_runtime: PASS_READONLY_STALE_PROCESS_RECHECK
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 218a0d76a0881b14de106337762efc576b63705a
+repo_head_observed_at_task: 6b547856ed50b787e415053a7306b298f9499182
 workspace: clean
 
-LOCAL_OAUTH_WRAPPER_RUNNING: true
-LOCAL_OAUTH_SSH_RUNNING: true
-LOCAL_OAUTH_PROCESS_COUNT: 2
-LOCAL_OAUTH_PROCESS_SANITIZED:
-  - cmd.exe wrapper vps_codex_oauth_login.cmd
-  - ssh.exe associated with ionos-n8n openai-codex login
+CMD_MATCH_COUNT: 1
+SSH_MATCH_COUNT: 1
+CMD_PID: 77468
+SSH_PID: 20676
+SSH_PARENT_PID: 77468
+PROCESS_TREE_MATCH: true
+CMD_IDENTITY_RECHECK: PASS
+SSH_IDENTITY_RECHECK: PASS
+
+SSH_TERMINATED: true
+CMD_TERMINATION: TERMINATED
+
+LOCAL_OAUTH_WRAPPER_RUNNING: false
+LOCAL_OAUTH_SSH_RUNNING: false
+LOCAL_OAUTH_PROCESS_COUNT: 0
 
 VPS_OAUTH_LOGIN_RUNNING: false
 VPS_OAUTH_PROCESS_COUNT: 0
@@ -31,19 +39,20 @@ CODEX_PROVIDER_CURRENT: missing
 PORT_18789: free
 GATEWAY_RUNNING: false
 
-mutations: 0
-processes_stopped: 0
+processes_stopped: 2
+unrelated_processes_stopped: 0
 oauth_invocations: 0
 planner_invocations: 0
+auth_mutations: 0
+vps_processes_stopped: 0
 secret_values_exposed: false
 
-STALE_OAUTH_PROCESS_STATE: PRESENT
-NEXT_GATE_CLASSIFICATION: STALE_OAUTH_PROCESS_CLEANUP_GATE_REQUIRED
+NEXT_GATE_CLASSIFICATION: OAUTH_HEADLESS_CALLBACK_RECOVERY_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-Recheck read-only: processi OAuth locali ancora presenti; nessun login OpenClaw attivo sul VPS; auth Codex ancora `missing`; porta 18789 libera. Nessun kill/retry/OAuth/gateway mutation.
+Cleanup autorizzato: terminati solo il wrapper `cmd.exe` (`vps_codex_oauth_login.cmd`, PID 77468) e il figlio `ssh.exe` OAuth (PID 20676, parent 77468). Nessun kill generico, nessun kill VPS, nessun retry OAuth, nessuna mutazione auth/gateway. Post-verify locale e VPS a zero processi OAuth; Codex auth ancora `missing`; porta 18789 libera.
 
 ## Completion persistence invariant
 
