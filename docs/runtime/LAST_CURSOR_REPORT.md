@@ -5,67 +5,71 @@
 ## LATEST
 
 ```yaml
-task_ref: GLM_BIGMODEL_CN_CURSOR_REQUEST_EVIDENCE_CAPTURE
+task_ref: GLM_BIGMODEL_CN_DIRECT_API_CONTROL_REQUEST
 result_cursor: BLOCKED
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 1795718af659f1d45b42cbf0ced031b8416d1ed2
+repo_head_observed_at_task: 24438a8d8cb8688306557d72ef6c77eaac6d188f
 workspace: clean
 
-CURSOR_VERSION: 3.15.6
+OPENCLAW_VERSION: 2026.8.1-beta.3
+ZAI_PLUGIN_VERSION: 2026.8.1-beta.3
 
-SAFE_CAPTURE_METHOD_AVAILABLE: false
-SAFE_CAPTURE_METHOD: none
+ZAI_PROFILE_PRESENT_BEFORE: true
+ZAI_PROFILE_ID_BEFORE: zai:manual
+ZAI_AUTH_TYPE_BEFORE: api_key
+EFFECTIVE_CONFIGURED_BASE_URL_BEFORE: https://open.bigmodel.cn/api/coding/paas/v4
 
+DIRECT_REQUEST_ENDPOINT: https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
+DIRECT_REQUEST_MODEL: glm-5.2
+DIRECT_REQUEST_STREAM: false
+
+DIRECT_BIGMODEL_CN_PROVIDER_REQUEST_COUNT: 1
+AUTOMATIC_RETRY_COUNT: 0
+
+HTTP_STATUS: 500
+RESPONSE_RECEIVED: true
+MARKER_MATCH: false
+
+SANITIZED_PROVIDER_ERROR_CODE: "500"
+SANITIZED_PROVIDER_ERROR_MESSAGE: "内部服务器错误"
+PROVIDER_REQUEST_ID: ""
+PROVIDER_TRACE_ID: "f05c09d74c53ca35b8092fead25fe282"
+
+SECRET_LOADED_IN_REQUEST_PROCESS: true
+SECRET_EXPOSED: false
+SECRET_PERSISTED: false
+
+OPENCLAW_INFER_INVOCATION_COUNT: 0
 CURSOR_GLM_REQUEST_COUNT: 0
-CURSOR_AUTOMATIC_RETRY_COUNT: 0
-
-CURSOR_OBSERVED_HOST: n/a
-CURSOR_OBSERVED_REQUEST_PATH: n/a
-CURSOR_OBSERVED_FULL_URL_SANITIZED: n/a
-CURSOR_OBSERVED_MODEL_ID: n/a
-CURSOR_OBSERVED_STATUS: n/a
-CURSOR_OBSERVED_PROVIDER: n/a
-CURSOR_OBSERVED_ADAPTER: n/a
-CURSOR_OBSERVED_HEADER_NAMES: n/a
-
-CURSOR_USED_OPENAI_BASEURL_PATH: unknown
-CURSOR_USED_CURSOR_VENDOR_MEDIATION: unknown
-CURSOR_DIRECT_BIGMODEL_HOST_CONTACT: unknown
-
-ROOT_CAUSE_CLASSIFICATION: EVIDENCE_CAPTURE_NOT_AVAILABLE
-BLOCKER: EVIDENCE_CAPTURE_NOT_AVAILABLE
-
-OPENCLAW_PROVIDER_REQUEST_COUNT: 0
-OPENCLAW_MODEL_INVOCATION_COUNT: 0
 CODEX_INVOCATION_COUNT: 0
 QWEN_INVOCATION_COUNT: 0
 
-SECRET_VALUE_READ: false
-SECRET_VALUES_PERSISTED: false
-PROMPT_CONTENT_PERSISTED: false
-RESPONSE_CONTENT_PERSISTED: false
+ZAI_PROFILE_PRESENT_AFTER: true
+ZAI_PROFILE_ID_AFTER: zai:manual
+EFFECTIVE_CONFIGURED_BASE_URL_AFTER: https://open.bigmodel.cn/api/coding/paas/v4
 
-CURSOR_SETTING_MUTATION: false
-CURSOR_API_CONFIG_MUTATION: false
-OPENCLAW_MUTATION: false
+PORT_18789_AFTER: free
+GATEWAY_RUNNING_AFTER: false
+
+AUTH_MUTATION: false
+CONFIG_MUTATION: false
+ENDPOINT_MUTATION: false
+CREDENTIAL_REENTRY: false
+CREDENTIAL_REPLACEMENT: false
 RUNTIME_MUTATION: false
 
-PRECHECK_OPENAI_BASE_URL: https://open.bigmodel.cn/api/coding/paas/v4
-PRECHECK_USE_OPENAI_KEY: false
-PRECHECK_AVAILABLE_API_KEY_MODELS_COUNT: 0
-PRECHECK_GLM52_VENDOR: ZAI
-
-CAPTURE_ELIGIBILITY_NOTES: "No Cursor DevTools/CDP listen port already available; existing logs do not expose live request host/path; OS Get-NetTCPConnection can observe remote IPs only but cannot select/issue the operator GLM 5.2 UI path without settings mutation or non-equivalent agent invocation. Per gate: no GLM request issued."
-
-NEXT_GATE_CLASSIFICATION: GLM_BIGMODEL_CN_CURSOR_REQUEST_EVIDENCE_ESCALATION_GATE_REQUIRED
+DIRECT_BIGMODEL_CN_API_CONTROL: BLOCKED
+ROOT_CAUSE_CLASSIFICATION: DIRECT_BIGMODEL_CN_API_OR_ACCOUNT_PLAN_PATH_BLOCKED_INDEPENDENT_OF_OPENCLAW_INFER
+BLOCKER: BLOCKED_DIRECT_BIGMODEL_CN_API_HTTP500
+NEXT_GATE_CLASSIFICATION: GLM_BIGMODEL_CN_DIRECT_API_HTTP500_DIAGNOSIS_REQUIRED
 ```
 
 ## Evidence boundary
 
-Eligibility gate failed before any Cursor GLM request. Preconditions matched (Cursor 3.15.6; stored Coding Plan baseUrl; useOpenAIKey=false; catalog glm-5.2 vendor ZAI). No already-available safe capture method can both (1) trigger the same UI GLM 5.2 path and (2) observe host/path without proxy/MITM/settings mutation/DevTools enablement. CURSOR_GLM_REQUEST_COUNT remains 0. No secrets/prompts/bodies captured. No OpenClaw/VPS mutation.
+Exactly one in-process HTTPS POST to BigModel CN Coding Plan `/chat/completions` using `zai:manual` loaded only inside the Node process (no argv/env/file dump of the key). OpenClaw infer/adapter bypassed. Provider returned HTTP 500 (`内部服务器错误`) with response header `ga-traceid` captured as PROVIDER_TRACE_ID only. No retry. No auth/config/endpoint mutation. Gateway remained off.
 
 ## Completion persistence invariant
 
