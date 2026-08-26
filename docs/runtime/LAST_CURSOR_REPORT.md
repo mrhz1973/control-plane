@@ -5,28 +5,52 @@
 ## LATEST
 
 ```yaml
-task_ref: WORK_LOCAL_SYNC_AND_AGG_FRONTIER_PERSISTENCE
+task_ref: CODEX_VPS_DIRECT_SMOKE
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-FRONTIER_UPDATE_COMMIT: d909f0de11256a421efd04e10889e0d933cdcfaa
-LOCAL_BRANCH: main
-LOCAL_FINAL_HEAD: d909f0de11256a421efd04e10889e0d933cdcfaa
-ORIGIN_MAIN: d909f0de11256a421efd04e10889e0d933cdcfaa
-REMOTE_MAIN: d909f0de11256a421efd04e10889e0d933cdcfaa
-WORKSPACE_CLEAN: true
+repo_head_observed_at_task: ef2e53a2b2cf7f2507e05bef35dea24e5c480285
+workspace: clean
 
-RUNTIME_MUTATIONS: 0
-MODEL_INVOCATIONS: 0
-AUTH_MUTATIONS: 0
+OPENCLAW_VERSION: 2026.7.1-2 (0790d9f)
+CODEX_AUTH_BEFORE: configured
+CODEX_PROVIDER_BEFORE: usable
+PORT_18789_BEFORE: free
+GATEWAY_RUNNING_BEFORE: false
 
-NEXT_GATE_CLASSIFICATION: CODEX_VPS_DIRECT_SMOKE_GATE_REQUIRED
+DIRECT_LOCAL_COMMAND_SUPPORTED: true
+DIRECT_COMMAND_FORM: openclaw infer model run --local --model <provider/model> --prompt <text>
+EXPLICIT_MODEL_SELECTION_SUPPORTED: true
+
+MODEL_INVOCATION_COUNT: 1
+SMOKE_EXIT_CODE: 0
+SMOKE_RESPONSE_RECEIVED: true
+SMOKE_MARKER_MATCH: true
+
+CODEX_AUTH_AFTER: configured
+CODEX_PROVIDER_AFTER: usable
+PORT_18789_AFTER: free
+GATEWAY_RUNNING_AFTER: false
+
+AUTOMATIC_RETRY_COUNT: 0
+
+GATEWAY_MUTATION: false
+SERVICE_MUTATION: false
+AUTH_MUTATION: false
+N8N_MUTATION: false
+DOCKER_MUTATION: false
+TAILSCALE_MUTATION: false
+GLM_CONFIG_CHANGED: false
+QWEN_CHANGED: false
+SECRET_VALUES_PERSISTED: false
+
+NEXT_GATE_CLASSIFICATION: CODEX_VPS_SMOKE_PASS_NEXT_PROVIDER_OR_BROKER_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-Docs-only local sync + `CURRENT_FRONTIER.md` persistence only. No runtime mutation, no model/provider invocation, no auth mutation. Frontier advanced to `CODEX_VPS_DIRECT_SMOKE_GATE_REQUIRED` at `d909f0de11256a421efd04e10889e0d933cdcfaa`. Local `main` clean and equal to `origin/main` / remote `main` at report time.
+Exactly one direct/local OpenClaw inference on VPS `ionos-n8n` via `infer model run --local` with explicit `openai/gpt-5.5` selection. Prompt required exact marker `CODEX_VPS_SMOKE_OK`. Exit 0; marker matched. No gateway/service start, no auth mutation, no n8n/Docker/Tailscale change, no GLM/Qwen change, no retry, no secrets persisted.
 
 ## Completion persistence invariant
 
