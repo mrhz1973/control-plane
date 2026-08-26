@@ -1,0 +1,7 @@
+# D-0014-W index
+
+- `BACKLOG_D0014_WINDOWS_OPENCLAW_FALLBACK.md` — strategic backlog item
+- `D0014_WINDOWS_OPENCLAW_FALLBACK_PLANNER_BRIEF.md` — planner input
+- `D0014_WINDOWS_OPENCLAW_FALLBACK_EXECUTION_PACKET_REQUEST.md` — packet request marker
+- `D0014_WINDOWS_OPENCLAW_FALLBACK_STATUS.md` — current status
+- `D0014_WINDOWS_OPENCLAW_FALLBACK_GATE.md` — explicit runtime gates
