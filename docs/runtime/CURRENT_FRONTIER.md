@@ -8,13 +8,13 @@
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8 — Architecture v3 evidence track — OpenClaw → planners → Cursor bounded loop** |
 | **BLOCCO ATTIVO** | `VPS-CODEX-OAUTH-RECOVERY` |
-| **STATO BLOCCO** | `BLOCKED / CALLBACK_TUNNEL_OAUTH_FAILED` |
-| **GATE CORRENTE** | `OAUTH_CALLBACK_RECOVERY_RETRY_GATE_REQUIRED` |
-| **NEXT** | autorizzare un solo nuovo OAuth `openai-codex` sul VPS con tunnel loopback temporaneo `PC 127.0.0.1:1455 -> VPS 127.0.0.1:1455`, ma con console interattiva OAuth chiaramente visibile all'operatore e senza logging persistente dell'URL/callback; verify auth/provider, chiusura tunnel e persistenza evidence |
+| **STATO BLOCCO** | `AUTHORIZED / CALLBACK_RECOVERY_RETRY_PENDING` |
+| **GATE CORRENTE** | `OAUTH_CALLBACK_RECOVERY_RETRY_AUTHORIZED` |
+| **NEXT** | eseguire un solo nuovo OAuth `openai-codex` sul VPS con tunnel loopback temporaneo `PC 127.0.0.1:1455 -> VPS 127.0.0.1:1455`, in console interattiva esterna chiaramente visibile all'operatore, senza redirect stdout/stderr o logging persistente di authorize URL/callback/code/token; verify auth/provider, chiusura tunnel con la sessione e persistenza evidence |
 | **PLACEMENT DECISION** | ACCEPTED — OpenClaw target canonico sul VPS IONOS come broker 24/7; Cursor/Bugbot/Ollama-Qwen restano locali |
 | **ISOLATED NODE 24** | PASS — `v24.19.0`; `/opt/openclaw-node/current`; system Node/npm unchanged |
 | **VPS OPENCLAW** | PASS — `openclaw@2026.7.1-2` at `/opt/openclaw-app`; gateway non attivo |
-| **CODEX OAUTH VPS** | `missing` — callback tunnel recovery attempt BLOCKED; tunnel bind riuscito, login non completato, auth/profile/provider restano missing |
+| **CODEX OAUTH VPS** | `missing` — callback tunnel recovery attempt BLOCKED; tunnel bind riuscito, login non completato, auth/profile/provider restano missing; retry singolo ora autorizzato |
 | **CALLBACK TUNNEL EVIDENCE** | PASS bind/cleanup — `SSH_TUNNEL_BIND=true`; exactly one OAuth invocation; local/VPS 1455 free after exit; no OAuth process remains |
 | **VPS NETWORK** | port `18789` free · gateway false |
 | **PLANNER INVOCATION COUNT** | `0` |
@@ -34,9 +34,11 @@
 
 ## Boundaries operative correnti
 
-- Il recovery OAuth con tunnel è terminato `BLOCKED_CALLBACK_TUNNEL_OAUTH_FAILED`: tunnel loopback stabilito correttamente, un solo OAuth avviato, ma la sessione è uscita senza configurare Codex.
-- Stato post-pass pulito: local/VPS `1455` libere, nessun OAuth process residuo, gateway `false`, port `18789` free.
-- Il prossimo tentativo OAuth richiede un nuovo gate esplicito. Il nuovo task dovrà mantenere la console interattiva chiaramente visibile e non deve catturare stdout persistente contenente URL OAuth/callback/code.
+- L'operatore ha autorizzato **un solo nuovo retry OAuth `openai-codex`** sul VPS tramite OpenClaw `/opt/openclaw-app/bin/openclaw` e Node isolato `/opt/openclaw-node/current`.
+- Il tunnel autorizzato è esclusivamente loopback `PC 127.0.0.1:1455 -> VPS 127.0.0.1:1455`, temporaneo e legato alla stessa sessione SSH del login; nessun bind pubblico o servizio persistente.
+- Il retry deve essere eseguito in una console interattiva esterna chiaramente visibile all'operatore. Vietati redirect stdout/stderr verso file e logging persistente di authorize URL, callback URL, authorization code o token.
+- Prima del retry vanno eseguiti solo preflight read-only su porta 1455 e processi OAuth residui; se il tunnel non può essere stabilito, STOP senza login.
+- Sono autorizzate esclusivamente le modifiche auth/config/state direttamente necessarie al singolo OAuth e la verifica provider/auth immediatamente successiva; il tunnel va chiuso con la sessione SSH.
 - Nessun retry automatico, planner/model invocation, gateway/service, GLM/Z.AI, n8n/Docker/Tailscale mutation, firewall/reverse proxy/public exposure, runtime wiring, billing o Qwen.
 - Token/auth state Windows NON vanno copiati, letti o trasferiti sul VPS; nessun token/callback/code deve entrare in GitHub o log persistenti.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
