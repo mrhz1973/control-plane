@@ -5,73 +5,57 @@
 ## LATEST
 
 ```yaml
-task_ref: GLM_ZAI_VPS_DIRECT_SMOKE
+task_ref: GLM_ZAI_VERSION_RESOLUTION
 result_cursor: BLOCKED
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: e472bb0b1860e2ddb07ffee7f718e576952afdf6
+repo_head_observed_at_task: f03e741a8c6e02235b300a7d944f1b69448cd19e
 workspace: clean
 
 OPENCLAW_VERSION: 2026.7.1-2 (0790d9f)
 
-ZAI_AUTH_BEFORE: configured
-ZAI_PROFILE_PRESENT_BEFORE: true
-ZAI_PROVIDER_BEFORE: available
+ZAI_PLUGIN_VERSION_BEFORE: 2026.7.1
+ZAI_PLUGIN_VERSION_LATEST_OFFICIAL: 2026.7.1
+ZAI_PLUGIN_VERSION_BETA_WITH_GLM53: 2026.8.1-beta.3
+PLUGIN_COMPATIBILITY_VERIFIED: false
+PLUGIN_COMPATIBILITY_DETAIL: "@openclaw/zai-provider@2026.8.1-beta.3 peerDependencies.openclaw >=2026.8.1-beta.3; host OpenClaw 2026.7.1-2 incompatible for plugin-only upgrade"
 
-DIRECT_LOCAL_COMMAND_SUPPORTED: true
-ZAI_GLM53_MODEL_ID: NOT_FOUND
-EXPLICIT_MODEL_SELECTION_SUPPORTED: true
-DIRECT_COMMAND_FORM: openclaw infer model run --local --model <provider/model> --prompt <text>
+GLM53_OFFICIAL_SUPPORT_FOUND: true
+GLM53_SUPPORT_PATH: core_upgrade_required
 
-ZAI_MODELS_OBSERVED:
-  - zai/glm-4.5
-  - zai/glm-4.5-air
-  - zai/glm-4.5-flash
-  - zai/glm-4.5v
-  - zai/glm-4.6
-  - zai/glm-4.6v
-  - zai/glm-4.7
-  - zai/glm-4.7-flash
-  - zai/glm-4.7-flashx
-  - zai/glm-5
-  - zai/glm-5-turbo
-  - zai/glm-5.1
-  - zai/glm-5.2
-  - zai/glm-5v-turbo
+PLUGIN_MUTATION: false
+PROVIDER_CONFIG_MUTATION: false
+OPENCLAW_CORE_MUTATION: false
 
-GLM_ZAI_MODEL_INVOCATION_COUNT: 0
-CODEX_INVOCATION_COUNT: 0
-AUTOMATIC_RETRY_COUNT: 0
-
-SMOKE_EXIT_CODE: NOT_RUN
-SMOKE_RESPONSE_RECEIVED: false
-SMOKE_MARKER_MATCH: false
+EXACT_MODEL_REF_VISIBLE: false
 
 ZAI_AUTH_AFTER: configured
 ZAI_PROFILE_PRESENT_AFTER: true
 ZAI_PROVIDER_AFTER: available
+ZAI_PLUGIN_VERSION_AFTER: 2026.7.1
+
+MODEL_INVOCATION_COUNT: 0
+CODEX_INVOCATION_COUNT: 0
 
 PORT_18789_AFTER: free
 GATEWAY_RUNNING_AFTER: false
 
 GATEWAY_MUTATION: false
 SERVICE_MUTATION: false
-AUTH_MUTATION: false
 N8N_MUTATION: false
 DOCKER_MUTATION: false
 TAILSCALE_MUTATION: false
 QWEN_CHANGED: false
-CODEX_CHANGED: false
 SECRET_VALUES_PERSISTED: false
 
-BLOCKER: BLOCKED_EXACT_GLM53_MODEL_NOT_AVAILABLE
-NEXT_GATE_CLASSIFICATION: BLOCKED_EXACT_GLM53_MODEL_NOT_AVAILABLE
+BLOCKER: BLOCKED_OPENCLAW_CORE_UPGRADE_REQUIRED
+NEXT_GATE_CLASSIFICATION: OPENCLAW_CORE_UPGRADE_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-Read-only discovery on VPS `ionos-n8n`: Z.AI auth configured (`zai:manual`), provider available. Direct/local invocation form exists (`infer model run --local --model …`). Exact GLM 5.3 model id is **not** exposed by authenticated Z.AI catalog (nearest observed: `zai/glm-5`, `zai/glm-5.1`, `zai/glm-5.2`; no `glm-5.3`). Per authorization, no silent substitution and no invocation. Codex not invoked. Gateway remained inactive; port 18789 free.
+Read-only resolution on VPS `ionos-n8n`. Installed `@openclaw/zai-provider@2026.7.1` (npm `latest`) does **not** expose `zai/glm-5.3` (catalog tops at `glm-5.2`). Official npm beta `@openclaw/zai-provider@2026.8.1-beta.3` **does** define `glm-5.3`, but requires OpenClaw core `>=2026.8.1-beta.3` (peer/`pluginApi`). Current core `2026.7.1-2` is incompatible with a plugin-only upgrade. No supported non-patch config path applied; no alias/fallback/core upgrade/model invocation. Auth unchanged; gateway inactive; port 18789 free.
 
 ## Completion persistence invariant
 
