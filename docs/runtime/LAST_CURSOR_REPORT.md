@@ -5,56 +5,73 @@
 ## LATEST
 
 ```yaml
-task_ref: GLM_ZAI_VPS_CREDENTIAL_CONFIG
-result_cursor: PASS
+task_ref: GLM_ZAI_VPS_DIRECT_SMOKE
+result_cursor: BLOCKED
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 808572bf6a43eda537d0647f730db706b9d34a6f
+repo_head_observed_at_task: e472bb0b1860e2ddb07ffee7f718e576952afdf6
 workspace: clean
 
 OPENCLAW_VERSION: 2026.7.1-2 (0790d9f)
 
-ZAI_PROVIDER_ID: zai
-SECURE_INTERACTIVE_AUTH_SUPPORTED: true
-AUTH_COMMAND_FORM: openclaw models auth paste-api-key --provider zai
+ZAI_AUTH_BEFORE: configured
+ZAI_PROFILE_PRESENT_BEFORE: true
+ZAI_PROVIDER_BEFORE: available
 
-GLM_ZAI_AUTH_BEFORE: missing
-GLM_ZAI_PROVIDER_BEFORE: missing
+DIRECT_LOCAL_COMMAND_SUPPORTED: true
+ZAI_GLM53_MODEL_ID: NOT_FOUND
+EXPLICIT_MODEL_SELECTION_SUPPORTED: true
+DIRECT_COMMAND_FORM: openclaw infer model run --local --model <provider/model> --prompt <text>
 
-AUTH_CONFIG_COMMAND_STARTED: true
-AUTH_CONFIG_EXIT_CODE: 0
-GLM_ZAI_AUTH_CONFIGURED: true
+ZAI_MODELS_OBSERVED:
+  - zai/glm-4.5
+  - zai/glm-4.5-air
+  - zai/glm-4.5-flash
+  - zai/glm-4.5v
+  - zai/glm-4.6
+  - zai/glm-4.6v
+  - zai/glm-4.7
+  - zai/glm-4.7-flash
+  - zai/glm-4.7-flashx
+  - zai/glm-5
+  - zai/glm-5-turbo
+  - zai/glm-5.1
+  - zai/glm-5.2
+  - zai/glm-5v-turbo
 
-GLM_ZAI_AUTH_AFTER: configured
-GLM_ZAI_PROFILE_PRESENT: true
-GLM_ZAI_PROVIDER_EFFECTIVE: available
+GLM_ZAI_MODEL_INVOCATION_COUNT: 0
+CODEX_INVOCATION_COUNT: 0
+AUTOMATIC_RETRY_COUNT: 0
+
+SMOKE_EXIT_CODE: NOT_RUN
+SMOKE_RESPONSE_RECEIVED: false
+SMOKE_MARKER_MATCH: false
+
+ZAI_AUTH_AFTER: configured
+ZAI_PROFILE_PRESENT_AFTER: true
+ZAI_PROVIDER_AFTER: available
 
 PORT_18789_AFTER: free
 GATEWAY_RUNNING_AFTER: false
 
-MODEL_INVOCATION_COUNT_DURING_TASK: 0
-CODEX_INVOCATION_COUNT_DURING_TASK: 0
-
 GATEWAY_MUTATION: false
 SERVICE_MUTATION: false
+AUTH_MUTATION: false
 N8N_MUTATION: false
 DOCKER_MUTATION: false
 TAILSCALE_MUTATION: false
 QWEN_CHANGED: false
+CODEX_CHANGED: false
 SECRET_VALUES_PERSISTED: false
-WINDOWS_CREDENTIAL_STATE_COPIED: false
 
-PLUGIN_INSTALL_REQUIRED: true
-PLUGIN_INSTALLED: "@openclaw/zai-provider@2026.7.1"
-PLUGIN_ID: zai
-
-NEXT_GATE_CLASSIFICATION: GLM_ZAI_VPS_DIRECT_SMOKE_GATE_REQUIRED
+BLOCKER: BLOCKED_EXACT_GLM53_MODEL_NOT_AVAILABLE
+NEXT_GATE_CLASSIFICATION: BLOCKED_EXACT_GLM53_MODEL_NOT_AVAILABLE
 ```
 
 ## Evidence boundary
 
-Official `@openclaw/zai-provider` installed on VPS (required; `models auth login --provider zai` otherwise reported no provider plugins). Credential entered only via visible external interactive console using `models auth paste-api-key --provider zai` (no CLI key argv, no chat paste, no transcript capture). Auth exit 0; profile `zai:manual` present; provider `zai` configured/available. No model invocation. Gateway remained inactive; port 18789 free. No secrets persisted to GitHub.
+Read-only discovery on VPS `ionos-n8n`: Z.AI auth configured (`zai:manual`), provider available. Direct/local invocation form exists (`infer model run --local --model …`). Exact GLM 5.3 model id is **not** exposed by authenticated Z.AI catalog (nearest observed: `zai/glm-5`, `zai/glm-5.1`, `zai/glm-5.2`; no `glm-5.3`). Per authorization, no silent substitution and no invocation. Codex not invoked. Gateway remained inactive; port 18789 free.
 
 ## Completion persistence invariant
 
