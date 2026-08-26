@@ -8,9 +8,9 @@
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8 — Architecture v3 evidence track — OpenClaw → planners → Cursor bounded loop** |
 | **BLOCCO ATTIVO** | `VPS-CODEX-OAUTH-RECOVERY` |
-| **STATO BLOCCO** | `BLOCKED / STALE_LOCAL_OAUTH_PROCESSES_PRESENT` |
-| **GATE CORRENTE** | `STALE_OAUTH_PROCESS_CLEANUP_EXPLICIT_AUTHORIZATION_REQUIRED` |
-| **NEXT** | terminare esclusivamente i 2 processi locali Windows stale appartenenti al vecchio OAuth (`cmd.exe` wrapper `vps_codex_oauth_login.cmd` + relativo `ssh.exe` verso `ionos-n8n`), dopo PID re-identification; verify-only che non restino processi OAuth locali/VPS; nessun nuovo OAuth |
+| **STATO BLOCCO** | `AUTHORIZED / STALE_LOCAL_OAUTH_PROCESS_CLEANUP_PENDING` |
+| **GATE CORRENTE** | `STALE_OAUTH_PROCESS_CLEANUP_AUTHORIZED` |
+| **NEXT** | re-identificare read-only i PID dei 2 processi Windows stale del vecchio OAuth (`cmd.exe` wrapper `vps_codex_oauth_login.cmd` + relativo `ssh.exe` verso `ionos-n8n`), terminare esclusivamente quei processi se match esatto, quindi verify-only locale/VPS e persistere `LAST_CURSOR_REPORT`; nessun nuovo OAuth |
 | **PLACEMENT DECISION** | ACCEPTED — OpenClaw target canonico sul VPS IONOS come broker 24/7; Cursor/Bugbot/Ollama-Qwen restano locali |
 | **ISOLATED NODE 24** | PASS — official `v24.19.0`; `/opt/openclaw-node/current`; system Node/npm unchanged |
 | **VPS OPENCLAW** | PASS — `openclaw@2026.7.1-2` at `/opt/openclaw-app`; gateway non attivo |
@@ -34,10 +34,10 @@
 
 ## Boundaries operative correnti
 
-- Il primo OAuth VPS è chiuso `BLOCKED`; retry `0`; non è autorizzato alcun nuovo OAuth sotto il gate precedente.
-- Il recheck read-only ha confermato che il VPS non ha processi OAuth attivi; restano solo 2 processi locali Windows stale del vecchio flusso.
-- La terminazione di quei 2 processi locali richiede gate umano specifico; prima del kill Cursor deve re-identificare i PID e verificare che appartengano esattamente al wrapper/SSH OAuth stale.
-- Il cleanup non autorizza retry OAuth, callback recovery, planner/model invocation, gateway/service, GLM/Z.AI, n8n/Docker/Tailscale/firewall/network wiring, billing o Qwen changes.
+- L'operatore ha autorizzato esclusivamente la terminazione dei 2 processi locali Windows stale appartenenti al precedente tentativo OAuth: wrapper `vps_codex_oauth_login.cmd` e relativo `ssh.exe` verso `ionos-n8n` associato a `openclaw models auth login --provider openai-codex`.
+- Prima della terminazione Cursor deve re-identificare read-only i PID e verificare il match esatto; nessun altro `cmd.exe`, `ssh.exe` o processo deve essere toccato.
+- È autorizzata la sola verifica post-cleanup che non restino processi OAuth locali/VPS. Il VPS risultava già senza processi OAuth attivi al recheck precedente.
+- Il cleanup NON autorizza nuovi tentativi OAuth, callback recovery, planner/model invocation, gateway/service, GLM/Z.AI, n8n/Docker/Tailscale, firewall/reverse proxy, runtime wiring, billing o Qwen.
 - Dopo cleanup PASS il prossimo gate sarà `OAUTH_HEADLESS_CALLBACK_RECOVERY_GATE_REQUIRED`.
 - Token/auth state Windows NON vanno copiati, letti o trasferiti sul VPS; nessun secret/callback/code deve entrare in GitHub.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
