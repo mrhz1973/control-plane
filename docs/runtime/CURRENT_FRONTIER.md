@@ -7,20 +7,21 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8** |
-| **BLOCCO ATTIVO** | `GLM-ZAI-5.2-FALLBACK-SMOKE` |
-| **STATO BLOCCO** | `AUTHORIZED / ONE_BOUNDED_MODEL_INVOCATION_PENDING` |
-| **GATE CORRENTE** | `GLM_ZAI_52_DIRECT_SMOKE_AUTHORIZED` |
-| **NEXT** | read-only confirm exact `zai/glm-5.2` availability; if present execute exactly one bounded direct smoke; if absent STOP; no retry, further fallback or endpoint change |
+| **BLOCCO ATTIVO** | `GLM-ZAI-ENDPOINT-PRODUCT-COMPATIBILITY` |
+| **STATO BLOCCO** | `HUMAN_GATE_REQUIRED / COMMON_PROVIDER_ENDPOINT_PATH` |
+| **GATE CORRENTE** | `GLM_ZAI_ENDPOINT_PRODUCT_COMPATIBILITY_GATE_REQUIRED` |
+| **NEXT** | diagnose and, only if separately authorized, remediate the common Z.AI endpoint/product path used by GLM 5.3 and 5.2; no further model retries before that gate |
 | **VPS OPENCLAW** | `2026.8.1-beta.3`; gateway inactive |
 | **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` |
 | **CODEX VPS** | OAuth PASS · direct smoke PASS |
-| **GLM 5.3 STATUS** | BLOCKED/deferred for current critical path · repaired credential reaches provider but 5.3 returns HTTP 500 on general API path · endpoint/product compatibility unresolved |
-| **GLM 5.2 TARGET** | operator-selected manual fallback · exact installed model ref must be confirmed before invocation |
+| **GLM 5.3 STATUS** | BLOCKED/deferred · repaired credential reaches provider · exact smoke returns HTTP 500 on general API path |
+| **GLM 5.2 STATUS** | BLOCKED · exact ref visible · exactly one smoke returns same HTTP 500 on same general API path |
+| **COMMON Z.AI REQUEST PATH** | `https://api.z.ai/api/paas/v4/chat/completions` |
 | **Z.AI CREDENTIAL** | repaired · stored credential single/nonduplicated · profile/provider preserved |
 | **VPS NETWORK** | port `18789` free · gateway false |
-| **PLANNER INVOCATIONS** | Codex `1` · GLM `3` total smoke attempts so far · Qwen `0` |
-| **LATEST EVIDENCE** | `GLM_ZAI_POST_REMEDIATION_SMOKE_EXACT_53 = BLOCKED`; evidence commit `74f7b84d4a07442f06e26562538cfc8e04590427`; provider HTTP 500 |
-| **PLANNER SMOKE** | Codex PASS · GLM 5.3 blocked/deferred · exactly one GLM 5.2 smoke authorized subject to exact-ref precheck · Qwen 3.8 37B blocked missing model |
+| **PLANNER INVOCATIONS** | Codex `1` · GLM `4` total smoke attempts · Qwen `0` |
+| **LATEST EVIDENCE** | `GLM_ZAI_52_DIRECT_SMOKE_EXACT = BLOCKED`; evidence commit `1ab838de338e8d6f48ecba60482db9a2e160eceb`; provider HTTP 500 |
+| **PLANNER SMOKE** | Codex PASS · GLM 5.3 BLOCKED · GLM 5.2 BLOCKED · common endpoint/product compatibility gate required · Qwen 3.8 37B blocked missing model |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
 | **Gate E / L5_PASS** | PASS-CLOSED / NOT_CLAIMED |
 | **L5 runtime** | activation `false` · runtime `false` · endurance `false` |
@@ -30,19 +31,19 @@
 
 ## Boundaries operative correnti
 
-- L'operatore ha autorizzato esattamente una minimal direct smoke invocation dell'esatto `zai/glm-5.2` come fallback manuale a GLM 5.3.
-- Prima della invocation deve essere confermata read-only la presenza dell'esatto model ref `zai/glm-5.2`; se non è presente, STOP senza sostituzioni implicite.
-- Se presente, è autorizzata esattamente una sola smoke 5.2 con postcheck read-only; nessun retry automatico o seconda invocation.
-- Nessun fallback a GLM 5.1/5 o altri modelli è autorizzato. La policy automatica issue #19 resta DEFERRED e inattiva.
-- Nessuna modifica endpoint/baseUrl, credential/auth/config mutation, Codex/Qwen invocation, core/plugin upgrade, doctor --fix, gateway/service activation, n8n/Docker/Tailscale mutation, firewall/reverse proxy, runtime wiring o billing è autorizzata.
-- Se la smoke fallisce, STOP senza retry e persistere il blocker sanitizzato.
-- Nessun secret/token può apparire in GPT Web, Cursor chat, GitHub, argv o log persistenti.
-- Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
+- Exact `zai/glm-5.2` was locally visible and exactly one authorized smoke was executed; it returned the same HTTP 500 Internal service error observed with GLM 5.3 on the same general API path.
+- Therefore the current blocker is no longer model-specific. The common endpoint/product/provider path is the leading compatibility hypothesis.
+- No retry, no GLM 5.1/5 fallback, no further model invocation and no endpoint/baseUrl mutation is authorized before the next gate.
+- The repaired Z.AI credential remains structurally single/nonduplicated; profile/provider remain present; gateway remains inactive and port `18789` free.
+- Issue #19 remains DEFERRED: no automatic quota-aware switching or silent fallback is active.
+- No credential/auth/config mutation, Codex/Qwen invocation, core/plugin upgrade, doctor --fix, gateway/service activation, n8n/Docker/Tailscale mutation, firewall/reverse proxy, runtime wiring or billing is authorized.
+- No secret/token may appear in GPT Web, Cursor chat, GitHub, argv or persisted logs.
+- No PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop or public Telegram Trigger implicit.
 
 ## Puntatori
 
 - Active work: issue **#8**
 - Future research: issue **#18** (`DEFERRED`)
-- Future quota policy: issue **#19** remains `DEFERRED` for automatic quota-aware switching
+- Future quota policy: issue **#19** (`DEFERRED`)
 - Planner routing: `docs/contracts/planner-routing-policy-v1.md`
 - Cursor evidence: `docs/runtime/LAST_CURSOR_REPORT.md`
