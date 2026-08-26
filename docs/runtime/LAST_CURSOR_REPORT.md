@@ -5,35 +5,41 @@
 ## LATEST
 
 ```yaml
-task_ref: GLM_ZAI_VERSION_RESOLUTION
-result_cursor: BLOCKED
+task_ref: OPENCLAW_CORE_UPGRADE_FOR_GLM53
+result_cursor: PASS
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: f03e741a8c6e02235b300a7d944f1b69448cd19e
+repo_head_observed_at_task: 7054e183e0f3ece19b2999518d98a0d44e253b6f
 workspace: clean
 
-OPENCLAW_VERSION: 2026.7.1-2 (0790d9f)
+OPENCLAW_VERSION_BEFORE: 2026.7.1-2 (0790d9f)
+OPENCLAW_TARGET_VERSION: 2026.8.1-beta.3
+OPENCLAW_VERSION_AFTER: 2026.8.1-beta.3 (5831b80)
 
 ZAI_PLUGIN_VERSION_BEFORE: 2026.7.1
-ZAI_PLUGIN_VERSION_LATEST_OFFICIAL: 2026.7.1
-ZAI_PLUGIN_VERSION_BETA_WITH_GLM53: 2026.8.1-beta.3
-PLUGIN_COMPATIBILITY_VERIFIED: false
-PLUGIN_COMPATIBILITY_DETAIL: "@openclaw/zai-provider@2026.8.1-beta.3 peerDependencies.openclaw >=2026.8.1-beta.3; host OpenClaw 2026.7.1-2 incompatible for plugin-only upgrade"
+ZAI_PLUGIN_TARGET_VERSION: 2026.8.1-beta.3
+ZAI_PLUGIN_VERSION_AFTER: 2026.8.1-beta.3
 
-GLM53_OFFICIAL_SUPPORT_FOUND: true
-GLM53_SUPPORT_PATH: core_upgrade_required
+TARGET_COMPATIBILITY_VERIFIED: true
+TARGET_SELECTION: "smallest official pair with glm-5.3: openclaw@2026.8.1-beta.3 + @openclaw/zai-provider@2026.8.1-beta.3"
 
-PLUGIN_MUTATION: false
-PROVIDER_CONFIG_MUTATION: false
-OPENCLAW_CORE_MUTATION: false
+ROLLBACK_METADATA_PREPARED: true
+ROLLBACK_LOCATION: /root/openclaw-rollback/glm53-20260826T091609Z
+ROLLBACK_EXECUTED: false
 
-EXACT_MODEL_REF_VISIBLE: false
+EXACT_GLM53_MODEL_REF_VISIBLE: true
 
+ZAI_AUTH_BEFORE: configured
 ZAI_AUTH_AFTER: configured
 ZAI_PROFILE_PRESENT_AFTER: true
 ZAI_PROVIDER_AFTER: available
-ZAI_PLUGIN_VERSION_AFTER: 2026.7.1
+
+ISOLATED_NODE_VERSION: v24.19.0
+SYSTEM_NODE_VERSION_BEFORE: v18.19.1
+SYSTEM_NODE_VERSION_AFTER: v18.19.1
+SYSTEM_NPM_VERSION_BEFORE: 9.2.0
+SYSTEM_NPM_VERSION_AFTER: 9.2.0
 
 MODEL_INVOCATION_COUNT: 0
 CODEX_INVOCATION_COUNT: 0
@@ -49,13 +55,16 @@ TAILSCALE_MUTATION: false
 QWEN_CHANGED: false
 SECRET_VALUES_PERSISTED: false
 
-BLOCKER: BLOCKED_OPENCLAW_CORE_UPGRADE_REQUIRED
-NEXT_GATE_CLASSIFICATION: OPENCLAW_CORE_UPGRADE_GATE_REQUIRED
+LAYOUT_NOTE: "npm installed into /opt/openclaw-app/node_modules; bin/lib path relinked to new package; stale 2026.7.1-2 moved into rollback dir"
+DOCTOR_FIX_APPLIED: true
+DOCTOR_FIX_REASON: "post-upgrade config schema migration required by OpenClaw 2026.8.1-beta.3 (structural only; no credential re-entry)"
+
+NEXT_GATE_CLASSIFICATION: GLM_ZAI_VPS_DIRECT_SMOKE_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-Read-only resolution on VPS `ionos-n8n`. Installed `@openclaw/zai-provider@2026.7.1` (npm `latest`) does **not** expose `zai/glm-5.3` (catalog tops at `glm-5.2`). Official npm beta `@openclaw/zai-provider@2026.8.1-beta.3` **does** define `glm-5.3`, but requires OpenClaw core `>=2026.8.1-beta.3` (peer/`pluginApi`). Current core `2026.7.1-2` is incompatible with a plugin-only upgrade. No supported non-patch config path applied; no alias/fallback/core upgrade/model invocation. Auth unchanged; gateway inactive; port 18789 free.
+Official smallest compatible upgrade on VPS `ionos-n8n`: OpenClaw core `2026.7.1-2` → `2026.8.1-beta.3`, Z.AI provider `2026.7.1` → `2026.8.1-beta.3`. Exact `zai/glm-5.3` now visible. Auth profile `zai:manual` preserved. Gateway remained inactive; port 18789 free. System Node/npm unchanged. No model/Codex invocation. VPS-only rollback metadata prepared; rollback not executed.
 
 ## Completion persistence invariant
 
