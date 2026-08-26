@@ -5,71 +5,104 @@
 ## LATEST
 
 ```yaml
-task_ref: GLM_BIGMODEL_CN_POST_REMEDIATION_52_SMOKE
-result_cursor: BLOCKED
+task_ref: GLM_BIGMODEL_CN_CURSOR_OPENCLAW_DELTA_DIAGNOSIS
+result_cursor: PASS
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 440fb068238d1156186e811b29d7ed398a4bcc5c
+repo_head_observed_at_task: 46a987f366815e2b1623ff166f1d0f1d4aed74b7
 workspace: clean
+
+CURSOR_VERSION: 3.15.6
+CURSOR_GLM_PROVIDER_MODE: "catalog_vendor_ZAI_with_stored_openAIBaseUrl_but_useOpenAIKey_false"
+CURSOR_MODEL_LABEL: "GLM 5.2"
+CURSOR_MODEL_ID_IF_LOCALLY_VISIBLE: "glm-5.2"
+CURSOR_OVERRIDE_BASE_URL: "https://open.bigmodel.cn/api/coding/paas/v4"
+CURSOR_PROVIDER_COMPATIBILITY_MODE: "OpenAI Base URL override present in storage; useOpenAIKey=false"
+CURSOR_OPENAI_COMPATIBLE_MODE: "override stored; BYOK flag disabled"
+CURSOR_CUSTOM_MODEL_MODE: false
+
+CURSOR_ACTUAL_REQUEST_URL: unknown
+CURSOR_ACTUAL_REQUEST_PATH: unknown
+CURSOR_REQUEST_API_STYLE: "openai-compatible chat/completions IF openAIBaseUrl BYOK path used; otherwise Cursor-mediated vendor ZAI unknown-on-wire"
+CURSOR_REQUEST_MODEL_FIELD: "catalog serverModelName=glm-5.2; wire id unknown"
+CURSOR_STREAM_SETTING: unknown
+CURSOR_RELEVANT_HEADER_NAMES: "Content-Type, Authorization (proven only for openAIBaseUrl challenge helper)"
+CURSOR_PROVIDER_SPECIFIC_ADAPTER: "availableDefaultModels2 vendor=ZAI for glm-5.2"
+CURSOR_PROVIDER_SPECIFIC_TRANSFORM: "openAIBaseUrl normalize: if pathname=='/' then pathname='/v1'; then append '/chat/completions'"
+
+CURSOR_BASE_URL_APPEND_RULE: "pathname '/' -> '/v1'; strip trailing slash; append '/chat/completions'"
+CURSOR_RESOLVED_PATH_IF_PROVABLE: "/api/coding/paas/v4/chat/completions (from stored openAIBaseUrl + append rule); NOT proven as the live working call"
 
 OPENCLAW_VERSION: 2026.8.1-beta.3
 ZAI_PLUGIN_VERSION: 2026.8.1-beta.3
+OPENCLAW_BASE_URL: "https://open.bigmodel.cn/api/coding/paas/v4"
+OPENCLAW_RESOLVED_REQUEST_URL: "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions"
+OPENCLAW_API_STYLE: openai-completions
+OPENCLAW_MODEL_FIELD: "model=glm-5.2"
+OPENCLAW_STREAM_SETTING: "stream wrapper; infer uses provider stream path"
+OPENCLAW_REASONING_FIELDS: "thinking/reasoning_effort by model family"
+OPENCLAW_OPTIONAL_FIELDS: "tool_stream default true"
+OPENCLAW_RELEVANT_HEADER_NAMES: "authorization, content-type"
 
-MODEL_USED: zai/glm-5.2
+CURSOR_PROVIDER_MODEL_ID: "glm-5.2 (catalog); wire unknown"
+OPENCLAW_PROVIDER_MODEL_ID: glm-5.2
+MODEL_ID_MATCH: unknown
 
-ZAI_PROFILE_PRESENT_BEFORE: true
-ZAI_PROFILE_ID_BEFORE: zai:manual
-ZAI_PROVIDER_BEFORE: available
+BASE_URL_MATCH: true
+REQUEST_PATH_MATCH: unknown
+API_STYLE_MATCH: unknown
+MODEL_FIELD_MATCH: unknown
+STREAM_SETTING_MATCH: unknown
+REASONING_FIELDS_MATCH: unknown
+TOOL_PAYLOAD_MATCH: unknown
+HEADER_NAME_SET_MATCH: unknown
 
-EFFECTIVE_ZAI_BASE_ENDPOINT_BEFORE: https://open.bigmodel.cn/api/coding/paas/v4
-EXACT_GLM52_MODEL_REF_VISIBLE_BEFORE: true
+DELTA_BASE_URL: "none vs stored Cursor openAIBaseUrl; operator-stated UI root https://open.bigmodel.cn/ would resolve to /v1/chat/completions and DIFFER (not current storage)"
+DELTA_REQUEST_PATH: unknown
+DELTA_MODEL_ID: unknown
+DELTA_API_STYLE: unknown
+DELTA_STREAM: unknown
+DELTA_REASONING: unknown
+DELTA_TOOLS: unknown
+DELTA_HEADERS: unknown
 
-BIGMODEL_CN_GLM52_SMOKE_INVOCATION_COUNT: 1
-AUTOMATIC_RETRY_COUNT: 0
+CURSOR_BIGMODEL_ADAPTER_PRESENT: true
+CURSOR_BIGMODEL_ADAPTER_BEHAVIOR: "First-party catalog model glm-5.2 vendor=ZAI; OpenAI override URL stored but useOpenAIKey=false and availableAPIKeyModels empty"
+OPENCLAW_EQUIVALENT_PRESENT: "direct openai-completions to Coding Plan baseUrl; no Cursor vendor/cloud adapter"
 
-GLM53_INVOCATION_COUNT_THIS_TASK: 0
-GLM51_INVOCATION_COUNT_THIS_TASK: 0
-GLM5_INVOCATION_COUNT_THIS_TASK: 0
+CURSOR_SUCCESS_LOG_EVIDENCE_AVAILABLE: false
+CURSOR_SUCCESS_STATUS: unknown
+CURSOR_SUCCESS_HOST: unknown
+CURSOR_SUCCESS_PATH: unknown
+CURSOR_EFFECTIVE_MODEL_IF_VISIBLE: "operator-reported effective GLM 5.3; not proven in local logs"
+
+ROOT_CAUSE_CLASSIFICATION: CURSOR_WORKING_PATH_NOT_RECONSTRUCTABLE_FROM_LOCAL_EVIDENCE
+
+PROVIDER_REQUEST_COUNT: 0
+MODEL_INVOCATION_COUNT: 0
 CODEX_INVOCATION_COUNT: 0
 QWEN_INVOCATION_COUNT: 0
 
-SMOKE_EXIT_CODE: 1
-SMOKE_RESPONSE_RECEIVED: true
-SMOKE_MARKER_MATCH: false
-SANITIZED_PROVIDER_ERROR: "500 内部服务器错误 (provider=zai model=glm-5.2)"
-OBSERVED_REQUEST_URL_SANITIZED: "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions"
-
-ZAI_PROFILE_PRESENT_AFTER: true
-ZAI_PROFILE_ID_AFTER: zai:manual
-ZAI_PROVIDER_AFTER: available
-EFFECTIVE_ZAI_BASE_ENDPOINT_AFTER: https://open.bigmodel.cn/api/coding/paas/v4
-EXACT_GLM52_MODEL_REF_VISIBLE_AFTER: true
-
-PORT_18789_AFTER: free
-GATEWAY_RUNNING_AFTER: false
+SECRET_VALUE_READ: false
+SECRET_VALUES_PERSISTED: false
 
 AUTH_MUTATION: false
 CONFIG_MUTATION: false
 ENDPOINT_MUTATION: false
-CREDENTIAL_REENTRY: false
-CORE_PLUGIN_MUTATION: false
-GATEWAY_MUTATION: false
-SERVICE_MUTATION: false
-N8N_MUTATION: false
-DOCKER_MUTATION: false
-TAILSCALE_MUTATION: false
+CURSOR_SETTING_MUTATION: false
+RUNTIME_MUTATION: false
 
-SECRET_VALUES_PERSISTED: false
+PORT_18789_AFTER: free
+GATEWAY_RUNNING_AFTER: false
 
-BLOCKER: BLOCKED_BIGMODEL_CN_GLM52_HTTP500
-NEXT_GATE_CLASSIFICATION: GLM_ZAI_PROVIDER_ACCOUNT_PLAN_SUPPORT_GATE_REQUIRED
+NEXT_GATE_CLASSIFICATION: GLM_BIGMODEL_CN_CURSOR_REQUEST_EVIDENCE_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-Exactly one local smoke: `openclaw infer model run --local --model zai/glm-5.2` with the required marker prompt. Effective baseUrl was BigModel CN Coding Plan. Transport hit `https://open.bigmodel.cn/api/coding/paas/v4/chat/completions` and returned provider HTTP 500 (`内部服务器错误`). No retry, no alternate GLM, no auth/config/endpoint mutation. Gateway remained off.
+Read-only only. Cursor 3.15.6 storage: `openAIBaseUrl=https://open.bigmodel.cn/api/coding/paas/v4` (matches OpenClaw), but `useOpenAIKey=false` and `availableAPIKeyModels=[]`. Catalog lists `glm-5.2` under vendor ZAI. Cursor code appends `/chat/completions` after normalizing root `/` to `/v1`. No local log proves the live successful Cursor request host/path. Therefore the working Cursor wire path cannot be reconstructed; no OpenClaw-remediable delta is proven. No secrets read/persisted; no invocations.
 
 ## Completion persistence invariant
 
