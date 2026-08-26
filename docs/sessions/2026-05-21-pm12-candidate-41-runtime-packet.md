@@ -23,7 +23,7 @@ Prepare PM-12 runtime/import packet for candidate **`41 - CP v4 multirepo + plan
 | File | Action |
 |------|--------|
 | [runtime-packets/pm-12-candidate-41-handoff-file-import-gate.md](../runtime-packets/pm-12-candidate-41-handoff-file-import-gate.md) | **Created** |
-| [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md) | PM-12 row |
+| [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) | PM-12 row |
 | [README.md](../../README.md) | Brief index link (if added) |
 | This session note | **Created** |
 

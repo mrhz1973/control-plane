@@ -43,9 +43,9 @@ Prepare **PM-09 Gate C** docs-only design: future n8n watcher for `docs/plans/*.
 | Action | Path |
 |--------|------|
 | Created | [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md) |
-| Updated | [PLAN_OUTPUT_INGESTION.md](../PLAN_OUTPUT_INGESTION.md) — Gate C section |
-| Updated | [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md) — PM-09 Gate C design PASS |
-| Updated | [MVP_STATUS.md](../MVP_STATUS.md) — minimal pointer |
+| Updated | [PLAN_OUTPUT_INGESTION.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/PLAN_OUTPUT_INGESTION.md) — Gate C section |
+| Updated | [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) — PM-09 Gate C design PASS |
+| Updated | [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) — minimal pointer |
 | Updated | [plans/README.md](../plans/README.md) — minimal pointer |
 | Updated | [README.md](../../README.md) — minimal pointer |
 | Created | This session log |

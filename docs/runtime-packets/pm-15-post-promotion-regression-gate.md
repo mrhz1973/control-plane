@@ -4,7 +4,7 @@
 **Date:** 2026-05-21
 **Status:** **Prepared** — runtime smoke **not executed** by this packet alone.
 
-**Related:** [pm-14 promotion packet](pm-14-promote-41-to-40-gate.md) · [PM-12 PASS](../sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md) · [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md) · [HANDOFF_N8N_GATE.md](../HANDOFF_N8N_GATE.md) · [RUNTIME_GATES.md](../RUNTIME_GATES.md) · [MVP_STATUS.md](../MVP_STATUS.md)
+**Related:** [pm-14 promotion packet](pm-14-promote-41-to-40-gate.md) · [PM-12 PASS](../sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md) · [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md) · [HANDOFF_N8N_GATE.md](../HANDOFF_N8N_GATE.md) · [RUNTIME_GATES.md](../RUNTIME_GATES.md) · [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md)
 
 ---
 
@@ -33,16 +33,16 @@ preserves all prior **PM-06 / PM-09 / PM-12** behavior with no spam, no regressi
 
 | # | Check | Expected | Reference |
 |---|-------|----------|-----------|
-| 1 | **Commit notify** — push a docs commit to a watched CONTROL PLANE branch | Telegram message with new SHA in ≤ ~1–5 min | [MVP_STATUS.md](../MVP_STATUS.md) |
-| 2 | **Dedupe** — observe 2 polling cycles after that commit | **No** duplicate Telegram for same SHA | [PM-02 dedupe](../POST_MVP_BACKLOG.md#pm-02--multirepo-watcher-promotion) |
+| 1 | **Commit notify** — push a docs commit to a watched CONTROL PLANE branch | Telegram message with new SHA in ≤ ~1–5 min | [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) |
+| 2 | **Dedupe** — observe 2 polling cycles after that commit | **No** duplicate Telegram for same SHA | [PM-02 dedupe](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md#pm-02--multirepo-watcher-promotion) |
 | 3 | **`plan_detected`** — push a `docs/plans/YYYY-MM-DD_HHMM_*.plan.md` | Telegram `plan_detected` short text | [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md) |
 | 4 | **Plan `.md` file attachment** (Gate D file) | Telegram document `*.plan.md` attached | [Gate D file PASS](../sessions/2026-05-21-control-plane-40-gate-d-file-attachment-pass.md) |
 | 5 | **`latest-control-plane-handoff.md`** (PM-11/12 branch) | Telegram short text + document `latest-control-plane-handoff.md` | [PM-12 PASS](../sessions/2026-05-21-control-plane-41-handoff-file-runtime-pass.md) |
 | 6 | **GIS handoff** — push a watched commit to GIS repo | Telegram safe-text + `latest-gis-handoff.md` attachment | [HANDOFF_N8N_GATE.md](../HANDOFF_N8N_GATE.md) |
-| 7 | **GIS dedupe** — same GIS SHA on next poll | **No** duplicate Telegram | [PM-02](../POST_MVP_BACKLOG.md#pm-02--multirepo-watcher-promotion) |
+| 7 | **GIS dedupe** — same GIS SHA on next poll | **No** duplicate Telegram | [PM-02](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md#pm-02--multirepo-watcher-promotion) |
 | 8 | **List integrity** — `30` / `20` / `01` still **OFF** | No new active workflows | [N8N_WORKFLOW_NAMING.md](../N8N_WORKFLOW_NAMING.md) |
-| 9 | **ALINA LAVORO** untouched | Folder/workflows unchanged | [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md) |
-| 10 | **C1 posture** | Remains **PARTIAL** (D-C1-A) — **not** relabeled to strict PASS | [MVP_STATUS.md](../MVP_STATUS.md) |
+| 9 | **ALINA LAVORO** untouched | Folder/workflows unchanged | [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) |
+| 10 | **C1 posture** | Remains **PARTIAL** (D-C1-A) — **not** relabeled to strict PASS | [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) |
 
 **Timing:** smoke should finish in &lt; ~10 minutes total. Do **not** run all 10 checks in parallel — sequence per commit/poll to keep evidence readable.
 

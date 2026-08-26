@@ -43,8 +43,8 @@
 ## Docs updated
 
 - [WORKFLOW_EXPORT_STATUS.md](../WORKFLOW_EXPORT_STATUS.md)
-- [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md) PM-08
-- [MVP_STATUS.md](../MVP_STATUS.md)
+- [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) PM-08
+- [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md)
 - [RUNTIME_GATES.md](../RUNTIME_GATES.md)
 - [workflows/README.md](../../workflows/README.md)
 - [README.md](../../README.md) (pointer)

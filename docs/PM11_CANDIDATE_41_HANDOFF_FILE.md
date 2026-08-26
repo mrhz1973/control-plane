@@ -2,7 +2,7 @@
 
 **Docs-only design package.** **Does not** authorize n8n UI, import, execute, activation, workflow switch, or implementer auto-send.
 
-**Related:** [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) · [PM-10 plan](plans/2026-05-21_1700_control-plane_pm10-automation-next-step.plan.md) · [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) · [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) · [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) · [RUNTIME_GATES.md](RUNTIME_GATES.md)
+**Related:** [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) · [PM-10 plan](plans/2026-05-21_1700_control-plane_pm10-automation-next-step.plan.md) · [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) · [N8N_WORKFLOW_NAMING.md](N8N_WORKFLOW_NAMING.md) · [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) · [RUNTIME_GATES.md](RUNTIME_GATES.md)
 
 ---
 

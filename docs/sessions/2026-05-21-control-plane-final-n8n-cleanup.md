@@ -37,8 +37,8 @@ PM-09 Gate **C + D + FILE** already **PASS** in production **`40`**. Backup and 
 
 ## Docs updated (follow-up)
 
-- [MVP_STATUS.md](../MVP_STATUS.md)
-- [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md)
+- [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md)
+- [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md)
 - [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md)
 - [WORKFLOW_EXPORT_STATUS.md](../WORKFLOW_EXPORT_STATUS.md)
 - [N8N_WORKFLOW_NAMING.md](../N8N_WORKFLOW_NAMING.md)
@@ -49,7 +49,7 @@ PM-09 Gate **C + D + FILE** already **PASS** in production **`40`**. Backup and 
 
 ## Optional future work
 
-- Strict C1 / v5 / webhook — [PM-01](../POST_MVP_BACKLOG.md) only if explicitly reopened
+- Strict C1 / v5 / webhook — [PM-01](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) only if explicitly reopened
 - Plan-watcher changes via candidates **`41` / `42` / `43`** (pre-bound credentials; placeholders for private values)
 - One-time n8n-side Telegram destination lookup to avoid retyping Chat ID per import
 

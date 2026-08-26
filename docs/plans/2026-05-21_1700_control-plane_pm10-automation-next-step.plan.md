@@ -47,7 +47,7 @@ Push automation forward on **CONTROL PLANE** only. Active workflow **`40`** alre
 ## Notes for orchestrator
 
 - **Window:** CONTROL PLANE (arancione) — home repo `mrhz1973/control-plane`
-- **Backlog ID:** PM-10 — see [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md)
+- **Backlog ID:** PM-10 — see [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md)
 - **MVP:** operationally accepted; C1 **PARTIAL**; C2–C5 **PASS**; PM-09 Gate C+D+FILE **PASS**
 - **Runtime list:** `40` ACTIVE · `30` / `20` / `01` OFF (4 workflows); backup `40` and `55` deleted from UI
 - **Desired future output:** generated handoff/prompt **file** saved and deliverable (not only Telegram preview text)

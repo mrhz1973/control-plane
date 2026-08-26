@@ -45,8 +45,8 @@ Create redacted importable n8n JSON draft for PM-09 Gate C first edit on **02F**
 | Created | [pm-09-gate-c-02f-json-draft.md](../runtime-packets/pm-09-gate-c-02f-json-draft.md) |
 | Updated | [pm-09-gate-c-extend-02f-plan-watcher.md](../runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) |
 | Updated | [pm-09-gate-c-02f-first-edit-plan.md](../runtime-packets/pm-09-gate-c-02f-first-edit-plan.md) |
-| Updated | [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md) |
-| Updated | [MVP_STATUS.md](../MVP_STATUS.md) |
+| Updated | [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) |
+| Updated | [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) |
 | Created | This session log |
 
 ---

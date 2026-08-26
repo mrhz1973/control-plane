@@ -9,7 +9,7 @@
 
 - [PM-68](../PM68_OPENCLAW_NEW_CHAT_COMPACT_HANDOFF.md)  
 - [PM-79](../PM79_OPENCLAW_CONTROLLED_SECOND_GATEWAY_PROBE.md)  
-- [MVP_STATUS](../MVP_STATUS.md) (pointer section)  
+- [MVP_STATUS](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) (pointer section)
 - [OPERATING_MEMORY](../OPERATING_MEMORY.md) (OpenClaw line)  
 - [pm-34](../runtime-packets/pm-34-n8n-codex-worker-integration-gate.md)  
 - Skim: [PM-52](../PM52_OPENCLAW_CONFINED_BRIDGE_DESIGN.md), [PM-53](../PM53_OPENCLAW_BRIDGE_ARTIFACT_VALIDATOR_DRY_RUN.md)

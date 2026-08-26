@@ -20,7 +20,7 @@
 | 6 | [dry-run package](2026-05-23-control-plane-strict-pass-dry-run-package.md) | **PASS** |
 | 7 | [readiness checklist](2026-05-23-control-plane-strict-pass-dry-run-readiness-checklist.md) | **PASS** |
 | 8 | [fixture](../examples/strict-pass-artifact-v1.example.json) — valid JSON, `strict_pass_candidate=false` | **PASS** |
-| 9 | [MVP_STATUS.md](../MVP_STATUS.md) — PM-34 gated, dry-run recorded | **PASS** |
+| 9 | [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) — PM-34 gated, dry-run recorded | **PASS** |
 | 10 | Invariants: `pm34_unblocked=false`, `n8n_ready=false`, `strict_pass_candidate=false` | **PASS** (consistent across docs) |
 | 11 | No `docs/plans/**` trigger created in this audit | **PASS** |
 | 12 | Workflow **40** / **41** not modified in this audit | **PASS** |
