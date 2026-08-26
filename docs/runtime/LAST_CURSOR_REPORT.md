@@ -5,65 +5,72 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0014-W_WINDOWS_OPENCLAW_PRIVATE_FALLBACK_BROKER
-result_cursor: PASS
+task_ref: D-0015-W_WINDOWS_FALLBACK_HARDENING_N8N_ROUTING_NON_CREDENTIAL_STAGE
+result_cursor: PASS_NON_CREDENTIAL_STAGE_COMPLETE
+next_gate: BLOCKED_N8N_OPENCLAW_CREDENTIAL_BINDING_REQUIRED
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
-report_persistence_commit: d8717314b70bb73e674b70397ee86b47d9fb8abf
+report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 33904f4049f5c097de941f8e24731102e84e8680
+repo_head_observed_at_task: a7629e46c9d64d52248d6823ac142562852bedbf
 workspace_at_start: clean
-execution_packet: docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_EXECUTION_PACKET.yaml
-execution_packet_revision: 1
-operator_gate_ref: github:issue/20#issuecomment-5431799606
+operator_gate_ref: github:issue/21#issuecomment-5431911525
+prior_transport_pass: github:issue/20 D-0014-W
 
-planner_requested: codex
-planner_used: glm
-planner_fallback_used: true
-implementation_rounds: 1
+AUTOSTART_MECHANISM:
+  primary: "Startup folder -> OpenClaw-Gateway-Autostart.cmd"
+  startup_path: "%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\OpenClaw-Gateway-Autostart.cmd"
+  script_path: "%USERPROFILE%\\.openclaw\\gateway-autostart.cmd"
+  idempotent_rule: skip_start_when_port_18789_listen_count_gt_0
+  openclaw_gateway_install_schtasks: failed_access_denied
+  user_logon_schtasks: failed
+  autostart_start_verified: true
+  autostart_skip_when_running_verified: true
+  log_path: "%LOCALAPPDATA%\\OpenClaw\\gateway-autostart.log"
 
-WINDOWS_OPENCLAW_VERSION: 2026.5.20
-WINDOWS_OPENCLAW_PATH: C:\Users\mrhz\AppData\Roaming\npm\openclaw
-WINDOWS_CONFIG_PATH: ~/.openclaw/openclaw.json
-
-TOPOLOGY: loopback_plus_tailscale_serve
-GATEWAY_BIND: loopback
-GATEWAY_PORT: 18789
-TAILSCALE_MODE: serve
-TAILSCALE_SERVE_TARGET: http://127.0.0.1:18789
-TAILNET_HOSTNAME: asusdesktop.tailc01234.ts.net
-TAILNET_IPV4: 100.110.35.23
-VPS_TAILNET_HOSTNAME: ubuntu
-VPS_TAILNET_IPV4: 100.114.7.53
-
-PRE_CHANGE_STATE:
-  gateway_tailscale_mode: off
-  tailscale_serve_target: http://127.0.0.1:8765
-  rollback_local_snapshot: ~/.openclaw/openclaw.json.rollback-d0014-w
-
-POST_CHANGE_STATE:
-  gateway_running: true
-  local_listen: 127.0.0.1:18789
-  local_gateway_health: OK
-  tailscale_serve_enabled: true
+WINDOWS_GATEWAY_STATE:
+  openclaw_version: 2026.5.20
+  bind: loopback
+  port: 18789
+  listen: 127.0.0.1:18789
+  tailscale_mode: serve
+  tailscale_serve_target: http://127.0.0.1:18789
+  tailnet_hostname: asusdesktop.tailc01234.ts.net
+  gateway_auth_mode: token
   funnel_enabled: false
-  direct_tailnet_tcp_18789: closed_or_refused
+  local_health_http_code: 200
 
-PRIVATE_REACHABILITY_FROM_VPS:
-  https_root_http_code: 200
-  https_health_http_code: 200
-  wss_connect: ok
-  wss_connect_ms: 225
+N8N_CONTAINER_REACHABILITY:
+  container: root-n8n-1
+  probe_method: node_fetch
+  fallback_health_url: https://asusdesktop.tailc01234.ts.net/health
+  health_http_code: 200
+  root_http_code: 200
+  direct_tailnet_tcp_18789: not_required_closed
+
+N8N_BINDING_DISCOVERY_METADATA_ONLY:
+  credentials_total: 2
+  matching_openclaw_gateway_credentials: 0
+  credential_names_types:
+    - {name: "CONTROL PLANE - Telegram Bot", type: telegramApi}
+    - {name: "GitHub account", type: githubApi}
+  container_env_openclaw_gateway: none
+  safe_existing_auth_binding_for_authenticated_openclaw_api: false
+
+WORKFLOW_TARGET_DISCOVERY:
+  gpt_web_artifact: workflows/60-openclaw-broker-fallback-resolver.template.json
+  live_n8n_workflow_present: false
+  insertion_point: executeWorkflowTrigger node "When Executed by Another Workflow"
+  parent_integration_pattern: parent workflow adds Execute Workflow node calling WF60 after import/publish
+  health_nodes_auth: none
+  authenticated_api_wiring: requires new gateway token credential or env binding not present
 
 provider_model_request_count: 0
-zai_provider_model_requests: 0
 credential_mutation: false
+gateway_auth_mode_mutation: false
 vps_openclaw_mutation: false
-config_mutation: true
-profile_mutation: false
-runtime_mutation: true
-network_mutation: true
-network_mutation_scope: tailnet_private_serve_only
+n8n_workflow_logic_authored_by_cursor: false
+public_exposure: false
 
 SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
@@ -72,8 +79,5 @@ SECRET_VALUE_HASHED: false
 SECRET_VALUE_MEASURED: false
 AUTHORIZATION_DATA_EXPOSED: false
 
-N8N_WORKFLOW_MUTATION: false
-WINDOWS_PROMOTED_TO_PRIMARY: false
-
-NEXT_REAL_GATE: production wiring, Windows gateway OS service hardening, or scope expansion requires new explicit authorization
+STOP_REASON_FOR_NEXT_STAGE: authenticated n8n-to-OpenClaw invocation requires creating/copying a gateway token credential or changing auth mode; no safe existing binding found
 ```
