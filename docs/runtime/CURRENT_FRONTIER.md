@@ -7,31 +7,30 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8** |
-| **BLOCCO ATTIVO** | `GLM-BIGMODEL-CN-OFFICIAL-DEFAULT-53-SMOKE` |
-| **STATO BLOCCO** | `HUMAN_GATE_REQUIRED / ONE_BOUNDED_OFFICIAL_DEFAULT_MODEL_INVOCATION` |
-| **GATE CORRENTE** | `GLM_BIGMODEL_CN_OFFICIAL_DEFAULT_53_SMOKE_GATE_REQUIRED` |
-| **NEXT** | authorize exactly one direct/local OpenClaw smoke of official Coding Plan CN default model `zai/glm-5.3` against the already-configured `https://open.bigmodel.cn/api/coding/paas/v4`; zero retry/fallback; no auth/config/profile/endpoint mutation; persist sanitized evidence only |
+| **BLOCCO ATTIVO** | `GLM-BIGMODEL-CN-OPENCLAW-BIGMODEL-MODEL-POLICY-CONFLICT` |
+| **STATO BLOCCO** | `HUMAN_GATE_REQUIRED / VENDOR_DOCS_CONFLICT` |
+| **GATE CORRENTE** | `GLM_BIGMODEL_CN_SUPPORTED_MODEL_SMOKE_GATE_REQUIRED` |
+| **NEXT** | do NOT execute the previously authorized `zai/glm-5.3` smoke: current BigModel Coding Plan docs explicitly list `GLM-5.2`, `GLM-5-Turbo`, `GLM-4.7` as plan-supported and warn not to select other models, while current OpenClaw docs claim `zai-coding-cn` defaults to `glm-5.3`; because the operator's authorization excluded billing side-effects, this contradiction invalidates the 5.3 runtime premise. Next bounded discriminator should use a model supported by BOTH sources, preferably `zai/glm-5-turbo`, under a fresh explicit gate. |
 | **VPS OPENCLAW** | `2026.8.1-beta.3`; gateway inactive |
 | **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` |
 | **CODEX VPS** | OAuth PASS · direct smoke PASS |
-| **CURSOR VERSION** | `3.15.6` |
 | **CURRENT Z.AI PROFILE** | provider `zai` · profile `zai:manual` · auth `api_key` |
 | **CURRENT BIGMODEL CN BASE URL** | `https://open.bigmodel.cn/api/coding/paas/v4` |
 | **CURRENT API STYLE / ADAPTER** | `openai-completions` · `zai openai-completions wrapZaiStreamFn` |
-| **OFFICIAL CODING-PLAN-CN SEMANTICS** | provider `zai` · auth API key · Coding CN endpoint `https://open.bigmodel.cn/api/coding/paas/v4` · same API style/adapter as current setup |
-| **OFFICIAL CURRENT DEFAULT MODEL** | current OpenClaw `main` docs: `zai-coding-cn` defaults to `glm-5.3`; `glm-5.2` is General API default; Coding Plan requests for GLM-5.2/5.1 are currently routed to GLM-5.3 |
-| **OFFICIAL ENDPOINT AUTODETECT** | current OpenClaw docs state `zai-api-key` probes each endpoint's Chat Completions API and supports explicit `zai-coding-cn`; no onboarding/profile mutation is authorized here |
 | **OFFICIAL CONFIG DELTA DIAGNOSIS** | PASS · `CURRENT_CONFIG_SEMANTICALLY_MATCHES_OFFICIAL_CODING_PLAN_CN` |
-| **PUBLIC SUPPORT VERIFICATION** | OpenClaw issue #63687 confirms `open.bigmodel.cn/api/coding/paas/v4` is the intended CN Coding Plan endpoint and was implemented as explicit `zai-coding-cn`; current docs warn persistent failures with the same key/endpoint can indicate provider-side rejection or plan limitation, while ordinary overload/rate-limit responses use specific codes such as 1302/1305 |
+| **BIGMODEL CURRENT CODING PLAN POLICY** | provider docs currently list plan models `GLM-5.2`, `GLM-5-Turbo`, `GLM-4.7`; OpenClaw is supported on best-effort/secondary scheduling; non-official OpenClaw config must use `https://open.bigmodel.cn/api/coding/paas/v4`; BigModel OpenClaw guide warns not to select other models to avoid unintended charging |
+| **OPENCLAW CURRENT Z.AI DOCS** | current OpenClaw docs map `zai-coding-cn` to the same CN Coding endpoint but claim default model `glm-5.3`; catalog labels `glm-5-turbo` as OpenClaw-optimized text model |
+| **DOCS CONFLICT** | `glm-5.3` eligibility/default differs between OpenClaw and BigModel current documentation; for billing/model entitlement, provider-side BigModel documentation is treated as the safety authority until reconciled |
 | **OPENCLAW GLM 5.2 BIGMODEL CN SMOKE** | BLOCKED · one invocation · HTTP 500 · zero retry/fallback |
 | **DIRECT BIGMODEL CN RAW CONTROL** | BLOCKED · exactly one raw HTTPS POST · HTTP 500 · zero retry; not a supported-tool equivalence test |
-| **GLM 5.3 BIGMODEL CN STATUS** | NOT_TESTED on regional BigModel CN endpoint; prior explicit 5.3 failures were on global `api.z.ai` surfaces only |
-| **ROOT CAUSE CLASSIFICATION** | no local provider/profile/baseUrl/adapter remediation is evidence-supported; vendor/client verification identified one untested officially preferred supported-tool path: exact `zai/glm-5.3` on Coding-Plan-CN. This is the next deterministic discriminator before support escalation. |
+| **GLM 5.3 BIGMODEL CN SMOKE** | NOT_EXECUTED after authorization because fresh provider documentation created a billing/eligibility conflict with the authorization's no-billing boundary |
+| **RECOMMENDED COMMON-SUPPORT DISCRIMINATOR** | `zai/glm-5-turbo` on the existing Coding-Plan-CN endpoint: explicitly supported by current BigModel Coding Plan docs and present in current OpenClaw Z.AI catalog; requires fresh human authorization |
+| **ROOT CAUSE CLASSIFICATION** | local provider/profile/baseUrl/adapter configuration remains semantically aligned; unresolved failure now needs a supported-model control that does not cross the BigModel plan-eligibility warning |
 | **Z.AI CREDENTIAL** | preserved; no re-entry/change; secret must not be read/exposed/persisted |
-| **GLM TEST QUOTA POLICY** | TEST PHASE: token conservation non-blocking / low priority. PRODUCTION PHASE: quota-aware routing remains deferred to issue #19. |
+| **GLM TEST QUOTA POLICY** | TEST PHASE: token conservation non-blocking / low priority. Billing/model-entitlement boundaries remain hard gates. PRODUCTION PHASE: quota-aware routing deferred to issue #19. |
 | **VPS NETWORK** | port `18789` free · gateway false |
-| **PLANNER / TEST INVOCATIONS** | Codex `1` · GLM `7` OpenClaw historical smoke attempts · direct raw BigModel control `1` · Qwen `0`; provider/client support verification added `0` provider/model requests |
-| **LATEST EVIDENCE** | official config delta PASS at `419fc0bcad7aa87a57c9e2bbb5729325b7e810b2`; provider/client public verification confirms current Coding CN endpoint and current official default `glm-5.3`; no runtime request during this verification |
+| **PLANNER / TEST INVOCATIONS** | Codex `1` · GLM `7` OpenClaw historical smoke attempts · direct raw BigModel control `1` · Qwen `0`; no 5.3 regional smoke executed in this phase |
+| **LATEST EVIDENCE** | fresh public cross-check: BigModel current OpenClaw/Coding Plan docs conflict with OpenClaw current Z.AI docs on `glm-5.3`; zero provider/model requests and zero runtime/config mutations during this cross-check |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
 | **Gate E / L5_PASS** | PASS-CLOSED / NOT_CLAIMED |
 | **L5 runtime** | activation `false` · runtime `false` · endurance `false` |
@@ -41,14 +40,13 @@
 
 ## Boundaries operative correnti
 
-- The operator authorized the provider/client-specific support gate. That pass was executed as public/vendor-side read-only verification only; it performed zero GLM/provider requests and zero local/runtime mutations.
-- Current OpenClaw `main` documentation establishes `zai-coding-cn -> https://open.bigmodel.cn/api/coding/paas/v4 -> glm-5.3` as the fresh Coding Plan CN default. It separately identifies `glm-5.2` as the General API default and states Coding Plan requests for 5.2/5.1 are currently routed to 5.3.
-- OpenClaw issue #63687 is closed as implemented and confirms explicit `zai-coding-cn` support for the BigModel CN endpoint. Therefore endpoint support itself is not the remaining gap.
-- Current docs also state endpoint auto-detection works by Chat Completions probes. Persistent same-key/same-endpoint failures may indicate provider-side rejection or plan limitation; specific overload/rate-limit codes 1302/1305 are distinct from the generic HTTP 500 observed here.
-- Exact `zai/glm-5.3` has never been tested through OpenClaw on the regional BigModel CN endpoint in this evidence track. Prior explicit GLM-5.3 tests were on global `api.z.ai` endpoints only.
-- Therefore the next highest-value bounded experiment is exactly one supported-tool OpenClaw invocation of `zai/glm-5.3` on the already-configured Coding-Plan-CN endpoint. This model invocation requires a separate explicit human gate.
-- No retry, second invocation, 5.2/5.1/5 fallback, direct raw API request, credential refresh/re-entry/change, config/profile/baseUrl mutation, core/plugin upgrade, `doctor --fix`, gateway/service activation, n8n/Docker/Tailscale/firewall/reverse-proxy mutation, runtime wiring or billing action is implicitly authorized.
-- Any future vendor/support escalation must use sanitized evidence only; never expose API keys, tokens or Authorization values.
+- The operator explicitly authorized exactly one `zai/glm-5.3` regional smoke, but that authorization also forbade billing mutation/side-effects and was based on the premise that GLM-5.3 is the official Coding-Plan-CN default.
+- A fresh documentation cross-check found a material source conflict: current OpenClaw docs claim `zai-coding-cn` defaults to `glm-5.3`, while current BigModel Coding Plan/OpenClaw docs list only `GLM-5.2`, `GLM-5-Turbo`, `GLM-4.7` as Coding Plan-supported and explicitly warn not to select other models to avoid charging.
+- Therefore the `zai/glm-5.3` smoke was NOT executed. This is a real safety/billing gate, not a token-conservation pause.
+- Provider-side BigModel documentation governs plan eligibility/billing risk until the discrepancy is reconciled. No inference is made that OpenClaw docs are wrong; the two sources are simply inconsistent at the current snapshot.
+- The next recommended bounded discriminator is exactly one supported-tool OpenClaw smoke using `zai/glm-5-turbo` on the already-configured Coding-Plan-CN endpoint, because it is explicitly supported by BigModel and described by OpenClaw as an OpenClaw-optimized text model. This requires fresh explicit authorization.
+- No GLM/provider request, retry, credential change, config/profile/endpoint/model mutation, plugin/core upgrade, `doctor --fix`, gateway/service activation, n8n/Docker/Tailscale/firewall/reverse-proxy mutation, runtime wiring or billing action is authorized by this docs-only advance.
+- Any vendor/support escalation must use sanitized evidence only; never expose API keys, tokens or Authorization values.
 - Issue #8 remains an evidence backlog; `CURRENT_FRONTIER.md` owns live state. Issue #19 remains DEFERRED for production quota-aware policy.
 - No PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop or public Telegram Trigger implicit.
 
