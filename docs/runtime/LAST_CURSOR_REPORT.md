@@ -5,36 +5,34 @@
 ## LATEST
 
 ```yaml
-task_ref: VPS_CODEX_OAUTH_CALLBACK_TUNNEL_RECOVERY
-result_cursor: BLOCKED
+task_ref: VPS_CODEX_OAUTH_CALLBACK_VISIBLE_CONSOLE_RETRY
+result_cursor: PASS
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 5fe85c86b8cea9b0759d84ecb0540925a816a217
+repo_head_observed_at_task: 781934469f801a1caf3775e8b025a815f97319f8
 workspace: clean
 
 LOCAL_1455_BEFORE: 0
-STALE_CMD_COUNT: 0
-STALE_SSH_COUNT: 0
+STALE_OAUTH_CMD_COUNT: 0
+STALE_OAUTH_SSH_COUNT: 0
+
 VPS_1455_BEFORE: free
 VPS_OAUTH_PROCESS_COUNT_BEFORE: 0
-
 CODEX_AUTH_BEFORE: missing
 
-SSH_TUNNEL_BIND: true
+EXTERNAL_OAUTH_CONSOLE_OPENED: true
 LOGIN_INVOCATION_COUNT: 1
-CODEX_OAUTH_LOGIN: FAIL
+EXTERNAL_CONSOLE_EXIT_CODE: 0
+SSH_TUNNEL_BIND_OBSERVED: true
 
-CODEX_AUTH_AFTER: missing
-CODEX_AUTH_PROFILE_PRESENT: false
-CODEX_PROVIDER_EFFECTIVE: missing
+CODEX_OAUTH_LOGIN: PASS
+CODEX_AUTH_AFTER: configured
+CODEX_AUTH_PROFILE_PRESENT: true
+CODEX_PROVIDER_EFFECTIVE: usable
 
-AUTH_STATE_CHANGED: false
-AUTH_STATE_PATHS_CHANGED: []
-UNEXPECTED_CONFIG_PATHS_CHANGED: []
-
-LOCAL_1455_AFTER: false
+LOCAL_1455_AFTER: free
 OAUTH_TUNNEL_SSH_REMAINS: false
 VPS_1455_AFTER: free
 VPS_OAUTH_PROCESS_COUNT_AFTER: 0
@@ -43,21 +41,18 @@ PORT_18789: free
 GATEWAY_RUNNING: false
 
 PLANNER_INVOCATION_COUNT: 0
+AUTOMATIC_RETRY_COUNT: 0
 WINDOWS_AUTH_STATE_COPIED: false
 SECRET_VALUES_PERSISTED: false
-GLM_CONFIG_CHANGED: false
-N8N_MUTATION: false
-DOCKER_MUTATION: false
-TAILSCALE_MUTATION: false
-FIREWALL_CHANGE: false
-GATEWAY_CHANGE: false
+OAUTH_STDOUT_PERSISTED: false
+OAUTH_STDERR_PERSISTED: false
 
-NEXT_GATE_CLASSIFICATION: BLOCKED_CALLBACK_TUNNEL_OAUTH_FAILED
+NEXT_GATE_CLASSIFICATION: CODEX_VPS_DIRECT_SMOKE_GATE_READY
 ```
 
 ## Evidence boundary
 
-Tunnel bind `127.0.0.1:1455` → VPS `127.0.0.1:1455` established once with `ExitOnForwardFailure=yes`. Exactly one OAuth invocation. Session exited without Codex auth becoming configured; auth remained `missing`. Tunnel closed afterward; local/VPS 1455 free; no OAuth process remains; gateway off. No second OAuth, no secrets persisted. Post-exit URL recovery also unavailable (`BLOCKED_CURRENT_OAUTH_URL_NOT_SURFACED`).
+Exactly one visible external CMD (`CODEX VPS OAUTH - DO NOT CLOSE`) with temporary SSH `-L 127.0.0.1:1455:127.0.0.1:1455` and `ExitOnForwardFailure=yes`. No wrapper file, no OAuth stdout/stderr capture. Console exit 0; Codex auth on VPS became `configured` / provider `usable`. Tunnel closed; local/VPS 1455 free; gateway off; no automatic retry; no secrets persisted.
 
 ## Completion persistence invariant
 
