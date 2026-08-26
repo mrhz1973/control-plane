@@ -8,18 +8,17 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8 — Architecture v3 evidence track — OpenClaw → planners → Cursor bounded loop** |
-| **BLOCCO ATTIVO** | `CODEX-DIRECT-PLANNER-SMOKE` |
-| **STATO BLOCCO** | HUMAN_GATE_REQUIRED |
-| **GATE CORRENTE** | `CODEX_DIRECT_SMOKE_EXPLICIT_AUTHORIZATION_REQUIRED` |
-| **NEXT** | autorizzare una sola invocazione innocua `openclaw agent --local` usando il provider Codex OAuth già configurato, finalizzata esclusivamente a generare/validare un Execution Packet; nessun gateway start/install, GLM/Z.AI config, Qwen pull, n8n mutation o repo write |
-| **CODEX OAUTH** | PASS — `openai-codex` OAuth profile presente; provider effective usable; usage/quota snapshot disponibile con gateway down; nessun secret esposto |
-| **CODEX DIRECT PATH** | `openclaw agent --local` AVAILABLE — direct smoke possibile senza gateway persistente |
-| **OPENCLAW DISCOVERY** | PASS — npm global `openclaw@2026.5.20`; gateway `ws://127.0.0.1:18789` non in ascolto; nessun servizio/task gateway installato |
-| **OPENCLAW PROVIDERS** | `openai-codex` AVAILABLE / AUTHENTICATED · `zai` AVAILABLE / auth missing |
-| **USAGE OBSERVABILITY** | Codex native and visible after auth even with gateway down · Z.AI native after credential+gateway · Qwen local/not_applicable |
-| **QWEN LOCAL** | target Qwen 3.8 37B NOT_INSTALLED; `qwen3.8:27b` presente; nessun modello caricato alla discovery; nessun pull/run/stop autorizzato |
-| **OPENCLAW v3 RUNTIME** | AUTHENTICATED_CODEX / NOT_ACTIVATED_AS_GATEWAY |
-| **PLANNER SMOKE** | Qwen 3.8 37B: BLOCKED_MISSING_MODEL · GLM 5.3: BLOCKED_MISSING_AUTH · Codex OAuth: READY_FOR_DIRECT_SMOKE_GATE |
+| **BLOCCO ATTIVO** | `VPS-OPENCLAW-BROKER-DISCOVERY` |
+| **STATO BLOCCO** | IN_PROGRESS |
+| **GATE CORRENTE** | `READ_ONLY_VPS_OPENCLAW_DISCOVERY` |
+| **NEXT** | discovery read-only via `ssh ionos-n8n`: OS/risorse, Node/npm, presenza/versione OpenClaw, Tailscale, processi/porte e coesistenza n8n; nessuna install/config/auth/start/restart/firewall mutation |
+| **PLACEMENT DECISION** | ACCEPTED — OpenClaw target canonico sul VPS IONOS come broker 24/7; Cursor/Bugbot/Ollama-Qwen restano locali; metodo: `docs/foundation/OPENCLAW_VPS_BROKER_PLACEMENT.md` |
+| **LOCAL OPENCLAW EVIDENCE** | PASS — npm global `openclaw@2026.5.20`; `openai-codex` OAuth autenticato/usable; usage/quota visibile; gateway locale non avviato |
+| **LOCAL CODEX DIRECT SMOKE** | DEFERRED_BY_PLACEMENT_DECISION — resta fallback/evidence locale, non priorità corrente |
+| **VPS OPENCLAW** | NOT_DISCOVERED / NOT_INSTALLED_ASSUMPTION_FORBIDDEN |
+| **OPENCLAW v3 RUNTIME** | TARGET_VPS / NOT_ACTIVATED |
+| **QWEN LOCAL** | target Qwen 3.8 37B NOT_INSTALLED; `qwen3.8:27b` presente; nessun pull/run autorizzato; Qwen resta nodo locale/GPU |
+| **PLANNER SMOKE** | Codex VPS: NOT_RUN · GLM VPS: BLOCKED_MISSING_AUTH · Qwen 3.8 37B: BLOCKED_MISSING_MODEL |
 | **CURSOR v3 SMOKE** | GLM BYOK: NOT_RUN · bounded loop: NOT_RUN · Bugbot loop: NOT_RUN · checkpoint resume: NOT_RUN |
 | **PM-34** | BLOCKED |
 | **n8n_ready** | `false` |
@@ -33,17 +32,19 @@
 ## Boundaries operative correnti
 
 - Foundation v3.1 wiki-LLM lean è canonica su `main`; issue #8 è l'unico ACTIVE WORK.
-- Codex OAuth login e post-auth verify sono PASS; modifiche auth limitate allo stato OpenClaw attribuibile al provider `openai-codex`.
-- Il gateway NON è stato avviato; nessun servizio/task gateway è stato installato.
-- Il prossimo passo è una vera invocazione provider e richiede gate umano separato anche se bounded/innocua.
-- Il gate proposto autorizzerà una sola chiamata direct/local per smoke Execution Packet; non autorizza GLM/Z.AI credential write, gateway start/install, Qwen pull, n8n/runtime wiring, billing mutation o repo write.
-- Warning transitori `@openclaw/codex` osservati durante auth verify non invalidano lo stato provider `usable`; se ricompaiono nello smoke vanno riportati come evidence.
+- Placement target aggiornato: OpenClaw VPS IONOS = broker canonico 24/7; OpenClaw Windows = test/fallback/evidence.
+- Cursor, Bugbot, filesystem/terminale di implementazione e Ollama/Qwen restano sul PC locale; collegamento futuro solo tramite trasporto privato/Tailscale verificato.
+- L'OAuth Codex locale PASS è evidence di compatibilità; token/auth state NON vanno copiati sul VPS.
+- Il precedente gate per smoke Codex locale è deferito dalla nuova placement decision.
+- Discovery VPS corrente è read-only: nessuna installazione OpenClaw, login OAuth VPS, GLM credential write, gateway/service start, firewall/reverse-proxy change o n8n mutation è autorizzata.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
 
 ## Puntatori
 
 - Active work: GitHub issue **#8**
 - Foundation/invarianti: `docs/foundation/PROJECT_VISION.md`
+- Operating model: `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`
+- OpenClaw placement addendum: `docs/foundation/OPENCLAW_VPS_BROKER_PLACEMENT.md`
 - Lean method: `docs/foundation/WIKI_LLM_LEAN_METHOD.md`
 - Contracts: `docs/contracts/backlog-item-v1.md` · `planner-routing-policy-v1.md` · `execution-packet-v1.md` · `execution-checkpoint-v1.md`
 - Evidence Cursor rolling: `docs/runtime/LAST_CURSOR_REPORT.md` — on demand
