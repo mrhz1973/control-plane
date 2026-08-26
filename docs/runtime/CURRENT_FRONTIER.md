@@ -16,7 +16,7 @@
 | **OPENCLAW DISCOVERY** | PASS — npm global `openclaw@2026.5.20`; CLI presente; gateway `ws://127.0.0.1:18789` non in ascolto; nessun servizio/task gateway installato |
 | **OPENCLAW PROVIDERS** | `openai-codex` AVAILABLE / auth missing · `zai` AVAILABLE / auth missing |
 | **USAGE OBSERVABILITY** | Codex native after auth+gateway · Z.AI native after credential+gateway · Qwen local/not_applicable |
-| **QWEN LOCAL** | target Qwen 3.8 37B NOT_INSTALLED; `qwen3.8:27b` presente; nessun modello Ollama caricato al momento della discovery |
+| **QWEN LOCAL** | target Qwen 3.8 37B NOT_INSTALLED; `qwen3.8:27b` presente; nessun modello caricato alla discovery; `ollama list` ha incidentalmente riavviato l'app Ollama locale, senza pull/run/stop |
 | **OPENCLAW v3 RUNTIME** | DISCOVERED / NOT_ACTIVATED |
 | **PLANNER SMOKE** | Qwen 3.8 37B: BLOCKED_MISSING_MODEL · GLM 5.3: BLOCKED_MISSING_AUTH · Codex OAuth: BLOCKED_MISSING_AUTH |
 | **CURSOR v3 SMOKE** | GLM BYOK: NOT_RUN · bounded loop: NOT_RUN · Bugbot loop: NOT_RUN · checkpoint resume: NOT_RUN |
@@ -33,7 +33,8 @@
 ## Boundaries operative correnti
 
 - Foundation v3.1 wiki-LLM lean è canonica su `main`; issue #8 è l'unico ACTIVE WORK.
-- Discovery OpenClaw read-only PASS; nessuna repo/config/auth/runtime mutation è stata eseguita.
+- Discovery OpenClaw PASS; nessuna repo/config/auth/OpenClaw runtime mutation è stata eseguita.
+- Side-effect osservato separatamente: `ollama list` ha riavviato l'app Ollama locale; nessun modello è stato pullato, avviato o fermato.
 - Il prossimo passo richiede gate umano perché scrive lo stato OAuth di OpenClaw.
 - Il gate corrente autorizza solo Codex OAuth login; NON autorizza GLM/Z.AI credential write, gateway start/install, Qwen pull, n8n/runtime/provider wiring o billing mutation.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
