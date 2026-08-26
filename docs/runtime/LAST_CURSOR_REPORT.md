@@ -5,68 +5,71 @@
 ## LATEST
 
 ```yaml
-task_ref: GLM_ZAI_CODING_PLAN_ENDPOINT_BINDING_REMEDIATION
-result_cursor: PASS
+task_ref: GLM_ZAI_CODING_PLAN_POST_REMEDIATION_52_SMOKE
+result_cursor: BLOCKED
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 1e9f482e4c3f7f3f3f8ece919af363cd884a0d01
+repo_head_observed_at_task: 50e4bb1fc866c3bb056f87201b0a2ef6e3c87cf2
 workspace: clean
 
 OPENCLAW_VERSION: 2026.8.1-beta.3
 ZAI_PLUGIN_VERSION: 2026.8.1-beta.3
 
-GENERAL_PROVIDER_ID: zai
-GENERAL_BASE_ENDPOINT: https://api.z.ai/api/paas/v4
+MODEL_USED: zai/glm-5.2
 
-CODING_PLAN_PROVIDER_ID: zai
-CODING_PLAN_BASE_ENDPOINT: https://api.z.ai/api/coding/paas/v4
-CODING_PLAN_AUTH_METHOD: api_key
-CODING_PLAN_PROFILE_BINDING_RULE: provider remains zai; profile zai:manual retained; models.providers.zai.baseUrl selects Coding Plan surface (auth-choice zai-coding-global)
+ZAI_PROFILE_PRESENT_BEFORE: true
+ZAI_PROFILE_ID_BEFORE: zai:manual
+ZAI_PROVIDER_BEFORE: available
 
-CURRENT_PROVIDER_BINDING: zai
-CURRENT_BASE_ENDPOINT: https://api.z.ai/api/paas/v4
-CURRENT_PROFILE_BINDING: zai:manual
+EFFECTIVE_ZAI_BASE_ENDPOINT_BEFORE: https://api.z.ai/api/coding/paas/v4
+EXACT_GLM52_MODEL_REF_VISIBLE_BEFORE: true
 
-CONFIG_MUTATION_APPLIED: true
-MUTATION_SCOPE: models.providers.zai.baseUrl only
+CODING_PLAN_GLM52_SMOKE_INVOCATION_COUNT: 1
+AUTOMATIC_RETRY_COUNT: 0
 
-PROVIDER_BINDING_AFTER: zai
-BASE_ENDPOINT_AFTER: https://api.z.ai/api/coding/paas/v4
+GLM53_INVOCATION_COUNT_THIS_TASK: 0
+GLM51_INVOCATION_COUNT_THIS_TASK: 0
+GLM5_INVOCATION_COUNT_THIS_TASK: 0
+CODEX_INVOCATION_COUNT: 0
+QWEN_INVOCATION_COUNT: 0
+
+SMOKE_EXIT_CODE: 1
+SMOKE_RESPONSE_RECEIVED: true
+SMOKE_MARKER_MATCH: false
+SANITIZED_PROVIDER_ERROR: "500 Internal service error (provider=zai model=glm-5.2)"
+OBSERVED_REQUEST_URL_SANITIZED: "https://api.z.ai/api/coding/paas/v4/chat/completions"
 
 ZAI_PROFILE_PRESENT_AFTER: true
 ZAI_PROFILE_ID_AFTER: zai:manual
-ZAI_AUTH_TYPE_AFTER: api_key
-
-EXACT_GLM53_MODEL_REF_VISIBLE_AFTER: true
+ZAI_PROVIDER_AFTER: available
+EFFECTIVE_ZAI_BASE_ENDPOINT_AFTER: https://api.z.ai/api/coding/paas/v4
 EXACT_GLM52_MODEL_REF_VISIBLE_AFTER: true
-
-CREDENTIAL_REENTRY: false
-AUTH_SECRET_CHANGED: false
-AUTH_SECRET_VALUE_READ: false
-
-MODEL_INVOCATION_COUNT: 0
-PROVIDER_REQUEST_COUNT: 0
-CODEX_INVOCATION_COUNT: 0
-QWEN_INVOCATION_COUNT: 0
 
 PORT_18789_AFTER: free
 GATEWAY_RUNNING_AFTER: false
 
+AUTH_MUTATION: false
+CONFIG_MUTATION: false
+ENDPOINT_MUTATION: false
+CREDENTIAL_REENTRY: false
 CORE_PLUGIN_MUTATION: false
+GATEWAY_MUTATION: false
 SERVICE_MUTATION: false
 N8N_MUTATION: false
 DOCKER_MUTATION: false
 TAILSCALE_MUTATION: false
+
 SECRET_VALUES_PERSISTED: false
 
-NEXT_GATE_CLASSIFICATION: GLM_ZAI_CODING_PLAN_POST_REMEDIATION_SMOKE_GATE_REQUIRED
+BLOCKER: BLOCKED_ZAI_PROVIDER_HTTP_500_INTERNAL_SERVICE_ERROR
+NEXT_GATE_CLASSIFICATION: BLOCKED_ZAI_PROVIDER_HTTP_500_INTERNAL_SERVICE_ERROR
 ```
 
 ## Evidence boundary
 
-Installed OpenClaw docs (`docs/providers/zai.md`) and `@openclaw/zai-provider@2026.8.1-beta.3` establish: general `zai-global` → `https://api.z.ai/api/paas/v4`; Coding Plan Global `zai-coding-global` → `https://api.z.ai/api/coding/paas/v4`. Prior smokes hit the general path. Authored `models.providers.zai.baseUrl` was unset (catalog default = general). Minimal remediation: set baseUrl to Coding Plan Global. Credential `zai:manual` preserved; no key re-entry; no model/provider request; gateway off. Smoke deferred to separate gate.
+Exactly one local smoke: `openclaw infer model run --local --model zai/glm-5.2` with the required marker prompt. Effective baseUrl remained Coding Plan (`/api/coding/paas/v4`). Transport hit `https://api.z.ai/api/coding/paas/v4/chat/completions` and returned provider HTTP 500. No retry, no fallback model, no auth/config/endpoint mutation. Gateway remained off.
 
 ## Completion persistence invariant
 
