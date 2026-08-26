@@ -7,21 +7,24 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8** |
-| **BLOCCO ATTIVO** | `GLM-ZAI-ENDPOINT-PRODUCT-COMPATIBILITY` |
-| **STATO BLOCCO** | `HUMAN_GATE_REQUIRED / COMMON_PROVIDER_ENDPOINT_PATH` |
-| **GATE CORRENTE** | `GLM_ZAI_ENDPOINT_PRODUCT_COMPATIBILITY_GATE_REQUIRED` |
-| **NEXT** | diagnose and, only if separately authorized, remediate the common Z.AI endpoint/product path used by GLM 5.3 and 5.2; no further model retries before that gate |
+| **BLOCCO ATTIVO** | `GLM-ZAI-CODING-PLAN-ENDPOINT-BINDING` |
+| **STATO BLOCCO** | `HUMAN_GATE_REQUIRED / CONFIG_ENDPOINT_REMEDIATION` |
+| **GATE CORRENTE** | `GLM_ZAI_CODING_PLAN_ENDPOINT_REMEDIATION_GATE_REQUIRED` |
+| **NEXT** | remediate only the Z.AI provider/product binding so the existing Coding Plan credential uses the Coding Plan endpoint/path; then local read-only verification; no model retry until a later gate |
 | **VPS OPENCLAW** | `2026.8.1-beta.3`; gateway inactive |
 | **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` |
 | **CODEX VPS** | OAuth PASS · direct smoke PASS |
-| **GLM 5.3 STATUS** | BLOCKED/deferred · repaired credential reaches provider · exact smoke returns HTTP 500 on general API path |
-| **GLM 5.2 STATUS** | BLOCKED · exact ref visible · exactly one smoke returns same HTTP 500 on same general API path |
-| **COMMON Z.AI REQUEST PATH** | `https://api.z.ai/api/paas/v4/chat/completions` |
+| **Z.AI KEY SOURCE** | OPERATOR-CONFIRMED via account screenshots: key used for `Control Plane` was created under the GLM Coding Plan / Model & Personal Coding Plan area; no secret value persisted |
+| **GLM CODING PLAN** | active plan shown valid; key source is Coding Plan rather than general API platform |
+| **GLM 5.3 STATUS** | BLOCKED/deferred · repaired credential reached provider but request used general API path and returned HTTP 500 |
+| **GLM 5.2 STATUS** | BLOCKED · exact ref visible · exactly one smoke used same general API path and returned same HTTP 500 |
+| **COMMON OBSERVED PATH** | general API `https://api.z.ai/api/paas/v4/chat/completions` |
+| **ROOT CAUSE CLASSIFICATION** | product/endpoint binding mismatch is now strongly supported: Coding Plan credential is being sent through the general API path |
 | **Z.AI CREDENTIAL** | repaired · stored credential single/nonduplicated · profile/provider preserved |
 | **VPS NETWORK** | port `18789` free · gateway false |
 | **PLANNER INVOCATIONS** | Codex `1` · GLM `4` total smoke attempts · Qwen `0` |
 | **LATEST EVIDENCE** | `GLM_ZAI_52_DIRECT_SMOKE_EXACT = BLOCKED`; evidence commit `1ab838de338e8d6f48ecba60482db9a2e160eceb`; provider HTTP 500 |
-| **PLANNER SMOKE** | Codex PASS · GLM 5.3 BLOCKED · GLM 5.2 BLOCKED · common endpoint/product compatibility gate required · Qwen 3.8 37B blocked missing model |
+| **PLANNER SMOKE** | Codex PASS · GLM blocked pending Coding Plan endpoint remediation · Qwen 3.8 37B blocked missing model |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
 | **Gate E / L5_PASS** | PASS-CLOSED / NOT_CLAIMED |
 | **L5 runtime** | activation `false` · runtime `false` · endurance `false` |
@@ -31,14 +34,13 @@
 
 ## Boundaries operative correnti
 
-- Exact `zai/glm-5.2` was locally visible and exactly one authorized smoke was executed; it returned the same HTTP 500 Internal service error observed with GLM 5.3 on the same general API path.
-- Therefore the current blocker is no longer model-specific. The common endpoint/product/provider path is the leading compatibility hypothesis.
-- No retry, no GLM 5.1/5 fallback, no further model invocation and no endpoint/baseUrl mutation is authorized before the next gate.
-- The repaired Z.AI credential remains structurally single/nonduplicated; profile/provider remain present; gateway remains inactive and port `18789` free.
-- Issue #19 remains DEFERRED: no automatic quota-aware switching or silent fallback is active.
-- No credential/auth/config mutation, Codex/Qwen invocation, core/plugin upgrade, doctor --fix, gateway/service activation, n8n/Docker/Tailscale mutation, firewall/reverse proxy, runtime wiring or billing is authorized.
-- No secret/token may appear in GPT Web, Cursor chat, GitHub, argv or persisted logs.
-- No PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop or public Telegram Trigger implicit.
+- Le schermate operatore confermano che la key `Control Plane` appartiene al GLM Coding Plan. Nessun valore di key/API secret viene riportato o persistito.
+- Le smoke 5.3 e 5.2 hanno entrambe usato il general API path e restituito HTTP 500; il blocker è quindi comune al binding endpoint/prodotto e non specifico del modello.
+- La prossima modifica possibile è esclusivamente il binding/provider/base endpoint necessario a usare il percorso Coding Plan corretto con la credenziale esistente; questa è una config mutation e richiede gate umano esplicito.
+- Nessuna model invocation, provider smoke, retry, fallback 5.1/5, credential refresh/re-entry o ulteriore secret handling è autorizzata nel pass di remediation endpoint.
+- Issue #19 resta DEFERRED: nessun automatic model switching o silent fallback.
+- Nessun Codex/Qwen invocation, core/plugin upgrade, doctor --fix, gateway/service activation, n8n/Docker/Tailscale mutation, firewall/reverse proxy, runtime wiring o billing è autorizzato.
+- Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
 
 ## Puntatori
 
