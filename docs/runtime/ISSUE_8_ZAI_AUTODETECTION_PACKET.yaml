@@ -1,0 +1,122 @@
+schema: execution-packet-v1
+packet_id: EP-D-0008-Z-r4
+packet_revision: 4
+task_id: D-0008-Z
+source_backlog_ref: "github:issue/8#issuecomment-5429724710"
+source_backlog_commit: da99847c61495f316d60988636236d1bc41febd2
+generated_at: "2026-08-26T19:17:00Z"
+routing:
+  schema: planner-selection-v1
+  task_id: D-0008-Z
+  preferred: codex
+  selected: codex
+  fallback_used: false
+  fallback_reason: null
+  risk: high
+  complexity: high
+  provider_state_ref: docs/runtime/CURRENT_FRONTIER.md
+  policy_result: PROCEED
+planner:
+  requested: codex
+  used: codex
+  fallback_used: false
+  fallback_reason: null
+  provider_state_ref: docs/runtime/CURRENT_FRONTIER.md
+executor: cursor
+repository: mrhz1973/control-plane
+branch_target: main
+expected_base_head: da99847c61495f316d60988636236d1bc41febd2
+goal: >-
+  Execute the authorized ordered Z.AI four-surface primary autodetection matrix with the opaque in-process zai:manual credential, stop at first HTTP 2xx, and, only if all four fail, complete a maximum-three-round read-only diagnostic loop with zero further provider/model calls and no remediation.
+preflight:
+  - Run the canonical repository/branch preflight and require clean main at expected_base_head.
+  - Confirm issue #8 comment 5429724710 authorizes the matrix and bounded read-only loop.
+  - Confirm VPS ionos-n8n and installed OpenClaw are available without activating any service.
+  - Confirm zai:manual profile metadata exists while never reading, displaying, hashing, measuring, logging, or persisting credential or Authorization data.
+allowed_paths:
+  - docs/runtime/LAST_CURSOR_REPORT.md
+  - docs/runtime/CURRENT_FRONTIER.md
+  - docs/runtime/ISSUE_8_ZAI_AUTODETECTION_PACKET.yaml
+forbidden_paths:
+  - Every repository path not explicitly listed in allowed_paths.
+  - Any credential, auth, billing, config, profile, baseUrl, model-catalog, runtime, gateway, service, n8n, Docker, Tailscale, firewall, network, workflow, or executable asset.
+steps:
+  - "Resolve zai:manual once as an opaque in-memory value inside the request process; never emit raw errors, request/response bodies, headers, secret-derived metadata, or Authorization data."
+  - "Dispatch exact ordered POST probes with messages=[{role:user,content:ping}], stream=false, max_tokens=1, redirects=0, retries=0: General Global https://api.z.ai/api/paas/v4/chat/completions glm-5.2; General CN https://open.bigmodel.cn/api/paas/v4/chat/completions glm-5.2; Coding Global https://api.z.ai/api/coding/paas/v4/chat/completions glm-5.3; Coding CN https://open.bigmodel.cn/api/coding/paas/v4/chat/completions glm-5.3."
+  - "Stop immediately at first HTTP 2xx; otherwise stop matrix after exactly four invocations. Persist only endpoint/surface, model, HTTP/result classification, invocation count, and stop reason."
+  - "If all four fail, perform round 1 static OpenClaw/Z.AI source/routing/profile-metadata analysis without credential content; round 2 read-only clock/DNS/TLS handshakes without HTTP; round 3 deterministic cause synthesis and one candidate remediation not applied. Make zero additional provider/model calls."
+  - "Stop for acceptance, max rounds, scope drift, or any real gate. Do not mutate auth, credentials, billing, config, profile, baseUrl, catalog, runtime, gateway, service, n8n, Docker, Tailscale, firewall, network, or apply remediation."
+  - "Update only allowed_paths, validate deterministic evidence, selectively stage those paths, commit documentation only, push main normally, and run canonical final Git verification."
+validation:
+  - The attempted probes are an exact ordered prefix of the four authorized tuples and invocation count never exceeds four.
+  - Every request has stream=false and max_tokens=1 with zero retry and zero redirect, and no probe follows a first HTTP 2xx.
+  - Persisted probe evidence contains only endpoint/surface, model, HTTP/result classification, invocation count, and stop reason.
+  - If entered, diagnostic loop uses at most three ordered rounds and zero additional provider/model calls.
+  - No secret/Authorization data or derived property is read, displayed, logged, hashed, measured, persisted, or included in errors.
+  - No forbidden mutation or remediation occurs and Git changes are limited to allowed_paths.
+acceptance:
+  - First HTTP 2xx is deterministically identified and later probes are not sent, or all four failures are recorded and bounded diagnostics reach a deterministic stop.
+  - Z.AI provider invocation count is at most four and diagnostic additional provider/model invocation count is zero.
+  - A supported root-cause class and unapplied candidate remediation are recorded when all four fail, or evidence exhaustion/max-round stop is explicitly recorded.
+  - LAST_CURSOR_REPORT and CURRENT_FRONTIER reflect verified live state; packet records execution/checkpoint result; documentation-only commit is pushed with clean/equal main refs.
+loop:
+  enabled: true
+  stop_when:
+    - First HTTP 2xx acceptance is reached.
+    - All four fail and a deterministic root-cause class plus unapplied candidate remediation is documented.
+    - No further allowed diagnostic can distinguish remaining causes.
+    - A real human gate, scope drift, or forbidden operation would be required.
+    - Maximum three diagnostic rounds are reached.
+  max_rounds: 3
+  on_exhaustion: blocked
+risk_assessment:
+  level: high
+  reasons:
+    - Uses an existing opaque provider credential for at most four live minimal requests.
+    - Operates against external provider surfaces and may reveal an account/provider-side gate.
+    - Any remediation or mutation is explicitly outside authorization.
+  scope_expansion: false
+  destructive: false
+  production_sensitive: true
+  credentials_or_billing: true
+gate_recommendation:
+  required: false
+  reason: >-
+    Issue #8 comment 5429724710 already authorizes the maximum-four matrix and bounded read-only diagnostic loop; any remediation, additional provider/model request, mutation, destructive action, or material scope expansion requires a new real human gate.
+context:
+  read_set:
+    - README.md AI-BOOT block only
+    - docs/runtime/CURRENT_FRONTIER.md
+    - GitHub issue #8 and authorization comment 5429724710
+    - docs/contracts/planner-routing-policy-v1.md
+    - docs/contracts/execution-packet-v1.md
+    - docs/foundation/CURSOR_PROMPT_TEMPLATE.md
+    - Installed OpenClaw/Z.AI static source and sanitized metadata required by bounded diagnostics
+  checkpoint_policy: required
+  checkpoint_contract: docs/contracts/execution-checkpoint-v1.md
+review:
+  bugbot: disabled
+  max_review_rounds: 0
+  autofix_cloud: false
+final_report_contract: docs/foundation/CURSOR_PROMPT_TEMPLATE.md
+status: READY_FOR_EXECUTION
+
+execution_result:
+  result: BLOCKED
+  matrix_invocation_count: 4
+  matrix_stop_reason: ALL_OFFICIAL_PRIMARY_SURFACES_FAILED
+  automatic_retry_count: 0
+  redirect_follow_count: 0
+  probes:
+    - {surface: General Global, endpoint: "https://api.z.ai/api/paas/v4/chat/completions", model: glm-5.2, http_status: 500, result_classification: HTTP_UPSTREAM_ERROR}
+    - {surface: General CN, endpoint: "https://open.bigmodel.cn/api/paas/v4/chat/completions", model: glm-5.2, http_status: 500, result_classification: HTTP_UPSTREAM_ERROR}
+    - {surface: Coding Global, endpoint: "https://api.z.ai/api/coding/paas/v4/chat/completions", model: glm-5.3, http_status: 500, result_classification: HTTP_UPSTREAM_ERROR}
+    - {surface: Coding CN, endpoint: "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions", model: glm-5.3, http_status: 500, result_classification: HTTP_UPSTREAM_ERROR}
+  diagnostic_loop_entered: true
+  diagnostic_rounds_completed: 3
+  post_matrix_provider_model_calls: 0
+  root_cause_classification: PROVIDER_OR_ACCOUNT_SPECIFIC_UPSTREAM_FAILURE_ACROSS_ALL_OFFICIAL_PRIMARY_SURFACES
+  candidate_remediation: PROVIDER_ACCOUNT_PLAN_ENTITLEMENT_SUPPORT_VERIFICATION
+  candidate_remediation_applied: false
+  stop_reason: REAL_HUMAN_GATE_REQUIRED
+  next_gate: ZAI_PROVIDER_ACCOUNT_PLAN_ENTITLEMENT_SUPPORT_GATE_REQUIRED
