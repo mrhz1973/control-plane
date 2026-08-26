@@ -2,7 +2,7 @@
 
 **Status:** **Design only.** No runtime change. No new workflows imported. No tokens, OAuth, model endpoints, or implementer bridges activated by this doc.
 
-**Related:** [POST_MVP_BACKLOG.md](POST_MVP_BACKLOG.md) · [PM11_CANDIDATE_41_HANDOFF_FILE.md](PM11_CANDIDATE_41_HANDOFF_FILE.md) · [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) · [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) · [RUNTIME_GATES.md](RUNTIME_GATES.md) · [runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md](runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md)
+**Related:** [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) · [PM11_CANDIDATE_41_HANDOFF_FILE.md](PM11_CANDIDATE_41_HANDOFF_FILE.md) · [PLAN_WATCHER_GATE_C.md](PLAN_WATCHER_GATE_C.md) · [HANDOFF_N8N_GATE.md](HANDOFF_N8N_GATE.md) · [RUNTIME_GATES.md](RUNTIME_GATES.md) · [runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md](runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md)
 
 ---
 

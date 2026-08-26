@@ -27,8 +27,8 @@ After later n8n UI cleanup, the repo **README.md** at repo root is the consolida
 
 ## Files updated (this consolidation)
 
-- [MVP_STATUS.md](../MVP_STATUS.md)
-- [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md)
+- [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md)
+- [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md)
 - [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md)
 - [WORKFLOW_EXPORT_STATUS.md](../WORKFLOW_EXPORT_STATUS.md)
 - [N8N_WORKFLOW_NAMING.md](../N8N_WORKFLOW_NAMING.md)
@@ -49,7 +49,7 @@ After later n8n UI cleanup, the repo **README.md** at repo root is the consolida
 
 | Area | Note |
 |------|------|
-| **Strict C1 / v5 / webhook** | [PM-01](../POST_MVP_BACKLOG.md) — optional only if explicitly reopened |
+| **Strict C1 / v5 / webhook** | [PM-01](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) — optional only if explicitly reopened |
 | **Plan-watcher changes** | Import/test candidates as **`41`**, **`42`**, **`43`** — not multiple `40` names ([N8N_WORKFLOW_NAMING.md](../N8N_WORKFLOW_NAMING.md)) |
 | **Candidate JSON** | Pre-bind known GitHub/Telegram credential **names**; placeholders for chat_id and other private values |
 | **Telegram Chat ID UX** | Possible future one-time n8n-side lookup so Chat ID is not retyped per imported workflow |

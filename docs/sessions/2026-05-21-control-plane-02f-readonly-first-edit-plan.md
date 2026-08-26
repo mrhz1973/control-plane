@@ -50,8 +50,8 @@ Record read-only visual verification of **02F** in n8n UI and prepare first runt
 |--------|------|
 | Created | [runtime-packets/pm-09-gate-c-02f-first-edit-plan.md](../runtime-packets/pm-09-gate-c-02f-first-edit-plan.md) |
 | Updated | [runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](../runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) — pointer |
-| Updated | [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md) — minimal pointer |
-| Updated | [MVP_STATUS.md](../MVP_STATUS.md) — minimal pointer |
+| Updated | [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) — minimal pointer |
+| Updated | [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) — minimal pointer |
 | Created | This session log |
 
 ---

@@ -47,8 +47,8 @@
 | Action | Path |
 |--------|------|
 | Created | [N8N_WORKFLOW_NAMING.md](../N8N_WORKFLOW_NAMING.md) |
-| Updated | [MVP_STATUS.md](../MVP_STATUS.md) |
-| Updated | [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md) |
+| Updated | [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) |
+| Updated | [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) |
 | Updated | [WORKFLOW_EXPORT_STATUS.md](../WORKFLOW_EXPORT_STATUS.md) |
 | Updated | [RUNTIME_GATES.md](../RUNTIME_GATES.md) |
 | Updated | [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md) — minimal |

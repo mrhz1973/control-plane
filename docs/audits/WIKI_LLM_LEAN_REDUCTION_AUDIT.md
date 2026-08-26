@@ -3,7 +3,7 @@
 **Date:** 2026-08-25
 **Scope:** repository semantics/context efficiency only; no runtime activation.
 **Branch:** `docs/wiki-llm-lean-l3a5-collision-cleanup` (L3A.5); prior L3A on `docs/wiki-llm-lean-l3a-canonical-extraction`; originally drafted on `docs/wiki-llm-lean-bootstrap`
-**Deletion performed by this audit:** **NONE**.
+**Deletion performed by this audit file alone:** **NONE** (L3B deletions recorded in §13; executed on branch `docs/wiki-llm-lean-l3b-atomic-historical-reduction`).
 
 ## 1. Executive finding
 
@@ -255,10 +255,10 @@ Score target is reached when all are true:
 - **Foundation/architecture quality:** strong.
 - **Bootstrap before this branch:** too heavy.
 - **Bootstrap on this branch:** target-quality design.
-- **Repository semantic hygiene:** improved by L3A (below); remaining MVP/PM/NEEDS_REVIEW surfaces still discoverable.
-- **Deletion readiness:** NOT YET — re-census required after L3A merge; `DELETE_CANDIDATE` still empty.
+- **Repository semantic hygiene:** improved through L3A→L3A.6; L3B removes five superseded MVP-era files from the current tree (see §13).
+- **Deletion readiness:** L3B DELETE_READY_FINAL set executed after PR16 reverify PASS + explicit authorization.
 
-No deletions are authorized or implied by this audit.
+Historical PM/session material remains evidence; further physical reduction still requires separate gates.
 
 ## 10. L3A canonical extraction (2026-08-25)
 
@@ -306,3 +306,19 @@ No deletions are authorized or implied by this audit.
 - **L3A.6:** rewrote material/legacy relative links to immutable baseline `777504f7…`; README lean recovery pointer; D-C1-A packet immutable; exhaustive `L3B_HISTORY_LINK_REWRITE_PLAN` recorded in candidate manifest (`HISTORY_LINK_REWRITE_PLAN_COMPLETE=true`).
 - **Physical deletions:** NONE.
 - **Next:** post-L3A.6 delete-gate re-census; L3B may delete the five only after history rewrites execute or are co-scheduled.
+
+## 13. L3B atomic historical reduction (2026-08-26)
+
+- **Final predelete reverify (PR #16):** PASS.
+- **Explicit destructive authorization:** ACQUIRED.
+- **Recovery baseline (unchanged):** `777504f7c46e5e724b6ad5f8586a98d43bab7ce8`
+- **Census refinement:** 28 planned history/evidence source refs = **24** Markdown rewrite sources + **4** `NOOP_PLAINTEXT_ONLY` (inline-code/plain path; not modified).
+- **Exact delete set (5):** `MVP_STATUS`, `MVP_CRITERIA`, `POST_MVP_BACKLOG`, `PLAN_OUTPUT_INGESTION`, `V4_POLLING_LATENCY`.
+- **Exact Markdown link rewrite count:** 47 destinations → immutable baseline URLs across 24 files.
+- **NOOP byte-invariant (4):** `FAST_TRACK_RUNTIME_SEQUENCE`, `pm-14-promote-41-to-40-gate`, `pm58-…`, `pm64-pm68-…`.
+- **Zero** unique current-rule / runtime / rebuild / live-gate dependencies for deleted paths.
+- **Final link validation:** `BROKEN_LINKS_TO_L3B_DELETED_PATHS=0`; no new broken relative MD links vs pre-L3B baseline.
+- **Atomic changeset:** 5 D + 24 rewrite M + 2 audit M = **31** paths.
+- **Runtime / credential / OAuth / billing / branch-deletion / n8n actions:** NONE.
+- **Keep pointers unchanged:** `RUNTIME_GATES`, `WORKFLOW_EXPORT_STATUS`, `HANDOFF_N8N_GATE`.
+- **CURRENT_FRONTIER:** not modified on feature branch (authorization already on `main`).

@@ -202,7 +202,7 @@ The candidate must, after `plan_detected` on a real `docs/plans/*.plan.md` commi
 |------|--------|
 | G1 | Create `docs/sessions/YYYY-MM-DD-control-plane-41-handoff-file-manual-pass.md` (or `-fail.md`) |
 | G2 | Record: workflow name, public commit SHA, PASS/FAIL per gate, file path, **no secrets** |
-| G3 | Link from [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md) PM-12 row |
+| G3 | Link from [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) PM-12 row |
 
 ---
 

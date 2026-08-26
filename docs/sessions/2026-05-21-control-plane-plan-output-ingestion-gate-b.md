@@ -41,11 +41,11 @@ Complete **PM-09 Gate B**: define concrete file convention for structured Cursor
 
 | Action | Path |
 |--------|------|
-| Updated | [PLAN_OUTPUT_INGESTION.md](../PLAN_OUTPUT_INGESTION.md) — Gate B convention |
+| Updated | [PLAN_OUTPUT_INGESTION.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/PLAN_OUTPUT_INGESTION.md) — Gate B convention |
 | Created | [plans/README.md](../plans/README.md) |
 | Created | [plans/example-control-plane-plan.plan.md](../plans/example-control-plane-plan.plan.md) |
-| Updated | [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md) — PM-09 Gate B PASS |
-| Updated | [MVP_STATUS.md](../MVP_STATUS.md) — minimal pointer |
+| Updated | [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) — PM-09 Gate B PASS |
+| Updated | [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) — minimal pointer |
 | Updated | [README.md](../../README.md) — minimal pointer |
 | Created | This session log |
 

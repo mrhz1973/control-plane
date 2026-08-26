@@ -4,7 +4,7 @@
 **Date:** 2026-05-21  
 **Status:** **Prepared** — runtime **not authorized** by this packet alone.
 
-**Related:** [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md), [PLAN_OUTPUT_INGESTION.md](../PLAN_OUTPUT_INGESTION.md), [RUNTIME_GATES.md](../RUNTIME_GATES.md), [WORKFLOW_EXPORT_STATUS.md](../WORKFLOW_EXPORT_STATUS.md).
+**Related:** [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md), [PLAN_OUTPUT_INGESTION.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/PLAN_OUTPUT_INGESTION.md), [RUNTIME_GATES.md](../RUNTIME_GATES.md), [WORKFLOW_EXPORT_STATUS.md](../WORKFLOW_EXPORT_STATUS.md).
 
 **Architecture decision:** **A — extend 02F** (user-selected 2026-05-21). Architecture B (PM-03 separate workflow) is **fallback only** if A fails or regression risk is unacceptable.
 

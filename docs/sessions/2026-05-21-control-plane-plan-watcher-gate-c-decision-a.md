@@ -43,9 +43,9 @@ Decision does **not** authorize n8n or **02F** modification.
 |--------|------|
 | Created | [runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md](../runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md) |
 | Updated | [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md) |
-| Updated | [PLAN_OUTPUT_INGESTION.md](../PLAN_OUTPUT_INGESTION.md) — architecture A selected |
-| Updated | [POST_MVP_BACKLOG.md](../POST_MVP_BACKLOG.md) |
-| Updated | [MVP_STATUS.md](../MVP_STATUS.md) |
+| Updated | [PLAN_OUTPUT_INGESTION.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/PLAN_OUTPUT_INGESTION.md) — architecture A selected |
+| Updated | [POST_MVP_BACKLOG.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md) |
+| Updated | [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) |
 | Updated | [RUNTIME_GATES.md](../RUNTIME_GATES.md) — minimal pointer |
 | Updated | [README.md](../../README.md) — minimal pointer |
 | Created | This session log |

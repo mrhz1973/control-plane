@@ -51,4 +51,4 @@
 
 ## Suggested orchestrator phrase
 
-**Aggio control** — use [MVP_STATUS.md](../MVP_STATUS.md) orchestrator snapshot + PM-08 pending before scheduling export gate.
+**Aggio control** — use [MVP_STATUS.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md) orchestrator snapshot + PM-08 pending before scheduling export gate.

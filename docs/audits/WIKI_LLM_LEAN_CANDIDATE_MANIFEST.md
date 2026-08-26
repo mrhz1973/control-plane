@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-25
 **Purpose:** pre-deletion classification for issue #10.
-**Physical deletions authorized by this file:** **NONE**.
+**Physical deletions authorized by this file:** **L3B executed** (5 DELETE_READY_FINAL paths removed from current tree; recovery via baseline `777504f7…`).
 
 Classification vocabulary:
 
@@ -49,12 +49,13 @@ These files describe the May-2026 MVP era. After **L3A.5** the first two are his
 
 | Path | Class after L3A.5 | Notes |
 |---|---|---|
-| `docs/MVP_STATUS.md` | `HISTORICAL_MVP_STATUS` pointer | no current-state authority; full snapshot in Git history |
-| `docs/MVP_CRITERIA.md` | `HISTORICAL_MVP_ACCEPTANCE_EVIDENCE` pointer | not v3.1 acceptance criteria |
+| `docs/MVP_STATUS.md` | **REMOVED_FROM_CURRENT_TREE (L3B)** | recovery: baseline `777504f7…/docs/MVP_STATUS.md` |
+| `docs/MVP_CRITERIA.md` | **REMOVED_FROM_CURRENT_TREE (L3B)** | recovery: baseline `777504f7…/docs/MVP_CRITERIA.md` |
 | `docs/END_TO_END_CYCLES.md` | KEEP_EVIDENCE / ARCHIVE_CANDIDATE | not rewritten in L3A.5 |
 | `docs/HANDOFF_N8N_GATE.md` | `HISTORICAL_EVIDENCE_POINTER` | L3A |
-| `docs/POST_MVP_BACKLOG.md` | ARCHIVE_CANDIDATE | body not rewritten in L3A.5; not LIVE STATE; inbound from canonical owners cleared of semantic dependency |
-| `docs/V4_POLLING_LATENCY.md` | ARCHIVE_CANDIDATE / KEEP_EVIDENCE | same |
+| `docs/POST_MVP_BACKLOG.md` | **REMOVED_FROM_CURRENT_TREE (L3B)** | recovery: baseline `777504f7…/docs/POST_MVP_BACKLOG.md` |
+| `docs/V4_POLLING_LATENCY.md` | **REMOVED_FROM_CURRENT_TREE (L3B)** | recovery: baseline `777504f7…/docs/V4_POLLING_LATENCY.md` |
+| `docs/PLAN_OUTPUT_INGESTION.md` | **REMOVED_FROM_CURRENT_TREE (L3B)** | recovery: baseline `777504f7…/docs/PLAN_OUTPUT_INGESTION.md` |
 | `docs/PUBLIC_WEBHOOK_GATE.md` | `HISTORICAL_DECISION_POINTER` | durable public-HTTPS/webhook rules → `PROJECT_VISION` §7; no recommended NEXT |
 
 **Group decision:** physical deletion still requires a later delete-gate census after L3A.5. History/session links may remain.
@@ -300,26 +301,26 @@ Exhaustive plan for HISTORY_EVIDENCE refs that would break if the five archive c
 - **IMMUTABLE_REPLACEMENT:** https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/MVP_STATUS.md
 - **SOURCE_PATHS / ACTION:**
   - docs/decision-packets/2026-05-21-criterion-1-latency-closure-decision.md → DONE_IN_L3A6 (immutable permalink applied)
-  - docs/PM70_OPENCLAW_HANDOFF_LINK_HYGIENE.md → REWRITE_IN_L3B
-  - docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md → REWRITE_IN_L3B
-  - docs/runtime-packets/pm-14-promote-41-to-40-gate.md → REWRITE_IN_L3B
-  - docs/runtime-packets/pm-15-post-promotion-regression-gate.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-02f-first-edit-json-draft.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-02f-readonly-first-edit-plan.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-02f-redacted-export-commit.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-02f-redacted-export-hygiene.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-final-n8n-cleanup.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-n8n-numeric-workflow-rename.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-backlog.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-gate-b.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-decision-a.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-design.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-pm09-final-docs-close.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-raw-github-url-import-preference.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-22-control-plane-pm58-openclaw-bridge-artifact-lifecycle-design.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-22-control-plane-pm64-pm68-openclaw-governance-cleanup-batch.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-23-control-plane-pm34-artifact-validation-readiness-audit.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-23-control-plane-pm80-openclaw-runtime-evidence-capture-design.md → REWRITE_IN_L3B
+  - docs/PM70_OPENCLAW_HANDOFF_LINK_HYGIENE.md → DONE_IN_L3B
+  - docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md → NOOP_PLAINTEXT_ONLY
+  - docs/runtime-packets/pm-14-promote-41-to-40-gate.md → NOOP_PLAINTEXT_ONLY
+  - docs/runtime-packets/pm-15-post-promotion-regression-gate.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-first-edit-json-draft.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-readonly-first-edit-plan.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-redacted-export-commit.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-redacted-export-hygiene.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-final-n8n-cleanup.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-n8n-numeric-workflow-rename.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-backlog.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-gate-b.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-decision-a.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-design.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-pm09-final-docs-close.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-raw-github-url-import-preference.md → DONE_IN_L3B
+  - docs/sessions/2026-05-22-control-plane-pm58-openclaw-bridge-artifact-lifecycle-design.md → NOOP_PLAINTEXT_ONLY
+  - docs/sessions/2026-05-22-control-plane-pm64-pm68-openclaw-governance-cleanup-batch.md → NOOP_PLAINTEXT_ONLY
+  - docs/sessions/2026-05-23-control-plane-pm34-artifact-validation-readiness-audit.md → DONE_IN_L3B
+  - docs/sessions/2026-05-23-control-plane-pm80-openclaw-runtime-evidence-capture-design.md → DONE_IN_L3B
 
 ### TARGET: docs/MVP_CRITERIA.md
 
@@ -333,37 +334,37 @@ Exhaustive plan for HISTORY_EVIDENCE refs that would break if the five archive c
 - **HISTORY_REF_COUNT:** 19
 - **IMMUTABLE_REPLACEMENT:** https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/POST_MVP_BACKLOG.md
 - **SOURCE_PATHS / ACTION:**
-  - docs/PM11_CANDIDATE_41_HANDOFF_FILE.md → REWRITE_IN_L3B
-  - docs/PM16_AUTOMATION_ROUTER_LAYER.md → REWRITE_IN_L3B
-  - docs/plans/2026-05-21_1700_control-plane_pm10-automation-next-step.plan.md → REWRITE_IN_L3B
-  - docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md → REWRITE_IN_L3B
-  - docs/runtime-packets/pm-12-candidate-41-handoff-file-import-gate.md → REWRITE_IN_L3B
-  - docs/runtime-packets/pm-15-post-promotion-regression-gate.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-02f-first-edit-json-draft.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-02f-readonly-first-edit-plan.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-02f-redacted-export-commit.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-final-n8n-cleanup.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-n8n-numeric-workflow-rename.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-backlog.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-gate-b.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-decision-a.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-design.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-pm09-final-docs-close.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-raw-github-url-import-preference.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-pm12-candidate-41-runtime-packet.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-pm13-candidate-41-redacted-export-prep.md → REWRITE_IN_L3B
+  - docs/PM11_CANDIDATE_41_HANDOFF_FILE.md → DONE_IN_L3B
+  - docs/PM16_AUTOMATION_ROUTER_LAYER.md → DONE_IN_L3B
+  - docs/plans/2026-05-21_1700_control-plane_pm10-automation-next-step.plan.md → DONE_IN_L3B
+  - docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md → NOOP_PLAINTEXT_ONLY
+  - docs/runtime-packets/pm-12-candidate-41-handoff-file-import-gate.md → DONE_IN_L3B
+  - docs/runtime-packets/pm-15-post-promotion-regression-gate.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-first-edit-json-draft.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-readonly-first-edit-plan.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-02f-redacted-export-commit.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-final-n8n-cleanup.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-n8n-numeric-workflow-rename.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-backlog.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-gate-b.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-decision-a.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-design.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-pm09-final-docs-close.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-raw-github-url-import-preference.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-pm12-candidate-41-runtime-packet.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-pm13-candidate-41-redacted-export-prep.md → DONE_IN_L3B
 
 ### TARGET: docs/PLAN_OUTPUT_INGESTION.md
 
 - **HISTORY_REF_COUNT:** 6
 - **IMMUTABLE_REPLACEMENT:** https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/PLAN_OUTPUT_INGESTION.md
 - **SOURCE_PATHS / ACTION:**
-  - docs/plans/README.md → REWRITE_IN_L3B
-  - docs/runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-backlog.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-gate-b.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-decision-a.md → REWRITE_IN_L3B
-  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-design.md → REWRITE_IN_L3B
+  - docs/plans/README.md → DONE_IN_L3B
+  - docs/runtime-packets/pm-09-gate-c-extend-02f-plan-watcher.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-backlog.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-output-ingestion-gate-b.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-decision-a.md → DONE_IN_L3B
+  - docs/sessions/2026-05-21-control-plane-plan-watcher-gate-c-design.md → DONE_IN_L3B
 
 ### TARGET: docs/V4_POLLING_LATENCY.md
 
@@ -372,4 +373,36 @@ Exhaustive plan for HISTORY_EVIDENCE refs that would break if the five archive c
 - **SOURCE_PATHS / ACTION:**
   - docs/decision-packets/2026-05-21-criterion-1-latency-closure-decision.md → DONE_IN_L3A6 (immutable permalink applied)
 
-**HISTORY_LINK_REWRITE_PLAN_COMPLETE:** `true` (exhaustive mechanical census; remaining history relative links scheduled REWRITE_IN_L3B; D-C1-A already rewritten in L3A.6).
+**HISTORY_LINK_REWRITE_PLAN_COMPLETE:** `true` (executed in L3B; see section R).
+
+---
+
+## R. L3B atomic historical reduction (2026-08-26)
+
+- **Explicit destructive authorization:** ACQUIRED (frontier-authorized L3B).
+- **PR16 final predelete reverify:** PASS (`50fd11d…` / COMPLETE marker fixed).
+- **Recovery baseline (unchanged):** `777504f7c46e5e724b6ad5f8586a98d43bab7ce8`
+- **Census refinement:** 28 planned history/evidence source refs =
+  - **24** Markdown-link rewrite sources → `DONE_IN_L3B`
+  - **4** `NOOP_PLAINTEXT_ONLY` (inline-code/plain path only; byte-invariant) =
+    - `docs/runtime-packets/FAST_TRACK_RUNTIME_SEQUENCE.md`
+    - `docs/runtime-packets/pm-14-promote-41-to-40-gate.md`
+    - `docs/sessions/2026-05-22-control-plane-pm58-openclaw-bridge-artifact-lifecycle-design.md`
+    - `docs/sessions/2026-05-22-control-plane-pm64-pm68-openclaw-governance-cleanup-batch.md`
+- **UNIQUE_PLANNED_SOURCE_PATHS:** 28
+- **UNIQUE_DONE_IN_L3B_PATHS:** 24
+- **UNIQUE_NOOP_PLAINTEXT_ONLY_PATHS:** 4
+- **UNIQUE_UNCLASSIFIED_SOURCE_PATHS:** 0
+- **Markdown relative links rewritten:** 47 → immutable baseline URLs
+- **DELETE_READY_FINAL removed from current tree (5):**
+  - `docs/MVP_STATUS.md`
+  - `docs/MVP_CRITERIA.md`
+  - `docs/POST_MVP_BACKLOG.md`
+  - `docs/PLAN_OUTPUT_INGESTION.md`
+  - `docs/V4_POLLING_LATENCY.md`
+- **L3B_ATOMIC_CHANGESET:** 5 delete + 24 history rewrites + 2 audit updates (31 paths); 4 NOOP untouched
+- **BROKEN_LINKS_AFTER_L3B:** 0
+- **Dependencies (current/runtime/rebuild/live-gate):** none for deleted paths
+- **Runtime / credential / branch-deletion actions:** NONE
+- **L3A compatibility pointers kept unchanged:** `RUNTIME_GATES`, `WORKFLOW_EXPORT_STATUS`, `HANDOFF_N8N_GATE`
+- **D-C1-A:** remains `DONE_IN_L3A6`

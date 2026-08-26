@@ -2,7 +2,7 @@
 
 Structured **Cursor Plan** outputs saved for future orchestrator ingestion via GitHub (and eventually n8n → Telegram).
 
-**PM-09 Gate B** — [PLAN_OUTPUT_INGESTION.md](../PLAN_OUTPUT_INGESTION.md). **Gate C watcher design** — [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md). **Docs-only.** No runtime in this folder by itself.
+**PM-09 Gate B** — [PLAN_OUTPUT_INGESTION.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/PLAN_OUTPUT_INGESTION.md). **Gate C watcher design** — [PLAN_WATCHER_GATE_C.md](../PLAN_WATCHER_GATE_C.md). **Docs-only.** No runtime in this folder by itself.
 
 ---
 
@@ -70,7 +70,7 @@ docs/plans/2026-05-21_1230_control-plane_pm-09-gate-b.plan.md
 4. `## Out of scope`
 5. `## Notes for orchestrator`
 
-Full schema: [PLAN_OUTPUT_INGESTION.md](../PLAN_OUTPUT_INGESTION.md#gate-b--file-convention-delivered).
+Full schema: [PLAN_OUTPUT_INGESTION.md](https://github.com/mrhz1973/control-plane/blob/777504f7c46e5e724b6ad5f8586a98d43bab7ce8/docs/PLAN_OUTPUT_INGESTION.md#gate-b--file-convention-delivered).
 
 ---
 
