@@ -5,66 +5,67 @@
 ## LATEST
 
 ```yaml
-task_ref: OPENCLAW_CORE_UPGRADE_FOR_GLM53
-result_cursor: PASS
+task_ref: GLM_ZAI_VPS_DIRECT_SMOKE_EXACT_53
+result_cursor: BLOCKED
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 7054e183e0f3ece19b2999518d98a0d44e253b6f
+repo_head_observed_at_task: a42db816e57b4ca1adc83f1fc36894359aa63ca6
 workspace: clean
 
-OPENCLAW_VERSION_BEFORE: 2026.7.1-2 (0790d9f)
-OPENCLAW_TARGET_VERSION: 2026.8.1-beta.3
+OPENCLAW_VERSION_BEFORE: 2026.8.1-beta.3 (5831b80)
 OPENCLAW_VERSION_AFTER: 2026.8.1-beta.3 (5831b80)
 
-ZAI_PLUGIN_VERSION_BEFORE: 2026.7.1
-ZAI_PLUGIN_TARGET_VERSION: 2026.8.1-beta.3
+ZAI_PLUGIN_VERSION_BEFORE: 2026.8.1-beta.3
 ZAI_PLUGIN_VERSION_AFTER: 2026.8.1-beta.3
 
-TARGET_COMPATIBILITY_VERIFIED: true
-TARGET_SELECTION: "smallest official pair with glm-5.3: openclaw@2026.8.1-beta.3 + @openclaw/zai-provider@2026.8.1-beta.3"
-
-ROLLBACK_METADATA_PREPARED: true
-ROLLBACK_LOCATION: /root/openclaw-rollback/glm53-20260826T091609Z
-ROLLBACK_EXECUTED: false
-
-EXACT_GLM53_MODEL_REF_VISIBLE: true
-
 ZAI_AUTH_BEFORE: configured
+ZAI_PROFILE_PRESENT_BEFORE: true
+ZAI_PROVIDER_BEFORE: available
+EXACT_GLM53_MODEL_REF_VISIBLE_BEFORE: true
+
+DIRECT_LOCAL_COMMAND_SUPPORTED: true
+EXPLICIT_MODEL_SELECTION_SUPPORTED: true
+DIRECT_COMMAND_FORM: "openclaw infer model run --local --model <provider/model> --prompt <text>"
+
+MODEL_USED: zai/glm-5.3
+
+GLM53_MODEL_INVOCATION_COUNT: 1
+CODEX_INVOCATION_COUNT: 0
+QWEN_INVOCATION_COUNT: 0
+AUTOMATIC_RETRY_COUNT: 0
+
+SMOKE_EXIT_CODE: 1
+SMOKE_RESPONSE_RECEIVED: false
+SMOKE_MARKER_MATCH: false
+
+BLOCKER: BLOCKED_ZAI_AUTH_401_TOKEN_EXPIRED_OR_INCORRECT
+SANITIZED_PROVIDER_ERROR: "401 token expired or incorrect (provider=zai model=glm-5.3)"
+
 ZAI_AUTH_AFTER: configured
 ZAI_PROFILE_PRESENT_AFTER: true
 ZAI_PROVIDER_AFTER: available
-
-ISOLATED_NODE_VERSION: v24.19.0
-SYSTEM_NODE_VERSION_BEFORE: v18.19.1
-SYSTEM_NODE_VERSION_AFTER: v18.19.1
-SYSTEM_NPM_VERSION_BEFORE: 9.2.0
-SYSTEM_NPM_VERSION_AFTER: 9.2.0
-
-MODEL_INVOCATION_COUNT: 0
-CODEX_INVOCATION_COUNT: 0
+EXACT_GLM53_MODEL_REF_VISIBLE_AFTER: true
 
 PORT_18789_AFTER: free
 GATEWAY_RUNNING_AFTER: false
 
+AUTH_MUTATION: false
+CONFIG_MUTATION: false
 GATEWAY_MUTATION: false
 SERVICE_MUTATION: false
 N8N_MUTATION: false
 DOCKER_MUTATION: false
 TAILSCALE_MUTATION: false
-QWEN_CHANGED: false
+CORE_PLUGIN_MUTATION: false
 SECRET_VALUES_PERSISTED: false
 
-LAYOUT_NOTE: "npm installed into /opt/openclaw-app/node_modules; bin/lib path relinked to new package; stale 2026.7.1-2 moved into rollback dir"
-DOCTOR_FIX_APPLIED: true
-DOCTOR_FIX_REASON: "post-upgrade config schema migration required by OpenClaw 2026.8.1-beta.3 (structural only; no credential re-entry)"
-
-NEXT_GATE_CLASSIFICATION: GLM_ZAI_VPS_DIRECT_SMOKE_GATE_REQUIRED
+NEXT_GATE_CLASSIFICATION: GLM_ZAI_VPS_CREDENTIAL_REFRESH_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-Official smallest compatible upgrade on VPS `ionos-n8n`: OpenClaw core `2026.7.1-2` → `2026.8.1-beta.3`, Z.AI provider `2026.7.1` → `2026.8.1-beta.3`. Exact `zai/glm-5.3` now visible. Auth profile `zai:manual` preserved. Gateway remained inactive; port 18789 free. System Node/npm unchanged. No model/Codex invocation. VPS-only rollback metadata prepared; rollback not executed.
+Exactly one direct/local smoke of `zai/glm-5.3` on VPS `ionos-n8n` via OpenClaw `2026.8.1-beta.3` + `@openclaw/zai-provider@2026.8.1-beta.3`. Precheck confirmed exact model visible, profile `zai:manual` present, gateway inactive, port 18789 free. Invocation used `infer model run --local --model zai/glm-5.3`. Provider returned HTTP 401 (token expired or incorrect); no text output; marker not matched. No retry. No Codex/Qwen. Auth/config/core/plugin unchanged. Gateway remained inactive.
 
 ## Completion persistence invariant
 
