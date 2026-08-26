@@ -7,20 +7,22 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8** |
-| **BLOCCO ATTIVO** | `GLM-ZAI-POST-REMEDIATION-SMOKE` |
-| **STATO BLOCCO** | `AUTHORIZED / ONE_BOUNDED_MODEL_INVOCATION_PENDING` |
-| **GATE CORRENTE** | `GLM_ZAI_POST_REMEDIATION_SMOKE_AUTHORIZED` |
-| **NEXT** | execute exactly one new direct smoke of exact `zai/glm-5.3` to verify provider acceptance after successful local credential repair; no retry, fallback or endpoint change |
+| **BLOCCO ATTIVO** | `GLM-ZAI-ENDPOINT-PRODUCT-COMPATIBILITY` |
+| **STATO BLOCCO** | `HUMAN_GATE_REQUIRED / ENDPOINT_PRODUCT_COMPATIBILITY` |
+| **GATE CORRENTE** | `GLM_ZAI_ENDPOINT_PRODUCT_COMPATIBILITY_GATE_REQUIRED` |
+| **NEXT** | determine and, only if explicitly authorized, remediate the Z.AI endpoint/product compatibility for exact `zai/glm-5.3`; no retry before that gate |
 | **VPS OPENCLAW** | `2026.8.1-beta.3`; gateway inactive |
 | **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` |
 | **CODEX VPS** | OAuth PASS · direct smoke PASS |
 | **GLM 5.3 REF** | `zai/glm-5.3` visible |
-| **Z.AI CREDENTIAL REMEDIATION** | PASS · stored credential now single/nonduplicated · profile/provider/model ref preserved |
-| **Z.AI ENDPOINT FACTOR** | secondary/unresolved: installed docs identify Coding Plan path for GLM 5.3 while effective path observed general API; no endpoint mutation authorized in this smoke |
+| **Z.AI CREDENTIAL REMEDIATION** | PASS · stored credential single/nonduplicated · profile/provider/model ref preserved |
+| **GLM 5.3 POST-REMEDIATION SMOKE** | BLOCKED · exactly one invocation · provider HTTP 500 Internal service error · no retry |
+| **OBSERVED REQUEST PATH** | general API `https://api.z.ai/api/paas/v4/chat/completions` |
+| **Z.AI ENDPOINT FACTOR** | unresolved but now primary compatibility hypothesis: installed docs identify Coding Plan path for GLM 5.3 while effective request used general API |
 | **VPS NETWORK** | port `18789` free · gateway false |
-| **PLANNER INVOCATIONS** | Codex `1` · GLM `2` historical smoke attempts · Qwen `0` |
-| **LATEST EVIDENCE** | `GLM_ZAI_CREDENTIAL_REMEDIATION_DOUBLE_PASTE_FIX = PASS`; evidence commit `91381ae8746fad755f99dea1b00fd1e925803e22` |
-| **PLANNER SMOKE** | Codex PASS · exactly one GLM post-remediation smoke authorized · Qwen 3.8 37B blocked missing model |
+| **PLANNER INVOCATIONS** | Codex `1` · GLM `3` total smoke attempts · Qwen `0` |
+| **LATEST EVIDENCE** | `GLM_ZAI_POST_REMEDIATION_SMOKE_EXACT_53 = BLOCKED`; evidence commit `74f7b84d4a07442f06e26562538cfc8e04590427`; blocker `BLOCKED_ZAI_PROVIDER_HTTP_500_INTERNAL_SERVICE_ERROR` |
+| **PLANNER SMOKE** | Codex PASS · GLM blocked pending endpoint/product compatibility gate · Qwen 3.8 37B blocked missing model |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
 | **Gate E / L5_PASS** | PASS-CLOSED / NOT_CLAIMED |
 | **L5 runtime** | activation `false` · runtime `false` · endurance `false` |
@@ -30,12 +32,11 @@
 
 ## Boundaries operative correnti
 
-- Credential remediation PASS: malformed double-paste removed; local stored credential is now structurally single/nonduplicated.
-- L'operatore ha autorizzato esattamente una nuova minimal direct smoke invocation dell'esatto `zai/glm-5.3` esclusivamente per verificare end-to-end l'accettazione provider della credenziale corretta.
-- Nessun retry automatico o seconda invocation è autorizzato se la smoke fallisce o è inconcludente.
-- Nessuna modifica endpoint/baseUrl/Coding Plan path è autorizzata in questo pass; il fattore endpoint resta separato e potrà essere valutato solo dopo l'esito dello smoke.
-- Nessun fallback GLM 5.2/5.1/5 o altri modelli, Codex/Qwen invocation, credential/auth/config mutation, core/plugin upgrade, doctor --fix, gateway/service activation, n8n/Docker/Tailscale mutation, firewall/reverse proxy, runtime wiring, billing o broader runtime activation è autorizzato.
-- Se la smoke fallisce: STOP, nessun retry, persistere blocker sanitizzato e classificare il gate successivo.
+- Credential remediation PASS: il precedente double-paste è stato corretto e la credenziale salvata è strutturalmente singola/nonduplicata.
+- La singola smoke post-remediation non ha più restituito HTTP 401; ha raggiunto il provider sul general API path e ha ricevuto HTTP 500 Internal service error, senza testo e senza retry.
+- Questo stato non giustifica un'altra smoke alla cieca. Il prossimo gate riguarda la compatibilità endpoint/prodotto per GLM 5.3.
+- La diagnosi precedente ha già rilevato che la documentazione installata descrive GLM 5.3 come Coding Plan-oriented, mentre il path effettivo osservato resta il general API path. Prima di qualsiasi endpoint mutation deve essere stabilita la compatibilità del tipo/sorgente della key con il prodotto target.
+- Nessuna nuova model invocation, retry, fallback GLM, endpoint/baseUrl mutation, credential/auth/config mutation, Codex/Qwen invocation, core/plugin upgrade, doctor --fix, gateway/service activation, n8n/Docker/Tailscale mutation, firewall/reverse proxy, runtime wiring o billing è autorizzata.
 - Nessun secret/token può apparire in GPT Web, Cursor chat, GitHub, argv o log persistenti.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
 
