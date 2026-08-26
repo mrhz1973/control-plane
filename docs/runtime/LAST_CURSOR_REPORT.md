@@ -5,87 +5,82 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0008-Z_ZAI_OFFICIAL_ENDPOINT_AUTODETECT_DIAGNOSIS
-result_cursor: BLOCKED
+task_ref: D-0008-Z_ZAI_CREDENTIAL_IDENTITY_DIAGNOSTIC
+result_cursor: PASS_READ_ONLY_DIAGNOSTIC
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: da99847c61495f316d60988636236d1bc41febd2
+repo_head_observed_at_task: c81579ccca2a174cc4e9c2de229834cef62f6eac
 workspace_at_start: clean
-execution_packet: docs/runtime/ISSUE_8_ZAI_AUTODETECTION_PACKET.yaml
-execution_packet_revision: 4
+active_work: github:issue/8
+operator_evidence_ref: github:issue/8#issuecomment-5430877624
 
-OPENCLAW_VERSION: 2026.8.1-beta.3
-ZAI_PLUGIN_VERSION: 2026.8.1-beta.3
+diagnostic_type: read_only_credential_identity
+goal: determine which Z.AI dashboard API Key ID corresponds to stored OpenClaw auth profile zai:manual
+authorization_scope: identity extraction and local comparison only; not provider/model authorization
 
-PLANNER_REQUESTED: codex
-PLANNER_USED: codex
-PLANNER_FALLBACK_USED: false
-CODEX_PLANNER_INVOCATION_COUNT: 4
-PLANNER_PACKET_SCHEMA_RESULT: PASS_R4
+ZAI_MANUAL_KEY_ID_MATCH: CANNOT_SAFELY_DETERMINE
 
-ZAI_PROFILE_PRESENT: true
-ZAI_PROFILE_ID: zai:manual
-ZAI_AUTH_TYPE: api_key
-EFFECTIVE_ZAI_BASE_ENDPOINT_BEFORE: https://open.bigmodel.cn/api/coding/paas/v4
+ZAI_DOCUMENTED_KEY_STRUCTURE: "{32-hex-id}.{16-alnum-secret}"
+ZAI_EXPECTED_FULL_KEY_LENGTH_CLASS: approximately_49_chars_when_complete
 
-ZAI_PRIMARY_PROBE_REQUEST_COUNT: 4
-AUTOMATIC_RETRY_COUNT: 0
-REDIRECT_FOLLOW_COUNT: 0
-FIRST_HTTP_SUCCESS_FOUND: false
-MATRIX_STOP_REASON: ALL_OFFICIAL_PRIMARY_SURFACES_FAILED
+STORE_RESOLVED:
+  path: /root/.openclaw/state/openclaw.sqlite
+  table: auth_profile_stores
+  store_key: shared
+  profile_id: zai:manual
+  provider: zai
+  auth_type: api_key
+  profile_present: true
 
-PROBES:
-  - invocation_count: 1
-    surface: General Global
-    endpoint: https://api.z.ai/api/paas/v4/chat/completions
-    model: glm-5.2
-    http_status: 500
-    result_classification: HTTP_UPSTREAM_ERROR
-  - invocation_count: 2
-    surface: General CN
-    endpoint: https://open.bigmodel.cn/api/paas/v4/chat/completions
-    model: glm-5.2
-    http_status: 500
-    result_classification: HTTP_UPSTREAM_ERROR
-  - invocation_count: 3
-    surface: Coding Global
-    endpoint: https://api.z.ai/api/coding/paas/v4/chat/completions
-    model: glm-5.3
-    http_status: 500
-    result_classification: HTTP_UPSTREAM_ERROR
-  - invocation_count: 4
-    surface: Coding CN
-    endpoint: https://open.bigmodel.cn/api/coding/paas/v4/chat/completions
-    model: glm-5.3
-    http_status: 500
-    result_classification: HTTP_UPSTREAM_ERROR
+STORED_CREDENTIAL_FORMAT_ANALYSIS:
+  key_length: 5
+  contains_dot: false
+  matches_id_dot_secret: false
+  matches_id_only_32hex: false
+  charset_class: ascii_printable_digits_and_punctuation_only
+  unique_char_count: 4
+  secret_store_entries_row_count: 0
+  env_fallback_keys_checked: ZAI_API_KEY UNSET; GLM_API_KEY UNSET; BIGMODEL_API_KEY UNSET
+  alternate_agent_store_profile: missing
+  openclaw_models_status_label_length: 16
+  openclaw_cli_list_confirms: "zai:manual [zai/api_key]"
 
-POST_MATRIX_PROVIDER_REQUEST_COUNT: 0
-POST_MATRIX_MODEL_INVOCATION_COUNT: 0
-DIAGNOSTIC_LOOP_ENTERED: true
-DIAGNOSTIC_ROUNDS_COMPLETED: 3
-DIAGNOSTIC_MAX_ROUNDS: 3
-DIAGNOSTIC_STOP_REASON: REAL_HUMAN_GATE_REQUIRED
+EXTRACTED_API_KEY_ID:
+  extractable: false
+  reason: stored profile.key is not in documented Z.AI id.secret format and is far shorter than a valid full key
 
-ROUND_1_RESULT: "PASS: installed zai-provider 2026.8.1-beta.3 detector endpoints, models, Bearer header name and request body match the authorized matrix; zai:manual metadata is zai/api_key"
-ROUND_2_RESULT: "PASS: NTP synchronized; DNS and certificate-validating TLS handshakes pass for api.z.ai and open.bigmodel.cn"
-ROUND_3_RESULT: "uniform HTTP 500 across all four official primary surfaces with local routing/profile/clock/DNS/TLS checks passing"
+OPERATOR_DASHBOARD_KEYS_AVAILABLE_FOR_MATCH:
+  cursor_key:
+    name: Cursor
+    created: 2026-07-01
+    last_used: 2026-08-19
+    sanitized_32hex_key_id_supplied: false
+  control_plane_key:
+    name: Control Plane
+    created: 2026-08-26
+    last_used_ui: Not used
+    sanitized_32hex_key_id_supplied: false
 
-ROOT_CAUSE_CLASSIFICATION: PROVIDER_OR_ACCOUNT_SPECIFIC_UPSTREAM_FAILURE_ACROSS_ALL_OFFICIAL_PRIMARY_SURFACES
-CANDIDATE_REMEDIATION: PROVIDER_ACCOUNT_PLAN_ENTITLEMENT_SUPPORT_VERIFICATION
-CANDIDATE_REMEDIATION_APPLIED: false
-BLOCKER: BLOCKED_ALL_ZAI_OFFICIAL_PRIMARY_SURFACES_HTTP500
-NEXT_GATE_CLASSIFICATION: ZAI_PROVIDER_ACCOUNT_PLAN_ENTITLEMENT_SUPPORT_GATE_REQUIRED
+COMPARISON_OUTCOME:
+  cursor_key_id_compare: not_performed_missing_extracted_id_and_missing_dashboard_id
+  control_plane_key_id_compare: not_performed_missing_extracted_id_and_missing_dashboard_id
+  neither_known_key_ruled_out: false
+  interpretation: cannot map zai:manual to Cursor vs Control Plane dashboard keys without a valid extracted API Key ID and without sanitized dashboard Key ID values in-band
 
-ZAI_PROFILE_PRESENT_AFTER: true
-ZAI_PROFILE_ID_AFTER: zai:manual
-EFFECTIVE_ZAI_BASE_ENDPOINT_AFTER: https://open.bigmodel.cn/api/coding/paas/v4
-PORT_18789_AFTER: free
-GATEWAY_RUNNING_AFTER: false
+MATERIAL_FINDING:
+  stored_openclaw_zai_manual_credential_does_not_match_documented_zai_api_key_format
+  prior_four_surface_http500_probes_likely_used_nonconforming_short_stored_value_as_bearer
+  this materially weakens provider_only_upstream_failure_as_sole_explanation
 
-SECRET_LOADED_OPAQUELY_IN_REQUEST_PROCESS: true
+provider_model_request_count: 0
+credential_mutation: false
+config_mutation: false
+profile_mutation: false
+runtime_mutation: false
+network_mutation: false
+
 SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
 SECRET_VALUE_PERSISTED: false
@@ -93,11 +88,5 @@ SECRET_VALUE_HASHED: false
 SECRET_VALUE_MEASURED: false
 AUTHORIZATION_DATA_EXPOSED: false
 
-AUTH_MUTATION: false
-CONFIG_MUTATION: false
-PROFILE_MUTATION: false
-ENDPOINT_MUTATION: false
-MODEL_CATALOG_MUTATION: false
-RUNTIME_MUTATION: false
-NETWORK_MUTATION: false
+NEXT_RECOMMENDED_GATE: real human gate to re-enter or repair zai:manual with a full documented-format Z.AI key before any further provider/model request or provider-side support escalation
 ```
