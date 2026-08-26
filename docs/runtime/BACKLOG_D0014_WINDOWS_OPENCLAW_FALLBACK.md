@@ -2,31 +2,29 @@
 
 ```yaml
 id: D-0014-W
-title: Prepare Windows OpenClaw as private fallback broker
+title: Activate Windows OpenClaw as private fallback broker
 repository: mrhz1973/control-plane
 objective: >
-  Prepare the already-tested Windows OpenClaw installation as a private fallback
-  broker for the control-plane while the canonical VPS IONOS Z.AI path remains
-  blocked awaiting provider response, without changing the canonical primary
-  architecture and without enabling production/runtime wiring in this backlog step.
+  Make the already-tested Windows OpenClaw installation operational as a PRIVATE
+  fallback broker reachable from the VPS/control-plane over Tailscale/private transport,
+  while keeping the VPS architecture canonical and issue #8 waiting on Z.AI Support.
 scope:
   allowed_areas:
-    - read-only discovery of the existing Windows OpenClaw installation and current state
-    - read-only verification of Windows Tailscale presence/state and private reachability prerequisites
-    - read-only verification of OpenClaw version, provider/profile/model metadata, gateway/service state, listening ports and local paths
-    - architecture/design for n8n VPS -> Tailscale -> Windows OpenClaw fallback transport
-    - definition of minimal future activation steps, rollback, health checks and failover boundaries
-    - sanitized persistence of evidence and plan in GitHub
+    - inspect existing Windows OpenClaw/Tailscale state first
+    - start/restart the existing Windows OpenClaw gateway/process when required
+    - apply the minimum non-destructive bind/listen configuration needed for Tailscale-private reachability
+    - apply the minimum Windows Firewall/Tailscale-private rule needed only if required for the chosen private port
+    - verify local Windows health and VPS-to-Windows private reachability
+    - define and verify deterministic fallback health checks and rollback
+    - sanitized persistence of evidence/checkpoints in GitHub
   forbidden_areas:
-    - API key or Authorization value exposure, extraction, copying, hashing or secret-derived metadata
-    - credential/auth/billing mutation
-    - starting, installing or modifying OpenClaw gateway/service/daemon
-    - Tailscale configuration changes, exit-node changes, ACL changes or route advertisement
-    - Windows Firewall changes, port-forwarding, reverse proxy or public exposure
-    - n8n workflow creation/modification or runtime wiring
-    - VPS OpenClaw mutation
-    - provider/model requests not separately authorized
-    - PM-34/L5/runtime/endurance/permanent schedule activation
+    - public exposure, NAT/port-forwarding, public reverse proxy or open Internet listener
+    - credential extraction/exposure/rotation/deletion, Authorization logging or billing mutation
+    - destructive actions or destructive Git
+    - autonomous n8n workflow authoring by Cursor
+    - VPS OpenClaw credential/provider mutation
+    - PM-34/L5/endurance/permanent schedule activation
+    - promotion of Windows from fallback to canonical primary
 risk_hint: medium
 complexity_hint: medium
 planner:
@@ -39,31 +37,32 @@ execution:
   target: cursor
   loop_allowed: true
 acceptance:
-  - Existing Windows OpenClaw state is inventoried read-only with no secret exposure.
-  - Tailscale/private-network prerequisites are identified without mutation.
-  - A concrete private fallback topology is documented: n8n VPS -> Tailscale -> Windows OpenClaw.
-  - Exact future activation mutations are separated from discovery and marked as requiring a new human gate.
-  - Rollback and health-check criteria are deterministic.
-  - No provider/model call, auth/config/runtime/network mutation, public exposure or n8n workflow authoring occurs in the discovery step.
-  - GitHub evidence is sanitized and references current canonical frontier.
+  - Windows OpenClaw fallback endpoint is running using the existing installation.
+  - Endpoint is reachable only through local/private Tailscale path, never public Internet.
+  - VPS can perform a deterministic private transport/health check to the Windows fallback endpoint.
+  - Existing credentials remain undisclosed and unmodified unless a new explicit gate is reached.
+  - No n8n workflow logic is authored by Cursor.
+  - A deterministic rollback restores the pre-task Windows OpenClaw/network state.
+  - Sanitized evidence and canonical Git verification are persisted.
 human_gate_required_if:
-  - any credential/auth/billing action
-  - any OpenClaw gateway/service start or install
-  - any Tailscale/ACL/route/network/firewall mutation
-  - any n8n workflow/runtime wiring
-  - any public exposure
-  - any provider/model request beyond already-persisted evidence
-  - any scope expansion or destructive action
+  - credentials/auth/billing must change
+  - required action would expose a public listener or port
+  - destructive action is required
+  - required n8n workflow logic is missing and must be authored
+  - Windows must become canonical primary
+  - provider/model validation would require a new Z.AI probe not already authorized
+  - scope expansion beyond private fallback activation is required
 context_refs:
   - docs/runtime/CURRENT_FRONTIER.md
   - docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md
   - docs/foundation/CURSOR_PROMPT_TEMPLATE.md
   - docs/contracts/execution-packet-v1.md
   - docs/contracts/planner-routing-policy-v1.md
+  - GitHub issue #20
   - GitHub issue #8
-status: BACKLOG_READY_FOR_PLANNER
+status: OPERATOR_AUTHORIZED_FOR_BOUNDED_IMPLEMENTATION
 notes:
-  - Canonical primary remains OpenClaw on VPS; Windows is fallback, not silent promotion to primary.
-  - Z.AI support escalation remains independently open and awaiting provider response.
-  - Existing evidence indicates Windows OpenClaw + Coding Plan Global + glm-5.1 previously succeeded.
+  - Operator explicitly rejected docs-only on 2026-08-27 and authorized proceeding with FALLBACK 1.
+  - Authorization evidence: issue #20 comment 5431799606.
+  - Prefer transport/health validation; do not generate extra Z.AI probes merely to prove reachability.
 ```
