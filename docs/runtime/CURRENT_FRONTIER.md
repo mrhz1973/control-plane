@@ -8,18 +8,18 @@
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8 — Architecture v3 evidence track — OpenClaw → planners → Cursor bounded loop** |
 | **BLOCCO ATTIVO** | `VPS-CODEX-OAUTH-RECOVERY` |
-| **STATO BLOCCO** | `AUTHORIZED / STALE_LOCAL_OAUTH_PROCESS_CLEANUP_PENDING` |
-| **GATE CORRENTE** | `STALE_OAUTH_PROCESS_CLEANUP_AUTHORIZED` |
-| **NEXT** | re-identificare read-only i PID dei 2 processi Windows stale del vecchio OAuth (`cmd.exe` wrapper `vps_codex_oauth_login.cmd` + relativo `ssh.exe` verso `ionos-n8n`), terminare esclusivamente quei processi se match esatto, quindi verify-only locale/VPS e persistere `LAST_CURSOR_REPORT`; nessun nuovo OAuth |
+| **STATO BLOCCO** | `HUMAN_GATE_REQUIRED / CALLBACK_RECOVERY` |
+| **GATE CORRENTE** | `OAUTH_HEADLESS_CALLBACK_RECOVERY_GATE_REQUIRED` |
+| **NEXT** | autorizzare un solo nuovo OAuth `openai-codex` sul VPS usando un tunnel SSH temporaneo locale `127.0.0.1:1455 -> VPS 127.0.0.1:1455`, esclusivamente per la callback OAuth; verify auth/provider, chiudere il tunnel con la sessione e persistere evidence; nessun planner invocation/gateway/GLM/n8n wiring |
 | **PLACEMENT DECISION** | ACCEPTED — OpenClaw target canonico sul VPS IONOS come broker 24/7; Cursor/Bugbot/Ollama-Qwen restano locali |
 | **ISOLATED NODE 24** | PASS — official `v24.19.0`; `/opt/openclaw-node/current`; system Node/npm unchanged |
 | **VPS OPENCLAW** | PASS — `openclaw@2026.7.1-2` at `/opt/openclaw-app`; gateway non attivo |
-| **CODEX OAUTH VPS** | BLOCKED — auth current `missing`; provider current `missing`; nessun OAuth login attivo sul VPS |
-| **STALE OAUTH PROCESS RECHECK** | PASS read-only — local wrapper `true`, local ssh `true`, local count `2`; VPS OAuth login `false`, VPS count `0` |
+| **CODEX OAUTH VPS** | BLOCKED — primo tentativo fallito per callback browser su `localhost:1455`; auth current `missing`; provider current `missing` |
+| **STALE OAUTH CLEANUP** | PASS — exact wrapper `cmd.exe` + child `ssh.exe` identificati e terminati; unrelated processes stopped `0`; locale OAuth count `0`; VPS OAuth count `0` |
 | **VPS NETWORK** | port `18789` free · gateway false |
 | **PLANNER INVOCATION COUNT** | `0` |
 | **SECRET / WINDOWS AUTH GUARD** | secret values exposed `false` · Windows auth copied `false` |
-| **LATEST EVIDENCE** | `docs/runtime/LAST_CURSOR_REPORT.md` — `VPS_CODEX_OAUTH_STALE_PROCESS_RECHECK_READONLY = PASS`; direct Cursor persistence; evidence commit `44953d1367b82c5e7744406eb3018744e1b6f0e2` |
+| **LATEST EVIDENCE** | `docs/runtime/LAST_CURSOR_REPORT.md` — `VPS_CODEX_OAUTH_STALE_PROCESS_CLEANUP = PASS`; direct Cursor persistence; evidence commit `5e2564cd84413d056a5c5adc60805526cc548f90` |
 | **AGG EVIDENCE RULE** | CANONICAL — Cursor pass needed by `agg` must persist final report; stale/missing => `EVIDENCE_NOT_PERSISTED` |
 | **OPENCLAW v3 RUNTIME** | TARGET_VPS / INSTALLED / CODEX_NOT_AUTHENTICATED / GATEWAY_NOT_ACTIVATED |
 | **PLANNER SMOKE** | Codex VPS: BLOCKED_PENDING_OAUTH_RECOVERY · GLM VPS: BLOCKED_MISSING_AUTH · Qwen 3.8 37B: BLOCKED_MISSING_MODEL |
@@ -34,12 +34,14 @@
 
 ## Boundaries operative correnti
 
-- L'operatore ha autorizzato esclusivamente la terminazione dei 2 processi locali Windows stale appartenenti al precedente tentativo OAuth: wrapper `vps_codex_oauth_login.cmd` e relativo `ssh.exe` verso `ionos-n8n` associato a `openclaw models auth login --provider openai-codex`.
-- Prima della terminazione Cursor deve re-identificare read-only i PID e verificare il match esatto; nessun altro `cmd.exe`, `ssh.exe` o processo deve essere toccato.
-- È autorizzata la sola verifica post-cleanup che non restino processi OAuth locali/VPS. Il VPS risultava già senza processi OAuth attivi al recheck precedente.
-- Il cleanup NON autorizza nuovi tentativi OAuth, callback recovery, planner/model invocation, gateway/service, GLM/Z.AI, n8n/Docker/Tailscale, firewall/reverse proxy, runtime wiring, billing o Qwen.
-- Dopo cleanup PASS il prossimo gate sarà `OAUTH_HEADLESS_CALLBACK_RECOVERY_GATE_REQUIRED`.
-- Token/auth state Windows NON vanno copiati, letti o trasferiti sul VPS; nessun secret/callback/code deve entrare in GitHub.
+- Il cleanup dei processi stale è PASS: i soli due processi locali appartenenti al vecchio OAuth sono stati terminati dopo identity check; nessun processo OAuth resta locale o VPS.
+- Il primo OAuth resta `BLOCKED`; Codex auth/provider sul VPS sono ancora `missing`.
+- Il prossimo gate deve autorizzare separatamente **un solo nuovo OAuth** e il solo tunnel SSH temporaneo necessario alla callback `localhost:1455`.
+- Il tunnel previsto deve essere loopback-only sul PC (`127.0.0.1:1455`) e inoltrare esclusivamente a `127.0.0.1:1455` sul VPS; nessun bind `0.0.0.0`, nessuna modifica firewall/nginx/reverse proxy e nessun servizio persistente.
+- Prima del nuovo OAuth vanno verificati read-only che la porta locale 1455 sia libera e che non esistano processi OAuth stale; se il bind del tunnel fallisce o la porta è occupata, STOP senza login.
+- Dopo OAuth, il tunnel deve terminare con la stessa sessione SSH; verify auth/provider read-only, gateway `false`, port 18789 free, planner invocation `0`, quindi persist `LAST_CURSOR_REPORT.md`.
+- Token/auth state Windows NON vanno copiati, letti o trasferiti sul VPS; nessun token/callback/code deve entrare in GitHub.
+- Non sono autorizzati planner/model invocation, gateway/service, GLM/Z.AI, n8n/Docker/Tailscale mutation, firewall/reverse proxy/public exposure, runtime wiring, billing o Qwen.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
 
 ## Puntatori
