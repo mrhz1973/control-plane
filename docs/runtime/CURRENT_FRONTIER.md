@@ -7,22 +7,26 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8 — Architecture v3 evidence track — OpenClaw → planners → Cursor bounded loop** |
-| **BLOCCO ATTIVO** | `VPS-CODEX-OAUTH-RECOVERY` |
-| **STATO BLOCCO** | `AUTHORIZED / CALLBACK_RECOVERY_RETRY_PENDING` |
-| **GATE CORRENTE** | `OAUTH_CALLBACK_RECOVERY_RETRY_AUTHORIZED` |
-| **NEXT** | eseguire un solo nuovo OAuth `openai-codex` sul VPS con tunnel loopback temporaneo `PC 127.0.0.1:1455 -> VPS 127.0.0.1:1455`, in console interattiva esterna chiaramente visibile all'operatore, senza redirect stdout/stderr o logging persistente di authorize URL/callback/code/token; verify auth/provider, chiusura tunnel con la sessione e persistenza evidence |
+| **BLOCCO ATTIVO** | `CODEX-VPS-DIRECT-SMOKE` |
+| **STATO BLOCCO** | `HUMAN_GATE_REQUIRED / MODEL_INVOCATION` |
+| **GATE CORRENTE** | `CODEX_VPS_DIRECT_SMOKE_GATE_REQUIRED` |
+| **NEXT** | authorize exactly one minimal direct Codex smoke on VPS through authenticated OpenClaw; no gateway/service, GLM/Z.AI, n8n wiring, or broader runtime activation |
 | **PLACEMENT DECISION** | ACCEPTED — OpenClaw target canonico sul VPS IONOS come broker 24/7; Cursor/Bugbot/Ollama-Qwen restano locali |
 | **ISOLATED NODE 24** | PASS — `v24.19.0`; `/opt/openclaw-node/current`; system Node/npm unchanged |
 | **VPS OPENCLAW** | PASS — `openclaw@2026.7.1-2` at `/opt/openclaw-app`; gateway non attivo |
-| **CODEX OAUTH VPS** | `missing` — callback tunnel recovery attempt BLOCKED; tunnel bind riuscito, login non completato, auth/profile/provider restano missing; retry singolo ora autorizzato |
-| **CALLBACK TUNNEL EVIDENCE** | PASS bind/cleanup — `SSH_TUNNEL_BIND=true`; exactly one OAuth invocation; local/VPS 1455 free after exit; no OAuth process remains |
+| **CODEX OAUTH VPS** | PASS |
+| **AUTH CLASSIFICATION** | configured |
+| **PROFILE** | present |
+| **PROVIDER** | usable |
+| **OAUTH TUNNEL** | closed |
+| **LOCAL / VPS 1455** | free |
 | **VPS NETWORK** | port `18789` free · gateway false |
 | **PLANNER INVOCATION COUNT** | `0` |
 | **SECRET / WINDOWS AUTH GUARD** | persisted secrets `false` · Windows auth copied `false` |
-| **LATEST EVIDENCE** | `docs/runtime/LAST_CURSOR_REPORT.md` — `VPS_CODEX_OAUTH_CALLBACK_TUNNEL_RECOVERY = BLOCKED`; evidence commit `7e87c432536b72dd0174d577ee57cda70a7f7ce0` |
+| **LATEST EVIDENCE** | `VPS_CODEX_OAUTH_CALLBACK_VISIBLE_CONSOLE_RETRY = PASS`; evidence commit `1c932240591311aea8320173a7599d270e4b8e71` |
 | **AGG EVIDENCE RULE** | CANONICAL — Cursor pass needed by `agg` must persist final report; stale/missing => `EVIDENCE_NOT_PERSISTED` |
-| **OPENCLAW v3 RUNTIME** | TARGET_VPS / INSTALLED / CODEX_NOT_AUTHENTICATED / GATEWAY_NOT_ACTIVATED |
-| **PLANNER SMOKE** | Codex VPS: BLOCKED_PENDING_OAUTH · GLM VPS: BLOCKED_MISSING_AUTH · Qwen 3.8 37B: BLOCKED_MISSING_MODEL |
+| **OPENCLAW v3 RUNTIME** | TARGET_VPS / INSTALLED / CODEX_AUTHENTICATED / GATEWAY_NOT_ACTIVATED |
+| **PLANNER SMOKE** | Codex VPS: READY_PENDING_GATE · GLM VPS: BLOCKED_MISSING_AUTH · Qwen 3.8 37B: BLOCKED_MISSING_MODEL |
 | **PM-34** | BLOCKED |
 | **n8n_ready** | `false` |
 | **Gate E** | PASS / CLOSED |
@@ -34,14 +38,13 @@
 
 ## Boundaries operative correnti
 
-- L'operatore ha autorizzato **un solo nuovo retry OAuth `openai-codex`** sul VPS tramite OpenClaw `/opt/openclaw-app/bin/openclaw` e Node isolato `/opt/openclaw-node/current`.
-- Il tunnel autorizzato è esclusivamente loopback `PC 127.0.0.1:1455 -> VPS 127.0.0.1:1455`, temporaneo e legato alla stessa sessione SSH del login; nessun bind pubblico o servizio persistente.
-- Il retry deve essere eseguito in una console interattiva esterna chiaramente visibile all'operatore. Vietati redirect stdout/stderr verso file e logging persistente di authorize URL, callback URL, authorization code o token.
-- Prima del retry vanno eseguiti solo preflight read-only su porta 1455 e processi OAuth residui; se il tunnel non può essere stabilito, STOP senza login.
-- Sono autorizzate esclusivamente le modifiche auth/config/state direttamente necessarie al singolo OAuth e la verifica provider/auth immediatamente successiva; il tunnel va chiuso con la sessione SSH.
-- Nessun retry automatico, planner/model invocation, gateway/service, GLM/Z.AI, n8n/Docker/Tailscale mutation, firewall/reverse proxy/public exposure, runtime wiring, billing o Qwen.
-- Token/auth state Windows NON vanno copiati, letti o trasferiti sul VPS; nessun token/callback/code deve entrare in GitHub o log persistenti.
+- Codex OAuth sul VPS è PASS (configured / profile present / provider usable). Il tunnel OAuth è chiuso; porte locali/VPS `1455` e VPS `18789` sono free; gateway resta false.
+- Il gate corrente è **umano**: autorizzare esattamente **un** minimal direct Codex smoke sul VPS tramite OpenClaw autenticato.
+- Nessun gateway/service, GLM/Z.AI, n8n wiring, o broader runtime activation è autorizzato da questo frontier update.
+- Nessun planner/model invocation finché il gate umano non autorizza lo smoke.
+- Token/auth state Windows NON vanno copiati, letti o trasferiti; nessun token/callback/code deve entrare in GitHub o log persistenti.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
+- WF40/42 invariati; WF41 off; wf47 invariato (inactive/unpublished, Schedule disabled, `enable_wg48_handoff=false`).
 
 ## Puntatori
 
