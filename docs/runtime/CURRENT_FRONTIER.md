@@ -7,26 +7,27 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8** |
-| **BLOCCO ATTIVO** | `GLM-ZAI-PROVIDER-HTTP500-VERIFICATION` |
-| **STATO BLOCCO** | `AUTHORIZED / ONE_BOUNDED_MODEL_INVOCATION_PENDING` |
-| **GATE CORRENTE** | `GLM_ZAI_CODING_PLAN_DEFAULT_53_VERIFICATION_AUTHORIZED` |
-| **NEXT** | execute exactly one direct smoke of exact Coding Plan default `zai/glm-5.3` through `https://api.z.ai/api/coding/paas/v4`; no retry, no 5.2/5.1/5 fallback and no auth/config/endpoint mutation; persist evidence before closure |
+| **BLOCCO ATTIVO** | `GLM-ZAI-PROVIDER-ACCOUNT-PLAN-SERVICE-BLOCKER` |
+| **STATO BLOCCO** | `HUMAN_GATE_REQUIRED / PROVIDER_ACCOUNT_PLAN_SUPPORT` |
+| **GATE CORRENTE** | `GLM_ZAI_PROVIDER_ACCOUNT_PLAN_SUPPORT_GATE_REQUIRED` |
+| **NEXT** | stop local remediation/model attempts; perform provider/account-plan-side verification with Z.AI using the persisted sanitized evidence package before any further GLM invocation |
 | **VPS OPENCLAW** | `2026.8.1-beta.3`; gateway inactive |
 | **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` |
 | **CODEX VPS** | OAuth PASS · direct smoke PASS |
 | **Z.AI KEY SOURCE** | OPERATOR-CONFIRMED: `Control Plane` key was created under GLM Coding Plan; no secret value persisted |
 | **GLM CODING PLAN** | active plan shown valid; key source is Coding Plan rather than general API platform |
 | **CODING PLAN BASE ENDPOINT** | `https://api.z.ai/api/coding/paas/v4` effective |
-| **GLM 5.3 STATUS** | Coding Plan default · exact ref/plugin declared · exactly one post-remediation Coding Plan smoke explicitly authorized |
-| **GLM 5.2 STATUS** | BLOCKED · exact ref/plugin declared · one Coding Plan smoke reached correct path and returned HTTP 500 |
+| **GLM 5.3 STATUS** | BLOCKED · exact Coding Plan default tested once on correct Coding Plan path · HTTP 500 |
+| **GLM 5.2 STATUS** | BLOCKED · exact ref tested once on correct Coding Plan path · HTTP 500 |
 | **GLM 5.2 CODING BEHAVIOR** | installed docs state Coding Plan requests for `glm-5.2` (and `glm-5.1`) are currently routed by Z.AI to `glm-5.3`; therefore selecting 5.2 does not prove lower underlying model/token usage |
-| **ROOT CAUSE CLASSIFICATION** | `LOCAL_STACK_CONSISTENT_PROVIDER_HTTP500_UNEXPLAINED`; endpoint binding fixed, request contract matches, no richer local provider error available |
+| **ROOT CAUSE CLASSIFICATION** | `PROVIDER_SIDE_OR_ACCOUNT_PLAN_SERVICE_BLOCKER`; local endpoint/auth/request-contract causes exhausted by current evidence |
+| **CURRENT BLOCKER** | `BLOCKED_ZAI_CODING_PLAN_DEFAULT_53_HTTP500` |
 | **Z.AI CREDENTIAL** | repaired · stored credential single/nonduplicated · profile `zai:manual` preserved · no re-entry |
-| **GLM QUOTA POLICY** | future issue #19 only · morning consumption observation remains; new evidence means 5.2/5.1 cannot be assumed to preserve quota on Coding Plan because they may route to 5.3; no automatic switching authorized |
+| **GLM QUOTA POLICY** | future issue #19 only · morning consumption observation remains; 5.2/5.1 cannot be assumed conservation tiers on Coding Plan without measured effective consumption |
 | **VPS NETWORK** | port `18789` free · gateway false |
-| **PLANNER INVOCATIONS** | Codex `1` · GLM `5` total historical smoke attempts before this authorized pass · Qwen `0` |
-| **LATEST EVIDENCE** | `GLM_ZAI_CODING_PLAN_HTTP500_READ_ONLY_DIAGNOSIS = PASS`; evidence commit `d14c306cfd998492da779218eade7e636c6a6f72`; zero provider/model requests in diagnosis |
-| **PLANNER SMOKE** | Codex PASS · GLM 5.2 Coding Plan smoke BLOCKED HTTP 500 · one exact 5.3 Coding Plan default verification explicitly authorized · Qwen 3.8 37B blocked missing model |
+| **PLANNER INVOCATIONS** | Codex `1` · GLM `6` total historical smoke attempts · Qwen `0` |
+| **LATEST EVIDENCE** | `GLM_ZAI_CODING_PLAN_DEFAULT_53_PROVIDER_VERIFICATION = BLOCKED`; evidence commit `17f401406623b3e31fd8e261685de4991bb72b27`; exactly one 5.3 invocation; HTTP 500 on Coding Plan path |
+| **PLANNER SMOKE** | Codex PASS · GLM provider path BLOCKED pending provider/account-plan verification · Qwen 3.8 37B blocked missing model |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
 | **Gate E / L5_PASS** | PASS-CLOSED / NOT_CLAIMED |
 | **L5 runtime** | activation `false` · runtime `false` · endurance `false` |
@@ -36,14 +37,12 @@
 
 ## Boundaries operative correnti
 
-- Read-only diagnosis PASS: `glm-5.2` is declared/supported by the installed Z.AI stack, Coding Plan default is `glm-5.3`, and installed docs state Coding Plan requests for `glm-5.2`/`glm-5.1` are currently routed to `glm-5.3`.
-- Offline OpenClaw/plugin trace found the expected `openai-completions` `/chat/completions` request contract and no Coding Plan request-contract mismatch beyond the already-corrected baseUrl.
-- No richer existing provider error detail exists beyond generic HTTP 500, and no local config/plugin defect was confirmed. Current root-cause class is therefore provider-side/unexplained from local evidence, not endpoint/auth/request-contract mismatch.
-- Operator authorization now permits exactly one bounded direct smoke of exact Coding Plan default `zai/glm-5.3` against the already-effective Coding Plan base endpoint, with pre/post read-only checks and evidence persistence.
-- If this exact 5.3 Coding Plan default smoke also returns HTTP 500, STOP without retry and classify the result as provider-side/account-plan service blocker; do not perform further local remediation or alternate-model attempts in this pass.
-- No retry, second invocation, 5.2/5.1/5 fallback, auth/config/endpoint mutation, credential refresh/re-entry, Codex/Qwen invocation, core/plugin upgrade, doctor --fix, gateway/service activation, n8n/Docker/Tailscale mutation, firewall/reverse proxy, runtime wiring or billing is authorized in this pass.
-- Issue #19 remains DEFERRED. Any future quota/time-window routing must account for the fact that 5.2/5.1 Coding Plan selection may still route to 5.3; measured effective consumption is required before treating them as conservation tiers.
-- No secret/token may appear in GPT Web, Cursor chat, GitHub, argv or persisted logs.
+- The exact Coding Plan default `zai/glm-5.3` was invoked exactly once after the read-only diagnosis had already established a locally consistent stack. The request reached `https://api.z.ai/api/coding/paas/v4/chat/completions` and returned provider HTTP 500.
+- This reproduces the failure previously observed with `zai/glm-5.2` on the same correct Coding Plan path and removes the remaining model-alias ambiguity from the local diagnosis.
+- Current evidence therefore supports `PROVIDER_SIDE_OR_ACCOUNT_PLAN_SERVICE_BLOCKER`; it does not justify further local endpoint/auth/config/plugin remediation or alternate-model attempts.
+- No retry, second invocation, GLM 5.2/5.1/5 fallback, auth/config/endpoint mutation, credential refresh/re-entry, Codex/Qwen invocation, core/plugin upgrade, doctor --fix, gateway/service activation, n8n/Docker/Tailscale mutation, firewall/reverse proxy, runtime wiring or billing occurred in the 5.3 verification pass.
+- Next action requires provider/account-plan-side verification with Z.AI. Before any new GLM invocation, provider/account entitlement/service status must be clarified from the Z.AI side using sanitized evidence only; no secret/API key should be pasted into GPT Web, Cursor chat or GitHub.
+- Issue #19 remains DEFERRED. Morning GLM token-consumption behavior remains a future measurement/routing-policy input; 5.2/5.1 Coding Plan selection may still route to 5.3, so measured effective consumption is required before treating them as conservation tiers.
 - No PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop or public Telegram Trigger implicit.
 
 ## Puntatori
