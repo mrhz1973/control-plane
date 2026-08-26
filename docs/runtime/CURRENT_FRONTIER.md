@@ -8,14 +8,19 @@
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#8 — Architecture v3 evidence track — OpenClaw → planners → Cursor bounded loop** |
-| **BLOCCO ATTIVO** | `CURSOR-CLONE-SYNC-VERIFY` |
-| **STATO BLOCCO** | IN_PROGRESS |
-| **GATE CORRENTE** | `READ_ONLY_CLONE_SYNC_VERIFY` |
-| **NEXT** | sincronizzare/verificare il clone Cursor contro `origin/main`; se PASS, AUTO-VIA alla discovery OpenClaw read-only (path/version/gateway/provider surface), senza login/config/auth mutation |
-| **WIKI-LLM CONSOLIDATION** | issue #10 COMPLETED; L3B post-merge re-census PASS; recovery baseline `777504f7c46e5e724b6ad5f8586a98d43bab7ce8` |
-| **OPENCLAW v3 RUNTIME** | NOT_VERIFIED / NOT_ACTIVATED |
-| **PLANNER SMOKE** | Qwen 3.8 37B: NOT_RUN · GLM 5.3: NOT_RUN · Codex OAuth: NOT_RUN |
+| **BLOCCO ATTIVO** | `OPENCLAW-CODEX-OAUTH-AUTH` |
+| **STATO BLOCCO** | HUMAN_GATE_REQUIRED |
+| **GATE CORRENTE** | `CODEX_OAUTH_LOGIN_EXPLICIT_AUTHORIZATION_REQUIRED` |
+| **NEXT** | autorizzare esclusivamente `openclaw models auth login --provider openai-codex`; dopo PASS, verificare auth state read-only e decidere il minimo gateway smoke necessario; nessuna GLM config, gateway service install, Qwen pull o n8n mutation implicita |
+| **CLONE SYNC VERIFY** | PASS — clone `main` pulito e allineato al remote al momento della discovery |
+| **OPENCLAW DISCOVERY** | PASS — npm global `openclaw@2026.5.20`; CLI presente; gateway `ws://127.0.0.1:18789` non in ascolto; nessun servizio/task gateway installato |
+| **OPENCLAW PROVIDERS** | `openai-codex` AVAILABLE / auth missing · `zai` AVAILABLE / auth missing |
+| **USAGE OBSERVABILITY** | Codex native after auth+gateway · Z.AI native after credential+gateway · Qwen local/not_applicable |
+| **QWEN LOCAL** | target Qwen 3.8 37B NOT_INSTALLED; `qwen3.8:27b` presente; nessun modello Ollama caricato al momento della discovery |
+| **OPENCLAW v3 RUNTIME** | DISCOVERED / NOT_ACTIVATED |
+| **PLANNER SMOKE** | Qwen 3.8 37B: BLOCKED_MISSING_MODEL · GLM 5.3: BLOCKED_MISSING_AUTH · Codex OAuth: BLOCKED_MISSING_AUTH |
 | **CURSOR v3 SMOKE** | GLM BYOK: NOT_RUN · bounded loop: NOT_RUN · Bugbot loop: NOT_RUN · checkpoint resume: NOT_RUN |
+| **WIKI-LLM CONSOLIDATION** | issue #10 COMPLETED; L3B post-merge re-census PASS; recovery baseline `777504f7c46e5e724b6ad5f8586a98d43bab7ce8` |
 | **PM-34** | BLOCKED |
 | **n8n_ready** | `false` |
 | **Gate E** | PASS / CLOSED |
@@ -27,12 +32,10 @@
 
 ## Boundaries operative correnti
 
-- Foundation v3.1 wiki-LLM lean è canonica su `main`.
-- Issue #10 è chiusa; nessun ulteriore file/branch cleanup è implicito o autorizzato.
-- Issue #8 è l'unico ACTIVE WORK.
-- Prima fase issue #8: clone sync/verify read-only; poi OpenClaw discovery read-only via AUTO-VIA.
-- Nessuna runtime/provider/n8n mutation durante discovery.
-- Nessuna credential/OAuth/billing mutation senza gate esplicito.
+- Foundation v3.1 wiki-LLM lean è canonica su `main`; issue #8 è l'unico ACTIVE WORK.
+- Discovery OpenClaw read-only PASS; nessuna repo/config/auth/runtime mutation è stata eseguita.
+- Il prossimo passo richiede gate umano perché scrive lo stato OAuth di OpenClaw.
+- Il gate corrente autorizza solo Codex OAuth login; NON autorizza GLM/Z.AI credential write, gateway start/install, Qwen pull, n8n/runtime/provider wiring o billing mutation.
 - Nessun PM-34 unlock, L5 activation, endurance runtime, permanent Schedule/loop o public Telegram Trigger implicito.
 - GPT Web resta autore autorevole dei workflow n8n; Cursor non li ridisegna autonomamente.
 
