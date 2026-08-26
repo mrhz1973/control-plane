@@ -5,54 +5,28 @@
 ## LATEST
 
 ```yaml
-task_ref: VPS_CODEX_OAUTH_CALLBACK_VISIBLE_CONSOLE_RETRY
+task_ref: WORK_LOCAL_SYNC_AND_AGG_FRONTIER_PERSISTENCE
 result_cursor: PASS
 reported_via: cursor_direct_persistence
-independent_verification: cursor_runtime_evidence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 781934469f801a1caf3775e8b025a815f97319f8
-workspace: clean
+FRONTIER_UPDATE_COMMIT: d909f0de11256a421efd04e10889e0d933cdcfaa
+LOCAL_BRANCH: main
+LOCAL_FINAL_HEAD: d909f0de11256a421efd04e10889e0d933cdcfaa
+ORIGIN_MAIN: d909f0de11256a421efd04e10889e0d933cdcfaa
+REMOTE_MAIN: d909f0de11256a421efd04e10889e0d933cdcfaa
+WORKSPACE_CLEAN: true
 
-LOCAL_1455_BEFORE: 0
-STALE_OAUTH_CMD_COUNT: 0
-STALE_OAUTH_SSH_COUNT: 0
+RUNTIME_MUTATIONS: 0
+MODEL_INVOCATIONS: 0
+AUTH_MUTATIONS: 0
 
-VPS_1455_BEFORE: free
-VPS_OAUTH_PROCESS_COUNT_BEFORE: 0
-CODEX_AUTH_BEFORE: missing
-
-EXTERNAL_OAUTH_CONSOLE_OPENED: true
-LOGIN_INVOCATION_COUNT: 1
-EXTERNAL_CONSOLE_EXIT_CODE: 0
-SSH_TUNNEL_BIND_OBSERVED: true
-
-CODEX_OAUTH_LOGIN: PASS
-CODEX_AUTH_AFTER: configured
-CODEX_AUTH_PROFILE_PRESENT: true
-CODEX_PROVIDER_EFFECTIVE: usable
-
-LOCAL_1455_AFTER: free
-OAUTH_TUNNEL_SSH_REMAINS: false
-VPS_1455_AFTER: free
-VPS_OAUTH_PROCESS_COUNT_AFTER: 0
-
-PORT_18789: free
-GATEWAY_RUNNING: false
-
-PLANNER_INVOCATION_COUNT: 0
-AUTOMATIC_RETRY_COUNT: 0
-WINDOWS_AUTH_STATE_COPIED: false
-SECRET_VALUES_PERSISTED: false
-OAUTH_STDOUT_PERSISTED: false
-OAUTH_STDERR_PERSISTED: false
-
-NEXT_GATE_CLASSIFICATION: CODEX_VPS_DIRECT_SMOKE_GATE_READY
+NEXT_GATE_CLASSIFICATION: CODEX_VPS_DIRECT_SMOKE_GATE_REQUIRED
 ```
 
 ## Evidence boundary
 
-Exactly one visible external CMD (`CODEX VPS OAUTH - DO NOT CLOSE`) with temporary SSH `-L 127.0.0.1:1455:127.0.0.1:1455` and `ExitOnForwardFailure=yes`. No wrapper file, no OAuth stdout/stderr capture. Console exit 0; Codex auth on VPS became `configured` / provider `usable`. Tunnel closed; local/VPS 1455 free; gateway off; no automatic retry; no secrets persisted.
+Docs-only local sync + `CURRENT_FRONTIER.md` persistence only. No runtime mutation, no model/provider invocation, no auth mutation. Frontier advanced to `CODEX_VPS_DIRECT_SMOKE_GATE_REQUIRED` at `d909f0de11256a421efd04e10889e0d933cdcfaa`. Local `main` clean and equal to `origin/main` / remote `main` at report time.
 
 ## Completion persistence invariant
 
