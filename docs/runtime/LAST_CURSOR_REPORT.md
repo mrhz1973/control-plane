@@ -5,38 +5,41 @@
 ## LATEST
 
 ```yaml
-task_ref: GLM_ZAI_POST_REMEDIATION_SMOKE_EXACT_53
+task_ref: GLM_ZAI_52_DIRECT_SMOKE_EXACT
 result_cursor: BLOCKED
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 73ccec5c63f141a6eaf8941acd762c8461849d24
+repo_head_observed_at_task: abf168d394e38425d33775169c1635d47423b85f
 workspace: clean
 
 OPENCLAW_VERSION: 2026.8.1-beta.3 (5831b80)
-MODEL_USED: zai/glm-5.3
+MODEL_USED: zai/glm-5.2
 
-STORED_KEY_STRUCTURAL_STATUS_BEFORE: single_nonduplicated_candidate
-DOUBLE_PASTE_PATTERN_BEFORE: false
+EXACT_GLM52_MODEL_REF_VISIBLE: true
 
-DIRECT_COMMAND_FORM: "openclaw infer model run --local --model zai/glm-5.3 --prompt <text>"
-OBSERVED_REQUEST_URL_SANITIZED: "https://api.z.ai/api/paas/v4/chat/completions"
+STORED_KEY_STRUCTURAL_STATUS: single_nonduplicated_candidate
+DOUBLE_PASTE_PATTERN: false
 
-POST_REMEDIATION_SMOKE_INVOCATION_COUNT: 1
+DIRECT_COMMAND_FORM: "openclaw infer model run --local --model zai/glm-5.2 --prompt <text>"
+
+GLM52_SMOKE_INVOCATION_COUNT: 1
 AUTOMATIC_RETRY_COUNT: 0
+GLM53_INVOCATION_COUNT_THIS_TASK: 0
 CODEX_INVOCATION_COUNT: 0
 QWEN_INVOCATION_COUNT: 0
 
 SMOKE_EXIT_CODE: 1
 SMOKE_RESPONSE_RECEIVED: false
 SMOKE_MARKER_MATCH: false
-SANITIZED_PROVIDER_ERROR: "500 Internal service error (provider=zai model=glm-5.3)"
+SANITIZED_PROVIDER_ERROR: "500 Internal service error (provider=zai model=glm-5.2)"
+OBSERVED_REQUEST_URL_SANITIZED: "https://api.z.ai/api/paas/v4/chat/completions"
 
 BLOCKER: BLOCKED_ZAI_PROVIDER_HTTP_500_INTERNAL_SERVICE_ERROR
 
 ZAI_PROFILE_PRESENT_AFTER: true
 ZAI_PROVIDER_AFTER: available
-EXACT_GLM53_MODEL_REF_VISIBLE_AFTER: true
+EXACT_GLM52_MODEL_REF_VISIBLE_AFTER: true
 
 PORT_18789_AFTER: free
 GATEWAY_RUNNING_AFTER: false
@@ -57,7 +60,7 @@ NEXT_GATE_CLASSIFICATION: GLM_ZAI_ENDPOINT_PRODUCT_COMPATIBILITY_GATE_REQUIRED
 
 ## Evidence boundary
 
-Exactly one post-remediation smoke of `zai/glm-5.3` on VPS `ionos-n8n`. Precheck: repaired credential structurally single/nonduplicated; profile present; gateway off. Provider returned HTTP 500 Internal service error on general `…/api/paas/v4/chat/completions`; no text; marker not matched. No retry. No auth/config/endpoint mutation. Auth profile remains present locally.
+Exact `zai/glm-5.2` was locally visible. Exactly one direct/local smoke on VPS `ionos-n8n` via OpenClaw `2026.8.1-beta.3`. Provider returned HTTP 500 Internal service error on general `…/api/paas/v4/chat/completions`; no text; marker not matched. No retry. No 5.3/5.1/5 fallback. No auth/config/endpoint mutation. Gateway remained inactive.
 
 ## Completion persistence invariant
 
