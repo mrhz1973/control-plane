@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/planner-routing-input-v1.schema.json",
+  "title": "planner-routing-input-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "task_id",
+    "risk_hint",
+    "complexity_hint",
+    "preferred",
+    "fallback",
+    "fallback_policy",
+    "provider_state"
+  ],
+  "properties": {
+    "schema": {"const": "planner-routing-input-v1"},
+    "task_id": {"type": "string", "minLength": 1},
+    "risk_hint": {"enum": ["low", "medium", "high"]},
+    "complexity_hint": {"enum": ["low", "medium", "high"]},
+    "preferred": {"enum": ["qwen", "glm", "codex"]},
+    "fallback": {
+      "type": "array",
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {"enum": ["qwen", "glm", "codex"]}
+    },
+    "fallback_policy": {"enum": ["normal", "equivalent_or_gate", "gate_only"]},
+    "provider_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["qwen", "glm", "codex"],
+      "properties": {
+        "qwen": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["available", "resource_pressure"],
+          "properties": {
+            "available": {"enum": [true, false, "unknown"]},
+            "resource_pressure": {"enum": ["low", "medium", "high", "unknown"]}
+          }
+        },
+        "glm": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["available", "quota_state"],
+          "properties": {
+            "available": {"enum": [true, false, "unknown"]},
+            "quota_state": {"enum": ["healthy", "conserve", "exhausted", "unknown"]}
+          }
+        },
+        "codex": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["available", "quota_state"],
+          "properties": {
+            "available": {"enum": [true, false, "unknown"]},
+            "quota_state": {"enum": ["healthy", "conserve", "exhausted", "unknown"]}
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {"not": {"properties": {"fallback": {"contains": {"const": "qwen"}}, "preferred": {"const": "qwen"}}, "required": ["fallback", "preferred"]}},
+    {"not": {"properties": {"fallback": {"contains": {"const": "glm"}}, "preferred": {"const": "glm"}}, "required": ["fallback", "preferred"]}},
+    {"not": {"properties": {"fallback": {"contains": {"const": "codex"}}, "preferred": {"const": "codex"}}, "required": ["fallback", "preferred"]}}
+  ]
+}
