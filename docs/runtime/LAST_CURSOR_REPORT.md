@@ -9,7 +9,7 @@ task_ref: D-0015-W_WF40_LIVE_STRUCTURE_MAP
 result_cursor: PASS_WF40_LIVE_STRUCTURE_MAP_PERSISTED_FOR_GPT_WEB_WIRING_DELTA
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_readonly_n8n_export
-report_persistence_commit: PENDING_SELF_REFERENCE
+report_persistence_commit: e79e4feb446993b22327afecfe68b16bc2664f90
 
 repo_head_observed_at_task: 355f8a109afa065700d01d861ef1561df5e9ab0f
 workspace_at_start: clean
