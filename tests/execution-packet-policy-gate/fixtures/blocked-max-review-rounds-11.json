@@ -1,0 +1,80 @@
+{
+  "schema": "execution-packet-v1",
+  "packet_id": "EP-D-0021-W-r1",
+  "packet_revision": 1,
+  "task_id": "D-0021-W",
+  "source_backlog_ref": "github:issue/27",
+  "source_backlog_commit": "af56b57104b7182cbc56580a8df2074cc1436d78",
+  "generated_at": "2026-08-27T10:00:00.000Z",
+  "planner": {
+    "requested": "glm",
+    "used": "glm",
+    "fallback_used": false,
+    "fallback_reason": null,
+    "provider_state_ref": null
+  },
+  "executor": "cursor",
+  "repository": "mrhz1973/control-plane",
+  "branch_target": "main",
+  "goal": "Deterministic Execution Packet policy gate.",
+  "preflight": [
+    "workspace clean",
+    "HEAD == origin/main"
+  ],
+  "allowed_paths": [
+    "tools/evaluate-execution-packet-policy.mjs",
+    "tests/execution-packet-policy-gate/"
+  ],
+  "forbidden_paths": [
+    "n8n",
+    "OpenClaw runtime"
+  ],
+  "steps": [
+    "Add validator entrypoint",
+    "Add fixtures and local tests",
+    "Persist evidence"
+  ],
+  "validation": [
+    "node tests/execution-packet-policy-gate/run.mjs"
+  ],
+  "acceptance": [
+    "Policy decisions match GPT-Web contract"
+  ],
+  "loop": {
+    "enabled": false,
+    "stop_when": [],
+    "max_rounds": 1,
+    "on_exhaustion": "blocked"
+  },
+  "risk_assessment": {
+    "level": "low",
+    "reasons": [
+      "repo-only",
+      "no runtime"
+    ],
+    "scope_expansion": false,
+    "destructive": false,
+    "production_sensitive": false,
+    "credentials_or_billing": false
+  },
+  "gate_recommendation": {
+    "required": false,
+    "reason": null
+  },
+  "context": {
+    "read_set": [
+      "docs/contracts/execution-packet-v1.md",
+      "docs/contracts/execution-packet-v1.schema.json"
+    ],
+    "checkpoint_policy": "required",
+    "checkpoint_contract": "docs/contracts/execution-checkpoint-v1.md"
+  },
+  "review": {
+    "bugbot": "optional",
+    "max_review_rounds": 11,
+    "autofix_cloud": false
+  },
+  "final_report_contract": "docs/foundation/CURSOR_PROMPT_TEMPLATE.md",
+  "status": "READY_FOR_EXECUTION",
+  "hard_constraints": []
+}

@@ -70,7 +70,7 @@
       "properties": {
         "enabled": {"type": "boolean"},
         "stop_when": {"type": "array", "items": {"type": "string"}},
-        "max_rounds": {"type": "integer", "minimum": 1},
+        "max_rounds": {"type": "integer", "minimum": 1, "maximum": 10},
         "on_exhaustion": {"enum": ["telegram_gate", "blocked"]}
       }
     },
@@ -112,7 +112,7 @@
       "required": ["bugbot", "max_review_rounds", "autofix_cloud"],
       "properties": {
         "bugbot": {"enum": ["required", "optional", "disabled"]},
-        "max_review_rounds": {"type": "integer", "minimum": 0},
+        "max_review_rounds": {"type": "integer", "minimum": 0, "maximum": 10},
         "autofix_cloud": {"const": false}
       }
     },

@@ -5,61 +5,38 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0020-W
+task_ref: D-0021-W
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 6c839e634308ebc18ee9bb63309ed871dddb7175
+repo_head_observed_at_task: af56b57104b7182cbc56580a8df2074cc1436d78
 workspace_at_start: clean
-issue: 26
+issue: 27
 
-harness: tests/openclaw-consumer-roundtrip/run.mjs
-composition: D-0019 request builder → synthetic OpenResponses fixture → D-0018 response gate → D-0017 packet validator
-fixture_kind: synthetic_openresponses_offline_fixture
-not_claimed: [provider_success, model_success, openclaw_runtime_success, phase_c_pass]
+policy_contract: docs/contracts/execution-packet-policy-gate-v1.md
+evaluator: tools/evaluate-execution-packet-policy.mjs
+schema_parity_fix:
+  - loop.max_rounds maximum 10
+  - review.max_review_rounds maximum 10
 
-d0020_roundtrip:
-  ok: true
-  classification: PASS
-  request_builder: PASS
-  response_gate: PASS
-  packet_validator: PASS
-  tamper_tests_passed: 6
-  tamper_tests_total: 6
-  network_access: false
-  provider_model_request_count: 0
-  credential_access: 0
-
-tamper_classifications:
-  - task_id_modified -> INPUT_MISMATCH
-  - hard_constraints_reordered -> HARD_CONSTRAINT_MISMATCH
-  - planner_requested_modified -> PLANNER_MISMATCH
-  - function_name_changed -> FUNCTION_CALL_NAME
-  - packet_schema_invalid -> PACKET_SCHEMA_INVALID
-  - request_builder_secret_boundary -> PASS
-
-d0017_regression:
-  runner: tests/execution-packet-validator/run.mjs
-  passed: 5
-  failed: 0
-  total: 5
-  exit_code: 0
-
-d0018_regression:
-  runner: tests/openclaw-planner-response-gate/run.mjs
+d0021_tests:
+  runner: tests/execution-packet-policy-gate/run.mjs
   passed: 15
   failed: 0
   total: 15
   exit_code: 0
 
-d0019_regression:
-  runner: tests/openclaw-request-builder/run.mjs
-  passed: 15
-  failed: 0
-  total: 15
-  exit_code: 0
+decisions_covered:
+  - PROCEED (clean low-risk)
+  - GATE (RISK_HIGH, SCOPE_EXPANSION, DESTRUCTIVE, PRODUCTION_SENSITIVE, CREDENTIALS_OR_BILLING, PLANNER_RECOMMENDED_GATE, PLANNER_FALLBACK_REQUIRES_EQUIVALENCE_GATE, PACKET_ALREADY_GATED, multi-reason order, READY_FOR_EXECUTION+destructive)
+  - BLOCKED (PACKET_SUPERSEDED, PACKET_SCHEMA_INVALID, max_rounds=11, max_review_rounds=11)
 
+cursor_dispatch_executed: false
+telegram_used: false
+network_access: false
+provider_model_request_count: 0
+credential_access: 0
 openclaw_mutation: false
 n8n_mutation: false
 vps_mutation: false
@@ -67,12 +44,17 @@ dependency_manager_created: false
 packages_installed: false
 d0016_phase_b_executed: false
 
-NEXT_GATE_CLASSIFICATION: D0020_W_COMPLETE
+d0017_regression: {passed: 5, failed: 0, total: 5, exit_code: 0}
+d0018_regression: {passed: 15, failed: 0, total: 15, exit_code: 0}
+d0019_regression: {passed: 15, failed: 0, total: 15, exit_code: 0}
+d0020_regression: {ok: true, classification: PASS, exit_code: 0}
+
+NEXT_GATE_CLASSIFICATION: D0021_W_COMPLETE
 ```
 
 ## Evidence boundary
 
-Offline round-trip harness proves D-0019 → D-0018 → D-0017 composition with synthetic fixtures only. Tamper suite fail-closed with expected classifications. No network/provider/runtime/credential access. D-0016-W Phase B not executed. This is not Phase C inference evidence.
+Implemented GPT-Web policy gate verbatim with schema boundedness parity for loop/review max rounds. Local policy tests 15/15 PASS; regressions D-0017–D-0020 PASS. No Cursor dispatch, Telegram, OpenClaw, network, or provider access. D-0016-W Phase B not executed.
 
 ## Completion persistence invariant
 
