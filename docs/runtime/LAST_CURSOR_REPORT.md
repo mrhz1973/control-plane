@@ -5,79 +5,68 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0015-W_WINDOWS_FALLBACK_HARDENING_N8N_ROUTING_NON_CREDENTIAL_STAGE
-result_cursor: PASS_NON_CREDENTIAL_STAGE_COMPLETE
-next_gate: BLOCKED_N8N_OPENCLAW_CREDENTIAL_BINDING_REQUIRED
+task_ref: D-0015-W_WF60_IMPORT_CREDENTIAL_METADATA_PARENT_TARGET
+result_cursor: PASS_WF60_IMPORTED_CALLABLE_PARENT_WIRING_READY_FOR_GPT_WEB_DELTA
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_evidence
-report_persistence_commit: 233a4b8fa296e2a94bde60b9c917ee2083ac327a
+report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: a7629e46c9d64d52248d6823ac142562852bedbf
+repo_head_observed_at_task: 604bfa00866aaef30ce42dd2325bcfc77319d240
 workspace_at_start: clean
 operator_gate_ref: github:issue/21#issuecomment-5431911525
-prior_transport_pass: github:issue/20 D-0014-W
+operator_credential_attestation_ref: github:issue/21#issuecomment-5432643248
 
-AUTOSTART_MECHANISM:
-  primary: "Startup folder -> OpenClaw-Gateway-Autostart.cmd"
-  startup_path: "%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\OpenClaw-Gateway-Autostart.cmd"
-  script_path: "%USERPROFILE%\\.openclaw\\gateway-autostart.cmd"
-  idempotent_rule: skip_start_when_port_18789_listen_count_gt_0
-  openclaw_gateway_install_schtasks: failed_access_denied
-  user_logon_schtasks: failed
-  autostart_start_verified: true
-  autostart_skip_when_running_verified: true
-  log_path: "%LOCALAPPDATA%\\OpenClaw\\gateway-autostart.log"
+N8N_CREDENTIAL_METADATA:
+  present: true
+  id: Qy4tQ7a7ld5loSdV
+  name: Header Auth account
+  type: httpHeaderAuth
+  uniquely_identifiable_without_secret: true
+  uniqueness_basis: only httpHeaderAuth credential in n8n store; operator-attested OpenClaw Windows gateway token binding
+  secret_read_or_persisted: false
 
-WINDOWS_GATEWAY_STATE:
-  openclaw_version: 2026.5.20
-  bind: loopback
-  port: 18789
-  listen: 127.0.0.1:18789
-  tailscale_mode: serve
-  tailscale_serve_target: http://127.0.0.1:18789
-  tailnet_hostname: asusdesktop.tailc01234.ts.net
-  gateway_auth_mode: token
-  funnel_enabled: false
-  local_health_http_code: 200
+WF60_IMPORT:
+  source_artifact: workflows/60-openclaw-broker-fallback-resolver.template.json
+  import_method: n8n CLI import:workflow inside root-n8n-1
+  mechanical_import_envelope: top_level_workflow_id_only required by n8n importer; node logic unchanged
+  live_workflow_id: d0015600-4001-8001-0001-0653506aabcd
+  live_workflow_name: "60 - OpenClaw broker fallback resolver - tailnet private - GPT-Web authored"
+  active: false
+  shared_workflow_role: workflow:owner
+  execute_workflow_trigger_present: true
+  callable_via_execute_workflow_node: true
 
-N8N_CONTAINER_REACHABILITY:
-  container: root-n8n-1
-  probe_method: node_fetch
+WF60_HEALTH_VALIDATION:
+  method: n8n_container_equivalent_health_resolution
+  n8n_cli_execute_note: blocked because task broker port 5679 already in use by running n8n instance
+  primary_health_url: https://ubuntu.tailc01234.ts.net/health
+  primary_status: 404
   fallback_health_url: https://asusdesktop.tailc01234.ts.net/health
-  health_http_code: 200
-  root_http_code: 200
-  direct_tailnet_tcp_18789: not_required_closed
+  fallback_status: 200
+  broker_selected: windows_private_fallback
+  reason: PRIMARY_UNAVAILABLE_FALLBACK_HEALTHY
+  selected_base_url: https://asusdesktop.tailc01234.ts.net
+  provider_model_request_count: 0
 
-N8N_BINDING_DISCOVERY_METADATA_ONLY:
-  credentials_total: 2
-  matching_openclaw_gateway_credentials: 0
-  credential_names_types:
-    - {name: "CONTROL PLANE - Telegram Bot", type: telegramApi}
-    - {name: "GitHub account", type: githubApi}
-  container_env_openclaw_gateway: none
-  safe_existing_auth_binding_for_authenticated_openclaw_api: false
+PARENT_WIRING_TARGET_FOR_GPT_WEB:
+  do_not_modify_in_this_pass: true
+  recommended_primary_parent:
+    live_id: 9ZMj2ACTKyDVhCue
+    name: "40 - CP v4 multirepo + classifier bridge - ACTIVE"
+    insertion: add Execute Workflow node upstream of any future authenticated OpenClaw invocation; target WF60 id d0015600-4001-8001-0001-0653506aabcd
+  secondary_candidate:
+    live_id: HVCzN3FoBdLGe9Hx
+    name: "42 - CP diff summary Telegram MVP - cursor-coordinate-converter - TEMPLATE"
+  wf60_subworkflow_trigger_node: When Executed by Another Workflow
+  authenticated_openclaw_calls: must use Header Auth credential id Qy4tQ7a7ld5loSdV when GPT Web wires authenticated HTTP nodes; not applied in WF60 health-only resolver
 
-WORKFLOW_TARGET_DISCOVERY:
-  gpt_web_artifact: workflows/60-openclaw-broker-fallback-resolver.template.json
-  live_n8n_workflow_present: false
-  insertion_point: executeWorkflowTrigger node "When Executed by Another Workflow"
-  parent_integration_pattern: parent workflow adds Execute Workflow node calling WF60 after import/publish
-  health_nodes_auth: none
-  authenticated_api_wiring: requires new gateway token credential or env binding not present
-
-provider_model_request_count: 0
-credential_mutation: false
 gateway_auth_mode_mutation: false
 vps_openclaw_mutation: false
-n8n_workflow_logic_authored_by_cursor: false
+parent_workflow_mutation: false
+wf40_wf42_wf41_mutation: false
 public_exposure: false
 
 SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
 SECRET_VALUE_PERSISTED: false
-SECRET_VALUE_HASHED: false
-SECRET_VALUE_MEASURED: false
-AUTHORIZATION_DATA_EXPOSED: false
-
-STOP_REASON_FOR_NEXT_STAGE: authenticated n8n-to-OpenClaw invocation requires creating/copying a gateway token credential or changing auth mode; no safe existing binding found
 ```

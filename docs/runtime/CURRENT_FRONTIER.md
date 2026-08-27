@@ -8,9 +8,9 @@
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#21** `D-0015-W` — Windows fallback hardening + private n8n routing; issue **#20** fallback transport PASS; issue **#8** parallel provider wait |
 | **BLOCCO ATTIVO** | `WINDOWS-FALLBACK-HARDENING-N8N-ROUTING` |
-| **STATO BLOCCO** | `NON_CREDENTIAL_STAGE_PASS / N8N_OPENCLAW_CREDENTIAL_BINDING_REQUIRED / ZAI_SUPPORT_WAIT_PARALLEL` |
-| **GATE CORRENTE** | `BLOCKED_N8N_OPENCLAW_CREDENTIAL_BINDING_REQUIRED` — autostart hardening, private transport, n8n-container `/health`, auth-binding discovery, and workflow insertion-point identification are complete; next real gate is a human credential step to bind an existing or newly supplied OpenClaw gateway token into n8n without changing `gateway.auth.mode` unless separately authorized |
-| **NEXT** | operator/GPT Web gate: create or authorize copying an n8n-safe OpenClaw gateway token binding, import/publish GPT-Web workflow `60-openclaw-broker-fallback-resolver`, and wire parent Execute Workflow nodes; do not mutate VPS Z.AI credentials or issue extra Z.AI probes |
+| **STATO BLOCCO** | `WF60_IMPORTED_CALLABLE / PARENT_WIRING_READY_FOR_GPT_WEB_DELTA / ZAI_SUPPORT_WAIT_PARALLEL` |
+| **GATE CORRENTE** | `D0015_W_PARENT_WIRING_GPT_WEB_DELTA_REQUIRED` — WF60 live import + n8n Header Auth credential metadata verified; next step is GPT-Web-authored parent Execute Workflow wiring using live WF60 id `d0015600-4001-8001-0001-0653506aabcd` |
+| **NEXT** | GPT Web supplies parent-workflow wiring delta for WF40 (primary) calling WF60 and, when needed, authenticated OpenClaw HTTP nodes bound to credential id `Qy4tQ7a7ld5loSdV`; Cursor may apply verbatim only; no autonomous parent logic |
 | **PARALLEL ZAI SUPPORT** | issue #8 · sanitized escalation submitted 2026-08-27 · `AWAITING_ZAI_SUPPORT_RESPONSE`; no additional Z.AI probes authorized merely to validate fallback transport/routing |
 | **VPS OPENCLAW** | `2026.8.1-beta.3` (5831b80) · gateway inactive (unchanged) · node runtime `/opt/openclaw-node/current` v24.19.0 |
 | **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` (active generation, unchanged) |
@@ -32,7 +32,7 @@
 | **ROOT CAUSE CLASSIFICATION** | `APPLICATION_LAYER_IP_OR_RISK_CONTROL_SUSPECT` (updated 2026-08-26): transport/unauthenticated path eliminated; credential format and model variant eliminated; datacenter egress `217.160.71.145` → authenticated HTTP 500 while residential egress `95.249.154.241` → SUCCESS with same key family; provider-side classification pending |
 | **SUPPORT ESCALATION** | `SUBMITTED` on `2026-08-27` via email to `user_feedback@z.ai` · sanitized draft `docs/runtime/ISSUE_8_ZAI_SUPPORT_ESCALATION_DRAFT.md` · submission evidence issue #8 comment `5431709978` · `AWAITING_ZAI_RESPONSE` |
 | **WINDOWS FALLBACK TRANSPORT** | issue #20 `D-0014-W` · **PASS** 2026-08-27 · OpenClaw `2026.5.20` · loopback `127.0.0.1:18789` · Tailscale Serve `https://asusdesktop.tailc01234.ts.net/` → loopback gateway · VPS private HTTPS/WSS PASS · no Funnel/public exposure · Windows remains fallback |
-| **WINDOWS FALLBACK HARDENING / N8N ROUTING** | issue #21 `D-0015-W` · **NON-CREDENTIAL STAGE PASS** 2026-08-27 · user-level idempotent autostart via Startup folder script · n8n container `/health` HTTP 200 over Tailscale Serve · no OpenClaw gateway n8n credential/env binding found · workflow target `workflows/60-openclaw-broker-fallback-resolver.template.json` insertion via `executeWorkflowTrigger` · next gate `BLOCKED_N8N_OPENCLAW_CREDENTIAL_BINDING_REQUIRED` |
+| **WINDOWS FALLBACK HARDENING / N8N ROUTING** | issue #21 `D-0015-W` · WF60 imported callable · live id `d0015600-4001-8001-0001-0653506aabcd` · n8n Header Auth credential metadata id `Qy4tQ7a7ld5loSdV` · health resolver PASS from n8n container (`fallbackStatus=200`, `brokerSelected=windows_private_fallback`) · parent wiring pending GPT Web delta |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
 | **Gate E / L5_PASS** | PASS-CLOSED / NOT_CLAIMED |
 | **L5 runtime** | activation `false` · runtime `false` · endurance `false` |
@@ -42,8 +42,8 @@
 
 ## Boundaries operative correnti
 
-- Issue #21 D-0015-W non-credential stage completed 2026-08-27: Windows gateway autostart is idempotent via Startup-folder script `%USERPROFILE%\.openclaw\gateway-autostart.cmd`; loopback + Tailscale Serve preserved; n8n container `root-n8n-1` reaches `https://asusdesktop.tailc01234.ts.net/health` with HTTP 200; metadata-only discovery found **no** OpenClaw/gateway n8n credential or env binding (`gateway.auth.mode=token` on Windows). GPT-Web workflow artifact `workflows/60-openclaw-broker-fallback-resolver.template.json` defines the insertion point via `executeWorkflowTrigger`; live n8n import/wiring not yet performed.
-- Authenticated n8n→OpenClaw invocation now requires the next real human credential gate: create/copy an n8n-safe gateway token binding without unauthorized auth-mode changes.
+- Issue #21 D-0015-W: n8n Header Auth credential metadata verified (`Qy4tQ7a7ld5loSdV`, type `httpHeaderAuth`, operator-attested OpenClaw Windows binding); WF60 imported verbatim from GPT-Web artifact with live id `d0015600-4001-8001-0001-0653506aabcd`; health-only resolver validated from n8n container (`/health` only, provider/model requests 0); parent WF40/WF42 not modified; next gate is GPT-Web parent Execute Workflow wiring delta.
+- Authenticated parent OpenClaw invocation wiring remains GPT-Web-authored; Cursor applies verbatim only.
 - Credential repair completed 2026-08-26 via official `zai-coding-global` onboarding; old malformed `zai:manual` remains preserved and unused.
 - `NO_MORE_MANUAL_ONE_OFF_PROBES` remains in force for the Z.AI VPS diagnosis while awaiting Z.AI Support; unnecessary provider/model calls are forbidden.
 - No public listener/port exposure, Funnel, NAT, public reverse proxy, destructive action, VPS Z.AI credential/provider mutation, PM-34/L5/endurance/permanent schedule, scope expansion, or Windows-primary promotion is authorized.
