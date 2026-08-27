@@ -6,11 +6,11 @@
 |---|---|
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
-| **ACTIVE WORK** | GitHub issue **#23** `D-0017-W` **COMPLETE**; issue **#22 D-0016-W** Phase B authorized but HOME host offline; issue **#8** Z.AI VPS/provider support parallel; issue **#21 D-0015-W** complete; issue **#20 D-0014-W** PASS |
-| **BLOCCO ATTIVO** | `D0016-W-PHASE-B-HOME-HOST` |
-| **STATO BLOCCO** | `D0017_W_VALIDATOR_PASS / D0016_W_PHASE_B_AUTHORIZED_HOME_HOST_OFFLINE / PHASE_C_CONSUMER_CONTRACT_AUTHORED / ZAI_SUPPORT_WAIT_PARALLEL` |
-| **GATE CORRENTE** | `D0016_W_PHASE_B_HOME_HOST_REQUIRED` — execution-packet-v1 deterministic validator delivered; next actionable runtime gate remains HOME Windows Phase B when the host is online |
-| **NEXT** | When HOME Windows is available, execute only the already-authorized D-0016-W Phase B (`/v1/responses` enable + managed Gateway repair/start + zero-inference health/metadata). Phase C provider call remains separately gated. |
+| **ACTIVE WORK** | GitHub issue **#24** `D-0018-W` — deterministic OpenClaw planner-response gate validator; issue **#23 D-0017-W** COMPLETE; issue **#22 D-0016-W** Phase B authorized but HOME host offline; issue **#8** Z.AI VPS/provider support parallel; issue **#21 D-0015-W** complete; issue **#20 D-0014-W** PASS |
+| **BLOCCO ATTIVO** | `OPENCLAW-PLANNER-RESPONSE-DETERMINISTIC-GATE` |
+| **STATO BLOCCO** | `D0018_W_REPO_ONLY_IMPLEMENTATION_READY / D0017_W_VALIDATOR_PASS / D0016_W_PHASE_B_AUTHORIZED_HOME_HOST_OFFLINE / PHASE_C_CONSUMER_CONTRACT_AUTHORED / ZAI_SUPPORT_WAIT_PARALLEL` |
+| **GATE CORRENTE** | `D0018_W_REPO_ONLY_AUTO_ELIGIBLE` — bounded local implementation/tests only; no OpenClaw/provider/runtime/credential gate opened |
+| **NEXT** | Cursor on WORK PC syncs safely, reads issue #24 plus the consumer contract and D-0017 validator, implements the fail-closed saved-response gate + local fixtures/tests, persists evidence, and stops on ambiguous hard-constraint mapping rather than inventing semantics. |
 | **PARALLEL D-0016-W** | Phase B **AUTHORIZED / NOT EXECUTED** because HOME Windows host is offline; when access returns, execute only the already-gated `/v1/responses` enable + managed Gateway repair/start + zero-inference health/metadata verification |
 | **PARALLEL ZAI SUPPORT** | issue #8 · escalation already submitted · `AWAITING_ZAI_SUPPORT_RESPONSE`; support no longer blocks independent Architecture v3 work |
 | **VPS OPENCLAW** | canonical target primary · `2026.8.1-beta.3` · gateway inactive · Z.AI VPS diagnosis remains `APPLICATION_LAYER_IP_OR_RISK_CONTROL_SUSPECT` |
@@ -19,6 +19,8 @@
 | **D-0016-W PHASE B** | **AUTHORIZED / NOT EXECUTED** · enable only `/v1/responses` surface + install/repair/start managed Windows Gateway · preserve loopback/token/Tailscale-private/no Funnel · zero inference |
 | **D-0016-W PHASE C CONTRACT** | GPT-Web-authored `docs/contracts/openclaw-execution-packet-consumer-v1.md` · structured `emit_execution_packet` tool call · deterministic validation against `execution-packet-v1` · pilot max 1 inference / 0 retry / 0 fallback only after later provider-call gate |
 | **EXECUTION PACKET MACHINE SCHEMA** | `docs/contracts/execution-packet-v1.schema.json` · JSON Schema 2020-12 mirror for deterministic validation; representative packet validation PASS offline |
+| **D-0017-W VALIDATOR** | COMPLETE · `tools/validate-execution-packet-v1.mjs` + local fixtures/tests PASS · issue #23 closed |
+| **D-0018-W RESPONSE GATE** | ACTIVE repo-only implementation · validates saved OpenResponses `function_call` output + consumer-input invariants before packet handoff; no runtime/provider access |
 | **D-0015-W ROUTING** | COMPLETE · WF60 live id `d0015600-4001-8001-0001-0653506aabcd` · n8n Header Auth metadata id `Qy4tQ7a7ld5loSdV` · WF40 parent resolver lane applied · no generic model invocation |
 | **WF40 / WF42 / WF41** | WF40 active with WF60 resolver lane · WF42 active unchanged · WF41 off |
 | **HOME EXECUTION SURFACE** | use Cursor already installed on the home Windows host when direct local OpenClaw access is required; work PC remains repo/Cursor surface and does not need OpenClaw installed without a concrete task |
@@ -30,7 +32,9 @@
 
 ## Boundaries operative correnti
 
-- **D-0017-W COMPLETE:** `tools/validate-execution-packet-v1.mjs` validates packets against `docs/contracts/execution-packet-v1.schema.json` via environment-provided Ajv; fixtures/tests under `tests/execution-packet-validator/` PASS locally (1 valid + 4 invalid).
+- **D-0018-W is active and repo-only:** implement a deterministic gate for saved non-streaming OpenClaw `/v1/responses` payloads. It must require exactly one `function_call` named `emit_execution_packet`, parse its arguments, reuse canonical `execution-packet-v1` schema validation, enforce consumer-input identity/planner/fallback invariants, and fail closed. Work PC Cursor is sufficient; no OpenClaw/n8n/provider/network access belongs to this task.
+- **Hard-constraint mapping boundary:** the consumer contract requires hard constraints to be preserved but does not define a unique packet field mapping. Cursor must not invent semantic mapping; if implementation cannot enforce this deterministically from existing contracts, persist that exact limitation/STOP rather than silently weakening the check.
+- **D-0017-W COMPLETE:** `tools/validate-execution-packet-v1.mjs` validates packets against `docs/contracts/execution-packet-v1.schema.json` via environment-provided Ajv; fixtures/tests under `tests/execution-packet-validator/` PASS locally (1 valid + 4 invalid). Issue #23 closed.
 - **D-0016-W Phase B remains explicitly authorized but not executed:** HOME Windows host is offline. When access returns, enable only `gateway.http.endpoints.responses.enabled=true`, install/repair/start the managed Windows Gateway on existing loopback port 18789, preserve `gateway.auth.mode=token`, loopback bind, Tailscale Serve tailnet-only and no Funnel/public exposure.
 - GPT Web pre-authored the concrete Phase C consumer contract at `docs/contracts/openclaw-execution-packet-consumer-v1.md`: OpenResponses `/v1/responses`, required structured `emit_execution_packet` tool call, deterministic `execution-packet-v1` validation, YAML serialization after validation, and fail-closed behavior before Cursor.
 - The first Phase C provider call is **not authorized yet**. It requires explicit backend planner/model selection and a separate gate capped at one inference request, zero retry and zero fallback.
@@ -40,7 +44,8 @@
 
 ## Puntatori
 
-- Completed deterministic validator: issue **#23** (`D-0017-W`) · `tools/validate-execution-packet-v1.mjs` · `tests/execution-packet-validator/`
+- Active saved-response gate: issue **#24** (`D-0018-W`)
+- Completed deterministic packet validator: issue **#23** (`D-0017-W`) · `tools/validate-execution-packet-v1.mjs` · `tests/execution-packet-validator/`
 - Parallel planner consumer pilot: issue **#22** (`D-0016-W`)
 - Concrete OpenClaw planner consumer contract: `docs/contracts/openclaw-execution-packet-consumer-v1.md`
 - Machine-readable Execution Packet schema: `docs/contracts/execution-packet-v1.schema.json`
