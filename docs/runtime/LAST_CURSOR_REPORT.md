@@ -6,47 +6,26 @@
 
 ```yaml
 task_ref: D-0018-W
-result_cursor: BLOCKED
+result_cursor: PASS
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 7a02462a0f7f9f8ed2a72ac717c6759b070a8bb4
+repo_head_observed_at_task: 2e54ba7b82c79c8aa0cf23b5bedd8f16bf892c07
 workspace_at_start: clean
 issue: 24
 
-blocker: HARD_CONSTRAINT_MAPPING_UNDEFINED
-blocker_detail: >
-  openclaw-execution-packet-consumer-v1.md requires hard_constraints to be
-  preserved, but neither that contract nor execution-packet-v1 defines a
-  deterministic unique packet field mapping for those strings. Gate refuses
-  to invent semantics; non-empty hard_constraints fail closed with
-  HARD_CONSTRAINT_MAPPING_UNDEFINED.
+mapping_source: docs/contracts/execution-packet-hard-constraints-mapping-v1.md
+mapping_integrated: true
+
+contract_updates:
+  - docs/contracts/execution-packet-v1.md (required hard_constraints: []; planner exact-copy obligation)
+  - docs/contracts/execution-packet-v1.schema.json (required array<string>)
+  - docs/contracts/openclaw-execution-packet-consumer-v1.md (tool schema + HARD_CONSTRAINT_MISMATCH)
 
 gate_entrypoint: tools/validate-openclaw-planner-response-gate.mjs
-reuses: tools/validate-execution-packet-v1.mjs (validatePacketObject export)
-schema_source: docs/contracts/execution-packet-v1.schema.json
-dependency_manager_created: false
-packages_installed: false
-
-implemented_deterministic_checks:
-  - response JSON parse
-  - top-level API error reject
-  - exactly one function_call
-  - name == emit_execution_packet
-  - arguments JSON object parse
-  - canonical execution-packet-v1 schema validation
-  - task_id/source_backlog_ref/repository/branch_target identity
-  - executor == cursor
-  - planner.requested == consumer_input.planner_requested
-  - fallback metadata consistency
-  - hard_constraints non-empty -> HARD_CONSTRAINT_MAPPING_UNDEFINED (no invented mapping)
-
-d0018_tests:
-  runner: tests/openclaw-planner-response-gate/run.mjs
-  passed: 10
-  failed: 0
-  total: 10
-  exit_code: 0
+hard_constraint_check: exact deep-array equality (length/order/string identity; no trim/case-fold/normalize/dedup)
+stable_mismatch_classification: HARD_CONSTRAINT_MISMATCH
+HARD_CONSTRAINT_MAPPING_UNDEFINED_operational_blocker: removed
 
 d0017_regression:
   runner: tests/execution-packet-validator/run.mjs
@@ -55,20 +34,35 @@ d0017_regression:
   total: 5
   exit_code: 0
 
+d0018_tests:
+  runner: tests/openclaw-planner-response-gate/run.mjs
+  passed: 15
+  failed: 0
+  total: 15
+  exit_code: 0
+  added_cases:
+    - hard-constraints-identical -> PASS
+    - hard-constraints-missing -> HARD_CONSTRAINT_MISMATCH
+    - hard-constraints-reordered -> HARD_CONSTRAINT_MISMATCH
+    - hard-constraints-modified -> HARD_CONSTRAINT_MISMATCH
+    - hard-constraints-empty-ok -> PASS
+    - hard-constraints-empty-input-nonempty-packet -> HARD_CONSTRAINT_MISMATCH
+
 network_access: false
 provider_model_request_count: 0
 openclaw_mutation: false
 n8n_mutation: false
 vps_mutation: false
-contract_schema_mutated: false
+dependency_manager_created: false
+packages_installed: false
 d0016_phase_b_executed: false
 
-NEXT_GATE_CLASSIFICATION: HARD_CONSTRAINT_PACKET_FIELD_MAPPING_CONTRACT_GATE_REQUIRED
+NEXT_GATE_CLASSIFICATION: D0018_W_COMPLETE
 ```
 
 ## Evidence boundary
 
-Implemented repo-only OpenClaw planner-response gate that validates saved non-streaming `/v1/responses` JSON + `consumer_input` without HTTP. Reuses D-0017 schema validation programmatically. Local gate fixtures 10/10 PASS including explicit `HARD_CONSTRAINT_MAPPING_UNDEFINED` when `hard_constraints` is non-empty. D-0017 regression 5/5 PASS. Task acceptance cannot be declared complete because the consumer contract does not define a deterministic packet-field mapping for hard-constraints preservation; no mapping was invented and contracts were not changed.
+Incorporated GPT-Web hard-constraints mapping verbatim into execution-packet contract, machine schema, OpenClaw consumer contract, D-0017 fixtures, and D-0018 response gate. Exact deep-array equality enforces `HARD_CONSTRAINT_MISMATCH`. D-0017 5/5 PASS; D-0018 15/15 PASS. No runtime/network/provider/credential access. D-0016-W Phase B not executed.
 
 ## Completion persistence invariant
 

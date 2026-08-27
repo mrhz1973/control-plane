@@ -77,5 +77,6 @@
   },
   "final_report_contract": "docs/foundation/CURSOR_PROMPT_TEMPLATE.md",
   "status": "READY_FOR_EXECUTION",
-  "unexpected_extra": "nope"
+  "unexpected_extra": "nope",
+  "hard_constraints": []
 }

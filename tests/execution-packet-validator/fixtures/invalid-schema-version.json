@@ -76,5 +76,6 @@
     "autofix_cloud": false
   },
   "final_report_contract": "docs/foundation/CURSOR_PROMPT_TEMPLATE.md",
-  "status": "READY_FOR_EXECUTION"
+  "status": "READY_FOR_EXECUTION",
+  "hard_constraints": []
 }

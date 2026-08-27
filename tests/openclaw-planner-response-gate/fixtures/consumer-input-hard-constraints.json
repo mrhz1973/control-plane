@@ -1,7 +1,7 @@
 {
   "task_id": "D-0018-W",
   "source_backlog_ref": "github:issue/24",
-  "source_backlog_commit": "7a02462a0f7f9f8ed2a72ac717c6759b070a8bb4",
+  "source_backlog_commit": "2e54ba7b82c79c8aa0cf23b5bedd8f16bf892c07",
   "repository": "mrhz1973/control-plane",
   "branch_target": "main",
   "goal": "Implement deterministic execution-packet-v1 validator with local fixtures.",
@@ -24,6 +24,7 @@
     "node tests/execution-packet-validator/run.mjs"
   ],
   "hard_constraints": [
-    "no-n8n-mutation"
+    "no-n8n-mutation",
+    "no-provider-calls"
   ]
 }

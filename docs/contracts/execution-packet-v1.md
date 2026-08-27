@@ -46,6 +46,7 @@ goal: <single bounded implementation goal>
 preflight: []
 allowed_paths: []
 forbidden_paths: []
+hard_constraints: []
 steps: []
 validation: []
 acceptance: []
@@ -91,12 +92,13 @@ The planner must:
 1. preserve the Backlog Item objective and hard exclusions;
 2. convert the strategic objective into a bounded executable goal;
 3. make allowed/forbidden paths explicit;
-4. define deterministic acceptance and validation where possible;
-5. define bounded loop behavior;
-6. classify risk and call out scope expansion;
-7. recommend a gate when uncertainty or policy requires one;
-8. include the minimum read-set required for a new Cursor session;
-9. never claim runtime authorization that is absent from GitHub policy.
+4. when the consumer supplies `hard_constraints`, copy that array exactly into top-level packet `hard_constraints` (same length, same order, byte-for-byte strings; empty input remains `[]`);
+5. define deterministic acceptance and validation where possible;
+6. define bounded loop behavior;
+7. classify risk and call out scope expansion;
+8. recommend a gate when uncertainty or policy requires one;
+9. include the minimum read-set required for a new Cursor session;
+10. never claim runtime authorization that is absent from GitHub policy.
 
 The planner **cannot self-authorize** the packet.
 
@@ -209,6 +211,7 @@ forbidden_paths:
   - deployment/
   - credentials
   - tailscale
+hard_constraints: []
 steps:
   - reproduce the failing behavior
   - identify the minimum faulty branch

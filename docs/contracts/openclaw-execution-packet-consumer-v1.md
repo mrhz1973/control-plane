@@ -132,6 +132,7 @@ The request must expose exactly one client-side function tool for the pilot:
       "preflight",
       "allowed_paths",
       "forbidden_paths",
+      "hard_constraints",
       "steps",
       "validation",
       "acceptance",
@@ -170,6 +171,7 @@ The request must expose exactly one client-side function tool for the pilot:
       "preflight": { "type": "array", "items": { "type": "string" } },
       "allowed_paths": { "type": "array", "items": { "type": "string" } },
       "forbidden_paths": { "type": "array", "items": { "type": "string" } },
+      "hard_constraints": { "type": "array", "items": { "type": "string" } },
       "steps": { "type": "array", "minItems": 1, "items": { "type": "string" } },
       "validation": { "type": "array", "items": { "type": "string" } },
       "acceptance": { "type": "array", "minItems": 1, "items": { "type": "string" } },
@@ -262,9 +264,9 @@ The consumer must reject the response unless all are true:
 10. risk/gate fields are present;
 11. loop and review bounds are finite;
 12. no field contains a known secret value or authorization header material;
-13. project hard constraints are preserved.
+13. `packet.hard_constraints` equals `consumer_input.hard_constraints` by exact deep array equality (same length, same order, byte-for-byte strings; no trim/case-fold/normalize/dedup/paraphrase). Empty input requires `[]`. Mismatch classification: `HARD_CONSTRAINT_MISMATCH`.
 
-If validation fails, classify the consumer result `INVALID_EXECUTION_PACKET` and do not send anything to Cursor.
+If validation fails, classify the consumer result `INVALID_EXECUTION_PACKET` (or the specific stable classification such as `HARD_CONSTRAINT_MISMATCH`) and do not send anything to Cursor.
 
 ---
 

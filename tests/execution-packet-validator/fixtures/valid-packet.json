@@ -17,18 +17,26 @@
   "repository": "mrhz1973/control-plane",
   "branch_target": "main",
   "goal": "Implement deterministic execution-packet-v1 validator with local fixtures.",
-  "preflight": ["workspace clean", "HEAD == origin/main"],
+  "preflight": [
+    "workspace clean",
+    "HEAD == origin/main"
+  ],
   "allowed_paths": [
     "tools/validate-execution-packet-v1.mjs",
     "tests/execution-packet-validator/"
   ],
-  "forbidden_paths": ["n8n", "OpenClaw runtime"],
+  "forbidden_paths": [
+    "n8n",
+    "OpenClaw runtime"
+  ],
   "steps": [
     "Add validator entrypoint",
     "Add fixtures and local tests",
     "Persist evidence"
   ],
-  "validation": ["node tests/execution-packet-validator/run.mjs"],
+  "validation": [
+    "node tests/execution-packet-validator/run.mjs"
+  ],
   "acceptance": [
     "Valid fixture PASS",
     "Invalid fixtures FAIL with machine-readable classification"
@@ -41,7 +49,10 @@
   },
   "risk_assessment": {
     "level": "low",
-    "reasons": ["repo-only", "no runtime"],
+    "reasons": [
+      "repo-only",
+      "no runtime"
+    ],
     "scope_expansion": false,
     "destructive": false,
     "production_sensitive": false,
@@ -65,5 +76,6 @@
     "autofix_cloud": false
   },
   "final_report_contract": "docs/foundation/CURSOR_PROMPT_TEMPLATE.md",
-  "status": "READY_FOR_EXECUTION"
+  "status": "READY_FOR_EXECUTION",
+  "hard_constraints": []
 }

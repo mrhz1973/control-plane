@@ -223,16 +223,36 @@ async function evaluate(response, consumerInput) {
     };
   }
 
-  // hard_constraints: contract requires preservation but defines no unique
-  // packet field mapping — do not invent semantics.
-  const hard = consumerInput.hard_constraints;
-  if (Array.isArray(hard) && hard.length > 0) {
+  // hard_constraints: exact deep-array equality vs consumer_input
+  // Mapping: docs/contracts/execution-packet-hard-constraints-mapping-v1.md
+  const expectedHard = Array.isArray(consumerInput.hard_constraints)
+    ? consumerInput.hard_constraints
+    : null;
+  if (expectedHard === null) {
     return {
       ok: false,
-      classification: "HARD_CONSTRAINT_MAPPING_UNDEFINED",
+      classification: "INPUT_MISMATCH",
+      reason: "consumer_input.hard_constraints must be an array (use [] when empty)",
+      field: "hard_constraints",
+    };
+  }
+  const actualHard = packet.hard_constraints;
+  if (!Array.isArray(actualHard)) {
+    return {
+      ok: false,
+      classification: "HARD_CONSTRAINT_MISMATCH",
+      reason: "packet.hard_constraints must be an array",
+    };
+  }
+  let hardEqual =
+    actualHard.length === expectedHard.length &&
+    actualHard.every((v, i) => v === expectedHard[i]);
+  if (!hardEqual) {
+    return {
+      ok: false,
+      classification: "HARD_CONSTRAINT_MISMATCH",
       reason:
-        "consumer_input.hard_constraints is non-empty, but openclaw-execution-packet-consumer-v1.md / execution-packet-v1 do not define a deterministic unique packet field mapping for preserving those strings",
-      hard_constraints_count: hard.length,
+        "packet.hard_constraints does not exactly equal consumer_input.hard_constraints (length/order/string identity)",
     };
   }
 
@@ -242,8 +262,6 @@ async function evaluate(response, consumerInput) {
     reason:
       "Saved OpenResponses function_call packet passed schema and consumer-input invariants",
     schema_path: SCHEMA_PATH,
-    note:
-      "hard_constraints preservation is only vacuously satisfied when consumer_input.hard_constraints is empty/absent; no deterministic mapping exists in the current contracts",
   };
 }
 
