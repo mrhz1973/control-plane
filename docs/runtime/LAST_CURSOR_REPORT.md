@@ -5,27 +5,38 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0018-W
+task_ref: D-0019-W
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 2e54ba7b82c79c8aa0cf23b5bedd8f16bf892c07
+repo_head_observed_at_task: b86f618988844110fd40fec36098160de934f4c8
 workspace_at_start: clean
-issue: 24
+issue: 25
 
-mapping_source: docs/contracts/execution-packet-hard-constraints-mapping-v1.md
-mapping_integrated: true
+builder_entrypoint: tools/build-openclaw-responses-request.mjs
+consumer_input_schema: docs/contracts/openclaw-consumer-input-v1.schema.json
+parameters_source: docs/contracts/execution-packet-v1.schema.json (loaded; not hand-duplicated)
+model: openclaw/default
+stream: false
+tool: emit_execution_packet (exactly one; tool_choice pinned)
+provider_override: absent
+secrets_in_output: false
+authorization_header_value: not_included
+openclaw_config_read: false
 
-contract_updates:
-  - docs/contracts/execution-packet-v1.md (required hard_constraints: []; planner exact-copy obligation)
-  - docs/contracts/execution-packet-v1.schema.json (required array<string>)
-  - docs/contracts/openclaw-execution-packet-consumer-v1.md (tool schema + HARD_CONSTRAINT_MISMATCH)
+canonical_serialization: >
+  fixed envelope key insertion order; body.input structured-clone of
+  validated consumer_input preserving key/array order; parameters =
+  JSON.parse of canonical packet schema; compact JSON.stringify stdout;
+  no timestamps/random IDs.
 
-gate_entrypoint: tools/validate-openclaw-planner-response-gate.mjs
-hard_constraint_check: exact deep-array equality (length/order/string identity; no trim/case-fold/normalize/dedup)
-stable_mismatch_classification: HARD_CONSTRAINT_MISMATCH
-HARD_CONSTRAINT_MAPPING_UNDEFINED_operational_blocker: removed
+d0019_tests:
+  runner: tests/openclaw-request-builder/run.mjs
+  passed: 15
+  failed: 0
+  total: 15
+  exit_code: 0
 
 d0017_regression:
   runner: tests/execution-packet-validator/run.mjs
@@ -34,22 +45,16 @@ d0017_regression:
   total: 5
   exit_code: 0
 
-d0018_tests:
+d0018_regression:
   runner: tests/openclaw-planner-response-gate/run.mjs
   passed: 15
   failed: 0
   total: 15
   exit_code: 0
-  added_cases:
-    - hard-constraints-identical -> PASS
-    - hard-constraints-missing -> HARD_CONSTRAINT_MISMATCH
-    - hard-constraints-reordered -> HARD_CONSTRAINT_MISMATCH
-    - hard-constraints-modified -> HARD_CONSTRAINT_MISMATCH
-    - hard-constraints-empty-ok -> PASS
-    - hard-constraints-empty-input-nonempty-packet -> HARD_CONSTRAINT_MISMATCH
 
 network_access: false
 provider_model_request_count: 0
+credential_access: 0
 openclaw_mutation: false
 n8n_mutation: false
 vps_mutation: false
@@ -57,12 +62,12 @@ dependency_manager_created: false
 packages_installed: false
 d0016_phase_b_executed: false
 
-NEXT_GATE_CLASSIFICATION: D0018_W_COMPLETE
+NEXT_GATE_CLASSIFICATION: D0019_W_COMPLETE
 ```
 
 ## Evidence boundary
 
-Incorporated GPT-Web hard-constraints mapping verbatim into execution-packet contract, machine schema, OpenClaw consumer contract, D-0017 fixtures, and D-0018 response gate. Exact deep-array equality enforces `HARD_CONSTRAINT_MISMATCH`. D-0017 5/5 PASS; D-0018 15/15 PASS. No runtime/network/provider/credential access. D-0016-W Phase B not executed.
+Implemented repo-only deterministic OpenClaw `/v1/responses` request builder: validates `consumer_input` against GPT-Web schema, emits non-secret envelope with parameters sourced from `execution-packet-v1.schema.json`. D-0019 15/15 PASS; D-0017 5/5 PASS; D-0018 15/15 PASS. No runtime/network/provider/credential access. D-0016-W Phase B not executed.
 
 ## Completion persistence invariant
 

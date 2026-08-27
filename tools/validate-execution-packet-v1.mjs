@@ -44,7 +44,7 @@ function fail(classification, reason, extra = {}) {
   );
 }
 
-function resolveAjvModules() {
+export function resolveAjvModules() {
   let npmRootG = "";
   try {
     npmRootG = execSync("npm root -g", { encoding: "utf8" }).trim();

@@ -1,0 +1,28 @@
+{
+  "task_id": "D-0019-W",
+  "source_backlog_ref": "github:issue/25",
+  "source_backlog_commit": "b86f618988844110fd40fec36098160de934f4c8",
+  "repository": "mrhz1973/control-plane",
+  "branch_target": "main",
+  "goal": "Implement deterministic OpenClaw request builder with local fixtures.",
+  "risk_hint": "low",
+  "complexity_hint": "low",
+  "planner_requested": "glm",
+  "allowed_paths": [
+    "tools/build-openclaw-responses-request.mjs",
+    "tests/openclaw-request-builder/"
+  ],
+  "forbidden_paths": [
+    "n8n",
+    "OpenClaw runtime"
+  ],
+  "acceptance_seed": [
+    "Valid consumer_input PASS",
+    "Invalid inputs FAIL INPUT_SCHEMA_INVALID"
+  ],
+  "validation_seed": [
+    "node tests/openclaw-request-builder/run.mjs"
+  ],
+  "hard_constraints": [],
+  "extra_field": "nope"
+}
