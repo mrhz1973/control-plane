@@ -9,7 +9,7 @@ task_ref: D-0015-W
 result_cursor: PASS_WF40_WF60_PARENT_WIRING_APPLIED_VERBATIM
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_n8n_export_import_structural
-report_persistence_commit: PENDING_SELF_REFERENCE
+report_persistence_commit: 1bb968214b742cea3c15635e14969037db30848c
 
 repo_head_observed_at_task: bfba5f7b1f16c99aedc532222afe704ad23c3775
 workspace_at_start: clean
@@ -76,12 +76,14 @@ SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
 SECRET_VALUES_PERSISTED: false
 
-NEXT_GATE_CLASSIFICATION: D0015_W_AUTHENTICATED_OPENCLAW_INVOCATION_DELTA_REQUIRES_GPT_WEB_AUTHORING
+NEXT_GATE_CLASSIFICATION: D0015_W_COMPLETE_ROUTING_INFRASTRUCTURE_AUTHENTICATED_CONSUMER_DEFERRED
 ```
 
 ## Evidence boundary
 
-Applied GPT-Web delta `workflows/patches/d0015-w-wf40-wf60-parent-wiring.gpt-web.json` verbatim to live WF40 `9ZMj2ACTKyDVhCue` after precondition PASS (name/active/versionId/TRUE three-way fork/FALSE duplicate-skip/no prior Execute Workflow node). Added exactly one Execute Workflow node targeting WF60 `d0015600-4001-8001-0001-0653506aabcd` and appended it as fourth TRUE target of `IF - New commit?` without altering existing TRUE/FALSE branches. WF40 remains active. Structural redacted re-export persisted. No WF40 execution for validation; no provider/model calls; no credential values read/persisted.
+Applied GPT-Web delta `workflows/patches/d0015-w-wf40-wf60-parent-wiring.gpt-web.json` verbatim to live WF40 `9ZMj2ACTKyDVhCue` after precondition PASS. Added exactly one Execute Workflow node targeting WF60 `d0015600-4001-8001-0001-0653506aabcd` and appended it as fourth TRUE target of `IF - New commit?` without altering existing TRUE/FALSE branches. WF40 remains active. Structural redacted re-export persisted. No WF40 execution for validation; no provider/model calls; no credential values read/persisted.
+
+GPT-Web closure decision: D-0015-W is complete at the routing-infrastructure layer. No generic authenticated OpenClaw model invocation is added because there is no concrete consumer/prompt/agent contract; that future invocation belongs to the specific planner/consumer workstream that defines its payload, model policy, acceptance criteria and provider-call authorization.
 
 ## Completion persistence invariant
 
