@@ -5,38 +5,39 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0019-W
+task_ref: D-0020-W
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: b86f618988844110fd40fec36098160de934f4c8
+repo_head_observed_at_task: 6c839e634308ebc18ee9bb63309ed871dddb7175
 workspace_at_start: clean
-issue: 25
+issue: 26
 
-builder_entrypoint: tools/build-openclaw-responses-request.mjs
-consumer_input_schema: docs/contracts/openclaw-consumer-input-v1.schema.json
-parameters_source: docs/contracts/execution-packet-v1.schema.json (loaded; not hand-duplicated)
-model: openclaw/default
-stream: false
-tool: emit_execution_packet (exactly one; tool_choice pinned)
-provider_override: absent
-secrets_in_output: false
-authorization_header_value: not_included
-openclaw_config_read: false
+harness: tests/openclaw-consumer-roundtrip/run.mjs
+composition: D-0019 request builder → synthetic OpenResponses fixture → D-0018 response gate → D-0017 packet validator
+fixture_kind: synthetic_openresponses_offline_fixture
+not_claimed: [provider_success, model_success, openclaw_runtime_success, phase_c_pass]
 
-canonical_serialization: >
-  fixed envelope key insertion order; body.input structured-clone of
-  validated consumer_input preserving key/array order; parameters =
-  JSON.parse of canonical packet schema; compact JSON.stringify stdout;
-  no timestamps/random IDs.
+d0020_roundtrip:
+  ok: true
+  classification: PASS
+  request_builder: PASS
+  response_gate: PASS
+  packet_validator: PASS
+  tamper_tests_passed: 6
+  tamper_tests_total: 6
+  network_access: false
+  provider_model_request_count: 0
+  credential_access: 0
 
-d0019_tests:
-  runner: tests/openclaw-request-builder/run.mjs
-  passed: 15
-  failed: 0
-  total: 15
-  exit_code: 0
+tamper_classifications:
+  - task_id_modified -> INPUT_MISMATCH
+  - hard_constraints_reordered -> HARD_CONSTRAINT_MISMATCH
+  - planner_requested_modified -> PLANNER_MISMATCH
+  - function_name_changed -> FUNCTION_CALL_NAME
+  - packet_schema_invalid -> PACKET_SCHEMA_INVALID
+  - request_builder_secret_boundary -> PASS
 
 d0017_regression:
   runner: tests/execution-packet-validator/run.mjs
@@ -52,9 +53,13 @@ d0018_regression:
   total: 15
   exit_code: 0
 
-network_access: false
-provider_model_request_count: 0
-credential_access: 0
+d0019_regression:
+  runner: tests/openclaw-request-builder/run.mjs
+  passed: 15
+  failed: 0
+  total: 15
+  exit_code: 0
+
 openclaw_mutation: false
 n8n_mutation: false
 vps_mutation: false
@@ -62,12 +67,12 @@ dependency_manager_created: false
 packages_installed: false
 d0016_phase_b_executed: false
 
-NEXT_GATE_CLASSIFICATION: D0019_W_COMPLETE
+NEXT_GATE_CLASSIFICATION: D0020_W_COMPLETE
 ```
 
 ## Evidence boundary
 
-Implemented repo-only deterministic OpenClaw `/v1/responses` request builder: validates `consumer_input` against GPT-Web schema, emits non-secret envelope with parameters sourced from `execution-packet-v1.schema.json`. D-0019 15/15 PASS; D-0017 5/5 PASS; D-0018 15/15 PASS. No runtime/network/provider/credential access. D-0016-W Phase B not executed.
+Offline round-trip harness proves D-0019 → D-0018 → D-0017 composition with synthetic fixtures only. Tamper suite fail-closed with expected classifications. No network/provider/runtime/credential access. D-0016-W Phase B not executed. This is not Phase C inference evidence.
 
 ## Completion persistence invariant
 

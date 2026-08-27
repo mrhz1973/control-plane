@@ -1,0 +1,89 @@
+{
+  "schema": "execution-packet-v1",
+  "packet_id": "EP-D-0020-W-r1",
+  "packet_revision": 1,
+  "task_id": "D-0020-W",
+  "source_backlog_ref": "github:issue/26",
+  "source_backlog_commit": "6c839e634308ebc18ee9bb63309ed871dddb7175",
+  "generated_at": "2026-08-27T12:00:00.000Z",
+  "planner": {
+    "requested": "glm",
+    "used": "glm",
+    "fallback_used": false,
+    "fallback_reason": null,
+    "provider_state_ref": null
+  },
+  "executor": "cursor",
+  "repository": "mrhz1973/control-plane",
+  "branch_target": "main",
+  "goal": "Prove offline D-0019 -> D-0018 -> D-0017 composition with fail-closed tamper coverage.",
+  "preflight": [
+    "workspace clean",
+    "HEAD == origin/main",
+    "offline round-trip only"
+  ],
+  "allowed_paths": [
+    "tools/build-openclaw-responses-request.mjs",
+    "tools/validate-openclaw-planner-response-gate.mjs",
+    "tools/validate-execution-packet-v1.mjs",
+    "tests/openclaw-consumer-roundtrip/"
+  ],
+  "forbidden_paths": [
+    "n8n",
+    "OpenClaw runtime",
+    "VPS"
+  ],
+  "hard_constraints": [
+    "no-n8n-mutation",
+    "no-provider-calls"
+  ],
+  "steps": [
+    "Invoke D-0019 request builder",
+    "Validate synthetic response via D-0018 gate",
+    "Validate extracted packet via D-0017"
+  ],
+  "validation": [
+    "node tests/openclaw-consumer-roundtrip/run.mjs"
+  ],
+  "acceptance": [
+    "Canonical offline round trip PASS",
+    "Tamper cases fail-closed with expected classifications"
+  ],
+  "loop": {
+    "enabled": false,
+    "stop_when": [],
+    "max_rounds": 1,
+    "on_exhaustion": "blocked"
+  },
+  "risk_assessment": {
+    "level": "low",
+    "reasons": [
+      "repo-only",
+      "synthetic fixture",
+      "no inference"
+    ],
+    "scope_expansion": false,
+    "destructive": false,
+    "production_sensitive": false,
+    "credentials_or_billing": false
+  },
+  "gate_recommendation": {
+    "required": false,
+    "reason": null
+  },
+  "context": {
+    "read_set": [
+      "docs/contracts/openclaw-execution-packet-consumer-v1.md",
+      "docs/contracts/execution-packet-v1.schema.json"
+    ],
+    "checkpoint_policy": "required",
+    "checkpoint_contract": "docs/contracts/execution-checkpoint-v1.md"
+  },
+  "review": {
+    "bugbot": "optional",
+    "max_review_rounds": 0,
+    "autofix_cloud": false
+  },
+  "final_report_contract": "docs/foundation/CURSOR_PROMPT_TEMPLATE.md",
+  "status": "READY_FOR_EXECUTION"
+}
