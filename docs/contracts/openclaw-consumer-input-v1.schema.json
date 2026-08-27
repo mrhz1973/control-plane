@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/openclaw-consumer-input-v1.schema.json",
+  "title": "openclaw-consumer-input-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "source_backlog_ref",
+    "source_backlog_commit",
+    "repository",
+    "branch_target",
+    "goal",
+    "risk_hint",
+    "complexity_hint",
+    "planner_requested",
+    "allowed_paths",
+    "forbidden_paths",
+    "acceptance_seed",
+    "validation_seed",
+    "hard_constraints"
+  ],
+  "properties": {
+    "task_id": {"type": "string", "minLength": 1},
+    "source_backlog_ref": {"type": "string", "minLength": 1},
+    "source_backlog_commit": {"type": ["string", "null"]},
+    "repository": {"type": "string", "minLength": 1},
+    "branch_target": {"type": "string", "minLength": 1},
+    "goal": {"type": "string", "minLength": 1},
+    "risk_hint": {"enum": ["low", "medium", "high"]},
+    "complexity_hint": {"enum": ["low", "medium", "high"]},
+    "planner_requested": {"enum": ["qwen", "glm", "codex"]},
+    "allowed_paths": {"type": "array", "items": {"type": "string"}},
+    "forbidden_paths": {"type": "array", "items": {"type": "string"}},
+    "acceptance_seed": {"type": "array", "items": {"type": "string"}},
+    "validation_seed": {"type": "array", "items": {"type": "string"}},
+    "hard_constraints": {"type": "array", "items": {"type": "string"}}
+  }
+}
