@@ -1,0 +1,47 @@
+# TEST / SPIKE TEMPLATE — NOT ACTIVE
+#
+# D-0023-W offline/config artifact only.
+# Does NOT authorize install, start, OAuth, credential access, HTTP, or inference.
+# Future runtime pilot aliases (D-0024, max 1 call/backend, total max 3):
+#   planner-qwen-pilot
+#   planner-glm-pilot
+#   planner-codex-pilot
+#
+# No runtime degrade chain. No service auto-start. No package manager install steps.
+# Secrets must be supplied only via local environment references — never literals.
+
+model_list:
+  # --- Qwen 3.8 37B local (Ollama / OpenAI-compatible) ---
+  # Exact target: Qwen 3.8 37B. No silent 27B substitution. No model pull/download.
+  - model_name: planner-qwen-pilot
+    litellm_params:
+      model: ollama/<EXACT_QWEN_38_37B_RUNTIME_MODEL_ID>
+      api_base: os.environ/OLLAMA_API_BASE
+      # optional: api_key: os.environ/OLLAMA_API_KEY  (only if local auth required)
+
+  # --- GLM 5.3 via Z.AI Coding Plan ---
+  # Coding endpoint EXPLICIT — do not use General API implicitly.
+  - model_name: planner-glm-pilot
+    litellm_params:
+      model: openai/glm-5.3
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_CODING_API_KEY
+
+  # --- Codex via ChatGPT subscription OAuth (Responses mode) ---
+  # Exact Codex model recorded only after local OAuth discovery.
+  # Do NOT substitute OpenAI Platform API key / paid API fallback.
+  - model_name: planner-codex-pilot
+    litellm_params:
+      model: chatgpt/<EXACT_CODEX_MODEL_AFTER_OAUTH_DISCOVERY>
+      # OAuth/device material stays local; never commit tokens.
+
+# Pilot policy notes (documentation only — not a live router):
+# - stream false
+# - retry count 0
+# - no planner auto-degrade
+# - no gateway auto-degrade
+# - max 1 inference per backend; max 3 total for D-0024 suite
+
+litellm_settings:
+  drop_params: true
+  # intentionally no degrade chain / no multi-backend auto-route for the pilot template

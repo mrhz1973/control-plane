@@ -1,0 +1,14 @@
+{
+  "schema": "planner-selection-v1",
+  "task_id": "D-0023-W",
+  "preferred": "glm",
+  "selected": null,
+  "fallback_used": false,
+  "fallback_reason": null,
+  "risk": "low",
+  "complexity": "low",
+  "policy_result": "GATE",
+  "reason_codes": [
+    "TEST_GATE"
+  ]
+}

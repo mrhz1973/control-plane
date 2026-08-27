@@ -1,0 +1,14 @@
+{
+  "schema": "llm-gateway-profile-v1",
+  "gateway_kind": "litellm",
+  "responses_path": "/v1/responses",
+  "auth_requirement": "existing_bearer",
+  "planner_binding_mode": "explicit_model_alias",
+  "default_model": null,
+  "agent_header": null,
+  "model_aliases": {
+    "qwen": "planner-qwen-test",
+    "glm": "planner-glm-test",
+    "codex": "planner-codex-test"
+  }
+}

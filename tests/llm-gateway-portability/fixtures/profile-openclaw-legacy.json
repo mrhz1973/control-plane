@@ -1,0 +1,17 @@
+{
+  "schema": "llm-gateway-profile-v1",
+  "gateway_kind": "openclaw",
+  "responses_path": "/v1/responses",
+  "auth_requirement": "existing_bearer",
+  "planner_binding_mode": "gateway_default_unverified",
+  "default_model": "openclaw/default",
+  "agent_header": {
+    "name": "x-openclaw-agent-id",
+    "value": "main"
+  },
+  "model_aliases": {
+    "qwen": null,
+    "glm": null,
+    "codex": null
+  }
+}

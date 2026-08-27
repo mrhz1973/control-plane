@@ -1,0 +1,12 @@
+{
+  "schema": "planner-selection-v1",
+  "task_id": "D-0023-W",
+  "preferred": "qwen",
+  "selected": "qwen",
+  "fallback_used": false,
+  "fallback_reason": null,
+  "risk": "low",
+  "complexity": "low",
+  "policy_result": "PROCEED",
+  "reason_codes": []
+}

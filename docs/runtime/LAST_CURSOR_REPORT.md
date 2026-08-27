@@ -5,32 +5,40 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0022-W
+task_ref: D-0023-W
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 95443be5b6ba82bafa61b4a222ecebf7a7378c71
+repo_head_observed_at_task: 37fe07a9ee6b55e8fa587934093ab07ac4839f5a
 workspace_at_start: clean
-issue: 28
+issue: 29
+issue_30_runtime: STAGED_GLM_CODEX_ONLY_QWEN_DEFERRED
 
-evaluator: tools/evaluate-planner-selection.mjs
-policy_contract: docs/contracts/planner-selection-evaluator-v1.md
-input_schema: docs/contracts/planner-routing-input-v1.schema.json
-parent_policy: docs/contracts/planner-routing-policy-v1.md
+adapter: tools/build-llm-gateway-request.mjs
+contracts:
+  - docs/contracts/llm-gateway-portability-v1.md
+  - docs/contracts/llm-gateway-profile-v1.schema.json
+  - docs/contracts/llm-gateway-comparison-spike-v1.md
 
-d0022_tests:
-  runner: tests/planner-selection-evaluator/run.mjs
-  passed: 17
+litellm_template: configs/litellm/control-plane-spike.template.yaml
+comparison_matrix: reports/architecture/openclaw_vs_litellm_spike_matrix.md
+
+d0023_tests:
+  runner: tests/llm-gateway-portability/run.mjs
+  passed: 18
   failed: 0
-  total: 17
+  total: 18
   exit_code: 0
 
-notes:
-  - PROCEED means planner selection only; not inference/OpenClaw/Cursor authorization
-  - high-risk preferred unavailable/unknown does not auto-fallback
-  - equivalent_or_gate does not invent equivalence attestation
-  - Ajv strictTypes=false only to compile GPT-Web allOf/contains schema as authored
+key_results:
+  - LiteLLM explicit alias binding PROVEN_OFFLINE (qwen/glm/codex test aliases)
+  - OpenClaw legacy -> PLANNER_BINDING_UNVERIFIED / request_ready=false
+  - GLM coding endpoint explicit in template: https://api.z.ai/api/coding/paas/v4
+  - Codex OAuth placeholder without Platform API-key fallback
+  - Qwen 3.8 37B semantic target; no 27B; no download
+  - no RUNTIME_PROVEN claims
+  - D-0024 not executed; GLM+Codex budget untouched (0/2); Qwen runtime deferred
 
 network_access: false
 provider_model_request_count: 0
@@ -40,22 +48,24 @@ cursor_dispatch_executed: false
 openclaw_mutation: false
 n8n_mutation: false
 vps_mutation: false
+litellm_install_or_start: false
+d0016_phase_b_executed: false
 dependency_manager_created: false
 packages_installed: false
-d0016_phase_b_executed: false
 
 d0017_regression: {passed: 5, failed: 0, total: 5, exit_code: 0}
 d0018_regression: {passed: 15, failed: 0, total: 15, exit_code: 0}
 d0019_regression: {passed: 15, failed: 0, total: 15, exit_code: 0}
 d0020_regression: {ok: true, classification: PASS, exit_code: 0}
 d0021_regression: {passed: 15, failed: 0, total: 15, exit_code: 0}
+d0022_regression: {passed: 17, failed: 0, total: 17, exit_code: 0}
 
-NEXT_GATE_CLASSIFICATION: D0022_W_COMPLETE
+NEXT_GATE_CLASSIFICATION: D0023_W_COMPLETE__D0024_GLM_CODEX_STAGED_READY_FOR_RUNTIME_PREREQUISITES__QWEN_DEFERRED
 ```
 
 ## Evidence boundary
 
-Implemented GPT-Web planner selection evaluator verbatim with schema-validated routing input. D-0022 17/17 PASS; regressions D-0017→D-0021 PASS. No network/provider/runtime/credential/Telegram/Cursor dispatch. D-0016-W Phase B not executed. PROCEED is routing-only.
+Offline/config OpenClaw vs LiteLLM spike complete: portability adapter, sanitized LiteLLM template, and comparison matrix. No install/start/HTTP/provider/credential access. D-0024 runtime pilot not executed. OpenClaw and D-0016-W Phase B authorization unchanged.
 
 ## Completion persistence invariant
 

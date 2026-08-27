@@ -1,0 +1,33 @@
+{
+  "task_id": "D-9999-X",
+  "source_backlog_ref": "github:issue/29",
+  "source_backlog_commit": "37fe07a9ee6b55e8fa587934093ab07ac4839f5a",
+  "repository": "mrhz1973/control-plane",
+  "branch_target": "main",
+  "goal": "Offline LLM gateway portability adapter and LiteLLM config spike.",
+  "risk_hint": "low",
+  "complexity_hint": "low",
+  "planner_requested": "glm",
+  "allowed_paths": [
+    "tools/build-llm-gateway-request.mjs",
+    "tests/llm-gateway-portability/",
+    "configs/litellm/",
+    "reports/architecture/"
+  ],
+  "forbidden_paths": [
+    "n8n",
+    "OpenClaw runtime",
+    "VPS"
+  ],
+  "acceptance_seed": [
+    "LiteLLM alias binding PASS",
+    "OpenClaw legacy PLANNER_BINDING_UNVERIFIED"
+  ],
+  "validation_seed": [
+    "node tests/llm-gateway-portability/run.mjs"
+  ],
+  "hard_constraints": [
+    "no-runtime",
+    "no-secrets"
+  ]
+}
