@@ -9,7 +9,7 @@ task_ref: D-0024-W_PREFLIGHT_GLM_CODEX
 result_cursor: STOP_OAUTH_STARTED_INVOLUNTARILY
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_preflight_work_pc
-report_persistence_commit: PENDING_SELF_REFERENCE
+report_persistence_commit: d376d38d1a5910b771914f924ad7b22ea97379fd
 classification: STOP
 stop_finding: get_llm_provider('chatgpt/…') triggered ChatGPT device-code OAuth without operator gate; process killed; device code must be ignored / not completed
 
