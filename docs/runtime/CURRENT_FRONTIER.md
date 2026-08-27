@@ -6,7 +6,7 @@
 |---|---|
 | **FOUNDATION** | v3.1 wiki-LLM lean — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
-| **ACTIVE WORK** | issue **#30 D-0024-W** — safe preflight recovery active after involuntary ChatGPT device-OAuth STOP; issue **#29 D-0023-W** COMPLETE; Qwen runtime deferred; issue **#22 D-0016-W** Phase B parallel; HOME startup-console investigation authorized but latest HOME result not persisted; issue **#8** Z.AI support parallel |
+| **ACTIVE WORK** | issue **#30 D-0024-W** — safe preflight recovery active after involuntary ChatGPT device-OAuth STOP; issue **#29 D-0023-W** COMPLETE; Qwen runtime deferred; issue **#22 D-0016-W** Phase B parallel, HOME legacy visible-console autostart removed; issue **#8** Z.AI support parallel |
 | **BLOCCO ATTIVO** | `D0024_W_LITELLM_PREFLIGHT_RECOVERY_GLM_CODEX` |
 | **STATO BLOCCO** | `D0024_W_STOP_REVIEWED / LITELLM_1_98_0_ISOLATED / GLM_ROUTE_RESOLVED_ZAI_WITH_EXPLICIT_CODING_API_BASE / CODEX_SOURCE_CAPABLE_OAUTH_SIDE_EFFECT_KNOWN / RECOVERY_AUTO_ELIGIBLE / INFERENCE_BUDGET_0_OF_2 / QWEN_RUNTIME_DEFERRED` |
 | **GATE CORRENTE** | `D0024_W_PREFLIGHT_RECOVERY_AUTO_ELIGIBLE` — complete source-only/config recovery with zero provider inference and no OAuth; then stop at real human auth gates |
@@ -18,8 +18,8 @@
 | **CODEX ROUTE** | installed source has `chatgpt/`, Responses transformation and device OAuth; exact pilot model unresolved pending operator-present OAuth; pre-gate provider resolution that can auto-start OAuth is forbidden |
 | **REGRESSION HOST NOTE** | D-0023 runner on WORK PC could not resolve Ajv draft-2020-12 engine; classify host tooling availability, not D-0023 functional regression; do not add repo dependency solely for this host |
 | **QWEN RUNTIME STATUS** | `DEFERRED_NOT_BLOCKING_CURRENT_REMOTE_PATH` · inference `0` · no load/start/download |
-| **PARALLEL D-0016-W** | Phase B AUTHORIZED / NOT EXECUTED · HOME reachable · not current priority |
-| **HOME STARTUP CONSOLE** | investigation/remediation authorized under issue #22; `agg` has no persisted Cursor finding for that HOME pass yet → `EVIDENCE_NOT_PERSISTED` for nuisance result only |
+| **PARALLEL D-0016-W** | Phase B AUTHORIZED / NOT EXECUTED · HOME reachable · legacy visible-console Startup `.cmd` removed · current gateway session still listening on `127.0.0.1:18789` with `/health` 200 · next login will not auto-start until managed Gateway Phase B is executed |
+| **HOME STARTUP CONSOLE** | COMPLETE · `OPENCLAW_LEGACY_VISIBLE_AUTOSTART_CONFIRMED` · removed only `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\OpenClaw-Gateway-Autostart.cmd` · OpenClaw install/config/current running gateway preserved · secret exposure false |
 | **PARALLEL ZAI SUPPORT** | issue #8 · `AWAITING_ZAI_SUPPORT_RESPONSE` · VPS `NO_MORE_MANUAL_ONE_OFF_PROBES` |
 | **LITELLM STATUS** | candidate gateway · offline portability PASS · isolated 1.98.0 installed · runtime provider inference not yet consumed |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
@@ -35,8 +35,8 @@
 - D-0024 inference budget remains 0/2; retry/fallback zero; Qwen runtime deferred.
 - Isolated LiteLLM environment may remain; no permanent service/autostart/public bind.
 - WORK-PC Ajv unavailability does not authorize adding repo dependencies. If shared JS tooling is untouched, preserve historical D-0023 PASS and validate only modified config locally.
-- HOME OpenClaw/startup-console work remains parallel; no nuisance-remediation result is canonical until persisted evidence exists.
-- No n8n/OpenClaw/VPS mutation, credential persistence, architecture promotion, PM-34/L5/endurance/permanent schedule.
+- HOME nuisance remediation is complete: the legacy visible-console Startup `.cmd` was removed only; current gateway session was left running, and no replacement autostart was created. On next HOME login the gateway will remain stopped until separately authorized D-0016-W Phase B installs/repairs the managed Gateway path.
+- No n8n/OpenClaw provider/VPS mutation, credential persistence, architecture promotion, PM-34/L5/endurance/permanent schedule.
 
 ## Puntatori
 
