@@ -1,0 +1,117 @@
+{
+  "schema": "control-plane-gpt-web-n8n-delta-v1",
+  "task_ref": "D-0015-W",
+  "authority": "GPT_WEB",
+  "purpose": "Add the canonical WF60 OpenClaw private broker resolver as a dedicated parallel lane on the live WF40 new-commit TRUE branch. This pass resolves routing only; it does not invoke a provider/model.",
+  "target_workflow": {
+    "live_id": "9ZMj2ACTKyDVhCue",
+    "expected_name": "40 - CP v4 multirepo + classifier bridge - ACTIVE",
+    "expected_active": true,
+    "expected_version_id_before_patch": "028cd44a-508d-4573-b9cd-70d6338110b3"
+  },
+  "preconditions": {
+    "source_node": {
+      "id": "b4bf4e90-f17e-4edc-b2d0-4bba669d985c",
+      "name": "IF - New commit?",
+      "type": "n8n-nodes-base.if"
+    },
+    "true_output_index": 0,
+    "existing_true_targets_must_include": [
+      {
+        "id": "1f2cbff4-feac-4734-bb60-04b34ad10887",
+        "name": "IF - GIS repo for handoff?"
+      },
+      {
+        "id": "6b3a3565-3d0d-47e1-aa46-0d3670b0db26",
+        "name": "Data Table - Upsert last seen commit"
+      },
+      {
+        "id": "429cde10-b360-4396-9f57-ffeac563d2fe",
+        "name": "Code - Plan watcher repo gate stub"
+      }
+    ],
+    "must_not_already_exist": {
+      "node_id": "d0015f40-0060-4001-8001-000000000060",
+      "node_name": "Execute Workflow - Resolve OpenClaw broker (WF60)"
+    }
+  },
+  "operations": [
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "workflowId": "d0015600-4001-8001-0001-0653506aabcd",
+          "options": {}
+        },
+        "id": "d0015f40-0060-4001-8001-000000000060",
+        "name": "Execute Workflow - Resolve OpenClaw broker (WF60)",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1,
+        "position": [-720, -160]
+      }
+    },
+    {
+      "op": "append_connection",
+      "from_node": "IF - New commit?",
+      "output_type": "main",
+      "output_index": 0,
+      "connection": {
+        "node": "Execute Workflow - Resolve OpenClaw broker (WF60)",
+        "type": "main",
+        "index": 0
+      },
+      "preserve_all_existing_connections": true
+    }
+  ],
+  "resulting_lane_contract": {
+    "lane": "IF - New commit? TRUE -> Execute Workflow - Resolve OpenClaw broker (WF60) -> terminal for this pass",
+    "wf60_input": "passthrough",
+    "wf60_output_fields_of_interest": [
+      "brokerSelected",
+      "selectedBaseUrl",
+      "reason",
+      "primaryStatus",
+      "fallbackStatus",
+      "failClosed",
+      "privateOnly"
+    ],
+    "future_extension_rule": "Any future authenticated OpenClaw HTTP invocation must be authored by GPT Web downstream of this resolver lane, must fail closed when brokerSelected=none/failClosed=true, and must use n8n Header Auth credential id Qy4tQ7a7ld5loSdV without exposing its value. No such authenticated invocation is added by this delta."
+  },
+  "preserve": [
+    "All existing WF40 nodes and connections",
+    "WF40 active state",
+    "WF42 and WF41 unchanged",
+    "WF60 logic unchanged",
+    "gateway.auth.mode unchanged",
+    "Windows remains fallback-only",
+    "VPS remains canonical primary"
+  ],
+  "forbidden": [
+    "Provider/model requests",
+    "Authenticated OpenClaw inference/API calls in this delta",
+    "Credential value read/export/log/persist/hash/measure",
+    "Public exposure/Funnel/NAT/public reverse proxy",
+    "VPS Z.AI mutation",
+    "PM-34/L5/endurance/permanent schedule changes",
+    "Autonomous changes to any other WF40 branch"
+  ],
+  "verification": {
+    "required": [
+      "Re-export live WF40 metadata/structure after patch",
+      "Confirm the new Execute Workflow node exists exactly once and targets WF60 live id d0015600-4001-8001-0001-0653506aabcd",
+      "Confirm IF - New commit? TRUE retains its three pre-existing targets and adds the WF60 lane as a fourth target",
+      "Confirm FALSE branch remains Duplicate skip - no Telegram",
+      "Confirm WF40 remains active",
+      "Confirm no credential values were read and provider/model request count is 0"
+    ],
+    "do_not_execute_wf40_for_validation": true,
+    "wf60_health_only_execution_optional_if_needed": true
+  },
+  "stop_conditions": [
+    "WF40 live id/name/version precondition mismatch",
+    "Any expected existing TRUE target is missing",
+    "The new node name/id already exists with non-equivalent configuration",
+    "Applying the delta would require changing unrelated workflow logic",
+    "A credential value would need to be read or exposed"
+  ]
+}
