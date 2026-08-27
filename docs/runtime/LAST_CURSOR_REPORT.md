@@ -5,38 +5,38 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0021-W
+task_ref: D-0022-W
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: af56b57104b7182cbc56580a8df2074cc1436d78
+repo_head_observed_at_task: 95443be5b6ba82bafa61b4a222ecebf7a7378c71
 workspace_at_start: clean
-issue: 27
+issue: 28
 
-policy_contract: docs/contracts/execution-packet-policy-gate-v1.md
-evaluator: tools/evaluate-execution-packet-policy.mjs
-schema_parity_fix:
-  - loop.max_rounds maximum 10
-  - review.max_review_rounds maximum 10
+evaluator: tools/evaluate-planner-selection.mjs
+policy_contract: docs/contracts/planner-selection-evaluator-v1.md
+input_schema: docs/contracts/planner-routing-input-v1.schema.json
+parent_policy: docs/contracts/planner-routing-policy-v1.md
 
-d0021_tests:
-  runner: tests/execution-packet-policy-gate/run.mjs
-  passed: 15
+d0022_tests:
+  runner: tests/planner-selection-evaluator/run.mjs
+  passed: 17
   failed: 0
-  total: 15
+  total: 17
   exit_code: 0
 
-decisions_covered:
-  - PROCEED (clean low-risk)
-  - GATE (RISK_HIGH, SCOPE_EXPANSION, DESTRUCTIVE, PRODUCTION_SENSITIVE, CREDENTIALS_OR_BILLING, PLANNER_RECOMMENDED_GATE, PLANNER_FALLBACK_REQUIRES_EQUIVALENCE_GATE, PACKET_ALREADY_GATED, multi-reason order, READY_FOR_EXECUTION+destructive)
-  - BLOCKED (PACKET_SUPERSEDED, PACKET_SCHEMA_INVALID, max_rounds=11, max_review_rounds=11)
+notes:
+  - PROCEED means planner selection only; not inference/OpenClaw/Cursor authorization
+  - high-risk preferred unavailable/unknown does not auto-fallback
+  - equivalent_or_gate does not invent equivalence attestation
+  - Ajv strictTypes=false only to compile GPT-Web allOf/contains schema as authored
 
-cursor_dispatch_executed: false
-telegram_used: false
 network_access: false
 provider_model_request_count: 0
 credential_access: 0
+telegram_used: false
+cursor_dispatch_executed: false
 openclaw_mutation: false
 n8n_mutation: false
 vps_mutation: false
@@ -48,13 +48,14 @@ d0017_regression: {passed: 5, failed: 0, total: 5, exit_code: 0}
 d0018_regression: {passed: 15, failed: 0, total: 15, exit_code: 0}
 d0019_regression: {passed: 15, failed: 0, total: 15, exit_code: 0}
 d0020_regression: {ok: true, classification: PASS, exit_code: 0}
+d0021_regression: {passed: 15, failed: 0, total: 15, exit_code: 0}
 
-NEXT_GATE_CLASSIFICATION: D0021_W_COMPLETE
+NEXT_GATE_CLASSIFICATION: D0022_W_COMPLETE
 ```
 
 ## Evidence boundary
 
-Implemented GPT-Web policy gate verbatim with schema boundedness parity for loop/review max rounds. Local policy tests 15/15 PASS; regressions D-0017–D-0020 PASS. No Cursor dispatch, Telegram, OpenClaw, network, or provider access. D-0016-W Phase B not executed.
+Implemented GPT-Web planner selection evaluator verbatim with schema-validated routing input. D-0022 17/17 PASS; regressions D-0017→D-0021 PASS. No network/provider/runtime/credential/Telegram/Cursor dispatch. D-0016-W Phase B not executed. PROCEED is routing-only.
 
 ## Completion persistence invariant
 

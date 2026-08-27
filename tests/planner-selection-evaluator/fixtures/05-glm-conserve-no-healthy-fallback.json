@@ -1,0 +1,25 @@
+{
+  "schema": "planner-routing-input-v1",
+  "task_id": "D-0022-W",
+  "risk_hint": "low",
+  "complexity_hint": "low",
+  "preferred": "glm",
+  "fallback": [
+    "codex"
+  ],
+  "fallback_policy": "normal",
+  "provider_state": {
+    "qwen": {
+      "available": false,
+      "resource_pressure": "low"
+    },
+    "glm": {
+      "available": true,
+      "quota_state": "conserve"
+    },
+    "codex": {
+      "available": true,
+      "quota_state": "conserve"
+    }
+  }
+}
