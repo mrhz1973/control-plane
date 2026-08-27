@@ -8,7 +8,7 @@
 task_ref: D-0017-W
 result_cursor: PASS
 reported_via: cursor_direct_persistence
-report_persistence_commit: PENDING_SELF_REFERENCE
+report_persistence_commit: 2f89561e459becf8c7d505d84142c7df356987ad
 
 repo_head_observed_at_task: 680b25b8be6a9082854e5f53554ab1a7764b5229
 workspace_at_start: clean
