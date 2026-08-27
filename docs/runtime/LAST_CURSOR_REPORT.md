@@ -5,104 +5,95 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0015-W
-result_cursor: PASS_WF40_WF60_PARENT_WIRING_APPLIED_VERBATIM
+task_ref: D-0016-W_PHASE_A_WINDOWS_OPENCLAW_HTTP_PLANNER_SURFACE_READONLY
+result_cursor: PASS_HTTP_PLANNER_SURFACE_DISABLED
 reported_via: cursor_direct_persistence
-independent_verification: cursor_runtime_n8n_export_import_structural
-report_persistence_commit: 1bb968214b742cea3c15635e14969037db30848c
+independent_verification: cursor_runtime_readonly_openclaw_windows
+report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: bfba5f7b1f16c99aedc532222afe704ad23c3775
+repo_head_observed_at_task: a221686c41b5b7ef9a7f252014544b0ee59018ee
 workspace_at_start: clean
-artifact: workflows/patches/d0015-w-wf40-wf60-parent-wiring.gpt-web.json
-override: PERSIST_APPLY_VERBATIM_GPT_B_SUPPLIED_WORKFLOW_ARTIFACT
+repo_sync: fast_forward_ok
+origin_main_after_sync: a221686c41b5b7ef9a7f252014544b0ee59018ee
+operator_gate_ref: github:issue/22
+active_work: github:issue/22
 
-preconditions_live: PASS
-  live_id: 9ZMj2ACTKyDVhCue
-  live_name: "40 - CP v4 multirepo + classifier bridge - ACTIVE"
-  active_before: true
-  versionId_before: 028cd44a-508d-4573-b9cd-70d6338110b3
-  if_new_commit_true_before:
-    - "IF - GIS repo for handoff?"
-    - "Data Table - Upsert last seen commit"
-    - "Code - Plan watcher repo gate stub"
-  if_new_commit_false_before:
-    - "Duplicate skip - no Telegram"
-  execute_workflow_nodes_before: []
+HOST:
+  surface: home_windows_openclaw
+  openclaw_identifiable: true
+  openclaw_path: C:\Users\mrhz\AppData\Roaming\npm\openclaw.cmd
 
-operations_applied_verbatim:
-  - op: add_node
-    node_id: d0015f40-0060-4001-8001-000000000060
-    node_name: "Execute Workflow - Resolve OpenClaw broker (WF60)"
-    type: n8n-nodes-base.executeWorkflow
-    typeVersion: 1
-    workflowId: d0015600-4001-8001-0001-0653506aabcd
-    position: [-720, -160]
-  - op: append_connection
-    from: "IF - New commit?"
-    output_type: main
-    output_index: 0
-    preserve_all_existing_connections: true
-    to: "Execute Workflow - Resolve OpenClaw broker (WF60)"
+OPENCLAW_VERSION:
+  version: "2026.5.20"
+  build: e510042
 
-post_apply_live:
-  active_after: true
-  listed_in_n8n_active_true: true
-  versionId_after: 86ed5569-ce2b-49bb-9f3b-30f4e7fa918b
-  node_count_after: 35
-  execute_workflow_nodes_after_count: 1
-  execute_workflow_nodes_after:
-    - name: "Execute Workflow - Resolve OpenClaw broker (WF60)"
-      id: d0015f40-0060-4001-8001-000000000060
-      workflowId: d0015600-4001-8001-0001-0653506aabcd
-  if_new_commit_true_after:
-    - "IF - GIS repo for handoff?"
-    - "Data Table - Upsert last seen commit"
-    - "Code - Plan watcher repo gate stub"
-    - "Execute Workflow - Resolve OpenClaw broker (WF60)"
-  if_new_commit_false_after:
-    - "Duplicate skip - no Telegram"
+GATEWAY_STATUS_SANITIZED:
+  service: Scheduled Task (missing)
+  config_cli: ~\.openclaw\openclaw.json
+  config_service: ~\.openclaw\openclaw.json
+  bind_reported: loopback (127.0.0.1)
+  port_reported: 18789
+  probe_target: ws://127.0.0.1:18789
+  connectivity_probe: failed
+  connectivity_error: ECONNREFUSED 127.0.0.1:18789
+  gateway_listening_at_inspection: false
+  restart_performed: false
 
-structural_reexport_redacted: workflows/exports/2026-08-27_40-d0015-w-wf60-parent-wiring-post-apply.redacted.json
+GATEWAY_CONFIG_SANITIZED:
+  gateway.mode: local
+  gateway.bind: loopback
+  gateway.port: 18789
+  gateway.auth.mode: token
+  gateway.auth.token_value_read: false
+  gateway.http: null
+  gateway.http.endpoints: unset
+  gateway.http.endpoints.responses.enabled: unset_path_not_found
+  gateway.http.endpoints.chatCompletions.enabled: unset_path_not_found
+  gateway.tailscale.mode: serve
+  gateway.tailscale.resetOnExit: true
 
-wf40_executed_for_validation: false
-wf42_mutation: false
-wf41_mutation: false
-wf60_mutation: false
-endpoint_mutation: false
-gateway_auth_mode_mutation: false
-provider_model_request_count: 0
-credential_values_read: false
+HTTP_PLANNER_SURFACE_CLASSIFICATION: HTTP_PLANNER_SURFACE_DISABLED
+classification_basis: both responses.enabled and chatCompletions.enabled are unset/absent; gateway.http is null; OpenClaw docs default is disabled
+autonomous_enablement: false
+
+LOCAL_HEALTH:
+  url: http://127.0.0.1:18789/health
+  result: connection_refused
+  http_status: null
+  note: consistent with gateway not listening; no restart attempted
+
+TAILSCALE:
+  serve_status_human: "https://asusdesktop.tailc01234.ts.net (tailnet only) -> / proxy http://127.0.0.1:18789"
+  serve_private_tailnet_only: true
+  funnel_public_exposure: false
+  funnel_status_note: CLI shows same private serve proxy; human status marked tailnet only; no public Funnel claimed
+
+INVARIANTS:
+  windows_fallback_only: preserved
+  vps_canonical_primary: preserved
+  gateway_bind_loopback: true
+  gateway_auth_mode_token: true
+  tailscale_serve_private: true
+  funnel_disabled_or_non_public: true
+  openclaw_config_mutation: false
+  openclaw_restart: false
+  zai_mutation: false
+  n8n_mutation: false
+  vps_mutation: false
+  pm34_l5_endurance_permanent_schedule: unchanged
+
+PROVIDER_BOUNDARY:
+  called_v1_responses: false
+  called_v1_chat_completions: false
+  called_v1_models: false
+  inference_performed: false
+  provider_model_inference_request_count: 0
+
 SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
-SECRET_VALUES_PERSISTED: false
+SECRET_VALUE_PERSISTED: false
+SECRET_VALUE_HASHED_OR_MEASURED: false
 
-NEXT_GATE_CLASSIFICATION: D0015_W_COMPLETE_ROUTING_INFRASTRUCTURE_AUTHENTICATED_CONSUMER_DEFERRED
+NEXT_REAL_GATE: D0016_W_PHASE_B_EXPLICIT_HTTP_PLANNER_SURFACE_ENABLE_GATE
+next_gate_note: enabling gateway.http.endpoints.responses and/or chatCompletions requires explicit operator authorization; also gateway process was not listening at Phase A inspection (Scheduled Task missing / ECONNREFUSED) and must not be restarted in this pass
 ```
-
-## Evidence boundary
-
-Applied GPT-Web delta `workflows/patches/d0015-w-wf40-wf60-parent-wiring.gpt-web.json` verbatim to live WF40 `9ZMj2ACTKyDVhCue` after precondition PASS. Added exactly one Execute Workflow node targeting WF60 `d0015600-4001-8001-0001-0653506aabcd` and appended it as fourth TRUE target of `IF - New commit?` without altering existing TRUE/FALSE branches. WF40 remains active. Structural redacted re-export persisted. No WF40 execution for validation; no provider/model calls; no credential values read/persisted.
-
-GPT-Web closure decision: D-0015-W is complete at the routing-infrastructure layer. No generic authenticated OpenClaw model invocation is added because there is no concrete consumer/prompt/agent contract; that future invocation belongs to the specific planner/consumer workstream that defines its payload, model policy, acceptance criteria and provider-call authorization.
-
-## Completion persistence invariant
-
-Per i task Cursor successivi, il report finale non deve restare soltanto nella chat Cursor.
-
-Prima di dichiarare il task completamente chiuso, Cursor deve persistere in GitHub un aggiornamento docs-only di questo file con almeno:
-
-- `task_ref` esatto;
-- risultato `PASS|BLOCKED|FAILED`;
-- evidence deterministica necessaria al gate/NEXT;
-- HEAD/workspace osservati quando pertinenti;
-- eventuali mutazioni runtime effettuate;
-- `NEXT_GATE_CLASSIFICATION` o blocker esatto;
-- nessun secret/token.
-
-La persistenza del report è evidence bookkeeping recuperabile e non amplia lo scope runtime del task.
-
-Se `agg` trova un `LAST_CURSOR_REPORT` che non corrisponde al pass Cursor atteso, deve classificare **`EVIDENCE_NOT_PERSISTED`**, non concludere che il task non sia stato eseguito.
-
-## History
-
-La cronologia precedente del rolling report resta recuperabile nella Git history. Il file corrente privilegia il LATEST necessario a `agg` e al resume lean.
