@@ -9,7 +9,7 @@ task_ref: D-0024-W_CODEX_EXACT_MODEL_DISCOVERY
 result_cursor: STOP_CODEX_EXACT_MODEL_UNRESOLVED
 reported_via: cursor_direct_persistence
 independent_verification: cursor_runtime_work_pc
-report_persistence_commit: PENDING_SELF_REFERENCE
+report_persistence_commit: d633eb670e334190a2bb00d6d84eb4c45c763f56
 classification: CODEX_EXACT_MODEL_UNRESOLVED
 
 repo_head_observed_at_task: 3f87ab0a2edb7d71c37cbae703ee2be05b7f25c4
