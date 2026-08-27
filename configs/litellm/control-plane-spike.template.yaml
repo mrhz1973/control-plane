@@ -30,12 +30,12 @@ model_list:
       api_key: os.environ/ZAI_CODING_API_KEY
 
   # --- Codex via ChatGPT subscription OAuth (Responses mode) ---
-  # Exact Codex model is resolved only at the operator-present OAuth gate.
-  # Do NOT invoke chatgpt provider resolution before that gate: LiteLLM 1.98.0 may auto-start device OAuth.
+  # D-0024 exact authenticated model from custom CHATGPT_TOKEN_DIR catalog metadata.
   # Do NOT substitute OpenAI Platform API key / paid API fallback.
+  # Runtime must set CHATGPT_TOKEN_DIR / CHATGPT_AUTH_FILE to the operator auth store.
   - model_name: planner-codex-pilot
     litellm_params:
-      model: chatgpt/<EXACT_CODEX_MODEL_AFTER_OAUTH_DISCOVERY>
+      model: chatgpt/gpt-5.6-sol
       # OAuth/device material stays local; never commit tokens.
 
 # Pilot policy notes (documentation only — not a live router):
