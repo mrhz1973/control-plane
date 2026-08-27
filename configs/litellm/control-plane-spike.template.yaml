@@ -2,16 +2,17 @@
 #
 # D-0023-W offline/config artifact only.
 # Does NOT authorize install, start, OAuth, credential access, HTTP, or inference.
-# Future runtime pilot aliases (D-0024, max 1 call/backend, total max 3):
-#   planner-qwen-pilot
+# Current D-0024 runtime priority aliases (max 1 GLM + 1 Codex call; max 2 total):
 #   planner-glm-pilot
 #   planner-codex-pilot
+# Qwen remains represented only for offline/static portability and is runtime-deferred.
+#   planner-qwen-pilot
 #
 # No runtime degrade chain. No service auto-start. No package manager install steps.
 # Secrets must be supplied only via local environment references — never literals.
 
 model_list:
-  # --- Qwen 3.8 37B local (Ollama / OpenAI-compatible) ---
+  # --- Qwen 3.8 37B local (DEFERRED RUNTIME; offline/static portability only) ---
   # Exact target: Qwen 3.8 37B. No silent 27B substitution. No model pull/download.
   - model_name: planner-qwen-pilot
     litellm_params:
@@ -40,7 +41,8 @@ model_list:
 # - retry count 0
 # - no planner auto-degrade
 # - no gateway auto-degrade
-# - max 1 inference per backend; max 3 total for D-0024 suite
+# - max 1 GLM inference + 1 Codex OAuth inference; max 2 total for current D-0024 priority suite
+# - Qwen inference 0 until a later explicit resume
 
 litellm_settings:
   drop_params: true
