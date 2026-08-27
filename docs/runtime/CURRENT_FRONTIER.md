@@ -8,9 +8,9 @@
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
 | **ACTIVE WORK** | GitHub issue **#21** `D-0015-W` — Windows fallback hardening + private n8n routing; issue **#20** fallback transport PASS; issue **#8** parallel provider wait |
 | **BLOCCO ATTIVO** | `WINDOWS-FALLBACK-HARDENING-N8N-ROUTING` |
-| **STATO BLOCCO** | `WF60_IMPORTED_CALLABLE / GPT_WEB_PARENT_DELTA_AUTHORED / VERBATIM_APPLY_READY / ZAI_SUPPORT_WAIT_PARALLEL` |
-| **GATE CORRENTE** | `D0015_W_PARENT_WIRING_VERBATIM_APPLY_READY` — GPT Web ha authorato il delta canonico `workflows/patches/d0015-w-wf40-wf60-parent-wiring.gpt-web.json`; Cursor può applicarlo verbatim al live WF40 solo se le precondition live coincidono |
-| **NEXT** | Cursor applica verbatim il delta GPT-Web a WF40 `9ZMj2ACTKyDVhCue`, preserva active state e tutti i rami esistenti, verifica structural-only senza eseguire WF40 e persiste evidence; nessuna chiamata provider/model e nessuna lettura secret |
+| **STATO BLOCCO** | `WF40_WF60_PARENT_WIRING_APPLIED / RESOLVER_LANE_LIVE / AUTHENTICATED_INVOCATION_PENDING_GPT_WEB / ZAI_SUPPORT_WAIT_PARALLEL` |
+| **GATE CORRENTE** | `D0015_W_AUTHENTICATED_OPENCLAW_INVOCATION_DELTA_REQUIRES_GPT_WEB_AUTHORING` — WF40→WF60 parent wiring applied verbatim; next authenticated OpenClaw HTTP invocation (if any) must be GPT-Web-authored downstream of resolver, fail-closed, using credential id `Qy4tQ7a7ld5loSdV` without exposing its value |
+| **NEXT** | GPT Web may author the authenticated invocation delta only; Cursor must not invent provider/model calls, must not execute WF40 for validation unless newly authorized, and must not mutate VPS Z.AI |
 | **PARALLEL ZAI SUPPORT** | issue #8 · sanitized escalation submitted 2026-08-27 · `AWAITING_ZAI_SUPPORT_RESPONSE`; no additional Z.AI probes authorized merely to validate fallback transport/routing |
 | **VPS OPENCLAW** | `2026.8.1-beta.3` (5831b80) · gateway inactive (unchanged) · node runtime `/opt/openclaw-node/current` v24.19.0 |
 | **Z.AI PROVIDER PLUGIN** | `2026.8.1-beta.3` (active generation, unchanged) |
@@ -32,20 +32,19 @@
 | **ROOT CAUSE CLASSIFICATION** | `APPLICATION_LAYER_IP_OR_RISK_CONTROL_SUSPECT` (updated 2026-08-26): transport/unauthenticated path eliminated; credential format and model variant eliminated; datacenter egress `217.160.71.145` → authenticated HTTP 500 while residential egress `95.249.154.241` → SUCCESS with same key family; provider-side classification pending |
 | **SUPPORT ESCALATION** | `SUBMITTED` on `2026-08-27` via email to `user_feedback@z.ai` · sanitized draft `docs/runtime/ISSUE_8_ZAI_SUPPORT_ESCALATION_DRAFT.md` · submission evidence issue #8 comment `5431709978` · `AWAITING_ZAI_RESPONSE` |
 | **WINDOWS FALLBACK TRANSPORT** | issue #20 `D-0014-W` · **PASS** 2026-08-27 · OpenClaw `2026.5.20` · loopback `127.0.0.1:18789` · Tailscale Serve `https://asusdesktop.tailc01234.ts.net/` → loopback gateway · VPS private HTTPS/WSS PASS · no Funnel/public exposure · Windows remains fallback |
-| **WINDOWS FALLBACK HARDENING / N8N ROUTING** | issue #21 `D-0015-W` · WF60 imported callable · live id `d0015600-4001-8001-0001-0653506aabcd` · n8n Header Auth credential metadata id `Qy4tQ7a7ld5loSdV` · health resolver PASS from n8n container (`fallbackStatus=200`, `brokerSelected=windows_private_fallback`) · GPT-Web WF40 parent delta authored and ready for verbatim apply |
+| **WINDOWS FALLBACK HARDENING / N8N ROUTING** | issue #21 `D-0015-W` · WF60 callable `d0015600-4001-8001-0001-0653506aabcd` · WF40 parent wiring **APPLIED** · Execute Workflow node `d0015f40-0060-4001-8001-000000000060` · WF40 active · versionId `86ed5569-ce2b-49bb-9f3b-30f4e7fa918b` · redacted export `workflows/exports/2026-08-27_40-d0015-w-wf60-parent-wiring-post-apply.redacted.json` |
 | **PM-34 / n8n_ready** | BLOCKED / `false` |
 | **Gate E / L5_PASS** | PASS-CLOSED / NOT_CLAIMED |
 | **L5 runtime** | activation `false` · runtime `false` · endurance `false` |
 | **PERMANENT SCHEDULE / LOOP** | NOT_AUTHORIZED / NOT_DECLARED |
-| **WF40 / WF42 / WF41** | 40 active unchanged · 42 active unchanged · 41 off |
+| **WF40 / WF42 / WF41** | 40 active **with WF60 resolver lane** · 42 active unchanged · 41 off |
 | **wf47** | inactive/unpublished · Schedule disabled · `enable_wg48_handoff=false` |
 
 ## Boundaries operative correnti
 
-- Issue #21 D-0015-W: n8n Header Auth credential metadata verified (`Qy4tQ7a7ld5loSdV`, type `httpHeaderAuth`, operator-attested OpenClaw Windows binding); WF60 imported verbatim from GPT-Web artifact with live id `d0015600-4001-8001-0001-0653506aabcd`; health-only resolver validated from n8n container (`/health` only, provider/model requests 0).
-- WF40 live structure map PASS: live id `9ZMj2ACTKyDVhCue`, active, no existing Execute Workflow/OpenClaw nodes; `IF - New commit?` TRUE has the verified three-way fork. GPT Web authored `workflows/patches/d0015-w-wf40-wf60-parent-wiring.gpt-web.json` to append a fourth terminal resolver lane without changing the existing branches.
-- Cursor may apply that parent delta verbatim only; precondition mismatch => STOP. Do not execute WF40 for validation. Structural re-export only.
-- Authenticated OpenClaw invocation remains a future GPT-Web-authored extension downstream of the resolver lane; this delta performs no provider/model/API invocation.
+- Issue #21 D-0015-W: WF40→WF60 parent wiring applied verbatim from `workflows/patches/d0015-w-wf40-wf60-parent-wiring.gpt-web.json`. Existing three TRUE targets preserved; FALSE remains `Duplicate skip - no Telegram`; WF40 remains active.
+- Resolver lane is terminal for this pass (routing only). Authenticated OpenClaw HTTP invocation remains a future GPT-Web-authored extension downstream of WF60, fail-closed when `brokerSelected=none`/`failClosed=true`, using Header Auth credential id `Qy4tQ7a7ld5loSdV` without exposing its value.
+- Do not execute WF40 for validation unless a new gate explicitly authorizes it. No provider/model calls from this wiring.
 - Credential repair completed 2026-08-26 via official `zai-coding-global` onboarding; old malformed `zai:manual` remains preserved and unused.
 - `NO_MORE_MANUAL_ONE_OFF_PROBES` remains in force for the Z.AI VPS diagnosis while awaiting Z.AI Support; unnecessary provider/model calls are forbidden.
 - No public listener/port exposure, Funnel, NAT, public reverse proxy, destructive action, VPS Z.AI credential/provider mutation, PM-34/L5/endurance/permanent schedule, scope expansion, or Windows-primary promotion is authorized.
@@ -55,7 +54,8 @@
 ## Puntatori
 
 - Active hardening/routing work: issue **#21**
-- GPT-Web parent wiring delta: `workflows/patches/d0015-w-wf40-wf60-parent-wiring.gpt-web.json`
+- Applied GPT-Web parent wiring delta: `workflows/patches/d0015-w-wf40-wf60-parent-wiring.gpt-web.json`
+- Post-apply redacted export: `workflows/exports/2026-08-27_40-d0015-w-wf60-parent-wiring-post-apply.redacted.json`
 - Windows fallback implementation/evidence: issue **#20**
 - Windows fallback execution packet: `docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_EXECUTION_PACKET.yaml`
 - Windows fallback status: `docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_STATUS.md`

@@ -5,105 +5,102 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0015-W_WF40_LIVE_STRUCTURE_MAP
-result_cursor: PASS_WF40_LIVE_STRUCTURE_MAP_PERSISTED_FOR_GPT_WEB_WIRING_DELTA
+task_ref: D-0015-W
+result_cursor: PASS_WF40_WF60_PARENT_WIRING_APPLIED_VERBATIM
 reported_via: cursor_direct_persistence
-independent_verification: cursor_runtime_readonly_n8n_export
-report_persistence_commit: e79e4feb446993b22327afecfe68b16bc2664f90
+independent_verification: cursor_runtime_n8n_export_import_structural
+report_persistence_commit: PENDING_SELF_REFERENCE
 
-repo_head_observed_at_task: 355f8a109afa065700d01d861ef1561df5e9ab0f
+repo_head_observed_at_task: bfba5f7b1f16c99aedc532222afe704ad23c3775
 workspace_at_start: clean
-operator_gate_ref: github:issue/21#issuecomment-5431911525
-inspection_method: read_only
-  - ssh ionos-n8n
-  - docker exec root-n8n-1 n8n export:workflow --id=9ZMj2ACTKyDVhCue
-  - host-side python3 structural sanitize (no credential values)
-  - temp export file removed after inspection
-n8n_mutation: false
-workflow_execution: false
-provider_model_calls: 0
+artifact: workflows/patches/d0015-w-wf40-wf60-parent-wiring.gpt-web.json
+override: PERSIST_APPLY_VERBATIM_GPT_B_SUPPLIED_WORKFLOW_ARTIFACT
 
-WF40_LIVE_IDENTITY:
+preconditions_live: PASS
   live_id: 9ZMj2ACTKyDVhCue
   live_name: "40 - CP v4 multirepo + classifier bridge - ACTIVE"
-  active: true
-  node_count: 34
-  updatedAt: "2026-05-21T23:33:35.671Z"
-  versionId: 028cd44a-508d-4573-b9cd-70d6338110b3
-  triggers:
-    manual_trigger: true
-    schedule_trigger_controlled_polling: true
+  active_before: true
+  versionId_before: 028cd44a-508d-4573-b9cd-70d6338110b3
+  if_new_commit_true_before:
+    - "IF - GIS repo for handoff?"
+    - "Data Table - Upsert last seen commit"
+    - "Code - Plan watcher repo gate stub"
+  if_new_commit_false_before:
+    - "Duplicate skip - no Telegram"
+  execute_workflow_nodes_before: []
 
-IF_NEW_COMMIT_NODE:
-  id: b4bf4e90-f17e-4edc-b2d0-4bba669d985c
-  name: "IF - New commit?"
-  type: n8n-nodes-base.if
-  upstream_immediate:
-    - from: "Decide Data Table dedupe"
-      branch: main
-  true_downstream_main_index_0_parallel_fork:
-    - to: "IF - GIS repo for handoff?"
-      target_id: 1f2cbff4-feac-4734-bb60-04b34ad10887
-      target_type: n8n-nodes-base.if
-    - to: "Data Table - Upsert last seen commit"
-      target_id: 6b3a3565-3d0d-47e1-aa46-0d3670b0db26
-      target_type: n8n-nodes-base.dataTable
-    - to: "Code - Plan watcher repo gate stub"
-      target_id: 429cde10-b360-4396-9f57-ffeac563d2fe
-      target_type: n8n-nodes-base.code
-  false_downstream_main_index_1:
-    - to: "Duplicate skip - no Telegram"
-      target_id: b463da87-997b-416d-8796-911cecd55273
-      target_type: n8n-nodes-base.code
+operations_applied_verbatim:
+  - op: add_node
+    node_id: d0015f40-0060-4001-8001-000000000060
+    node_name: "Execute Workflow - Resolve OpenClaw broker (WF60)"
+    type: n8n-nodes-base.executeWorkflow
+    typeVersion: 1
+    workflowId: d0015600-4001-8001-0001-0653506aabcd
+    position: [-720, -160]
+  - op: append_connection
+    from: "IF - New commit?"
+    output_type: main
+    output_index: 0
+    preserve_all_existing_connections: true
+    to: "Execute Workflow - Resolve OpenClaw broker (WF60)"
 
-KEY_TRUE_BRANCH_CHAINS:
-  gis_handoff_branch:
-    - "IF - GIS repo for handoff?" -> "Execute Command - handoff dry-run" -> "Parse handoff stdout" -> Telegram handoff nodes
-  plan_watcher_branch:
-    - "Code - Plan watcher repo gate stub" -> "GitHub - Fetch commit details (plan files)" -> "Code - Detect real docs/plans plan files" -> "IF - plan_detected?" -> Gate D Telegram/file chain OR no_plan_detected
-  classifier_bridge_branch_on_plan_detected_true:
-    - "IF - plan_detected?" true -> "Code - PM21 classifier decision" -> "Code - PM21 bridge result" -> "Code - PM21 format Telegram bridge summary" -> "Telegram - Send PM21 bridge summary"
-  dedupe_notify_parallel_on_true:
-    - "Data Table - Upsert last seen commit" -> "Format Data Table Telegram message" -> "Telegram - Send Data Table deduped message"
+post_apply_live:
+  active_after: true
+  listed_in_n8n_active_true: true
+  versionId_after: 86ed5569-ce2b-49bb-9f3b-30f4e7fa918b
+  node_count_after: 35
+  execute_workflow_nodes_after_count: 1
+  execute_workflow_nodes_after:
+    - name: "Execute Workflow - Resolve OpenClaw broker (WF60)"
+      id: d0015f40-0060-4001-8001-000000000060
+      workflowId: d0015600-4001-8001-0001-0653506aabcd
+  if_new_commit_true_after:
+    - "IF - GIS repo for handoff?"
+    - "Data Table - Upsert last seen commit"
+    - "Code - Plan watcher repo gate stub"
+    - "Execute Workflow - Resolve OpenClaw broker (WF60)"
+  if_new_commit_false_after:
+    - "Duplicate skip - no Telegram"
 
-EXECUTE_WORKFLOW_NODES_LIVE: []
-OPENCLAW_NAMED_NODES_LIVE: []
-HTTP_NODES_LIVE_METADATA_ONLY:
-  - name: "GitHub - Fetch latest commit (per repo)"
-    id: ce3f4bb1-8b81-4ede-b3b5-8701133f5abb
-    url_pattern: "=https://api.github.com/repos/{{ $json.ownerRepo }}/commits?per_page=1"
-  - name: "GitHub - Fetch commit details (plan files)"
-    id: 52e94e9c-986f-4f93-bac3-2c20ec4a60a1
-    url_pattern: "=https://api.github.com/repos/{{ $json.repo }}/commits/{{ $json.currentSha }}"
-  - name: "HTTP Request - Fetch raw Gate D plan file"
-    id: 4fda089d-01fe-4d7f-b98c-308394eb1627
-    url_pattern: "={{ $json.rawPlanUrl }}"
+structural_reexport_redacted: workflows/exports/2026-08-27_40-d0015-w-wf60-parent-wiring-post-apply.redacted.json
 
-MERGE_SWITCH_NODES_LIVE: none
-
-WF60_INSERTION_CANDIDATES_FOR_GPT_WEB:
-  primary_fork: IF - New commit? true (main[0]) parallel targets unchanged vs repo snapshot
-  recommended_parent: live WF40 id 9ZMj2ACTKyDVhCue
-  wf60_live_target_id: d0015600-4001-8001-0001-0653506aabcd
-  header_auth_credential_id_for_future_openclaw_http: Qy4tQ7a7ld5loSdV
-  note: no Execute Workflow or OpenClaw HTTP nodes exist yet on live WF40; GPT Web must author verbatim wiring delta
-
-REPO_SNAPSHOT_DIVERGENCE:
-  compared_to: workflows/exports/READY_IMPORT_40-control-plane-active-with-credentials.json
-  snapshot_name: "40 - CP v4 multirepo polling - FILE HANDOFF SAFE TEXT - ACTIVE"
-  snapshot_node_count: 30
-  live_node_count: 34
-  if_new_commit_topology: MATCH (same 3-way true fork + false duplicate skip)
-  live_only_vs_ready_import_40:
-    - PM21 classifier bridge chain present on live (Code/Telegram PM21 nodes)
-    - live workflow display name includes "classifier bridge"
-  ready_import_42_note: PM21 chain mirrors workflows/exports/READY_IMPORT_42-classifier-bridge-candidate.json pattern now merged into live WF40
-
-parent_workflow_mutation: false
-wf40_wf42_wf41_wf60_mutation: false
+wf40_executed_for_validation: false
+wf42_mutation: false
+wf41_mutation: false
+wf60_mutation: false
+endpoint_mutation: false
+gateway_auth_mode_mutation: false
+provider_model_request_count: 0
 credential_values_read: false
-
 SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
-SECRET_VALUE_PERSISTED: false
+SECRET_VALUES_PERSISTED: false
+
+NEXT_GATE_CLASSIFICATION: D0015_W_AUTHENTICATED_OPENCLAW_INVOCATION_DELTA_REQUIRES_GPT_WEB_AUTHORING
 ```
+
+## Evidence boundary
+
+Applied GPT-Web delta `workflows/patches/d0015-w-wf40-wf60-parent-wiring.gpt-web.json` verbatim to live WF40 `9ZMj2ACTKyDVhCue` after precondition PASS (name/active/versionId/TRUE three-way fork/FALSE duplicate-skip/no prior Execute Workflow node). Added exactly one Execute Workflow node targeting WF60 `d0015600-4001-8001-0001-0653506aabcd` and appended it as fourth TRUE target of `IF - New commit?` without altering existing TRUE/FALSE branches. WF40 remains active. Structural redacted re-export persisted. No WF40 execution for validation; no provider/model calls; no credential values read/persisted.
+
+## Completion persistence invariant
+
+Per i task Cursor successivi, il report finale non deve restare soltanto nella chat Cursor.
+
+Prima di dichiarare il task completamente chiuso, Cursor deve persistere in GitHub un aggiornamento docs-only di questo file con almeno:
+
+- `task_ref` esatto;
+- risultato `PASS|BLOCKED|FAILED`;
+- evidence deterministica necessaria al gate/NEXT;
+- HEAD/workspace osservati quando pertinenti;
+- eventuali mutazioni runtime effettuate;
+- `NEXT_GATE_CLASSIFICATION` o blocker esatto;
+- nessun secret/token.
+
+La persistenza del report è evidence bookkeeping recuperabile e non amplia lo scope runtime del task.
+
+Se `agg` trova un `LAST_CURSOR_REPORT` che non corrisponde al pass Cursor atteso, deve classificare **`EVIDENCE_NOT_PERSISTED`**, non concludere che il task non sia stato eseguito.
+
+## History
+
+La cronologia precedente del rolling report resta recuperabile nella Git history. Il file corrente privilegia il LATEST necessario a `agg` e al resume lean.
