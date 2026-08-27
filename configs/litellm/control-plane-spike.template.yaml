@@ -1,6 +1,6 @@
 # TEST / SPIKE TEMPLATE — NOT ACTIVE
 #
-# D-0023-W offline/config artifact only.
+# D-0023-W offline/config artifact; reconciled by D-0024 preflight evidence.
 # Does NOT authorize install, start, OAuth, credential access, HTTP, or inference.
 # Current D-0024 runtime priority aliases (max 1 GLM + 1 Codex call; max 2 total):
 #   planner-glm-pilot
@@ -21,15 +21,17 @@ model_list:
       # optional: api_key: os.environ/OLLAMA_API_KEY  (only if local auth required)
 
   # --- GLM 5.3 via Z.AI Coding Plan ---
-  # Coding endpoint EXPLICIT — do not use General API implicitly.
+  # D-0024 installed-package evidence: native LiteLLM route is zai/glm-5.3.
+  # Coding endpoint MUST remain explicit because LiteLLM's native Z.AI default is General API.
   - model_name: planner-glm-pilot
     litellm_params:
-      model: openai/glm-5.3
+      model: zai/glm-5.3
       api_base: https://api.z.ai/api/coding/paas/v4
       api_key: os.environ/ZAI_CODING_API_KEY
 
   # --- Codex via ChatGPT subscription OAuth (Responses mode) ---
-  # Exact Codex model recorded only after local OAuth discovery.
+  # Exact Codex model is resolved only at the operator-present OAuth gate.
+  # Do NOT invoke chatgpt provider resolution before that gate: LiteLLM 1.98.0 may auto-start device OAuth.
   # Do NOT substitute OpenAI Platform API key / paid API fallback.
   - model_name: planner-codex-pilot
     litellm_params:
