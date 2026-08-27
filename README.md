@@ -80,6 +80,20 @@ STOP soltanto per gate reale, ad esempio:
 - policy violation;
 - loop non convergente.
 
+### OPERATOR ACTION HANDOFF — obbligatorio in tutte le chat
+
+Quando un gate reale richiede un'azione manuale dell'operatore:
+
+- guidare l'operatore concretamente, non limitarsi a nominare il gate;
+- ogni **URL, comando, path, hostname, nome credenziale, nome campo/header, workflow/node/ID o testo esatto da inserire** deve essere fornito in un **blocco one-click copiabile**, quando tecnicamente possibile;
+- usare **un valore/azione per blocco** quando più valori simili potrebbero essere confusi; l'operatore non deve trascrivere stringhe tecniche a mano;
+- per una sequenza UI indicare il percorso esatto con le etichette visibili (`A → B → C`) e rendere copiabili i valori da inserire;
+- i secret non vanno mai messi nel blocco/chat/GitHub: fornire solo il metodo secret-safe per trasferirli direttamente nel campo/store di destinazione;
+- se AUTO-VIA può eseguire l'azione senza un gate umano, non scaricarla sull'operatore.
+
+Dettaglio canonico user-facing: `docs/foundation/OPERATOR_ACTION_HANDOFF_STANDARD.md`.
+Per i prompt Cursor resta inoltre obbligatorio `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` (modalità `AGENT|PLAN`, TASK DELTA, blocco unico, `agg` separato).
+
 ### `agg` — refresh dopo un pass Cursor
 
 `agg` significa **aggiornamento minimo evidence-aware**, non reboot completo.
@@ -135,6 +149,7 @@ Per stato runtime: `docs/runtime/CURRENT_FRONTIER.md` è sempre canonico.
 | Backlog / routing / packet / checkpoint | solo contratto o istanza pertinente |
 | Esecuzione Cursor | `docs/foundation/CURSOR_PROMPT_TEMPLATE.md` |
 | GLM mode | `docs/advisors/GLM_ADVISOR_METHOD.md` — mode pertinente |
+| Azioni manuali operatore | `docs/foundation/OPERATOR_ACTION_HANDOFF_STANDARD.md` |
 | Evidenza ultimo pass Cursor | `docs/runtime/LAST_CURSOR_REPORT.md` una volta |
 | Handoff | solo per seed/resume quando il frontier/task non basta |
 | Storia/audit | session log / PM / runtime-packets solo su necessità concreta |
@@ -167,6 +182,7 @@ Aggiornare questo blocco solo se cambiano:
 - precedenza fonti;
 - AUTO-VIA;
 - `agg`;
+- operator action handoff;
 - context guard / navigazione on-demand.
 
 HEAD, gate, runtime, task e NEXT vivono nel frontier/active work, non qui.
@@ -183,6 +199,7 @@ HEAD, gate, runtime, task e NEXT vivono nel frontier/active work, non qui.
 | [docs/contracts/execution-packet-v1.md](docs/contracts/execution-packet-v1.md) | planner → Cursor |
 | [docs/contracts/execution-checkpoint-v1.md](docs/contracts/execution-checkpoint-v1.md) | resume Cursor |
 | [docs/foundation/CURSOR_PROMPT_TEMPLATE.md](docs/foundation/CURSOR_PROMPT_TEMPLATE.md) | execution contract Cursor |
+| [docs/foundation/OPERATOR_ACTION_HANDOFF_STANDARD.md](docs/foundation/OPERATOR_ACTION_HANDOFF_STANDARD.md) | istruzioni manuali user-facing one-click / secret-safe |
 
 ## Architettura target v3
 
