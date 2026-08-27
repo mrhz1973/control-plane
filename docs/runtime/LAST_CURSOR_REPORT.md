@@ -5,95 +5,107 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0024-W_CODEX_AUTH_PATH_RECOVERY
-result_cursor: PASS_CODEX_AUTH_STORE_VERIFIED_CHATGPT_GPT56_SOL_BOUND_PROXY_START_READY
+task_ref: D-0024-W_RUNTIME_PILOT
+result_cursor: PASS_D0024_RUNTIME_PILOT_COMPLETE_GLM_PROVIDER_BAD_REQUEST_CODEX_PROVIDER_BAD_REQUEST
 reported_via: cursor_direct_persistence
-independent_verification: cursor_runtime_work_pc
-report_persistence_commit: cb406a00dafa880791d5194f754218a2e9c7c11c
-classification: D0024_CODEX_MODEL_BOUND_RUNTIME_PROXY_START_READY
+independent_verification: cursor_runtime_pilot_work_pc
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: D0024_RUNTIME_PILOT_COMPLETE_BOTH_BACKENDS_PROVIDER_400_NO_PACKET
 
-repo_head_observed_at_task: 9f81949d871453b9e7110cd9d6edc9ef91e1ea55
+repo_head_observed_at_task: a8cf1c5fddce0523edcfb908ed5d60394503a947
 workspace_at_start: clean
 operator_gate_ref: github:issue/30
 issue_30_state: OPEN
 
-CUSTOM_AUTH_STORE:
-  path_sanitized: "%LOCALAPPDATA%\\ControlPlane\\litellm-spike\\chatgpt-auth\\auth.json"
-  custom_auth_file_exists: true
-  byte_size: 3721
-  json_valid: true
-  auth_keys: ["access_token", "account_id", "expires_at", "id_token", "refresh_token"]
-  has_access_token: true
-  has_refresh_token: true
-  has_account_id: true
-  token_value_read: false
-  token_value_displayed: false
-  token_value_persisted: false
+PROXY_READINESS:
+  bind: 127.0.0.1:4000
+  tcp_listen: true
+  health_http_status: 200
+  models_http_status: 200
+  aliases_present: [planner-qwen-pilot, planner-glm-pilot, planner-codex-pilot]
+  proxy_started_by_cursor: false
+  shared_runtime_alive_after_glm: true
 
-AUTH_BIND:
-  CHATGPT_TOKEN_DIR: "%LOCALAPPDATA%\\ControlPlane\\litellm-spike\\chatgpt-auth"
-  CHATGPT_AUTH_FILE: auth.json
-  authenticator_auth_file_match: true
-  oauth_restarted: false
+HOST_TOOLING:
+  ajv: HOST_TOOLING_AJV_UNAVAILABLE
+  envelope_build: canonical_equivalent_without_ajv
+  note: Node Ajv schema validators not run; structural response-gate/policy N/A because provider returned errors before function_call
 
-AUTHENTICATED_CATALOG:
-  method: GET https://chatgpt.com/backend-api/codex/models?client_version=0.148.0
-  authenticated_catalog_http_status: 200
-  authenticated_model_ids:
-    - codex-auto-review
-    - gpt-5.4
-    - gpt-5.4-mini
-    - gpt-5.5
-    - gpt-5.6-luna
-    - gpt-5.6-sol
-    - gpt-5.6-terra
-    - gpt-reserve
-  preferred_model_present: true
-  preferred_model: gpt-5.6-sol
+CONSUMER_TASK:
+  fixture_base: tests/openclaw-consumer-roundtrip/fixtures/consumer-input-valid.json
+  mutation: planner_requested only
+  glm_planner_requested: glm
+  codex_planner_requested: codex
+  endpoint: POST /v1/responses
+  stream: false
+  tool: emit_execution_packet
+  tool_choice: emit_execution_packet
+  provider_override: false
+  credentials_in_body: false
 
-LITELLM_RESOLUTION:
-  input: chatgpt/gpt-5.6-sol
-  litellm_provider_resolution:
-    model: gpt-5.6-sol
-    provider: chatgpt
-    api_base: https://chatgpt.com/backend-api/codex
-    dynamic_key_set: true
-  device_flow_attempted: false
-  chatgpt_exact_model: chatgpt/gpt-5.6-sol
-
-CONFIG:
-  template: configs/litellm/control-plane-spike.template.yaml
-  reconciled: true
-  planner-codex-pilot: chatgpt/gpt-5.6-sol
-  planner-glm-pilot: zai/glm-5.3
-  glm_api_base: https://api.z.ai/api/coding/paas/v4
-  yaml_local_validate: PASS
-  secrets_in_template: false
-
-PROXY_START:
-  executed_by_cursor: false
-  operator_proxy_start_command: |
-    # Run ONLY in the operator PowerShell session that already has ZAI_CODING_API_KEY set.
-    $env:CHATGPT_TOKEN_DIR = "$env:LOCALAPPDATA\ControlPlane\litellm-spike\chatgpt-auth"
-    $env:CHATGPT_AUTH_FILE = "auth.json"
-    & "$env:LOCALAPPDATA\ControlPlane\litellm-spike\venv\Scripts\litellm.exe" `
-      --host 127.0.0.1 `
-      --port 4000 `
-      --config "C:\Users\mrhz\Documents\AI\GitHub\control-plane\configs\litellm\control-plane-spike.template.yaml"
-
-BUDGET:
-  glm_inference: 0/1
-  codex_inference: 0/1
-  total_inference: 0/2
+COUNTERS:
+  glm_attempt_count: 1
+  codex_attempt_count: 1
+  total_provider_attempts: 2
+  qwen_attempt_count: 0
   retry: 0
   planner_fallback: 0
   gateway_fallback: 0
-  qwen_inference: 0
-  inference_used: false
-  glm_call: false
-  codex_call: false
-  provider_model_request_count: 0
+  litellm_available_model_group_fallbacks: None
 
+GLM:
+  gateway_kind: litellm
+  litellm_version: "1.98.0"
+  alias: planner-glm-pilot
+  backend_model: zai/glm-5.3
+  endpoint_class: zai_coding_paas_v4
+  api_base: https://api.z.ai/api/coding/paas/v4
+  http_status: 400
+  provider_attempt_count: 1
+  elapsed_ms: 382
+  response_object_status: null
+  function_call_count: null
+  function_call_name: null
+  response_gate: API_ERROR_NO_FUNCTION_CALL
+  packet_schema: NOT_APPLICABLE_PROVIDER_ERROR
+  packet_schema_note: SCHEMA_VALIDATION_HOST_TOOLING_UNAVAILABLE
+  policy: NOT_APPLICABLE_NO_PACKET
+  failure_classification: PROVIDER_BAD_REQUEST_ZAI_MESSAGES_PARAMETER_ILLEGAL
+  failure_message_sanitized: "ZaiException - The messages parameter is illegal. Please check the documentation. Available Model Group Fallbacks=None"
+  secret_exposure: false
+
+CODEX:
+  gateway_kind: litellm
+  litellm_version: "1.98.0"
+  alias: planner-codex-pilot
+  backend_model: chatgpt/gpt-5.6-sol
+  endpoint_class: chatgpt_codex_oauth
+  http_status: 400
+  provider_attempt_count: 1
+  elapsed_ms: 635
+  response_object_status: null
+  function_call_count: null
+  function_call_name: null
+  response_gate: API_ERROR_NO_FUNCTION_CALL
+  packet_schema: NOT_APPLICABLE_PROVIDER_ERROR
+  packet_schema_note: SCHEMA_VALIDATION_HOST_TOOLING_UNAVAILABLE
+  policy: NOT_APPLICABLE_NO_PACKET
+  failure_classification: PROVIDER_BAD_REQUEST_CHATGPT_INPUT_MUST_BE_LIST
+  failure_message_sanitized: "ChatgptException - {\"detail\":\"Input must be a list\"}. Available Model Group Fallbacks=None"
+  secret_exposure: false
+
+BUDGET:
+  glm_inference: 1/1
+  codex_inference: 1/1
+  total_inference: 2/2
+  qwen_inference: 0
+  retry: 0
+  fallback: 0
+
+PACKET_EXECUTION_BY_CURSOR: false
+oauth_restarted: false
+token_value_read: false
+token_value_displayed: false
 SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
 SECRET_VALUE_PERSISTED: false
