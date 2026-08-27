@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/execution-packet-v1.schema.json",
+  "title": "execution-packet-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "packet_id",
+    "packet_revision",
+    "task_id",
+    "source_backlog_ref",
+    "source_backlog_commit",
+    "generated_at",
+    "planner",
+    "executor",
+    "repository",
+    "branch_target",
+    "goal",
+    "preflight",
+    "allowed_paths",
+    "forbidden_paths",
+    "steps",
+    "validation",
+    "acceptance",
+    "loop",
+    "risk_assessment",
+    "gate_recommendation",
+    "context",
+    "review",
+    "final_report_contract",
+    "status"
+  ],
+  "properties": {
+    "schema": {"const": "execution-packet-v1"},
+    "packet_id": {"type": "string", "minLength": 1},
+    "packet_revision": {"type": "integer", "minimum": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "source_backlog_ref": {"type": "string", "minLength": 1},
+    "source_backlog_commit": {"type": ["string", "null"]},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "planner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requested", "used", "fallback_used", "fallback_reason", "provider_state_ref"],
+      "properties": {
+        "requested": {"enum": ["qwen", "glm", "codex"]},
+        "used": {"enum": ["qwen", "glm", "codex"]},
+        "fallback_used": {"type": "boolean"},
+        "fallback_reason": {"type": ["string", "null"]},
+        "provider_state_ref": {"type": ["string", "null"]}
+      }
+    },
+    "executor": {"const": "cursor"},
+    "repository": {"type": "string", "minLength": 1},
+    "branch_target": {"type": "string", "minLength": 1},
+    "goal": {"type": "string", "minLength": 1},
+    "preflight": {"type": "array", "items": {"type": "string"}},
+    "allowed_paths": {"type": "array", "items": {"type": "string"}},
+    "forbidden_paths": {"type": "array", "items": {"type": "string"}},
+    "steps": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "validation": {"type": "array", "items": {"type": "string"}},
+    "acceptance": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "loop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "stop_when", "max_rounds", "on_exhaustion"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "stop_when": {"type": "array", "items": {"type": "string"}},
+        "max_rounds": {"type": "integer", "minimum": 1},
+        "on_exhaustion": {"enum": ["telegram_gate", "blocked"]}
+      }
+    },
+    "risk_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "reasons", "scope_expansion", "destructive", "production_sensitive", "credentials_or_billing"],
+      "properties": {
+        "level": {"enum": ["low", "medium", "high"]},
+        "reasons": {"type": "array", "items": {"type": "string"}},
+        "scope_expansion": {"type": "boolean"},
+        "destructive": {"type": "boolean"},
+        "production_sensitive": {"type": "boolean"},
+        "credentials_or_billing": {"type": "boolean"}
+      }
+    },
+    "gate_recommendation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "reason"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "reason": {"type": ["string", "null"]}
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["read_set", "checkpoint_policy", "checkpoint_contract"],
+      "properties": {
+        "read_set": {"type": "array", "items": {"type": "string"}},
+        "checkpoint_policy": {"const": "required"},
+        "checkpoint_contract": {"const": "docs/contracts/execution-checkpoint-v1.md"}
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bugbot", "max_review_rounds", "autofix_cloud"],
+      "properties": {
+        "bugbot": {"enum": ["required", "optional", "disabled"]},
+        "max_review_rounds": {"type": "integer", "minimum": 0},
+        "autofix_cloud": {"const": false}
+      }
+    },
+    "final_report_contract": {"const": "docs/foundation/CURSOR_PROMPT_TEMPLATE.md"},
+    "status": {"enum": ["READY_FOR_GATE", "GATED", "READY_FOR_EXECUTION", "SUPERSEDED"]}
+  }
+}
