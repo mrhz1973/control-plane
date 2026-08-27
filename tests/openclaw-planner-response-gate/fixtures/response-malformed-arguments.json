@@ -1,0 +1,12 @@
+{
+  "id": "resp_badargs",
+  "object": "response",
+  "status": "completed",
+  "output": [
+    {
+      "type": "function_call",
+      "name": "emit_execution_packet",
+      "arguments": "{not-json"
+    }
+  ]
+}

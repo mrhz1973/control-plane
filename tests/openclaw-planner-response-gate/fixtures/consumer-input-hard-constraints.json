@@ -1,0 +1,29 @@
+{
+  "task_id": "D-0018-W",
+  "source_backlog_ref": "github:issue/24",
+  "source_backlog_commit": "7a02462a0f7f9f8ed2a72ac717c6759b070a8bb4",
+  "repository": "mrhz1973/control-plane",
+  "branch_target": "main",
+  "goal": "Implement deterministic execution-packet-v1 validator with local fixtures.",
+  "risk_hint": "low",
+  "complexity_hint": "low",
+  "planner_requested": "glm",
+  "allowed_paths": [
+    "tools/validate-execution-packet-v1.mjs",
+    "tests/execution-packet-validator/"
+  ],
+  "forbidden_paths": [
+    "n8n",
+    "OpenClaw runtime"
+  ],
+  "acceptance_seed": [
+    "Valid fixture PASS",
+    "Invalid fixtures FAIL with machine-readable classification"
+  ],
+  "validation_seed": [
+    "node tests/execution-packet-validator/run.mjs"
+  ],
+  "hard_constraints": [
+    "no-n8n-mutation"
+  ]
+}
