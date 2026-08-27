@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/llm-gateway-profile-v1.schema.json",
+  "title": "llm-gateway-profile-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "gateway_kind",
+    "responses_path",
+    "auth_requirement",
+    "planner_binding_mode",
+    "default_model",
+    "agent_header",
+    "model_aliases"
+  ],
+  "properties": {
+    "schema": {"const": "llm-gateway-profile-v1"},
+    "gateway_kind": {"enum": ["openclaw", "litellm"]},
+    "responses_path": {"const": "/v1/responses"},
+    "auth_requirement": {"const": "existing_bearer"},
+    "planner_binding_mode": {"enum": ["explicit_model_alias", "gateway_default_unverified"]},
+    "default_model": {"type": ["string", "null"], "minLength": 1},
+    "agent_header": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "value"],
+          "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "value": {"type": "string", "minLength": 1}
+          }
+        }
+      ]
+    },
+    "model_aliases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["qwen", "glm", "codex"],
+      "properties": {
+        "qwen": {"type": ["string", "null"], "minLength": 1},
+        "glm": {"type": ["string", "null"], "minLength": 1},
+        "codex": {"type": ["string", "null"], "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"planner_binding_mode": {"const": "explicit_model_alias"}},
+        "required": ["planner_binding_mode"]
+      },
+      "then": {
+        "properties": {
+          "model_aliases": {
+            "properties": {
+              "qwen": {"type": "string", "minLength": 1},
+              "glm": {"type": "string", "minLength": 1},
+              "codex": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"planner_binding_mode": {"const": "gateway_default_unverified"}},
+        "required": ["planner_binding_mode"]
+      },
+      "then": {
+        "properties": {
+          "default_model": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"gateway_kind": {"const": "openclaw"}},
+        "required": ["gateway_kind"]
+      },
+      "then": {
+        "properties": {
+          "agent_header": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "value"],
+            "properties": {
+              "name": {"const": "x-openclaw-agent-id"},
+              "value": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"gateway_kind": {"const": "litellm"}},
+        "required": ["gateway_kind"]
+      },
+      "then": {
+        "properties": {
+          "agent_header": {"type": "null"},
+          "planner_binding_mode": {"const": "explicit_model_alias"}
+        }
+      }
+    }
+  ]
+}
