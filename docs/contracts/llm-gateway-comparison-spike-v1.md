@@ -29,11 +29,9 @@ Current limitation for Phase C readiness: the legacy `openclaw/default` route is
 
 ### LiteLLM
 
-Candidate replacement gateway. Offline/config comparison must use explicit model aliases for:
+Candidate replacement gateway. Offline/config comparison may retain explicit model aliases for the full planner pool (`qwen`, `glm`, `codex`) so portability remains structurally testable.
 
-- `qwen`
-- `glm`
-- `codex`
+**Current runtime priority is GLM + Codex only. Qwen runtime is explicitly deferred.**
 
 The selected planner must deterministically map to exactly one LiteLLM alias.
 
@@ -48,23 +46,24 @@ Required outputs:
 - LiteLLM explicit-alias profile test;
 - deterministic request envelope parity with current `/v1/responses` planner-consumer semantics;
 - no secrets in committed config examples;
-- test-only LiteLLM configuration skeleton for three aliases;
-- comparison matrix covering planner binding, Responses API/tool call compatibility, auth shape, retry/fallback control, n8n fit, Qwen local path, GLM Coding Plan path, Codex subscription OAuth path, operational complexity, and failure isolation.
+- test-only LiteLLM configuration skeleton;
+- comparison matrix covering planner binding, Responses API/tool call compatibility, auth shape, retry/fallback control, n8n fit, GLM Coding Plan path, Codex subscription OAuth path, optional/deferred Qwen local path, operational complexity, and failure isolation.
+
+Qwen may remain represented only as an offline/static compatibility alias in D-0023-W. No Qwen model load, local runtime probe, download, or inference belongs to the current priority path.
 
 Offline/config PASS does not prove runtime provider compatibility.
 
-## 3. Runtime pilot suite authorization boundary
+## 3. Current runtime pilot authorization boundary
 
-The operator authorized a later controlled spike suite with **at most one inference request per backend**:
+The operator currently authorizes the runtime priority suite for **two backends only**:
 
 - GLM Coding Plan;
-- ChatGPT/Codex subscription OAuth;
-- Qwen 3.8 37B local.
+- ChatGPT/Codex subscription OAuth.
 
-For the complete suite:
+Current caps:
 
-- total max inference requests: **3**;
-- max per backend: **1**;
+- total max inference requests: **2**;
+- max per active backend: **1**;
 - retry: **0**;
 - gateway fallback: **0**;
 - planner fallback: **0**;
@@ -73,6 +72,17 @@ For the complete suite:
 - no architectural switch, n8n mutation, production deployment, public exposure, or permanent service activation.
 
 A failed backend pilot is evidence, not permission to retry automatically.
+
+### Qwen deferred
+
+Qwen 3.8 37B remains in the architecture/planner pool but is **not part of the current runtime spike**.
+
+Current Qwen runtime authorization:
+
+- inference calls: **0**;
+- model load/start/download: **not authorized by this spike**;
+- no 27B substitution;
+- future Qwen pilot requires a later explicit resume/authorization step when its host is reachable and the operator decides it is worth testing.
 
 ## 4. Runtime prerequisites
 
@@ -96,14 +106,16 @@ The GLM pilot may run on a non-VPS execution surface if that is the bounded spik
 - use `/v1/responses`, `stream=false`;
 - no OpenAI Platform API key or paid API fallback is silently substituted.
 
-### Qwen
+### Qwen — deferred prerequisite set
 
-- HOME/local Qwen host is reachable;
-- exact target remains **Qwen 3.8 37B**;
+No current runtime action. Future-only prerequisites remain:
+
+- HOME/local Qwen host reachable;
+- exact target **Qwen 3.8 37B**;
 - no silent 27B substitution;
-- local resource pressure is acceptable;
-- LiteLLM maps a dedicated alias to the existing local Ollama/OpenAI-compatible backend;
-- no model download is implicitly authorized by this spike.
+- local resource pressure acceptable;
+- dedicated LiteLLM alias to existing local backend;
+- no model download implicitly authorized.
 
 ## 5. Comparison method
 
@@ -117,7 +129,7 @@ Use the same bounded semantic test wherever transport allows:
 - packet policy gate required;
 - sanitized evidence only.
 
-Record per candidate/backend:
+Record per active runtime backend:
 
 - gateway kind/version;
 - selected planner alias;
@@ -133,15 +145,19 @@ Record per candidate/backend:
 
 The spike does not automatically replace OpenClaw.
 
-LiteLLM may be recommended as the new primary gateway candidate only if:
+For the **current priority decision**, LiteLLM may be recommended as the primary gateway candidate for the remote-planner path if:
 
 - D-0023 offline portability is PASS;
-- required explicit planner binding works;
-- GLM, Codex OAuth, and Qwen pilot evidence is sufficient for the intended planner pool, or any unsupported path is explicitly accepted as a limitation;
+- explicit planner binding works;
+- GLM runtime evidence is sufficient;
+- Codex OAuth runtime evidence is sufficient;
 - no regression in Execution Packet validation/policy semantics;
+- Qwen is recorded as `DEFERRED_NOT_BLOCKING_CURRENT_REMOTE_PATH` rather than falsely claimed proven;
 - operator makes a separate architecture-change decision.
 
-Until then:
+A later Qwen runtime pilot can extend evidence for the local-planner path without reopening the already-proven GLM/Codex transport work unless a real incompatibility appears.
+
+Until an architecture decision is made:
 
 - OpenClaw remains intact;
 - LiteLLM remains a candidate;
@@ -151,7 +167,8 @@ Until then:
 
 This contract does not authorize:
 
-- more than one model call per backend;
+- more than one GLM call and one Codex call in the current priority suite;
+- any Qwen inference in the current priority suite;
 - retry/fallback during the pilot;
 - secrets in GitHub/chat/log evidence;
 - public listener/Funnel/NAT exposure;
