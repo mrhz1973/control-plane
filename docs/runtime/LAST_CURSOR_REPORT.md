@@ -5,41 +5,51 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_LITELLM_AUTH_DESIGN_READONLY_PREFLIGHT
-result_cursor: PASS_D0025_LITELLM_AUTH_DESIGN_PREFLIGHT
+task_ref: D-0025-W_WF61_CREDENTIALLESS_PATCH_AND_PROVIDER_AUTH_READONLY_PREFLIGHT
+result_cursor: STOP_D0025_PROVIDER_AUTH_HUMAN_GATE_REQUIRED
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_readonly_litellm_auth_inspect
-report_persistence_commit: e20dc41acfdb2c6146325bbc2e487d9a5d43a05e
-classification: CREDENTIALLESS_PRIVATE_PROXY_RECOMMENDED
+independent_verification: cursor_vps_readonly_provider_auth_inspect
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: STOP_PROVIDER_AUTH_HUMAN_GATE_REQUIRED
 
-repo_head_observed_at_task: e84f0412789d5fca2ecb8132662d4783b7ef9137
-workspace_at_start: clean
-operator_gate_ref: github:issue/31#5452941338
+repo_head_observed_at_task: ae3fdeafabb1ac29bcf4ef77f55e0712888d0bfb
+workspace_at_start: clean (ae3fdeaf)
+operator_gate_ref: github:issue/31#5453176557
 issue_31_state: OPEN
 
+WF61_PATCH:
+  gpt_web_authoring: issue/31#5453176557
+  pre_patch_blob: ebd838c27a3fde388e5e45faf2e8e71feff68483
+  post_patch_blob: 528f40f2111850383953991b2f822ef2816ad621
+  json_parse: PASS
+  http_node_credentialless: true
+  authentication_absent: true
+  genericAuthType_absent: true
+  credentials_absent: true
+  post_url_timeout_semantics_preserved: true
+  active: false
+  structural_test: 16/16 PASS
+  live_import: false
+
 PROXY_AUTH:
-  required_current_live: false
-  classification: UNNECESSARY
+  credentialless: true
   litellm_master_key_env_present: false
-  config_mount: false
-  credentialless_proxy: true
+  n8n_header_auth_required: false
 
-PROVIDER_AUTH:
-  required_future_config_gate: true
-  separate_from_proxy_auth: true
+PROVIDER_AUTH_PREFLIGHT:
+  zai_coding_api_key_env_name_present: false
+  chatgpt_token_dir_env_name_present: false
+  chatgpt_auth_file_env_name_present: false
+  chatgpt_auth_store_on_vps: false
+  litellm_config_mount: false
+  litellm_provider_env_names: none
+  template_on_vps_checkout: present
+  existing_material_sufficient: false
 
-PRIVATE_BOUNDARY:
-  private_docker_only: true
-  untrusted_sibling_present: false
-  root_default_members: [root-n8n-1, litellm-primary]
-  host_published_ports: 0
-
-WF61:
-  http_header_auth_placeholder: true
-  header_auth_required_current_topology: false
-  artifact_modified: false
-
-RECOMMENDATION: CREDENTIALLESS_PRIVATE_PROXY
+HUMAN_GATES_REQUIRED:
+  - ZAI_CODING_API_KEY creation/transfer + LiteLLM container env wiring
+  - ChatGPT OAuth store (CHATGPT_TOKEN_DIR/CHATGPT_AUTH_FILE) creation/transfer/wiring
+  - LiteLLM config template apply (separate runtime gate; not performed)
 
 N8N_LITELLM_SAFETY:
   n8n_id_unchanged: true
@@ -48,6 +58,7 @@ N8N_LITELLM_SAFETY:
   wf61_unimported: true
 
 BUDGET_THIS_PASS:
+  repo_mutations: wf61_patch + test_alignment + docs
   runtime_mutations: 0
   provider_calls: 0
   inference: 0
@@ -58,5 +69,5 @@ SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
 SECRET_VALUE_PERSISTED: false
 
-REPORT: reports/architecture/d0025_litellm_auth_design_readonly_preflight.md
+REPORT: reports/architecture/d0025_wf61_credentialless_patch_and_provider_auth_readonly_preflight.md
 ```

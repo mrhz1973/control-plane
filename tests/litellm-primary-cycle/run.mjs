@@ -121,8 +121,11 @@ function validateWf61() {
     return "public https URL forbidden on HTTP node";
   }
   const cred = http.credentials?.httpHeaderAuth;
-  if (!cred || cred.id !== "LITELLM_PRIMARY_HEADER_AUTH_CREDENTIAL_ID") {
-    return "HTTP Header Auth must use placeholder credential metadata only";
+  if (http.parameters?.authentication || http.parameters?.genericAuthType || http.credentials) {
+    return "HTTP node must be credentialless (no authentication/genericAuthType/credentials)";
+  }
+  if (cred) {
+    return "HTTP Header Auth must not be present on credentialless WF61";
   }
   if (/Bearer [A-Za-z0-9]{8,}/.test(JSON.stringify(wf))) return "secret literal in WF61";
   if (!names.includes("Return HTTP failure no retry")) return "missing HTTP failure no-retry branch";
