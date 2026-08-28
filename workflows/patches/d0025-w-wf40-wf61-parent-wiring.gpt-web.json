@@ -1,0 +1,326 @@
+{
+  "schema": "control-plane-gpt-web-n8n-delta-v1",
+  "task_ref": "D-0025-W",
+  "authority": "GPT_WEB",
+  "purpose": "Add an additive canonical Backlog Item lane to live WF40. The lane detects exactly one GPT-Web backlog-item-v1 Markdown changed in a watched commit, fetches it using the existing opaque GitHub credential binding, delegates deterministic mapping/gating to the canonical repo helper, and invokes WF61 only when the separate non-secret runtime gate explicitly allows one provider call. Initial gate state is disabled, so applying this parent wiring causes zero WF61 executions and zero provider/model calls.",
+  "contract_ref": "docs/contracts/backlog-primary-remote-adapter-v1.md",
+  "runtime_gate_ref": "configs/planner/primary-remote-runtime-gate.json",
+  "helper_ref": "tools/build-primary-remote-cycle-input-from-backlog.mjs",
+  "target_workflow": {
+    "live_id": "9ZMj2ACTKyDVhCue",
+    "expected_name": "40 - CP v4 multirepo + classifier bridge - ACTIVE",
+    "expected_active": true,
+    "expected_version_id_before_patch": "86ed5569-ce2b-49bb-9f3b-30f4e7fa918b",
+    "expected_node_count_before_patch": 35
+  },
+  "preconditions": {
+    "source_node": {
+      "id": "52e94e9c-986f-4f93-bac3-2c20ec4a60a1",
+      "name": "GitHub - Fetch commit details (plan files)",
+      "type": "n8n-nodes-base.httpRequest"
+    },
+    "source_existing_target_must_include": {
+      "id": "cf34f974-d471-4983-814c-a942ce2f27bb",
+      "name": "Code - Detect real docs/plans plan files"
+    },
+    "plan_stub_must_exist": {
+      "id": "429cde10-b360-4396-9f57-ffeac563d2fe",
+      "name": "Code - Plan watcher repo gate stub"
+    },
+    "wf61": {
+      "live_id": "d0025-6100-4001-8001-000000000061",
+      "expected_name": "61 - LiteLLM primary remote planner cycle - GPT-Web authored - INACTIVE",
+      "expected_active": false
+    },
+    "required_repo_files": [
+      "docs/contracts/backlog-primary-remote-adapter-v1.md",
+      "configs/planner/primary-remote-runtime-gate.json",
+      "tools/build-primary-remote-cycle-input-from-backlog.mjs"
+    ],
+    "runtime_gate_must_equal": {
+      "schema": "primary-remote-runtime-gate-v1",
+      "enabled": false,
+      "provider_calls_authorized_per_event": 0
+    },
+    "must_not_already_exist_node_ids": [
+      "d0025f40-6101-4001-8001-000000000101",
+      "d0025f40-6102-4002-8002-000000000102",
+      "d0025f40-6103-4003-8003-000000000103",
+      "d0025f40-6104-4004-8004-000000000104",
+      "d0025f40-6105-4005-8005-000000000105",
+      "d0025f40-6106-4006-8006-000000000106",
+      "d0025f40-6107-4007-8007-000000000107",
+      "d0025f40-6108-4008-8008-000000000108",
+      "d0025f40-6109-4009-8009-000000000109"
+    ]
+  },
+  "operations": [
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const commit=$input.item.json??{};const stub=$('Code - Plan watcher repo gate stub').item.json??{};const files=Array.isArray(commit.files)?commit.files:[];const candidates=files.filter(f=>{const p=String(f?.filename||'');const s=String(f?.status||'');return /^docs\\/runtime\\/BACKLOG_[^/]+\\.md$/.test(p)&&s!=='removed';});let classification='NO_CANONICAL_BACKLOG_IN_COMMIT';if(candidates.length===1)classification='CANONICAL_BACKLOG_DETECTED';else if(candidates.length>1)classification='MULTIPLE_BACKLOG_ITEMS_IN_COMMIT';return {json:{backlog_detected:candidates.length===1,classification,repo:String(stub.repo||''),commitSha:String(stub.currentSha||commit.sha||''),backlogPath:candidates.length===1?String(candidates[0].filename):null,candidateCount:candidates.length}};"
+        },
+        "id": "d0025f40-6101-4001-8001-000000000101",
+        "name": "Code - Detect canonical backlog item",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [240, 1420]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "conditions": {
+            "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1},
+            "conditions": [
+              {
+                "id": "d0025-canonical-backlog-detected",
+                "leftValue": "={{ $json.backlog_detected }}",
+                "rightValue": true,
+                "operator": {"type": "boolean", "operation": "equals"}
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "d0025f40-6102-4002-8002-000000000102",
+        "name": "IF - canonical backlog detected?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [480, 1420]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "url": "={{ 'https://api.github.com/repos/' + $json.repo + '/contents/' + $json.backlogPath + '?ref=' + $json.commitSha }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {"name": "Accept", "value": "application/vnd.github+json"},
+              {"name": "User-Agent", "value": "control-plane-d0025-backlog-primary-remote"}
+            ]
+          },
+          "options": {}
+        },
+        "id": "d0025f40-6103-4003-8003-000000000103",
+        "name": "GitHub - Fetch canonical backlog item",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [720, 1360]
+      },
+      "credential_binding": {
+        "clone_from_node_id": "52e94e9c-986f-4f93-bac3-2c20ec4a60a1",
+        "clone_only_credential_metadata": true,
+        "must_not_read_or_export_secret_value": true,
+        "required_node_credential_type": "githubApi"
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const resp=$input.item.json??{};const det=$('Code - Detect canonical backlog item').item.json??{};const content=String(resp.content||'').replace(/\\s+/g,'');if(!content)throw new Error('CANONICAL_BACKLOG_CONTENT_MISSING');const b64=s=>Buffer.from(String(s??''),'utf8').toString('base64');return {json:{repo_b64:b64(det.repo),commit_b64:b64(det.commitSha),path_b64:b64(det.backlogPath),markdown_b64:content}};"
+        },
+        "id": "d0025f40-6104-4004-8004-000000000104",
+        "name": "Code - Encode canonical backlog adapter input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [960, 1360]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "command": "=node /files/handoff-runtime/control-plane/tools/build-primary-remote-cycle-input-from-backlog.mjs --repo-b64 '{{$json.repo_b64}}' --commit-b64 '{{$json.commit_b64}}' --path-b64 '{{$json.path_b64}}' --markdown-b64 '{{$json.markdown_b64}}' --gate /files/handoff-runtime/control-plane/configs/planner/primary-remote-runtime-gate.json"
+        },
+        "id": "d0025f40-6105-4005-8005-000000000105",
+        "name": "Execute Command - build primary remote backlog input",
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [1200, 1360],
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const r=$input.item.json??{};const stdout=String(r.stdout??'').trim();const exitCode=Number(r.exitCode??r.code??1);let parsed=null;try{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}const structural=exitCode===0&&parsed?.schema==='backlog-primary-remote-adapter-result-v1'&&parsed?.ok===true;const dispatch=structural&&parsed?.dispatch_allowed===true&&parsed?.consumer_input&&parsed?.routing_input;return {json:{adapter_ok:Boolean(structural),dispatch_allowed:Boolean(dispatch),classification:parsed?.classification||(exitCode===0?'ADAPTER_OUTPUT_INVALID':'ADAPTER_EXECUTION_FAILED'),reason:parsed?.reason||null,task_id:parsed?.task_id||null,consumer_input:dispatch?parsed.consumer_input:null,routing_input:dispatch?parsed.routing_input:null}};"
+        },
+        "id": "d0025f40-6106-4006-8006-000000000106",
+        "name": "Code - Parse primary remote adapter result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [1440, 1360]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "conditions": {
+            "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1},
+            "conditions": [
+              {
+                "id": "d0025-remote-dispatch-allowed",
+                "leftValue": "={{ $json.dispatch_allowed }}",
+                "rightValue": true,
+                "operator": {"type": "boolean", "operation": "equals"}
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "d0025f40-6107-4007-8007-000000000107",
+        "name": "IF - remote planner dispatch allowed?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [1680, 1360]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "workflowId": "d0025-6100-4001-8001-000000000061",
+          "options": {}
+        },
+        "id": "d0025f40-6108-4008-8008-000000000108",
+        "name": "Execute Workflow - WF61 primary remote planner",
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1,
+        "position": [1920, 1280]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "return {json:{schema:'wf40-primary-remote-gate-result-v1',ok:false,classification:$json.classification||'REMOTE_PLANNER_GATE_CLOSED',task_id:$json.task_id||null,reason:$json.reason||'Primary remote planner dispatch is not authorized for this event',wf61_executed:false,provider_call_attempted:false}};"
+        },
+        "id": "d0025f40-6109-4009-8009-000000000109",
+        "name": "Code - Remote planner gate closed",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [1920, 1450]
+      }
+    },
+    {
+      "op": "append_connection",
+      "from_node": "GitHub - Fetch commit details (plan files)",
+      "output_type": "main",
+      "output_index": 0,
+      "connection": {"node": "Code - Detect canonical backlog item", "type": "main", "index": 0},
+      "preserve_all_existing_connections": true
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Detect canonical backlog item",
+      "outputs": [[{"node": "IF - canonical backlog detected?", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "IF - canonical backlog detected?",
+      "outputs": [[{"node": "GitHub - Fetch canonical backlog item", "type": "main", "index": 0}], []]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "GitHub - Fetch canonical backlog item",
+      "outputs": [[{"node": "Code - Encode canonical backlog adapter input", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Encode canonical backlog adapter input",
+      "outputs": [[{"node": "Execute Command - build primary remote backlog input", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Execute Command - build primary remote backlog input",
+      "outputs": [[{"node": "Code - Parse primary remote adapter result", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Parse primary remote adapter result",
+      "outputs": [[{"node": "IF - remote planner dispatch allowed?", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "IF - remote planner dispatch allowed?",
+      "outputs": [[{"node": "Execute Workflow - WF61 primary remote planner", "type": "main", "index": 0}], [{"node": "Code - Remote planner gate closed", "type": "main", "index": 0}]]
+    }
+  ],
+  "resulting_lane_contract": {
+    "lane": "GitHub commit details -> canonical backlog detect/fetch -> deterministic backlog adapter -> fail-closed runtime gate -> WF61 only when separately armed",
+    "legacy_pm21_lane_preserved": true,
+    "wf61_input": "passthrough object containing consumer_input + routing_input",
+    "initial_dispatch_state": "CLOSED",
+    "initial_provider_calls_authorized_per_event": 0,
+    "initial_expected_wf61_executions_after_apply_validation": 0,
+    "future_enable_rule": "Only a later explicit provider/inference gate may change configs/planner/primary-remote-runtime-gate.json to enabled=true and provider_calls_authorized_per_event=1 with deterministic healthy provider_state. Parent wiring apply itself must not make that change."
+  },
+  "preserve": [
+    "All existing WF40 nodes and connections, including Code - Detect real docs/plans plan files",
+    "Existing PM21 classifier/mock-worker/Telegram lane",
+    "WF40 active state",
+    "WF60 and OpenClaw lane unchanged",
+    "WF61 workflow content and active=false state unchanged",
+    "LiteLLM provider/config wiring unchanged",
+    "Data Table behavior unchanged",
+    "GIS branch unchanged",
+    "Qwen deferred",
+    "WORK-PC network/TeamViewer continuity"
+  ],
+  "forbidden": [
+    "WF61 execution during patch apply/validation",
+    "Provider/model calls or inference during patch apply/validation",
+    "Changing primary-remote-runtime-gate.json during patch apply",
+    "Credential value read/export/log/persist/hash/measure",
+    "Creating a new GitHub credential; clone only opaque metadata from the existing source node",
+    "LITELLM_MASTER_KEY or n8n Header Auth for the private LiteLLM lane",
+    "WF60/OpenClaw redesign",
+    "Legacy PM21 branch redesign",
+    "Public exposure or Docker/Tailscale/TeamViewer network mutation",
+    "Qwen activation"
+  ],
+  "verification": {
+    "required": [
+      "Re-export live WF40 metadata/structure after patch",
+      "Confirm exactly nine new nodes with the exact IDs/names above",
+      "Confirm GitHub - Fetch commit details (plan files) preserves its existing docs/plans target and adds exactly one parallel canonical-backlog target",
+      "Confirm the new GitHub backlog-fetch node uses the same credential metadata binding as source node 52e94e9c-986f-4f93-bac3-2c20ec4a60a1 without reading credential values",
+      "Confirm WF61 Execute Workflow target is d0025-6100-4001-8001-000000000061",
+      "Confirm configs/planner/primary-remote-runtime-gate.json remains enabled=false and provider_calls_authorized_per_event=0",
+      "Confirm WF40 remains active and WF60/WF61 active states remain unchanged",
+      "Confirm no workflow execution is used to validate this patch",
+      "Confirm provider/model calls=0, inference=0, WF61 executions=0"
+    ],
+    "do_not_execute_wf40_for_validation": true,
+    "do_not_execute_wf61_for_validation": true
+  },
+  "stop_conditions": [
+    "WF40 id/name/version/node-count precondition mismatch",
+    "Source node or its existing plan-detection connection is missing",
+    "WF61 id/name/active-state mismatch",
+    "Required adapter contract, disabled runtime gate, or helper implementation is absent",
+    "Helper offline tests do not PASS",
+    "Any target node id/name already exists with non-equivalent configuration",
+    "Existing GitHub credential metadata cannot be cloned without exposing a secret value",
+    "Applying the delta would change existing legacy branches",
+    "Runtime gate is not still disabled at apply time",
+    "Any provider/model call or workflow execution would be required for validation"
+  ]
+}
