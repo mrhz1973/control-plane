@@ -5,75 +5,66 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0024-W_SCHEMA_ENGINE_CLOSURE
-result_cursor: PASS_D0024_SCHEMA_ENGINE_CLOSURE_PACKET_SCHEMA_PASS_RESPONSE_GATE_PASS_POLICY_PROCEED
+task_ref: D-0025-W_PHASE_A
+result_cursor: PASS_D0025_PHASE_A_FOUNDATION_SYNC_PRIMARY_CONFIG_N8N_MAP
 reported_via: cursor_direct_persistence
-independent_verification: cursor_offline_schema_engine_closure_work_pc
-report_persistence_commit: 5b3f0774c9007c3cd15c944bd8b474effa480f7c
-classification: D0024_SCHEMA_ENGINE_CLOSURE_CANONICAL_GATES_PASS
+independent_verification: cursor_repo_only_phase_a_work_pc
+report_persistence_commit: pending
+classification: D0025_PHASE_A_REPO_SYNC_COMPLETE
 
-repo_head_observed_at_task: 44c4abd265acc878ab67457185e195d252353d9c
+repo_head_observed_at_task: 7fe8b58ec32a40afedc7e3c1eb1f2250a31cc0c2
 workspace_at_start: clean
-operator_gate_ref: github:issue/30
-issue_30_state: OPEN
+operator_gate_ref: github:issue/31
+issue_31_state: OPEN
 
 PRECHECK:
   fetch_ff_only: PASS
   core_boot: PASS
   teamviewer_network_mutations: 0
 
-SCHEMA_ENGINE:
-  install_class: user_local_isolated
-  install_root: "%LOCALAPPDATA%\\ControlPlane\\schema-engine"
-  resolver_env: CONTROL_PLANE_AJV_NODE_MODULES
-  resolver_hook: tools/validate-execution-packet-v1.mjs resolveAjvModules()
-  ajv_version: "8.20.0"
-  ajv_formats_version: "3.0.1"
-  repo_dependencies_added: false
+FOUNDATION_SYNC:
+  document: docs/foundation/PROJECT_VISION.md
+  version: "3.2"
+  litellm_primary_remote: documented
+  openclaw_fallback_preserved: documented
+  qwen_deferred: documented
+  d0024_pass_recorded: true
+  operator_decision_date: "2026-08-28"
 
-VALIDATOR_REGRESSION:
-  suite: tests/execution-packet-validator/run.mjs
-  result: PASS
-  passed: 5
-  failed: 0
-  valid_packet: PASS
-  invalid_fixtures: FAIL_CLOSED
+PRIMARY_REMOTE_CONFIG:
+  path: configs/litellm/control-plane-primary-remote.template.yaml
+  status: NOT_ACTIVE
+  aliases: [planner-glm-pilot, planner-codex-pilot]
+  qwen_included: false
+  offline_validation: PASS
+  validation_suite: tests/llm-gateway-portability/run.mjs
+  validation_case: litellm-primary-remote-config-checks
+  litellm_package_parse: unavailable_on_host
+  structural_validation: PASS
 
-CAPTURED_ARTIFACTS:
-  packet: tests/llm-gateway-request-shape/artifacts/packet-codex.json
-  response_raw: tests/llm-gateway-request-shape/artifacts/response-codex-raw.txt
-  consumer: tests/llm-gateway-request-shape/artifacts/consumer-input-codex.json
-  source: d0024-codex-verify temp artifacts (sanitized copy)
-
-PACKET_SCHEMA:
-  tool: tools/validate-execution-packet-v1.mjs
-  classification: PASS
-  reason: Packet validates against execution-packet-v1.schema.json
-
-RESPONSE_GATE:
-  tool: tools/validate-openclaw-planner-response-gate.mjs
-  classification: PASS
-  emit_execution_packet_count: 1
-  planner_requested: codex
-  planner_used: codex
-  fallback_used: false
-  hard_constraints_exact: true
-  execution_packet_schema: PASS
-
-POLICY:
-  tool: tools/evaluate-execution-packet-policy.mjs
-  decision: PROCEED
-  cursor_dispatch_allowed: true
-  human_gate_required: false
-  reason_codes: []
+N8N_INTEGRATION_MAP:
+  report: reports/architecture/d0025_phase_a_integration_map.md
+  classification: REPO_GROUNDED_REVERIFY_REQUIRED
+  live_n8n_api: unavailable
+  n8n_api_key_set: false
+  wf40_live_id: 9ZMj2ACTKyDVhCue
+  wf60_live_id: d0015600-4001-8001-0001-0653506aabcd
+  wf40_export_evidence: workflows/exports/2026-08-27_40-d0015-w-wf60-parent-wiring-post-apply.redacted.json
+  live_workflow_mutation: 0
+  planner_litellm_node_present_in_export: false
+  wf60_openclaw_resolver_present: true
 
 BUDGET_THIS_PASS:
   provider_calls: 0
   codex_inference: 0
   glm_inference: 0
   qwen_inference: 0
-  oauth_restarted: false
-  token_read: false
+  expanded_glm_budget_used: 0
+  expanded_codex_budget_used: 1
+  expanded_codex_budget_remaining: 9
+  retry: 0
+  planner_fallback: 0
+  gateway_fallback: 0
   network_config_mutations: 0
   teamviewer_mutations: 0
 

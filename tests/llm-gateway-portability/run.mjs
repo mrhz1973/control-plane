@@ -21,6 +21,10 @@ const LITELLM_TEMPLATE = join(
   ROOT,
   "configs/litellm/control-plane-spike.template.yaml",
 );
+const PRIMARY_REMOTE_TEMPLATE = join(
+  ROOT,
+  "configs/litellm/control-plane-primary-remote.template.yaml",
+);
 
 const CONSUMER = join(FIX, "consumer-input-valid.json");
 
@@ -379,6 +383,52 @@ const CASES = [
         if (/\bautostart\b/i.test(text) && !/no (service )?auto-start|no autostart/i.test(text)) {
           return "install/autostart command present in template";
         }
+      }
+      return null;
+    },
+  },
+  {
+    name: "litellm-primary-remote-config-checks",
+    run() {
+      if (!existsSync(PRIMARY_REMOTE_TEMPLATE)) {
+        return `missing template ${PRIMARY_REMOTE_TEMPLATE}`;
+      }
+      const text = readFileSync(PRIMARY_REMOTE_TEMPLATE, "utf8");
+      if (!/PRIMARY REMOTE GATEWAY TEMPLATE\s*—\s*NOT ACTIVE/i.test(text)) {
+        return "template missing PRIMARY REMOTE NOT ACTIVE marker";
+      }
+      if (!text.includes("planner-glm-pilot") || !text.includes("planner-codex-pilot")) {
+        return "missing live-verified pilot aliases";
+      }
+      if (text.includes("planner-qwen-pilot")) {
+        return "Qwen must not appear in primary-remote config";
+      }
+      if (!text.includes("model: zai/glm-5.3")) {
+        return "missing GLM model binding";
+      }
+      if (!text.includes("https://api.z.ai/api/coding/paas/v4")) {
+        return "missing GLM coding endpoint";
+      }
+      if (!text.includes("os.environ/ZAI_CODING_API_KEY")) {
+        return "missing ZAI env reference";
+      }
+      if (!text.includes("chatgpt/gpt-5.6-sol")) {
+        return "missing Codex model binding";
+      }
+      if (/sk-[A-Za-z0-9]{10,}/.test(text) || /Bearer\s+[A-Za-z0-9._\-]{8,}/i.test(text)) {
+        return "secret-like value in template";
+      }
+      if (/api_key:\s*['\"]?[A-Za-z0-9_\-]{20,}['\"]?/.test(text) && !/os\.environ/.test(text)) {
+        return "possible literal api_key";
+      }
+      if (/openai\.com\/v1|os\.environ\/OPENAI_API_KEY|openai\//i.test(text)) {
+        return "OpenAI Platform API-key path present";
+      }
+      if (/fallbacks?\s*:/i.test(text) || /router_settings:[\s\S]*fallbacks/i.test(text)) {
+        return "runtime fallback chain configured";
+      }
+      if (/0\.0\.0\.0|public bind|autostart|systemctl enable/i.test(text) && !/no (service )?auto-start|not active|loopback\/private/i.test(text)) {
+        return "public bind or autostart implied";
       }
       return null;
     },

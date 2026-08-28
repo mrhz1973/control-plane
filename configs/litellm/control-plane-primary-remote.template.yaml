@@ -1,0 +1,42 @@
+# PRIMARY REMOTE GATEWAY TEMPLATE — NOT ACTIVE
+#
+# D-0025-W canonical non-secret artifact for LiteLLM as primary remote gateway
+# (GLM 5.3 + Codex OAuth). Derived from D-0024 live-verified spike config.
+#
+# Does NOT authorize install, start, OAuth, credential access, HTTP, inference,
+# service/autostart, public bind, or n8n routing mutation.
+#
+# Live-verified aliases (D-0024-W) — do not rename without new evidence:
+#   planner-glm-pilot   -> zai/glm-5.3 (Z.AI Coding Plan endpoint explicit)
+#   planner-codex-pilot -> chatgpt/gpt-5.6-sol (ChatGPT subscription OAuth)
+#
+# Qwen is intentionally absent — deferred; see control-plane-spike.template.yaml
+# for historical offline portability representation only.
+#
+# Runtime policy (documentation only — not a live router):
+# - bind loopback/private only when started in a later controlled pass
+# - stream false for Codex verify path; SSE normalized downstream if proxy streams
+# - retry count 0
+# - no planner auto-degrade
+# - no gateway auto-degrade / no fallback chain
+# - ChatGPT OAuth material: local env/token store only (CHATGPT_TOKEN_DIR / CHATGPT_AUTH_FILE)
+# - Z.AI key: os.environ/ZAI_CODING_API_KEY on the LiteLLM host only — never literals here
+
+model_list:
+  # --- GLM 5.3 via Z.AI Coding Plan (D-0024 runtime structural PASS) ---
+  - model_name: planner-glm-pilot
+    litellm_params:
+      model: zai/glm-5.3
+      api_base: https://api.z.ai/api/coding/paas/v4
+      api_key: os.environ/ZAI_CODING_API_KEY
+
+  # --- Codex via ChatGPT subscription OAuth (D-0024 runtime PASS) ---
+  # Do NOT substitute OpenAI Platform API key / paid API fallback.
+  - model_name: planner-codex-pilot
+    litellm_params:
+      model: chatgpt/gpt-5.6-sol
+      # OAuth/device material stays local on LiteLLM host; never commit tokens.
+
+litellm_settings:
+  drop_params: true
+  # intentionally no degrade chain / no multi-backend auto-route

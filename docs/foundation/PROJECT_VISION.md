@@ -1,14 +1,14 @@
 # PROJECT VISION — control-plane Foundation
 
 **Repository:** `mrhz1973/control-plane`
-**Versione:** **3.1 — wiki-LLM lean — 2026-08-25**
-**Precedente:** 3.0 — 2026-08-25
+**Versione:** **3.2 — LiteLLM primary remote gateway — 2026-08-28**
+**Precedente:** 3.1 — wiki-LLM lean — 2026-08-25
 **Ruolo:** architettura e invarianti fondative. **Non LIVE STATE, non bootstrap manuale, non cronologia.**
 **Runtime autorizzato da questo documento:** **NO**.
 
 ## 0. Visione in una frase
 
-`control-plane` è un sistema personale di sviluppo AI-assisted in cui **GPT Web governa strategia/backlog, GitHub conserva la verità, n8n applica workflow/policy/gate, OpenClaw media provider/auth/quota, Codex/GLM/Qwen producono Execution Packet, Cursor implementa in loop task-bounded, Bugbot verifica e Telegram interviene sui gate umani reali**.
+`control-plane` è un sistema personale di sviluppo AI-assisted in cui **GPT Web governa strategia/backlog, GitHub conserva la verità, n8n applica workflow/policy/gate, LiteLLM è il primary remote gateway per GLM/Codex, OpenClaw resta preserved fallback/existing broker, Codex/GLM producono Execution Packet (Qwen locale deferred), Cursor implementa in loop task-bounded, Bugbot verifica e Telegram interviene sui gate umani reali**.
 
 Obiettivo: aumentare autonomia e throughput usando più pool/modelli senza perdere auditabilità, controllo del rischio o memoria persistente.
 
@@ -61,11 +61,11 @@ GitHub — source of truth
    ↓
 n8n — workflow / deterministic policy / gates
    ↓
-OpenClaw — provider / auth / quota broker
-   ↓
-Qwen 3.8 37B | GLM 5.3 | Codex OAuth
-   ↓ planner selected
+LiteLLM primary remote gateway
+   ↓ selected GLM 5.3 / Codex OAuth
 Execution Packet
+   ↓
+deterministic gates (response / schema / policy)
    ↓
 n8n gate
    ├─ auto-eligible → Cursor bounded execution loop
@@ -74,9 +74,12 @@ n8n gate
                  tests → Bugbot
                     ├─ PASS → GitHub
                     └─ ISSUE → bounded fix loop
+
+OpenClaw — preserved fallback/existing broker path
+   (explicit selection / authorized fallback only)
 ```
 
-**Tailscale** resta trasporto privato VPS ↔ nodo locale quando richiesto dal runtime.
+**Tailscale** resta trasporto privato VPS ↔ nodo locale quando richiesto dal runtime (OpenClaw fallback path, n8n host reachability).
 
 Questa architettura è **target accettato**, non prova che ogni capability sia già operativa. Capability reali: frontier + issue/evidence corrente.
 
@@ -89,10 +92,11 @@ Questa architettura è **target accettato**, non prova che ogni capability sia g
 | **GPT Web** | strategia, backlog, Decision Packet, authoring n8n autorevole | implementer meccanico obbligatorio |
 | **GitHub** | memoria, audit, contratti, evidence, stato persistente | runtime engine |
 | **n8n** | workflow, dedupe, policy deterministica, gate, coordinamento | planner LLM |
-| **OpenClaw** | broker provider/auth/quota/failover consentito | strategic orchestrator |
-| **Codex OAuth** | planner/reasoner senior/advisor quando verificato | modello Cursor nativo assunto |
-| **GLM 5.3** | Advisor / Planner / Cursor Executor secondo mode verificato | autorità derivata dal nome modello |
-| **Qwen 3.8 37B** | planner/advisor locale per-job | router daemon obbligatorio |
+| **LiteLLM** | primary remote gateway/auth transport per GLM 5.3 + Codex OAuth quando verificato | strategic orchestrator; sostituto dei gate canonici |
+| **OpenClaw** | preserved fallback/existing broker provider/auth/quota/failover consentito | primary remote gateway; strategic orchestrator |
+| **Codex OAuth** | planner/reasoner senior/advisor via LiteLLM primary remote path quando verificato | modello Cursor nativo assunto; OpenAI Platform API key path |
+| **GLM 5.3** | Advisor / Planner / Cursor Executor via LiteLLM primary remote path secondo mode verificato | autorità derivata dal nome modello |
+| **Qwen 3.8 37B** | planner/advisor locale per-job (**deferred** — non blocking current remote path) | router daemon obbligatorio; primary remote gateway |
 | **Cursor** | execution harness: Agent, edit, terminal, test, Git, subagent, bounded loop | orchestratore strategico generale |
 | **Bugbot** | reviewer/quality gate | router/orchestrator |
 | **Telegram** | human gate | archivio/source of truth |
@@ -112,15 +116,23 @@ Cursor harness + GLM 5.3 BYOK + bounded loop
 
 Lo scope viene dall'Execution Packet, non dal modello.
 
-### 3.3 Codex advisor Cursor
+### 3.3 Codex path
 
-Track separato da verificare:
+Canonical remote path (when runtime-qualified):
 
 ```text
-Cursor → tool/CLI/MCP → OpenClaw → Codex OAuth
+n8n → LiteLLM primary remote gateway → chatgpt/gpt-5.6-sol (OAuth token store local)
 ```
 
-Nessuna assunzione di OpenAI API billing o native Cursor picker senza evidence reale.
+Nessuna assunzione di OpenAI Platform API key billing o native Cursor picker senza evidence reale.
+
+Preserved fallback/existing path:
+
+```text
+n8n → OpenClaw (explicit selection / authorized fallback) → Codex OAuth
+```
+
+Track separato D-0016-W resta valido e parallel where separately authorized.
 
 ---
 
@@ -265,7 +277,11 @@ L'operatore esegue le azioni UI n8n supervisionate quando necessarie.
 Target provider boundary:
 
 ```text
-n8n → Tailscale/local broker → OpenClaw → provider selezionato
+primary remote:
+  n8n → LiteLLM → selected GLM/Codex
+
+fallback/existing:
+  n8n → OpenClaw where explicitly selected/authorized
 ```
 
 Non chiamate provider arbitrarie inline fuori broker/policy salvo gate esplicito.
@@ -345,8 +361,9 @@ Checkpoint/handoff ≠ PASS e non auto-certificano il commit che li contiene.
 Un componente fallito deve degradare a una modalità supervisionata senza perdere stato:
 
 - planner unavailable → fallback consentito oppure gate;
+- LiteLLM unavailable → OpenClaw/manual/gated path secondo policy; **mai** silent fallback non equivalente;
 - OpenClaw unavailable → path manuale/gated;
-- resource pressure Qwen → altro planner consentito;
+- resource pressure Qwen → altro planner consentito solo se esplicitamente autorizzato (Qwen deferred on current remote path);
 - Cursor non converge → checkpoint + gate;
 - Bugbot non converge → gate;
 - Tailscale/nodo locale down → offline/manual;
@@ -415,8 +432,9 @@ AUTO-VIA elimina i `vai` ridondanti quando NEXT è già tecnicamente determinato
 - foundation v3 multi-planner → Cursor accepted;
 - GPT Web strategic orchestrator/backlog owner;
 - GitHub source of truth;
-- OpenClaw target broker;
-- planner pool Qwen 3.8 37B / GLM 5.3 / Codex OAuth;
+- **LiteLLM primary remote gateway for GLM+Codex (architecture decision 2026-08-28; D-0024 runtime qualification PASS)**;
+- OpenClaw preserved fallback/existing broker;
+- planner pool GLM 5.3 / Codex OAuth on primary remote path; Qwen 3.8 37B deferred;
 - planner → Execution Packet;
 - n8n deterministic gate;
 - Cursor target bounded execution harness;
@@ -426,13 +444,15 @@ AUTO-VIA elimina i `vai` ridondanti quando NEXT è già tecnicamente determinato
 
 ### Non claimed
 
-- OpenClaw v3 provider wiring already verified/current;
+- permanent LiteLLM service/deploy on production path;
+- n8n live routing already switched to LiteLLM primary;
+- OpenClaw v3 provider wiring already verified/current for all paths;
 - quota thresholds calibrated;
-- planner smokes PASS;
+- planner smokes PASS on all paths;
 - GLM BYOK Cursor PASS;
 - Codex OAuth native Cursor model;
 - bounded Cursor/Bugbot production loop PASS;
-- n8n modified for v3;
+- n8n modified for v3 primary-remote integration (Phase B pending);
 - PM-34/L5/permanent schedule/loop authorized.
 
 Current factual values are read from the frontier.
@@ -448,5 +468,6 @@ Current factual values are read from the frontier.
 | **3.1** | **2026-08-25** | wiki-LLM lean: bootstrap delegated to README AI-BOOT, LIVE STATE only in frontier, handoff seed-only, AUTO-VIA/`agg`, foundation deduplicated, historical cleanup issue #10 |
 | 3.1 L3A | 2026-08-25 | §7.0 gate model: one runtime action per gate; docs-only AUTO-VIA; docs batching; real-gate list (extracted from legacy RUNTIME_GATES; no rolling state) |
 | 3.1 L3A.5 | 2026-08-25 | §7.0 public webhook / naked HTTPS exposure gate + secrets-out-of-Git (from PUBLIC_WEBHOOK_GATE declassification) |
+| **3.2** | **2026-08-28** | LiteLLM promoted to primary remote gateway for GLM+Codex; OpenClaw reclassified as preserved fallback/existing; Qwen deferred on current remote path; D-0024 PASS + operator architecture decision recorded; n8n integration Phase B pending |
 
 Storia dettagliata: Git history; non duplicarla nella context window.
