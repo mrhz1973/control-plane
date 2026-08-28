@@ -9,7 +9,7 @@ task_ref: D-0025-W_WF40_GIS_READWRITE_NONBLOCKING
 result_cursor: PASS_D0025_GIS_READWRITE_NONBLOCKING
 reported_via: cursor_direct_persistence
 independent_verification: cursor_vps_n8n_export_post_apply
-report_persistence_commit: PENDING_SELF_REFERENCE
+report_persistence_commit: 5d1268bca8cf51d01c982e9bd6b1d72eeed8011e
 classification: WF40_GIS_READWRITE_NONBLOCKING_APPLIED
 
 repo_head_at_start: 87708a2ad2a70d6dc435096efa599d0b4cb96803
