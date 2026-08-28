@@ -5,51 +5,53 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_WF61_CREDENTIALLESS_PATCH_AND_PROVIDER_AUTH_READONLY_PREFLIGHT
-result_cursor: STOP_D0025_PROVIDER_AUTH_HUMAN_GATE_REQUIRED
+task_ref: D-0025-W_PROVIDER_WIRING_EXACT_READONLY_PREFLIGHT
+result_cursor: PASS_D0025_PROVIDER_WIRING_CANDIDATE_READY
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_readonly_provider_auth_inspect
-report_persistence_commit: 389c2fb529f26e4dc90803ed052125eb7319a9ed
-classification: STOP_PROVIDER_AUTH_HUMAN_GATE_REQUIRED
+independent_verification: cursor_vps_readonly_provider_wiring_inspect
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: PROVIDER_WIRING_CANDIDATE_READY
 
-repo_head_observed_at_task: ae3fdeafabb1ac29bcf4ef77f55e0712888d0bfb
-workspace_at_start: clean (ae3fdeaf)
-operator_gate_ref: github:issue/31#5453176557
+repo_head_observed_at_task: 993be4e410a3fae3247056ac700928718396c58d
+workspace_at_start: clean
+operator_gate_ref: operator_relay_staged_provider_material
 issue_31_state: OPEN
 
-WF61_PATCH:
-  gpt_web_authoring: issue/31#5453176557
-  pre_patch_blob: ebd838c27a3fde388e5e45faf2e8e71feff68483
-  post_patch_blob: 528f40f2111850383953991b2f822ef2816ad621
-  json_parse: PASS
-  http_node_credentialless: true
-  authentication_absent: true
-  genericAuthType_absent: true
-  credentials_absent: true
-  post_url_timeout_semantics_preserved: true
-  active: false
-  structural_test: 16/16 PASS
-  live_import: false
+PROVIDER_MATERIAL_STAGED: true
+WIRING_CANDIDATE_READY: true
 
-PROXY_AUTH:
-  credentialless: true
-  litellm_master_key_env_present: false
-  n8n_header_auth_required: false
+STAGED_MATERIAL:
+  zai_env_file: /root/local-files/handoff-runtime/secrets/litellm-primary.env
+  zai_env_key_names: [ZAI_CODING_API_KEY]
+  zai_env_size_bytes: 69
+  zai_env_mode: "600"
+  chatgpt_auth_json: /root/local-files/handoff-runtime/secrets/chatgpt-auth/auth.json
+  chatgpt_auth_size_bytes: 3721
+  chatgpt_auth_mode: "600"
+  secret_values_read: false
 
-PROVIDER_AUTH_PREFLIGHT:
-  zai_coding_api_key_env_name_present: false
-  chatgpt_token_dir_env_name_present: false
-  chatgpt_auth_file_env_name_present: false
-  chatgpt_auth_store_on_vps: false
-  litellm_config_mount: false
-  litellm_provider_env_names: none
-  template_on_vps_checkout: present
-  existing_material_sufficient: false
+LITELLM_BASELINE:
+  container_id: e9b3828c59922a00474d88a7f205b2fe35ce4d1dfc4bc65190636c76a8cb922a
+  image_digest: sha256:26eb8aa650ef8039f3453b80fb52156fcadcb588be13a22bd8ce28a2425ed2f4
+  network: root_default
+  host_ports: 0
+  mounts: 0
+  cmd: ["--port","4000"]
+  proxy_credentialless: true
+  baseline_reconstructible: true
 
-HUMAN_GATES_REQUIRED:
-  - ZAI_CODING_API_KEY creation/transfer + LiteLLM container env wiring
-  - ChatGPT OAuth store (CHATGPT_TOKEN_DIR/CHATGPT_AUTH_FILE) creation/transfer/wiring
-  - LiteLLM config template apply (separate runtime gate; not performed)
+WIRING_PLAN:
+  zai: --env-file /root/local-files/handoff-runtime/secrets/litellm-primary.env
+  chatgpt_token_dir: /secrets/chatgpt-auth
+  chatgpt_auth_file: auth.json
+  chatgpt_internal_path: /secrets/chatgpt-auth/auth.json
+  chatgpt_mount: /root/local-files/handoff-runtime/secrets/chatgpt-auth:/secrets/chatgpt-auth:ro
+  config_host: /root/local-files/handoff-runtime/control-plane/configs/litellm/control-plane-primary-remote.template.yaml
+  config_internal: /etc/litellm/config.yaml:ro
+  config_arg: --config /etc/litellm/config.yaml
+  litellm_master_key: absent
+
+NEXT_RUNTIME_GATE: D-0025-W_LITELLM_PROVIDER_CONFIG_WIRING_APPLY
 
 N8N_LITELLM_SAFETY:
   n8n_id_unchanged: true
@@ -58,7 +60,6 @@ N8N_LITELLM_SAFETY:
   wf61_unimported: true
 
 BUDGET_THIS_PASS:
-  repo_mutations: wf61_patch + test_alignment + docs
   runtime_mutations: 0
   provider_calls: 0
   inference: 0
@@ -69,5 +70,5 @@ SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
 SECRET_VALUE_PERSISTED: false
 
-REPORT: reports/architecture/d0025_wf61_credentialless_patch_and_provider_auth_readonly_preflight.md
+REPORT: reports/architecture/d0025_provider_wiring_exact_readonly_preflight.md
 ```

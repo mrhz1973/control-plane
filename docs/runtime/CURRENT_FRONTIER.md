@@ -6,36 +6,43 @@
 |---|---|
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
-| **ACTIVE WORK** | issue **#31 D-0025-W** — WF61 credential-free repo patch applied; provider-auth read-only preflight STOP (human gate); issue **#30** COMPLETE/CLOSED; Qwen deferred |
+| **ACTIVE WORK** | issue **#31 D-0025-W** — provider material staged on VPS; wiring candidate ready; next runtime apply gate; issue **#30** COMPLETE/CLOSED; Qwen deferred |
 | **BLOCCO ATTIVO** | `D0025_W_LITELLM_PRIMARY_REMOTE_INTEGRATION` |
-| **STATO BLOCCO** | `SCHEMA_ENGINE_LIVE_READY / CREDENTIALLESS_PROXY_LIVE / WF61_ARTIFACT_CREDENTIALLESS / PROVIDER_AUTH_HUMAN_GATE` |
-| **GATE CORRENTE** | **REAL HUMAN GATE** — provider auth material absent on VPS LiteLLM host; no secret/OAuth mutation authorized in AUTO-VIA |
-| **NEXT** | Operator supplies `ZAI_CODING_API_KEY` to LiteLLM host (create/transfer + env wiring, names only in evidence) and ChatGPT OAuth store via `CHATGPT_TOKEN_DIR`/`CHATGPT_AUTH_FILE` (transfer from WORK-PC spike path or device OAuth). Then separate bounded gate: LiteLLM config mount/apply of `control-plane-primary-remote.template.yaml`. WF61 import remains after provider readiness. |
-| **LITELLM PROXY AUTH** | **UNNECESSARY / ACCEPTED / LIVE** · no `LITELLM_MASTER_KEY` · credentialless · private Docker-only `root_default` · host ports **0** |
-| **PROVIDER AUTH** | **REQUIRED · ABSENT ON VPS** · `ZAI_CODING_API_KEY` env name **absent** · `CHATGPT_TOKEN_DIR`/`CHATGPT_AUTH_FILE` **absent** · no `auth.json`/`chatgpt-auth` on VPS · template present on checkout but **not wireable** without human gates |
-| **WF61 ARTIFACT** | **credentialless (repo patched)** · structural validation **PASS** · **not imported** · `active=false` in artifact |
+| **STATO BLOCCO** | `SCHEMA_ENGINE_LIVE_READY / CREDENTIALLESS_PROXY_LIVE / WF61_ARTIFACT_CREDENTIALLESS / PROVIDER_MATERIAL_STAGED / WIRING_CANDIDATE_READY` |
+| **GATE CORRENTE** | `D-0025-W_LITELLM_PROVIDER_CONFIG_WIRING_APPLY` — execute bounded `litellm-primary` recreate with staged provider material + config mount (operator-authorized runtime mutation) |
+| **NEXT** | Apply candidate recreate (see wiring report), then read-only structural verify. WF61 import remains after provider wiring verify. No inference in wiring apply gate unless separately authorized. |
+| **PROVIDER MATERIAL (STAGED)** | Z.AI env `/root/local-files/handoff-runtime/secrets/litellm-primary.env` (600, 69 B, key `ZAI_CODING_API_KEY`) · ChatGPT auth `/root/local-files/handoff-runtime/secrets/chatgpt-auth/auth.json` (600, 3721 B) · values **not** read in control-plane pass |
+| **LITELLM PROXY AUTH** | **UNNECESSARY / ACCEPTED / LIVE** · no `LITELLM_MASTER_KEY` · credentialless · `root_default` · host ports **0** |
+| **LITELLM LIVE (current)** | `litellm-primary` · credentialless · **no** provider wiring yet · mounts **0** · `cmd=["--port","4000"]` |
+| **WF61 ARTIFACT** | credentialless (repo) · structural PASS · **not imported** |
 | **SCHEMA ENGINE LIVE** | **READY** · Ajv **8.20.0** · ajv-formats **3.0.1** |
 | **CONTROL-PLANE TOOLS LIVE** | **MOUNTED RO** on n8n surface |
-| **LITELLM LIVE** | `litellm-primary` · credentialless · no config mount · `root_default` · host ports **0** |
 | **WF40 LIVE** | **PRESERVED** · active · `9ZMj2ACTKyDVhCue` |
 | **WF60 LIVE** | **PRESERVED** · inactive · `d0015600-4001-8001-0001-0653506aabcd` |
-| **EXPANDED PLANNER BUDGET** | GLM **0/10** · Codex **1/10 used / 9 remaining** · retry 0 · planner fallback 0 · gateway fallback 0 |
-| **STANDING AUTO-VIA** | issue #31 comment `5452941338` · stops at real human credential/OAuth gate (now reached) |
+| **EXPANDED PLANNER BUDGET** | GLM **0/10** · Codex **1/10 used / 9 remaining** |
 | **WORK-PC REMOTE ACCESS SAFETY** | TEAMVIEWER_CONTINUITY_HARD_CONSTRAINT unchanged |
+
+## Wiring candidate summary (not applied)
+
+| Component | Wiring |
+|---|---|
+| Z.AI | `--env-file /root/local-files/handoff-runtime/secrets/litellm-primary.env` |
+| ChatGPT OAuth | `-e CHATGPT_TOKEN_DIR=/secrets/chatgpt-auth` · `-e CHATGPT_AUTH_FILE=auth.json` · mount `…/secrets/chatgpt-auth:/secrets/chatgpt-auth:ro` |
+| Config | mount `…/control-plane-primary-remote.template.yaml:/etc/litellm/config.yaml:ro` · `--config /etc/litellm/config.yaml` |
+| Rollback | restore original credentialless `docker run` (no env-file, no mounts, `--port 4000` only) |
+
+Full commands: `reports/architecture/d0025_provider_wiring_exact_readonly_preflight.md`
 
 ## Boundaries operative correnti
 
-- WF61 repo artifact is credential-free per GPT-Web issue #31 comment `5453176557`. Do not re-add Header Auth or `LITELLM_MASTER_KEY` for current private topology.
-- Provider auth preflight (read-only) determined existing VPS material is **insufficient**. STOP until operator completes human gates; do not read/print secret values in control-plane passes.
-- LiteLLM config apply, container recreate/restart, WF61 import, and parent WF40 wiring remain **separate later gates** after provider material exists.
-- No provider/model call or inference. GLM/Codex expanded budget untouched this pass.
-- OpenClaw/WF40/WF60 unchanged. WF61 unimported. Qwen deferred. TeamViewer continuity preserved.
+- Provider material is staged; wiring candidate is deterministic. **Do not apply** until explicit wiring-apply gate authorization.
+- Proxy stays credentialless — candidate adds **no** `LITELLM_MASTER_KEY`.
+- No provider/model HTTP or inference in this preflight pass.
+- OpenClaw/WF40/WF60 unchanged. WF61 unimported. Qwen deferred.
 
 ## Puntatori
 
-- Active integration: issue **#31** (`D-0025-W`) — OPEN
-- GPT-Web WF61 patch authoring: issue #31 comment `5453176557`
-- Provider preflight report: `reports/architecture/d0025_wf61_credentialless_patch_and_provider_auth_readonly_preflight.md`
-- Auth design preflight: `reports/architecture/d0025_litellm_auth_design_readonly_preflight.md`
+- Active integration: issue **#31** — OPEN
+- Wiring preflight: `reports/architecture/d0025_provider_wiring_exact_readonly_preflight.md`
 - WF61 artifact: `workflows/61-litellm-primary-remote-planner.template.json`
 - Cursor evidence: `docs/runtime/LAST_CURSOR_REPORT.md`
