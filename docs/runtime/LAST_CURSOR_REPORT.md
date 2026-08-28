@@ -5,18 +5,24 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001_RETRY_4
-result_cursor: STOP_D0025_GLM_LIVE_001_RETRY4_FINALIZE_FAILED_AFTER_HTTP_200
+task_ref: D-0025-W_WF61_FINALIZE_FAILURE_OBSERVABILITY_FIX_AND_RESUME
+result_cursor: STOP_D0025_RETRY5_LITELLM_HTTP_FAILURE_STATUS_0
 reported_via: cursor_direct_persistence
 independent_verification: cursor_vps_wf40_rundata_plus_litellm_logs
-report_persistence_commit: eb9c64e514d9285ffa59fec4cf2eb542c9c84852
-classification: GLM_LIVE_CYCLE_FINALIZE_FAILED_AFTER_LITELLM_200
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: PHASE_A_PASS_PHASE_B_LITELLM_HTTP_FAILURE_NO_PROXY_HIT
 
-repo_head_at_start: 706ac21969aeb662a59df4dd8f37dd29a2b0b184
-trigger_commit_sha: 617f63391852a1f4dd0122cf025eaf33f544e2ea
+repo_head_at_start: 63d88ee926cce1fb1436b86babd825c295524c42
+artifact_path: workflows/patches/d0025-w-wf61-finalize-failure-observability-fix.gpt-web.json
+template_apply_commit: de8c3b92e21bccf496198c4caeb81e0dfdf93e24
+wf61_pre_versionId: c9c97f71-d934-4efd-b423-7aaaec11f86c
+wf61_post_apply_versionId: d0f88e31-4756-471a-9544-1bcfc40a52b2
+graph_equivalence: PASS except node 6109 command
+node_6109_command_apply: PASS
 standing_auth_ref: docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md
-auto_via_release: github:issue/31#issuecomment-5457964584
+auto_via_release: github:issue/31#issuecomment-5458229605
 
+trigger_commit_sha: c06b8be967c9e7dbbd3bcc4c2727d01f5787c4c0
 backlog_path: docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md
 task_id: D-0025-W-GLM-LIVE-001
 yaml_unchanged: true
@@ -25,20 +31,19 @@ adapter_offline: REMOTE_DISPATCH_READY
 adapter_live: REMOTE_DISPATCH_READY
 selected_planner: glm
 
-WF40_execution_id: 284816
-WF61_execution_id: 284817
+WF40_execution_id: 284881
+WF61_execution_id: 284882
 wf61_new_execution_count_this_pass: 1
-wf61_total_execution_count_retained: 2
-litellm_request_count: 1
-provider_attempt_count: 1
-http_status: 200
+litellm_request_delta: 0
+provider_attempt_delta: 0
+http_status: 0
 
-response_gate_result: NOT_CLAIMED_FINALIZE_FAILED
-schema_gate_result: NOT_CLAIMED_FINALIZE_FAILED
-packet_policy_result: NOT_CLAIMED_FINALIZE_FAILED
+finalize_classification: LITELLM_HTTP_FAILURE
+finalize_reason_sanitized: Single LiteLLM HTTP attempt did not return 2xx; retry is forbidden
+response_gate_result: NOT_REACHED
+schema_gate_result: NOT_REACHED
+packet_policy_result: NOT_REACHED
 packet_path: null
-cycle_classification: FINALIZE_FAILED
-cycle_reason: canonical finalize failed
 
 runtime_gate_before: {enabled: false, provider_calls_authorized_per_event: 0}
 runtime_gate_during: {enabled: true, provider_calls_authorized_per_event: 1, allowed_planners: [glm]}
@@ -49,7 +54,6 @@ WF61_state_before: inactive
 WF61_state_during: active_temporarily
 WF61_state_after: inactive
 
-blocker: WF61 returned FINALIZE_FAILED after LiteLLM POST /v1/responses HTTP 200; no Execution Packet; sole GLM attempt consumed
 retry: 0
 fallback: 0
 qwen: 0
@@ -61,7 +65,8 @@ teamviewer_mutations: 0
 secret_exposure: false
 glm_budget: 1/10
 
-NEXT_GATE: diagnose/fix WF61 canonical finalize after GLM HTTP 200; then one bounded resume of D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001
+NEXT_GATE: diagnose WF61 LiteLLM HTTP status-0 with zero proxy hits; then one bounded resume of D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001
 
+APPLY_REPORT: reports/architecture/d0025_wf61_finalize_failure_observability_fix_apply.md
 REPORT: reports/architecture/d0025_primary_remote_glm_live_001.md
 ```
