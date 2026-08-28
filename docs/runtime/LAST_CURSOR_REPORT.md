@@ -5,50 +5,63 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_WF61_TEMPLATE_ITEM_RETURN_SHAPE_FIX
-result_cursor: PASS_WF61_PER_ITEM_RETURN_SHAPE_FIX_APPLIED
+task_ref: D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001_RETRY_4
+result_cursor: STOP_D0025_GLM_LIVE_001_RETRY4_FINALIZE_FAILED_AFTER_HTTP_200
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_n8n_export_plus_template_graph_equiv
-report_persistence_commit: f0897ec61b209b5281022ecd32557e72448d66ec
-classification: WF61_RETURN_SHAPE_FIXED_INACTIVE_GATE_CLOSED
+independent_verification: cursor_vps_wf40_rundata_plus_litellm_logs
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: GLM_LIVE_CYCLE_FINALIZE_FAILED_AFTER_LITELLM_200
 
-repo_head_at_start: 1f46638ccce5dad9bcd8d03ac2236cc334ee2a97
-template_apply_commit: 8812c1b6f22f92da1b9efa00fbd5d462c7341df3
+repo_head_at_start: 706ac21969aeb662a59df4dd8f37dd29a2b0b184
+trigger_commit_sha: 617f63391852a1f4dd0122cf025eaf33f544e2ea
 standing_auth_ref: docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md
-gpt_web_artifact: workflows/patches/d0025-w-wf61-item-return-shape-fix.gpt-web.json
+auto_via_release: github:issue/31#issuecomment-5457964584
 
-source_template_pre_commit: 1f46638
-source_template_post_commit: 8812c1b
-live_wf61_pre_versionId: e94c8529-bf3c-4f0e-b09c-2dca6dfa0dad
-live_wf61_post_versionId: ab504cd5-1f14-4097-9e78-6aa6cf10cd1a
-node_count: 13
+backlog_path: docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md
+task_id: D-0025-W-GLM-LIVE-001
+yaml_unchanged: true
 
-target_node_ids:
-  - d0025-6104-4004-8004-000000000004
-  - d0025-6107-4007-8007-000000000007
-  - d0025-6110-4010-8010-000000000010
-  - d0025-6111-4011-8011-000000000011
-  - d0025-6112-4012-8012-000000000012
+adapter_offline: REMOTE_DISPATCH_READY
+adapter_live: REMOTE_DISPATCH_READY
+selected_planner: glm
 
-mode_before_after: runOnceForEachItem (unchanged on all five)
-invalid_array_return_count_before: 5
-invalid_array_return_count_after: 0
-input_first_in_targets: 0
-graph_equivalence: PASS except five jsCode return-shape fields
+WF40_execution_id: 284816
+WF61_execution_id: 284817
+wf61_new_execution_count_this_pass: 1
+wf61_total_execution_count_retained: 2
+litellm_request_count: 1
+provider_attempt_count: 1
+http_status: 200
 
-WF61_state: inactive
-runtime_gate: CLOSED
-litellm_requests: 0
-provider_calls: 0
-inference: 0
+response_gate_result: NOT_CLAIMED_FINALIZE_FAILED
+schema_gate_result: NOT_CLAIMED_FINALIZE_FAILED
+packet_policy_result: NOT_CLAIMED_FINALIZE_FAILED
+packet_path: null
+cycle_classification: FINALIZE_FAILED
+cycle_reason: canonical finalize failed
+
+runtime_gate_before: {enabled: false, provider_calls_authorized_per_event: 0}
+runtime_gate_during: {enabled: true, provider_calls_authorized_per_event: 1, allowed_planners: [glm]}
+runtime_gate_after: {enabled: false, provider_calls_authorized_per_event: 0}
+final_gate_closed: true
+
+WF61_state_before: inactive
+WF61_state_during: active_temporarily
+WF61_state_after: inactive
+
+blocker: WF61 returned FINALIZE_FAILED after LiteLLM POST /v1/responses HTTP 200; no Execution Packet; sole GLM attempt consumed
+retry: 0
+fallback: 0
+qwen: 0
+codex: 0
+cursor_dispatch: 0
 credential_mutations: 0
 network_mutations: 0
 teamviewer_mutations: 0
 secret_exposure: false
-wf40_unchanged: true
-wf61_executions_total: 2
+glm_budget: 1/10
 
-NEXT_GATE: D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001
+NEXT_GATE: diagnose/fix WF61 canonical finalize after GLM HTTP 200; then one bounded resume of D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001
 
-REPORT: reports/architecture/d0025_wf61_item_return_shape_fix_apply.md
+REPORT: reports/architecture/d0025_primary_remote_glm_live_001.md
 ```

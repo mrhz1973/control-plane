@@ -1,11 +1,11 @@
 # D-0025-W — primary remote GLM live planning cycle (001)
 
 **Repository:** `mrhz1973/control-plane`  
-**Task:** `D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001` (+ `_RETRY`, `_RETRY_2`, `_RETRY_3`)  
+**Task:** `D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001` (+ `_RETRY` … `_RETRY_4`)  
 **Date:** 2026-08-28  
-**Release evidence:** issue #31 comment `5456859595` · `5457265822` · `5457565004` · retry 3 under standing authorization  
+**Release evidence:** issue #31 comment `5457964584` · standing authorization  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **STOP (retry 3)** — WF61 failed again at `Parse prepare result fail-closed` (new defect: array return in per-item mode) · no LiteLLM request · gate CLOSED
+**Status:** **STOP (retry 4)** — LiteLLM/GLM reached (`HTTP 200`) · canonical finalize failed · no Execution Packet · gate CLOSED
 
 ---
 
@@ -16,55 +16,70 @@
 | 1 | `8765362` | STOP | GIS `Read/Write Files from Disk` hard-fail before lane | `D-0025-W_WF40_GIS_READWRITE_NONBLOCKING` |
 | 2 | `5ccb8c9` | STOP | GIS `Telegram - Send handoff file` missing binary | `D-0025-W_WF40_GIS_TELEGRAM_FILE_NONBLOCKING` |
 | 3 | `7d19504` | STOP | WF61 `Can't use .first() here` (per-item `$input.first()`) | `D-0025-W_WF61_TEMPLATE_CODE_NODE_ITEM_ACCESS_FIX` |
-| 4 (retry 3) | `fdbbd48` | **STOP** | WF61 `A 'json' property isn't an object` — see below | **pending GPT-Web artifact** |
+| 4 (retry 3) | `fdbbd48` | STOP | WF61 array return in per-item mode | `D-0025-W_WF61_TEMPLATE_ITEM_RETURN_SHAPE_FIX` |
+| 5 (retry 4) | `617f633` | **STOP** | WF61 `FINALIZE_FAILED` after LiteLLM HTTP 200 | **pending GPT-Web / finalize diagnosis** |
 
 ---
 
-## Attempt 4 (RETRY_3)
+## Attempt 5 (RETRY_4)
 
 | Metric | Value |
 |---|---|
 | `final_gate_closed` | **true** |
-| New WF61 executions this pass | **1** (execution `284784`, status `error`, 0.5s; total historical count 2) |
-| LiteLLM requests | **0** (container logs: no `POST /v1/responses` in window) |
-| GLM provider attempts | **0** (never reached HTTP node — attempt not consumed) |
+| New WF61 executions this pass | **1** (execution `284817`; parent-visible cycle result returned; DB row later pruned while status stuck `running`) |
+| LiteLLM requests | **1** (`POST /v1/responses` → **200 OK**) |
+| GLM provider attempts | **1** (consumed) |
 | retry / fallback / qwen / codex / cursor_dispatch | **0** |
-| `credential_mutations` / `network_mutations` | **0** |
+| `credential_mutations` / `network_mutations` / `teamviewer_mutations` | **0** |
 | `secret_exposure` | **false** |
-| GLM expanded budget | **0/10** |
+| GLM expanded budget | **1/10** |
 
 ### Precheck (PASS)
 
-WF40 `07fbfca6-…` active 44 nodes · 4 nonblocking nodes true · WF61 inactive `e231817d-…` 13 nodes five jsCode fixed `$input.first()`=0 · hist exec 1 · gate CLOSED · LiteLLM 200 no inference · backlog YAML intact `D-0025-W-GLM-LIVE-001`.
+- `origin/main` `706ac21` → trigger commit `617f633`
+- WF40 `07fbfca6-…` active · 44 nodes
+- WF61 inactive `ab504cd5-…` · 13 nodes · `$input.first()`=0 · array-return=0 · hist exec 2
+- Runtime gate CLOSED · LiteLLM models ready · backlog YAML intact · `task_id=D-0025-W-GLM-LIVE-001`
 
 ### Execution
 
-1. Fresh trigger commit `fdbbd487f343fdc1c83fa233c7e1b74864282bc7` (`Retry trigger 3: 2026-08-28 — WF61 item access fixed; execute same task D-0025-W-GLM-LIVE-001.` outside YAML).
-2. Temp GLM gate armed; WF61 temporarily activated; offline adapter **REMOTE_DISPATCH_READY** (`preferred=glm`, `fallback=[]`, `gate_only`, `task_id=D-0025-W-GLM-LIVE-001`).
-3. Pushed; natural poll: WF40 `284783` dispatched WF61.
+1. Temp GLM gate armed (`enabled=true`, `provider_calls_authorized_per_event=1`, `allowed_planners=["glm"]`); WF61 temporarily activated; offline adapter **REMOTE_DISPATCH_READY**.
+2. Fresh trigger commit `617f63391852a1f4dd0122cf025eaf33f544e2ea` (`Retry trigger 4: 2026-08-28 — WF61 per-item return shape fixed; execute same task D-0025-W-GLM-LIVE-001.` outside YAML).
+3. Natural WF40 poll `284816` observed trigger SHA `617f633…`, backlog path detected, adapter live **REMOTE_DISPATCH_READY**, dispatched WF61.
 
 ### STOP finding (precise)
 
-WF61 execution `284784` ran: Execute trigger → `Validate canonical ingress + encode` OK → `Execute Command - canonical prepare` OK → **`Parse prepare result fail-closed` ERROR**:
+WF40 node `Execute Workflow - WF61 primary remote planner` returned:
 
+```json
+{
+  "schema": "n8n-litellm-primary-cycle-result-v1",
+  "ok": false,
+  "classification": "FINALIZE_FAILED",
+  "task_id": "D-0025-W-GLM-LIVE-001",
+  "http_status": 200,
+  "reason": "canonical finalize failed",
+  "cursor_dispatch_allowed": false
+}
 ```
-A 'json' property isn't an object [item 0]
-```
 
-Root cause: the GPT-Web corrected `jsCode` (from `d0025-w-wf61-code-node-item-access-fix.gpt-web.json`) keeps `mode: "runOnceForEachItem"` but **returns an array**: `return [{json:{…}}]`. In per-item mode n8n expects the return value to be a **single item object** `{json:{…}}`; an array has no `json` property → n8n rejects it. The same pattern (`return [{json:…}]`) exists in all five fixed nodes, so the same failure would recur at each.
+Interpretation:
 
-Failure again occurred **before** `HTTP Request - LiteLLM primary one-shot`: LiteLLM container logs confirm zero `/v1/responses` calls; the single authorized provider attempt remains **unconsumed**; GLM budget stays 0/10.
+- Ingress + prepare + LiteLLM HTTP one-shot succeeded (`http_status=200`; container log: one `POST /v1/responses` 200).
+- Canonical finalize stage did **not** PASS → classification `FINALIZE_FAILED`.
+- No structurally valid Execution Packet was produced.
+- WF61 execution entity `284817` remained `running` in SQLite for ~14 minutes after the parent already received the cycle result, then disappeared from `execution_entity` (no retained rundata for deeper finalize stdout). Parent evidence above is authoritative for the cycle outcome.
 
-Runtime restored at first terminal result: gate CLOSED · WF61 inactive.
+Runtime restored at first terminal observation: gate CLOSED · WF61 inactive. No retry / no second trigger / no additional provider call.
 
 ---
 
 ## NEXT_GATE
 
-GPT-Web bounded WF61 template artifact v2: in the five `runOnceForEachItem` Code nodes change `return [{json:{…}}]` to `return {json:{…}}` (single item object), keeping everything else identical. Then re-apply to source template + live WF61 (inactive) and run one more bounded GLM window with a fresh trigger. Parent lane and prepare stage are now proven; only the Code-node return shape remains.
+Diagnose/fix the WF61 canonical finalize path for a single GLM `/v1/responses` 200 body (response gate / schema / packet policy / finalize CLI), then one bounded resume of the same live cycle. Do **not** open another smoke/proof task.
 
 ---
 
 ## Output line
 
-`STOP — WF61 Parse prepare result fail-closed rejects array return in runOnceForEachItem mode (A 'json' property isn't an object; GPT-Web jsCode returns [{json:…}] where per-item requires {json:…}); GATE_CLOSED=true; WF61_NEW_EXECUTIONS=1; PROVIDER_CALLS=0`
+`STOP — WF61 FINALIZE_FAILED after LiteLLM/GLM HTTP 200 (canonical finalize failed; no Execution Packet); GATE_CLOSED=true; WF61_NEW_EXECUTIONS=1; LITELLM_REQUESTS=1; PROVIDER_CALLS=1`
