@@ -9,7 +9,7 @@ task_ref: D-0025-W_PHASE_A
 result_cursor: PASS_D0025_PHASE_A_FOUNDATION_SYNC_PRIMARY_CONFIG_N8N_MAP
 reported_via: cursor_direct_persistence
 independent_verification: cursor_repo_only_phase_a_work_pc
-report_persistence_commit: pending
+report_persistence_commit: 9002b363215aa8df9d86cb256fb0da8e9ea06024
 classification: D0025_PHASE_A_REPO_SYNC_COMPLETE
 
 repo_head_observed_at_task: 7fe8b58ec32a40afedc7e3c1eb1f2250a31cc0c2
