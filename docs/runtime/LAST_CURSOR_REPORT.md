@@ -5,58 +5,68 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_WF61_STRUCTURAL_VERIFY_AND_INACTIVE_IMPORT
-result_cursor: PASS_D0025_WF61_IMPORTED_INACTIVE_STRUCTURAL_READY
+task_ref: D-0025-W_WF40_PARENT_WIRING_EXACT_READONLY_PREFLIGHT
+result_cursor: PASS_D0025_WF40_PARENT_WIRING_AUTHORING_INPUT_READY
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_n8n_import
-report_persistence_commit: 880a8449510df126590f47ba5ae72b94d8d3efef
-classification: WF61_IMPORTED_INACTIVE_STRUCTURAL_READY
+independent_verification: cursor_vps_wf40_export_readonly
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: WF40_PARENT_WIRING_EXACT_AUTHORING_INPUT_READY
 
-repo_head_observed_at_task: 1a4fa636f7a7c98e77524dbd1931b78ebf5e879c
+repo_head_observed_at_task: d9eb71b924bfa9b5ebdd873c93269a2bc7ab6f4d
 workspace_at_start: clean
-operator_gate_ref: github:issue/31#5453475230
+operator_gate_ref: github:issue/31#5453568468
 issue_31_state: OPEN
 
-V1_MODELS:
-  endpoint: /v1/models
-  provider_calls: 0
-  inference: 0
-  aliases_present: [planner-glm-pilot, planner-codex-pilot]
+WF40_LIVE:
+  id: 9ZMj2ACTKyDVhCue
+  active: true
+  versionId: 86ed5569-ce2b-49bb-9f3b-30f4e7fa918b
+  updatedAt: 2026-08-27T07:49:35.000Z
+  node_count: 35
 
-WF61_IMPORT:
-  artifact_blob: 528f40f2111850383953991b2f822ef2816ad621
-  vps_checkout_synced: 1a4fa636f7a7c98e77524dbd1931b78ebf5e879c
+V1_MODELS: not_called_this_pass
+litellm_readiness: 200_healthy
+
+SEAM_NODES:
+  plan_stub: 429cde10-b360-4396-9f57-ffeac563d2fe
+  github_fetch: 52e94e9c-986f-4f93-bac3-2c20ec4a60a1
+  detect_plans: cf34f974-d471-4983-814c-a942ce2f27bb
+  if_plan_detected: 528577ea-6424-4779-8d07-51f8502dc084
+  pm21_classifier: 666f9ed5-5236-42d1-b4ef-afe59e9d2a8a
+  pm21_bridge: 5ee80b07-4260-40df-9c25-251a7e212de6
+
+INSERTION_EDGE:
+  after_node: Code - PM21 bridge result
+  after_node_id: 5ee80b07-4260-40df-9c25-251a7e212de6
+  current_downstream: Code - PM21 format Telegram bridge summary
+
+CANONICAL_INPUTS_BUILDABLE: false
+GPT_WEB_AUTHORING_REQUIRED: true
+
+CONSUMER_DIRECT_EXISTING: [source_backlog_ref, source_backlog_commit, repository, risk_hint]
+CONSUMER_MUST_NOT_INFER: [planner_requested]
+ROUTING_MUST_NOT_INFER: [preferred]
+ROUTING_DETERMINISTIC_DERIVABLE: [schema, fallback, fallback_policy]
+
+WF61_EXECUTE_FEASIBLE:
   workflow_id: d0025-6100-4001-8001-000000000061
-  name: 61 - LiteLLM primary remote planner cycle - GPT-Web authored - INACTIVE
-  active: false
-  import_mechanism: n8n import:workflow (staged id metadata only)
-  mounted_artifact_modified: false
-  semantic_equivalence: PASS
-  http_credentialless: true
-  http_url: http://litellm-primary:4000/v1/responses
-  executed: false
+  passthrough_compatible: true
 
-LITELLM_PRESERVED:
-  container_id: edbb03981626234b1f75bd91dd5cf205fca9922a1cbe1d38a2d07f0b8163f635
-  wiring_unchanged: true
-
-N8N_PRESERVATION:
-  n8n_id_unchanged: true
-  wf40_ok: true
-  wf60_ok: true
+PRESERVATION:
+  wf40_unchanged: true
+  wf60_unchanged: true
+  wf61_unchanged: true
+  wf61_executions: 0
 
 BUDGET_THIS_PASS:
-  runtime_mutations: 1
+  workflow_mutations: 0
   provider_calls: 0
   inference: 0
-  credential_mutations: 0
-  teamviewer_mutations: 0
+  wf61_executions: 0
 
 SECRET_VALUE_DISPLAYED: false
-SECRET_VALUE_LOGGED: false
-SECRET_VALUE_PERSISTED: false
 
-NEXT_GATE: D-0025-W_WF40_PARENT_WIRING
+NEXT_GATE: GPT_WEB_WF40_PARENT_WIRING_EXACT_PATCH_AUTHORING
 
-REPORT: reports/architecture/d0025_wf61_structural_verify_and_inactive_import.md
+REPORT: reports/architecture/d0025_wf40_parent_wiring_exact_readonly_preflight.md
 ```
