@@ -1,0 +1,54 @@
+{
+  "schema": "control-plane-gpt-web-n8n-delta-v1",
+  "task_ref": "D-0025-W_WF40_WF60_PARALLEL_NONBLOCKING_FOR_BACKLOG_LANE",
+  "authority": "GPT_WEB",
+  "purpose": "Make the preserved inactive WF60 execute node non-blocking so sibling WF40 branches can continue under executionOrder v1.",
+  "target_workflow": {
+    "live_id": "9ZMj2ACTKyDVhCue",
+    "expected_name": "40 - CP v4 multirepo + classifier bridge - ACTIVE",
+    "expected_active": true,
+    "expected_version_id_before_patch": "48c30f4a-124c-48a4-b240-c2f6eca4743e",
+    "expected_node_count": 44
+  },
+  "target_node": {
+    "id": "d0015f40-0060-4001-8001-000000000060",
+    "name": "Execute Workflow - Resolve OpenClaw broker (WF60)",
+    "type": "n8n-nodes-base.executeWorkflow",
+    "expected_workflow_id": "d0015600-4001-8001-0001-0653506aabcd"
+  },
+  "operations": [
+    {
+      "op": "set_node_top_level_property",
+      "node_id": "d0015f40-0060-4001-8001-000000000060",
+      "property": "continueOnFail",
+      "value": true
+    }
+  ],
+  "preserve": [
+    "All node ids, names, types, positions and parameters",
+    "All workflow connections",
+    "WF40 active state",
+    "WF40 node count 44",
+    "WF60 inactive state and workflow content",
+    "WF61 inactive state and workflow content",
+    "Runtime gate closed",
+    "LiteLLM and OpenClaw runtime state"
+  ],
+  "forbidden": [
+    "Any additional WF40 graph change",
+    "WF60 activation",
+    "WF61 activation",
+    "Runtime gate enablement",
+    "Provider/model calls",
+    "Credential changes",
+    "Network, Tailscale or TeamViewer changes"
+  ],
+  "validation": {
+    "manual_workflow_execution": false,
+    "use_natural_wf40_poll": true,
+    "require_backlog_lane_siblings_not_aborted_by_wf60_inactive_error": true,
+    "provider_calls": 0,
+    "inference": 0
+  },
+  "rollback": "Restore the exact pre-patch WF40 export if any non-equivalent drift is detected."
+}
