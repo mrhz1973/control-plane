@@ -1,0 +1,78 @@
+{
+  "schema": "control-plane-gpt-web-n8n-delta-v1",
+  "task_ref": "D-0025-W",
+  "authority": "GPT_WEB",
+  "purpose": "Make the existing GIS handoff Execute Command node non-blocking so its hard failure cannot abort lower WF40 siblings under executionOrder v1. This change does not alter routing, node order, connections, planner/provider runtime, or any child workflow state.",
+  "target_workflow": {
+    "live_id": "9ZMj2ACTKyDVhCue",
+    "expected_name": "40 - CP v4 multirepo + classifier bridge - ACTIVE",
+    "expected_active": true,
+    "expected_version_id_before_patch": "b05501c1-8df7-4853-9674-2e35ca393a07",
+    "expected_node_count": 44
+  },
+  "preconditions": {
+    "target_node": {
+      "id": "f40c332a-ac76-4f1a-861e-ae5581d327ab",
+      "name": "Execute Command - handoff dry-run",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [-480, 80]
+    },
+    "continueOnFail_must_not_be_true": true,
+    "wf60_must_remain_inactive": true,
+    "wf61_must_remain_inactive": true,
+    "runtime_gate_must_be_closed": true
+  },
+  "operations": [
+    {
+      "op": "set_node_top_level_property",
+      "node_id": "f40c332a-ac76-4f1a-861e-ae5581d327ab",
+      "property": "continueOnFail",
+      "value": true
+    }
+  ],
+  "preserve": [
+    "All 44 WF40 node ids/names/types/positions/parameters except the single top-level continueOnFail property on the target node",
+    "All WF40 connections and executionOrder",
+    "WF40 active state",
+    "WF60 inactive and unchanged",
+    "WF61 inactive and unchanged",
+    "Runtime gate CLOSED",
+    "LiteLLM unchanged",
+    "OpenClaw unchanged",
+    "Credentials unchanged",
+    "Network/Tailscale/TeamViewer unchanged"
+  ],
+  "forbidden": [
+    "Any node addition/removal/reposition",
+    "Any connection change",
+    "Any workflow redesign",
+    "WF60 activation",
+    "WF61 activation or execution",
+    "Runtime gate enablement",
+    "Provider/model request",
+    "Credential mutation",
+    "OpenClaw or LiteLLM mutation",
+    "Network/Tailscale/TeamViewer mutation"
+  ],
+  "verification": {
+    "required": [
+      "Re-export live WF40 after apply",
+      "Confirm node count remains 44",
+      "Confirm target node exists exactly once and continueOnFail=true",
+      "Confirm graph equivalence excluding that single property",
+      "Confirm WF40 remains active",
+      "Confirm WF60 and WF61 remain inactive",
+      "Confirm runtime gate remains CLOSED",
+      "Confirm provider/model request count is 0"
+    ],
+    "manual_workflow_execution_for_validation": false,
+    "separate_smoke_test": false
+  },
+  "stop_conditions": [
+    "WF40 live id/name/version/node-count precondition mismatch",
+    "Target node id/name/type/position mismatch",
+    "Target node already has non-equivalent configuration",
+    "Any unrelated graph mutation would be required",
+    "Runtime gate is not CLOSED"
+  ]
+}
