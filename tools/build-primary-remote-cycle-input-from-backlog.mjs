@@ -235,8 +235,9 @@ export function parseBoundedBacklogYaml(text) {
       continue;
     }
 
-    if (valRaw.trim() === ">" || valRaw.trim() === "|") {
-      const folded = valRaw.trim() === ">";
+    const blockMarker = valRaw.trim();
+    if (/^>([-+])?$/.test(blockMarker) || /^\|([-+])?$/.test(blockMarker)) {
+      const folded = blockMarker.startsWith(">");
       const collected = [];
       while (i < lines.length) {
         const n = lines[i];
