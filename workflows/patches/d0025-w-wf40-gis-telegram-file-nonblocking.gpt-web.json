@@ -1,0 +1,56 @@
+{
+  "schema": "control-plane-gpt-web-n8n-delta-v1",
+  "task_ref": "D-0025-W_WF40_GIS_TELEGRAM_FILE_NONBLOCKING",
+  "authority": "GPT_WEB",
+  "purpose": "Make the terminal GIS handoff Telegram document-send node non-blocking so its missing-binary failure cannot abort lower WF40 siblings under executionOrder v1.",
+  "target_workflow": {
+    "live_id": "9ZMj2ACTKyDVhCue",
+    "expected_name": "40 - CP v4 multirepo + classifier bridge - ACTIVE",
+    "expected_active": true,
+    "expected_version_id_before_patch": "b198b317-f004-465d-82ed-3fbb3d79f9f6",
+    "expected_node_count": 44
+  },
+  "target_node": {
+    "id": "18078c6b-1181-42da-9f05-32138f45f0ab",
+    "name": "Telegram - Send handoff file",
+    "type": "n8n-nodes-base.telegram",
+    "expected_position": [240, 144]
+  },
+  "operations": [
+    {
+      "op": "set_node_top_level_property",
+      "node_id": "18078c6b-1181-42da-9f05-32138f45f0ab",
+      "property": "continueOnFail",
+      "value": true
+    }
+  ],
+  "preserve": [
+    "All WF40 node ids, names, types, positions and parameters except the single target top-level property",
+    "All workflow connections and executionOrder",
+    "WF40 active state and node count 44",
+    "Existing WF60, GIS handoff and GIS Read/Write continueOnFail=true settings",
+    "WF60 inactive state and content",
+    "WF61 inactive state and content",
+    "Runtime gate closed",
+    "LiteLLM and OpenClaw runtime state",
+    "Credentials and network/Tailscale/TeamViewer state"
+  ],
+  "forbidden": [
+    "Any additional WF40 graph or parameter change",
+    "WF60 activation or mutation",
+    "WF61 activation or mutation",
+    "Runtime gate enablement",
+    "Provider/model calls or inference",
+    "Credential changes",
+    "Network, Tailscale or TeamViewer changes",
+    "Any separate smoke/proof cycle"
+  ],
+  "validation": {
+    "manual_workflow_execution": false,
+    "require_target_continue_on_fail_true": true,
+    "require_graph_equivalence_excluding_single_property": true,
+    "provider_calls": 0,
+    "inference": 0
+  },
+  "rollback": "Restore the exact pre-patch WF40 export if any non-equivalent drift is detected."
+}
