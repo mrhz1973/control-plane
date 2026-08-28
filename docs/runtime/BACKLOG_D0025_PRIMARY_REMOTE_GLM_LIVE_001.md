@@ -78,3 +78,5 @@ Retry trigger 3: 2026-08-28 — WF61 item access fixed; execute same task D-0025
 Retry trigger 4: 2026-08-28 — WF61 per-item return shape fixed; execute same task D-0025-W-GLM-LIVE-001.
 
 Retry trigger 5: 2026-08-29 — WF61 finalize failure observability fix applied; execute same task D-0025-W-GLM-LIVE-001.
+
+Retry trigger 6: 2026-08-29 — private LiteLLM transport diagnosed healthy; execute same task D-0025-W-GLM-LIVE-001.
