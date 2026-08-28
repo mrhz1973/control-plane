@@ -5,43 +5,36 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_WF61_HTTP_STATUS0_DIAGNOSE_AND_CONDITIONAL_RESUME
-result_cursor: STOP_D0025_RETRY6_SSE_NO_COMPLETED_RESPONSE
+task_ref: D-0025-W_SSE_OUTPUT_ITEM_DONE_NORMALIZATION_FIX_AND_RESUME
+result_cursor: STOP_D0025_RETRY7_LITELLM_HTTP_429_ZAI_5H_USAGE_LIMIT
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_transport_diagnostics_plus_wf40_rundata_plus_litellm_logs
-report_persistence_commit: 14cf9bc3ee057d710db8a3ad55748e033838223f
-classification: TRANSPORT_HEALTHY_NONPERSISTENT_TIMEOUT_THEN_SSE_NORMALIZATION_BLOCKED
+independent_verification: cursor_vps_offline_suite_18_18_plus_wf40_rundata_plus_litellm_logs
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: PHASE_A_SSE_NORMALIZER_PASS_PHASE_B_ZAI_RATE_LIMIT
 
-repo_head_at_start: 0ce82f8afd535ef7b96472ac8d30a1cf119dccde
-standing_auth_ref: docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md
-auto_via_release: github:issue/31#issuecomment-5458375723
-
-transport_diagnosis:
-  n8n_execution_context_dns: litellm-primary -> 172.18.0.3 OK
-  tcp_4000_from_n8n: connected
-  readiness_from_n8n: 200 healthy
-  docker_network_membership: both root_default (172.18.0.2 / 172.18.0.3)
-  litellm_container: running, restarts=0, unchanged since 14:01Z
-  wf61_http_node_template_equivalence: true
-  retry5_transport_error_recoverable: none retained (child rundata pruned); parent node executionTime=120632ms ~= canonical 120s timeout; zero proxy hits => nonpersistent upstream-latency client timeout (CASE 1)
-  workflow_template_equivalence: PASS (HTTP node identical; no mutation required)
-
+repo_head_at_start: 8c35ff7ad01398bb36072ac419dc0de28836c172
+authoritative_artifact: docs/runtime/PATCH_D0025_W_SSE_OUTPUT_ITEM_DONE_NORMALIZATION.gpt-web.json
+normalizer_commit: a8b051f664c7f6ecc37c1cd468796c4a65dcdf38
+targeted_tests: PASS (finalize-sse-output-item-done-without-completed-pass, finalize-sse-no-completed-no-output-fail-closed)
+offline_suite: PASS 18/18
+phase_a_provider_calls: 0
 phase_b_entered: true
-trigger_commit_sha: 48c7c7c8b7a932ec53509a8cd77f715cdf5d2800
-WF40_execution_id: 284952
-WF61_execution_id: 284953
-wf61_new_execution_count_this_pass: 1
+standing_auth_ref: docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md
+auto_via_release: github:issue/31#issuecomment-5458616370
+
+trigger_commit_sha: 9b40ff25ca97d09bca393c9294095c272e6330c4
+WF40_execution_id: 285015
+WF61_execution_id: 285016
 litellm_request_delta: 1
 provider_attempt_delta: 1
-http_status: 200
-selected_planner: glm
-adapter_classification: REMOTE_DISPATCH_READY
-
-terminal_classification: SSE_NO_COMPLETED_RESPONSE
-terminal_reason_sanitized: No response.completed terminal event found
-response_gate_result: FAIL_AT_SSE_NORMALIZATION
-schema_gate_result: NOT_REACHED
-packet_policy_result: NOT_REACHED
+http_status: 429
+response_source_format: NOT_REACHED
+normalization_classification: NOT_REACHED
+terminal_classification: LITELLM_HTTP_FAILURE
+terminal_reason_sanitized: Single LiteLLM HTTP attempt did not return 2xx; retry is forbidden (ZAI 5-hour usage limit; reset 2026-08-29 09:12:41)
+response_gate: NOT_REACHED
+schema_gate: NOT_REACHED
+packet_policy: NOT_REACHED
 packet_path: null
 
 runtime_gate_before: {enabled: false, provider_calls_authorized_per_event: 0}
@@ -62,11 +55,11 @@ credential_mutations: 0
 network_mutations: 0
 teamviewer_mutations: 0
 secret_exposure: false
-glm_budget: 2/10
-litellm_total_v1_responses: 2
+glm_budget: 3/10
+litellm_total_v1_responses: 3
 
-NEXT_GATE: GPT-Web bounded SSE normalization artifact (handle GLM /v1/responses streams closing without response.completed); then one bounded resume of D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001
+NEXT_GATE: after ZAI 5-hour usage window reset 2026-08-29 09:12:41, one bounded resume of D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001 (SSE normalizer already applied)
 
-DIAGNOSIS_REPORT: reports/architecture/d0025_wf61_http_status0_diagnosis.md
+APPLY_REPORT: reports/architecture/d0025_sse_output_item_done_normalization_fix.md
 REPORT: reports/architecture/d0025_primary_remote_glm_live_001.md
 ```

@@ -1,11 +1,11 @@
 # D-0025-W — primary remote GLM live planning cycle (001)
 
 **Repository:** `mrhz1973/control-plane`  
-**Task:** `D-0025-W_WF61_HTTP_STATUS0_DIAGNOSE_AND_CONDITIONAL_RESUME`  
+**Task:** `D-0025-W_SSE_OUTPUT_ITEM_DONE_NORMALIZATION_FIX_AND_RESUME`  
 **Date:** 2026-08-28 / 2026-08-29  
-**Release evidence:** issue #31 comment `5458229605` · `5458375723` · standing authorization  
+**Release evidence:** issue #31 comment `5458616370` · standing authorization  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **STOP (retry 6)** — diagnosis CASE 1 (transport healthy) · Phase B terminal `SSE_NO_COMPLETED_RESPONSE` after HTTP 200 · gate CLOSED
+**Status:** **STOP (retry 7)** — Phase A SSE normalization **PASS** (18/18 offline) · Phase B `LITELLM_HTTP_FAILURE` HTTP **429** (ZAI 5-hour usage limit) · gate CLOSED
 
 ---
 
@@ -19,7 +19,8 @@
 | 4 (retry 3) | `fdbbd48` | STOP | array return in per-item | return-shape fix |
 | 5 (retry 4) | `617f633` | STOP | `FINALIZE_FAILED` after HTTP 200 | finalize observability fix (Phase A) |
 | 6 (retry 5) | `c06b8be` | STOP | `LITELLM_HTTP_FAILURE` http_status=0 · LiteLLM delta 0 | **status-0 diagnosis: nonpersistent upstream-latency client timeout** |
-| 7 (retry 6) | `48c7c7c` | **STOP** | `SSE_NO_COMPLETED_RESPONSE` — "No response.completed terminal event found" (HTTP 200) | **pending GPT-Web: SSE response normalization/terminal-event handling** |
+| 7 (retry 6) | `48c7c7c` | STOP | `SSE_NO_COMPLETED_RESPONSE` (HTTP 200) | SSE `output_item.done` reconstruction (Phase A this pass) |
+| 8 (retry 7) | `9b40ff2` | **STOP** | `LITELLM_HTTP_FAILURE` HTTP 429 · ZAI 5-hour usage limit (reset 2026-08-29 09:12:41) | **quota wait / no workflow mutation** |
 
 ---
 
@@ -104,12 +105,34 @@ Classification emitted by the canonical finalize runner (observability fix worki
 
 ---
 
+## Attempt 8 (RETRY_7 — after SSE output_item.done normalization)
+
+Phase A applied `docs/runtime/PATCH_D0025_W_SSE_OUTPUT_ITEM_DONE_NORMALIZATION.gpt-web.json`. Offline suite **18/18 PASS** (including both targeted SSE cases). Code commit `a8b051f`.
+
+| Metric | Value |
+|---|---|
+| Trigger | `9b40ff25ca97d09bca393c9294095c272e6330c4` |
+| WF40 / WF61 | `285015` / `285016` |
+| Adapter | **REMOTE_DISPATCH_READY** |
+| LiteLLM request delta | **1** (total **3**; `POST /v1/responses` **429**) |
+| GLM provider-attempt delta | **1** (LiteLLM forwarded `planner-glm-pilot`; ZAI returned usage-limit) |
+| HTTP status | **429** |
+| Terminal classification | **`LITELLM_HTTP_FAILURE`** |
+| Sanitized reason | Single LiteLLM HTTP attempt did not return 2xx; retry is forbidden. ZAI 5-hour usage limit; reset **2026-08-29 09:12:41**. |
+| SSE normalization / response gate / schema / policy | **NOT_REACHED** |
+| Gate / WF61 final | **CLOSED** / **inactive** |
+| GLM budget | **3/10** |
+
+The SSE reconstruction was **not exercised live** because the one-shot HTTP node did not return 2xx.
+
+---
+
 ## NEXT_GATE
 
-Smallest deterministic correction implied by `SSE_NO_COMPLETED_RESPONSE`: canonical runner normalization for GLM `/v1/responses` SSE streams that close without a `response.completed` terminal event (LiteLLM/GLM may terminate streams after `response.done`/final delta only). GPT-Web authoring of the bounded runner/response-normalization artifact is the next step; no smoke/proof detour.
+ZAI 5-hour usage window reset **2026-08-29 09:12:41**. After that instant, one bounded resume of the same task `D-0025-W-GLM-LIVE-001` (SSE normalizer already applied). No workflow mutation. No smoke/proof detour.
 
 ---
 
 ## Output line
 
-`STOP — SSE_NO_COMPLETED_RESPONSE: No response.completed terminal event found; GATE_CLOSED=true; PHASE_B_ENTERED=true; PROVIDER_CALLS_DELTA=1`
+`STOP — LITELLM_HTTP_FAILURE: Single LiteLLM HTTP attempt did not return 2xx (HTTP 429; ZAI 5-hour usage limit, reset 2026-08-29 09:12:41); PHASE_B_ENTERED=true; GATE_CLOSED=true; PROVIDER_CALLS_DELTA=1`
