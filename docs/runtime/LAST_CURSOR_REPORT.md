@@ -5,78 +5,71 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0024-W_CODEX_COMPAT_OFFLINE_RECOVERY
-result_cursor: PASS_D0024_CODEX_OFFLINE_COMPAT_RECOVERY_SSE_NORMALIZATION_PASS_HARD_CONSTRAINT_ENFORCEMENT_PASS
+task_ref: D-0024-W_CODEX_RUNTIME_VERIFY
+result_cursor: PASS_D0024_CODEX_RUNTIME_VERIFY_HTTP200_SSE_NORMALIZER_PASS_STRUCTURAL_HARD_CONSTRAINTS_EXACT
 reported_via: cursor_direct_persistence
-independent_verification: cursor_offline_work_pc
-report_persistence_commit: 4fe8ab51167727b582bbd142793bf08201ae3484
-classification: D0024_CODEX_OFFLINE_COMPAT_RECOVERY_COMPLETE
+independent_verification: cursor_runtime_verify_work_pc
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: D0024_CODEX_RUNTIME_VERIFY_SSE_NORMALIZED_HARD_CONSTRAINTS_EXACT
 
-repo_head_observed_at_task: 41275327a61cb8bc5e6bdaa670ec1715434486a9
+repo_head_observed_at_task: eb6048f0b83b9e72f01f6ecd7953903eb62edf1c
 workspace_at_start: clean
 operator_gate_ref: github:issue/30
 issue_30_state: OPEN
 
-SSE_ROOT_CAUSE:
-  classification: LITELLM_CHATGPT_FORCES_STREAM_TRUE_PROXY_FORWARDS_SSE
-  detail: |
-    LiteLLM 1.98.0 ChatGPT Responses adapter sets request.stream=true regardless of
-    client stream=false (litellm/llms/chatgpt/responses/transformation.py). ChatGPT
-    provider returns text/event-stream SSE. LiteLLM has provider-side SSE aggregation
-    helpers but the loopback proxy returned raw SSE to the non-streaming client/runner.
-  litellm_source_paths:
-    - litellm/llms/chatgpt/responses/transformation.py
-    - litellm/responses/sse_output_recovery.py
-  client_runner_fault: false
+PRECHECK:
+  request_shape_regression: PASS (4/4)
+  codex_compat_offline: PASS (13/13)
+  teamviewer_network_mutations: 0
 
-CAPTURED_ARTIFACT:
-  sse_fixture: tests/llm-gateway-request-shape/fixtures/response-codex-repilot-sse.sse
-  packet_fixture: tests/llm-gateway-request-shape/fixtures/packet-codex-repilot-hard-constraint-mismatch.json
-  source: D-0024 runtime re-pilot sanitized local artifact (no network recreation)
+LITELLM:
+  temporary_process_started_by_cursor: true
+  temporary_process_pid: 21752
+  temporary_process_stopped_by_cursor: true
+  bind: 127.0.0.1:4000
+  config: "%LOCALAPPDATA%\\Temp\\d0024-codex-verify\\litellm-codex-only.yaml"
+  aliases: [planner-codex-pilot]
+  litellm_version: "1.98.0"
+  CHATGPT_TOKEN_DIR_set: true
+  token_read: false
 
-NORMALIZER:
-  path: tools/normalize-litellm-responses-body.mjs
-  integration:
-    - tools/validate-openclaw-planner-response-gate.mjs
-    - tests/llm-gateway-request-shape/runtime-repilot-once.mjs
-  behavior: JSON pass-through; SSE parsed by data lines; fail-closed on malformed/duplicate terminal events
-
-HARD_CONSTRAINTS:
-  expected_count: 2
-  actual_count: 6
-  delta_added_non_secret:
-    - Operate entirely offline.
-    - Do not modify files outside the allowed paths.
-    - Do not weaken existing execution-packet or planner-response validation to make fixtures pass.
-    - Do not self-authorize runtime execution.
-  gate_enforcement: FAIL_CLOSED exact equality preserved via checkHardConstraintsExact
-  silent_rewrite: false
-
-STRICT_PLANNER_CONTRACT:
-  updated:
-    - tools/build-openclaw-responses-request.mjs (PLANNER_INSTRUCTIONS)
-    - docs/contracts/openclaw-execution-packet-consumer-v1.md
-  rule: hard_constraints MUST equal consumer_input.hard_constraints exactly (length/order/strings)
-
-TESTS:
-  suite: tests/llm-gateway-request-shape/codex-compat-run.mjs
-  result: PASS (13/13)
-  json_normalization: PASS
-  captured_sse_normalization: PASS
-  malformed_sse_fail_closed: PASS
-  duplicate_terminal_fail_closed: PASS
-  hard_constraint_regressions: PASS
-  shape_regression_suite: PASS (4/4)
+CODEX:
+  alias: planner-codex-pilot
+  backend_model: chatgpt/gpt-5.6-sol
+  endpoint: POST http://127.0.0.1:4000/v1/responses
+  stream: false
+  codex_attempt_count_this_pass: 1
+  glm_attempt_count_this_pass: 0
+  qwen_attempt_count_this_pass: 0
+  http_status: 200
+  elapsed_ms: 38434
+  body_source_format: sse
+  normalizer_ok: true
+  normalizer_classification: PASS
+  response_object_status: completed
+  function_call_count: 1
+  function_call_name: emit_execution_packet
+  hard_constraints_expected_count: 2
+  hard_constraints_actual_count: 2
+  hard_constraints_exact_match: true
+  planner_requested: codex
+  planner_used: codex
+  fallback_used: false
+  response_gate: PASS_STRUCTURAL
+  response_gate_note: full evaluate returned PACKET_SCHEMA_INVALID due HOST_TOOLING_AJV_UNAVAILABLE; structural invariants and exact hard_constraints PASS
+  packet_schema: SCHEMA_VALIDATION_HOST_TOOLING_UNAVAILABLE
+  policy: BLOCKED
+  policy_note: canonical policy tool blocked on schema engine unavailable; packet gate_recommendation.required=true would classify GATE structurally
 
 BUDGET:
-  historical_original_pilot_attempts: 2
-  runtime_repilot_attempts: 2
-  provider_calls_this_pass: 0
-  inference_this_pass: 0
-  qwen_inference: 0
-  oauth_restarted: false
-  token_read: false
-  network_access: false
+  codex_budget_used: 1
+  codex_budget_remaining: 9
+  codex_budget_max: 10
+  glm_budget_used_this_pass: 0
+  qwen_budget_used_this_pass: 0
+  retry: 0
+  planner_fallback: 0
+  gateway_fallback: 0
 
 SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
