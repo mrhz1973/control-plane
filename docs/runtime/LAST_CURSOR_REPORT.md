@@ -9,7 +9,7 @@ task_ref: D-0025-W_CONTROL_PLANE_MOUNT_APPLY
 result_cursor: PASS_D0025_CONTROL_PLANE_MOUNT_APPLY
 reported_via: cursor_direct_persistence
 independent_verification: cursor_vps_compose_mount_apply_ionos_n8n
-report_persistence_commit: pending
+report_persistence_commit: 7a8395cdd9242aa67c79ad50c207512f5f26fd73
 classification: CONTROL_PLANE_MOUNT_RO_LIVE
 
 repo_head_observed_at_task: c717c6a031662942cd51e3e864711e7d5f4dc868
