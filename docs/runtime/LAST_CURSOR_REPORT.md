@@ -5,92 +5,86 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0024-W_REQUEST_SHAPE_RECOVERY
-result_cursor: PASS_D0024_REQUEST_SHAPE_RECOVERY_OFFLINE_GLM_TRANSFORM_PASS_CODEX_TRANSFORM_PASS
+task_ref: D-0024-W_RUNTIME_REPILOT
+result_cursor: PASS_D0024_RUNTIME_REPILOT_COMPLETE_GLM_PASS_STRUCTURAL_CODEX_SSE_HARD_CONSTRAINT_MISMATCH
 reported_via: cursor_direct_persistence
-independent_verification: cursor_offline_work_pc
-report_persistence_commit: b0c29d3d515310678fcc8e16cc926b61f02d32bc
-classification: D0024_REQUEST_SHAPE_RECOVERY_OFFLINE_COMPLETE
+independent_verification: cursor_runtime_repilot_work_pc
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: D0024_RUNTIME_REPILOT_COMPLETE_REQUEST_SHAPE_FIX_VERIFIED
 
-repo_head_observed_at_task: 2ea22af6d4b82f7219f86b87528e1264ac793571
+repo_head_observed_at_task: fe2598fb1d4e8dad1f057a964fe678d72e84ac0d
 workspace_at_start: clean
 operator_gate_ref: github:issue/30
 issue_30_state: OPEN
 
-ROOT_CAUSE:
-  root_cause_confirmed: true
-  old_input_shape: "body.input = consumer_input object (raw JSON object)"
-  new_input_shape: |
-    input: [
-      {
-        role: "user",
-        content: [{ type: "input_text", text: JSON.stringify(consumerInput) }]
-      }
-    ]
-  pilot_evidence:
-    glm: PROVIDER_BAD_REQUEST_ZAI_MESSAGES_PARAMETER_ILLEGAL
-    codex: PROVIDER_BAD_REQUEST_CHATGPT_INPUT_MUST_BE_LIST
+PRECHECK:
+  request_shape_regression: PASS (4/4)
+  adapter_input_shape: list user item with input_text JSON.stringify(consumerInput)
 
-LITELLM_SOURCE_INSPECTION:
-  litellm_version: "1.98.0"
-  venv_path_sanitized: "%LOCALAPPDATA%\\ControlPlane\\litellm-spike\\venv"
-  litellm_source_paths_inspected:
-    - litellm/responses/litellm_completion_transformation/transformation.py
-    - litellm/llms/openai/responses/transformation.py
-    - litellm/llms/chatgpt/responses/transformation.py
-    - litellm/llms/zai/chat/transformation.py
-  finding: |
-    LiteLLM transform_responses_api_input_to_messages accepts only str|list input.
-    ChatGPT/Codex Responses rejects raw object input ("Input must be a list").
-    ZAI routes via chat-completions bridge; list input with input_text content
-    produces legal user messages instead of empty/illegal messages from raw object.
-
-ADAPTER_FIX:
-  file: tools/build-llm-gateway-request.mjs
-  export: buildResponsesInputFromConsumer
-  preserved:
-    - stream=false
-    - canonical instructions
-    - emit_execution_packet tool + forced tool_choice
-    - model alias binding
-    - no provider override
-    - no credentials in body
-    - consumer_input semantic identity via JSON.parse(input_text)
-
-TRANSFORM_VALIDATION_OFFLINE:
-  codex_transform_validation: PASS
-  zai_transform_validation: PASS
-  method: pure LiteLLM 1.98.0 transformation functions only
-  network_guard: socket.connect monkeypatched to forbid network
-  oauth_restarted: false
-  token_read: false
-  get_access_token_called: false
-
-TESTS:
-  suite: tests/llm-gateway-request-shape/run.mjs
-  result: PASS (4/4)
-  cases:
-    - glm-input-is-list
-    - codex-input-is-list
-    - buildResponsesInputFromConsumer-export
-    - litellm-transform-offline-python
-  portability_suite: tests/llm-gateway-portability/run.mjs
-  portability_note: HOST_TOOLING_AJV_UNAVAILABLE — adapter Ajv-dependent cases not runnable on host; template/matrix checks PASS
-  host_tooling_ajv: HOST_TOOLING_AJV_UNAVAILABLE
+PROXY_READINESS:
+  bind: 127.0.0.1:4000
+  tcp_listen: true
+  health_http_status: 200
+  aliases_present: [planner-glm-pilot, planner-codex-pilot]
+  proxy_started_by_cursor: false
 
 BUDGET:
-  glm_provider_attempts_total: 1
-  codex_provider_attempts_total: 1
-  total_provider_attempts: 2
-  new_provider_attempts_this_pass: 0
-  new_inference_this_pass: 0
-  qwen_inference: 0
+  historical_original_pilot_attempts: 2
+  glm_repilot_attempt_count: 1
+  codex_repilot_attempt_count: 1
+  new_total_provider_attempts: 2
+  qwen_attempt_count: 0
   retry: 0
-  fallback: 0
-  network_access: false
-  proxy_called: false
-  litellm_restarted: false
+  planner_fallback: 0
+  gateway_fallback: 0
 
+GLM:
+  gateway_kind: litellm
+  litellm_version: "1.98.0"
+  alias: planner-glm-pilot
+  backend_model: zai/glm-5.3
+  endpoint_class: zai_coding_paas_v4
+  api_base: https://api.z.ai/api/coding/paas/v4
+  http_status: 200
+  elapsed_ms: 78278
+  response_object_status: completed
+  function_call_count: 1
+  function_call_name: emit_execution_packet
+  response_gate: PASS_STRUCTURAL
+  packet_schema: SCHEMA_VALIDATION_HOST_TOOLING_UNAVAILABLE
+  policy: GATE
+  policy_reason_codes: [PLANNER_RECOMMENDED_GATE]
+  policy_note: canonical Ajv tool returned BLOCKED/PACKET_SCHEMA_INVALID due HOST_TOOLING_AJV_UNAVAILABLE; structural policy GATE from packet.gate_recommendation.required
+  failure_classification: null
+  secret_exposure: false
+
+CODEX:
+  gateway_kind: litellm
+  litellm_version: "1.98.0"
+  alias: planner-codex-pilot
+  backend_model: chatgpt/gpt-5.6-sol
+  endpoint_class: chatgpt_codex_oauth
+  http_status: 200
+  elapsed_ms: 34763
+  response_object_status: completed
+  gateway_body_format: SSE_STREAM_NOT_JSON
+  function_call_count: 1
+  function_call_name: emit_execution_packet
+  response_gate: HARD_CONSTRAINT_MISMATCH
+  response_gate_note: planner packet hard_constraints expanded beyond consumer_input exact equality
+  packet_schema: SCHEMA_VALIDATION_HOST_TOOLING_UNAVAILABLE
+  policy: GATE
+  policy_reason_codes: [PLANNER_RECOMMENDED_GATE]
+  failure_classification: GATEWAY_SSE_BODY_NOT_AGGREGATED_JSON
+  secret_exposure: false
+
+HOST_TOOLING:
+  ajv: HOST_TOOLING_AJV_UNAVAILABLE
+  note: full schema validator and canonical policy tool blocked on host; structural gate/policy applied
+
+PACKET_EXECUTION_BY_CURSOR: false
+oauth_restarted: false
+token_read: false
 SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
 SECRET_VALUE_PERSISTED: false
