@@ -1,0 +1,66 @@
+{
+  "schema": "gpt-web-n8n-bounded-delta-v1",
+  "task_ref": "D-0025-W_WF61_FINALIZE_FAILURE_OBSERVABILITY_FIX",
+  "workflow": {
+    "id": "d0025-6100-4001-8001-000000000061",
+    "name": "61 - LiteLLM primary remote planner cycle - GPT-Web authored - INACTIVE",
+    "must_remain_active": false
+  },
+  "reason": "Retry 4 reached LiteLLM/GLM HTTP 200 but the canonical finalize runner returned nonzero. n8n Execute Command is configured continue-on-error, yet the downstream parser received no parseable runner JSON and collapsed the result to generic FINALIZE_FAILED. Preserve the runner's JSON stdout on nonzero without changing canonical finalize semantics, then resume the same real live cycle once.",
+  "mutations": [
+    {
+      "node_id": "d0025-6109-4009-8009-000000000009",
+      "node_name": "Execute Command - canonical finalize",
+      "expected_type": "n8n-nodes-base.executeCommand",
+      "expected_current_command": "=node /files/handoff-runtime/control-plane/tools/run-litellm-primary-cycle.mjs finalize --consumer-b64 '{{$json.consumer_b64}}' --response-b64 '{{$json.response_b64}}'",
+      "replace_command_with": "=node /files/handoff-runtime/control-plane/tools/run-litellm-primary-cycle.mjs finalize --consumer-b64 '{{$json.consumer_b64}}' --response-b64 '{{$json.response_b64}}' 2>&1 || true"
+    }
+  ],
+  "preserve": [
+    "all 13 nodes and all node ids/names/types/typeVersions/positions",
+    "all connections and workflow settings",
+    "all five runOnceForEachItem modes and their corrected item access/return shapes",
+    "HTTP Request - LiteLLM primary one-shot parameters",
+    "canonical prepare command and semantics",
+    "canonical finalize runner and arguments",
+    "Return canonical cycle result fail-closed semantics",
+    "WF61 inactive state after apply and after bounded resume",
+    "retry=0 and fallback=0 semantics",
+    "cursor_dispatch_allowed=false semantics",
+    "WF40, WF60/OpenClaw, credentials, network, Tailscale and TeamViewer state"
+  ],
+  "forbidden": [
+    "runner logic redesign",
+    "response/schema/policy gate weakening",
+    "node additions or deletions",
+    "connection changes",
+    "provider fallback",
+    "Qwen or Codex invocation",
+    "more than one new WF61 execution in the bounded resume",
+    "more than one new LiteLLM/GLM provider attempt in the bounded resume",
+    "smoke/proof-only detours"
+  ],
+  "acceptance_apply": [
+    "only node d0025-6109-4009-8009-000000000009 command field changes",
+    "command still invokes the same canonical finalize runner with the same consumer-b64 and response-b64 arguments",
+    "stderr is merged into stdout and shell exit is normalized so runner JSON remains parseable on canonical finalize failure",
+    "no response body or secret material is persisted",
+    "WF61 remains inactive",
+    "runtime gate remains CLOSED during apply",
+    "provider calls remain unchanged during apply"
+  ],
+  "bounded_resume": {
+    "task_id": "D-0025-W-GLM-LIVE-001",
+    "same_backlog_only": true,
+    "fresh_trigger_required": true,
+    "max_new_wf61_executions": 1,
+    "max_new_litellm_requests": 1,
+    "max_new_glm_provider_attempts": 1,
+    "retry": 0,
+    "fallback": 0,
+    "qwen": 0,
+    "codex": 0,
+    "cursor_auto_dispatch": 0,
+    "terminal_behavior": "At first PASS or failure, close runtime gate and return WF61 inactive before evidence persistence. If finalize fails again, persist the exact canonical classification/reason emitted by the runner; do not make another provider call."
+  }
+}
