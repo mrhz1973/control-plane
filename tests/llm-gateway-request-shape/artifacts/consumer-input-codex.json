@@ -1,0 +1,33 @@
+﻿{
+    "task_id":  "D-0020-W",
+    "source_backlog_ref":  "github:issue/26",
+    "source_backlog_commit":  "6c839e634308ebc18ee9bb63309ed871dddb7175",
+    "repository":  "mrhz1973/control-plane",
+    "branch_target":  "main",
+    "goal":  "Prove offline D-0019 -\u003e D-0018 -\u003e D-0017 composition with fail-closed tamper coverage.",
+    "risk_hint":  "low",
+    "complexity_hint":  "low",
+    "planner_requested":  "codex",
+    "allowed_paths":  [
+                          "tools/build-openclaw-responses-request.mjs",
+                          "tools/validate-openclaw-planner-response-gate.mjs",
+                          "tools/validate-execution-packet-v1.mjs",
+                          "tests/openclaw-consumer-roundtrip/"
+                      ],
+    "forbidden_paths":  [
+                            "n8n",
+                            "OpenClaw runtime",
+                            "VPS"
+                        ],
+    "acceptance_seed":  [
+                            "Canonical offline round trip PASS",
+                            "Tamper cases fail-closed with expected classifications"
+                        ],
+    "validation_seed":  [
+                            "node tests/openclaw-consumer-roundtrip/run.mjs"
+                        ],
+    "hard_constraints":  [
+                             "no-n8n-mutation",
+                             "no-provider-calls"
+                         ]
+}

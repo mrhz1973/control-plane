@@ -51,7 +51,11 @@ export function resolveAjvModules() {
   } catch {
     npmRootG = "";
   }
+  const envNodeModules = process.env.CONTROL_PLANE_AJV_NODE_MODULES;
   const paths = [
+    typeof envNodeModules === "string" && envNodeModules.trim().length > 0
+      ? envNodeModules.trim()
+      : "",
     npmRootG,
     npmRootG ? join(npmRootG, "firebase-tools", "node_modules") : "",
     npmRootG

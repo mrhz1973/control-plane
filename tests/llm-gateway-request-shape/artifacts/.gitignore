@@ -1,0 +1,3 @@
+# Runtime verify scratch except persisted sanitized captures used offline.
+request-body-*.json
+summary.json
