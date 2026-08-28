@@ -5,42 +5,41 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_WF61_FINALIZE_FAILURE_OBSERVABILITY_FIX_AND_RESUME
-result_cursor: STOP_D0025_RETRY5_LITELLM_HTTP_FAILURE_STATUS_0
+task_ref: D-0025-W_WF61_HTTP_STATUS0_DIAGNOSE_AND_CONDITIONAL_RESUME
+result_cursor: STOP_D0025_RETRY6_SSE_NO_COMPLETED_RESPONSE
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_wf40_rundata_plus_litellm_logs
-report_persistence_commit: ab6c9df12718c7e761e760b043c02a2ee4f778f7
-classification: PHASE_A_PASS_PHASE_B_LITELLM_HTTP_FAILURE_NO_PROXY_HIT
+independent_verification: cursor_vps_transport_diagnostics_plus_wf40_rundata_plus_litellm_logs
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: TRANSPORT_HEALTHY_NONPERSISTENT_TIMEOUT_THEN_SSE_NORMALIZATION_BLOCKED
 
-repo_head_at_start: 63d88ee926cce1fb1436b86babd825c295524c42
-artifact_path: workflows/patches/d0025-w-wf61-finalize-failure-observability-fix.gpt-web.json
-template_apply_commit: de8c3b92e21bccf496198c4caeb81e0dfdf93e24
-wf61_pre_versionId: c9c97f71-d934-4efd-b423-7aaaec11f86c
-wf61_post_apply_versionId: d0f88e31-4756-471a-9544-1bcfc40a52b2
-graph_equivalence: PASS except node 6109 command
-node_6109_command_apply: PASS
+repo_head_at_start: 0ce82f8afd535ef7b96472ac8d30a1cf119dccde
 standing_auth_ref: docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md
-auto_via_release: github:issue/31#issuecomment-5458229605
+auto_via_release: github:issue/31#issuecomment-5458375723
 
-trigger_commit_sha: c06b8be967c9e7dbbd3bcc4c2727d01f5787c4c0
-backlog_path: docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md
-task_id: D-0025-W-GLM-LIVE-001
-yaml_unchanged: true
+transport_diagnosis:
+  n8n_execution_context_dns: litellm-primary -> 172.18.0.3 OK
+  tcp_4000_from_n8n: connected
+  readiness_from_n8n: 200 healthy
+  docker_network_membership: both root_default (172.18.0.2 / 172.18.0.3)
+  litellm_container: running, restarts=0, unchanged since 14:01Z
+  wf61_http_node_template_equivalence: true
+  retry5_transport_error_recoverable: none retained (child rundata pruned); parent node executionTime=120632ms ~= canonical 120s timeout; zero proxy hits => nonpersistent upstream-latency client timeout (CASE 1)
+  workflow_template_equivalence: PASS (HTTP node identical; no mutation required)
 
-adapter_offline: REMOTE_DISPATCH_READY
-adapter_live: REMOTE_DISPATCH_READY
-selected_planner: glm
-
-WF40_execution_id: 284881
-WF61_execution_id: 284882
+phase_b_entered: true
+trigger_commit_sha: 48c7c7c8b7a932ec53509a8cd77f715cdf5d2800
+WF40_execution_id: 284952
+WF61_execution_id: 284953
 wf61_new_execution_count_this_pass: 1
-litellm_request_delta: 0
-provider_attempt_delta: 0
-http_status: 0
+litellm_request_delta: 1
+provider_attempt_delta: 1
+http_status: 200
+selected_planner: glm
+adapter_classification: REMOTE_DISPATCH_READY
 
-finalize_classification: LITELLM_HTTP_FAILURE
-finalize_reason_sanitized: Single LiteLLM HTTP attempt did not return 2xx; retry is forbidden
-response_gate_result: NOT_REACHED
+terminal_classification: SSE_NO_COMPLETED_RESPONSE
+terminal_reason_sanitized: No response.completed terminal event found
+response_gate_result: FAIL_AT_SSE_NORMALIZATION
 schema_gate_result: NOT_REACHED
 packet_policy_result: NOT_REACHED
 packet_path: null
@@ -63,10 +62,11 @@ credential_mutations: 0
 network_mutations: 0
 teamviewer_mutations: 0
 secret_exposure: false
-glm_budget: 1/10
+glm_budget: 2/10
+litellm_total_v1_responses: 2
 
-NEXT_GATE: diagnose WF61 LiteLLM HTTP status-0 with zero proxy hits; then one bounded resume of D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001
+NEXT_GATE: GPT-Web bounded SSE normalization artifact (handle GLM /v1/responses streams closing without response.completed); then one bounded resume of D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001
 
-APPLY_REPORT: reports/architecture/d0025_wf61_finalize_failure_observability_fix_apply.md
+DIAGNOSIS_REPORT: reports/architecture/d0025_wf61_http_status0_diagnosis.md
 REPORT: reports/architecture/d0025_primary_remote_glm_live_001.md
 ```

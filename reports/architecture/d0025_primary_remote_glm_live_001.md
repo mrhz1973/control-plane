@@ -1,11 +1,11 @@
 # D-0025-W — primary remote GLM live planning cycle (001)
 
 **Repository:** `mrhz1973/control-plane`  
-**Task:** `D-0025-W_WF61_FINALIZE_FAILURE_OBSERVABILITY_FIX_AND_RESUME`  
+**Task:** `D-0025-W_WF61_HTTP_STATUS0_DIAGNOSE_AND_CONDITIONAL_RESUME`  
 **Date:** 2026-08-28 / 2026-08-29  
-**Release evidence:** issue #31 comment `5458229605` · standing authorization  
+**Release evidence:** issue #31 comment `5458229605` · `5458375723` · standing authorization  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **STOP (retry 5)** — Phase A observability apply PASS · Phase B `LITELLM_HTTP_FAILURE` (`http_status=0`) · no new LiteLLM request · gate CLOSED
+**Status:** **STOP (retry 6)** — diagnosis CASE 1 (transport healthy) · Phase B terminal `SSE_NO_COMPLETED_RESPONSE` after HTTP 200 · gate CLOSED
 
 ---
 
@@ -18,7 +18,8 @@
 | 3 | `7d19504` | STOP | WF61 `$input.first()` in per-item | item-access fix |
 | 4 (retry 3) | `fdbbd48` | STOP | array return in per-item | return-shape fix |
 | 5 (retry 4) | `617f633` | STOP | `FINALIZE_FAILED` after HTTP 200 | finalize observability fix (Phase A) |
-| 6 (retry 5) | `c06b8be` | **STOP** | `LITELLM_HTTP_FAILURE` http_status=0 · LiteLLM delta 0 | **pending: HTTP one-shot status-0 diagnosis** |
+| 6 (retry 5) | `c06b8be` | STOP | `LITELLM_HTTP_FAILURE` http_status=0 · LiteLLM delta 0 | **status-0 diagnosis: nonpersistent upstream-latency client timeout** |
+| 7 (retry 6) | `48c7c7c` | **STOP** | `SSE_NO_COMPLETED_RESPONSE` — "No response.completed terminal event found" (HTTP 200) | **pending GPT-Web: SSE response normalization/terminal-event handling** |
 
 ---
 
@@ -80,12 +81,35 @@ Runtime restored: gate CLOSED · WF61 inactive. No retry / no second provider ca
 
 ---
 
+## Attempt 7 (RETRY_6 — after status-0 diagnosis CASE 1)
+
+**Diagnosis (see `reports/architecture/d0025_wf61_http_status0_diagnosis.md`):** transport fully healthy (DNS/TCP/readiness/network/template equivalence all PASS); retry-5 status-0 was a **nonpersistent upstream-latency client timeout** (`Execute Workflow` node time 120632 ms ≈ canonical 120 s timeout; retry-4 GLM latency ~76 s). No mutation required → CASE 1 → resume.
+
+| Metric | Value |
+|---|---|
+| Trigger | `48c7c7c8b7a932ec53509a8cd77f715cdf5d2800` (`Retry trigger 6: 2026-08-29 — private LiteLLM transport diagnosed healthy; …`) |
+| WF40 / WF61 | `284952` / `284953` |
+| Adapter (offline + live) | **REMOTE_DISPATCH_READY** · `preferred=glm` |
+| LiteLLM request delta | **1** (`POST /v1/responses` 200 at 22:44:47Z; total **2**) |
+| GLM provider-attempt delta | **1** (budget **2/10**) |
+| HTTP status | **200** |
+| Terminal classification | **`SSE_NO_COMPLETED_RESPONSE`** |
+| Sanitized reason | **`No response.completed terminal event found`** |
+| Gate / WF61 final | **CLOSED** / **inactive** |
+| retry / fallback / qwen / codex / cursor_dispatch | **0** |
+| `credential_mutations` / `network_mutations` / `teamviewer_mutations` | **0** |
+| `secret_exposure` | **false** |
+
+Classification emitted by the canonical finalize runner (observability fix working): the GLM response normalization/gate found **no `response.completed` terminal event** in the SSE stream — i.e. the failure is now precisely localized to **SSE response normalization / terminal-event handling**, not transport, not HTTP, not packet/schema/policy (not reached).
+
+---
+
 ## NEXT_GATE
 
-Smallest deterministic correction: diagnose why WF61 `HTTP Request - LiteLLM primary one-shot` yielded `http_status=0` with zero LiteLLM access-log hits (connectivity/timeout/client abort), then one bounded resume of the same live cycle. Do not open a smoke/proof detour.
+Smallest deterministic correction implied by `SSE_NO_COMPLETED_RESPONSE`: canonical runner normalization for GLM `/v1/responses` SSE streams that close without a `response.completed` terminal event (LiteLLM/GLM may terminate streams after `response.done`/final delta only). GPT-Web authoring of the bounded runner/response-normalization artifact is the next step; no smoke/proof detour.
 
 ---
 
 ## Output line
 
-`STOP — LITELLM_HTTP_FAILURE: Single LiteLLM HTTP attempt did not return 2xx; retry is forbidden; GATE_CLOSED=true; WF61_NEW_EXECUTIONS=1; LITELLM_REQUESTS_DELTA=0; PROVIDER_CALLS_DELTA=0`
+`STOP — SSE_NO_COMPLETED_RESPONSE: No response.completed terminal event found; GATE_CLOSED=true; PHASE_B_ENTERED=true; PROVIDER_CALLS_DELTA=1`
