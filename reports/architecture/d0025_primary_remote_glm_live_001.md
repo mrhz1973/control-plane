@@ -1,11 +1,19 @@
 # D-0025-W — primary remote GLM live planning cycle (001)
 
 **Repository:** `mrhz1973/control-plane`  
-**Task:** `D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001`  
+**Task:** `D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001` (+ `_RETRY`)  
 **Date:** 2026-08-28  
-**Release evidence:** issue #31 comment `5456859595`  
+**Release evidence:** issue #31 comment `5456859595` (first) · `5457265822` (retry)  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **STOP** — WF40 hard-fail before backlog lane · WF61 not executed · gate CLOSED
+**Status:** **STOP (retry)** — WF40 hard-fail before backlog lane · WF61 not executed · gate CLOSED
+
+---
+
+## Attempt 1 — result STOP
+
+See previous section history: commit `8765362` observed by WF40 but execution `284605` died at GIS `Read/Write Files from Disk` (`No file(s) found`) before the backlog lane. Fixed by `D-0025-W_WF40_GIS_READWRITE_NONBLOCKING` (`continueOnFail=true` on `d255df3e-…`, WF40 versionId `b198b317-f004-465d-82ed-3fbb3d79f9f6`).
+
+## Attempt 2 (RETRY) — result STOP
 
 | Metric | Value |
 |---|---|
@@ -16,89 +24,46 @@
 | `credential_mutations` | **0** |
 | `network_mutations` | **0** |
 | `secret_exposure` | **false** |
+| GLM expanded budget | **0/10** (unchanged) |
 
----
-
-## Precheck
+### Precheck (PASS)
 
 | Check | Result |
 |---|---|
-| `origin/main` at start | `4e963619bc0d1fca4d87ef4ff7ef955c380a875d` |
-| WF40 baseline | active · versionId `29184a4e-cea0-4483-8c8e-47688fb6e3d0` · 44 nodes · WF60/GIS `continueOnFail=true` |
-| WF61 | inactive · single trigger `When Executed by Another Workflow` · exec **0** |
+| `origin/main` | `4461ff358b3729c326ae5e93a9209484def39ae8` |
+| WF40 baseline | active · versionId `b198b317-f004-465d-82ed-3fbb3d79f9f6` · 44 nodes · all three `continueOnFail=true` (WF60 execute, GIS handoff, GIS Read/Write) |
+| WF61 | inactive · single `When Executed by Another Workflow` trigger · exec **0** |
+| WF60 | inactive |
 | Runtime gate pre | CLOSED |
-| LiteLLM | `/v1/models` HTTP 200 · no inference in precheck |
+| LiteLLM | `/v1/models` HTTP 200 · no inference |
+| Backlog | YAML intact · `D-0025-W-GLM-LIVE-001` · no retry line yet |
 
----
+### Execution window
 
-## Actions taken
+1. Local retry trigger commit `5ccb8c9db67ec303d11551216f849c829e7d951e` (adds exactly `Retry trigger: 2026-08-28 — lane repaired; same task D-0025-W-GLM-LIVE-001.` outside the YAML block; no YAML change).
+2. Temp gate armed (GLM-only, `provider_calls_authorized_per_event=1`, qwen/codex unavailable) — runtime-only, never committed.
+3. WF61 temporarily activated (no node/connection changes).
+4. Offline adapter: **REMOTE_DISPATCH_READY** · `dispatch_allowed=true` · `preferred=glm` · `fallback=[]` · `fallback_policy=gate_only` · `task_id=D-0025-W-GLM-LIVE-001` — provider calls 0.
+5. Pushed trigger commit; monitored natural polls ~10 minutes (executions 284659–284679).
+6. Restored gate CLOSED; WF61 restored inactive (import deactivation).
 
-1. Created verbatim backlog `docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md` (`D-0025-W-GLM-LIVE-001`).
-2. **Minimal adapter fix** (same push): bounded parser now accepts YAML `>-` / `|-` block scalars required by GPT-Web backlog artifacts (`tools/build-primary-remote-cycle-input-from-backlog.mjs`). Offline tests **18/18 PASS**.
-3. Trigger commit pushed: `87653627b4aa31e4d5d855812e99d4a9361e9416`.
-4. Temporary runtime window on VPS: gate enabled (GLM-only) · WF61 temporarily activated · offline adapter **REMOTE_DISPATCH_READY** · bounded n8n restart.
-5. Natural WF40 polling observed ~10 minutes — **no WF61 execution**.
-6. Runtime gate restored CLOSED · WF61 restored inactive before evidence commit.
+### STOP finding (precise)
 
----
+WF40 sees commit `5ccb8c9` (present in execution payloads) but still aborts before the backlog lane. Sample executions `284677`/`284679`:
 
-## STOP finding (precise)
+- GIS `Read/Write Files from Disk` no longer aborts (`continueOnFail=true` works — it now passes through with an error item).
+- **`Telegram - Send handoff file`** (`18078c6b-1181-42da-9f05-32138f45f0ab`, position `[240,144]`) is the new terminal failure: `This operation expects the node's input data to contain a binary file 'data', but none was found [item 0]` — the Read/Write error passthrough produces no binary, and this Telegram node has `continueOnFail` unset.
 
-Commit `8765362` is observed by WF40 (present in execution payloads), but the canonical backlog→WF61 lane **never runs**.
-
-Sample execution `284605` (`2026-08-28 19:51:02`) runData ends at:
-
-1. … `IF - New commit?` (true)
-2. `Execute Workflow - Resolve OpenClaw broker (WF60)` (non-blocking)
-3. GIS handoff chain (`IF - GIS repo for handoff?` → `Execute Command - handoff dry-run` → …)
-4. **`Read/Write Files from Disk`** → terminal error **`No file(s) found`**
-
-Nodes **not reached** include:
-
-- `Data Table - Upsert last seen commit`
-- `Code - Plan watcher repo gate stub`
-- `GitHub - Fetch commit details (plan files)`
-- entire canonical backlog→adapter→WF61 lane
-
-Under WF40 `executionOrder: v1`, higher-position GIS handoff siblings still hard-abort the run before lower-position plan-watcher/backlog siblings execute. GIS `handoff dry-run` nonblocking alone is insufficient; downstream `Read/Write Files from Disk` remains blocking.
-
-Therefore:
-
-- adapter live dispatch never authorized at runtime (gate window irrelevant once lane not reached)
-- WF61 executions remain **0**
-- provider attempts **0**
-
----
-
-## Budget
-
-| Budget | Used |
-|---|---|
-| WF61 executions | **0 / 1** |
-| GLM provider attempts | **0 / 1** |
-| GLM expanded budget | still **0/10** |
-
----
-
-## Artifacts on main (already pushed)
-
-| Artifact | SHA / path |
-|---|---|
-| Backlog trigger + parser fix | `87653627b4aa31e4d5d855812e99d4a9361e9416` |
-| Backlog file | `docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md` |
-
-Execution packet **not** produced (`docs/runtime/EXECUTION_PACKET_D0025_PRIMARY_REMOTE_GLM_LIVE_001.json` not created).
+The GIS handoff tail still hard-aborts the run under `executionOrder: v1` before lower-position plan-watcher/backlog siblings (including `GitHub - Fetch commit details (plan files)` and the adapter→WF61 lane) can execute. WF61 executions remain **0**; provider attempts **0**.
 
 ---
 
 ## NEXT_GATE
 
-GPT-Web-authored bounded WF40 delta to make the GIS handoff **Read/Write Files from Disk** node (or entire GIS branch tail) non-blocking under v1 order, **or** reorder/wire so plan-watcher/backlog siblings cannot be suppressed by GIS file I/O failure — without activating WF60/OpenClaw or redesigning the primary-remote lane.
-
-Then re-arm temporary GLM gate + WF61 callable window for one live cycle retry.
+GPT-Web bounded WF40 delta to make the GIS handoff tail non-blocking to its end — at minimum `Telegram - Send handoff file` (`18078c6b-…`), or the whole GIS branch tail after the Read/Write node — so the backlog lane is reachable on natural polls. Then re-arm the single GLM live cycle window (backlog trigger commit `5ccb8c9` is already on main; a new trigger commit may be required if Data Table dedupe consumed `5ccb8c9`).
 
 ---
 
 ## Output line
 
-`STOP — WF40 GIS Read/Write Files hard-fail aborts before backlog lane under v1 order; GATE_CLOSED=true; WF61_EXECUTIONS=0; PROVIDER_CALLS=0`
+`STOP — WF40 GIS tail Telegram - Send handoff file hard-fail (binary 'data' missing after non-blocking Read/Write passthrough) aborts before backlog lane; GATE_CLOSED=true; WF61_EXECUTIONS=0; PROVIDER_CALLS=0`
