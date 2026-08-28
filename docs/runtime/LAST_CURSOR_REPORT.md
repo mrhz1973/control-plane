@@ -5,46 +5,62 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_LITELLM_PRIVATE_CONTAINER_DEPLOY
-result_cursor: PASS_D0025_LITELLM_PRIVATE_CONTAINER_DEPLOY
+task_ref: D-0025-W_CONTROL_PLANE_MOUNT_READONLY_PREFLIGHT
+result_cursor: STOP_CONTROL_PLANE_HOST_PATH_ABSENT
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_runtime_deploy_ionos_n8n
-report_persistence_commit: aec4d7e00f39ee079df7a6b1f61c60fdea1784a0
-classification: PRIVATE_PROXY_READY_CREDENTIALLESS
+independent_verification: cursor_vps_readonly_inspect_ionos_n8n
+report_persistence_commit: pending
+classification: MOUNT_PREFLIGHT_STOP_HOST_PATH_ABSENT
 
-repo_head_observed_at_task: d3943e8bf30367c281def0aa6e78fbc3a8d18f3c
+repo_head_observed_at_task: 8284e34b93fda2b8c14b61579aed715205312a35
 workspace_at_start: clean
-operator_gate_ref: github:issue/31#5451709148
+operator_gate_ref: github:issue/31
 issue_31_state: OPEN
 
-LITELLM_CONTAINER:
-  name: litellm-primary
-  container_id: e9b3828c5992
-  state: running
-  image: ghcr.io/berriai/litellm:v1.98.0@sha256:26eb8aa650ef8039f3453b80fb52156fcadcb588be13a22bd8ce28a2425ed2f4
-  repo_digest: ghcr.io/berriai/litellm@sha256:26eb8aa650ef8039f3453b80fb52156fcadcb588be13a22bd8ce28a2425ed2f4
-  architecture: amd64
-  litellm_package_version: "1.98.0"
-  network: root_default
-  host_published_ports: 0
-  network_host_mode: false
-  private_dns_from_root_n8n_1: 172.18.0.3
-  uvicorn_internal: "0.0.0.0:4000"
-  credential_config_mount: none
-  provider_calls: 0
+COMPOSE:
+  managed: true
+  project: root
+  config_file: /root/docker-compose.yaml
+  working_dir: /root
+  service: n8n
+  services_count: 1
 
-N8N_SAFETY:
-  root_n8n_1_before: running
-  root_n8n_1_after: running
-  started_at_unchanged: 2026-08-21T21:38:26.189399585Z
-  restart_count_unchanged: 0
-  wf40_wf60_mutations: 0
-  n8n_workflow_mutations: 0
+N8N_CONTAINER:
+  name: root-n8n-1
+  id: 56e639b521e753b5ca097ad251c58c2d8382920aa0fc9014ebb25467422bdbc2
+  image: docker.n8n.io/n8nio/n8n
+  n8n_version: "2.19.5"
+  started_at: 2026-08-21T21:38:26.189399585Z
+  restart_count: 0
+  network: root_default
+  mounts:
+    - /root/local-files:/files:rw
+    - /srv/cp-verifier-inbox:/files/control-plane-verifier-inbox:rw
+    - root_n8n_data:/home/node/.n8n:rw
+
+CONTROL_PLANE_HOST_PATH: ABSENT
+candidate_host_path: /root/local-files/handoff-runtime/control-plane
+candidate_container_path: /files/handoff-runtime/control-plane
+candidate_mode: ro
+mount_collision: absent
+
+RECREATE:
+  can_add_bind_mount_without_recreate: false
+  recreate_required: true
+  affected_service: n8n only
+  litellm_primary_impact: none
+
+ROLLBACK: PROVEN
+
+ACTIVE_EXECUTION_RISK:
+  wf40_active: true
+  running_execution_count: unknown
+  sqlite3_available: false
 
 BUDGET_THIS_PASS:
+  runtime_mutations: 0
   provider_calls: 0
   inference: 0
-  network_mutations_work_pc: 0
   teamviewer_mutations: 0
   credential_mutations: 0
 
@@ -52,5 +68,5 @@ SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
 SECRET_VALUE_PERSISTED: false
 
-REPORT: reports/architecture/d0025_litellm_private_container_deploy.md
+REPORT: reports/architecture/d0025_control_plane_mount_readonly_preflight.md
 ```
