@@ -18,6 +18,7 @@ import {
   SCHEMA_PATH,
   validatePacketObject,
 } from "./validate-execution-packet-v1.mjs";
+import { normalizeResponsesBody } from "./normalize-litellm-responses-body.mjs";
 
 const REQUIRED_FUNCTION = "emit_execution_packet";
 
@@ -51,9 +52,14 @@ function readJson(path, prefix) {
   }
   try {
     return { abs, value: JSON.parse(text) };
-  } catch (err) {
-    fail(`${prefix}_JSON_PARSE_ERROR`, String(err.message || err), {
+  } catch {
+    const normalized = normalizeResponsesBody(text);
+    if (normalized.ok && normalized.response) {
+      return { abs, value: normalized.response, normalized_from: normalized.source_format };
+    }
+    fail(`${prefix}_JSON_PARSE_ERROR`, normalized.reason || "Response body is not JSON or normalizable SSE", {
       path: abs,
+      normalization_classification: normalized.classification,
     });
   }
 }
@@ -95,6 +101,40 @@ function parseArguments(raw) {
 
 function nonEmptyString(v) {
   return typeof v === "string" && v.trim().length > 0;
+}
+
+export function checkHardConstraintsExact(packet, consumerInput) {
+  const expectedHard = Array.isArray(consumerInput.hard_constraints)
+    ? consumerInput.hard_constraints
+    : null;
+  if (expectedHard === null) {
+    return {
+      ok: false,
+      classification: "INPUT_MISMATCH",
+      reason: "consumer_input.hard_constraints must be an array (use [] when empty)",
+      field: "hard_constraints",
+    };
+  }
+  const actualHard = packet.hard_constraints;
+  if (!Array.isArray(actualHard)) {
+    return {
+      ok: false,
+      classification: "HARD_CONSTRAINT_MISMATCH",
+      reason: "packet.hard_constraints must be an array",
+    };
+  }
+  const hardEqual =
+    actualHard.length === expectedHard.length &&
+    actualHard.every((v, i) => v === expectedHard[i]);
+  if (!hardEqual) {
+    return {
+      ok: false,
+      classification: "HARD_CONSTRAINT_MISMATCH",
+      reason:
+        "packet.hard_constraints does not exactly equal consumer_input.hard_constraints (length/order/string identity)",
+    };
+  }
+  return { ok: true, classification: "PASS" };
 }
 
 async function evaluate(response, consumerInput) {
@@ -225,35 +265,9 @@ async function evaluate(response, consumerInput) {
 
   // hard_constraints: exact deep-array equality vs consumer_input
   // Mapping: docs/contracts/execution-packet-hard-constraints-mapping-v1.md
-  const expectedHard = Array.isArray(consumerInput.hard_constraints)
-    ? consumerInput.hard_constraints
-    : null;
-  if (expectedHard === null) {
-    return {
-      ok: false,
-      classification: "INPUT_MISMATCH",
-      reason: "consumer_input.hard_constraints must be an array (use [] when empty)",
-      field: "hard_constraints",
-    };
-  }
-  const actualHard = packet.hard_constraints;
-  if (!Array.isArray(actualHard)) {
-    return {
-      ok: false,
-      classification: "HARD_CONSTRAINT_MISMATCH",
-      reason: "packet.hard_constraints must be an array",
-    };
-  }
-  let hardEqual =
-    actualHard.length === expectedHard.length &&
-    actualHard.every((v, i) => v === expectedHard[i]);
-  if (!hardEqual) {
-    return {
-      ok: false,
-      classification: "HARD_CONSTRAINT_MISMATCH",
-      reason:
-        "packet.hard_constraints does not exactly equal consumer_input.hard_constraints (length/order/string identity)",
-    };
+  const hardCheck = checkHardConstraintsExact(packet, consumerInput);
+  if (!hardCheck.ok) {
+    return hardCheck;
   }
 
   return {

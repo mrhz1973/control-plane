@@ -40,6 +40,7 @@ export const PLANNER_INSTRUCTIONS = [
   "You are the planner for mrhz1973/control-plane.",
   "Generate exactly one bounded Execution Packet conforming to execution-packet-v1.",
   "Preserve the supplied task objective, allowed/forbidden scope and hard constraints.",
+  "hard_constraints MUST equal consumer_input.hard_constraints exactly: same length, same order, same strings; do not add, remove, rephrase, or infer additional hard constraints.",
   "Do not self-authorize runtime.",
   "Do not invent credentials, provider state, repository facts, hashes or acceptance evidence.",
   "If required information is absent, encode a gate/blocking condition rather than guessing.",

@@ -56,10 +56,7 @@ function buildBody(consumerInput, model) {
   };
 }
 
-function collectFunctionCalls(output) {
-  if (!Array.isArray(output)) return [];
-  return output.filter((o) => o && o.type === "function_call");
-}
+import { normalizeResponsesBody, collectFunctionCalls } from "../../tools/normalize-litellm-responses-body.mjs";
 
 function parseArguments(raw) {
   if (raw && typeof raw === "object" && !Array.isArray(raw)) {
@@ -189,10 +186,15 @@ async function postOnce(backend, model, consumerInput) {
   const sanitized = sanitize(text);
   writeFileSync(join(ART, `response-${backend}.json`), sanitized);
   let parsed = null;
-  try {
-    parsed = JSON.parse(sanitized);
-  } catch {
-    parsed = null;
+  const normalized = normalizeResponsesBody(sanitized);
+  if (normalized.ok) {
+    parsed = normalized.response;
+  } else {
+    try {
+      parsed = JSON.parse(sanitized);
+    } catch {
+      parsed = null;
+    }
   }
   const isHttpError = status == null || status < 200 || status >= 300;
   const hasTopError = parsed && parsed.error != null;
@@ -262,7 +264,10 @@ async function postOnce(backend, model, consumerInput) {
     failure_classification,
     error_message_sanitized: parsed?.error?.message
       ? String(parsed.error.message).slice(0, 400)
-      : null,
+      : normalized.ok
+        ? null
+        : normalized.classification,
+    response_body_format: normalized.ok ? normalized.source_format : null,
     secret_exposure: false,
   };
 }

@@ -1,0 +1,114 @@
+{
+  "schema": "execution-packet-v1",
+  "packet_id": "D-0020-W-r1",
+  "packet_revision": 1,
+  "task_id": "D-0020-W",
+  "source_backlog_ref": "github:issue/26",
+  "source_backlog_commit": "6c839e634308ebc18ee9bb63309ed871dddb7175",
+  "generated_at": "2025-08-01T00:00:00Z",
+  "planner": {
+    "requested": "codex",
+    "used": "codex",
+    "fallback_used": false,
+    "fallback_reason": null,
+    "provider_state_ref": null
+  },
+  "executor": "cursor",
+  "repository": "mrhz1973/control-plane",
+  "branch_target": "main",
+  "goal": "Prove offline D-0019 -> D-0018 -> D-0017 composition with fail-closed tamper coverage.",
+  "preflight": [
+    "Confirm repository is mrhz1973/control-plane and target branch is main.",
+    "Confirm source backlog commit 6c839e634308ebc18ee9bb63309ed871dddb7175 is available and issue 26 remains the governing objective.",
+    "Inspect the existing implementations and tests only within the allowed paths before editing.",
+    "Confirm no provider credentials, provider calls, n8n mutation, OpenClaw runtime, or VPS access are required.",
+    "Preserve unrelated working-tree changes and stop if unexpected concurrent changes appear."
+  ],
+  "allowed_paths": [
+    "tools/build-openclaw-responses-request.mjs",
+    "tools/validate-openclaw-planner-response-gate.mjs",
+    "tools/validate-execution-packet-v1.mjs",
+    "tests/openclaw-consumer-roundtrip/"
+  ],
+  "forbidden_paths": [
+    "n8n",
+    "OpenClaw runtime",
+    "VPS"
+  ],
+  "hard_constraints": [
+    "no-n8n-mutation",
+    "no-provider-calls",
+    "Operate entirely offline.",
+    "Do not modify files outside the allowed paths.",
+    "Do not weaken existing execution-packet or planner-response validation to make fixtures pass.",
+    "Do not self-authorize runtime execution."
+  ],
+  "steps": [
+    "Read the relevant builder, planner-response gate validator, execution-packet validator, and existing round-trip test fixtures to identify the D-0019 -> D-0018 -> D-0017 interfaces.",
+    "Add or refine the offline round-trip harness under tests/openclaw-consumer-roundtrip/ so canonical input traverses the three existing composition stages and produces a deterministic PASS without provider or runtime access.",
+    "Add bounded tamper fixtures or cases under tests/openclaw-consumer-roundtrip/ for each security-relevant boundary exposed by the composition, asserting rejection and the existing expected failure classification rather than only a nonzero exit.",
+    "Make only the smallest necessary compatibility or validation corrections in the allowed tool files when a canonical interface mismatch is demonstrated by the tests; preserve fail-closed behavior.",
+    "Run the seeded offline validation command, diagnose failures, and iterate only within allowed paths until canonical and tamper assertions pass or the loop limit is reached.",
+    "Record the tested cases, command result, changed paths, and any unresolved limitation in the final report; do not claim acceptance without command evidence."
+  ],
+  "validation": [
+    "node tests/openclaw-consumer-roundtrip/run.mjs",
+    "Verify the canonical case reports PASS and exits zero.",
+    "Verify every tamper case exits or returns fail-closed with its asserted expected classification.",
+    "Verify the test performs no network/provider access and does not touch n8n, OpenClaw runtime, or VPS resources.",
+    "Review the final diff to confirm all changes are confined to allowed paths and no validator was weakened."
+  ],
+  "acceptance": [
+    "Canonical offline D-0019 -> D-0018 -> D-0017 round trip reports PASS using node tests/openclaw-consumer-roundtrip/run.mjs.",
+    "Tamper cases fail closed and assert the expected existing classifications.",
+    "The validation is deterministic and requires no provider calls, n8n mutation, OpenClaw runtime, VPS access, credentials, or billing.",
+    "All modifications are confined to the declared allowed paths and preserve existing validation strictness."
+  ],
+  "loop": {
+    "enabled": true,
+    "stop_when": [
+      "The seeded validation command exits zero.",
+      "The canonical round trip reports PASS.",
+      "All tamper cases fail closed with their expected classifications.",
+      "The final diff remains within allowed paths."
+    ],
+    "max_rounds": 3,
+    "on_exhaustion": "blocked"
+  },
+  "risk_assessment": {
+    "level": "low",
+    "reasons": [
+      "Work is limited to offline composition tests and narrowly scoped supporting tools.",
+      "Provider calls and production runtime surfaces are explicitly forbidden.",
+      "Tamper assertions strengthen fail-closed coverage."
+    ],
+    "scope_expansion": false,
+    "destructive": false,
+    "production_sensitive": false,
+    "credentials_or_billing": false
+  },
+  "gate_recommendation": {
+    "required": true,
+    "reason": "Execution authorization was not supplied; this packet plans offline work but does not self-authorize Cursor runtime."
+  },
+  "context": {
+    "read_set": [
+      "github:issue/26@6c839e634308ebc18ee9bb63309ed871dddb7175",
+      "tools/build-openclaw-responses-request.mjs",
+      "tools/validate-openclaw-planner-response-gate.mjs",
+      "tools/validate-execution-packet-v1.mjs",
+      "tests/openclaw-consumer-roundtrip/",
+      "docs/contracts/execution-checkpoint-v1.md",
+      "docs/foundation/CURSOR_PROMPT_TEMPLATE.md"
+    ],
+    "checkpoint_policy": "required",
+    "checkpoint_contract": "docs/contracts/execution-checkpoint-v1.md"
+  },
+  "review": {
+    "bugbot": "optional",
+    "max_review_rounds": 1,
+    "autofix_cloud": false
+  },
+  "final_report_contract": "docs/foundation/CURSOR_PROMPT_TEMPLATE.md",
+  "status": "READY_FOR_GATE"
+}
