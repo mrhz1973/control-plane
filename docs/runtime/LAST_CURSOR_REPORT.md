@@ -9,7 +9,7 @@ task_ref: D-0025-W_VPS_SCHEMA_ENGINE
 result_cursor: PASS_D0025_VPS_SCHEMA_ENGINE
 reported_via: cursor_direct_persistence
 independent_verification: cursor_vps_isolated_ajv_install_ionos_n8n
-report_persistence_commit: pending
+report_persistence_commit: 049024b81836eeda29731731f2606784107cf04a
 classification: SCHEMA_ENGINE_LIVE_READY
 
 repo_head_observed_at_task: 86ce74735c68ecfb4c2f01e4889ab96b040627ba
