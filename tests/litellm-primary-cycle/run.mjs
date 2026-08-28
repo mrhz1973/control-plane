@@ -337,6 +337,51 @@ const CASES = [
     },
   },
   {
+    name: "finalize-sse-output-item-done-without-completed-pass",
+    async run() {
+      const consumer = readJson(
+        join(ROOT, "tests/openclaw-consumer-roundtrip/fixtures/consumer-input-valid.json"),
+      );
+      const synthetic = readJson(
+        join(ROOT, "tests/openclaw-consumer-roundtrip/fixtures/synthetic-response-valid.json"),
+      );
+      const item = (synthetic.output || [])[0];
+      if (!item) return "synthetic fixture missing first output item";
+      const sse = `data: ${JSON.stringify({ type: "response.output_item.done", output_index: 0, item })}\n\n`;
+      const result = await finalizeCycle({
+        consumerInput: consumer,
+        rawResponseText: sse,
+      });
+      if (!result.ok) return JSON.stringify(result);
+      if (result.response_source_format !== "sse") {
+        return `expected sse source format got ${result.response_source_format}`;
+      }
+      if (result.response_gate !== "PASS") return "response gate not PASS";
+      if (result.policy?.cursor_dispatch_allowed !== false) {
+        return "cursor_dispatch_allowed must be false";
+      }
+      return null;
+    },
+  },
+  {
+    name: "finalize-sse-no-completed-no-output-fail-closed",
+    async run() {
+      const consumer = readJson(
+        join(ROOT, "tests/openclaw-consumer-roundtrip/fixtures/consumer-input-valid.json"),
+      );
+      const sse = 'data: {"type":"response.created","response":{"id":"resp_no_terminal"}}\n\n';
+      const result = await finalizeCycle({
+        consumerInput: consumer,
+        rawResponseText: sse,
+      });
+      if (result.ok) return "expected FAIL";
+      if (result.classification !== "SSE_NO_COMPLETED_RESPONSE") {
+        return `expected SSE_NO_COMPLETED_RESPONSE got ${result.classification}`;
+      }
+      return null;
+    },
+  },
+  {
     name: "finalize-malformed-sse-fail",
     async run() {
       const consumer = readJson(join(FIX, "consumer-codex.json"));

@@ -163,11 +163,19 @@ export function normalizeResponsesBody(rawText) {
     };
   }
 
+  if (!completedResponse && outputItemsByIndex.size > 0) {
+    completedResponse = {
+      object: "response",
+      status: "completed",
+      output: [],
+    };
+  }
+
   if (!completedResponse) {
     return {
       ok: false,
       classification: "SSE_NO_COMPLETED_RESPONSE",
-      reason: "No response.completed terminal event found",
+      reason: "No response.completed terminal event found and no response.output_item.done items were available",
     };
   }
 
