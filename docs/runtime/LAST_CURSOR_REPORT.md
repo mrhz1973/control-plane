@@ -9,7 +9,7 @@ task_ref: D-0025-W_CONTROL_PLANE_MOUNT_READONLY_PREFLIGHT
 result_cursor: STOP_CONTROL_PLANE_HOST_PATH_ABSENT
 reported_via: cursor_direct_persistence
 independent_verification: cursor_vps_readonly_inspect_ionos_n8n
-report_persistence_commit: pending
+report_persistence_commit: 13f57c2eade0fe78092db155ed338faa520e3bfb
 classification: MOUNT_PREFLIGHT_STOP_HOST_PATH_ABSENT
 
 repo_head_observed_at_task: 8284e34b93fda2b8c14b61579aed715205312a35
