@@ -9,7 +9,7 @@ task_ref: D-0025-W_WF61_TEMPLATE_CODE_NODE_ITEM_ACCESS_FIX
 result_cursor: PASS_D0025_WF61_ITEM_ACCESS_FIX
 reported_via: cursor_direct_persistence
 independent_verification: cursor_vps_n8n_export_post_apply
-report_persistence_commit: PENDING_SELF_REFERENCE
+report_persistence_commit: 21fe300810425142f443e94ca46ab75cfc1dee71
 classification: WF61_TEMPLATE_AND_LIVE_CODE_ACCESS_FIXED
 
 repo_head_at_start: 2f04bddc74c852191c2f9e50a68224f94910cfe9
