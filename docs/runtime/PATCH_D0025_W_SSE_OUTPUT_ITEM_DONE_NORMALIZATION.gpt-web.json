@@ -1,0 +1,92 @@
+{
+  "schema": "gpt-web-bounded-code-delta-v1",
+  "task_ref": "D-0025-W_SSE_OUTPUT_ITEM_DONE_NORMALIZATION_FIX",
+  "authority": "GPT-Web",
+  "reason": "Retry 6 reached LiteLLM/GLM with HTTP 200 but canonical finalize stopped at SSE_NO_COMPLETED_RESPONSE because the normalizer requires response.completed even when the completed HTTP body contains response.output_item.done items. The bounded correction reconstructs a canonical Responses object only from fully done output items, while preserving fail-closed behavior for terminal errors and streams with no completed response and no done output items.",
+  "targets": [
+    "tools/normalize-litellm-responses-body.mjs",
+    "tests/litellm-primary-cycle/run.mjs"
+  ],
+  "mutations": [
+    {
+      "path": "tools/normalize-litellm-responses-body.mjs",
+      "operation": "replace_exact_block",
+      "expected_current": "  if (!completedResponse) {\n    return {\n      ok: false,\n      classification: \"SSE_NO_COMPLETED_RESPONSE\",\n      reason: \"No response.completed terminal event found\",\n    };\n  }\n\n  const response = mergeOutputItems(completedResponse, outputItemsByIndex);",
+      "replace_with": "  if (!completedResponse && outputItemsByIndex.size > 0) {\n    completedResponse = {\n      object: \"response\",\n      status: \"completed\",\n      output: [],\n    };\n  }\n\n  if (!completedResponse) {\n    return {\n      ok: false,\n      classification: \"SSE_NO_COMPLETED_RESPONSE\",\n      reason: \"No response.completed terminal event found and no response.output_item.done items were available\",\n    };\n  }\n\n  const response = mergeOutputItems(completedResponse, outputItemsByIndex);"
+    },
+    {
+      "path": "tests/litellm-primary-cycle/run.mjs",
+      "operation": "insert_test_case_after",
+      "anchor_case": "finalize-codex-sse-pass",
+      "test_case_name": "finalize-sse-output-item-done-without-completed-pass",
+      "required_semantics": [
+        "load tests/openclaw-consumer-roundtrip/fixtures/consumer-input-valid.json",
+        "load tests/openclaw-consumer-roundtrip/fixtures/synthetic-response-valid.json",
+        "take the first response.output item",
+        "build SSE containing exactly one response.output_item.done event with output_index 0 and that item, with no response.completed event",
+        "call finalizeCycle without responseSourceFormat override",
+        "require result.ok=true",
+        "require result.response_source_format='sse'",
+        "require result.response_gate='PASS'",
+        "require result.policy.cursor_dispatch_allowed=false"
+      ]
+    },
+    {
+      "path": "tests/litellm-primary-cycle/run.mjs",
+      "operation": "insert_test_case_after",
+      "anchor_case": "finalize-sse-output-item-done-without-completed-pass",
+      "test_case_name": "finalize-sse-no-completed-no-output-fail-closed",
+      "required_semantics": [
+        "use a parseable SSE event that is not response.output_item.done, response.completed, response.failed, or error",
+        "call finalizeCycle",
+        "require result.ok=false",
+        "require result.classification='SSE_NO_COMPLETED_RESPONSE'"
+      ]
+    }
+  ],
+  "preserve": [
+    "terminal response.failed/error remains fail-closed and takes precedence over reconstruction",
+    "multiple response.completed events remain rejected",
+    "existing response.completed path remains unchanged",
+    "existing JSON normalization remains unchanged",
+    "source_format remains 'sse' for reconstructed SSE",
+    "canonical response gate remains authoritative for function-call count/name, arguments, packet schema, identity, planner metadata and hard constraints",
+    "packet policy remains unchanged",
+    "cursor_dispatch_allowed=false",
+    "zero HTTP/provider calls in normalization/tests"
+  ],
+  "forbidden": [
+    "workflow topology mutation",
+    "WF40/WF61 live mutation during apply validation",
+    "runtime gate enablement during apply validation",
+    "provider inference during apply validation",
+    "retry/fallback addition",
+    "accepting SSE with terminal error",
+    "accepting SSE with neither response.completed nor response.output_item.done",
+    "raw provider response persistence",
+    "credential/network/Tailscale/TeamViewer/OpenClaw mutation"
+  ],
+  "acceptance": [
+    "targeted offline test for output_item.done without response.completed passes",
+    "targeted fail-closed test with neither completed nor done output items passes",
+    "existing litellm-primary-cycle offline suite remains PASS",
+    "normal JSON finalize behavior unchanged",
+    "existing Codex SSE finalize behavior unchanged",
+    "malformed SSE remains fail-closed",
+    "no HTTP/provider calls during apply/test pass"
+  ],
+  "after_apply": {
+    "resume_same_task": "D-0025-W-GLM-LIVE-001",
+    "fresh_trigger": true,
+    "max_new_wf61_executions": 1,
+    "max_new_litellm_requests": 1,
+    "max_new_glm_provider_attempts": 1,
+    "retry": 0,
+    "fallback": 0,
+    "qwen": 0,
+    "codex": 0,
+    "cursor_auto_dispatch": 0,
+    "final_runtime_gate": "CLOSED",
+    "final_wf61_state": "inactive"
+  }
+}
