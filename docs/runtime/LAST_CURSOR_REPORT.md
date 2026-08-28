@@ -5,59 +5,46 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001_RETRY_2
-result_cursor: STOP_D0025_GLM_LIVE_001_RETRY2_WF61_CODE_NODE_ITEM_MODE_DEFECT
+task_ref: D-0025-W_WF61_TEMPLATE_CODE_NODE_ITEM_ACCESS_FIX
+result_cursor: PASS_D0025_WF61_ITEM_ACCESS_FIX
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_n8n_execution_rundata_plus_litellm_logs
-report_persistence_commit: 0c60bc2f04e5439b43a98ceb228318abf3ee4eb2
-classification: GLM_LIVE_CYCLE_DISPATCHED_BUT_WF61_ABORTED_BEFORE_LITELLM
+independent_verification: cursor_vps_n8n_export_post_apply
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: WF61_TEMPLATE_AND_LIVE_CODE_ACCESS_FIXED
 
-repo_head_at_start: 8f82a4118a41bc67341628f31d22e439b5a6b71a
-trigger_commit_sha: 7d195047d31e665c3885d58cb00dc886ea7cf766
-release_ref: github:issue/31#5457565004
+repo_head_at_start: 2f04bddc74c852191c2f9e50a68224f94910cfe9
 standing_auth_ref: docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md
+patch_artifact: workflows/patches/d0025-w-wf61-code-node-item-access-fix.gpt-web.json
 
-backlog_path: docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md
-task_id: D-0025-W-GLM-LIVE-001
-yaml_unchanged: true
+source_template_commit: 10bb1791f42e44de5aa3899f0caaead77ec6eb29
 
-adapter_offline: REMOTE_DISPATCH_READY
-adapter_live: REMOTE_DISPATCH_READY
-selected_planner: glm
+wf61_live_version_before: 30c539f8-5c6b-46b2-912a-8c246f72ffe4
+wf61_live_version_after: e231817d-772c-4db0-80e6-3409fe259059
+wf61_node_count: 13
 
-WF40_execution_id: 284722
-WF61_execution_id: 284723
-WF61_execution_count: 1
-litellm_request_count: 0
-provider_attempt_count: 0
+five_target_ids:
+  - d0025-6104-4004-8004-000000000004
+  - d0025-6107-4007-8007-000000000007
+  - d0025-6110-4010-8010-000000000010
+  - d0025-6111-4011-8011-000000000011
+  - d0025-6112-4012-8012-000000000012
 
-response_gate_result: NOT_REACHED
-schema_gate_result: NOT_REACHED
-packet_policy_result: NOT_REACHED
-packet_path: null
-
-runtime_gate_before: {enabled: false, provider_calls_authorized_per_event: 0}
-runtime_gate_during: {enabled: true, provider_calls_authorized_per_event: 1, allowed_planners: [glm]}
-runtime_gate_after: {enabled: false, provider_calls_authorized_per_event: 0}
-final_gate_closed: true
-
-WF61_state_before: inactive
-WF61_state_during: active_temporarily
-WF61_state_after: inactive
-
-blocker: WF61 node Parse prepare result fail-closed aborts with Can't use .first() here — template Code nodes use mode runOnceForEachItem with $input.first() which is invalid per-item; failure before HTTP Request - LiteLLM node
-retry: 0
-fallback: 0
-qwen: 0
-codex: 0
-cursor_dispatch: 0
+mode_before_after: runOnceForEachItem -> runOnceForEachItem (all five preserved)
+invalid_input_first_count_targets_before: 3
+invalid_input_first_count_targets_after: 0
+graph_equivalence: PASS_except_five_jsCode_fields
+wf61_active_state: inactive (never activated this pass)
+runtime_gate_state: CLOSED
+provider_calls: 0
+inference: 0
 credential_mutations: 0
 network_mutations: 0
 teamviewer_mutations: 0
 secret_exposure: false
-glm_budget: 0/10
+wf40_unchanged: true
+litellm_container_unchanged: true
 
-NEXT_GATE: D-0025-W_WF61_TEMPLATE_CODE_NODE_ITEM_ACCESS_FIX
+NEXT_GATE: D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001
 
-REPORT: reports/architecture/d0025_primary_remote_glm_live_001.md
+REPORT: reports/architecture/d0025_wf61_code_node_item_access_fix_apply.md
 ```
