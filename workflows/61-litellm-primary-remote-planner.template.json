@@ -45,7 +45,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const r=$json;\nconst stdout=String(r.stdout??'').trim();\nconst exitCode=Number(r.exitCode??r.code??1);\nlet parsed=null;\ntry{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}\nconst ingress=$('Validate canonical ingress + encode').item.json;\nconst ready=exitCode===0&&parsed?.ok===true&&parsed?.classification==='PASS'&&parsed?.request_envelope?.body;\nreturn [{json:{\n task_id:ingress.task_id,consumer_b64:ingress.consumer_b64,\n prepare_ready:Boolean(ready),prepare_result:parsed,prepare_exit_code:exitCode,\n request_body:ready?parsed.request_envelope.body:null,\n classification:ready?'PASS':(parsed?.classification||'PREPARE_FAILED')\n}}];"
+        "jsCode": "const r=$json;\nconst stdout=String(r.stdout??'').trim();\nconst exitCode=Number(r.exitCode??r.code??1);\nlet parsed=null;\ntry{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}\nconst ingress=$('Validate canonical ingress + encode').item.json;\nconst ready=exitCode===0&&parsed?.ok===true&&parsed?.classification==='PASS'&&parsed?.request_envelope?.body;\nreturn {json:{\n task_id:ingress.task_id,consumer_b64:ingress.consumer_b64,\n prepare_ready:Boolean(ready),prepare_result:parsed,prepare_exit_code:exitCode,\n request_body:ready?parsed.request_envelope.body:null,\n classification:ready?'PASS':(parsed?.classification||'PREPARE_FAILED')\n}};"
       },
       "id": "d0025-6104-4004-8004-000000000004",
       "name": "Parse prepare result fail-closed",
@@ -130,7 +130,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const resp=$json;\nconst prep=$('Parse prepare result fail-closed').item.json;\nconst status=Number(resp.statusCode??resp.status??0);\nconst body=resp.body!==undefined?resp.body:resp;\nconst raw=typeof body==='string'?body:JSON.stringify(body??{});\nreturn [{json:{task_id:prep.task_id,consumer_b64:prep.consumer_b64,http_status:Number.isFinite(status)?status:0,http_ok:status>=200&&status<300,response_b64:Buffer.from(raw,'utf8').toString('base64')}}];"
+        "jsCode": "const resp=$json;\nconst prep=$('Parse prepare result fail-closed').item.json;\nconst status=Number(resp.statusCode??resp.status??0);\nconst body=resp.body!==undefined?resp.body:resp;\nconst raw=typeof body==='string'?body:JSON.stringify(body??{});\nreturn {json:{task_id:prep.task_id,consumer_b64:prep.consumer_b64,http_status:Number.isFinite(status)?status:0,http_ok:status>=200&&status<300,response_b64:Buffer.from(raw,'utf8').toString('base64')}};"
       },
       "id": "d0025-6107-4007-8007-000000000007",
       "name": "Capture HTTP body + status",
@@ -192,7 +192,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const r=$json;\nconst stdout=String(r.stdout??'').trim();\nconst exitCode=Number(r.exitCode??r.code??1);\nlet parsed=null;\ntry{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}\nconst http=$('Capture HTTP body + status').item.json;\nconst ok=exitCode===0&&parsed?.ok===true&&parsed?.classification==='PASS';\nreturn [{json:ok?{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:true,classification:'PASS',task_id:http.task_id,http_status:http.http_status,\n response_source_format:parsed.response_source_format,response_gate:parsed.response_gate,packet:parsed.packet,policy:parsed.policy,cursor_dispatch_allowed:false\n}:{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:false,classification:parsed?.classification||'FINALIZE_FAILED',task_id:http.task_id,http_status:http.http_status,\n reason:parsed?.reason||'canonical finalize failed',cursor_dispatch_allowed:false\n}}];"
+        "jsCode": "const r=$json;\nconst stdout=String(r.stdout??'').trim();\nconst exitCode=Number(r.exitCode??r.code??1);\nlet parsed=null;\ntry{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}\nconst http=$('Capture HTTP body + status').item.json;\nconst ok=exitCode===0&&parsed?.ok===true&&parsed?.classification==='PASS';\nreturn {json:ok?{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:true,classification:'PASS',task_id:http.task_id,http_status:http.http_status,\n response_source_format:parsed.response_source_format,response_gate:parsed.response_gate,packet:parsed.packet,policy:parsed.policy,cursor_dispatch_allowed:false\n}:{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:false,classification:parsed?.classification||'FINALIZE_FAILED',task_id:http.task_id,http_status:http.http_status,\n reason:parsed?.reason||'canonical finalize failed',cursor_dispatch_allowed:false\n}};"
       },
       "id": "d0025-6110-4010-8010-000000000010",
       "name": "Return canonical cycle result",
@@ -206,7 +206,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const prep=$json;\nreturn [{json:{schema:'n8n-litellm-primary-cycle-result-v1',ok:false,classification:prep.classification||'PREPARE_FAILED',task_id:prep.task_id,reason:'No LiteLLM request sent because canonical prepare did not PASS',http_status:null,cursor_dispatch_allowed:false}}];"
+        "jsCode": "const prep=$json;\nreturn {json:{schema:'n8n-litellm-primary-cycle-result-v1',ok:false,classification:prep.classification||'PREPARE_FAILED',task_id:prep.task_id,reason:'No LiteLLM request sent because canonical prepare did not PASS',http_status:null,cursor_dispatch_allowed:false}};"
       },
       "id": "d0025-6111-4011-8011-000000000011",
       "name": "Return prepare failure without HTTP",
@@ -220,7 +220,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const http=$json;\nreturn [{json:{schema:'n8n-litellm-primary-cycle-result-v1',ok:false,classification:'LITELLM_HTTP_FAILURE',task_id:http.task_id,http_status:http.http_status,reason:'Single LiteLLM HTTP attempt did not return 2xx; retry is forbidden',cursor_dispatch_allowed:false}}];"
+        "jsCode": "const http=$json;\nreturn {json:{schema:'n8n-litellm-primary-cycle-result-v1',ok:false,classification:'LITELLM_HTTP_FAILURE',task_id:http.task_id,http_status:http.http_status,reason:'Single LiteLLM HTTP attempt did not return 2xx; retry is forbidden',cursor_dispatch_allowed:false}};"
       },
       "id": "d0025-6112-4012-8012-000000000012",
       "name": "Return HTTP failure no retry",
