@@ -5,66 +5,64 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_REMOTE_RUNTIME_GATE_ENABLE_AND_SINGLE_GLM_SMOKE
-result_cursor: STOP_D0025_GLM_SMOKE_BLOCKED_WF40_GITHUB_401
+task_ref: D-0025-W_GITHUB_CREDENTIAL_REPAIR_AND_N8N_RELOAD
+result_cursor: PASS_D0025_GITHUB_CRED_REPAIRED_N8N_RELOADED_WF40_44_LIVE_GATE_CLOSED
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_n8n_sqlite_and_export
-report_persistence_commit: 4c8e83529e6554987e9bb656bf516895dff17c85
-classification: SMOKE_NOT_EXECUTED_GATE_REMAINS_CLOSED
+independent_verification: cursor_vps_n8n_sqlite_export_and_standalone_github_rest
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: GITHUB_CREDENTIAL_REPAIRED_N8N_RELOADED
 
-repo_head_observed_at_task: 39fffdebeffd872b1015c5ed76f1c8acec3e7103
+repo_head_observed_at_task: 1f39d96d7eae79e77ac626776261ed934989d77e
 workspace_at_start: clean
-operator_gate_ref: github:issue/31#5454611166
+operator_gate_ref: github:issue/31#5454744549
 issue_31_state: OPEN
-selected_planner: glm
 
-GATE:
-  enabled: false
-  provider_calls_authorized_per_event: 0
-  enabled_on_vps: false
-  enabled_pushed: false
+credential_metadata:
+  id: 7u1QOkEiYcdKncmd
+  name: GitHub account
+  type: githubApi
 
-WF40:
+pre_repair_wf40_github_401: true
+secure_repair_performed: true
+secret_source_class: operator_surface_github_cli_keyring
+github_auth_test:
+  authentication: PASS
+  http_status: 200
+  endpoint_class: GET /repos/{owner}/{repo}/commits?per_page=1
+
+n8n_reload_performed: true
+n8n_reload_action: docker_restart_root-n8n-1
+
+WF40_PUBLISHED:
   id: 9ZMj2ACTKyDVhCue
   active: true
-  db_versionId: 48c30f4a-124c-48a4-b240-c2f6eca4743e
-  db_node_count: 44
-  in_process_execution_versionId: 86ed5569-ce2b-49bb-9f3b-30f4e7fa918b
-  in_process_node_count: 35
-  poll_error: HTTP_401_Bad_credentials
-  failing_node: GitHub - Fetch latest commit (per repo)
-  github_cred_metadata: {id: 7u1QOkEiYcdKncmd, name: GitHub account}
+  versionId: 48c30f4a-124c-48a4-b240-c2f6eca4743e
+  node_count: 44
 
-WF61:
-  id: d0025-6100-4001-8001-000000000061
-  active: false
-  executions: 0
+WF40_IN_PROCESS_AFTER_RELOAD:
+  versionId: 48c30f4a-124c-48a4-b240-c2f6eca4743e
+  node_count: 44
 
-LITELLM:
-  container: litellm-primary
-  models_endpoint: ok
-  inference_this_pass: 0
+WF40_401_AFTER_REPAIR: false
+WF40_POST_RELOAD_NOTE: natural_poll_errors_on_inactive_WF60_execute_not_github_401
 
-HELPER_TESTS: 18/18 PASS
+WF61_executions: 0
+provider_calls: 0
+inference: 0
+runtime_gate_closed: true
 
-BUDGET_THIS_PASS:
-  wf61_executions: 0
-  provider_calls: 0
-  inference: 0
-  retry: 0
-  fallback: 0
-  qwen: 0
-  cursor_dispatch: 0
-  credential_mutations: 0
-  teamviewer_mutations: 0
+LITELLM_PRESERVATION: true
+WF60_OPENCLAW_PRESERVATION: true
+credential_mutations: 1
+network_mutations: 0
+teamviewer_mutations: 0
+secret_exposure: false
 
-SECRET_VALUE_DISPLAYED: false
-SECRET_VALUE_LOGGED: false
-SECRET_VALUE_PERSISTED: false
+BUDGET:
+  glm: 0/10
+  codex: 1/10_used
 
-BACKLOG_ARTIFACT_PERSISTED: docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_SMOKE_001.md
+NEXT_GATE: D-0025-W_REMOTE_RUNTIME_GATE_ENABLE_AND_SINGLE_GLM_SMOKE
 
-NEXT_GATE: D-0025-W_GITHUB_CREDENTIAL_REPAIR_THEN_N8N_RELOAD_THEN_REAUTH_GLM_SMOKE
-
-REPORT: reports/architecture/d0025_remote_runtime_gate_enable_and_single_glm_smoke.md
+REPORT: reports/architecture/d0025_github_credential_repair_and_n8n_reload.md
 ```
