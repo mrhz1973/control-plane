@@ -1,0 +1,27 @@
+{
+  "schema": "primary-remote-runtime-gate-v1",
+  "enabled": false,
+  "provider_calls_authorized_per_event": 0,
+  "allowed_planners": ["glm", "codex"],
+  "required_fallback_policy": "gate_only",
+  "require_empty_fallback": true,
+  "provider_state": {
+    "qwen": {
+      "available": false,
+      "resource_pressure": "unknown"
+    },
+    "glm": {
+      "available": "unknown",
+      "quota_state": "unknown"
+    },
+    "codex": {
+      "available": "unknown",
+      "quota_state": "unknown"
+    }
+  },
+  "notes": [
+    "Initial fail-closed state authored by GPT Web for D-0025-W parent wiring.",
+    "Enabling this gate or authorizing provider calls is a separate operator/provider-inference gate.",
+    "This file contains policy state only and must never contain credentials or token material."
+  ]
+}
