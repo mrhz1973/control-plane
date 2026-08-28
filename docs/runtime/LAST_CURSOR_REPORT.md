@@ -9,7 +9,7 @@ task_ref: D-0025-W_VPS_CONTROL_PLANE_CHECKOUT
 result_cursor: PASS_D0025_VPS_CONTROL_PLANE_CHECKOUT
 reported_via: cursor_direct_persistence
 independent_verification: cursor_vps_git_clone_ionos_n8n
-report_persistence_commit: pending
+report_persistence_commit: 73a089ebe83431adf970b9ca301433e1b3e7a415
 classification: VPS_CHECKOUT_PASS
 
 repo_head_observed_at_task: db7879e0c21e9aea141a8951be9b8f9124afb5cb
