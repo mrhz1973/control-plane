@@ -176,7 +176,7 @@
     },
     {
       "parameters": {
-        "command": "=node /files/handoff-runtime/control-plane/tools/run-litellm-primary-cycle.mjs finalize --consumer-b64 '{{$json.consumer_b64}}' --response-b64 '{{$json.response_b64}}'"
+        "command": "=node /files/handoff-runtime/control-plane/tools/run-litellm-primary-cycle.mjs finalize --consumer-b64 '{{$json.consumer_b64}}' --response-b64 '{{$json.response_b64}}' 2>&1 || true"
       },
       "id": "d0025-6109-4009-8009-000000000009",
       "name": "Execute Command - canonical finalize",
