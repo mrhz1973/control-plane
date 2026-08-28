@@ -1,0 +1,23 @@
+{
+  "schema": "primary-remote-runtime-gate-v1",
+  "enabled": true,
+  "provider_calls_authorized_per_event": 1,
+  "allowed_planners": ["glm", "codex"],
+  "required_fallback_policy": "gate_only",
+  "require_empty_fallback": true,
+  "provider_state": {
+    "qwen": {
+      "available": false,
+      "resource_pressure": "unknown"
+    },
+    "glm": {
+      "available": "unknown",
+      "quota_state": "unknown"
+    },
+    "codex": {
+      "available": false,
+      "quota_state": "exhausted"
+    }
+  },
+  "notes": ["TEST FIXTURE ONLY — preferred unavailable/unknown"]
+}

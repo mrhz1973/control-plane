@@ -5,68 +5,71 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_WF40_PARENT_WIRING_EXACT_READONLY_PREFLIGHT
-result_cursor: PASS_D0025_WF40_PARENT_WIRING_AUTHORING_INPUT_READY
+task_ref: D-0025-W_BACKLOG_PRIMARY_REMOTE_ADAPTER_IMPLEMENTATION
+result_cursor: PASS_D0025_BACKLOG_PRIMARY_REMOTE_ADAPTER_READY
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_wf40_export_readonly
-report_persistence_commit: 80e7e5c71ab9c23fda9ead1cf8632ff3400a31f8
-classification: WF40_PARENT_WIRING_EXACT_AUTHORING_INPUT_READY
+independent_verification: offline_fixture_suite
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: BACKLOG_PRIMARY_REMOTE_ADAPTER_READY
 
-repo_head_observed_at_task: d9eb71b924bfa9b5ebdd873c93269a2bc7ab6f4d
-workspace_at_start: clean
-operator_gate_ref: github:issue/31#5453568468
+repo_head_observed_at_task: 49904c4ff1e80c372b1206976ecadcf44a39bacb
+workspace_at_start: clean_after_ff
+operator_gate_ref: github:issue/31
 issue_31_state: OPEN
 
-WF40_LIVE:
-  id: 9ZMj2ACTKyDVhCue
-  active: true
-  versionId: 86ed5569-ce2b-49bb-9f3b-30f4e7fa918b
-  updatedAt: 2026-08-27T07:49:35.000Z
-  node_count: 35
+HELPER:
+  path: tools/build-primary-remote-cycle-input-from-backlog.mjs
+  implementation: PASS
+  parser_strategy: bounded_backlog_item_v1_yaml_subset_no_runtime_install
+  new_runtime_dependencies: 0
+  package_json_added: false
 
-V1_MODELS: not_called_this_pass
-litellm_readiness: 200_healthy
+TESTS:
+  suite: tests/backlog-primary-remote-adapter/run.mjs
+  passed: 18
+  failed: 0
+  total: 18
+  contract_section_9_coverage: true
+  glm_gate_disabled_dispatch_allowed: false
+  codex_gate_disabled_dispatch_allowed: false
+  glm_gate_enabled_fixture_REMOTE_DISPATCH_READY: true
+  codex_gate_enabled_fixture_REMOTE_DISPATCH_READY: true
+  http_provider_calls_in_tests: 0
 
-SEAM_NODES:
-  plan_stub: 429cde10-b360-4396-9f57-ffeac563d2fe
-  github_fetch: 52e94e9c-986f-4f93-bac3-2c20ec4a60a1
-  detect_plans: cf34f974-d471-4983-814c-a942ce2f27bb
-  if_plan_detected: 528577ea-6424-4779-8d07-51f8502dc084
-  pm21_classifier: 666f9ed5-5236-42d1-b4ef-afe59e9d2a8a
-  pm21_bridge: 5ee80b07-4260-40df-9c25-251a7e212de6
+PATCH_OFFLINE:
+  path: workflows/patches/d0025-w-wf40-wf61-parent-wiring.gpt-web.json
+  json_parse: PASS
+  helper_ref_match: true
+  contract_ref_match: true
+  runtime_gate_ref_match: true
+  runtime_gate_must_remain_disabled: true
 
-INSERTION_EDGE:
-  after_node: Code - PM21 bridge result
-  after_node_id: 5ee80b07-4260-40df-9c25-251a7e212de6
-  current_downstream: Code - PM21 format Telegram bridge summary
-
-CANONICAL_INPUTS_BUILDABLE: false
-GPT_WEB_AUTHORING_REQUIRED: true
-
-CONSUMER_DIRECT_EXISTING: [source_backlog_ref, source_backlog_commit, repository, risk_hint]
-CONSUMER_MUST_NOT_INFER: [planner_requested]
-ROUTING_MUST_NOT_INFER: [preferred]
-ROUTING_DETERMINISTIC_DERIVABLE: [schema, fallback, fallback_policy]
-
-WF61_EXECUTE_FEASIBLE:
-  workflow_id: d0025-6100-4001-8001-000000000061
-  passthrough_compatible: true
+CANONICAL_RUNTIME_GATE:
+  path: configs/planner/primary-remote-runtime-gate.json
+  unchanged: true
+  enabled: false
+  provider_calls_authorized_per_event: 0
 
 PRESERVATION:
+  workflow_mutations: 0
   wf40_unchanged: true
   wf60_unchanged: true
   wf61_unchanged: true
-  wf61_executions: 0
+  litellm_unchanged: true
+  gpt_web_patch_artifact_unchanged: true
 
 BUDGET_THIS_PASS:
-  workflow_mutations: 0
   provider_calls: 0
   inference: 0
   wf61_executions: 0
+  credential_mutations: 0
+  teamviewer_mutations: 0
 
 SECRET_VALUE_DISPLAYED: false
+SECRET_VALUE_LOGGED: false
+SECRET_VALUE_PERSISTED: false
 
-NEXT_GATE: GPT_WEB_WF40_PARENT_WIRING_EXACT_PATCH_AUTHORING
+NEXT_GATE: D-0025-W_WF40_PARENT_WIRING_APPLY
 
-REPORT: reports/architecture/d0025_wf40_parent_wiring_exact_readonly_preflight.md
+CONTRACT: docs/contracts/backlog-primary-remote-adapter-v1.md
 ```
