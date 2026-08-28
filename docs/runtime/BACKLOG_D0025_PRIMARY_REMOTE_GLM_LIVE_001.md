@@ -68,3 +68,5 @@ context_refs:
 
 state: READY_FOR_PLANNING
 ```
+
+Retry trigger: 2026-08-28 — lane repaired; same task D-0025-W-GLM-LIVE-001.
