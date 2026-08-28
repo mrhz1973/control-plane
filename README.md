@@ -68,17 +68,20 @@ Dopo CORE BOOT:
 - AUTO-VIA non amplia lo scope e non trasforma un gate umano in decisione tecnica;
 - la persistenza docs-only dell'evidence di un task già eseguito è bookkeeping recuperabile e non apre da sola un nuovo gate runtime.
 
-STOP soltanto per gate reale, ad esempio:
+**STANDING OPERATOR AUTHORIZATION — CANONICAL:** l'operatore ha autorizzato in modo permanente i passaggi bounded già determinati dall'architettura, dal `CURRENT_FRONTIER`, dall'ACTIVE WORK, dai contratti o da artifact GPT-Web. **Non chiedere più autorizzazioni/re-autorizzazioni conversazionali** quando l'unico motivo di pausa sarebbe il consenso dell'operatore. Procedere via AUTO-VIA. Persistenza dedicata: `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`.
 
-- scelta strategica con più opzioni non equivalenti;
-- credenziali/OAuth/billing mutation;
-- distruttivo o irreversibile;
-- deploy/runtime/produzione non già autorizzato;
-- scope expansion;
+Dopo questa direttiva, `WAIT` è ammesso solo per un **blocco reale** che l'agente non può completare autonomamente, per esempio:
+
+- azione manuale inevitabile dell'operatore in una UI o servizio esterno;
+- scelta strategica con più opzioni non equivalenti e nessuna autorità canonica che la risolva;
+- distruttivo o irreversibile non già determinato dal task/architettura;
+- scope expansion o nuova architettura non definita;
 - fallback non equivalente;
 - conflitto tra fonti vive;
-- policy violation;
+- limite di piattaforma/tool/policy;
 - loop non convergente.
+
+Credenziali/OAuth/runtime/deploy/inference **non sono più un WAIT solo perché richiedevano consenso**: se l'azione è bounded, tecnicamente determinata e nello scope corrente, è pre-autorizzata. Restano WAIT soltanto se serve un intervento manuale inevitabile o manca una risoluzione canonica sicura.
 
 ### OPERATOR ACTION HANDOFF — obbligatorio in tutte le chat
 
@@ -105,7 +108,7 @@ Eseguire:
 3. rileggere ACTIVE WORK pointer se presente;
 4. leggere `docs/runtime/LAST_CURSOR_REPORT.md` **una sola volta** soltanto se il gate/NEXT dipende dal pass Cursor appena concluso;
 5. leggere evidence aggiuntiva solo se esplicitamente puntata e necessaria;
-6. applicare AUTO-VIA.
+6. applicare AUTO-VIA + STANDING OPERATOR AUTHORIZATION.
 
 **Cursor completion persistence invariant:** se il risultato dell'ultimo pass Cursor serve a determinare gate/NEXT, il task Cursor non è evidence-complete finché il report finale non è persistito in `docs/runtime/LAST_CURSOR_REPORT.md` con `task_ref`, risultato, evidence deterministica, mutazioni rilevanti e next-gate/blocker, senza secret. Questa persistenza docs-only deve essere prevista come ultimo step del task Cursor.
 
@@ -139,12 +142,14 @@ memoria chat
 
 Per architettura/invarianti, quando necessario: `docs/foundation/PROJECT_VISION.md` è canonico.
 Per stato runtime: `docs/runtime/CURRENT_FRONTIER.md` è sempre canonico.
+La standing authorization non modifica la precedenza delle fonti: modifica soltanto la necessità di chiedere consenso ripetuto.
 
 ### ON DEMAND — aprire solo quando serve
 
 | Bisogno | Fonte |
 |---|---|
 | Foundation / ruoli / hard policy | `docs/foundation/PROJECT_VISION.md` — sezione pertinente |
+| Standing operator authorization | `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md` — solo se serve il dettaglio oltre alla regola già incorporata nel boot |
 | Operating model multi-planner | `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md` — sezione pertinente |
 | Backlog / routing / packet / checkpoint | solo contratto o istanza pertinente |
 | Esecuzione Cursor | `docs/foundation/CURSOR_PROMPT_TEMPLATE.md` |
@@ -180,7 +185,7 @@ Aggiornare questo blocco solo se cambiano:
 
 - CORE BOOT;
 - precedenza fonti;
-- AUTO-VIA;
+- AUTO-VIA / standing operator authorization;
 - `agg`;
 - operator action handoff;
 - context guard / navigazione on-demand.
@@ -194,6 +199,7 @@ HEAD, gate, runtime, task e NEXT vivono nel frontier/active work, non qui.
 |---|---|
 | [docs/runtime/CURRENT_FRONTIER.md](docs/runtime/CURRENT_FRONTIER.md) | **LIVE STATE** compatto — unica autorità sullo stato operativo corrente |
 | [docs/foundation/PROJECT_VISION.md](docs/foundation/PROJECT_VISION.md) | Foundation **v3.1** e invarianti |
+| [docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md](docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md) | autorizzazione persistente dell'operatore per AUTO-VIA senza round-trip ripetuti |
 | [docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md](docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md) | Operating model multi-planner → Cursor, on demand |
 | [docs/contracts/backlog-item-v1.md](docs/contracts/backlog-item-v1.md) | GPT Web → planner |
 | [docs/contracts/execution-packet-v1.md](docs/contracts/execution-packet-v1.md) | planner → Cursor |
@@ -215,7 +221,7 @@ Dettaglio e capability runtime effettivamente verificate: leggere il frontier e 
 - OpenClaw = provider/auth/quota broker target.
 - Cursor = execution harness; loop task-bounded.
 - Workflow produzione mai mutati in silenzio.
-- Runtime/credential/PM-34/L5/permanent schedule/loop richiedono i gate correnti indicati nel frontier.
+- Runtime/credential/PM-34/L5/permanent schedule/loop seguono il frontier, l'AUTO-VIA e la standing operator authorization; si ferma solo davanti a un blocco manuale/tecnico reale o a scope non definito.
 
 ## Runtime / rebuild / export — solo on demand
 
