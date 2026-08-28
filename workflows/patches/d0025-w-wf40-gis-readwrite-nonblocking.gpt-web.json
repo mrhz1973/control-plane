@@ -1,0 +1,68 @@
+{
+  "schema": "control-plane-gpt-web-n8n-delta-v1",
+  "task_ref": "D-0025-W_WF40_GIS_READWRITE_NONBLOCKING",
+  "authority": "GPT_WEB",
+  "purpose": "Make the existing GIS handoff Read/Write Files from Disk node non-blocking so a missing attachment file cannot abort lower WF40 plan-watcher/backlog siblings under executionOrder v1.",
+  "target_workflow": {
+    "live_id": "9ZMj2ACTKyDVhCue",
+    "expected_name": "40 - CP v4 multirepo + classifier bridge - ACTIVE",
+    "expected_active": true,
+    "expected_version_id_before_patch": "29184a4e-cea0-4483-8c8e-47688fb6e3d0",
+    "expected_node_count": 44
+  },
+  "target_node": {
+    "id": "d255df3e-0d76-4418-afb3-d5fca11df5ba",
+    "name": "Read/Write Files from Disk",
+    "type": "n8n-nodes-base.readWriteFile",
+    "expected_position": [0, 144]
+  },
+  "operations": [
+    {
+      "op": "set_node_top_level_property",
+      "node_id": "d255df3e-0d76-4418-afb3-d5fca11df5ba",
+      "property": "continueOnFail",
+      "value": true
+    }
+  ],
+  "preserve": [
+    "All 44 WF40 node ids, names, types, positions and parameters",
+    "All WF40 connections and executionOrder",
+    "WF40 active state",
+    "Existing WF60 continueOnFail=true",
+    "Existing GIS Execute Command - handoff dry-run continueOnFail=true",
+    "WF60 inactive and unchanged",
+    "WF61 inactive and unchanged",
+    "Runtime gate CLOSED",
+    "LiteLLM unchanged",
+    "OpenClaw unchanged",
+    "Credentials unchanged",
+    "Network/Tailscale/TeamViewer unchanged"
+  ],
+  "forbidden": [
+    "Any additional WF40 graph change",
+    "Any node addition/removal/reposition",
+    "Any connection change",
+    "Any parameter change",
+    "WF60 activation",
+    "WF61 activation or execution",
+    "Runtime gate enablement",
+    "Provider/model request",
+    "Credential mutation",
+    "OpenClaw or LiteLLM mutation",
+    "Network/Tailscale/TeamViewer mutation"
+  ],
+  "validation": {
+    "manual_workflow_execution": false,
+    "separate_smoke_test": false,
+    "required": [
+      "Re-export live WF40 after apply",
+      "Confirm WF40 remains active with 44 nodes",
+      "Confirm target node exists exactly once and continueOnFail=true",
+      "Confirm graph equivalence excluding that single top-level property",
+      "Confirm WF60 and WF61 remain inactive",
+      "Confirm runtime gate remains CLOSED",
+      "Confirm provider calls and inference remain 0"
+    ]
+  },
+  "rollback": "Restore the exact pre-patch WF40 export if any non-equivalent drift is detected."
+}
