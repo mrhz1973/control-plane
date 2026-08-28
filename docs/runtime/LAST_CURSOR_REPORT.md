@@ -5,59 +5,50 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001_RETRY_3
-result_cursor: STOP_D0025_GLM_LIVE_001_RETRY3_WF61_ITEM_MODE_RETURN_ARRAY_INVALID
+task_ref: D-0025-W_WF61_TEMPLATE_ITEM_RETURN_SHAPE_FIX
+result_cursor: PASS_WF61_PER_ITEM_RETURN_SHAPE_FIX_APPLIED
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_n8n_execution_rundata_plus_litellm_logs
-report_persistence_commit: 16bce78e9d0f1108edfd9226f822e9e7c251cd9f
-classification: GLM_LIVE_CYCLE_WF61_ABORTED_BEFORE_LITELLM_RETURN_SHAPE
+independent_verification: cursor_vps_n8n_export_plus_template_graph_equiv
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: WF61_RETURN_SHAPE_FIXED_INACTIVE_GATE_CLOSED
 
-repo_head_at_start: 4fc160a81cd633348915131b4a767fda7055a647
-trigger_commit_sha: fdbbd487f343fdc1c83fa233c7e1b74864282bc7
+repo_head_at_start: 1f46638ccce5dad9bcd8d03ac2236cc334ee2a97
+template_apply_commit: 8812c1b6f22f92da1b9efa00fbd5d462c7341df3
 standing_auth_ref: docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md
+gpt_web_artifact: workflows/patches/d0025-w-wf61-item-return-shape-fix.gpt-web.json
 
-backlog_path: docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md
-task_id: D-0025-W-GLM-LIVE-001
-yaml_unchanged: true
+source_template_pre_commit: 1f46638
+source_template_post_commit: 8812c1b
+live_wf61_pre_versionId: e94c8529-bf3c-4f0e-b09c-2dca6dfa0dad
+live_wf61_post_versionId: ab504cd5-1f14-4097-9e78-6aa6cf10cd1a
+node_count: 13
 
-adapter_offline: REMOTE_DISPATCH_READY
-adapter_live: REMOTE_DISPATCH_READY
-selected_planner: glm
+target_node_ids:
+  - d0025-6104-4004-8004-000000000004
+  - d0025-6107-4007-8007-000000000007
+  - d0025-6110-4010-8010-000000000010
+  - d0025-6111-4011-8011-000000000011
+  - d0025-6112-4012-8012-000000000012
 
-WF40_execution_id: 284783
-WF61_execution_id: 284784
-wf61_new_execution_count_this_pass: 1
-wf61_total_execution_count: 2
-litellm_request_count: 0
-provider_attempt_count: 0
+mode_before_after: runOnceForEachItem (unchanged on all five)
+invalid_array_return_count_before: 5
+invalid_array_return_count_after: 0
+input_first_in_targets: 0
+graph_equivalence: PASS except five jsCode return-shape fields
 
-response_gate_result: NOT_REACHED
-schema_gate_result: NOT_REACHED
-packet_policy_result: NOT_REACHED
-packet_path: null
-
-runtime_gate_before: {enabled: false, provider_calls_authorized_per_event: 0}
-runtime_gate_during: {enabled: true, provider_calls_authorized_per_event: 1, allowed_planners: [glm]}
-runtime_gate_after: {enabled: false, provider_calls_authorized_per_event: 0}
-final_gate_closed: true
-
-WF61_state_before: inactive
-WF61_state_during: active_temporarily
-WF61_state_after: inactive
-
-blocker: WF61 node Parse prepare result fail-closed rejects GPT-Web jsCode return of array [{json:...}] in runOnceForEachItem mode (requires single item {json:...}) — error A 'json' property isn't an object; failure before LiteLLM HTTP node
-retry: 0
-fallback: 0
-qwen: 0
-codex: 0
-cursor_dispatch: 0
+WF61_state: inactive
+runtime_gate: CLOSED
+litellm_requests: 0
+provider_calls: 0
+inference: 0
 credential_mutations: 0
 network_mutations: 0
 teamviewer_mutations: 0
 secret_exposure: false
-glm_budget: 0/10
+wf40_unchanged: true
+wf61_executions_total: 2
 
-NEXT_GATE: D-0025-W_WF61_TEMPLATE_ITEM_RETURN_SHAPE_FIX
+NEXT_GATE: D-0025-W_PRIMARY_REMOTE_GLM_LIVE_001
 
-REPORT: reports/architecture/d0025_primary_remote_glm_live_001.md
+REPORT: reports/architecture/d0025_wf61_item_return_shape_fix_apply.md
 ```
