@@ -5,107 +5,92 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0024-W_RUNTIME_PILOT
-result_cursor: PASS_D0024_RUNTIME_PILOT_COMPLETE_GLM_PROVIDER_BAD_REQUEST_CODEX_PROVIDER_BAD_REQUEST
+task_ref: D-0024-W_REQUEST_SHAPE_RECOVERY
+result_cursor: PASS_D0024_REQUEST_SHAPE_RECOVERY_OFFLINE_GLM_TRANSFORM_PASS_CODEX_TRANSFORM_PASS
 reported_via: cursor_direct_persistence
-independent_verification: cursor_runtime_pilot_work_pc
-report_persistence_commit: ce85ffb267323722b518e8eb943a8df2387fc1b4
-classification: D0024_RUNTIME_PILOT_COMPLETE_BOTH_BACKENDS_PROVIDER_400_NO_PACKET
+independent_verification: cursor_offline_work_pc
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: D0024_REQUEST_SHAPE_RECOVERY_OFFLINE_COMPLETE
 
-repo_head_observed_at_task: a8cf1c5fddce0523edcfb908ed5d60394503a947
+repo_head_observed_at_task: 2ea22af6d4b82f7219f86b87528e1264ac793571
 workspace_at_start: clean
 operator_gate_ref: github:issue/30
 issue_30_state: OPEN
 
-PROXY_READINESS:
-  bind: 127.0.0.1:4000
-  tcp_listen: true
-  health_http_status: 200
-  models_http_status: 200
-  aliases_present: [planner-qwen-pilot, planner-glm-pilot, planner-codex-pilot]
-  proxy_started_by_cursor: false
-  shared_runtime_alive_after_glm: true
+ROOT_CAUSE:
+  root_cause_confirmed: true
+  old_input_shape: "body.input = consumer_input object (raw JSON object)"
+  new_input_shape: |
+    input: [
+      {
+        role: "user",
+        content: [{ type: "input_text", text: JSON.stringify(consumerInput) }]
+      }
+    ]
+  pilot_evidence:
+    glm: PROVIDER_BAD_REQUEST_ZAI_MESSAGES_PARAMETER_ILLEGAL
+    codex: PROVIDER_BAD_REQUEST_CHATGPT_INPUT_MUST_BE_LIST
 
-HOST_TOOLING:
-  ajv: HOST_TOOLING_AJV_UNAVAILABLE
-  envelope_build: canonical_equivalent_without_ajv
-  note: Node Ajv schema validators not run; structural response-gate/policy N/A because provider returned errors before function_call
-
-CONSUMER_TASK:
-  fixture_base: tests/openclaw-consumer-roundtrip/fixtures/consumer-input-valid.json
-  mutation: planner_requested only
-  glm_planner_requested: glm
-  codex_planner_requested: codex
-  endpoint: POST /v1/responses
-  stream: false
-  tool: emit_execution_packet
-  tool_choice: emit_execution_packet
-  provider_override: false
-  credentials_in_body: false
-
-COUNTERS:
-  glm_attempt_count: 1
-  codex_attempt_count: 1
-  total_provider_attempts: 2
-  qwen_attempt_count: 0
-  retry: 0
-  planner_fallback: 0
-  gateway_fallback: 0
-  litellm_available_model_group_fallbacks: None
-
-GLM:
-  gateway_kind: litellm
+LITELLM_SOURCE_INSPECTION:
   litellm_version: "1.98.0"
-  alias: planner-glm-pilot
-  backend_model: zai/glm-5.3
-  endpoint_class: zai_coding_paas_v4
-  api_base: https://api.z.ai/api/coding/paas/v4
-  http_status: 400
-  provider_attempt_count: 1
-  elapsed_ms: 382
-  response_object_status: null
-  function_call_count: null
-  function_call_name: null
-  response_gate: API_ERROR_NO_FUNCTION_CALL
-  packet_schema: NOT_APPLICABLE_PROVIDER_ERROR
-  packet_schema_note: SCHEMA_VALIDATION_HOST_TOOLING_UNAVAILABLE
-  policy: NOT_APPLICABLE_NO_PACKET
-  failure_classification: PROVIDER_BAD_REQUEST_ZAI_MESSAGES_PARAMETER_ILLEGAL
-  failure_message_sanitized: "ZaiException - The messages parameter is illegal. Please check the documentation. Available Model Group Fallbacks=None"
-  secret_exposure: false
+  venv_path_sanitized: "%LOCALAPPDATA%\\ControlPlane\\litellm-spike\\venv"
+  litellm_source_paths_inspected:
+    - litellm/responses/litellm_completion_transformation/transformation.py
+    - litellm/llms/openai/responses/transformation.py
+    - litellm/llms/chatgpt/responses/transformation.py
+    - litellm/llms/zai/chat/transformation.py
+  finding: |
+    LiteLLM transform_responses_api_input_to_messages accepts only str|list input.
+    ChatGPT/Codex Responses rejects raw object input ("Input must be a list").
+    ZAI routes via chat-completions bridge; list input with input_text content
+    produces legal user messages instead of empty/illegal messages from raw object.
 
-CODEX:
-  gateway_kind: litellm
-  litellm_version: "1.98.0"
-  alias: planner-codex-pilot
-  backend_model: chatgpt/gpt-5.6-sol
-  endpoint_class: chatgpt_codex_oauth
-  http_status: 400
-  provider_attempt_count: 1
-  elapsed_ms: 635
-  response_object_status: null
-  function_call_count: null
-  function_call_name: null
-  response_gate: API_ERROR_NO_FUNCTION_CALL
-  packet_schema: NOT_APPLICABLE_PROVIDER_ERROR
-  packet_schema_note: SCHEMA_VALIDATION_HOST_TOOLING_UNAVAILABLE
-  policy: NOT_APPLICABLE_NO_PACKET
-  failure_classification: PROVIDER_BAD_REQUEST_CHATGPT_INPUT_MUST_BE_LIST
-  failure_message_sanitized: "ChatgptException - {\"detail\":\"Input must be a list\"}. Available Model Group Fallbacks=None"
-  secret_exposure: false
+ADAPTER_FIX:
+  file: tools/build-llm-gateway-request.mjs
+  export: buildResponsesInputFromConsumer
+  preserved:
+    - stream=false
+    - canonical instructions
+    - emit_execution_packet tool + forced tool_choice
+    - model alias binding
+    - no provider override
+    - no credentials in body
+    - consumer_input semantic identity via JSON.parse(input_text)
+
+TRANSFORM_VALIDATION_OFFLINE:
+  codex_transform_validation: PASS
+  zai_transform_validation: PASS
+  method: pure LiteLLM 1.98.0 transformation functions only
+  network_guard: socket.connect monkeypatched to forbid network
+  oauth_restarted: false
+  token_read: false
+  get_access_token_called: false
+
+TESTS:
+  suite: tests/llm-gateway-request-shape/run.mjs
+  result: PASS (4/4)
+  cases:
+    - glm-input-is-list
+    - codex-input-is-list
+    - buildResponsesInputFromConsumer-export
+    - litellm-transform-offline-python
+  portability_suite: tests/llm-gateway-portability/run.mjs
+  portability_note: HOST_TOOLING_AJV_UNAVAILABLE — adapter Ajv-dependent cases not runnable on host; template/matrix checks PASS
+  host_tooling_ajv: HOST_TOOLING_AJV_UNAVAILABLE
 
 BUDGET:
-  glm_inference: 1/1
-  codex_inference: 1/1
-  total_inference: 2/2
+  glm_provider_attempts_total: 1
+  codex_provider_attempts_total: 1
+  total_provider_attempts: 2
+  new_provider_attempts_this_pass: 0
+  new_inference_this_pass: 0
   qwen_inference: 0
   retry: 0
   fallback: 0
+  network_access: false
+  proxy_called: false
+  litellm_restarted: false
 
-PACKET_EXECUTION_BY_CURSOR: false
-oauth_restarted: false
-token_value_read: false
-token_value_displayed: false
 SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
 SECRET_VALUE_PERSISTED: false

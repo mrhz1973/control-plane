@@ -55,6 +55,29 @@ function structuredCloneJson(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+/**
+ * Canonical Responses API user input for LiteLLM portability.
+ *
+ * LiteLLM 1.98.0 `transform_responses_api_input_to_messages` accepts only
+ * `str | list` input items. ChatGPT/Codex Responses rejects a raw object
+ * (`Input must be a list`). ZAI routes via chat-completions and requires
+ * legal message lists derived from list-shaped Responses input with
+ * `input_text` content blocks (see litellm/responses/litellm_completion_transformation).
+ */
+export function buildResponsesInputFromConsumer(consumerInput) {
+  return [
+    {
+      role: "user",
+      content: [
+        {
+          type: "input_text",
+          text: JSON.stringify(consumerInput),
+        },
+      ],
+    },
+  ];
+}
+
 function readJson(abs) {
   return JSON.parse(readFileSync(abs, "utf8").replace(/^\uFEFF/, ""));
 }
@@ -128,7 +151,7 @@ function buildEnvelope({ consumerInput, model, agentHeader, responsesPath }) {
       model,
       stream: false,
       instructions: PLANNER_INSTRUCTIONS,
-      input: structuredCloneJson(consumerInput),
+      input: buildResponsesInputFromConsumer(consumerInput),
       tools: [
         {
           type: "function",

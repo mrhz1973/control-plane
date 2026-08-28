@@ -350,8 +350,11 @@ const CASES = [
       if (/api_key:\s*['\"]?[A-Za-z0-9_\-]{20,}['\"]?/.test(text) && !/os\.environ|\$\{|env\./.test(text)) {
         return "possible literal api_key";
       }
-      if (!text.includes("<EXACT_CODEX_MODEL_AFTER_OAUTH_DISCOVERY>")) {
-        return "missing Codex model placeholder";
+      if (
+        !text.includes("chatgpt/gpt-5.6-sol") &&
+        !text.includes("<EXACT_CODEX_MODEL_AFTER_OAUTH_DISCOVERY>")
+      ) {
+        return "missing reconciled Codex model or placeholder";
       }
       if (/openai\.com\/v1|OPENAI_API_KEY|platform\.openai\.com/i.test(text) && /codex/i.test(text)) {
         // allow mention as forbidden; must not configure as fallback route
