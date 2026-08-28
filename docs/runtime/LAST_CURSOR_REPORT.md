@@ -5,64 +5,64 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_GITHUB_CREDENTIAL_REPAIR_AND_N8N_RELOAD
-result_cursor: PASS_D0025_GITHUB_CRED_REPAIRED_N8N_RELOADED_WF40_44_LIVE_GATE_CLOSED
+task_ref: D-0025-W_REMOTE_RUNTIME_GATE_ENABLE_AND_SINGLE_GLM_SMOKE_RETRY
+result_cursor: STOP_D0025_GLM_SMOKE_RETRY_WF60_BLOCKS_BACKLOG_LANE
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_n8n_sqlite_export_and_standalone_github_rest
-report_persistence_commit: 162ca5d94d2b2d4405c9f23422771666b010b09d
-classification: GITHUB_CREDENTIAL_REPAIRED_N8N_RELOADED
+independent_verification: cursor_vps_n8n_export_positions_and_execution_rundata
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: SMOKE_NOT_EXECUTED_WF60_BLOCKS_CANONICAL_LANE
 
-repo_head_observed_at_task: 1f39d96d7eae79e77ac626776261ed934989d77e
+repo_head_observed_at_task: 7d2567489fbc4954b56562876d21f0c95bae2427
 workspace_at_start: clean
-operator_gate_ref: github:issue/31#5454744549
+operator_gate_ref: github:issue/31#5454884137
 issue_31_state: OPEN
+selected_planner: glm
 
-credential_metadata:
-  id: 7u1QOkEiYcdKncmd
-  name: GitHub account
-  type: githubApi
+trigger_backlog_path: null
+trigger_commit_sha: null
+cleanup_commit_sha: null
+adapter_classification: NOT_RUN
 
-pre_repair_wf40_github_401: true
-secure_repair_performed: true
-secret_source_class: operator_surface_github_cli_keyring
-github_auth_test:
-  authentication: PASS
-  http_status: 200
-  endpoint_class: GET /repos/{owner}/{repo}/commits?per_page=1
+WF40_execution_id: null_for_smoke
+WF61_execution_id: null
+WF61_execution_count: 0
+provider_attempt_count: 0
+normalized_provider_result: NOT_ATTEMPTED
+response_gate_result: NOT_RUN
+schema_gate_result: NOT_RUN
+packet_policy_result: NOT_RUN
+task_id_result: NOT_RUN
 
-n8n_reload_performed: true
-n8n_reload_action: docker_restart_root-n8n-1
+retry: 0
+fallback: 0
+qwen: 0
+codex: 0
+cursor_dispatch: 0
 
-WF40_PUBLISHED:
-  id: 9ZMj2ACTKyDVhCue
-  active: true
-  versionId: 48c30f4a-124c-48a4-b240-c2f6eca4743e
-  node_count: 44
+runtime_gate_before: {enabled: false, provider_calls_authorized_per_event: 0}
+runtime_gate_during: {enabled: false, provider_calls_authorized_per_event: 0}
+runtime_gate_after: {enabled: false, provider_calls_authorized_per_event: 0}
+final_gate_closed: true
 
-WF40_IN_PROCESS_AFTER_RELOAD:
-  versionId: 48c30f4a-124c-48a4-b240-c2f6eca4743e
-  node_count: 44
+blocker:
+  type: WF60_LEGACY_INACTIVE_EXECUTE_ABORTS_SIBLINGS
+  wf40_executionOrder: v1
+  wf60_position: [-720, -160]
+  backlog_stub_position: [-720, 752]
+  observed_error: Workflow is not active and cannot be executed.
+  backlog_lane_nodes_reached: false
 
-WF40_401_AFTER_REPAIR: false
-WF40_POST_RELOAD_NOTE: natural_poll_errors_on_inactive_WF60_execute_not_github_401
-
-WF61_executions: 0
-provider_calls: 0
-inference: 0
-runtime_gate_closed: true
-
-LITELLM_PRESERVATION: true
-WF60_OPENCLAW_PRESERVATION: true
-credential_mutations: 1
+WF40_preservation: true
+WF61_preservation: true
+WF60_OpenClaw_preservation: true
+LiteLLM_preservation: true
+GitHub_credential_preservation: true
+credential_mutations: 0
 network_mutations: 0
 teamviewer_mutations: 0
 secret_exposure: false
 
-BUDGET:
-  glm: 0/10
-  codex: 1/10_used
+NEXT_GATE: D-0025-W_WF40_WF60_PARALLEL_NONBLOCKING_FOR_BACKLOG_LANE
 
-NEXT_GATE: D-0025-W_REMOTE_RUNTIME_GATE_ENABLE_AND_SINGLE_GLM_SMOKE
-
-REPORT: reports/architecture/d0025_github_credential_repair_and_n8n_reload.md
+REPORT: reports/architecture/d0025_primary_remote_glm_single_smoke_retry.md
 ```
