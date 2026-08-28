@@ -5,44 +5,50 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_VPS_SCHEMA_ENGINE
-result_cursor: PASS_D0025_VPS_SCHEMA_ENGINE
+task_ref: D-0025-W_LITELLM_AUTH_DESIGN_READONLY_PREFLIGHT
+result_cursor: PASS_D0025_LITELLM_AUTH_DESIGN_PREFLIGHT
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_isolated_ajv_install_ionos_n8n
-report_persistence_commit: 049024b81836eeda29731731f2606784107cf04a
-classification: SCHEMA_ENGINE_LIVE_READY
+independent_verification: cursor_vps_readonly_litellm_auth_inspect
+report_persistence_commit: pending
+classification: CREDENTIALLESS_PRIVATE_PROXY_RECOMMENDED
 
-repo_head_observed_at_task: 86ce74735c68ecfb4c2f01e4889ab96b040627ba
+repo_head_observed_at_task: e84f0412789d5fca2ecb8132662d4783b7ef9137
 workspace_at_start: clean
 operator_gate_ref: github:issue/31#5452941338
 issue_31_state: OPEN
 
-SCHEMA_ENGINE:
-  install_classification: NEW
-  host_path: /root/local-files/handoff-runtime/schema-engine
-  container_node_modules: /files/handoff-runtime/schema-engine/node_modules
-  npm_version: "11.12.1"
-  ajv_version: "8.20.0"
-  ajv_formats_version: "3.0.1"
-  resolver_env_name: CONTROL_PLANE_AJV_NODE_MODULES
-  valid_fixture: PASS
-  invalid_fixture: FAIL_CLOSED
-  primary_cycle_offline_finalize: PASS
+PROXY_AUTH:
+  required_current_live: false
+  classification: UNNECESSARY
+  litellm_master_key_env_present: false
+  config_mount: false
+  credentialless_proxy: true
 
-N8N_SAFETY:
-  id_before: ef3520640a8e7006a58655109b8da3c69af40a03da6b79de4865723b67077568
-  id_after: ef3520640a8e7006a58655109b8da3c69af40a03da6b79de4865723b67077568
-  restarted: false
-  compose_mutation: 0
+PROVIDER_AUTH:
+  required_future_config_gate: true
+  separate_from_proxy_auth: true
 
-LITELLM:
-  id_before: e9b3828c59922a00474d88a7f205b2fe35ce4d1dfc4bc65190636c76a8cb922a
-  id_after: e9b3828c59922a00474d88a7f205b2fe35ce4d1dfc4bc65190636c76a8cb922a
-  mutation: 0
+PRIVATE_BOUNDARY:
+  private_docker_only: true
+  untrusted_sibling_present: false
+  root_default_members: [root-n8n-1, litellm-primary]
+  host_published_ports: 0
 
-REPO_DEPENDENCY_DELTA: 0
+WF61:
+  http_header_auth_placeholder: true
+  header_auth_required_current_topology: false
+  artifact_modified: false
+
+RECOMMENDATION: CREDENTIALLESS_PRIVATE_PROXY
+
+N8N_LITELLM_SAFETY:
+  n8n_id_unchanged: true
+  litellm_id_unchanged: true
+  wf40_wf60_unchanged: true
+  wf61_unimported: true
 
 BUDGET_THIS_PASS:
+  runtime_mutations: 0
   provider_calls: 0
   inference: 0
   credential_mutations: 0
@@ -52,5 +58,5 @@ SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
 SECRET_VALUE_PERSISTED: false
 
-REPORT: reports/architecture/d0025_vps_schema_engine.md
+REPORT: reports/architecture/d0025_litellm_auth_design_readonly_preflight.md
 ```
