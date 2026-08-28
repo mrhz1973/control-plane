@@ -5,14 +5,14 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_PHASE_A
-result_cursor: PASS_D0025_PHASE_A_FOUNDATION_SYNC_PRIMARY_CONFIG_N8N_MAP
+task_ref: D-0025-W_PHASE_B_LIVE_READONLY_PREFLIGHT
+result_cursor: PASS_D0025_PHASE_B_LIVE_READONLY_PREFLIGHT_WF40_MATCH_WF60_MATCH
 reported_via: cursor_direct_persistence
-independent_verification: cursor_repo_only_phase_a_work_pc
-report_persistence_commit: 9002b363215aa8df9d86cb256fb0da8e9ea06024
-classification: D0025_PHASE_A_REPO_SYNC_COMPLETE
+independent_verification: cursor_vps_ssh_readonly_preflight
+report_persistence_commit: pending
+classification: D0025_PHASE_B_LIVE_READONLY_PREFLIGHT_PASS
 
-repo_head_observed_at_task: 7fe8b58ec32a40afedc7e3c1eb1f2250a31cc0c2
+repo_head_observed_at_task: aab375c4490135205a168ceb50b0a9a70fe81b01
 workspace_at_start: clean
 operator_gate_ref: github:issue/31
 issue_31_state: OPEN
@@ -22,50 +22,77 @@ PRECHECK:
   core_boot: PASS
   teamviewer_network_mutations: 0
 
-FOUNDATION_SYNC:
-  document: docs/foundation/PROJECT_VISION.md
-  version: "3.2"
-  litellm_primary_remote: documented
-  openclaw_fallback_preserved: documented
-  qwen_deferred: documented
-  d0024_pass_recorded: true
-  operator_decision_date: "2026-08-28"
+ACCESS_METHOD:
+  vps_ssh: ionos-n8n
+  n8n_api: not_used
+  n8n_api_key_in_container: absent
+  workflow_read: n8n_export_workflow_cli_inside_root-n8n-1
 
-PRIMARY_REMOTE_CONFIG:
-  path: configs/litellm/control-plane-primary-remote.template.yaml
-  status: NOT_ACTIVE
-  aliases: [planner-glm-pilot, planner-codex-pilot]
-  qwen_included: false
-  offline_validation: PASS
-  validation_suite: tests/llm-gateway-portability/run.mjs
-  validation_case: litellm-primary-remote-config-checks
-  litellm_package_parse: unavailable_on_host
-  structural_validation: PASS
+WF40_LIVE:
+  id: 9ZMj2ACTKyDVhCue
+  name: "40 - CP v4 multirepo + classifier bridge - ACTIVE"
+  active: true
+  versionId: 86ed5569-ce2b-49bb-9f3b-30f4e7fa918b
+  nodeCount: 35
+  ifNewCommit: present
+  ifPlanDetected: present
+  wf60ExecuteCount: 1
+  wf60Target: d0015600-4001-8001-0001-0653506aabcd
+  plannerSelectionNode: absent
+  litellmNode: absent
+  pm21Classifier: present_not_planner_selection
+  repo_delta_class: MATCH
 
-N8N_INTEGRATION_MAP:
-  report: reports/architecture/d0025_phase_a_integration_map.md
-  classification: REPO_GROUNDED_REVERIFY_REQUIRED
-  live_n8n_api: unavailable
-  n8n_api_key_set: false
-  wf40_live_id: 9ZMj2ACTKyDVhCue
-  wf60_live_id: d0015600-4001-8001-0001-0653506aabcd
-  wf40_export_evidence: workflows/exports/2026-08-27_40-d0015-w-wf60-parent-wiring-post-apply.redacted.json
-  live_workflow_mutation: 0
-  planner_litellm_node_present_in_export: false
-  wf60_openclaw_resolver_present: true
+WF60_LIVE:
+  id: d0015600-4001-8001-0001-0653506aabcd
+  exists: true
+  name: "60 - OpenClaw broker fallback resolver - tailnet private - GPT-Web authored"
+  active: false
+  versionId: dacd0594-5e5a-41e8-a6cc-6088c5f7c14c
+  nodeCount: 7
+  health_resolver_only: true
+  provider_invocation_added: false
+  repo_delta_class: MATCH
+
+N8N_SURFACE:
+  class: docker_container_root_n8n_1_on_root_default_loopback_5678
+  container: root-n8n-1
+  image: docker.n8n.io/n8nio/n8n
+  n8n_version: "2.19.5"
+  container_node: v24.14.1
+  host_node: v18.19.1
+  host_os: Ubuntu_6.8.0-138-generic
+  network: root_default
+  container_ip_class: 172.18.0.2
+  port_binding: 127.0.0.1:5678
+
+CONTROL_PLANE_TOOLS:
+  available_on_n8n_surface: false
+  control_plane_mount_under_handoff_runtime: absent
+  handoff_runtime_dirs: [dev-method, cursor-coordinate-converter, Planet-Clone, _quarantine]
+
+SCHEMA_ENGINE:
+  ajv_on_vps_host: false
+  ajv_on_n8n_container: false
+  control_plane_ajv_env_on_n8n: unset
+
+LITELLM_PLACEMENT:
+  preferred_class: B_sibling_docker_container_on_root_default
+  candidate_url_class: http://litellm-primary:4000/v1/responses
+  public_exposure_required: false
+  install_started_this_pass: false
+
+PLANNER_INGRESS_GAP:
+  confirmed_live: true
+  planner_selection_v1_producer: absent
+  openclaw_consumer_input_v1_producer: absent
+  pm21_not_promoted: true
 
 BUDGET_THIS_PASS:
   provider_calls: 0
-  codex_inference: 0
-  glm_inference: 0
-  qwen_inference: 0
-  expanded_glm_budget_used: 0
-  expanded_codex_budget_used: 1
-  expanded_codex_budget_remaining: 9
-  retry: 0
-  planner_fallback: 0
-  gateway_fallback: 0
-  network_config_mutations: 0
+  inference: 0
+  workflow_mutations: 0
+  network_mutations: 0
   teamviewer_mutations: 0
 
 SECRET_VALUE_DISPLAYED: false
