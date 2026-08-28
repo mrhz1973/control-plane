@@ -1,0 +1,26 @@
+{
+  "task_id": "D-0021-W",
+  "source_backlog_ref": "github:issue/27",
+  "source_backlog_commit": "af56b57104b7182cbc56580a8df2074cc1436d78",
+  "repository": "mrhz1973/control-plane",
+  "branch_target": "main",
+  "goal": "Deterministic Execution Packet policy gate.",
+  "risk_hint": "low",
+  "complexity_hint": "low",
+  "planner_requested": "glm",
+  "allowed_paths": [
+    "tools/evaluate-execution-packet-policy.mjs",
+    "tests/execution-packet-policy-gate/"
+  ],
+  "forbidden_paths": [
+    "n8n",
+    "OpenClaw runtime"
+  ],
+  "acceptance_seed": [
+    "Policy GATE preserved"
+  ],
+  "validation_seed": [
+    "node tests/litellm-primary-cycle/run.mjs"
+  ],
+  "hard_constraints": []
+}
