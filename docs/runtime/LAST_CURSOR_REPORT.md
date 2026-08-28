@@ -5,74 +5,66 @@
 ## LATEST
 
 ```yaml
-task_ref: D-0025-W_WF40_PARENT_WIRING_APPLY
-result_cursor: PASS_D0025_WF40_PRIMARY_REMOTE_PARENT_LANE_WIRED_GATE_CLOSED
+task_ref: D-0025-W_REMOTE_RUNTIME_GATE_ENABLE_AND_SINGLE_GLM_SMOKE
+result_cursor: STOP_D0025_GLM_SMOKE_BLOCKED_WF40_GITHUB_401
 reported_via: cursor_direct_persistence
-independent_verification: cursor_vps_n8n_export_compare
-report_persistence_commit: 923581aaa458b6bd96e28068e21d4268259fc50e
-classification: WF40_PRIMARY_REMOTE_PARENT_LANE_WIRED_GATE_CLOSED
+independent_verification: cursor_vps_n8n_sqlite_and_export
+report_persistence_commit: PENDING_SELF_REFERENCE
+classification: SMOKE_NOT_EXECUTED_GATE_REMAINS_CLOSED
 
-repo_head_observed_at_task: 18b56bb38012c12a61e9306c5c41788905462212
+repo_head_observed_at_task: 39fffdebeffd872b1015c5ed76f1c8acec3e7103
 workspace_at_start: clean
-operator_gate_ref: github:issue/31#5454498686
+operator_gate_ref: github:issue/31#5454611166
 issue_31_state: OPEN
+selected_planner: glm
 
-WF40_PRE:
-  id: 9ZMj2ACTKyDVhCue
-  active: true
-  versionId: 86ed5569-ce2b-49bb-9f3b-30f4e7fa918b
-  node_count: 35
-
-WF40_POST:
-  id: 9ZMj2ACTKyDVhCue
-  active: true
-  versionId: 48c30f4a-124c-48a4-b240-c2f6eca4743e
-  node_count: 44
-
-ADDED_NODE_IDS:
-  - d0025f40-6101-4001-8001-000000000101
-  - d0025f40-6102-4002-8002-000000000102
-  - d0025f40-6103-4003-8003-000000000103
-  - d0025f40-6104-4004-8004-000000000104
-  - d0025f40-6105-4005-8005-000000000105
-  - d0025f40-6106-4006-8006-000000000106
-  - d0025f40-6107-4007-8007-000000000107
-  - d0025f40-6108-4008-8008-000000000108
-  - d0025f40-6109-4009-8009-000000000109
-
-CONNECTION_EQUIVALENCE: PASS
-LEGACY_LANE_PRESERVATION: PASS
-SOURCE_PARALLEL_TARGETS: [Code - Detect real docs/plans plan files, Code - Detect canonical backlog item]
-WF61_EXECUTE_TARGET: d0025-6100-4001-8001-000000000061
-
-WF60_PRESERVATION: unchanged_inactive
-WF61_STATE: inactive_not_executed
-LITELLM_UNCHANGED: true
-
-RUNTIME_GATE:
-  unchanged: true
+GATE:
   enabled: false
   provider_calls_authorized_per_event: 0
+  enabled_on_vps: false
+  enabled_pushed: false
 
-HELPER_TESTS_AT_APPLY: 18/18 PASS
+WF40:
+  id: 9ZMj2ACTKyDVhCue
+  active: true
+  db_versionId: 48c30f4a-124c-48a4-b240-c2f6eca4743e
+  db_node_count: 44
+  in_process_execution_versionId: 86ed5569-ce2b-49bb-9f3b-30f4e7fa918b
+  in_process_node_count: 35
+  poll_error: HTTP_401_Bad_credentials
+  failing_node: GitHub - Fetch latest commit (per repo)
+  github_cred_metadata: {id: 7u1QOkEiYcdKncmd, name: GitHub account}
+
+WF61:
+  id: d0025-6100-4001-8001-000000000061
+  active: false
+  executions: 0
+
+LITELLM:
+  container: litellm-primary
+  models_endpoint: ok
+  inference_this_pass: 0
+
+HELPER_TESTS: 18/18 PASS
 
 BUDGET_THIS_PASS:
-  workflow_mutations: 1
-  wf40_executions: 0
   wf61_executions: 0
   provider_calls: 0
   inference: 0
+  retry: 0
+  fallback: 0
+  qwen: 0
+  cursor_dispatch: 0
   credential_mutations: 0
   teamviewer_mutations: 0
 
 SECRET_VALUE_DISPLAYED: false
 SECRET_VALUE_LOGGED: false
 SECRET_VALUE_PERSISTED: false
-GITHUB_CRED_METADATA_CLONED: {id: 7u1QOkEiYcdKncmd, name: GitHub account}
 
-ROLLBACK_PERFORMED: false
+BACKLOG_ARTIFACT_PERSISTED: docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_SMOKE_001.md
 
-NEXT_GATE: D-0025-W_REMOTE_RUNTIME_GATE_ENABLE_OPERATOR_GATE
+NEXT_GATE: D-0025-W_GITHUB_CREDENTIAL_REPAIR_THEN_N8N_RELOAD_THEN_REAUTH_GLM_SMOKE
 
-REPORT: reports/architecture/d0025_wf40_parent_wiring_apply.md
+REPORT: reports/architecture/d0025_remote_runtime_gate_enable_and_single_glm_smoke.md
 ```
