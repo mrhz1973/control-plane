@@ -9,7 +9,7 @@ task_ref: D-0025-W_LITELLM_PRIVATE_CONTAINER_DEPLOY
 result_cursor: PASS_D0025_LITELLM_PRIVATE_CONTAINER_DEPLOY
 reported_via: cursor_direct_persistence
 independent_verification: cursor_vps_runtime_deploy_ionos_n8n
-report_persistence_commit: pending
+report_persistence_commit: aec4d7e00f39ee079df7a6b1f61c60fdea1784a0
 classification: PRIVATE_PROXY_READY_CREDENTIALLESS
 
 repo_head_observed_at_task: d3943e8bf30367c281def0aa6e78fbc3a8d18f3c
