@@ -98,6 +98,8 @@ AUTO-VIA stops on a real decision/gate, not on generic caution.
 
 Docs-only persistence of evidence for a task already executed is recoverable bookkeeping and does not by itself open a new runtime gate.
 
+**Sequencing boundary:** AUTO-VIA does not authorize GPT Web to emit a new Cursor TASK DELTA while the previous Cursor prompt is still awaiting its operator-returned `agg`. The canonical sequencing rule is `docs/foundation/PROMPT_SEQUENCING_GATE.md`.
+
 ## 7. `agg`
 
 After a Cursor pass:
@@ -108,7 +110,8 @@ remote HEAD
 → ACTIVE WORK
 → LAST_CURSOR_REPORT once if relevant
 → pointed evidence only if necessary
-→ AUTO-VIA
+→ summarize the completed Cursor pass to the operator
+→ only then derive/emit any next Cursor TASK DELTA via AUTO-VIA
 ```
 
 Never reboot the full project for `agg`.
@@ -138,6 +141,23 @@ EVIDENCE_NOT_PERSISTED
 Do **not** infer that the task was not executed.
 
 If the operator supplies the complete missing Cursor report in the same message, GPT Web may persist it docs-only, mark it `operator-relayed` / not independently verified, and continue AUTO-VIA. Otherwise issue a bounded verify/persist-only Cursor step.
+
+### 7.2 Prompt sequencing gate
+
+For consecutive Cursor passes, the mandatory order is:
+
+```text
+GPT Web prompt N
+→ Cursor executes N
+→ operator sends `agg`
+→ GPT Web refreshes canonical repo/evidence
+→ GPT Web summarizes outcome N
+→ only then prompt N+1
+```
+
+A provider becoming available, a quota reset, an obvious fix, or generic `vai` / `procedi` / `next` does not bypass this order while prompt N is unresolved. Only an explicit operator override that clearly names this sequencing gate may bypass it.
+
+Canonical detail: `docs/foundation/PROMPT_SEQUENCING_GATE.md`.
 
 ## 8. Handoff
 
@@ -207,6 +227,7 @@ The control-plane reaches the target when:
 - no active-looking stale document competes with frontier/foundation;
 - `agg` needs no broad repo scan;
 - every Cursor pass needed by `agg` persists its final evidence before closure;
+- every new Cursor prompt is emitted only after the prior pass has completed its `agg` + summary sequencing gate, unless explicitly overridden by the operator;
 - a stale/missing Cursor report is classified as `EVIDENCE_NOT_PERSISTED`, not as proof of non-execution;
 - an incomplete Cursor job resumes from packet/checkpoint, not chat;
 - historical files are excluded by default and clearly classified;
