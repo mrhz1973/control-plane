@@ -9,7 +9,7 @@ task_ref: V4_QWEN_LOCAL_ADAPTER
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 starting_head: 0f2f7a524970c4733319d8f5f849cbf71685321d
-final_head: PENDING_COMMIT
+final_head: f8dcac8e13e3972632e66835724bd8e0d6727737
 targeted_tests: PASS 9/9 (tests/qwen-local-adapter/run.mjs)
 classifier_regression: PASS 9/9 (tests/classifier-wrapper/run-offline-tests.mjs)
 provider_calls: 0
