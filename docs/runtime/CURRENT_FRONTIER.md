@@ -6,28 +6,27 @@
 |---|---|
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
-| **ACTIVE WORK** | issue **#31 D-0025-W** — one bounded live resume of `D-0025-W-GLM-LIVE-001` after fullResponse unwrap |
+| **ACTIVE WORK** | issue **#31 D-0025-W** — fullResponse unwrap live-proven; blocked on Execution Packet schema |
 | **BLOCCO ATTIVO** | `D0025_W_LITELLM_PRIMARY_REMOTE_INTEGRATION` |
-| **STATO BLOCCO** | `PROVIDER_CONFIG_WIRED / FULLRESPONSE_DATA_UNWRAP_APPLIED_OFFLINE / LIVE_RESUME_AUTHORIZED_ONE_EVENT` |
-| **GATE CORRENTE** | **AUTO-VIA RELEASED for one bounded live resume** — temporarily arm gate for exactly one provider event, then CLOSE |
-| **NEXT** | Execute exactly one `D-0025-W-GLM-LIVE-001` cycle on the corrected inner-body path; no retry/fallback |
-| **WF40 LIVE** | active · `9ZMj2ACTKyDVhCue` · 44 nodes |
-| **WF61 LIVE** | **inactive** until temporary window · `d0025-6100-4001-8001-000000000061` · unwrap on 6107 |
-| **REMOTE RUNTIME GATE** | baseline CLOSED; one-event window authorized for this block only |
-| **LITELLM LIVE** | preserved · **6** `/v1/responses` calls to date |
-| **EXPANDED PLANNER BUDGET** | GLM **6/10** · Codex **1/10 used** |
+| **STATO BLOCCO** | `PROVIDER_CONFIG_WIRED / FULLRESPONSE_UNWRAP_LIVE_PROVEN / PACKET_SCHEMA_INVALID / REMOTE_RUNTIME_GATE_DISABLED` |
+| **GATE CORRENTE** | **CLOSED** — one live event used; do not reopen until offline packet-schema remediation is authorized |
+| **NEXT** | Offline remediate `PACKET_SCHEMA_INVALID` (`Missing required field: final_report_contract`) on GLM primary-remote packet path; keep unwrap; no live retry until authorized |
+| **WF40 LIVE** | active · `9ZMj2ACTKyDVhCue` · 44 nodes · last cycle `285530` |
+| **WF61 LIVE** | **inactive** · `d0025-6100-4001-8001-000000000061` · unwrap retained on 6107 |
+| **REMOTE RUNTIME GATE** | `enabled=false` · `provider_calls_authorized_per_event=0` · **CLOSED** |
+| **LITELLM LIVE** | preserved · **7** `/v1/responses` calls to date |
+| **EXPANDED PLANNER BUDGET** | GLM **7/10** · Codex **1/10 used** |
 
 ## Boundaries
 
-- Hard maxima: WF61 executions ≤1 · LiteLLM `/v1/responses` ≤1 · GLM attempts ≤1.
-- retry=0 · fallback=0 · qwen=0 · codex=0 · cursor auto-dispatch=0.
-- Do not modify node 6107 or `tools/normalize-litellm-responses-body.mjs` in this live pass.
-- At first terminal result: close gate and deactivate WF61.
+- Do not undo the n8n fullResponse `data` unwrap.
+- Do not modify `tools/normalize-litellm-responses-body.mjs` unless a future block authorizes it from new evidence.
+- Do not reopen the runtime gate for another live attempt until offline remediation is authorized.
 - Do not activate WF60 / mutate OpenClaw / V4 Qwen work.
 
 ## Puntatori
 
+- Attempt report: `reports/architecture/d0025_glm_live_resume_after_fullresponse_unwrap.md`
+- Live rollup: `reports/architecture/d0025_primary_remote_glm_live_001.md`
 - Unwrap report: `reports/architecture/d0025_wf61_fullresponse_data_unwrap.md`
-- Live report: `reports/architecture/d0025_primary_remote_glm_live_001.md`
-- Backlog: `docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md`
 - Issue **#31** — OPEN

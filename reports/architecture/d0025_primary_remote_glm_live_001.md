@@ -5,7 +5,7 @@
 **Date:** 2026-08-28 / 2026-08-29  
 **Release evidence:** issue #31 comment `5458616370` · standing authorization  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **PASS (attempt 12 / body_shape)** — body-shape capture applied · HTTP **200** · sanitized `body_shape` + `sse_census` captured · gate CLOSED
+**Status:** **STOP (attempt 13 / unwrap resume)** — fullResponse unwrap live-proven · HTTP **200** · `PACKET_SCHEMA_INVALID` (`final_report_contract`) · gate CLOSED
 
 ---
 
@@ -25,6 +25,7 @@
 | 10 (capture) | `4894310` | **STOP** | `LITELLM_HTTP_FAILURE` http_status=0 · LiteLLM Δ0 · `sse_census=null` | **capture applied; census not reached** |
 | 11 (s0+capture) | `f506227` | **CAPTURE PASS** | HTTP 200 · `SSE_NO_COMPLETED_RESPONSE` · sanitized `sse_census` present (0 data events) | **census persisted; no normalizer change** |
 | 12 (body_shape) | `42aba26` | **CAPTURE PASS** | HTTP 200 · `body_shape`=`JSON_OBJECT` keys `data|headers|statusCode|statusMessage` | **n8n fullResponse wrapper identified** |
+| 13 (unwrap resume) | `bc94de8` | **STOP** | HTTP 200 · unwrap proved · `PACKET_SCHEMA_INVALID` missing `final_report_contract` | **offline packet-schema remediation (no normalizer change this pass)** |
 
 ---
 
@@ -297,12 +298,51 @@ Structural finding: Capture is stringifying the **n8n HTTP fullResponse wrapper*
 
 ---
 
+## Attempt 13 (live resume after fullResponse unwrap)
+
+**Block:** `D0025_W_GLM_LIVE_RESUME_AFTER_FULLRESPONSE_UNWRAP`  
+**Trigger:** `bc94de8f119a4eaa4b8d021d49b78f30c8f28426` (retry trigger 13; trigger 12 `7d3c551` was Data-Table-consumed under `REMOTE_PLANNER_GATE_CLOSED` with provider Δ0)
+
+### Precheck / arm
+
+| Check | Result |
+|---|---|
+| origin/main start | `f30cc6b…` |
+| unwrap on live 6107 + template/live equiv | PASS |
+| transport readiness (no `/v1/responses`) | PASS |
+| arm-first then push trigger 13 | PASS |
+| LiteLLM before | **6** |
+
+### Live result
+
+| Metric | Value |
+|---|---|
+| WF40 / WF61 | `285530` / `285531` |
+| LiteLLM Δ | **1** (total **7**; POST **200**) |
+| GLM Δ | **1** (budget **7/10**) |
+| HTTP status | **200** |
+| Terminal classification | **`PACKET_SCHEMA_INVALID`** |
+| Reason (sanitized) | `Missing required field: final_report_contract` |
+| `body_shape.framing` | `JSON_OBJECT` (inner Responses keys — unwrap proved) |
+| `body_shape.top_level_keys` | includes `object|status|output|usage|error|…` (not n8n wrapper) |
+| `sse_census.data_event_count` | 0 (JSON object path) |
+| Gate / WF61 final | **CLOSED** / **inactive** |
+| retry/fallback/qwen/codex/cursor | **0** |
+| normalizer mutated | **false** |
+| raw_model_content_persisted / secrets | **false** / **false** |
+
+### Structural finding
+
+n8n fullResponse `data` unwrap is live-proven: Capture/finalize now see the LiteLLM Responses JSON body. Canonical normalize progressed past prior `SSE_NO_COMPLETED_RESPONSE`. Cycle stopped at Execution Packet schema gate (`final_report_contract` missing). No second provider call; no normalizer patch in this pass.
+
+---
+
 ## NEXT_GATE
 
-Offline remediation from Attempt 12 `body_shape`: unwrap/capture the n8n `data` field (or equivalent) before Responses/SSE normalization. Gate remains CLOSED until that CASE A patch is authored/authorized.
+Offline remediation for `PACKET_SCHEMA_INVALID` / missing `final_report_contract` on the GLM primary-remote packet path. Keep unwrap. Do not reopen gate until that remediation is authorized.
 
 ---
 
 ## Output line
 
-`PASS — SANITIZED GLM HTTP BODY SHAPE CAPTURED / READY FOR OFFLINE REMEDIATION; PROVIDER_CALLS_DELTA=1; GATE_CLOSED=true`
+`STOP — PACKET_SCHEMA_INVALID (missing final_report_contract); PROVIDER_CALLS_DELTA=1; GATE_CLOSED=true`
