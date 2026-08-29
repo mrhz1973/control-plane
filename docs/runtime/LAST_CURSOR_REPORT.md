@@ -9,7 +9,7 @@ task_ref: D0025_W_WF61_6109_FINALIZE_OBSERVABILITY_RESYNC_AFTER_HANGPROOF
 result_cursor: PASS_WF61_6109_FINALIZE_OBSERVABILITY_RESYNCED
 reported_via: cursor_direct_persistence
 starting_head: fcf899cf1f942e0814d7fab6be71f0e8f2e5d467
-final_head: PENDING_COMMIT
+final_head: 79980a773cabcbf8df01c70a61c5bce64c198fed
 
 artifact: workflows/patches/d0025-w-wf61-6109-finalize-observability-resync-after-hangproof.gpt-web.json
 mutation: live_6109_parameters_command_only
