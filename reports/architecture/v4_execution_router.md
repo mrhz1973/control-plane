@@ -2,6 +2,7 @@
 
 **Block ID:** `V4_EXECUTION_ROUTER`  
 **Starting HEAD:** `2c4c188d1471d04864f94451db873c562912b8d5`  
+**Final HEAD:** `75d5fe4e2ebcfb2565021893a096a2ce28ffc6bf`  
 **Category:** CONTROL-PLANE / ROUTING  
 **arbiter mocked only:** true  
 **live_qwen_calls:** 0

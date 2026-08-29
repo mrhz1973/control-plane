@@ -9,7 +9,7 @@ task_ref: V4_EXECUTION_ROUTER
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 starting_head: 2c4c188d1471d04864f94451db873c562912b8d5
-final_head: PENDING_COMMIT
+final_head: 75d5fe4e2ebcfb2565021893a096a2ce28ffc6bf
 execution_packet_v1_unchanged: true
 arbiter_mocked_only: true
 live_qwen_calls: 0
