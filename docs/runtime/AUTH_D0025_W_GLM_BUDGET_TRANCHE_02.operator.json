@@ -1,0 +1,34 @@
+{
+  "schema": "operator-bounded-provider-budget-v1",
+  "task_ref": "D-0025-W",
+  "authorization_source": "operator_explicit_chat_authorization",
+  "authorized_at": "2026-08-29",
+  "budget_id": "D0025_W_GLM_TRANCHE_02",
+  "limits": {
+    "max_new_glm_calls": 10,
+    "max_new_litellm_calls": 10,
+    "retry_per_live_event": 0,
+    "fallback_per_live_event": 0,
+    "codex_calls": 0,
+    "qwen_calls": 0,
+    "cursor_auto_dispatch": 0
+  },
+  "execution_policy": {
+    "one_provider_event_per_bounded_live_pass": true,
+    "stop_after_each_terminal_result": true,
+    "remaining_budget_may_be_reused_only_for_same_D0025_W_workstream": true,
+    "runtime_gate_must_be_closed_between_events": true,
+    "offline_repairs_do_not_consume_budget": true
+  },
+  "initial_state": {
+    "glm_used": 0,
+    "glm_remaining": 10,
+    "litellm_used": 0,
+    "litellm_remaining": 10
+  },
+  "prior_budget": {
+    "glm": "10/10 exhausted",
+    "historical_litellm_calls": 10
+  },
+  "notes": "This authorization creates a new bounded tranche only. It does not authorize retries/fallbacks inside a live event, Codex/Qwen substitution, or Cursor auto-dispatch. Each live pass remains separately bounded to at most one GLM and one LiteLLM call."
+}
