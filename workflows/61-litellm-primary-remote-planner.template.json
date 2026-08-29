@@ -91,7 +91,7 @@
     },
     {
       "parameters": {
-        "command": "=node /files/handoff-runtime/control-plane/tools/post-litellm-primary-one-shot.mjs --url-b64 aHR0cDovL2xpdGVsbG0tcHJpbWFyeTo0MDAwL3YxL3Jlc3BvbnNlcw== --body-b64 '{{$json.request_body_b64}}' --wall-timeout-ms 115000 --body-idle-timeout-ms 15000 --max-body-bytes 8388608"
+        "command": "=node /files/handoff-runtime/control-plane/tools/post-litellm-primary-one-shot.mjs --url-b64 aHR0cDovL2xpdGVsbG0tcHJpbWFyeTo0MDAwL3YxL3Jlc3BvbnNlcw== --body-b64 '{{$json.request_body_b64}}' --wall-timeout-ms 115000 --body-idle-timeout-ms 15000 --max-body-bytes 8388608 2>&1 || true"
       },
       "id": "d0025-6106-4006-8006-000000000006",
       "name": "HTTP Request - LiteLLM primary one-shot",
