@@ -411,8 +411,8 @@ const CASES = [
         responseSourceFormat: "json",
       });
       if (result.ok) return "expected FAIL";
-      if (result.classification !== "HARD_CONSTRAINT_MISMATCH") {
-        return `expected HARD_CONSTRAINT_MISMATCH got ${result.classification}`;
+      if (result.classification !== "PACKET_SOURCE_FIELD_MISMATCH") {
+        return `expected PACKET_SOURCE_FIELD_MISMATCH got ${result.classification}`;
       }
       return null;
     },

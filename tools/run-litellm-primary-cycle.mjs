@@ -13,6 +13,10 @@ import { buildGatewayRequest } from "./build-llm-gateway-request.mjs";
 import { normalizeResponsesBody } from "./normalize-litellm-responses-body.mjs";
 import { evaluate as evaluateResponseGate } from "./validate-openclaw-planner-response-gate.mjs";
 import { evaluatePacketPolicy } from "./evaluate-execution-packet-policy.mjs";
+import {
+  buildPacketCensus,
+  completePrimaryRemotePacketSourceFields,
+} from "./complete-primary-remote-packet-source-fields.mjs";
 
 export const PREPARED_SCHEMA = "litellm-primary-cycle-prepared-v1";
 export const FINAL_SCHEMA = "litellm-primary-cycle-final-v1";
@@ -110,6 +114,8 @@ function failFinalize(classification, reason, extra = {}) {
       decision: "BLOCKED",
       cursor_dispatch_allowed: false,
     },
+    packet_census_before_completion: extra.packet_census_before_completion ?? null,
+    deterministic_completion: extra.deterministic_completion ?? null,
     ...extra,
   };
 }
@@ -308,6 +314,29 @@ export async function prepareCycle({ consumerInput, routingInput, gatewayProfile
   };
 }
 
+function rewriteFunctionCallArguments(response, packetObject) {
+  const cloned = structuredClone(response);
+  const calls = collectFunctionCalls(cloned.output);
+  if (calls.length !== 1 || calls[0].name !== REQUIRED_FUNCTION) {
+    return {
+      ok: false,
+      reason: "Cannot rewrite emit_execution_packet arguments on cloned response",
+    };
+  }
+  // Locate the same call inside cloned.output and rewrite arguments only.
+  for (let i = 0; i < cloned.output.length; i++) {
+    const item = cloned.output[i];
+    if (item && typeof item === "object" && item.type === "function_call" && item.name === REQUIRED_FUNCTION) {
+      cloned.output[i] = {
+        ...item,
+        arguments: JSON.stringify(packetObject),
+      };
+      return { ok: true, response: cloned };
+    }
+  }
+  return { ok: false, reason: "emit_execution_packet call not found in cloned output" };
+}
+
 export async function finalizeCycle({ consumerInput, rawResponseText, responseSourceFormat }) {
   const consumerB64 = Buffer.from(JSON.stringify(consumerInput), "utf8").toString("base64");
   let response;
@@ -337,25 +366,66 @@ export async function finalizeCycle({ consumerInput, rawResponseText, responseSo
     sourceFormat = normalized.source_format;
   }
 
-  const gate = await evaluateResponseGate(response, consumerInput);
-  if (!gate.ok) {
-    return failFinalize(gate.classification || "RESPONSE_GATE_FAIL", gate.reason || "response gate failed", {
-      task_id: consumerInput.task_id,
-      response_source_format: sourceFormat,
-      response_gate: gate.classification,
-    });
-  }
-
+  // Locate + parse emit_execution_packet before completion / canonical gates.
   const extracted = extractPacketFromResponse(response);
   if (!extracted.ok) {
     return failFinalize(extracted.classification, extracted.reason, {
       task_id: consumerInput.task_id,
       response_source_format: sourceFormat,
-      response_gate: "PASS",
     });
   }
 
-  const policy = await evaluatePacketPolicy(extracted.packet);
+  const packetCensus = buildPacketCensus(extracted.packet);
+  const completion = completePrimaryRemotePacketSourceFields(
+    extracted.packet,
+    consumerInput,
+  );
+  if (!completion.ok) {
+    return failFinalize(completion.classification, completion.reason, {
+      task_id: consumerInput.task_id,
+      response_source_format: sourceFormat,
+      packet_census_before_completion: packetCensus,
+      deterministic_completion: {
+        applied: false,
+        completed_fields: [],
+      },
+      field: completion.field ?? null,
+    });
+  }
+
+  const rewritten = rewriteFunctionCallArguments(response, completion.packet);
+  if (!rewritten.ok) {
+    return failFinalize("RESPONSE_REWRITE_FAILED", rewritten.reason, {
+      task_id: consumerInput.task_id,
+      response_source_format: sourceFormat,
+      packet_census_before_completion: packetCensus,
+      deterministic_completion: completion.deterministic_completion,
+    });
+  }
+
+  const gate = await evaluateResponseGate(rewritten.response, consumerInput);
+  if (!gate.ok) {
+    return failFinalize(gate.classification || "RESPONSE_GATE_FAIL", gate.reason || "response gate failed", {
+      task_id: consumerInput.task_id,
+      response_source_format: sourceFormat,
+      response_gate: gate.classification,
+      packet_census_before_completion: packetCensus,
+      deterministic_completion: completion.deterministic_completion,
+    });
+  }
+
+  const completedExtracted = extractPacketFromResponse(rewritten.response);
+  if (!completedExtracted.ok) {
+    return failFinalize(completedExtracted.classification, completedExtracted.reason, {
+      task_id: consumerInput.task_id,
+      response_source_format: sourceFormat,
+      response_gate: "PASS",
+      packet_census_before_completion: packetCensus,
+      deterministic_completion: completion.deterministic_completion,
+    });
+  }
+
+  const policy = await evaluatePacketPolicy(completedExtracted.packet);
   const result = {
     schema: FINAL_SCHEMA,
     ok: true,
@@ -363,19 +433,23 @@ export async function finalizeCycle({ consumerInput, rawResponseText, responseSo
     task_id: consumerInput.task_id,
     response_source_format: sourceFormat,
     response_gate: "PASS",
-    packet: extracted.packet,
+    packet: completedExtracted.packet,
     policy: {
       decision: policy.decision,
       cursor_dispatch_allowed: false,
       human_gate_required: policy.human_gate_required ?? false,
       reason_codes: policy.reason_codes ?? [],
     },
+    packet_census_before_completion: packetCensus,
+    deterministic_completion: completion.deterministic_completion,
   };
 
   if (hasSecretLeak(JSON.stringify(result))) {
     return failFinalize("SECRET_BOUNDARY", "Finalized output would leak secret-shaped data", {
       task_id: consumerInput.task_id,
       response_source_format: sourceFormat,
+      packet_census_before_completion: packetCensus,
+      deterministic_completion: completion.deterministic_completion,
     });
   }
 
