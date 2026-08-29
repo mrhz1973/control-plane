@@ -5,24 +5,22 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_QWEN_LOCAL_SESSION_MANAGER
+task_ref: V4_QWEN_LOCAL_RESOURCE_STATUS_OVERLAY
 result_cursor: PASS
 reported_via: cursor_direct_persistence
-starting_head: f34ec3b46747b7eaa2cd0ee123bfe2b5023d70a6
-final_head: 59f8c46ad7528dd571867e1529d0afaaf75b1020
-default_profile: fast_8k
-dflash_required: true
-idempotent_start: true
-concurrent_start_dedup: true
+starting_head: f7f534cf33ccfda4d06f962b4842edbb1c96c6a4
+final_head: PENDING_COMMIT
+baseline_unchanged: true
+session_manager_reused: true
+execution_router_policy_unchanged: true
+overlay_tests: PASS 14/14
+resource_status_tests: PASS 6/6
 session_manager_tests: PASS 14/14
-transport_tests: PASS 8/8
-adapter_tests: PASS 9/9
-live_readiness_probe: READY
-live_launch_performed: false
+execution_router_tests: PASS 12/12
+live_collector_probe: READY
+qwen_local_available: true
+launch_performed: false
 generation_calls: 0
-process_kill_calls: 0
-launcher_mutations: 0
-model_downloads: 0
 provider_calls: 0
 litellm_calls: 0
 glm_calls: 0
@@ -35,7 +33,7 @@ secret_exposure: false
 status_fail_closed_untouched: true
 current_frontier_d0025_untouched: true
 
-architecture_report: reports/architecture/v4_qwen_local_session_manager.md
+architecture_report: reports/architecture/v4_qwen_local_resource_status_overlay.md
 
-NEXT: V4 dispatch may call ensureQwenLocalReady after routing selects qwen_local; D-0025-W remains ZAI-gated
+NEXT: future dispatch may call collector then EXECUTION_ROUTER; D-0025-W remains ZAI-gated
 ```
