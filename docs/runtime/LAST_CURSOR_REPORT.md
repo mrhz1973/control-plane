@@ -9,7 +9,7 @@ task_ref: V4_QWEN_LOCAL_SESSION_MANAGER
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 starting_head: f34ec3b46747b7eaa2cd0ee123bfe2b5023d70a6
-final_head: PENDING_COMMIT
+final_head: 59f8c46ad7528dd571867e1529d0afaaf75b1020
 default_profile: fast_8k
 dflash_required: true
 idempotent_start: true
