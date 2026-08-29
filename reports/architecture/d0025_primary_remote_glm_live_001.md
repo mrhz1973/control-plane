@@ -5,7 +5,7 @@
 **Date:** 2026-08-28 / 2026-08-29  
 **Release evidence:** issue #31 comment `5458616370` · standing authorization  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **STOP (attempt 10 / capture)** — capture apply PASS · live resume `LITELLM_HTTP_FAILURE` http_status=0 · `sse_census=null` · gate CLOSED
+**Status:** **PASS (attempt 11 / census)** — transport preflight PASS · HTTP **200** · sanitized `sse_census` captured (`data_event_count=0`) · gate CLOSED
 
 ---
 
@@ -23,6 +23,7 @@
 | 8 (retry 7) | `9b40ff2` | **STOP** | `LITELLM_HTTP_FAILURE` HTTP 429 · ZAI 5-hour usage limit (reset 2026-08-29 09:12:41) | **quota wait / no workflow mutation** |
 | 9 (post-quota) | `34ba537` | **STOP** | `SSE_NO_COMPLETED_RESPONSE` HTTP 200 · no completed / no output_item.done | **no mutation this block** |
 | 10 (capture) | `4894310` | **STOP** | `LITELLM_HTTP_FAILURE` http_status=0 · LiteLLM Δ0 · `sse_census=null` | **capture applied; census not reached** |
+| 11 (s0+capture) | `f506227` | **CAPTURE PASS** | HTTP 200 · `SSE_NO_COMPLETED_RESPONSE` · sanitized `sse_census` present (0 data events) | **census persisted; no normalizer change** |
 
 ---
 
@@ -193,12 +194,66 @@ Capture code is live on inactive WF61, but this one-shot resume failed at transp
 
 ---
 
+## Attempt 11 (status-0 preflight PASS + capture resume)
+
+**Block:** `D0025_W_STATUS0_PREFLIGHT_AND_SSE_CAPTURE_RESUME`
+
+### Transport preflight (provider_calls=0)
+
+| Check | Result |
+|---|---|
+| litellm-primary running | PASS · restarts=0 |
+| DNS from n8n | PASS → `172.18.0.3` |
+| TCP :4000 | PASS |
+| `/health/readiness` | PASS HTTP 200 `healthy` |
+| shared `root_default` | PASS |
+| LiteLLM `/v1/responses` delta during preflight | **0** |
+| Pre-trigger readiness recheck | PASS HTTP 200 |
+
+### Live capture resume
+
+| Metric | Value |
+|---|---|
+| Trigger | `f50622768fbfc0eb90c6d52bbc4e3c8d65a9571b` |
+| WF40 / WF61 | `285414` / `285415` |
+| Adapter | **REMOTE_DISPATCH_READY** |
+| LiteLLM request delta | **1** (total **5**; POST **200**) |
+| GLM provider-attempt delta | **1** |
+| HTTP status | **200** |
+| Terminal classification | **`SSE_NO_COMPLETED_RESPONSE`** |
+| `sse_census` | **present** (schema `sse-structural-census-v1`) |
+| Gate / WF61 final | **CLOSED** / **inactive** · capture jsCode retained |
+| retry / fallback / qwen / codex / cursor_dispatch | **0** |
+| GLM budget | **5/10** |
+| raw_model_content_persisted / secret_exposure | **false** / **false** |
+
+### Sanitized sse_census
+
+```json
+{
+  "schema": "sse-structural-census-v1",
+  "data_event_count": 0,
+  "done_marker_count": 0,
+  "parse_error_count": 0,
+  "event_labels": [],
+  "event_types": [],
+  "first_event_types": [],
+  "last_event_types": [],
+  "top_level_key_sets": [],
+  "selected_field_shapes": []
+}
+```
+
+Structural finding: Capture ran on an HTTP 200 body, but found **zero** `data:` SSE lines / event labels / typed events. Canonical finalize still reports no `response.completed` and no `output_item.done`. Offline remediation must start from this empty-SSE-line census (likely non-`data:` body shape after n8n HTTP capture), without inventing terminal semantics here.
+
+---
+
 ## NEXT_GATE
 
-Retry the same capture-enabled WF61 path only under an authorized bounded resume after transport/status-0 is addressed or diagnosed healthy again. Do not invent normalizer semantics without a successful `sse_census`. Gate remains CLOSED.
+Offline analysis/remediation of the observed body capture shape implied by empty `sse_census` under HTTP 200. Gate remains CLOSED. No normalizer mutation until a deterministic CASE A patch is justified.
 
 ---
 
 ## Output line
 
-`STOP — LITELLM_HTTP_FAILURE http_status=0; sse_census=null; PROVIDER_CALLS_DELTA=0; GATE_CLOSED=true`
+`PASS — SANITIZED GLM SSE CENSUS CAPTURED / READY FOR OFFLINE REMEDIATION; PROVIDER_CALLS_DELTA=1; GATE_CLOSED=true`

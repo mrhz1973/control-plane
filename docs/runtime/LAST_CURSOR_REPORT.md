@@ -5,28 +5,30 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_WF61_SSE_STRUCTURAL_CAPTURE_AND_RESUME
-result_cursor: STOP
+task_ref: D0025_W_STATUS0_PREFLIGHT_AND_SSE_CAPTURE_RESUME
+result_cursor: PASS_CENSUS_CAPTURED
 reported_via: cursor_direct_persistence
-starting_head: 5ccfd724f0787b1e7ca052e0d5c6d5f09bb98acb
-apply_commit: 489431086b2524378b69d554852d20a0af362e17
-final_head: 3a125bc35c05bfdd0db3822943deb1c80b22bcad
+starting_head: b5ed90098d2d13c58f2eb97a78d87b90cf2bda1d
+trigger_sha: f50622768fbfc0eb90c6d52bbc4e3c8d65a9571b
+final_head: PENDING_COMMIT
 
-apply_phase: PASS
-apply_provider_calls: 0
-nodes_changed: [6107, 6110]
-wf61_inactive_after_apply: true
-gate_closed_during_apply: true
+preflight: PASS
+preflight_provider_calls: 0
+dns_tcp_readiness_network: PASS
+pre_trigger_readiness: PASS
 
-live_resume: STOP
-wf40_execution_id: 285395
-wf61_execution_id: 285396
-classification: LITELLM_HTTP_FAILURE
-http_status: 0
-litellm_request_delta: 0
-glm_provider_attempt_delta: 0
-sse_census: null
-capture_jscode_retained: true
+live_resume: CAPTURE_PASS
+wf40_execution_id: 285414
+wf61_execution_id: 285415
+http_status: 200
+classification: SSE_NO_COMPLETED_RESPONSE
+litellm_request_delta: 1
+glm_provider_attempt_delta: 1
+sse_census_present: true
+data_event_count: 0
+done_marker_count: 0
+parse_error_count: 0
+event_types: []
 retry: 0
 fallback: 0
 qwen_calls: 0
@@ -34,11 +36,12 @@ codex_calls: 0
 cursor_dispatch: 0
 gate_closed_final: true
 WF61_final: inactive
+capture_retained: true
 raw_model_content_persisted: false
 secrets_exposed: false
 normalizer_mutated: false
 
-architecture_report: reports/architecture/d0025_wf61_sse_structural_capture.md
+architecture_report: reports/architecture/d0025_status0_preflight_and_sse_capture_resume.md
 
-NEXT: one capture resume after status-0/transport healthy; no normalizer change without census
+NEXT: offline remediation from empty-data-event census under HTTP 200
 ```
