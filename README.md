@@ -66,7 +66,8 @@ Dopo CORE BOOT:
 - caricare on demand soltanto metodo/contratto/evidence necessari a quel passo;
 - non chiedere un nuovo `vai` per passaggi meccanici già determinati;
 - AUTO-VIA non amplia lo scope e non trasforma un gate umano in decisione tecnica;
-- la persistenza docs-only dell'evidence di un task già eseguito è bookkeeping recuperabile e non apre da sola un nuovo gate runtime.
+- la persistenza docs-only dell'evidence di un task già eseguito è bookkeeping recuperabile e non apre da sola un nuovo gate runtime;
+- **sequencing Cursor:** AUTO-VIA non consente di emettere un nuovo TASK DELTA mentre il precedente prompt Cursor attende ancora il relativo `agg` + riepilogo. Fonte canonica: `docs/foundation/PROMPT_SEQUENCING_GATE.md`.
 
 **STANDING OPERATOR AUTHORIZATION — CANONICAL:** l'operatore ha autorizzato in modo permanente i passaggi bounded già determinati dall'architettura, dal `CURRENT_FRONTIER`, dall'ACTIVE WORK, dai contratti o da artifact GPT-Web. **Non chiedere più autorizzazioni/re-autorizzazioni conversazionali** quando l'unico motivo di pausa sarebbe il consenso dell'operatore. Procedere via AUTO-VIA. Persistenza dedicata: `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`.
 
@@ -95,7 +96,7 @@ Quando un gate reale richiede un'azione manuale dell'operatore:
 - se AUTO-VIA può eseguire l'azione senza un gate umano, non scaricarla sull'operatore.
 
 Dettaglio canonico user-facing: `docs/foundation/OPERATOR_ACTION_HANDOFF_STANDARD.md`.
-Per i prompt Cursor resta inoltre obbligatorio `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` (modalità `AGENT|PLAN`, TASK DELTA, blocco unico, `agg` separato).
+Per i prompt Cursor resta inoltre obbligatorio `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` (modalità `AGENT|PLAN`, TASK DELTA, blocco unico, `agg` separato). Il sequencing tra prompt consecutivi è governato da `docs/foundation/PROMPT_SEQUENCING_GATE.md`.
 
 ### `agg` — refresh dopo un pass Cursor
 
@@ -108,7 +109,8 @@ Eseguire:
 3. rileggere ACTIVE WORK pointer se presente;
 4. leggere `docs/runtime/LAST_CURSOR_REPORT.md` **una sola volta** soltanto se il gate/NEXT dipende dal pass Cursor appena concluso;
 5. leggere evidence aggiuntiva solo se esplicitamente puntata e necessaria;
-6. applicare AUTO-VIA + STANDING OPERATOR AUTHORIZATION.
+6. **riepilogare all'operatore l'esito del pass Cursor appena concluso**;
+7. solo dopo il riepilogo applicare AUTO-VIA + STANDING OPERATOR AUTHORIZATION per derivare/emettere l'eventuale TASK DELTA successivo.
 
 **Cursor completion persistence invariant:** se il risultato dell'ultimo pass Cursor serve a determinare gate/NEXT, il task Cursor non è evidence-complete finché il report finale non è persistito in `docs/runtime/LAST_CURSOR_REPORT.md` con `task_ref`, risultato, evidence deterministica, mutazioni rilevanti e next-gate/blocker, senza secret. Questa persistenza docs-only deve essere prevista come ultimo step del task Cursor.
 
@@ -117,6 +119,8 @@ Se `LAST_CURSOR_REPORT.md` non corrisponde al pass Cursor atteso, `agg` classifi
 Se report/evidence e frontier confliggono: **CURRENT_FRONTIER prevale per LIVE STATE**; dichiarare l'evidence stale/conflicting, non ricostruire lo stato dalla narrativa.
 
 `agg` non equivale a handoff e non precarica foundation/storico.
+
+**Hard sequencing gate:** dopo aver consegnato prompt Cursor N, GPT Web non emette prompt N+1 finché l'operatore non ha inviato l'`agg` di N e GPT Web non ne ha riepilogato l'esito. `vai`, `procedi`, `next`, disponibilità provider o reset quota non bypassano il gate. Solo un override esplicito dell'operatore che nomini chiaramente questa eccezione può farlo. Dettaglio: `docs/foundation/PROMPT_SEQUENCING_GATE.md`.
 
 ### Precedenza delle fonti
 
@@ -153,6 +157,7 @@ La standing authorization non modifica la precedenza delle fonti: modifica solta
 | Operating model multi-planner | `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md` — sezione pertinente |
 | Backlog / routing / packet / checkpoint | solo contratto o istanza pertinente |
 | Esecuzione Cursor | `docs/foundation/CURSOR_PROMPT_TEMPLATE.md` |
+| Presentazione/sequence prompt Cursor | `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` + `docs/foundation/PROMPT_SEQUENCING_GATE.md` |
 | GLM mode | `docs/advisors/GLM_ADVISOR_METHOD.md` — mode pertinente |
 | Azioni manuali operatore | `docs/foundation/OPERATOR_ACTION_HANDOFF_STANDARD.md` |
 | Evidenza ultimo pass Cursor | `docs/runtime/LAST_CURSOR_REPORT.md` una volta |
@@ -186,7 +191,7 @@ Aggiornare questo blocco solo se cambiano:
 - CORE BOOT;
 - precedenza fonti;
 - AUTO-VIA / standing operator authorization;
-- `agg`;
+- `agg` / prompt sequencing gate;
 - operator action handoff;
 - context guard / navigazione on-demand.
 
@@ -200,6 +205,7 @@ HEAD, gate, runtime, task e NEXT vivono nel frontier/active work, non qui.
 | [docs/runtime/CURRENT_FRONTIER.md](docs/runtime/CURRENT_FRONTIER.md) | **LIVE STATE** compatto — unica autorità sullo stato operativo corrente |
 | [docs/foundation/PROJECT_VISION.md](docs/foundation/PROJECT_VISION.md) | Foundation **v3.1** e invarianti |
 | [docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md](docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md) | autorizzazione persistente dell'operatore per AUTO-VIA senza round-trip ripetuti |
+| [docs/foundation/PROMPT_SEQUENCING_GATE.md](docs/foundation/PROMPT_SEQUENCING_GATE.md) | gate canonico `prompt N → agg → riepilogo → prompt N+1` |
 | [docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md](docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md) | Operating model multi-planner → Cursor, on demand |
 | [docs/contracts/backlog-item-v1.md](docs/contracts/backlog-item-v1.md) | GPT Web → planner |
 | [docs/contracts/execution-packet-v1.md](docs/contracts/execution-packet-v1.md) | planner → Cursor |
