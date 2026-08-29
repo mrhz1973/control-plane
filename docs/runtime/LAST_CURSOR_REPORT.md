@@ -9,7 +9,7 @@ task_ref: V4_QWEN_LOCAL_LLAMA_CPP_BOUNDED_LIVE_PROOF_RETRY_2
 result_cursor: STOP
 reported_via: cursor_direct_persistence
 starting_head: 4925bca170ff3ae65a30dd91294dca98b6da44a2
-final_head: PENDING_COMMIT
+final_head: c844cc37abae7c0f940ffd5e31197d8404c92de2
 blocker: LLAMA_SERVER_NOT_RUNNING
 llama_server_process: ABSENT
 port_8080_listener: NOT_LISTENING

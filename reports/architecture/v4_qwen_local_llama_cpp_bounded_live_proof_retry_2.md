@@ -2,6 +2,7 @@
 
 **Block ID:** `V4_QWEN_LOCAL_LLAMA_CPP_BOUNDED_LIVE_PROOF_RETRY_2`  
 **Starting HEAD:** `4925bca170ff3ae65a30dd91294dca98b6da44a2`  
+**Final HEAD:** `c844cc37abae7c0f940ffd5e31197d8404c92de2`  
 **Result:** **STOP** — `LLAMA_SERVER_NOT_RUNNING`  
 **generation_attempts:** **0**
 
