@@ -6,31 +6,26 @@
 |---|---|
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
-| **ACTIVE WORK** | issue **#31 D-0025-W** — CASE B offline source-completion applied; final GLM slot preserved |
+| **ACTIVE WORK** | issue **#31 D-0025-W** — final GLM live resume in progress (slot 10/10) |
 | **BLOCCO ATTIVO** | `D0025_W_LITELLM_PRIMARY_REMOTE_INTEGRATION` |
-| **STATO BLOCCO** | `PROVIDER_CONFIG_WIRED / FULLRESPONSE_UNWRAP_LIVE_PROVEN / SOURCE_COMPLETION_CASE_B_OFFLINE_PASS / REMOTE_RUNTIME_GATE_DISABLED` |
-| **GATE CORRENTE** | **CLOSED** — offline CASE B complete; one final bounded GLM live resume authorized as NEXT only (not executed) |
-| **NEXT** | One final bounded GLM live resume of `D-0025-W-GLM-LIVE-001` — max GLM **10/10**, LiteLLM delta **1**, retry **0**, fallback **0**. Do not execute until explicitly authorized. |
-| **WF40 LIVE** | active · `9ZMj2ACTKyDVhCue` · 44 nodes · last Attempt15 parent `286080` |
-| **WF61 LIVE** | **inactive** · `d0025-6100-4001-8001-000000000061` · unwrap + packet-census/completion propagation on 6110 |
-| **REMOTE RUNTIME GATE** | `enabled=false` · `provider_calls_authorized_per_event=0` · **CLOSED** |
-| **LITELLM LIVE** | preserved · **9** `/v1/responses` calls to date |
-| **EXPANDED PLANNER BUDGET** | GLM **9/10** · Codex **1/10 used** |
+| **STATO BLOCCO** | `PROVIDER_CONFIG_WIRED / FULLRESPONSE_UNWRAP_LIVE_PROVEN / SOURCE_COMPLETION_CASE_B_OFFLINE_PASS / FINAL_LIVE_RESUME_ARMED` |
+| **GATE CORRENTE** | **ARMED (temporary one-event window)** — restore CLOSED immediately after terminal result |
+| **NEXT** | Await single WF61/GLM terminal result for `D-0025-W-GLM-LIVE-001`; no retry/fallback. |
+| **WF40 LIVE** | active · `9ZMj2ACTKyDVhCue` · 44 nodes |
+| **WF61 LIVE** | **temporarily active** for one event · `d0025-6100-4001-8001-000000000061` |
+| **REMOTE RUNTIME GATE** | temporary `enabled=true` · `provider_calls_authorized_per_event=1` · GLM healthy |
+| **LITELLM LIVE** | preserved · **9** `/v1/responses` before this event |
+| **EXPANDED PLANNER BUDGET** | GLM **9/10** → consuming slot **10/10** |
 
 ## Boundaries
 
-- Do not spend GLM slot 10/10 until the authorized final live resume.
-- Deterministic completion may add only absent source-owned/const allowlisted fields and must never overwrite a present field.
-- Present source-owned conflicts fail closed as `PACKET_SOURCE_FIELD_MISMATCH`.
-- Canonical response/schema/policy gates remain authoritative after completion.
-- Keep `execution-packet-v1` schema, normalizer, unwrap, LiteLLM config and provider state unchanged.
-- WF61 packet-census propagation may expose only key/missing-key names and completion field names; no raw arguments/model text/body/secrets.
-- Do not activate WF60 / mutate OpenClaw / V4 Qwen work.
+- Exactly one WF61 / one LiteLLM / one GLM attempt.
+- retry=0 · fallback=0 · Codex=0 · Qwen=0 · cursor_dispatch=0.
+- Restore gate CLOSED and WF61 inactive at first terminal result.
+- Do not modify schema/normalizer/CASE B semantics/credentials/network/WF60/OpenClaw/V4.
 
 ## Puntatori
 
 - CASE B report: `reports/architecture/d0025_packet_source_completion_case_b.md`
-- CASE B code artifact: `docs/runtime/PATCH_D0025_W_PACKET_SOURCE_COMPLETION_CASE_B.gpt-web.json`
-- CASE B WF61 artifact: `workflows/patches/d0025-w-wf61-packet-census-propagation.gpt-web.json`
-- Helper: `tools/complete-primary-remote-packet-source-fields.mjs`
-- Issue **#31** — OPEN
+- Live task: `docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md`
+- Issue **#31** — OPEN pending terminal result

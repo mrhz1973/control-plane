@@ -98,3 +98,5 @@ Retry trigger 13: 2026-08-29 — re-arm after pre-window Data Table consume of t
 Retry trigger 14: 2026-08-29 — packet final_report_contract planner hardening applied; execute same task D-0025-W-GLM-LIVE-001.
 
 Retry trigger 15: 2026-08-29 — required/empty-field planner hardening applied; execute same task D-0025-W-GLM-LIVE-001.
+
+Retry trigger 16: 2026-08-29 — CASE B deterministic source completion applied offline; execute same task D-0025-W-GLM-LIVE-001.
