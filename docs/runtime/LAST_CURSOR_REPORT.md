@@ -9,7 +9,7 @@ task_ref: D0025_W_PACKET_FINAL_REPORT_CONTRACT_HARDENING
 result_cursor: PASS_PACKET_FINAL_REPORT_CONTRACT_HARDENING_APPLIED_OFFLINE
 reported_via: cursor_direct_persistence
 starting_head: 6e6beebee26b4ff1f2aac5fb71f263c109b2b15e
-final_head: PENDING_COMMIT
+final_head: 9f47164e824b1af20d70b86dda0ddfe5bb04d8cf
 
 apply_phase: PASS
 mutations:
