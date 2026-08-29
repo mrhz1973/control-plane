@@ -9,7 +9,7 @@ task_ref: D0025_W_WF61_LIVE_CANONICAL_RESYNC_AFTER_6106_TYPE_DRIFT
 result_cursor: PASS_WF61_LIVE_CANONICAL_RESYNC_AFTER_6106_TYPE_DRIFT
 reported_via: cursor_direct_persistence
 starting_head: e2a2320ee8f62353b443c1c9628775bf58a36c07
-final_head: PENDING_COMMIT
+final_head: 00f01325eaf2f218d0dc3578ec1eed278cbd4403
 
 mutation: live_and_template_6104_6106_6107_6109_6110_from_gpt_web_sources
 template_live_equiv: true
