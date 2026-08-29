@@ -1,0 +1,66 @@
+{
+  "schema_version": "resource-status-v1",
+  "generated_at": "2026-08-29T00:00:00.000Z",
+  "resources": {
+    "cursor": {
+      "available": false,
+      "quota_remaining": { "value": null, "unit": "unknown" },
+      "reserve_floor": { "value": 0, "unit": "none" },
+      "reset_at": null,
+      "cost_mode": "unknown",
+      "location": "cloud",
+      "source": "unknown",
+      "updated_at": "2026-08-29T00:00:00.000Z"
+    },
+    "grok_bot": {
+      "available": false,
+      "quota_remaining": { "value": null, "unit": "unknown" },
+      "reserve_floor": { "value": 0, "unit": "none" },
+      "reset_at": null,
+      "cost_mode": "unknown",
+      "location": "cloud",
+      "source": "unknown",
+      "updated_at": "2026-08-29T00:00:00.000Z"
+    },
+    "opencode": {
+      "available": false,
+      "quota_remaining": { "value": null, "unit": "unknown" },
+      "reserve_floor": { "value": 0, "unit": "none" },
+      "reset_at": null,
+      "cost_mode": "unknown",
+      "location": "unknown",
+      "source": "unknown",
+      "updated_at": "2026-08-29T00:00:00.000Z"
+    },
+    "qwen_local": {
+      "available": false,
+      "quota_remaining": { "value": null, "unit": "unknown" },
+      "reserve_floor": { "value": 0, "unit": "none" },
+      "reset_at": null,
+      "cost_mode": "free",
+      "location": "local",
+      "source": "unknown",
+      "updated_at": "2026-08-29T00:00:00.000Z"
+    },
+    "glm": {
+      "available": false,
+      "quota_remaining": { "value": null, "unit": "unknown" },
+      "reserve_floor": { "value": 0, "unit": "none" },
+      "reset_at": null,
+      "cost_mode": "unknown",
+      "location": "cloud",
+      "source": "unknown",
+      "updated_at": "2026-08-29T00:00:00.000Z"
+    },
+    "codex": {
+      "available": false,
+      "quota_remaining": { "value": null, "unit": "unknown" },
+      "reserve_floor": { "value": 0, "unit": "none" },
+      "reset_at": null,
+      "cost_mode": "unknown",
+      "location": "cloud",
+      "source": "unknown",
+      "updated_at": "2026-08-29T00:00:00.000Z"
+    }
+  }
+}

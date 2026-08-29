@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/resource-status-v1.schema.json",
+  "title": "resource-status-v1",
+  "description": "Dynamic operational availability/quota/cost/reset/freshness state for control-plane resources. Separate from RESOURCE_REGISTRY (static capabilities). Does not choose planners or implementers.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "resources"],
+  "properties": {
+    "schema_version": { "const": "resource-status-v1" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "resources": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/resourceStatus" }
+    }
+  },
+  "$defs": {
+    "quotaRemaining": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": ["number", "null"] },
+        "unit": {
+          "enum": ["percent", "calls", "tokens", "credits", "unlimited", "unknown"]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "unit": { "const": "unlimited" } }, "required": ["unit"] },
+          "then": { "properties": { "value": { "type": "null" } } }
+        }
+      ]
+    },
+    "reserveFloor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": ["number", "null"] },
+        "unit": {
+          "enum": ["percent", "calls", "tokens", "credits", "none", "unknown"]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "unit": { "const": "none" } }, "required": ["unit"] },
+          "then": {
+            "properties": {
+              "value": {
+                "anyOf": [
+                  { "type": "null" },
+                  { "type": "number", "const": 0 }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "resourceStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "available",
+        "quota_remaining",
+        "reserve_floor",
+        "reset_at",
+        "cost_mode",
+        "location",
+        "source",
+        "updated_at"
+      ],
+      "properties": {
+        "available": { "type": "boolean" },
+        "quota_remaining": { "$ref": "#/$defs/quotaRemaining" },
+        "reserve_floor": { "$ref": "#/$defs/reserveFloor" },
+        "reset_at": { "type": ["string", "null"], "format": "date-time" },
+        "cost_mode": {
+          "enum": ["free", "included", "metered", "on_demand", "unknown"]
+        },
+        "location": {
+          "enum": ["local", "cloud", "remote", "hybrid", "unknown"]
+        },
+        "source": {
+          "enum": [
+            "provider_api",
+            "internal_ledger",
+            "dashboard_snapshot",
+            "local_probe",
+            "manual",
+            "unknown"
+          ]
+        },
+        "updated_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}
