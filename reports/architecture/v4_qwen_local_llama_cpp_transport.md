@@ -3,6 +3,7 @@
 **Block ID:** `V4_QWEN_LOCAL_LLAMA_CPP_TRANSPORT`  
 **Prompt expected origin/main:** `edb25753cde3df8fd11896e47c14e08bbac45537`  
 **Actual starting HEAD:** `95598349b5780710fe54f57ebd1eb3c5875ef928`  
+**Final HEAD:** `e7578321246549ffcfb2dbca36a543787a237c50`  
 **Interrupted-task cleanup:** N/A — workspace clean; prior live-proof already on main (`fd16efa` / `9559834`)
 
 ## Verified launcher (read-only)

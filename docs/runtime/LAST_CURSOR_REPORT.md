@@ -10,7 +10,7 @@ result_cursor: PASS
 reported_via: cursor_direct_persistence
 prompt_expected_origin_main: edb25753cde3df8fd11896e47c14e08bbac45537
 starting_head: 95598349b5780710fe54f57ebd1eb3c5875ef928
-final_head: PENDING_COMMIT
+final_head: e7578321246549ffcfb2dbca36a543787a237c50
 interrupted_cleanup: N/A_workspace_clean_live_proof_already_on_main
 primary_backend: llama_cpp
 ollama_compatibility: preserved
