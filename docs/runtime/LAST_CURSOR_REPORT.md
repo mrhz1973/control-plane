@@ -5,25 +5,33 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_QWEN_LOCAL_LLAMA_CPP_BOUNDED_LIVE_PROOF_RETRY_2
-result_cursor: STOP
+task_ref: V4_QWEN_LOCAL_LLAMA_CPP_BOUNDED_LIVE_PROOF_RETRY_3
+result_cursor: PASS
 reported_via: cursor_direct_persistence
-starting_head: 4925bca170ff3ae65a30dd91294dca98b6da44a2
-final_head: c844cc37abae7c0f940ffd5e31197d8404c92de2
-blocker: LLAMA_SERVER_NOT_RUNNING
-llama_server_process: ABSENT
-port_8080_listener: NOT_LISTENING
-listener_process: n/a
-models_probe: CONNECTION_ERROR
-fast_8k_dflash2_present: false
+starting_head: 327a2b6cee9c44649b5055d24d8c2982abca29c3
+final_head: PENDING_COMMIT
+runtime_manually_started_by_operator: true
+llama_server_process: RUNNING
+port_8080_listener: LISTENING
+listener_process: llama-server
+models_probe: HTTP_200
+fast_8k_dflash2_present: true
 backend: llama_cpp
 endpoint: http://127.0.0.1:8080
 profile: fast_8k
 model_id: qwen38-original-dflash2-8k
 context_tokens: 8192
 dflash_required: true
-generation_attempts: 0
-adapter_classification: N/A
+generation_attempts: 1
+adapter_ok: true
+adapter_classification: LOCAL_MODEL_RESULT
+role: routing_arbiter
+validated_result:
+  selection: opencode+qwen_local
+  reason_code: LOCAL_ZERO_COST_SUFFICIENT
+  confidence: high
+elapsed_ms: 63898
+qwen_local_llama_cpp_live_proof: PASS
 adapter_tests: PASS 9/9
 transport_tests: PASS 8/8
 classifier_regression: PASS 9/9
@@ -43,7 +51,7 @@ secret_exposure: false
 status_fail_closed_untouched: true
 current_frontier_d0025_untouched: true
 
-architecture_report: reports/architecture/v4_qwen_local_llama_cpp_bounded_live_proof_retry_2.md
+architecture_report: reports/architecture/v4_qwen_local_llama_cpp_bounded_live_proof_retry_3.md
 
-NEXT: start operator launcher so llama-server listens on 127.0.0.1:8080 with qwen38-original-dflash2-8k exposed; then another bounded retry; D-0025-W remains ZAI-gated
+NEXT: V4 routers/collector deferred; fail-closed status baseline remains available=false; D-0025-W remains ZAI-gated
 ```
