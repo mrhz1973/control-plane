@@ -9,7 +9,7 @@ task_ref: D0025_W_PACKET_REQUIRED_EMPTY_FIELDS_HARDENING
 result_cursor: PASS_PACKET_REQUIRED_EMPTY_FIELDS_HARDENING_APPLIED_OFFLINE
 reported_via: cursor_direct_persistence
 starting_head: d4ee4ab8411ef3567e820230599991d6b3329c48
-final_head: PENDING_COMMIT
+final_head: 6d4359a49a985598b0e55e986cea77d9a44d4c76
 
 apply_phase: PASS
 mutations:
