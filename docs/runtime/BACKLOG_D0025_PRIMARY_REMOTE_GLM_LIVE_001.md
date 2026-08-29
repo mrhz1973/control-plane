@@ -90,3 +90,5 @@ Retry trigger 9: 2026-08-29 — WF61 sanitized SSE structural capture applied; e
 Retry trigger 10: 2026-08-29 — status-0 transport preflight PASS; execute same task D-0025-W-GLM-LIVE-001 with SSE capture.
 
 Retry trigger 11: 2026-08-29 — body-shape capture applied; execute same task D-0025-W-GLM-LIVE-001.
+
+Retry trigger 12: 2026-08-29 — n8n fullResponse data unwrap applied; execute same task D-0025-W-GLM-LIVE-001.
