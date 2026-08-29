@@ -300,7 +300,7 @@ Structural finding: Capture is stringifying the **n8n HTTP fullResponse wrapper*
 
 ## Attempt 13 (live resume after fullResponse unwrap)
 
-**Block:** `D0025_W_GLM_LIVE_RESUME_AFTER_FULLRESPONSE_UNWRAP`  
+**Block:** `D0025_W_GLM_LIVE_RESUME_AFTER_FULLRESPONSE_UNWRAP`
 **Trigger:** `bc94de8f119a4eaa4b8d021d49b78f30c8f28426` (retry trigger 13; trigger 12 `7d3c551` was Data-Table-consumed under `REMOTE_PLANNER_GATE_CLOSED` with provider Δ0)
 
 ### Precheck / arm
