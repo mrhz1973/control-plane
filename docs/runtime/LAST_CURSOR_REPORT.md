@@ -10,7 +10,7 @@ result_cursor: STOP_PACKET_SCHEMA_INVALID_ALLOWED_PATHS_PERSISTENT
 reported_via: cursor_direct_persistence
 starting_head: 86aa18f32c8e066809386dec8db9998a0df806b0
 trigger_sha: 6cd2d2310b6233ead2470159ef2e10d9b439822e
-final_head: PENDING_COMMIT
+final_head: 3ba68e6d4ea746d35b88d5345723ccef1dff1724
 
 precheck: PASS
 provider_calls_precheck: 0
