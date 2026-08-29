@@ -10,7 +10,7 @@ result_cursor: STOP_HTTP_WALL_TIMEOUT
 reported_via: cursor_direct_persistence
 starting_head: a5677f6b1f81c3949866920d521ce43045c16858
 trigger_sha: 51c0db84ebc8c3d3fef133bfae416341a72a88ed
-final_head: PENDING_COMMIT
+final_head: ac70a2a8c3425888b1f8b4ce8bd3a1c46f80c47e
 
 wf40_exec: 287008
 wf61_exec: 287009
