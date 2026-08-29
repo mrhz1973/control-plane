@@ -1,0 +1,118 @@
+{
+  "acceptance": [
+    "planner returns one structurally valid canonical Execution Packet",
+    "task_id remains D-0025-W-GLM-LIVE-001",
+    "packet identifies the next bounded remaining D-0025-W work",
+    "packet is useful for implementation rather than proof-only testing",
+    "no automatic Cursor dispatch occurs",
+    "no Qwen or Codex fallback occurs",
+    "no secret material is requested or exposed"
+  ],
+  "allowed_paths": [
+    "docs/runtime/",
+    "reports/architecture/",
+    "configs/planner/",
+    "workflows/patches/",
+    "tools/"
+  ],
+  "branch_target": "main",
+  "context": {
+    "checkpoint_contract": "docs/contracts/execution-checkpoint-v1.md",
+    "checkpoint_policy": "required",
+    "read_set": [
+      "docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md",
+      "docs/contracts/execution-checkpoint-v1.md",
+      "docs/foundation/CURSOR_PROMPT_TEMPLATE.md",
+      "configs/planner/",
+      "workflows/patches/",
+      "tools/"
+    ]
+  },
+  "executor": "cursor",
+  "forbidden_paths": [
+    "credentials",
+    "secrets",
+    "network",
+    "Tailscale",
+    "TeamViewer",
+    "OpenClaw",
+    "WF60"
+  ],
+  "gate_recommendation": {
+    "reason": "Medium risk plus an unresolved constraint conflict: the supplied hard_constraints are phrased as requiring scope expansion, destructive action, and manual secret entry, which cannot be satisfied jointly with forbidden_paths and the no-secret acceptance items. The packet is therefore held at a human gate (no automatic Cursor dispatch, no runtime self-authorization) until the constraint interpretation is confirmed; the executor must treat forbidden_paths and the no-secret acceptance as binding.",
+    "required": true
+  },
+  "generated_at": "2025-08-14T00:00:00Z",
+  "goal": "Generate one canonical bounded Execution Packet for the next real remaining work required to close D-0025-W primary remote LiteLLM integration after the WF40 blocking sibling lanes have been corrected. The packet must be useful project work, not a proof-only or exploratory test artifact.",
+  "hard_constraints": [
+    "material architecture or project-scope expansion is required",
+    "destructive or irreversible action is required",
+    "unavoidable manual secret entry is required"
+  ],
+  "loop": {
+    "enabled": true,
+    "max_rounds": 3,
+    "on_exhaustion": "telegram_gate",
+    "stop_when": [
+      "All acceptance criteria are verified true",
+      "No changed path falls outside allowed_paths or matches forbidden_paths",
+      "Backlog status under docs/runtime/ reflects the completed next remaining D-0025-W work item",
+      "Checkpoint conforms to docs/contracts/execution-checkpoint-v1.md"
+    ]
+  },
+  "packet_id": "EP-D-0025-W-GLM-LIVE-001",
+  "packet_revision": 1,
+  "planner": {
+    "fallback_reason": null,
+    "fallback_used": false,
+    "provider_state_ref": null,
+    "requested": "glm",
+    "used": "glm"
+  },
+  "preflight": [
+    "Confirm repository mrhz1973/control-plane is on branch_target main with a clean working tree before starting.",
+    "Confirm docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md resolves at source_backlog_commit 989501e103090bf9a2dea2eb4e62a42c8add36ce and enumerate the remaining open work items it records.",
+    "Confirm the WF40 sibling lanes previously recorded as blocking for D-0025-W are marked corrected in that backlog revision; if not confirmed, treat the packet as blocked and report via the checkpoint without modifying files.",
+    "Confirm no planned step requires credentials, secrets, network, Tailscale, TeamViewer, OpenClaw, or WF60 surfaces; forbidden_paths are absolute exclusions."
+  ],
+  "repository": "mrhz1973/control-plane",
+  "review": {
+    "autofix_cloud": false,
+    "bugbot": "required",
+    "max_review_rounds": 3
+  },
+  "risk_assessment": {
+    "credentials_or_billing": false,
+    "destructive": false,
+    "level": "medium",
+    "production_sensitive": false,
+    "reasons": [
+      "Primary remote LiteLLM integration touches planner/provider configuration surfaces under configs/planner/, so misconfiguration could affect downstream planning lanes.",
+      "The supplied hard_constraints are phrased as requiring scope expansion, destructive action, and manual secret entry, which conflicts with forbidden_paths and the no-secret acceptance items; preserved verbatim and escalated to a human gate rather than self-authorized.",
+      "The specific next remaining D-0025-W work item cannot be named from planner context alone; the executor must derive it from the backlog revision pinned by source_backlog_commit, bounded strictly by allowed_paths.",
+      "WF40 sibling-lane corrected status must be re-verified at execution time; absence of confirmation is encoded as a blocking condition, not an assumption."
+    ],
+    "scope_expansion": false
+  },
+  "schema": "execution-packet-v1",
+  "source_backlog_commit": "989501e103090bf9a2dea2eb4e62a42c8add36ce",
+  "source_backlog_ref": "github:mrhz1973/control-plane@989501e103090bf9a2dea2eb4e62a42c8add36ce:docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md",
+  "status": "READY_FOR_GATE",
+  "steps": [
+    "Enumerate the remaining open work items recorded in docs/runtime/BACKLOG_D0025_PRIMARY_REMOTE_GLM_LIVE_001.md at commit 989501e103090bf9a2dea2eb4e62a42c8add36ce; do not rely on any newer uncommitted state.",
+    "Verify the WF40 sibling lanes previously recorded as blocking are marked corrected in that revision; if any is not confirmed corrected, stop, emit a blocked checkpoint per docs/contracts/execution-checkpoint-v1.md, and make no file changes.",
+    "Select exactly one next bounded remaining D-0025-W work item that advances primary remote LiteLLM integration (runtime docs, planner/provider configuration, patch workflow, or tooling) and is completable strictly within allowed_paths; exclude proof-only, exploratory, or test-only artifacts.",
+    "Implement the selected work item end to end within allowed_paths only, touching no credentials, secrets, network, Tailscale, TeamViewer, OpenClaw, or WF60 surfaces and performing no destructive or irreversible repository operations.",
+    "Update the D-0025-W runtime documentation under docs/runtime/ so the completed item and the revised remaining-work list are reflected at the new HEAD.",
+    "Emit the execution checkpoint per docs/contracts/execution-checkpoint-v1.md and produce the final report per docs/foundation/CURSOR_PROMPT_TEMPLATE.md; this packet authorizes no automatic dispatch beyond that report."
+  ],
+  "task_id": "D-0025-W-GLM-LIVE-001",
+  "validation": [
+    "Verify every changed path lies inside allowed_paths (docs/runtime/, reports/architecture/, configs/planner/, workflows/patches/, tools/) and no changed path matches forbidden_paths (credentials, secrets, network, Tailscale, TeamViewer, OpenClaw, WF60).",
+    "Verify the diff introduces no credential or secret material and that no secret was requested or exposed; scan changed files for secret-like patterns before reporting.",
+    "Verify the selected and completed work item maps to an open item enumerated from the backlog revision at 989501e103090bf9a2dea2eb4e62a42c8add36ce, and that the docs/runtime/ status update reflects both the completion and the updated remaining-work list.",
+    "Verify the emitted checkpoint conforms to docs/contracts/execution-checkpoint-v1.md and the final report conforms to docs/foundation/CURSOR_PROMPT_TEMPLATE.md.",
+    "Verify planner provenance remained glm with no Qwen or Codex fallback and that no automatic Cursor dispatch occurred."
+  ],
+  "final_report_contract": "docs/foundation/CURSOR_PROMPT_TEMPLATE.md"
+}

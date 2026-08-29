@@ -471,12 +471,42 @@ Hang-proof path terminated near wall (~115s) without a parseable bridge one-shot
 
 ---
 
+## Attempt 19 (tranche 02 live event 03 — with network observer)
+
+**Block:** `D0025_W_GLM_TRANCHE02_LIVE_EVENT_03_WITH_NETWORK_OBSERVER`  
+**Trigger:** `989501e103090bf9a2dea2eb4e62a42c8add36ce` (retry trigger 19; arm-first; observer active before trigger)  
+**Report:** `reports/architecture/d0025_glm_tranche02_live_event03_with_network_observer.md`
+
+### Live result
+
+| Metric | Value |
+|---|---|
+| WF40 / WF61 | `287887` (success) / `287888` (stuck-`running` row; canonical result emitted to parent) |
+| LiteLLM Δ | **1** (total **11**; `POST /v1/responses` → **200** at 23:08:40.916Z, ~97 s) |
+| GLM Δ | **1** (tranche 02 **1/10**) — conservative: request processed by gateway under zai-backed alias |
+| Observer | active 23:05:38Z→23:10:38Z · N8N_TO_LITELLM **4** · CONNECTION_CLOSE **2** · clean FIN pair at response time |
+| http_status | **200** · response_source_format `json` |
+| Terminal classification | **`PASS`** (n8n-litellm-primary-cycle-result-v1 · ok=true) |
+| Packet | **`execution-packet-v1` · status `READY_FOR_GATE`** · `EP-D-0025-W-GLM-LIVE-001` rev 1 |
+| packet_census | PASS (all required present; `final_report_contract` completed by deterministic_completion) |
+| deterministic_completion | applied=true · completed `final_report_contract` |
+| policy_decision | **GATE** · cursor_dispatch_allowed **false** · planner requested=glm · used=glm · fallback_used=false |
+| Child row artifact | `287888` stuck `running` + purged data (recurrence of post-HTTP200 child-hang pattern; parent got full result) |
+| Gate / WF61 final | **CLOSED** / **inactive** |
+| retry/fallback/qwen/codex/cursor | **0** |
+
+### Structural finding
+
+First live PASS end-to-end: request ingressed to LiteLLM (observer SYN/PSH 23:07:03.891Z), gateway completed 200 within the 115 s wall (~97 s), capture/finalize/CASE B completed, and the parent WF40 execution carries the canonical cycle result plus a valid Execution Packet. The known child-execution row hang (`running`, purged data) recurred but did not block the canonical parent result. No second call. No live repair.
+
+---
+
 ## NEXT_GATE
 
-Tranche 02 remains **0/10**. Remaining D-0025-W item: offline diagnose hang-proof **HTTP_WALL_TIMEOUT** with LiteLLM Δ0 (connect/upstream path) before another live spend. Issue **#31** remains OPEN.
+**Valid Execution Packet obtained** (event 03). Tranche 02: GLM **1/10** · LiteLLM **1/10**. Policy decision **GATE**: no auto Cursor dispatch. Remaining: bounded execution of the packet's next real D-0025-W work; child-row hang accounting; issue **#31** OPEN.
 
 ---
 
 ## Output line
 
-`STOP — HTTP_WALL_TIMEOUT / TRANCHE=0/10 / GATE_CLOSED=true`
+`PASS — D0025 GLM TRANCHE02 EVENT03 VALID EXECUTION PACKET / POLICY=GATE / TRANCHE=1/10`
