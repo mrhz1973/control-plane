@@ -5,20 +5,23 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_WF61_HANGPROOF_HTTP_BRIDGE
-result_cursor: PASS_WF61_HANGPROOF_HTTP_BRIDGE_APPLIED_OFFLINE
+task_ref: D0025_W_WF61_6110_CASE_B_RESYNC_AFTER_HANGPROOF
+result_cursor: PASS_WF61_6110_CASE_B_RESYNCED_AFTER_HANGPROOF
 reported_via: cursor_direct_persistence
-starting_head: b968a1417240112820d1a50e0c3ae6aaa8d7048b
-final_head: c1cb184182180225e489c793c1671ff731b37edf
+starting_head: 60b580a54e08fbd93a1e92973e1aa98bacdc30d2
+final_head: PENDING_COMMIT
 
-helper_path: tools/post-litellm-primary-one-shot.mjs
-mock_suite: tests/litellm-primary-one-shot/run.mjs
-mock_passed: 7
-nodes_changed: [d0025-6104, d0025-6106, d0025-6107]
-wf61_live_versionId: 8776dda8-e8d1-4df9-86f9-530f23409277
-authorized_template_live_equiv: true
-live_6110_case_b_present: false
-live_6110_drift_preexisting: true
+artifact: workflows/patches/d0025-w-wf61-6110-case-b-resync-after-hangproof.gpt-web.json
+mutation: live_6110_parameters_jsCode_only
+template_mutated: false
+wf61_live_versionId: 142ef860-a124-40fe-a99c-b2d26182764c
+live_6110_template_equiv: true
+packet_census_propagation: true
+deterministic_completion_propagation: true
+cursor_dispatch_allowed: false
+nodes_changed: [d0025-6110]
+hangproof_6104_6106_6107_preserved: true
+live_6109_unchanged: true
 provider_calls: 0
 litellm_request_delta: 0
 glm_delta: 0
@@ -29,7 +32,7 @@ schema_mutated: false
 normalizer_mutated: false
 case_b_helper_mutated: false
 
-architecture_report: reports/architecture/d0025_wf61_hangproof_http_bridge_apply.md
+architecture_report: reports/architecture/d0025_wf61_6110_case_b_resync_after_hangproof.md
 
-NEXT: re-sync live 6110 CASE B from template; then human gate for new bounded GLM budget before any live retry
+NEXT: REAL HUMAN GATE — explicit authorization of a NEW bounded GLM budget before any further D-0025-W live retry (not authorized/created/armed/consumed in this pass)
 ```
