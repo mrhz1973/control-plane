@@ -10,7 +10,7 @@ result_cursor: PASS_BODY_SHAPE_CAPTURED
 reported_via: cursor_direct_persistence
 starting_head: 3a537b9d28603c56f03e140a41f0dccc3d29b6fb
 apply_trigger_sha: 42aba26e1c04c4f4aad8db50462ec1eb2f64b99f
-final_head: PENDING_COMMIT
+final_head: 84c0018d42a2e3481d7ad9e9b441f9f024dc6034
 
 apply_phase: PASS
 preflight: PASS
