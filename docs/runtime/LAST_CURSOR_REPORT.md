@@ -5,32 +5,47 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_PACKET_IPV6_OBSERVER_COVERAGE
-result_cursor: PASS_IPV6_OBSERVER_COVERAGE
-starting_head: b3aca3be5f340df673ed8fa8a13d3207f2485dae
-final_head: aa1d377473697e9359bfe1cf5b370ac7fef8801d
-packet_id: EP-D-0025-W-GLM-LIVE-001
-operator_gate_resolution_seen: true
-observer_ipv4_preserved: true
-observer_ipv6_supported: true
-ipv6_ingress_test: PASS
-ipv6_outbound_test: PASS
-ipv6_close_test: PASS
-missing_ipv6_fallback_test: PASS
-sanitization_test: PASS
-tcpdump_payload_capture: none
+task_ref: D0025_W_CHILD_ROW_287888_ACCOUNTING_DIAGNOSIS
+result_cursor: PASS_EXECUTION_ENGINE_CHILD_FINALIZATION_BUG
+classification: EXECUTION_ENGINE_CHILD_FINALIZATION_BUG
+starting_head: e9621a2c6c938d38aebe663eae7c4540a71a02f2
+final_head: PENDING_COMMIT
+
+child_287888_row_exists: false_purged
+child_287888_status: was_running_now_absent
+child_287888_stopped_at: was_null
+child_287888_finished: event_log_workflow_success_entity_never_terminal_in_db
+child_287888_data_exists: false
+child_287888_data_purged: true
+
+parent_287887_status: success
+parent_result_delivered: true
+packet_delivered: true
+
+live_process_leak_seen: false
+task_runner_leak_seen: false
+helper_process_leak_seen: false
+socket_leak_seen: false
+
+n8n_restart_during_event03: false
+db_write_error_seen: false
+retention_or_purge_evidence: true
+operational_impact: accounting_history_only
+
+old_286310_signature: parent_success_subExecution_child_purged_6106_hang_ok_false
+event03_287888_signature: parent_success_PASS_workflow_success_all_nodes_entity_running_then_purged
+same_root_cause_proven: false_workflow_hang_true_accounting_desync_pattern
+
 provider_calls_delta: 0
 litellm_responses_delta: 0
 glm_delta: 0
-historical_litellm_total: 11
 tranche_02_glm_used: 1/10
 tranche_02_litellm_used: 1/10
 gate_closed_final: true
 WF61_final: inactive
-bugbot_review: PASS_NO_FINDINGS
-architecture_report: reports/architecture/d0025_packet_ipv6_observer_coverage.md
-checkpoint_path: docs/runtime/CHECKPOINT_D0025_W_PACKET_IPV6_OBSERVER_COVERAGE.md
 issue_31: OPEN
 
-NEXT: D0025_W_CHILD_ROW_287888_ACCOUNTING_DIAGNOSIS (do not execute in this pass)
+architecture_report: reports/architecture/d0025_child_row_287888_accounting_diagnosis.md
+
+NEXT: smallest bounded n8n child-finalization remediation/design; prefer additive/forward fix over historical-row mutation; do not auto-mutate DB
 ```
