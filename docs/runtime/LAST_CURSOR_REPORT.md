@@ -9,7 +9,7 @@ task_ref: D0025_W_WF61_POST_HTTP200_HANG_OFFLINE_DIAGNOSIS
 result_cursor: PASS_WF61_HANG_HTTP_NODE_NOT_RETURNED
 reported_via: cursor_direct_persistence
 starting_head: c61952509c1e765a524ebdb7a203fbc8328c97c5
-final_head: PENDING_SELF_REFERENCE
+final_head: dcd6d11792f430611482364e1d20570f8c3bc301
 
 primary_classification: WF61_HANG_HTTP_NODE_NOT_RETURNED
 last_recoverable_stage: HTTP Request node d0025-6106 (never returned to Capture)
