@@ -8,7 +8,7 @@
 task_ref: D0025_W_PACKET_IPV6_OBSERVER_COVERAGE
 result_cursor: PASS_IPV6_OBSERVER_COVERAGE
 starting_head: b3aca3be5f340df673ed8fa8a13d3207f2485dae
-final_head: PENDING_COMMIT
+final_head: aa1d377473697e9359bfe1cf5b370ac7fef8801d
 packet_id: EP-D-0025-W-GLM-LIVE-001
 operator_gate_resolution_seen: true
 observer_ipv4_preserved: true
