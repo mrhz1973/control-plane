@@ -159,7 +159,7 @@ Quota gate cleared (HTTP 200). Failure is again localized to **SSE terminal-even
 
 ## Attempt 10 (SSE structural-capture apply + bounded resume)
 
-**Block:** `D0025_W_WF61_SSE_STRUCTURAL_CAPTURE_AND_RESUME`  
+**Block:** `D0025_W_WF61_SSE_STRUCTURAL_CAPTURE_AND_RESUME`
 **Artifact:** `workflows/patches/d0025-w-wf61-sse-structural-capture.gpt-web.json`
 
 ### Apply phase (provider_calls=0)
