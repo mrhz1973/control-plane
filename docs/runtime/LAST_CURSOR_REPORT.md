@@ -1,17 +1,18 @@
-# LAST CURSOR REPORT â€” control-plane (rolling)
+# LAST CURSOR REPORT - control-plane (rolling)
 
-**Ruolo:** evidence rolling dell'ultimo pass Cursor completato. Non Ã¨ LIVE STATE e non sostituisce `CURRENT_FRONTIER.md`.
+**Ruolo:** evidence rolling dell'ultimo pass Cursor completato. Non e LIVE STATE e non sostituisce `CURRENT_FRONTIER.md`.
 
 ## LATEST
 
 ```yaml
-task_ref: V4_RESOURCE_STATUS_CONTRACT
+task_ref: V4_RESOURCE_REGISTRY_CONTRACT
 result_cursor: PASS
 reported_via: cursor_direct_persistence
-starting_head: 5a38939d4908de54c9b7f846ffcf87b43111cea9
-final_head: 0dec10fae66014a261c5388db08831859f4a14ef
-targeted_tests: PASS 6/6 (tests/resource-status-validator/run.mjs)
+starting_head: 9496f471ad1ae97e022ea5e511cfec5d797016d1
+final_head: 1ee35423cf2bea858fa10ff59364fdf3641b79a8
+targeted_tests: PASS 7/7 (tests/resource-registry-validator/run.mjs)
 provider_calls: 0
+ollama_calls: 0
 litellm_calls: 0
 workflow_mutations: 0
 n8n_mutations: 0
@@ -21,18 +22,20 @@ d0025_mutations: 0
 secret_exposure: false
 
 files_created:
-  - docs/contracts/resource-status-v1.schema.json
-  - configs/resources/status.fail-closed.json
-  - tools/validate-resource-status-v1.mjs
-  - tests/resource-status-validator/run.mjs
-  - tests/resource-status-validator/fixtures/*
-  - reports/architecture/v4_resource_status_contract.md
+  - docs/contracts/resource-registry-v1.schema.json
+  - configs/resources/registry.json
+  - tools/validate-resource-registry-v1.mjs
+  - tests/resource-registry-validator/run.mjs
+  - tests/resource-registry-validator/fixtures/*
+  - reports/architecture/v4_resource_registry_contract.md
 
-architecture_report: reports/architecture/v4_resource_status_contract.md
+architecture_report: reports/architecture/v4_resource_registry_contract.md
 current_frontier_d0025_untouched: true
+resource_status_untouched: true
 qwen_enabled: false
-resource_registry_created: false
-live_collector_created: false
+qwen_local_registered: true
+qwen_local_hardcoded_ollama_model: false
+ollama_transport_duplicated: false
 
-NEXT: D-0025-W remains gated on ZAI reset; V4 next blocks deferred (RESOURCE_REGISTRY / routers)
+NEXT: D-0025-W remains gated on ZAI reset; V4 next blocks deferred (adapters/routers)
 ```

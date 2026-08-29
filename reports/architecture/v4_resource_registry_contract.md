@@ -1,4 +1,4 @@
-# V4 â€” RESOURCE_REGISTRY contract
+# V4 - RESOURCE_REGISTRY contract
 
 **Block ID:** `V4_RESOURCE_REGISTRY_CONTRACT`  
 **Starting HEAD:** `9496f471ad1ae97e022ea5e511cfec5d797016d1`  
@@ -46,9 +46,9 @@ No availability, quota, reset, reserve, timestamps, credentials, or dashboard pe
 - Schema: `uniqueItems` on roles / capabilities / compatible_resources; `additionalProperties: false` on entries.
 - Semantic (validator): reject self-reference; reject unknown compatible IDs.
 - Committed edges (evidence/design-bounded):
-  - `qwen_local` â†” `opencode` (local model + local harness)
-  - `composer` â†’ `cursor` and `cursor` includes `composer`
-  - `glm` â†’ `cursor` (PROJECT_VISION Cursor harness + GLM path)
+  - `qwen_local` <-> `opencode` (local model + local harness)
+  - `composer` -> `cursor` and `cursor` includes `composer`
+  - `glm` -> `cursor` (PROJECT_VISION Cursor harness + GLM path)
   - `codex` / `grok_bot`: no unverified harness edges
 
 ## Separation from RESOURCE_STATUS
@@ -75,11 +75,11 @@ Exact Ollama model binding remains deferred to a later `QWEN_LOCAL_ADAPTER`/conf
 
 Repository evidence (`tools/classifier-wrapper-v1.mjs`): Ollama HTTP `/api/generate`, `OLLAMA_BASE_URL` / `OLLAMA_MODEL` configurable, default wrapper model `qwen3:14b`.
 
-This pass **reuses that transport later** â€” does **not** duplicate it, does **not** call Ollama, does **not** enable Qwen.
+This pass **reuses that transport later** - does **not** duplicate it, does **not** call Ollama, does **not** enable Qwen.
 
 ## Validation results
 
-`node tests/resource-registry-validator/run.mjs` â†’ **7/7 PASS**
+`node tests/resource-registry-validator/run.mjs` -> **7/7 PASS**
 
 | Case | Result |
 |---|---|
@@ -91,10 +91,10 @@ This pass **reuses that transport later** â€” does **not** duplicate it, do
 | self-compatible ref | FAIL closed |
 | qwen_local without hard-coded Ollama model name | PASS |
 
-JSON syntax OK Â· `git diff --check` clean.
+JSON syntax OK. `git diff --check` clean.
 
 ## Preserve (unchanged)
 
-RESOURCE_STATUS Â· execution-packet Â· planner-routing / selection Â· WF40/WF61 Â· workflows Â· n8n Â· LiteLLM Â· OpenClaw Â· CURRENT_FRONTIER D-0025 Â· backlog Â· GLM gate.
+RESOURCE_STATUS, execution-packet, planner-routing / selection, WF40/WF61, workflows, n8n, LiteLLM, OpenClaw, CURRENT_FRONTIER D-0025, backlog, GLM gate.
 
 Not created: QWEN_LOCAL_ADAPTER, EXECUTION_ROUTER, REVIEW_ROUTER, Telegram/n8n V4 integration.
