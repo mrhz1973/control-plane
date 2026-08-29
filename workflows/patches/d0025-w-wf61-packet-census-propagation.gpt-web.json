@@ -1,0 +1,53 @@
+{
+  "schema": "gpt-web-n8n-bounded-delta-v1",
+  "task_ref": "D0025_W_WF61_PACKET_CENSUS_PROPAGATION",
+  "authority": "GPT-Web",
+  "workflow_id": "d0025-6100-4001-8001-000000000061",
+  "workflow_template": "workflows/61-litellm-primary-remote-planner.template.json",
+  "expected_node_count": 13,
+  "mutations": [
+    {
+      "node_id": "d0025-6110-4010-8010-000000000010",
+      "node_name": "Return canonical cycle result",
+      "field": "parameters.jsCode",
+      "operation": "replace_exact",
+      "replacement": "const r=$json;\nconst stdout=String(r.stdout??'').trim();\nconst exitCode=Number(r.exitCode??r.code??1);\nlet parsed=null;\ntry{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}\nconst http=$('Capture HTTP body + status').item.json;\nconst ok=exitCode===0&&parsed?.ok===true&&parsed?.classification==='PASS';\nconst packetCensus=parsed?.packet_census_before_completion??parsed?.packet_census??null;\nconst completion=parsed?.deterministic_completion??null;\nreturn {json:ok?{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:true,classification:'PASS',task_id:http.task_id,http_status:http.http_status,\n response_source_format:parsed.response_source_format,response_gate:parsed.response_gate,packet:parsed.packet,policy:parsed.policy,\n packet_census:packetCensus,deterministic_completion:completion,cursor_dispatch_allowed:false\n}:{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:false,classification:parsed?.classification||'FINALIZE_FAILED',task_id:http.task_id,http_status:http.http_status,\n reason:parsed?.reason||'canonical finalize failed',packet_census:packetCensus,deterministic_completion:completion,\n sse_census:http.sse_census??null,body_shape:http.body_shape??null,cursor_dispatch_allowed:false\n}};"
+    }
+  ],
+  "preserve": [
+    "all 13 nodes and all node IDs/names/types/typeVersions/positions",
+    "all connections",
+    "HTTP Request node and fullResponse/data unwrap",
+    "prepare/finalize commands",
+    "success packet/policy result",
+    "existing sse_census and body_shape failure evidence",
+    "cursor_dispatch_allowed=false",
+    "WF61 remains inactive after apply",
+    "remote runtime gate remains closed",
+    "WF40 unchanged"
+  ],
+  "sanitized_evidence_only": [
+    "packet_census contains only key names and missing-key names",
+    "deterministic_completion contains only boolean/applied state and completed field names",
+    "no raw arguments",
+    "no model text",
+    "no response_b64",
+    "no prompt/reasoning/auth/token/credential values"
+  ],
+  "acceptance": [
+    "only node 6110 parameters.jsCode changes",
+    "node count remains 13",
+    "connections unchanged",
+    "success and failure classification semantics unchanged",
+    "packet_census and deterministic_completion are propagated when present and null otherwise",
+    "provider_calls=0 during apply",
+    "WF61 inactive and runtime gate closed after apply"
+  ],
+  "forbidden": [
+    "provider/model calls during apply",
+    "workflow topology changes",
+    "HTTP/unwrap/normalizer changes",
+    "raw model/body/arguments persistence",
+    "credential/network/OpenClaw/V4 changes"
+  ]
+}
