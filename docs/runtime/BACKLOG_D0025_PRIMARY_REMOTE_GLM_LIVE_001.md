@@ -94,3 +94,5 @@ Retry trigger 11: 2026-08-29 — body-shape capture applied; execute same task D
 Retry trigger 12: 2026-08-29 — n8n fullResponse data unwrap applied; execute same task D-0025-W-GLM-LIVE-001.
 
 Retry trigger 13: 2026-08-29 — re-arm after pre-window Data Table consume of trigger 12; execute same task D-0025-W-GLM-LIVE-001.
+
+Retry trigger 14: 2026-08-29 — packet final_report_contract planner hardening applied; execute same task D-0025-W-GLM-LIVE-001.
