@@ -9,7 +9,7 @@ task_ref: V4_QWEN_LOCAL_RESOURCE_STATUS_OVERLAY
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 starting_head: f7f534cf33ccfda4d06f962b4842edbb1c96c6a4
-final_head: PENDING_COMMIT
+final_head: 70a1046d7cf71afde87b04a23f3b6aac26129c38
 baseline_unchanged: true
 session_manager_reused: true
 execution_router_policy_unchanged: true
