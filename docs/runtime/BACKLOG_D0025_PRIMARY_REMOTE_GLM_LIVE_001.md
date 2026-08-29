@@ -104,3 +104,5 @@ Retry trigger 16: 2026-08-29 — CASE B deterministic source completion applied 
 Retry trigger 17: 2026-08-29 — hang-proof transport + 6110 CASE B + 6109 finalize observability resynced; tranche 02 event 01; execute same task D-0025-W-GLM-LIVE-001.
 
 Retry trigger 18: 2026-08-29 — live WF61 canonical resync after 6106 type drift + 6106 exit normalization; tranche 02 event 02; execute same task D-0025-W-GLM-LIVE-001.
+
+Retry trigger 19: 2026-08-30 — ingress socket observer armed before trigger; tranche 02 event 03 with network observer; execute same task D-0025-W-GLM-LIVE-001.
