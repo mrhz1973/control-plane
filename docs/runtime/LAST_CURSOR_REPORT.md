@@ -10,7 +10,7 @@ result_cursor: STOP_WF61_HUNG_AFTER_LITELLM_HTTP_200
 reported_via: cursor_direct_persistence
 starting_head: cf0da2514f666d370c76d31bc6b96dcd015626ff
 trigger_head: 4c263bd1a59f3a74b311ad1f63fd51b0fb4e9c0b
-final_head: PENDING_SELF_REFERENCE
+final_head: aa8a60d78f6ad337fae7898bb885bc19515000f3
 
 wf40_execution_id: 286309
 wf61_execution_id: 286310
