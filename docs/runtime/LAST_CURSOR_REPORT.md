@@ -9,7 +9,7 @@ task_ref: D0025_W_WF61_6110_CASE_B_RESYNC_AFTER_HANGPROOF
 result_cursor: PASS_WF61_6110_CASE_B_RESYNCED_AFTER_HANGPROOF
 reported_via: cursor_direct_persistence
 starting_head: 60b580a54e08fbd93a1e92973e1aa98bacdc30d2
-final_head: PENDING_COMMIT
+final_head: d63bdae1471356ee07347430059035616b9a3d25
 
 artifact: workflows/patches/d0025-w-wf61-6110-case-b-resync-after-hangproof.gpt-web.json
 mutation: live_6110_parameters_jsCode_only
