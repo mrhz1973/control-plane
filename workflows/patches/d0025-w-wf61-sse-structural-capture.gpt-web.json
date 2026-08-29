@@ -1,0 +1,82 @@
+{
+  "schema": "gpt-web-n8n-bounded-delta-v1",
+  "task_ref": "D0025_W_WF61_SSE_STRUCTURAL_CAPTURE",
+  "authority": "GPT-Web",
+  "workflow": {
+    "id": "d0025-6100-4001-8001-000000000061",
+    "name": "61 - LiteLLM primary remote planner cycle - GPT-Web authored - INACTIVE",
+    "must_remain_active": false,
+    "template_path": "workflows/61-litellm-primary-remote-planner.template.json"
+  },
+  "reason": "Attempt 9 reached LiteLLM/GLM HTTP 200 but stopped at SSE_NO_COMPLETED_RESPONSE. The child WF61 execution record and raw SSE body were not retained, so the alternate terminal protocol shape cannot be reconstructed safely from existing evidence. This bounded delta captures only sanitized SSE protocol structure (event labels/types/key sets and selected field shapes), never model text or raw response content, and propagates that census only on canonical finalize failure so the next single live resume yields deterministic remediation evidence.",
+  "mutations": [
+    {
+      "node_id": "d0025-6107-4007-8007-000000000007",
+      "node_name": "Capture HTTP body + status",
+      "expected_type": "n8n-nodes-base.code",
+      "field": "parameters.jsCode",
+      "expected_current": "const resp=$json;\nconst prep=$('Parse prepare result fail-closed').item.json;\nconst status=Number(resp.statusCode??resp.status??0);\nconst body=resp.body!==undefined?resp.body:resp;\nconst raw=typeof body==='string'?body:JSON.stringify(body??{});\nreturn {json:{task_id:prep.task_id,consumer_b64:prep.consumer_b64,http_status:Number.isFinite(status)?status:0,http_ok:status>=200&&status<300,response_b64:Buffer.from(raw,'utf8').toString('base64')}};",
+      "replace_with": "const resp=$json;\nconst prep=$('Parse prepare result fail-closed').item.json;\nconst status=Number(resp.statusCode??resp.status??0);\nconst body=resp.body!==undefined?resp.body:resp;\nconst raw=typeof body==='string'?body:JSON.stringify(body??{});\nfunction add(set,arr,v,limit){if(typeof v!=='string'||!v||set.has(v)||arr.length>=limit)return;set.add(v);arr.push(v);}\nfunction shape(v){if(Array.isArray(v)){const first=v[0];return first&&typeof first==='object'&&!Array.isArray(first)?'array<object:'+Object.keys(first).sort().join(',')+'>':'array';}if(v&&typeof v==='object')return 'object:'+Object.keys(v).sort().join(',');return typeof v;}\nfunction census(text){\n const labels=[],types=[],keySets=[],fieldShapes=[],orderedTypes=[];\n const sl=new Set(),st=new Set(),sk=new Set(),sf=new Set();\n let dataEventCount=0,doneMarkerCount=0,parseErrorCount=0;\n const selected=['response','item','delta','content','output','choices','message'];\n for(const rawLine of String(text??'').split(/\\r?\\n/)){\n  const line=rawLine.trim();if(!line)continue;\n  if(line.startsWith('event:')){add(sl,labels,line.slice(6).trim(),32);continue;}\n  if(!line.startsWith('data:'))continue;\n  dataEventCount+=1;const payload=line.slice(5).trim();\n  if(payload==='[DONE]'){doneMarkerCount+=1;continue;}\n  let p;try{p=JSON.parse(payload);}catch{parseErrorCount+=1;continue;}\n  if(!p||typeof p!=='object'||Array.isArray(p))continue;\n  const keys=Object.keys(p).sort();add(sk,keySets,keys.join('|'),32);\n  if(typeof p.type==='string'){add(st,types,p.type,64);if(orderedTypes.length<256)orderedTypes.push(p.type);}\n  for(const k of selected){if(!(k in p))continue;add(sf,fieldShapes,k+'='+shape(p[k]),64);const v=p[k];if(Array.isArray(v)&&v[0]&&typeof v[0]==='object'&&!Array.isArray(v[0])){for(const nk of ['delta','message','content']){if(nk in v[0])add(sf,fieldShapes,k+'[0].'+nk+'='+shape(v[0][nk]),64);}}}\n }\n return {schema:'sse-structural-census-v1',data_event_count:dataEventCount,done_marker_count:doneMarkerCount,parse_error_count:parseErrorCount,event_labels:labels,event_types:types,first_event_types:orderedTypes.slice(0,8),last_event_types:orderedTypes.slice(-8),top_level_key_sets:keySets,selected_field_shapes:fieldShapes};\n}\nreturn {json:{task_id:prep.task_id,consumer_b64:prep.consumer_b64,http_status:Number.isFinite(status)?status:0,http_ok:status>=200&&status<300,response_b64:Buffer.from(raw,'utf8').toString('base64'),sse_census:census(raw)}};"
+    },
+    {
+      "node_id": "d0025-6110-4010-8010-000000000010",
+      "node_name": "Return canonical cycle result",
+      "expected_type": "n8n-nodes-base.code",
+      "field": "parameters.jsCode",
+      "expected_current": "const r=$json;\nconst stdout=String(r.stdout??'').trim();\nconst exitCode=Number(r.exitCode??r.code??1);\nlet parsed=null;\ntry{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}\nconst http=$('Capture HTTP body + status').item.json;\nconst ok=exitCode===0&&parsed?.ok===true&&parsed?.classification==='PASS';\nreturn {json:ok?{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:true,classification:'PASS',task_id:http.task_id,http_status:http.http_status,\n response_source_format:parsed.response_source_format,response_gate:parsed.response_gate,packet:parsed.packet,policy:parsed.policy,cursor_dispatch_allowed:false\n}:{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:false,classification:parsed?.classification||'FINALIZE_FAILED',task_id:http.task_id,http_status:http.http_status,\n reason:parsed?.reason||'canonical finalize failed',cursor_dispatch_allowed:false\n}};",
+      "replace_with": "const r=$json;\nconst stdout=String(r.stdout??'').trim();\nconst exitCode=Number(r.exitCode??r.code??1);\nlet parsed=null;\ntry{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}\nconst http=$('Capture HTTP body + status').item.json;\nconst ok=exitCode===0&&parsed?.ok===true&&parsed?.classification==='PASS';\nreturn {json:ok?{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:true,classification:'PASS',task_id:http.task_id,http_status:http.http_status,\n response_source_format:parsed.response_source_format,response_gate:parsed.response_gate,packet:parsed.packet,policy:parsed.policy,cursor_dispatch_allowed:false\n}:{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:false,classification:parsed?.classification||'FINALIZE_FAILED',task_id:http.task_id,http_status:http.http_status,\n reason:parsed?.reason||'canonical finalize failed',sse_census:http.sse_census??null,cursor_dispatch_allowed:false\n}};"
+    }
+  ],
+  "preserve": [
+    "all 13 nodes and all node ids/names/types/typeVersions/positions",
+    "all connections and workflow settings",
+    "HTTP Request - LiteLLM primary one-shot parameters and timeout",
+    "canonical prepare/finalize commands and semantics",
+    "raw response_b64 internal handoff to canonical finalize unchanged",
+    "successful cycle result shape unchanged",
+    "response/schema/policy gates unchanged",
+    "retry=0 and fallback=0",
+    "cursor_dispatch_allowed=false",
+    "WF61 inactive before/after bounded resume",
+    "remote runtime gate CLOSED outside the one authorized event",
+    "WF40, WF60/OpenClaw, credentials, network, Tailscale and TeamViewer state"
+  ],
+  "forbidden": [
+    "persisting or returning raw SSE/body/model text outside the existing internal response_b64 path",
+    "persisting prompts, generated text, reasoning, authorization headers, tokens or credential values",
+    "normalizer semantic changes before a deterministic structural census exists",
+    "node additions/deletions",
+    "connection changes",
+    "HTTP/provider configuration changes",
+    "provider fallback",
+    "Qwen or Codex invocation",
+    "more than one new WF61 execution in the bounded capture resume",
+    "more than one new LiteLLM/GLM provider attempt in the bounded capture resume",
+    "smoke/proof-only detours"
+  ],
+  "acceptance_apply": [
+    "only node 6107 jsCode and node 6110 jsCode change in WF61/template",
+    "census contains structural protocol metadata only",
+    "no raw model output is added to cycle result",
+    "successful cycle result remains unchanged",
+    "failure cycle result may add only sse_census",
+    "WF61 remains inactive after apply",
+    "runtime gate remains CLOSED during apply",
+    "provider calls remain unchanged during apply"
+  ],
+  "bounded_capture_resume": {
+    "task_id": "D-0025-W-GLM-LIVE-001",
+    "same_backlog_only": true,
+    "fresh_trigger_required": true,
+    "max_new_wf61_executions": 1,
+    "max_new_litellm_requests": 1,
+    "max_new_glm_provider_attempts": 1,
+    "retry": 0,
+    "fallback": 0,
+    "qwen": 0,
+    "codex": 0,
+    "cursor_auto_dispatch": 0,
+    "required_capture_on_finalize_failure": "sse_census",
+    "terminal_behavior": "At first PASS or failure, close runtime gate and return WF61 inactive. If finalize fails and sse_census is present, make no second provider call; analyze only the sanitized census."
+  }
+}
