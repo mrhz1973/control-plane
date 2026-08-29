@@ -6,50 +6,35 @@
 |---|---|
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `ARCHITECTURE-V3-EVIDENCE-TRACK` |
-| **ACTIVE WORK** | issue **#31 D-0025-W** — valid packet `EP-D-0025-W-GLM-LIVE-001`; packet human gate explicitly RESOLVED by operator; bounded execution item selected: IPv6 observer coverage |
+| **ACTIVE WORK** | issue **#31 D-0025-W** — packet item IPv6 observer coverage → **PASS** |
 | **BLOCCO ATTIVO** | `D0025_W_LITELLM_PRIMARY_REMOTE_INTEGRATION` |
-| **STATO BLOCCO** | `EVENT03_PASS_VALID_EXECUTION_PACKET / PACKET_HUMAN_GATE_RESOLVED / PACKET_EXECUTION_IPV6_OBSERVER_COVERAGE_READY` |
-| **GATE CORRENTE** | **AUTO-VIA RELEASED for repo-only bounded packet execution item** — runtime gate remains CLOSED; no provider calls authorized |
-| **NEXT** | Execute `D0025_W_PACKET_IPV6_OBSERVER_COVERAGE`: extend `tools/observe-litellm-primary-network.mjs` so `LITELLM_TO_EXTERNAL` metadata-only observation covers IPv6 upstream traffic as well as IPv4, with deterministic offline/parser tests and zero provider calls. Preserve all packet forbidden paths, no-secret, no-destructive, no scope expansion. Child-row `287888` accounting remains a separate later bounded item. |
+| **STATO BLOCCO** | `EVENT03_PASS_VALID_EXECUTION_PACKET / PACKET_HUMAN_GATE_RESOLVED / PACKET_IPV6_OBSERVER_COVERAGE_PASS` |
+| **GATE CORRENTE** | Runtime gate **CLOSED** — no provider calls authorized |
+| **NEXT** | `D0025_W_CHILD_ROW_287888_ACCOUNTING_DIAGNOSIS` — separate bounded item; do **not** execute in the IPv6 observer pass. Issue **#31** remains OPEN. |
 | **WF40 LIVE** | active · `9ZMj2ACTKyDVhCue` · 44 nodes |
-| **WF61 LIVE** | **inactive** · `d0025-6100-4001-8001-000000000061` · hang-proof 6104/6106/6107 · 6106 `2>&1 \|\| true` · 6109/6110 canonical · versionId `dcf124b9-0cb3-428b-8a09-a6afda8d2083` |
+| **WF61 LIVE** | **inactive** · `d0025-6100-4001-8001-000000000061` · hang-proof preserved · versionId `dcf124b9-0cb3-428b-8a09-a6afda8d2083` |
 | **REMOTE RUNTIME GATE** | `enabled=false` · `provider_calls_authorized_per_event=0` · **CLOSED** |
 | **LITELLM LIVE — HISTORICAL** | **11** `/v1/responses` calls |
 | **BOUNDED BUDGET** | `D0025_W_GLM_TRANCHE_02` — GLM **1/10 used** · LiteLLM **1/10 used** · retry **0** · fallback **0** · Codex **0** · Qwen **0** · Cursor auto-dispatch **0** |
 
-## Packet gate resolution
+## Packet item completed
 
-- Operator explicitly confirmed for `EP-D-0025-W-GLM-LIVE-001` that the three contradictory generated `hard_constraints` do **not** authorize or require scope expansion, destructive/irreversible action, or manual secret entry.
-- Binding constraints remain: `forbidden_paths`, no-secret, no-destructive, no scope expansion.
-- Canonical persisted resolution: `docs/runtime/AUTH_D0025_W_EP_D0025_W_GLM_LIVE_001_GATE_RESOLUTION.operator.json`.
-- This resolution clears only the packet human gate; it does not weaken any other packet/repository boundary.
-
-## Packet execution selection
-
-GPT-Web resolves the packet's generic "select exactly one next bounded remaining item" against the current canonical live frontier. The selected item is the already-recorded IPv6 observer coverage gap because it is:
-
-- inside packet `allowed_paths` (`tools/`, `reports/architecture/`, `docs/runtime/`);
-- non-destructive and repo-only;
-- zero-provider / zero-secret;
-- directly tied to the live Event03 evidence gap (`api.z.ai` upstream was IPv6-only while the observer was IPv4-scoped);
-- bounded independently from the child-row accounting recurrence.
+- `EP-D-0025-W-GLM-LIVE-001` human gate was resolved; selected bounded item = IPv6 observer coverage.
+- `tools/observe-litellm-primary-network.mjs` now discovers optional container GlobalIPv6Address, extends BPF for IPv6 ingress/outbound, parses `IP6` endpoints, and classifies `LITELLM_TO_EXTERNAL` for IPv6 upstream without persisting literal addresses.
+- Deterministic tests A–J PASS (`tools/observe-litellm-primary-network.test.mjs`); provider Δ=0.
 
 ## Boundaries
 
-- Do NOT auto-dispatch any provider/model cycle in the packet execution item.
-- Do NOT arm runtime gate or activate WF61.
-- Do NOT mutate workflows, LiteLLM config, provider config, Docker/network/firewall, credentials, OpenClaw, WF60, Tailscale, TeamViewer, or V4 Qwen.
-- Preserve metadata-only observer guarantees: no payload/header/body capture; no external literal IP persistence.
-- Tranche 02 remains **1/10 used** for GLM and LiteLLM during this repo-only pass.
-- Child-row hang/accounting `287888` remains recorded-only and out of scope for the IPv6 observer item.
-- Node 6112 json-shape finding remains out of scope.
+- Do NOT arm runtime gate or trigger WF40/WF61 for the child-row item unless separately authorized.
+- Do NOT auto-dispatch Cursor from the packet (policy GATE remains).
+- Node 6112 remains out of scope.
+- Keep helper / CASE B / schema / normalizer / LiteLLM config / network unchanged unless a later authorized pass says otherwise.
 
 ## Puntatori
 
+- Architecture report: `reports/architecture/d0025_packet_ipv6_observer_coverage.md`
+- Checkpoint: `docs/runtime/CHECKPOINT_D0025_W_PACKET_IPV6_OBSERVER_COVERAGE.md`
 - Packet: `docs/packets/EP-D-0025-W-GLM-LIVE-001.json`
 - Operator gate resolution: `docs/runtime/AUTH_D0025_W_EP_D0025_W_GLM_LIVE_001_GATE_RESOLUTION.operator.json`
-- Event 03 report: `reports/architecture/d0025_glm_tranche02_live_event03_with_network_observer.md`
 - Observer tool: `tools/observe-litellm-primary-network.mjs`
-- Observer prep: `reports/architecture/d0025_litellm_ingress_socket_observer_prep.md`
-- Budget authorization: `docs/runtime/AUTH_D0025_W_GLM_BUDGET_TRANCHE_02.operator.json`
 - Issue **#31** — OPEN

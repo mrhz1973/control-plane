@@ -106,3 +106,11 @@ Retry trigger 17: 2026-08-29 — hang-proof transport + 6110 CASE B + 6109 final
 Retry trigger 18: 2026-08-29 — live WF61 canonical resync after 6106 type drift + 6106 exit normalization; tranche 02 event 02; execute same task D-0025-W-GLM-LIVE-001.
 
 Retry trigger 19: 2026-08-30 — ingress socket observer armed before trigger; tranche 02 event 03 with network observer; execute same task D-0025-W-GLM-LIVE-001.
+
+## Packet execution outcome (EP-D-0025-W-GLM-LIVE-001)
+
+- Human gate for `EP-D-0025-W-GLM-LIVE-001` was **RESOLVED** by operator (`docs/runtime/AUTH_D0025_W_EP_D0025_W_GLM_LIVE_001_GATE_RESOLUTION.operator.json`): scope expansion / destructive / manual secret entry all **not required**; forbidden_paths, no-secret, no-destructive, no scope expansion remain binding.
+- GPT-Web selected the bounded packet implementation item: **IPv6 observer coverage** (`D0025_W_PACKET_IPV6_OBSERVER_COVERAGE`).
+- Outcome on main: **PASS** — `tools/observe-litellm-primary-network.mjs` now observes/classifies IPv6 litellm-primary traffic in addition to IPv4; deterministic offline tests A–J PASS; zero provider calls; tranche 02 remains GLM **1/10** · LiteLLM **1/10**.
+- Remaining separate bounded D-0025-W item: **child-row execution accounting for 287888** (`D0025_W_CHILD_ROW_287888_ACCOUNTING_DIAGNOSIS`).
+- Historical `source_backlog_commit` / retry-trigger semantics above are preserved unchanged.
