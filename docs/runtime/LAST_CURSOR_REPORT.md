@@ -1,6 +1,6 @@
-# LAST CURSOR REPORT — control-plane (rolling)
+# LAST CURSOR REPORT â€” control-plane (rolling)
 
-**Ruolo:** evidence rolling dell'ultimo pass Cursor completato. Non è LIVE STATE e non sostituisce `CURRENT_FRONTIER.md`.
+**Ruolo:** evidence rolling dell'ultimo pass Cursor completato. Non Ã¨ LIVE STATE e non sostituisce `CURRENT_FRONTIER.md`.
 
 ## LATEST
 
