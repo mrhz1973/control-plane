@@ -5,7 +5,7 @@
 **Date:** 2026-08-28 / 2026-08-29  
 **Release evidence:** issue #31 comment `5458616370` · standing authorization  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **STOP (attempt 17 / tranche 02 event 01)** — `HTTP_BRIDGE_OUTPUT_INVALID` · LiteLLM Δ **0** · tranche 02 **0/10** · gate CLOSED
+**Status:** **STOP (attempt 18 / tranche 02 event 02)** — `HTTP_WALL_TIMEOUT` · LiteLLM Δ **0** · tranche 02 **0/10** · gate CLOSED
 
 ---
 
@@ -445,12 +445,38 @@ Hang-proof path terminated near wall (~115s) without a parseable bridge one-shot
 
 ---
 
+## Attempt 18 (tranche 02 live event 02 — after canonical WF61 resync)
+
+**Block:** `D0025_W_GLM_TRANCHE02_LIVE_EVENT_02`  
+**Trigger:** `51c0db84ebc8c3d3fef133bfae416341a72a88ed` (retry trigger 18; arm-first)  
+**Report:** `reports/architecture/d0025_glm_tranche02_live_event02.md`
+
+### Live result
+
+| Metric | Value |
+|---|---|
+| WF40 / WF61 | `287008` / `287009` |
+| LiteLLM Δ | **0** (historical total remains **10**) |
+| GLM Δ | **0** (tranche 02 remains **0/10**) |
+| transport_classification | **`HTTP_WALL_TIMEOUT`** · elapsed **115003** ms · body_bytes **0** · http_status **0** |
+| Not `HTTP_BRIDGE_OUTPUT_INVALID` | **true** |
+| packet_census / deterministic_completion | unavailable |
+| Gate / WF61 final | **CLOSED** / **inactive** (hang-proof preserved) |
+| retry/fallback/qwen/codex/cursor | **0** |
+| secondary 6112 json-shape | observed; not repaired |
+
+### Structural finding
+
+6106 exit normalization restored parseable hang-proof terminal JSON (`HTTP_WALL_TIMEOUT`). Provider not reached. No second call.
+
+---
+
 ## NEXT_GATE
 
-Tranche 02 remains **0/10** (no provider consumption). Remaining D-0025-W item: offline diagnose/fix hang-proof bridge Execute Command stdout/exit vs 6107 parser (`HTTP_BRIDGE_OUTPUT_INVALID`) before another live spend. Issue **#31** remains OPEN.
+Tranche 02 remains **0/10**. Remaining D-0025-W item: offline diagnose hang-proof **HTTP_WALL_TIMEOUT** with LiteLLM Δ0 (connect/upstream path) before another live spend. Issue **#31** remains OPEN.
 
 ---
 
 ## Output line
 
-`STOP — HTTP_BRIDGE_OUTPUT_INVALID / GLM_TRANCHE=0/10 / GATE_CLOSED=true`
+`STOP — HTTP_WALL_TIMEOUT / TRANCHE=0/10 / GATE_CLOSED=true`
