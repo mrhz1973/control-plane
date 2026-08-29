@@ -86,3 +86,5 @@ Retry trigger 7: 2026-08-29 — bounded SSE output_item.done normalization appli
 Retry trigger 8: 2026-08-29 — operator ZAI quota release reported; execute same task D-0025-W-GLM-LIVE-001.
 
 Retry trigger 9: 2026-08-29 — WF61 sanitized SSE structural capture applied; execute same task D-0025-W-GLM-LIVE-001.
+
+Retry trigger 10: 2026-08-29 — status-0 transport preflight PASS; execute same task D-0025-W-GLM-LIVE-001 with SSE capture.
