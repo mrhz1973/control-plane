@@ -11,7 +11,7 @@ classification: HTTP_COMPLETED_PASS
 reported_via: cursor_direct_persistence
 starting_head: d49d53ba948d98a00ed377d1b1c5a0ff4d8e926c
 trigger_sha: 989501e103090bf9a2dea2eb4e62a42c8add36ce
-final_head: PENDING_COMMIT
+final_head: b24a1e908d4a17223635faae4d3f537950cb8233
 
 wf40_exec: 287887
 wf61_exec: 287888
