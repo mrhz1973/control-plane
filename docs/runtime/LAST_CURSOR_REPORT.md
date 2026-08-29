@@ -5,27 +5,26 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_QWEN_LOCAL_LLAMA_CPP_BOUNDED_LIVE_PROOF
+task_ref: V4_QWEN_LOCAL_LLAMA_CPP_BOUNDED_LIVE_PROOF_RETRY_1
 result_cursor: STOP
 reported_via: cursor_direct_persistence
-starting_head: 6a71fd4bc0475a955730da7726dfc61f5ee3295a
-final_head: a21b95398dd9e7c742c72c4564aaf6f4adcf40da
-blocker: MODEL_ERROR
+starting_head: 08bcacb1671da40d967b74eb0fb3a1f4ecde41be
+final_head: PENDING_COMMIT
+blocker: FAST_8K_DFLASH2_PROFILE_NOT_AVAILABLE
+operator_runtime_manually_loaded: true
 backend: llama_cpp
 endpoint: http://127.0.0.1:8080
 profile: fast_8k
 model_id: qwen38-original-dflash2-8k
 context_tokens: 8192
 dflash_required: true
-models_probe: HTTP_200_FAST_8K_PRESENT
-generation_attempts: 1
-adapter_classification: MODEL_ERROR
-role: routing_arbiter
-elapsed_ms: 5487
-old_ollama_proof_superseded: true
-qwen_local_llama_cpp_live_proof: STOP
-adapter_offline_tests: PASS 9/9
-transport_offline_tests: PASS 8/8
+models_probe: CONNECTION_ERROR
+generation_attempts: 0
+adapter_classification: N/A
+transport_classification: CONNECTION_ERROR
+adapter_tests: PASS 9/9
+transport_tests: PASS 8/8
+classifier_regression: PASS 9/9
 provider_calls: 0
 litellm_calls: 0
 glm_calls: 0
@@ -40,7 +39,7 @@ secret_exposure: false
 status_fail_closed_untouched: true
 current_frontier_d0025_untouched: true
 
-architecture_report: reports/architecture/v4_qwen_local_llama_cpp_bounded_live_proof.md
+architecture_report: reports/architecture/v4_qwen_local_llama_cpp_bounded_live_proof_retry_1.md
 
-NEXT: diagnose llama.cpp chat failure for qwen38-original-dflash2-8k without retrying in this block; D-0025-W remains ZAI-gated
+NEXT: ensure llama-server multi-model router is listening on 127.0.0.1:8080 with qwen38-original-dflash2-8k exposed before another bounded retry; D-0025-W remains ZAI-gated
 ```
