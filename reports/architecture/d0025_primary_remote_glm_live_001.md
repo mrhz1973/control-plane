@@ -5,7 +5,7 @@
 **Date:** 2026-08-28 / 2026-08-29  
 **Release evidence:** issue #31 comment `5458616370` · standing authorization  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **STOP (attempt 13 / unwrap resume)** — fullResponse unwrap live-proven · HTTP **200** · `PACKET_SCHEMA_INVALID` (`final_report_contract`) · gate CLOSED
+**Status:** **STOP (attempt 14 / packet hardening resume)** — HTTP **200** · `PACKET_SCHEMA_INVALID` (`allowed_paths`) · gate CLOSED
 
 ---
 
@@ -26,6 +26,7 @@
 | 11 (s0+capture) | `f506227` | **CAPTURE PASS** | HTTP 200 · `SSE_NO_COMPLETED_RESPONSE` · sanitized `sse_census` present (0 data events) | **census persisted; no normalizer change** |
 | 12 (body_shape) | `42aba26` | **CAPTURE PASS** | HTTP 200 · `body_shape`=`JSON_OBJECT` keys `data|headers|statusCode|statusMessage` | **n8n fullResponse wrapper identified** |
 | 13 (unwrap resume) | `bc94de8` | **STOP** | HTTP 200 · unwrap proved · `PACKET_SCHEMA_INVALID` missing `final_report_contract` | **offline packet-schema remediation (no normalizer change this pass)** |
+| 14 (hardening resume) | `c3ea492` | **STOP** | HTTP 200 · `PACKET_SCHEMA_INVALID` missing `allowed_paths` | **offline planner required-field hardening (no live fix this pass)** |
 
 ---
 
@@ -337,12 +338,39 @@ n8n fullResponse `data` unwrap is live-proven: Capture/finalize now see the Lite
 
 ---
 
+## Attempt 14 (live resume after packet final_report_contract hardening)
+
+**Block:** `D0025_W_GLM_LIVE_RESUME_AFTER_PACKET_HARDENING`  
+**Trigger:** `c3ea49249e6988a777fce4817407524bb9b38f22` (retry trigger 14; arm-first)
+
+### Live result
+
+| Metric | Value |
+|---|---|
+| WF40 / WF61 | `286045` / `286046` |
+| LiteLLM Δ | **1** (total **8**; POST **200**) |
+| GLM Δ | **1** (budget **8/10**) |
+| HTTP status | **200** |
+| Terminal classification | **`PACKET_SCHEMA_INVALID`** |
+| First remaining required-field finding | **`allowed_paths`** |
+| Reason (sanitized) | `Missing required field: allowed_paths` |
+| Gate / WF61 final | **CLOSED** / **inactive** |
+| retry/fallback/qwen/codex/cursor | **0** |
+| normalizer / schema / unwrap mutated | **false** |
+| raw_model_content_persisted / secrets | **false** / **false** |
+
+### Structural finding
+
+Hardening for `final_report_contract` moved the failure past that field. Schema validation now fails on the next missing required field: `allowed_paths`. No packet attached to cycle result (`has_packet=false`). Offline planner required-field remediation authorized next; no live retry in this pass.
+
+---
+
 ## NEXT_GATE
 
-Offline remediation for `PACKET_SCHEMA_INVALID` / missing `final_report_contract` on the GLM primary-remote packet path. Keep unwrap. Do not reopen gate until that remediation is authorized.
+Offline remediate `PACKET_SCHEMA_INVALID` / missing `allowed_paths` (and ensure all execution-packet-v1 required fields are emitted). Keep unwrap and prior instruction hardening. Do not reopen gate until authorized.
 
 ---
 
 ## Output line
 
-`STOP — PACKET_SCHEMA_INVALID (missing final_report_contract); PROVIDER_CALLS_DELTA=1; GATE_CLOSED=true`
+`STOP — PACKET_SCHEMA_INVALID (missing allowed_paths); PROVIDER_CALLS_DELTA=1; GATE_CLOSED=true`

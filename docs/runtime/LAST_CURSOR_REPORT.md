@@ -5,34 +5,41 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_PACKET_FINAL_REPORT_CONTRACT_HARDENING
-result_cursor: PASS_PACKET_FINAL_REPORT_CONTRACT_HARDENING_APPLIED_OFFLINE
+task_ref: D0025_W_GLM_LIVE_RESUME_AFTER_PACKET_HARDENING
+result_cursor: STOP_PACKET_SCHEMA_INVALID_ALLOWED_PATHS
 reported_via: cursor_direct_persistence
-starting_head: 6e6beebee26b4ff1f2aac5fb71f263c109b2b15e
-final_head: 9f47164e824b1af20d70b86dda0ddfe5bb04d8cf
+starting_head: 085254af5ee7803f170aa4a256cea56b751a2637
+trigger_sha: c3ea49249e6988a777fce4817407524bb9b38f22
+final_head: PENDING_COMMIT
 
-apply_phase: PASS
-mutations:
-  - tools/build-openclaw-responses-request.mjs (PLANNER_INSTRUCTIONS +2 lines)
-  - docs/contracts/openclaw-execution-packet-consumer-v1.md (§3 +2 lines)
-new_instruction_lines_once_each: true
-schema_unchanged: true
-final_report_contract_required_const: true
-no_autofill: true
-provider_calls: 0
-tests:
-  openclaw-request-builder: PASS (15/15)
-  llm-gateway-request-shape: PASS (4/4)
-  llm-gateway-portability: PASS (19/19)
-  execution-packet-validator: PASS (5/5)
-  execution-packet-policy-gate: PASS (15/15)
-git_diff_check: PASS
+precheck: PASS
+provider_calls_precheck: 0
+live_resume: STOP
+wf40_execution_id: 286045
+wf61_execution_id: 286046
+http_status: 200
+classification: PACKET_SCHEMA_INVALID
+first_remaining_required_field: allowed_paths
+reason: Missing required field: allowed_paths
+litellm_request_delta: 1
+glm_provider_attempt_delta: 1
+litellm_total: 8
+glm_budget: 8/10
+has_packet: false
+retry: 0
+fallback: 0
+qwen_calls: 0
+codex_calls: 0
+cursor_dispatch: 0
 gate_closed_final: true
-live_resume: NOT_EXECUTED
+WF61_final: inactive
 normalizer_mutated: false
-workflow_mutated: false
+schema_mutated: false
+unwrap_retained: true
 raw_model_content_persisted: false
 secrets_exposed: false
 
-NEXT: one bounded live resume of D-0025-W-GLM-LIVE-001; max one LiteLLM/GLM attempt; retry=0; fallback=0
+architecture_report: reports/architecture/d0025_glm_live_resume_after_packet_hardening.md
+
+NEXT: offline remediate PACKET_SCHEMA_INVALID missing allowed_paths
 ```
