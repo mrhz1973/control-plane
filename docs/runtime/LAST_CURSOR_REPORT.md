@@ -10,7 +10,7 @@ result_cursor: PASS_CENSUS_CAPTURED
 reported_via: cursor_direct_persistence
 starting_head: b5ed90098d2d13c58f2eb97a78d87b90cf2bda1d
 trigger_sha: f50622768fbfc0eb90c6d52bbc4e3c8d65a9571b
-final_head: PENDING_COMMIT
+final_head: cd368d430122e6a8f3fa44e622bf1e5cc466f7e1
 
 preflight: PASS
 preflight_provider_calls: 0
