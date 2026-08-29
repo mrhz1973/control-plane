@@ -41,6 +41,8 @@ export const PLANNER_INSTRUCTIONS = [
   "Generate exactly one bounded Execution Packet conforming to execution-packet-v1.",
   "Preserve the supplied task objective, allowed/forbidden scope and hard constraints.",
   "hard_constraints MUST equal consumer_input.hard_constraints exactly: same length, same order, same strings; do not add, remove, rephrase, or infer additional hard constraints.",
+  "Every execution-packet-v1 required field MUST be present in emit_execution_packet arguments; do not omit required fields even when their schema value is fixed by const.",
+  "final_report_contract MUST be present and MUST equal docs/foundation/CURSOR_PROMPT_TEMPLATE.md exactly.",
   "Do not self-authorize runtime.",
   "Do not invent credentials, provider state, repository facts, hashes or acceptance evidence.",
   "If required information is absent, encode a gate/blocking condition rather than guessing.",

@@ -5,41 +5,34 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_GLM_LIVE_RESUME_AFTER_FULLRESPONSE_UNWRAP
-result_cursor: STOP_PACKET_SCHEMA_INVALID
+task_ref: D0025_W_PACKET_FINAL_REPORT_CONTRACT_HARDENING
+result_cursor: PASS_PACKET_FINAL_REPORT_CONTRACT_HARDENING_APPLIED_OFFLINE
 reported_via: cursor_direct_persistence
-starting_head: f30cc6b91bed64f419feeb812b29b23da8d784aa
-trigger_sha: bc94de8f119a4eaa4b8d021d49b78f30c8f28426
-final_head: 12167dff4cc7952891c16b733a3d67a356165260
+starting_head: 6e6beebee26b4ff1f2aac5fb71f263c109b2b15e
+final_head: PENDING_COMMIT
 
-precheck: PASS
-provider_calls_precheck: 0
-live_resume: STOP
-wf40_execution_id: 285530
-wf61_execution_id: 285531
-http_status: 200
-classification: PACKET_SCHEMA_INVALID
-reason: Missing required field: final_report_contract
-litellm_request_delta: 1
-glm_provider_attempt_delta: 1
-litellm_total: 7
-glm_budget: 7/10
-unwrap_live_proven: true
-body_shape_framing: JSON_OBJECT
-body_shape_not_n8n_wrapper: true
-sse_census_data_event_count: 0
-retry: 0
-fallback: 0
-qwen_calls: 0
-codex_calls: 0
-cursor_dispatch: 0
+apply_phase: PASS
+mutations:
+  - tools/build-openclaw-responses-request.mjs (PLANNER_INSTRUCTIONS +2 lines)
+  - docs/contracts/openclaw-execution-packet-consumer-v1.md (§3 +2 lines)
+new_instruction_lines_once_each: true
+schema_unchanged: true
+final_report_contract_required_const: true
+no_autofill: true
+provider_calls: 0
+tests:
+  openclaw-request-builder: PASS (15/15)
+  llm-gateway-request-shape: PASS (4/4)
+  llm-gateway-portability: PASS (19/19)
+  execution-packet-validator: PASS (5/5)
+  execution-packet-policy-gate: PASS (15/15)
+git_diff_check: PASS
 gate_closed_final: true
-WF61_final: inactive
+live_resume: NOT_EXECUTED
 normalizer_mutated: false
+workflow_mutated: false
 raw_model_content_persisted: false
 secrets_exposed: false
 
-architecture_report: reports/architecture/d0025_glm_live_resume_after_fullresponse_unwrap.md
-
-NEXT: offline remediate PACKET_SCHEMA_INVALID missing final_report_contract
+NEXT: one bounded live resume of D-0025-W-GLM-LIVE-001; max one LiteLLM/GLM attempt; retry=0; fallback=0
 ```
