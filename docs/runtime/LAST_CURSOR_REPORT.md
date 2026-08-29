@@ -9,7 +9,7 @@ task_ref: V4_QWEN_LOCAL_LLAMA_CPP_BOUNDED_LIVE_PROOF
 result_cursor: STOP
 reported_via: cursor_direct_persistence
 starting_head: 6a71fd4bc0475a955730da7726dfc61f5ee3295a
-final_head: PENDING_COMMIT
+final_head: a21b95398dd9e7c742c72c4564aaf6f4adcf40da
 blocker: MODEL_ERROR
 backend: llama_cpp
 endpoint: http://127.0.0.1:8080

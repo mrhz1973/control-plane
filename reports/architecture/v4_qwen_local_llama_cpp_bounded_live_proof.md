@@ -2,6 +2,7 @@
 
 **Block ID:** `V4_QWEN_LOCAL_LLAMA_CPP_BOUNDED_LIVE_PROOF`  
 **Starting HEAD:** `6a71fd4bc0475a955730da7726dfc61f5ee3295a`  
+**Final HEAD:** `a21b95398dd9e7c742c72c4564aaf6f4adcf40da`  
 **Result:** **STOP** — `MODEL_ERROR`
 
 ## Runtime binding
