@@ -5,43 +5,33 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_STATUS0_PREFLIGHT_AND_SSE_CAPTURE_RESUME
-result_cursor: PASS_CENSUS_CAPTURED
+task_ref: D0025_W_HTTP200_BODY_SHAPE_INSPECT_AND_OFFLINE_REMEDIATE
+result_cursor: STOP
 reported_via: cursor_direct_persistence
-starting_head: b5ed90098d2d13c58f2eb97a78d87b90cf2bda1d
-trigger_sha: f50622768fbfc0eb90c6d52bbc4e3c8d65a9571b
-final_head: cd368d430122e6a8f3fa44e622bf1e5cc466f7e1
-
-preflight: PASS
-preflight_provider_calls: 0
-dns_tcp_readiness_network: PASS
-pre_trigger_readiness: PASS
-
-live_resume: CAPTURE_PASS
-wf40_execution_id: 285414
-wf61_execution_id: 285415
-http_status: 200
-classification: SSE_NO_COMPLETED_RESPONSE
-litellm_request_delta: 1
-glm_provider_attempt_delta: 1
-sse_census_present: true
-data_event_count: 0
-done_marker_count: 0
-parse_error_count: 0
-event_types: []
-retry: 0
-fallback: 0
-qwen_calls: 0
-codex_calls: 0
-cursor_dispatch: 0
-gate_closed_final: true
-WF61_final: inactive
-capture_retained: true
-raw_model_content_persisted: false
-secrets_exposed: false
+starting_head: 5c3065bfb38f1d638656a966232a39a617632385
+final_head: PENDING_COMMIT
+case: B
+case_label: EXISTING_ATTEMPT11_BODY_UNAVAILABLE
+attempt11_wf40: 285414
+attempt11_wf61: 285415
+wf61_execution_present: true
+wf61_runData_empty: true
+response_b64_available: false
+raw_http_body_available: false
+parent_sse_census_only: true
 normalizer_mutated: false
+provider_calls: 0
+litellm_requests: 0
+glm_calls: 0
+codex_calls: 0
+qwen_calls: 0
+workflow_mutations: 0
+remote_runtime_gate: CLOSED
+raw_body_persisted: false
+model_content_persisted: false
+secrets_exposed: false
 
-architecture_report: reports/architecture/d0025_status0_preflight_and_sse_capture_resume.md
+architecture_report: reports/architecture/d0025_http200_body_shape_offline_remediation.md
 
-NEXT: offline remediation from empty-data-event census under HTTP 200
+NEXT: capture body framing+key shapes (no model text) before next live resume; no invented CASE A
 ```
