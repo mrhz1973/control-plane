@@ -5,38 +5,33 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_TRANCHE02_EVENT02_HTTP_WALL_TIMEOUT_OFFLINE_DIAGNOSIS
-result_cursor: PASS_EVIDENCE_INSUFFICIENT
-classification: EVIDENCE_INSUFFICIENT
-reported_via: cursor_direct_persistence
-starting_head: 4668b209587cac8ebd3ffac1f5f3a3e476ba41d2
-final_head: a31cf0b553e3fccf40f079b1320bc403f70cf7ea
-
-event02_wf40: 287008
-event02_wf61: 287009
-dns_current: OK_172.18.0.3
-tcp_4000_current: OK
-readiness_current: 200
-docker_network_current: shared_root_default
-litellm_request_seen: false
-provider_dispatch_seen: false
-post_timeout_completion_seen: false
-client_disconnect_seen: false
-helper_wall_ms: 115000
+task_ref: D0025_W_LITELLM_INGRESS_SOCKET_OBSERVER_PREP
+result_cursor: PASS_OBSERVER_READY
+observer_backend: tcpdump-4.99.4-text-metadata-only
+observer_tool: tools/observe-litellm-primary-network.mjs
+dry_run_readiness_status: 200
+n8n_to_litellm_seen: true
+connection_close_seen: true
+payload_capture: none
+external_established_baseline: false
+external_established_count: 0
 provider_calls_delta: 0
+litellm_responses_delta: 0
+historical_litellm_total: 10
 tranche_02_glm_used: 0/10
 tranche_02_litellm_used: 0/10
-historical_litellm_total: 10
 gate_closed_final: true
 WF61_final: inactive
-secondary_6112_json_shape_finding: observed_out_of_scope
-issue_31: OPEN
+runtime_restarts: none
 workflows_mutated: false
-tools_mutated: false
 litellm_config_mutated: false
 network_mutated: false
+secondary_6112_json_shape_finding: remains_out_of_scope
+issue_31: OPEN
+starting_head: cb91aa9932928158878725bc4fd2cfa1cbc2a71c
+final_head: PENDING_COMMIT
 
-architecture_report: reports/architecture/d0025_tranche02_event02_http_wall_timeout_offline_diagnosis.md
+architecture_report: reports/architecture/d0025_litellm_ingress_socket_observer_prep.md
 
-NEXT: smallest additional zero-provider diagnostic — LiteLLM request-start and/or incomplete-request/disconnect observability so the next HTTP_WALL_TIMEOUT can be classified A vs B/C/D deterministically (do not spend tranche 02)
+NEXT: one bounded D-0025-W tranche02 live event WITH observer active before trigger and a bounded post-wall observation grace period (GLM Δ≤1, LiteLLM Δ≤1, retry=0, fallback=0, Codex=0, Qwen=0, Cursor auto-dispatch=0) — do NOT execute in this pass
 ```
