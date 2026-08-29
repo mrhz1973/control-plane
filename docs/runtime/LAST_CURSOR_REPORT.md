@@ -9,7 +9,7 @@ task_ref: D0025_W_CHILD_ROW_287888_ACCOUNTING_DIAGNOSIS
 result_cursor: PASS_EXECUTION_ENGINE_CHILD_FINALIZATION_BUG
 classification: EXECUTION_ENGINE_CHILD_FINALIZATION_BUG
 starting_head: e9621a2c6c938d38aebe663eae7c4540a71a02f2
-final_head: PENDING_COMMIT
+final_head: feab2e5682ea439bb3f796653c9ed5b0a0f6eac3
 
 child_287888_row_exists: false_purged
 child_287888_status: was_running_now_absent
