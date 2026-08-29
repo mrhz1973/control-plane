@@ -1,0 +1,50 @@
+{
+  "schema": "gpt-web-n8n-bounded-delta-v1",
+  "task_ref": "D0025_W_WF61_LIVE_CANONICAL_RESYNC_AFTER_6106_TYPE_DRIFT",
+  "authority": "GPT-Web",
+  "workflow_id": "d0025-6100-4001-8001-000000000061",
+  "workflow_template": "workflows/61-litellm-primary-remote-planner.template.json",
+  "expected_node_count": 13,
+  "reason": "Operator-relayed Cursor evidence found live WF61 drift: 6106 is still the old httpRequest implementation and live 6104/6107, 6109 and 6110 also fail required canonical preserve checks. Restore only previously GPT-Web-authored canonical fields before another provider event.",
+  "sources": {
+    "hangproof": "workflows/patches/d0025-w-wf61-hangproof-http-bridge.gpt-web.json",
+    "finalize_observability": "workflows/patches/d0025-w-wf61-6109-finalize-observability-resync-after-hangproof.gpt-web.json",
+    "case_b": "workflows/patches/d0025-w-wf61-6110-case-b-resync-after-hangproof.gpt-web.json",
+    "pending_6106_normalization": "workflows/patches/d0025-w-wf61-6106-bridge-exit-normalization.gpt-web.json"
+  },
+  "authorized_apply": [
+    "Apply hangproof source mutations for 6104, 6106 and 6107 exactly to template and live WF61.",
+    "After hangproof 6106 is restored as executeCommand, apply the pending 6106 normalization artifact exactly to template and live 6106 command.",
+    "Apply finalize_observability source mutation exactly to template and live 6109.",
+    "Apply case_b source mutation exactly to template and live 6110."
+  ],
+  "preserve": [
+    "13 nodes",
+    "all connections",
+    "6101/6102/6103/6105/6108/6111/6112 unchanged",
+    "helper unchanged",
+    "schema normalizer CASE B helper LiteLLM config unchanged",
+    "WF40 unchanged",
+    "WF61 inactive",
+    "runtime gate closed",
+    "tranche02 GLM 0/10 and LiteLLM 0/10"
+  ],
+  "forbidden": [
+    "provider calls",
+    "runtime gate arm",
+    "planning trigger",
+    "6112 repair",
+    "topology change",
+    "redesign of any sourced mutation"
+  ],
+  "acceptance": [
+    "template/live 6104 6106 6107 match hangproof source plus pending 6106 normalization",
+    "template/live 6109 match finalize_observability source",
+    "template/live 6110 match case_b source",
+    "13 nodes and connections unchanged",
+    "offline bridge classification checks pass",
+    "provider calls 0",
+    "tranche02 remains 0/10",
+    "WF61 inactive and gate closed"
+  ]
+}
