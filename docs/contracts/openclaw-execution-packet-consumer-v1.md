@@ -97,6 +97,9 @@ Preserve the supplied task objective, allowed/forbidden scope and hard constrain
 hard_constraints MUST equal consumer_input.hard_constraints exactly: same length, same order, same strings; do not add, remove, rephrase, or infer additional hard constraints.
 Every execution-packet-v1 required field MUST be present in emit_execution_packet arguments; do not omit required fields even when their schema value is fixed by const.
 final_report_contract MUST be present and MUST equal docs/foundation/CURSOR_PROMPT_TEMPLATE.md exactly.
+Before emit_execution_packet, verify that ALL required top-level keys are present: schema, packet_id, packet_revision, task_id, source_backlog_ref, source_backlog_commit, generated_at, planner, executor, repository, branch_target, goal, preflight, allowed_paths, forbidden_paths, hard_constraints, steps, validation, acceptance, loop, risk_assessment, gate_recommendation, context, review, final_report_contract, status.
+Required fields MUST NOT be omitted because their value is empty, false, null, or fixed by const; required empty arrays such as allowed_paths, forbidden_paths, preflight, validation, hard_constraints, or reasons must still be emitted when the canonical value is empty.
+allowed_paths and forbidden_paths MUST both be present and MUST equal consumer_input.allowed_paths and consumer_input.forbidden_paths exactly, including [] when empty.
 Do not self-authorize runtime.
 Do not invent credentials, provider state, repository facts, hashes or acceptance evidence.
 If required information is absent, encode a gate/blocking condition rather than guessing.
