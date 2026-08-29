@@ -10,7 +10,7 @@ result_cursor: STOP_HTTP_BRIDGE_OUTPUT_INVALID
 reported_via: cursor_direct_persistence
 starting_head: 13b263fc3f6951791459797d83d0da41e0517f03
 trigger_sha: 1a9c08615104185da3178d6dd4b719e8f6346665
-final_head: PENDING_COMMIT
+final_head: bfdfeb925e82d609ce404fe70933d834a821c4d2
 
 wf40_exec: 286896
 wf61_exec: 286897
