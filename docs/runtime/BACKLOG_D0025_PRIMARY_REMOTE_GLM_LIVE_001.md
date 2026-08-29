@@ -100,3 +100,5 @@ Retry trigger 14: 2026-08-29 — packet final_report_contract planner hardening 
 Retry trigger 15: 2026-08-29 — required/empty-field planner hardening applied; execute same task D-0025-W-GLM-LIVE-001.
 
 Retry trigger 16: 2026-08-29 — CASE B deterministic source completion applied offline; execute same task D-0025-W-GLM-LIVE-001.
+
+Retry trigger 17: 2026-08-29 — hang-proof transport + 6110 CASE B + 6109 finalize observability resynced; tranche 02 event 01; execute same task D-0025-W-GLM-LIVE-001.
