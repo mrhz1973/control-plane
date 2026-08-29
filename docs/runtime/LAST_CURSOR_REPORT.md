@@ -5,31 +5,45 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_WF61_6109_FINALIZE_OBSERVABILITY_RESYNC_AFTER_HANGPROOF
-result_cursor: PASS_WF61_6109_FINALIZE_OBSERVABILITY_RESYNCED
+task_ref: D0025_W_GLM_TRANCHE02_LIVE_EVENT_01
+result_cursor: STOP_HTTP_BRIDGE_OUTPUT_INVALID
 reported_via: cursor_direct_persistence
-starting_head: fcf899cf1f942e0814d7fab6be71f0e8f2e5d467
-final_head: 79980a773cabcbf8df01c70a61c5bce64c198fed
+starting_head: 13b263fc3f6951791459797d83d0da41e0517f03
+trigger_sha: 1a9c08615104185da3178d6dd4b719e8f6346665
+final_head: PENDING_COMMIT
 
-artifact: workflows/patches/d0025-w-wf61-6109-finalize-observability-resync-after-hangproof.gpt-web.json
-mutation: live_6109_parameters_command_only
-template_mutated: false
-wf61_live_versionId: 5c36be63-ec06-4d47-bf51-726a1b354f37
-live_6109_template_equiv: true
-finalize_observability_suffix: "2>&1 || true"
-hangproof_6104_6106_6107_preserved: true
-live_6110_case_b_preserved: true
-provider_calls: 0
-litellm_historical_delta: 0
+wf40_exec: 286896
+wf61_exec: 286897
+wf61_status: error
+transport_classification: HTTP_BRIDGE_OUTPUT_INVALID
+http_status: 0
+transport_elapsed_ms: null
+transport_body_bytes: 0
+cycle_classification: LITELLM_HTTP_FAILURE
+packet_census: unavailable
+deterministic_completion: unavailable
+schema_result: not_reached
+policy_result: not_reached
+litellm_delta: 0
+glm_delta: 0
 tranche_02_glm_used: 0/10
 tranche_02_litellm_used: 0/10
+historical_litellm_total: 10
+cursor_dispatch: 0
+retry: 0
+fallback: 0
+qwen: 0
+codex: 0
 gate_closed_final: true
 WF61_final: inactive
+issue_31: OPEN
+workflows_mutated: false
+tools_mutated: false
 schema_mutated: false
 normalizer_mutated: false
-case_b_helper_mutated: false
+case_b_mutated: false
 
-architecture_report: reports/architecture/d0025_wf61_6109_finalize_observability_resync_after_hangproof.md
+architecture_report: reports/architecture/d0025_glm_tranche02_live_event01.md
 
-NEXT: one bounded D-0025-W GLM live event using at most GLM tranche02 Δ=1, LiteLLM tranche02 Δ=1, retry=0, fallback=0, Codex=0, Qwen=0, Cursor auto-dispatch=0 (NOT executed in this pass)
+NEXT: offline AUTO-VIA diagnose/fix hang-proof bridge output invalidation before another tranche-02 live spend
 ```

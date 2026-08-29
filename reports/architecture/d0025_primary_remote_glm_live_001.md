@@ -5,7 +5,7 @@
 **Date:** 2026-08-28 / 2026-08-29  
 **Release evidence:** issue #31 comment `5458616370` · standing authorization  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **STOP (attempt 15 / required-fields hardening resume)** — HTTP **200** · `PACKET_SCHEMA_INVALID` (`allowed_paths`) · gate CLOSED
+**Status:** **STOP (attempt 17 / tranche 02 event 01)** — `HTTP_BRIDGE_OUTPUT_INVALID` · LiteLLM Δ **0** · tranche 02 **0/10** · gate CLOSED
 
 ---
 
@@ -419,12 +419,38 @@ Provider event consumed successfully at the gateway (HTTP 200), but WF61 never e
 
 ---
 
+## Attempt 17 (tranche 02 live event 01 — after hang-proof + 6110/6109 resync)
+
+**Block:** `D0025_W_GLM_TRANCHE02_LIVE_EVENT_01`  
+**Trigger:** `1a9c08615104185da3178d6dd4b719e8f6346665` (retry trigger 17; arm-first)  
+**Report:** `reports/architecture/d0025_glm_tranche02_live_event01.md`
+
+### Live result
+
+| Metric | Value |
+|---|---|
+| WF40 / WF61 | `286896` / `286897` |
+| LiteLLM Δ | **0** (historical total remains **10**) |
+| GLM Δ | **0** (tranche 02 remains **0/10**) |
+| transport_classification | **`HTTP_BRIDGE_OUTPUT_INVALID`** |
+| HTTP status | **0** |
+| cycle classification | `LITELLM_HTTP_FAILURE` (no recoverable parent cycle-result object) |
+| packet_census / deterministic_completion | unavailable |
+| Gate / WF61 final | **CLOSED** / **inactive** |
+| retry/fallback/qwen/codex/cursor | **0** |
+
+### Structural finding
+
+Hang-proof path terminated near wall (~115s) without a parseable bridge one-shot JSON classification (`HTTP_BRIDGE_OUTPUT_INVALID`); LiteLLM never received `/v1/responses`. No second call. No live repair.
+
+---
+
 ## NEXT_GATE
 
-GLM budget **10/10 exhausted**. Any further GLM live call requires a separate canonical budget decision. Remaining D-0025-W item: diagnose/fix WF61 hang after LiteLLM HTTP 200 (no packet census available). Issue **#31** remains OPEN.
+Tranche 02 remains **0/10** (no provider consumption). Remaining D-0025-W item: offline diagnose/fix hang-proof bridge Execute Command stdout/exit vs 6107 parser (`HTTP_BRIDGE_OUTPUT_INVALID`) before another live spend. Issue **#31** remains OPEN.
 
 ---
 
 ## Output line
 
-`STOP — WF61_HUNG_AFTER_LITELLM_HTTP_200; PROVIDER_CALLS_DELTA=1; GLM_BUDGET=10/10; GATE_CLOSED=true`
+`STOP — HTTP_BRIDGE_OUTPUT_INVALID / GLM_TRANCHE=0/10 / GATE_CLOSED=true`
