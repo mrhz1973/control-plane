@@ -2,6 +2,7 @@
 
 **Block ID:** `V4_RESOURCE_STATUS_CONTRACT`  
 **Starting HEAD:** `5a38939d4908de54c9b7f846ffcf87b43111cea9`  
+**Final HEAD (contract commit):** `0dec10fae66014a261c5388db08831859f4a14ef`  
 **Category:** FOUNDATION / ADDITIVE / OFFLINE  
 **Provider calls:** 0  
 **LiteLLM calls:** 0  

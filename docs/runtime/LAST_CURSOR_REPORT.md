@@ -9,7 +9,7 @@ task_ref: V4_RESOURCE_STATUS_CONTRACT
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 starting_head: 5a38939d4908de54c9b7f846ffcf87b43111cea9
-final_head: dcc8d6d11ead5d7d6e5a1e245bd495b1092b071a
+final_head: 0dec10fae66014a261c5388db08831859f4a14ef
 targeted_tests: PASS 6/6 (tests/resource-status-validator/run.mjs)
 provider_calls: 0
 litellm_calls: 0
