@@ -5,36 +5,36 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_QWEN_LOCAL_ADAPTER
+task_ref: V4_QWEN_LOCAL_BOUNDED_LIVE_PROOF
 result_cursor: PASS
 reported_via: cursor_direct_persistence
-starting_head: 0f2f7a524970c4733319d8f5f849cbf71685321d
-final_head: f8dcac8e13e3972632e66835724bd8e0d6727737
-targeted_tests: PASS 9/9 (tests/qwen-local-adapter/run.mjs)
-classifier_regression: PASS 9/9 (tests/classifier-wrapper/run-offline-tests.mjs)
+starting_head: edb25753cde3df8fd11896e47c14e08bbac45537
+final_head: PENDING_COMMIT
+qwen_local_live_proof: PASS
+selected_model: qwen3.8:27b
+ollama_tags_reachable: true
+generate_attempts: 1
+adapter_classification: LOCAL_MODEL_RESULT
+role: routing_arbiter
+validated_result:
+  selection: opencode+qwen_local
+  reason_code: LOCAL_ZERO_COST_SUFFICIENT
+  confidence: high
+elapsed_ms: 55118
+targeted_offline_tests: PASS 9/9 (tests/qwen-local-adapter/run.mjs)
 provider_calls: 0
 litellm_calls: 0
-ollama_generate_calls: 0
-workflow_mutations: 0
+glm_calls: 0
+codex_calls: 0
 n8n_mutations: 0
+workflow_mutations: 0
 d0025_mutations: 0
+model_downloads: 0
 secret_exposure: false
-
-files_created_or_updated:
-  - tools/ollama-json-client-v1.mjs
-  - tools/classifier-wrapper-v1.mjs
-  - tools/qwen-local-adapter-v1.mjs
-  - docs/contracts/qwen-local-adapter-v1.md
-  - docs/contracts/qwen-local-adapter-v1.schema.json
-  - tests/qwen-local-adapter/run.mjs
-  - reports/architecture/v4_qwen_local_adapter.md
-
-architecture_report: reports/architecture/v4_qwen_local_adapter.md
+status_fail_closed_untouched: true
 current_frontier_d0025_untouched: true
-qwen_enabled: false
-qwen_local_registered: true
-ollama_transport_duplicated: false
-shared_ollama_client: tools/ollama-json-client-v1.mjs
 
-NEXT: D-0025-W remains gated on ZAI reset; optional later bounded Qwen generation proof is a separate block
+architecture_report: reports/architecture/v4_qwen_local_bounded_live_proof.md
+
+NEXT: D-0025-W remains gated on ZAI reset; V4 routers/collector deferred; fail-closed status baseline remains available=false for qwen_local
 ```
