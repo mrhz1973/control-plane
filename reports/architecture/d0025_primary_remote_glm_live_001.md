@@ -5,7 +5,7 @@
 **Date:** 2026-08-28 / 2026-08-29  
 **Release evidence:** issue #31 comment `5458616370` · standing authorization  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **STOP (retry 7)** — Phase A SSE normalization **PASS** (18/18 offline) · Phase B `LITELLM_HTTP_FAILURE` HTTP **429** (ZAI 5-hour usage limit) · gate CLOSED
+**Status:** **STOP (attempt 9 / post-quota-release)** — HTTP **200** · `SSE_NO_COMPLETED_RESPONSE` (no `response.completed` and no `response.output_item.done`) · gate CLOSED
 
 ---
 
@@ -21,6 +21,7 @@
 | 6 (retry 5) | `c06b8be` | STOP | `LITELLM_HTTP_FAILURE` http_status=0 · LiteLLM delta 0 | **status-0 diagnosis: nonpersistent upstream-latency client timeout** |
 | 7 (retry 6) | `48c7c7c` | STOP | `SSE_NO_COMPLETED_RESPONSE` (HTTP 200) | SSE `output_item.done` reconstruction (Phase A this pass) |
 | 8 (retry 7) | `9b40ff2` | **STOP** | `LITELLM_HTTP_FAILURE` HTTP 429 · ZAI 5-hour usage limit (reset 2026-08-29 09:12:41) | **quota wait / no workflow mutation** |
+| 9 (post-quota) | `34ba537` | **STOP** | `SSE_NO_COMPLETED_RESPONSE` HTTP 200 · no completed / no output_item.done | **no mutation this block** |
 
 ---
 
@@ -127,12 +128,40 @@ The SSE reconstruction was **not exercised live** because the one-shot HTTP node
 
 ---
 
+## Attempt 9 (post-quota-release bounded resume)
+
+**Block:** `D0025_W_GLM_LIVE_RESUME_POST_QUOTA_RESET`  
+**operator_quota_release_reported:** true
+
+| Metric | Value |
+|---|---|
+| Trigger | `34ba537fe9e46906026ac1699debe8424fe70b18` |
+| WF40 / WF61 | `285346` / `285347` |
+| Adapter | **REMOTE_DISPATCH_READY** · preferred=glm · fallback=[] |
+| LiteLLM request delta | **1** (total **4**; `POST /v1/responses` **200**) |
+| GLM provider-attempt delta | **1** |
+| HTTP status | **200** |
+| Terminal classification | **`SSE_NO_COMPLETED_RESPONSE`** |
+| Sanitized reason | No `response.completed` terminal event found and no `response.output_item.done` items were available |
+| SSE normalization | **FAIL** (updated normalizer path exercised; reconstructed completed response **not** possible) |
+| Response gate / schema / policy | **NOT_REACHED** |
+| Execution Packet generated | **false** |
+| Gate / WF61 final | **CLOSED** / **inactive** |
+| retry / fallback / qwen / codex / cursor_dispatch | **0** |
+| GLM budget | **4/10** |
+| `credential_mutations` / `network_mutations` / `teamviewer_mutations` / `workflow_mutations` | **0** |
+| `secret_exposure` | **false** |
+
+Quota gate cleared (HTTP 200). Failure is again localized to **SSE terminal-event content**: the live stream contained neither `response.completed` nor usable `response.output_item.done` items for the already-applied reconstruction path.
+
+---
+
 ## NEXT_GATE
 
-ZAI 5-hour usage window reset **2026-08-29 09:12:41**. After that instant, one bounded resume of the same task `D-0025-W-GLM-LIVE-001` (SSE normalizer already applied). No workflow mutation. No smoke/proof detour.
+Investigate / author a bounded SSE terminal-event remediation for live GLM streams that lack both `response.completed` and `output_item.done` (or confirm alternate event shape). No automatic retry in this block. Gate remains CLOSED.
 
 ---
 
 ## Output line
 
-`STOP — LITELLM_HTTP_FAILURE: Single LiteLLM HTTP attempt did not return 2xx (HTTP 429; ZAI 5-hour usage limit, reset 2026-08-29 09:12:41); PHASE_B_ENTERED=true; GATE_CLOSED=true; PROVIDER_CALLS_DELTA=1`
+`STOP — SSE_NO_COMPLETED_RESPONSE: No response.completed terminal event found and no response.output_item.done items were available; PROVIDER_CALLS_DELTA=1; GATE_CLOSED=true`

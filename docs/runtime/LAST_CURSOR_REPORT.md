@@ -5,35 +5,44 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_QWEN_LOCAL_RESOURCE_STATUS_OVERLAY
-result_cursor: PASS
+task_ref: D0025_W_GLM_LIVE_RESUME_POST_QUOTA_RESET
+result_cursor: STOP
 reported_via: cursor_direct_persistence
-starting_head: f7f534cf33ccfda4d06f962b4842edbb1c96c6a4
-final_head: 70a1046d7cf71afde87b04a23f3b6aac26129c38
-baseline_unchanged: true
-session_manager_reused: true
-execution_router_policy_unchanged: true
-overlay_tests: PASS 14/14
-resource_status_tests: PASS 6/6
-session_manager_tests: PASS 14/14
-execution_router_tests: PASS 12/12
-live_collector_probe: READY
-qwen_local_available: true
-launch_performed: false
-generation_calls: 0
-provider_calls: 0
-litellm_calls: 0
-glm_calls: 0
+starting_head_task_expected: f7f534cf33ccfda4d06f962b4842edbb1c96c6a4
+starting_head_observed: a7525fb7ff35e97eeb452da5559c433b94d3c1a7
+trigger_sha: 34ba537fe9e46906026ac1699debe8424fe70b18
+final_head: PENDING_COMMIT
+operator_quota_release_reported: true
+
+wf40_execution_id: 285346
+wf61_execution_id: 285347
+adapter: REMOTE_DISPATCH_READY
+litellm_request_delta: 1
+glm_provider_attempt_delta: 1
+http_status: 200
+terminal_classification: SSE_NO_COMPLETED_RESPONSE
+sse_normalization: FAIL
+response_gate: NOT_REACHED
+schema_gate: NOT_REACHED
+policy_gate: NOT_REACHED
+execution_packet_generated: false
+cursor_dispatch: 0
+retry: 0
+fallback: 0
+qwen_calls: 0
 codex_calls: 0
-qwen_generation_calls: 0
-n8n_mutations: 0
+gate_closed_final: true
+WF61_final: inactive
+credential_mutations: 0
+network_mutations: 0
+teamviewer_mutations: 0
 workflow_mutations: 0
-d0025_mutations: 0
 secret_exposure: false
-status_fail_closed_untouched: true
-current_frontier_d0025_untouched: true
 
-architecture_report: reports/architecture/v4_qwen_local_resource_status_overlay.md
+issue_31: OPEN
+issue_31_comment: 5459670470
 
-NEXT: future dispatch may call collector then EXECUTION_ROUTER; D-0025-W remains ZAI-gated
+architecture_report: reports/architecture/d0025_primary_remote_glm_live_001.md
+
+NEXT: bounded SSE terminal-event remediation (no completed / no output_item.done); gate stays CLOSED
 ```
