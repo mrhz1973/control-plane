@@ -5,7 +5,7 @@
 **Date:** 2026-08-28 / 2026-08-29  
 **Release evidence:** issue #31 comment `5458616370` · standing authorization  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **STOP (attempt 14 / packet hardening resume)** — HTTP **200** · `PACKET_SCHEMA_INVALID` (`allowed_paths`) · gate CLOSED
+**Status:** **STOP (attempt 15 / required-fields hardening resume)** — HTTP **200** · `PACKET_SCHEMA_INVALID` (`allowed_paths`) · gate CLOSED
 
 ---
 
@@ -27,6 +27,7 @@
 | 12 (body_shape) | `42aba26` | **CAPTURE PASS** | HTTP 200 · `body_shape`=`JSON_OBJECT` keys `data|headers|statusCode|statusMessage` | **n8n fullResponse wrapper identified** |
 | 13 (unwrap resume) | `bc94de8` | **STOP** | HTTP 200 · unwrap proved · `PACKET_SCHEMA_INVALID` missing `final_report_contract` | **offline packet-schema remediation (no normalizer change this pass)** |
 | 14 (hardening resume) | `c3ea492` | **STOP** | HTTP 200 · `PACKET_SCHEMA_INVALID` missing `allowed_paths` | **offline planner required-field hardening (no live fix this pass)** |
+| 15 (required-empty resume) | `6cd2d23` | **STOP** | HTTP 200 · `PACKET_SCHEMA_INVALID` missing `allowed_paths` (unchanged after instruction hardening) | **offline CASE A beyond instruction-only (no live fix this pass)** |
 
 ---
 
@@ -365,9 +366,36 @@ Hardening for `final_report_contract` moved the failure past that field. Schema 
 
 ---
 
+## Attempt 15 (live resume after required/empty-field hardening)
+
+**Block:** `D0025_W_GLM_LIVE_RESUME_AFTER_REQUIRED_FIELDS_HARDENING`
+**Trigger:** `6cd2d2310b6233ead2470159ef2e10d9b439822e` (retry trigger 15; arm-first)
+
+### Live result
+
+| Metric | Value |
+|---|---|
+| WF40 / WF61 | `286080` / `286081` |
+| LiteLLM Δ | **1** (total **9**; POST **200**) |
+| GLM Δ | **1** (budget **9/10**) |
+| HTTP status | **200** |
+| Terminal classification | **`PACKET_SCHEMA_INVALID`** |
+| First remaining required-field finding | **`allowed_paths`** |
+| Reason (sanitized) | `Missing required field: allowed_paths` |
+| Gate / WF61 final | **CLOSED** / **inactive** |
+| retry/fallback/qwen/codex/cursor | **0** |
+| schema / unwrap / hardenings / normalizer mutated | **false** |
+| raw_model_content_persisted / secrets | **false** / **false** |
+
+### Structural finding
+
+Instruction-only required/empty-field hardening did **not** clear `allowed_paths` omission under live GLM. Same first schema finding as Attempt 14. No second provider call; no live fix this pass.
+
+---
+
 ## NEXT_GATE
 
-Offline remediate `PACKET_SCHEMA_INVALID` / missing `allowed_paths` (and ensure all execution-packet-v1 required fields are emitted). Keep unwrap and prior instruction hardening. Do not reopen gate until authorized.
+Offline CASE A for persistent `PACKET_SCHEMA_INVALID` / missing `allowed_paths` after instruction hardening (without schema weaken or post-fill unless separately authorized). Keep unwrap + prior hardenings. Do not reopen gate until authorized.
 
 ---
 

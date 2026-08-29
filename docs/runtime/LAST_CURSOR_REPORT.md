@@ -5,37 +5,42 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_PACKET_REQUIRED_EMPTY_FIELDS_HARDENING
-result_cursor: PASS_PACKET_REQUIRED_EMPTY_FIELDS_HARDENING_APPLIED_OFFLINE
+task_ref: D0025_W_GLM_LIVE_RESUME_AFTER_REQUIRED_FIELDS_HARDENING
+result_cursor: STOP_PACKET_SCHEMA_INVALID_ALLOWED_PATHS_PERSISTENT
 reported_via: cursor_direct_persistence
-starting_head: d4ee4ab8411ef3567e820230599991d6b3329c48
-final_head: 6d4359a49a985598b0e55e986cea77d9a44d4c76
+starting_head: 86aa18f32c8e066809386dec8db9998a0df806b0
+trigger_sha: 6cd2d2310b6233ead2470159ef2e10d9b439822e
+final_head: PENDING_COMMIT
 
-apply_phase: PASS
-mutations:
-  - tools/build-openclaw-responses-request.mjs (PLANNER_INSTRUCTIONS +3 lines)
-  - docs/contracts/openclaw-execution-packet-consumer-v1.md (§3 +3 lines)
-new_instruction_lines_once_each: true
-required_manifest_matches_schema: true
-allowed_paths_required: true
-forbidden_paths_required: true
-empty_array_retention_instructed: true
-schema_unchanged: true
-no_autofill: true
-provider_calls: 0
-tests:
-  openclaw-request-builder: PASS (15/15)
-  llm-gateway-request-shape: PASS (4/4)
-  llm-gateway-portability: PASS (19/19)
-  execution-packet-validator: PASS (5/5)
-  execution-packet-policy-gate: PASS (15/15)
-git_diff_check: PASS
+precheck: PASS
+provider_calls_precheck: 0
+live_resume: STOP
+wf40_execution_id: 286080
+wf61_execution_id: 286081
+http_status: 200
+classification: PACKET_SCHEMA_INVALID
+first_remaining_required_field: allowed_paths
+reason: Missing required field: allowed_paths
+litellm_request_delta: 1
+glm_provider_attempt_delta: 1
+litellm_total: 9
+glm_budget: 9/10
+has_packet: false
+instruction_hardening_cleared_finding: false
+retry: 0
+fallback: 0
+qwen_calls: 0
+codex_calls: 0
+cursor_dispatch: 0
 gate_closed_final: true
-live_resume: NOT_EXECUTED
+WF61_final: inactive
 normalizer_mutated: false
-workflow_mutated: false
+schema_mutated: false
+unwrap_retained: true
 raw_model_content_persisted: false
 secrets_exposed: false
 
-NEXT: one bounded live resume of D-0025-W-GLM-LIVE-001; max one LiteLLM/GLM attempt; retry=0; fallback=0
+architecture_report: reports/architecture/d0025_glm_live_resume_after_required_fields_hardening.md
+
+NEXT: offline CASE A for persistent PACKET_SCHEMA_INVALID missing allowed_paths
 ```
