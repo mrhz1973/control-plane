@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/qwen-local-session-manager-v1.schema.json",
+  "title": "qwen-local-session-manager-v1",
+  "description": "Result envelope for qwen_local session manager ensureQwenLocalReady.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "ready",
+    "profile",
+    "model_id",
+    "base_url",
+    "launch_performed",
+    "wait_elapsed_ms",
+    "reason_code",
+    "launch_count"
+  ],
+  "properties": {
+    "schema_version": { "const": "qwen-local-session-manager-result-v1" },
+    "status": {
+      "enum": [
+        "READY",
+        "LAUNCH_STARTED_AND_READY",
+        "INVALID_PROFILE",
+        "INVALID_RUNTIME_CONFIG",
+        "LAUNCHER_NOT_FOUND",
+        "LAUNCH_FAILED",
+        "READINESS_TIMEOUT",
+        "API_UNREACHABLE",
+        "PROFILE_NOT_EXPOSED",
+        "DFLASH_REQUIRED"
+      ]
+    },
+    "ready": { "type": "boolean" },
+    "profile": { "type": ["string", "null"] },
+    "model_id": { "type": ["string", "null"] },
+    "base_url": { "type": ["string", "null"] },
+    "launch_performed": { "type": "boolean" },
+    "wait_elapsed_ms": { "type": "integer", "minimum": 0 },
+    "reason_code": { "type": "string", "minLength": 1 },
+    "launch_count": { "type": "integer", "minimum": 0 }
+  }
+}
