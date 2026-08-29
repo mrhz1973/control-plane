@@ -2,10 +2,10 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`  
-**Versione:** 2.0 — 2026-08-27  
+**Versione:** 2.1 — 2026-08-29  
 **Stato:** CANONICAL  
 **Ruolo:** standard permanente per come GPT Web/orchestratore costruisce e presenta i prompt destinati a Cursor.  
-**Relazione:** complementare a `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`, `docs/contracts/execution-packet-v1.md`, `docs/contracts/planner-routing-policy-v1.md` e `docs/runtime/CURRENT_FRONTIER.md`.
+**Relazione:** complementare a `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`, `docs/foundation/PROMPT_SEQUENCING_GATE.md`, `docs/contracts/execution-packet-v1.md`, `docs/contracts/planner-routing-policy-v1.md` e `docs/runtime/CURRENT_FRONTIER.md`.
 
 ---
 
@@ -175,6 +175,32 @@ agg
 ```
 
 5. quando Cursor conclude, non è necessario copiare il suo riepilogo nella chat se stato/evidence sono stati persistiti correttamente su GitHub: l’operatore usa `agg`.
+
+### 6.1 Sequencing gate tra prompt consecutivi
+
+Dopo che GPT Web ha consegnato un prompt Cursor, **non può consegnarne un altro** finché il pass precedente non ha completato questa sequenza:
+
+```text
+prompt N consegnato
+→ Cursor esegue N
+→ operatore invia `agg`
+→ GPT Web refresh origin/main + CURRENT_FRONTIER + evidence pertinente
+→ GPT Web riepiloga l'esito N all'operatore
+→ solo dopo può essere emesso prompt N+1
+```
+
+Questo gate vale anche se nel frattempo:
+
+- un provider/modello torna disponibile;
+- scade/resetta una quota;
+- il prossimo fix appare ovvio;
+- l'operatore scrive genericamente `vai`, `procedi` o `next`.
+
+Questi eventi possono essere registrati, ma **non autorizzano un nuovo TASK DELTA mentre il precedente è ancora privo del suo `agg` + riepilogo**.
+
+Eccezione unica: override esplicito dell'operatore che chieda chiaramente di ignorare questo specifico sequencing gate.
+
+Fonte canonica dedicata: `docs/foundation/PROMPT_SEQUENCING_GATE.md`.
 
 ---
 
