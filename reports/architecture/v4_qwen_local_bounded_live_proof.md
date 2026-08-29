@@ -2,6 +2,7 @@
 
 **Block ID:** `V4_QWEN_LOCAL_BOUNDED_LIVE_PROOF`  
 **Starting HEAD:** `edb25753cde3df8fd11896e47c14e08bbac45537`  
+**Final HEAD:** `fd16efa1bbe9f086a7f41560a51503f64ff51095`  
 **Result:** **PASS**
 
 ## Model selection

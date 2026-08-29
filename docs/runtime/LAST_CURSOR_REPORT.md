@@ -9,7 +9,7 @@ task_ref: V4_QWEN_LOCAL_BOUNDED_LIVE_PROOF
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 starting_head: edb25753cde3df8fd11896e47c14e08bbac45537
-final_head: PENDING_COMMIT
+final_head: fd16efa1bbe9f086a7f41560a51503f64ff51095
 qwen_local_live_proof: PASS
 selected_model: qwen3.8:27b
 ollama_tags_reachable: true
