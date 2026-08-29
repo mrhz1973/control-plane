@@ -130,7 +130,7 @@ The SSE reconstruction was **not exercised live** because the one-shot HTTP node
 
 ## Attempt 9 (post-quota-release bounded resume)
 
-**Block:** `D0025_W_GLM_LIVE_RESUME_POST_QUOTA_RESET`  
+**Block:** `D0025_W_GLM_LIVE_RESUME_POST_QUOTA_RESET`
 **operator_quota_release_reported:** true
 
 | Metric | Value |
