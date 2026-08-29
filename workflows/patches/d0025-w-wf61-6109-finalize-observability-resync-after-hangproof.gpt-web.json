@@ -1,0 +1,51 @@
+{
+  "schema": "gpt-web-n8n-bounded-delta-v1",
+  "task_ref": "D0025_W_WF61_6109_FINALIZE_OBSERVABILITY_RESYNC_AFTER_HANGPROOF",
+  "authority": "GPT-Web",
+  "workflow_id": "d0025-6100-4001-8001-000000000061",
+  "workflow_template": "workflows/61-litellm-primary-remote-planner.template.json",
+  "expected_node_count": 13,
+  "reason": "Hang-proof transport and CASE B 6110 are now live, but the previously-proven finalize observability suffix on live node 6109 drifted away before the hang-proof apply. Restore only the canonical 6109 command so nonzero finalize classifications remain parseable downstream before spending the newly-authorized GLM budget tranche.",
+  "mutations": [
+    {
+      "node_id": "d0025-6109-4009-8009-000000000009",
+      "node_name": "Execute Command - canonical finalize",
+      "field": "parameters.command",
+      "operation": "replace_exact",
+      "replacement": "=node /files/handoff-runtime/control-plane/tools/run-litellm-primary-cycle.mjs finalize --consumer-b64 '{{$json.consumer_b64}}' --response-b64 '{{$json.response_b64}}' 2>&1 || true"
+    }
+  ],
+  "preserve": [
+    "all 13 nodes and all node ids/names/types/typeVersions/positions",
+    "all connections and workflow settings",
+    "hang-proof transport on 6104/6106/6107",
+    "6108 HTTP 2xx branch semantics",
+    "6110 CASE B packet_census and deterministic_completion propagation",
+    "canonical finalize runner path and consumer-b64/response-b64 arguments",
+    "CASE B helper/schema/normalizer/response-policy gates",
+    "WF61 inactive state",
+    "runtime gate CLOSED",
+    "WF40 unchanged",
+    "WF60/OpenClaw/V4 unchanged"
+  ],
+  "forbidden": [
+    "provider/model call",
+    "runtime gate arm",
+    "workflow topology change",
+    "6104/6106/6107 hang-proof changes",
+    "6110 mutation",
+    "schema/normalizer/CASE B mutation",
+    "credential/network changes"
+  ],
+  "acceptance": [
+    "only live node 6109 parameters.command changes",
+    "6109 command becomes exactly equivalent to canonical template 6109",
+    "same finalize runner and same consumer-b64/response-b64 arguments retained",
+    "stderr merges into stdout and shell exit is normalized with 2>&1 || true",
+    "13 nodes and connections unchanged",
+    "hang-proof transport unchanged",
+    "6110 CASE B remains template-equivalent",
+    "provider_calls=0",
+    "WF61 inactive and runtime gate CLOSED after apply"
+  ]
+}
