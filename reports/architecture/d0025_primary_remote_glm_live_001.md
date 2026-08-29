@@ -5,7 +5,7 @@
 **Date:** 2026-08-28 / 2026-08-29  
 **Release evidence:** issue #31 comment `5458616370` · standing authorization  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **STOP (attempt 9 / post-quota-release)** — HTTP **200** · `SSE_NO_COMPLETED_RESPONSE` (no `response.completed` and no `response.output_item.done`) · gate CLOSED
+**Status:** **STOP (attempt 10 / capture)** — capture apply PASS · live resume `LITELLM_HTTP_FAILURE` http_status=0 · `sse_census=null` · gate CLOSED
 
 ---
 
@@ -22,6 +22,7 @@
 | 7 (retry 6) | `48c7c7c` | STOP | `SSE_NO_COMPLETED_RESPONSE` (HTTP 200) | SSE `output_item.done` reconstruction (Phase A this pass) |
 | 8 (retry 7) | `9b40ff2` | **STOP** | `LITELLM_HTTP_FAILURE` HTTP 429 · ZAI 5-hour usage limit (reset 2026-08-29 09:12:41) | **quota wait / no workflow mutation** |
 | 9 (post-quota) | `34ba537` | **STOP** | `SSE_NO_COMPLETED_RESPONSE` HTTP 200 · no completed / no output_item.done | **no mutation this block** |
+| 10 (capture) | `4894310` | **STOP** | `LITELLM_HTTP_FAILURE` http_status=0 · LiteLLM Δ0 · `sse_census=null` | **capture applied; census not reached** |
 
 ---
 
@@ -156,12 +157,48 @@ Quota gate cleared (HTTP 200). Failure is again localized to **SSE terminal-even
 
 ---
 
+## Attempt 10 (SSE structural-capture apply + bounded resume)
+
+**Block:** `D0025_W_WF61_SSE_STRUCTURAL_CAPTURE_AND_RESUME`  
+**Artifact:** `workflows/patches/d0025-w-wf61-sse-structural-capture.gpt-web.json`
+
+### Apply phase (provider_calls=0)
+
+| Metric | Value |
+|---|---|
+| Template + live WF61 | only nodes **6107** / **6110** jsCode changed as authored |
+| Node count / IDs / connections / HTTP / prepare-finalize | **unchanged** |
+| Live versionId post-apply | `6286b441-2b6d-45e2-85fc-ebf9f33a0c62` |
+| Gate during apply | **CLOSED** |
+| LiteLLM total after apply | **4** (delta **0**) |
+
+### Live capture resume
+
+| Metric | Value |
+|---|---|
+| Trigger | `489431086b2524378b69d554852d20a0af362e17` |
+| WF40 / WF61 | `285395` / `285396` |
+| Adapter | **REMOTE_DISPATCH_READY** |
+| LiteLLM request delta | **0** (total remains **4**) |
+| GLM provider-attempt delta | **0** |
+| HTTP status | **0** |
+| Terminal classification | **`LITELLM_HTTP_FAILURE`** |
+| Sanitized reason | Single LiteLLM HTTP attempt did not return 2xx; retry is forbidden |
+| `sse_census` | **null** (HTTP Capture path not reached with 2xx body) |
+| Gate / WF61 final | **CLOSED** / **inactive** · capture jsCode **still present** |
+| retry / fallback / qwen / codex / cursor_dispatch | **0** |
+| secret_exposure | **false** |
+
+Capture code is live on inactive WF61, but this one-shot resume failed at transport (status 0) before any SSE body could be censused. No second provider call.
+
+---
+
 ## NEXT_GATE
 
-Investigate / author a bounded SSE terminal-event remediation for live GLM streams that lack both `response.completed` and `output_item.done` (or confirm alternate event shape). No automatic retry in this block. Gate remains CLOSED.
+Retry the same capture-enabled WF61 path only under an authorized bounded resume after transport/status-0 is addressed or diagnosed healthy again. Do not invent normalizer semantics without a successful `sse_census`. Gate remains CLOSED.
 
 ---
 
 ## Output line
 
-`STOP — SSE_NO_COMPLETED_RESPONSE: No response.completed terminal event found and no response.output_item.done items were available; PROVIDER_CALLS_DELTA=1; GATE_CLOSED=true`
+`STOP — LITELLM_HTTP_FAILURE http_status=0; sse_census=null; PROVIDER_CALLS_DELTA=0; GATE_CLOSED=true`
