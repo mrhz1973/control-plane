@@ -10,7 +10,7 @@ result_cursor: STOP
 reported_via: cursor_direct_persistence
 starting_head: 5ccfd724f0787b1e7ca052e0d5c6d5f09bb98acb
 apply_commit: 489431086b2524378b69d554852d20a0af362e17
-final_head: PENDING_COMMIT
+final_head: 3a125bc35c05bfdd0db3822943deb1c80b22bcad
 
 apply_phase: PASS
 apply_provider_calls: 0
