@@ -5,53 +5,31 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_QWEN_LOCAL_LLAMA_CPP_BOUNDED_LIVE_PROOF_RETRY_3
+task_ref: V4_EXECUTION_ROUTER
 result_cursor: PASS
 reported_via: cursor_direct_persistence
-starting_head: 327a2b6cee9c44649b5055d24d8c2982abca29c3
-final_head: 55c880f2325f8fd10857bdfdae4924a4ba5034c1
-runtime_manually_started_by_operator: true
-llama_server_process: RUNNING
-port_8080_listener: LISTENING
-listener_process: llama-server
-models_probe: HTTP_200
-fast_8k_dflash2_present: true
-backend: llama_cpp
-endpoint: http://127.0.0.1:8080
-profile: fast_8k
-model_id: qwen38-original-dflash2-8k
-context_tokens: 8192
-dflash_required: true
-generation_attempts: 1
-adapter_ok: true
-adapter_classification: LOCAL_MODEL_RESULT
-role: routing_arbiter
-validated_result:
-  selection: opencode+qwen_local
-  reason_code: LOCAL_ZERO_COST_SUFFICIENT
-  confidence: high
-elapsed_ms: 63898
-qwen_local_llama_cpp_live_proof: PASS
-adapter_tests: PASS 9/9
-transport_tests: PASS 8/8
-classifier_regression: PASS 9/9
+starting_head: 2c4c188d1471d04864f94451db873c562912b8d5
+final_head: PENDING_COMMIT
+execution_packet_v1_unchanged: true
+arbiter_mocked_only: true
+live_qwen_calls: 0
+execution_router_tests: PASS 12/12
+resource_registry_tests: PASS 7/7
+resource_status_tests: PASS 6/6
+qwen_local_adapter_tests: PASS 9/9
 provider_calls: 0
 litellm_calls: 0
 glm_calls: 0
 codex_calls: 0
-ollama_generate_calls: 0
+qwen_live_calls: 0
 n8n_mutations: 0
 workflow_mutations: 0
 d0025_mutations: 0
-launcher_mutations: 0
-model_downloads: 0
-process_start_calls: 0
-process_kill_calls: 0
 secret_exposure: false
-status_fail_closed_untouched: true
 current_frontier_d0025_untouched: true
+status_fail_closed_untouched: true
 
-architecture_report: reports/architecture/v4_qwen_local_llama_cpp_bounded_live_proof_retry_3.md
+architecture_report: reports/architecture/v4_execution_router.md
 
-NEXT: V4 routers/collector deferred; fail-closed status baseline remains available=false; D-0025-W remains ZAI-gated
+NEXT: V4 OpenCode dispatch / n8n integration deferred; D-0025-W remains ZAI-gated
 ```

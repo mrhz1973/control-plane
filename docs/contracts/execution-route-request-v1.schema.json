@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/execution-route-request-v1.schema.json",
+  "title": "execution-route-request-v1",
+  "description": "Sidecar request for V4 EXECUTION_ROUTER. Selects implementer harness + implementation model. Does not replace execution-packet-v1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "technical_requirements",
+    "risk_level"
+  ],
+  "properties": {
+    "schema_version": { "const": "execution-route-request-v1" },
+    "request_id": { "type": "string", "minLength": 1 },
+    "technical_requirements": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "filesystem",
+          "terminal",
+          "code_edit",
+          "planning",
+          "classification",
+          "routing_arbitration",
+          "code_generation",
+          "review",
+          "persistent_agent",
+          "browser"
+        ]
+      }
+    },
+    "risk_level": { "enum": ["low", "medium", "high"] }
+  }
+}

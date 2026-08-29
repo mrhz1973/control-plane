@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/execution-route-result-v1.schema.json",
+  "title": "execution-route-result-v1",
+  "description": "Machine-readable result of V4 EXECUTION_ROUTER. No free-form hidden reasoning.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "status",
+    "execution_route",
+    "arbitration",
+    "reason_codes",
+    "arbiter_call_count"
+  ],
+  "properties": {
+    "schema_version": { "const": "execution-route-result-v1" },
+    "request_id": { "type": ["string", "null"] },
+    "status": { "enum": ["ROUTED", "NO_ROUTE"] },
+    "execution_route": {
+      "anyOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "route_id",
+            "implementer",
+            "model",
+            "confidence",
+            "reason_codes"
+          ],
+          "properties": {
+            "route_id": { "type": "string", "minLength": 1 },
+            "implementer": { "type": "string", "minLength": 1 },
+            "model": { "type": "string", "minLength": 1 },
+            "confidence": { "enum": ["low", "medium", "high"] },
+            "reason_codes": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            }
+          }
+        }
+      ]
+    },
+    "arbitration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "used", "arbiter"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "used": { "type": "boolean" },
+        "arbiter": {
+          "anyOf": [
+            { "type": "null" },
+            { "const": "qwen_local" }
+          ]
+        }
+      }
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "arbiter_call_count": { "type": "integer", "minimum": 0 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "NO_ROUTE" } }, "required": ["status"] },
+      "then": { "properties": { "execution_route": { "type": "null" } } }
+    },
+    {
+      "if": { "properties": { "status": { "const": "ROUTED" } }, "required": ["status"] },
+      "then": { "properties": { "execution_route": { "type": "object" } } }
+    }
+  ]
+}
