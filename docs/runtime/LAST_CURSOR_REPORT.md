@@ -5,45 +5,27 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_GLM_TRANCHE02_LIVE_EVENT_01
-result_cursor: STOP_HTTP_BRIDGE_OUTPUT_INVALID
-reported_via: cursor_direct_persistence
-starting_head: 13b263fc3f6951791459797d83d0da41e0517f03
-trigger_sha: 1a9c08615104185da3178d6dd4b719e8f6346665
-final_head: bfdfeb925e82d609ce404fe70933d834a821c4d2
+task_ref: D0025_W_WF61_6106_BRIDGE_EXIT_NORMALIZATION
+result_cursor: STOP_LIVE_WF61_6106_TYPE_MISMATCH_EXPECTED_EXECUTECOMMAND_HANGPROOF
+reported_via: operator_relay_from_cursor_terminal
+independent_verification: false
 
-wf40_exec: 286896
-wf61_exec: 286897
-wf61_status: error
-transport_classification: HTTP_BRIDGE_OUTPUT_INVALID
-http_status: 0
-transport_elapsed_ms: null
-transport_body_bytes: 0
-cycle_classification: LITELLM_HTTP_FAILURE
-packet_census: unavailable
-deterministic_completion: unavailable
-schema_result: not_reached
-policy_result: not_reached
-litellm_delta: 0
-glm_delta: 0
+live_6106_type: httpRequest
+expected_live_6106_type: executeCommand
+live_6104_hangproof_preserve: failed
+live_6107_hangproof_preserve: failed
+live_6109_finalize_observability_preserve: failed
+live_6110_case_b_preserve: failed
+provider_calls_delta: 0
+litellm_historical_total: 10
 tranche_02_glm_used: 0/10
 tranche_02_litellm_used: 0/10
-historical_litellm_total: 10
-cursor_dispatch: 0
-retry: 0
-fallback: 0
-qwen: 0
-codex: 0
 gate_closed_final: true
 WF61_final: inactive
-issue_31: OPEN
-workflows_mutated: false
-tools_mutated: false
-schema_mutated: false
-normalizer_mutated: false
-case_b_mutated: false
+mutation_performed: false
+commit_performed: false
 
-architecture_report: reports/architecture/d0025_glm_tranche02_live_event01.md
+architecture_report: reports/architecture/d0025_wf61_6106_bridge_exit_normalization_operator_relay.md
 
-NEXT: offline AUTO-VIA diagnose/fix hang-proof bridge output invalidation before another tranche-02 live spend
+NEXT: offline AUTO-VIA full live/template canonical resync from GPT-Web-authored hangproof + 6106 normalization + 6109 finalize-observability + 6110 CASE-B artifacts; provider calls 0
 ```
