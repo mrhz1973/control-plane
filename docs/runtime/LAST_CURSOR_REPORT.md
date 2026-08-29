@@ -5,42 +5,30 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_GLM_LIVE_RESUME_AFTER_REQUIRED_FIELDS_HARDENING
-result_cursor: STOP_PACKET_SCHEMA_INVALID_ALLOWED_PATHS_PERSISTENT
+task_ref: D0025_W_PACKET_SOURCE_FIELD_COMPLETION_CASE_A
+result_cursor: STOP_ATTEMPT15_ARGUMENT_STRUCTURE_UNAVAILABLE
 reported_via: cursor_direct_persistence
-starting_head: 86aa18f32c8e066809386dec8db9998a0df806b0
-trigger_sha: 6cd2d2310b6233ead2470159ef2e10d9b439822e
-final_head: 3ba68e6d4ea746d35b88d5345723ccef1dff1724
+starting_head: 09cc5f9f9c6402d097ba7f375e842dabf4eefd2d
+final_head: PENDING_COMMIT
 
-precheck: PASS
-provider_calls_precheck: 0
-live_resume: STOP
-wf40_execution_id: 286080
-wf61_execution_id: 286081
-http_status: 200
-classification: PACKET_SCHEMA_INVALID
-first_remaining_required_field: allowed_paths
-reason: Missing required field: allowed_paths
-litellm_request_delta: 1
-glm_provider_attempt_delta: 1
-litellm_total: 9
-glm_budget: 9/10
-has_packet: false
-instruction_hardening_cleared_finding: false
-retry: 0
-fallback: 0
-qwen_calls: 0
-codex_calls: 0
-cursor_dispatch: 0
+phase1_inspection: STOP
+wf61_execution_id_target: 286081
+execution_entity_present: false
+execution_data_present: false
+function_call_argument_census: unavailable
+case_a_implementation: NOT_PERFORMED
+provider_calls: 0
+litellm_request_delta: 0
+glm_delta: 0
 gate_closed_final: true
 WF61_final: inactive
-normalizer_mutated: false
 schema_mutated: false
-unwrap_retained: true
+helper_added: false
+run_litellm_primary_cycle_mutated: false
 raw_model_content_persisted: false
 secrets_exposed: false
 
-architecture_report: reports/architecture/d0025_glm_live_resume_after_required_fields_hardening.md
+architecture_report: reports/architecture/d0025_packet_source_field_completion_case_a.md
 
-NEXT: offline CASE A for persistent PACKET_SCHEMA_INVALID missing allowed_paths
+NEXT: recover alternative non-secret Attempt15 required-key evidence or authorize successor offline strategy; preserve GLM 10/10
 ```
