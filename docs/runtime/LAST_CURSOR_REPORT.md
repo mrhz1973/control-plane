@@ -9,7 +9,7 @@ task_ref: D0025_W_PACKET_SOURCE_FIELD_COMPLETION_CASE_A
 result_cursor: STOP_ATTEMPT15_ARGUMENT_STRUCTURE_UNAVAILABLE
 reported_via: cursor_direct_persistence
 starting_head: 09cc5f9f9c6402d097ba7f375e842dabf4eefd2d
-final_head: PENDING_COMMIT
+final_head: 024ea4783bd344d9c1c3b847636a5af7d529d408
 
 phase1_inspection: STOP
 wf61_execution_id_target: 286081
