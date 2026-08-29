@@ -1,0 +1,75 @@
+{
+  "schema": "gpt-web-n8n-bounded-delta-v1",
+  "task_ref": "D0025_W_WF61_FULLRESPONSE_DATA_UNWRAP",
+  "authority": "GPT-Web",
+  "workflow": {
+    "id": "d0025-6100-4001-8001-000000000061",
+    "name": "61 - LiteLLM primary remote planner cycle - GPT-Web authored - INACTIVE",
+    "must_remain_active": false,
+    "template_path": "workflows/61-litellm-primary-remote-planner.template.json"
+  },
+  "reason": "Attempt 12 captured sanitized body_shape proving that n8n HTTP Request fullResponse returns an envelope with top-level keys data, headers, statusCode, statusMessage. The current Capture HTTP body + status node serializes the whole envelope because it checks resp.body and otherwise uses resp. This causes the canonical Responses/SSE normalizer to receive the n8n wrapper instead of the LiteLLM payload. The bounded fix unwraps resp.data only when the exact fullResponse-wrapper structure is present, before response_b64, SSE census and body-shape inspection are produced.",
+  "mutations": [
+    {
+      "node_id": "d0025-6107-4007-8007-000000000007",
+      "node_name": "Capture HTTP body + status",
+      "expected_type": "n8n-nodes-base.code",
+      "field": "parameters.jsCode",
+      "operation": "replace_exact_snippet",
+      "expected_current_snippet": "const body=resp.body!==undefined?resp.body:resp;",
+      "replace_with_snippet": "const isFullResponseWrapper=resp&&typeof resp==='object'&&!Array.isArray(resp)&&Object.prototype.hasOwnProperty.call(resp,'data')&&Object.prototype.hasOwnProperty.call(resp,'headers')&&Object.prototype.hasOwnProperty.call(resp,'statusCode')&&Object.prototype.hasOwnProperty.call(resp,'statusMessage');\nconst body=resp.body!==undefined?resp.body:(isFullResponseWrapper?resp.data:resp);"
+    }
+  ],
+  "preserve": [
+    "all 13 nodes and all node ids/names/types/typeVersions/positions",
+    "all connections and workflow settings",
+    "HTTP Request - LiteLLM primary one-shot parameters, timeout, fullResponse and responseFormat=text",
+    "status extraction from statusCode/status",
+    "canonical prepare and finalize commands and arguments",
+    "response_b64 remains the internal handoff into canonical finalize",
+    "existing sanitized sse_census capture",
+    "existing sanitized body_shape capture",
+    "Return canonical cycle result behavior",
+    "retry=0 and fallback=0",
+    "cursor_dispatch_allowed=false",
+    "WF61 inactive",
+    "remote runtime gate CLOSED",
+    "WF40, WF60/OpenClaw, credentials, network, Tailscale and TeamViewer state"
+  ],
+  "forbidden": [
+    "normalizer semantic changes in this pass",
+    "provider inference",
+    "live WF40/WF61 trigger",
+    "runtime gate enablement",
+    "node additions or deletions",
+    "connection changes",
+    "HTTP/provider configuration changes",
+    "generic unwrapping of arbitrary objects that merely contain a data field",
+    "raw response persistence",
+    "model output/prompt/reasoning persistence",
+    "credential/auth/network mutation"
+  ],
+  "acceptance_apply": [
+    "only node 6107 parameters.jsCode changes",
+    "the new branch recognizes the exact captured n8n fullResponse wrapper by presence of data+headers+statusCode+statusMessage",
+    "for that wrapper only, the value serialized to response_b64 and inspected by sse_census/body_shape is resp.data",
+    "legacy resp.body behavior remains first priority",
+    "non-wrapper objects still fall back to resp unchanged",
+    "all existing capture and canonical finalize plumbing remains unchanged",
+    "WF61 remains inactive",
+    "runtime gate remains CLOSED",
+    "provider calls remain zero"
+  ],
+  "offline_validation": {
+    "required_cases": [
+      "captured fullResponse-like object with data string -> selected body equals data",
+      "captured fullResponse-like object with data object -> selected body equals serialized data object",
+      "object with body field -> body keeps precedence",
+      "object with data but missing one or more wrapper keys -> no unwrap",
+      "plain canonical response object -> no unwrap",
+      "sse_census/body_shape operate on selected inner body, not wrapper"
+    ],
+    "provider_calls": 0,
+    "network_calls": 0
+  }
+}
