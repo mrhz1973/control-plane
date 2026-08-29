@@ -5,32 +5,31 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_WF61_POST_HTTP200_HANG_OFFLINE_DIAGNOSIS
-result_cursor: PASS_WF61_HANG_HTTP_NODE_NOT_RETURNED
+task_ref: D0025_W_WF61_HANGPROOF_HTTP_BRIDGE
+result_cursor: PASS_WF61_HANGPROOF_HTTP_BRIDGE_APPLIED_OFFLINE
 reported_via: cursor_direct_persistence
-starting_head: c61952509c1e765a524ebdb7a203fbc8328c97c5
-final_head: dcd6d11792f430611482364e1d20570f8c3bc301
+starting_head: b968a1417240112820d1a50e0c3ae6aaa8d7048b
+final_head: PENDING_SELF_REFERENCE
 
-primary_classification: WF61_HANG_HTTP_NODE_NOT_RETURNED
-last_recoverable_stage: HTTP Request node d0025-6106 (never returned to Capture)
-execution_286310_entity: purged
-execution_286310_data: purged
-parent_286309: success 09:58:02.013Z -> 09:59:10.583Z
-litellm_http200_at: 2026-08-29T09:59:10.506Z
-node_6106_timeout_ms: 120000
-node_6109_timeout: none
-case_b_offline_hang: false
-case_b_large_finalize_ms: ~1677
-workflow_mutated: false
-tools_mutated: false
+helper_path: tools/post-litellm-primary-one-shot.mjs
+mock_suite: tests/litellm-primary-one-shot/run.mjs
+mock_passed: 7
+nodes_changed: [d0025-6104, d0025-6106, d0025-6107]
+wf61_live_versionId: 8776dda8-e8d1-4df9-86f9-530f23409277
+authorized_template_live_equiv: true
+live_6110_case_b_present: false
+live_6110_drift_preexisting: true
 provider_calls: 0
 litellm_request_delta: 0
 glm_delta: 0
 glm_budget_final: 10/10
 gate_closed_final: true
 WF61_final: inactive
+schema_mutated: false
+normalizer_mutated: false
+case_b_helper_mutated: false
 
-architecture_report: reports/architecture/d0025_wf61_post_http200_hang_offline_diagnosis.md
+architecture_report: reports/architecture/d0025_wf61_hangproof_http_bridge_apply.md
 
-NEXT: GPT-Web author node-6106 hang-proof HTTP completion/timeout artifact; new GLM budget required before any live retry
+NEXT: re-sync live 6110 CASE B from template; then human gate for new bounded GLM budget before any live retry
 ```
