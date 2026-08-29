@@ -1,0 +1,103 @@
+{
+  "schema": "gpt-web-bounded-code-delta-v1",
+  "task_ref": "D0025_W_PACKET_SOURCE_FIELD_COMPLETION_CASE_A",
+  "authority": "GPT-Web",
+  "reason": "Attempt 15 repeated PACKET_SCHEMA_INVALID missing allowed_paths after explicit complete-required-field instruction hardening. The provider has therefore demonstrated that instruction-only remediation is not sufficient. Before spending the final GLM budget slot, inspect the already-existing Attempt 15 function_call argument structure offline. If every omitted required field is deterministically owned by consumer_input or by an execution-packet-v1 const, a narrow missing-only compatibility completion is authorized. Planner-owned semantic fields must never be invented.",
+  "attempt15_evidence": {
+    "wf40_execution_id": 286080,
+    "wf61_execution_id": 286081,
+    "http_status": 200,
+    "classification": "PACKET_SCHEMA_INVALID",
+    "first_missing_required": "allowed_paths",
+    "provider_calls_already_consumed": 1
+  },
+  "phase_1_existing_execution_inspection": {
+    "network_or_provider_calls": 0,
+    "source": "existing n8n execution 286081 only",
+    "persist_raw_model_content": false,
+    "required_sanitized_census": [
+      "function_call count and name",
+      "top-level function argument key names",
+      "complete missing top-level required-key set compared with execution-packet-v1.schema.json",
+      "for each present nested object planner|loop|risk_assessment|gate_recommendation|context|review: key names and missing required-key set only",
+      "for deterministic source-owned fields: presence plus equality boolean versus consumer_input, never raw model prose"
+    ],
+    "stop_if_unavailable": "ATTEMPT15_ARGUMENT_STRUCTURE_UNAVAILABLE"
+  },
+  "deterministic_missing_only_allowlist": {
+    "schema": {"source": "const", "value": "execution-packet-v1"},
+    "task_id": {"source": "consumer_input.task_id"},
+    "source_backlog_ref": {"source": "consumer_input.source_backlog_ref"},
+    "source_backlog_commit": {"source": "consumer_input.source_backlog_commit"},
+    "repository": {"source": "consumer_input.repository"},
+    "branch_target": {"source": "consumer_input.branch_target"},
+    "goal": {"source": "consumer_input.goal"},
+    "executor": {"source": "const", "value": "cursor"},
+    "allowed_paths": {"source": "consumer_input.allowed_paths"},
+    "forbidden_paths": {"source": "consumer_input.forbidden_paths"},
+    "hard_constraints": {"source": "consumer_input.hard_constraints"},
+    "final_report_contract": {"source": "const", "value": "docs/foundation/CURSOR_PROMPT_TEMPLATE.md"}
+  },
+  "planner_owned_required_fields_never_completed": [
+    "packet_id",
+    "packet_revision",
+    "generated_at",
+    "planner",
+    "preflight",
+    "steps",
+    "validation",
+    "acceptance",
+    "loop",
+    "risk_assessment",
+    "gate_recommendation",
+    "context",
+    "review",
+    "status"
+  ],
+  "case_a_gate": {
+    "implement_only_if": "Every missing required field observed in Attempt 15 is in deterministic_missing_only_allowlist, and every present deterministic source-owned field equals its canonical source value.",
+    "otherwise_stop": "PACKET_OMISSION_NOT_DETERMINISTICALLY_COMPLETABLE"
+  },
+  "authorized_implementation_if_case_a": {
+    "scope": [
+      "Add one deterministic primary-remote compatibility helper under tools/ that operates on a parsed emit_execution_packet argument object plus consumer_input.",
+      "The helper may add only allowlisted fields that are truly absent (own-property missing).",
+      "Never overwrite a present field, including null, false, empty array, or empty string.",
+      "Before adding anything, fail closed if a present source-owned allowlisted field conflicts with its canonical consumer_input/const value.",
+      "Integrate the helper in tools/run-litellm-primary-cycle.mjs after Responses normalization/function-call argument parse and before canonical response/schema/policy validation, so the canonical gates evaluate the completed argument object.",
+      "Preserve the generic OpenClaw consumer path unchanged unless the minimum implementation mechanically requires a shared pure helper; do not weaken its gate.",
+      "Expose only bounded metadata such as deterministic_completion_applied and completed_fields in cycle evidence; do not place compatibility metadata inside execution-packet-v1."
+    ],
+    "classification_on_source_conflict": "PACKET_SOURCE_FIELD_MISMATCH",
+    "classification_on_non_allowlisted_omission": "PACKET_SCHEMA_INVALID",
+    "no_provider_call": true,
+    "no_workflow_mutation": true,
+    "no_schema_mutation": true,
+    "no_normalizer_mutation": true
+  },
+  "validation": [
+    "Attempt 15 structural census is derived from existing execution only and contains no raw model content.",
+    "A missing allowed_paths is restored exactly from consumer_input.allowed_paths.",
+    "A missing forbidden_paths/hard_constraints/goal or allowlisted const is restored exactly only when absent.",
+    "A present conflicting allowlisted source field fails closed and is never overwritten.",
+    "A missing planner-owned field such as steps/acceptance/risk_assessment/status is never synthesized and remains schema-invalid.",
+    "Empty arrays, false/null present values are not treated as missing.",
+    "Canonical execution-packet-v1 schema remains unchanged.",
+    "Existing response/schema/policy gates remain authoritative after completion.",
+    "Targeted primary-cycle tests plus execution-packet validator/policy suites PASS.",
+    "git diff --check PASS.",
+    "provider_calls=0, LiteLLM request delta=0, GLM delta=0."
+  ],
+  "next_if_pass": "one final bounded GLM live resume of D-0025-W-GLM-LIVE-001 (GLM slot 10/10 max), only after agg; retry=0; fallback=0",
+  "forbidden": [
+    "instruction-only retry",
+    "provider/model call in this CASE A pass",
+    "schema weakening",
+    "generic fill-defaults behavior",
+    "inventing planner semantic fields",
+    "overwriting present model fields",
+    "workflow or normalizer mutation",
+    "strict=true experimentation",
+    "credential/network/OpenClaw/V4 changes"
+  ]
+}
