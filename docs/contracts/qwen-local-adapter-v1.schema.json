@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/qwen-local-adapter-v1.schema.json",
+  "title": "qwen-local-adapter-v1",
+  "description": "Request and result envelopes for the reusable qwen_local adapter. Transport is shared ollama-json-client-v1. No routing policy.",
+  "$defs": {
+    "role": {
+      "enum": ["planner", "routing_arbiter", "reviewer", "classifier"]
+    },
+    "confidence": {
+      "enum": ["low", "medium", "high", "unknown"]
+    },
+    "outputContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "properties"],
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "enum": ["string", "number", "boolean", "object", "array", "null"]
+              },
+              "enum": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            }
+          }
+        },
+        "additionalProperties": { "type": "boolean" }
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "request_id",
+        "role",
+        "instruction",
+        "context",
+        "output_contract"
+      ],
+      "properties": {
+        "schema_version": { "const": "qwen-local-adapter-request-v1" },
+        "request_id": { "type": "string", "minLength": 1 },
+        "role": { "$ref": "#/$defs/role" },
+        "instruction": { "type": "string", "minLength": 1 },
+        "context": { "type": "object" },
+        "output_contract": { "$ref": "#/$defs/outputContract" }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "request_id",
+        "role",
+        "ok",
+        "classification",
+        "result",
+        "confidence"
+      ],
+      "properties": {
+        "schema_version": { "const": "qwen-local-adapter-result-v1" },
+        "request_id": { "type": ["string", "null"] },
+        "role": {
+          "anyOf": [
+            { "$ref": "#/$defs/role" },
+            { "type": "null" }
+          ]
+        },
+        "ok": { "type": "boolean" },
+        "classification": { "type": "string", "minLength": 1 },
+        "result": { "type": ["object", "null"] },
+        "confidence": { "$ref": "#/$defs/confidence" }
+      }
+    }
+  }
+}

@@ -5,37 +5,36 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_RESOURCE_REGISTRY_CONTRACT
+task_ref: V4_QWEN_LOCAL_ADAPTER
 result_cursor: PASS
 reported_via: cursor_direct_persistence
-starting_head: 9496f471ad1ae97e022ea5e511cfec5d797016d1
-final_head: 1ee35423cf2bea858fa10ff59364fdf3641b79a8
-targeted_tests: PASS 7/7 (tests/resource-registry-validator/run.mjs)
+starting_head: 0f2f7a524970c4733319d8f5f849cbf71685321d
+final_head: PENDING_COMMIT
+targeted_tests: PASS 9/9 (tests/qwen-local-adapter/run.mjs)
+classifier_regression: PASS 9/9 (tests/classifier-wrapper/run-offline-tests.mjs)
 provider_calls: 0
-ollama_calls: 0
 litellm_calls: 0
+ollama_generate_calls: 0
 workflow_mutations: 0
 n8n_mutations: 0
-execution_packet_mutations: 0
-planner_selection_mutations: 0
 d0025_mutations: 0
 secret_exposure: false
 
-files_created:
-  - docs/contracts/resource-registry-v1.schema.json
-  - configs/resources/registry.json
-  - tools/validate-resource-registry-v1.mjs
-  - tests/resource-registry-validator/run.mjs
-  - tests/resource-registry-validator/fixtures/*
-  - reports/architecture/v4_resource_registry_contract.md
+files_created_or_updated:
+  - tools/ollama-json-client-v1.mjs
+  - tools/classifier-wrapper-v1.mjs
+  - tools/qwen-local-adapter-v1.mjs
+  - docs/contracts/qwen-local-adapter-v1.md
+  - docs/contracts/qwen-local-adapter-v1.schema.json
+  - tests/qwen-local-adapter/run.mjs
+  - reports/architecture/v4_qwen_local_adapter.md
 
-architecture_report: reports/architecture/v4_resource_registry_contract.md
+architecture_report: reports/architecture/v4_qwen_local_adapter.md
 current_frontier_d0025_untouched: true
-resource_status_untouched: true
 qwen_enabled: false
 qwen_local_registered: true
-qwen_local_hardcoded_ollama_model: false
 ollama_transport_duplicated: false
+shared_ollama_client: tools/ollama-json-client-v1.mjs
 
-NEXT: D-0025-W remains gated on ZAI reset; V4 next blocks deferred (adapters/routers)
+NEXT: D-0025-W remains gated on ZAI reset; optional later bounded Qwen generation proof is a separate block
 ```

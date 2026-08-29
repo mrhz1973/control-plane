@@ -1,14 +1,27 @@
 #!/usr/bin/env node
 /**
  * classifier-wrapper-v1 — event-shaped Ollama classifier (C1a local runtime).
- * Transport: Ollama HTTP /api/generate only. Never ollama run.
+ * Transport: shared ollama-json-client-v1 (/api/generate only). Never ollama run.
  * Not PM-17 shaped. Not n8n wired. Not an implementer.
  */
 import { readFileSync } from "node:fs";
+import {
+  DEFAULT_BASE_URL,
+  DEFAULT_MODEL,
+  DEFAULT_TIMEOUT_MS,
+  buildGeneratePayload,
+  callOllamaGenerate,
+  ollamaReachable,
+  parseJsonModelResponse,
+  resolveOllamaConfig,
+} from "./ollama-json-client-v1.mjs";
 
-export const DEFAULT_MODEL = "qwen3:14b";
-export const DEFAULT_BASE_URL = "http://127.0.0.1:11434";
-export const DEFAULT_TIMEOUT_MS = 20_000;
+export {
+  DEFAULT_BASE_URL,
+  DEFAULT_MODEL,
+  DEFAULT_TIMEOUT_MS,
+  buildGeneratePayload,
+};
 
 const ALLOWED_DOCS_PREFIXES = [
   "docs/",
@@ -97,20 +110,6 @@ function pathsUnderAllowedDocs(paths) {
       (prefix) => norm === prefix.slice(0, -1) || norm.startsWith(prefix),
     );
   });
-}
-
-export function buildGeneratePayload({ model, prompt, baseUrl = DEFAULT_BASE_URL }) {
-  const url = `${baseUrl.replace(/\/$/, "")}/api/generate`;
-  return {
-    url,
-    body: {
-      model,
-      prompt,
-      stream: false,
-      think: false,
-      format: "json",
-    },
-  };
 }
 
 function textMatchesPatterns(text, patterns) {
@@ -380,14 +379,7 @@ export function validateAndNormalizeOutput(parsed, guardContext) {
 }
 
 export function parseModelResponse(raw) {
-  if (typeof raw !== "string" || !raw.trim()) {
-    return { ok: false, error: "empty" };
-  }
-  try {
-    return { ok: true, value: JSON.parse(raw.trim()) };
-  } catch {
-    return { ok: false, error: "invalid_json" };
-  }
+  return parseJsonModelResponse(raw);
 }
 
 function buildModelPrompt(input) {
@@ -415,42 +407,6 @@ export function validateInput(input) {
   return input;
 }
 
-async function ollamaReachable(baseUrl, timeoutMs = 3000) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const r = await fetch(`${baseUrl.replace(/\/$/, "")}/api/tags`, {
-      signal: ctrl.signal,
-    });
-    return r.ok;
-  } catch {
-    return false;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-async function callOllamaGenerate({ baseUrl, model, prompt, timeoutMs }) {
-  const { url, body } = buildGeneratePayload({ model, prompt, baseUrl });
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const r = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: ctrl.signal,
-      body: JSON.stringify(body),
-    });
-    if (!r.ok) {
-      throw new Error(`ollama http ${r.status}`);
-    }
-    const data = await r.json();
-    return String(data.response || "").trim();
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 export async function classifyEvent(input, options = {}) {
   const validated = validateInput(input);
   const guardResult = evaluateGuards(validated);
@@ -476,9 +432,7 @@ export async function classifyEvent(input, options = {}) {
     return fallbackOutput("fallback:model_error");
   }
 
-  const baseUrl = options.baseUrl || process.env.OLLAMA_BASE_URL || DEFAULT_BASE_URL;
-  const model = options.model || process.env.OLLAMA_MODEL || DEFAULT_MODEL;
-  const timeoutMs = options.timeoutMs || Number(process.env.OLLAMA_TIMEOUT_MS) || DEFAULT_TIMEOUT_MS;
+  const { baseUrl, model, timeoutMs } = resolveOllamaConfig(options);
 
   if (!(await ollamaReachable(baseUrl))) {
     return fallbackOutput("fallback:model_error");
