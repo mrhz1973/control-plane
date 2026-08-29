@@ -9,7 +9,7 @@ task_ref: V4_QWEN_LOCAL_LLAMA_CPP_BOUNDED_LIVE_PROOF_RETRY_3
 result_cursor: PASS
 reported_via: cursor_direct_persistence
 starting_head: 327a2b6cee9c44649b5055d24d8c2982abca29c3
-final_head: PENDING_COMMIT
+final_head: 55c880f2325f8fd10857bdfdae4924a4ba5034c1
 runtime_manually_started_by_operator: true
 llama_server_process: RUNNING
 port_8080_listener: LISTENING
