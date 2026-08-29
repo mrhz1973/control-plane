@@ -29,7 +29,7 @@ network_mutated: false
 secondary_6112_json_shape_finding: remains_out_of_scope
 issue_31: OPEN
 starting_head: cb91aa9932928158878725bc4fd2cfa1cbc2a71c
-final_head: PENDING_COMMIT
+final_head: a1b6809ffcc28f074295c17946abf1505ba6c467
 
 architecture_report: reports/architecture/d0025_litellm_ingress_socket_observer_prep.md
 
