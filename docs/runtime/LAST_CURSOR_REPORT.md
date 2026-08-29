@@ -5,39 +5,32 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_GLM_FINAL_LIVE_RESUME_AFTER_CASE_B
-result_cursor: STOP_WF61_HUNG_AFTER_LITELLM_HTTP_200
+task_ref: D0025_W_WF61_POST_HTTP200_HANG_OFFLINE_DIAGNOSIS
+result_cursor: PASS_WF61_HANG_HTTP_NODE_NOT_RETURNED
 reported_via: cursor_direct_persistence
-starting_head: cf0da2514f666d370c76d31bc6b96dcd015626ff
-trigger_head: 4c263bd1a59f3a74b311ad1f63fd51b0fb4e9c0b
-final_head: aa8a60d78f6ad337fae7898bb885bc19515000f3
+starting_head: c61952509c1e765a524ebdb7a203fbc8328c97c5
+final_head: PENDING_SELF_REFERENCE
 
-wf40_execution_id: 286309
-wf61_execution_id: 286310
-http_status_gateway: 200
-classification: WF61_HUNG_AFTER_LITELLM_HTTP_200
-has_cycle_result: false
-packet_census: null
-deterministic_completion: null
-schema_result: unavailable
-policy_result: unavailable
-provider_calls: 1
-litellm_request_delta: 1
-glm_delta: 1
+primary_classification: WF61_HANG_HTTP_NODE_NOT_RETURNED
+last_recoverable_stage: HTTP Request node d0025-6106 (never returned to Capture)
+execution_286310_entity: purged
+execution_286310_data: purged
+parent_286309: success 09:58:02.013Z -> 09:59:10.583Z
+litellm_http200_at: 2026-08-29T09:59:10.506Z
+node_6106_timeout_ms: 120000
+node_6109_timeout: none
+case_b_offline_hang: false
+case_b_large_finalize_ms: ~1677
+workflow_mutated: false
+tools_mutated: false
+provider_calls: 0
+litellm_request_delta: 0
+glm_delta: 0
 glm_budget_final: 10/10
-cursor_dispatch: 0
-retry: 0
-fallback: 0
-qwen: 0
-codex: 0
 gate_closed_final: true
 WF61_final: inactive
-issue_31: OPEN
-d0025w_closed: false
-raw_model_content_persisted: false
-secrets_exposed: false
 
-architecture_report: reports/architecture/d0025_glm_final_live_resume_after_case_b.md
+architecture_report: reports/architecture/d0025_wf61_post_http200_hang_offline_diagnosis.md
 
-NEXT: new budget authorization required before any further GLM live call; diagnose WF61 hang after LiteLLM HTTP 200
+NEXT: GPT-Web author node-6106 hang-proof HTTP completion/timeout artifact; new GLM budget required before any live retry
 ```
