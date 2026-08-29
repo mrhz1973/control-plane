@@ -1,0 +1,65 @@
+{
+  "schema": "gpt-web-bounded-code-delta-v1",
+  "task_ref": "D0025_W_PACKET_REQUIRED_EMPTY_FIELDS_HARDENING",
+  "authority": "GPT-Web",
+  "reason": "Attempt 14 reached the canonical Execution Packet schema after the prior final_report_contract hardening, but GLM omitted required allowed_paths. The schema requires allowed_paths even when empty. This indicates omission of required fields with empty/false/null/const values is still possible. Remediation remains planner-instruction hardening: require the complete top-level required-key manifest and explicitly forbid omission of required empty arrays, false, null, or const-valued fields. Do not weaken schema or post-fill model output.",
+  "mutations": [
+    {
+      "path": "tools/build-openclaw-responses-request.mjs",
+      "target": "PLANNER_INSTRUCTIONS",
+      "operation": "insert_after_exact_line",
+      "expected_line": "final_report_contract MUST be present and MUST equal docs/foundation/CURSOR_PROMPT_TEMPLATE.md exactly.",
+      "insert_lines": [
+        "Before emit_execution_packet, verify that ALL required top-level keys are present: schema, packet_id, packet_revision, task_id, source_backlog_ref, source_backlog_commit, generated_at, planner, executor, repository, branch_target, goal, preflight, allowed_paths, forbidden_paths, hard_constraints, steps, validation, acceptance, loop, risk_assessment, gate_recommendation, context, review, final_report_contract, status.",
+        "Required fields MUST NOT be omitted because their value is empty, false, null, or fixed by const; required empty arrays such as allowed_paths, forbidden_paths, preflight, validation, hard_constraints, or reasons must still be emitted when the canonical value is empty.",
+        "allowed_paths and forbidden_paths MUST both be present and MUST equal consumer_input.allowed_paths and consumer_input.forbidden_paths exactly, including [] when empty."
+      ]
+    },
+    {
+      "path": "docs/contracts/openclaw-execution-packet-consumer-v1.md",
+      "target": "§3 Planner instructions fixed semantics",
+      "operation": "insert_after_exact_line",
+      "expected_line": "final_report_contract MUST be present and MUST equal docs/foundation/CURSOR_PROMPT_TEMPLATE.md exactly.",
+      "insert_lines": [
+        "Before emit_execution_packet, verify that ALL required top-level keys are present: schema, packet_id, packet_revision, task_id, source_backlog_ref, source_backlog_commit, generated_at, planner, executor, repository, branch_target, goal, preflight, allowed_paths, forbidden_paths, hard_constraints, steps, validation, acceptance, loop, risk_assessment, gate_recommendation, context, review, final_report_contract, status.",
+        "Required fields MUST NOT be omitted because their value is empty, false, null, or fixed by const; required empty arrays such as allowed_paths, forbidden_paths, preflight, validation, hard_constraints, or reasons must still be emitted when the canonical value is empty.",
+        "allowed_paths and forbidden_paths MUST both be present and MUST equal consumer_input.allowed_paths and consumer_input.forbidden_paths exactly, including [] when empty."
+      ]
+    }
+  ],
+  "preserve": [
+    "execution-packet-v1.schema.json unchanged",
+    "all required fields remain required",
+    "final_report_contract remains required and const-constrained",
+    "planner remains responsible for structured packet content",
+    "no post-response auto-fill or silent repair",
+    "tool parameters remain canonical execution-packet-v1 schema",
+    "tool_choice remains emit_execution_packet",
+    "hard_constraints exact-equality instruction remains",
+    "fullResponse.data unwrap remains",
+    "run-litellm-primary-cycle finalize semantics unchanged",
+    "WF40/WF61/runtime gate/provider state unchanged"
+  ],
+  "forbidden": [
+    "schema weakening",
+    "making allowed_paths or any required field optional",
+    "injecting missing fields after model output",
+    "provider strict=true in this pass",
+    "provider/model calls",
+    "workflow mutation",
+    "normalizer mutation",
+    "credential/network/OpenClaw/V4 changes"
+  ],
+  "validation": [
+    "the three new instruction lines appear exactly once in the request builder and exactly once in contract §3",
+    "the required-key manifest exactly matches execution-packet-v1.schema.json required[] in order and membership",
+    "request tool schema still has allowed_paths and forbidden_paths required",
+    "offline test confirms instruction explicitly requires empty [] retention",
+    "existing openclaw request-builder tests PASS",
+    "existing llm-gateway request-shape/portability tests PASS",
+    "existing execution-packet validator/policy tests PASS",
+    "git diff --check PASS",
+    "provider_calls=0"
+  ],
+  "next_if_pass": "one bounded live resume of D-0025-W-GLM-LIVE-001; max one LiteLLM/GLM attempt; no retry/fallback"
+}
