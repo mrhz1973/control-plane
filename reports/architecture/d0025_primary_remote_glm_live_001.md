@@ -251,7 +251,7 @@ Structural finding: Capture ran on an HTTP 200 body, but found **zero** `data:` 
 
 ## Attempt 12 (body-shape capture apply + resume)
 
-**Block:** `D0025_W_WF61_BODY_SHAPE_CAPTURE_AND_RESUME`  
+**Block:** `D0025_W_WF61_BODY_SHAPE_CAPTURE_AND_RESUME`
 **Artifact:** `workflows/patches/d0025-w-wf61-body-shape-capture.gpt-web.json`
 
 ### Apply + transport preflight (provider_calls=0)
