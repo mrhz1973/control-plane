@@ -5,44 +5,31 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_GLM_LIVE_RESUME_POST_QUOTA_RESET
+task_ref: D0025_W_GLM_SSE_TERMINAL_EVENT_REMEDIATION
 result_cursor: STOP
 reported_via: cursor_direct_persistence
-starting_head_task_expected: f7f534cf33ccfda4d06f962b4842edbb1c96c6a4
-starting_head_observed: a7525fb7ff35e97eeb452da5559c433b94d3c1a7
-trigger_sha: 34ba537fe9e46906026ac1699debe8424fe70b18
-final_head: fbb57335587cb7687902d6e7cb7ed60977b50280
-operator_quota_release_reported: true
-
-wf40_execution_id: 285346
-wf61_execution_id: 285347
-adapter: REMOTE_DISPATCH_READY
-litellm_request_delta: 1
-glm_provider_attempt_delta: 1
-http_status: 200
-terminal_classification: SSE_NO_COMPLETED_RESPONSE
-sse_normalization: FAIL
-response_gate: NOT_REACHED
-schema_gate: NOT_REACHED
-policy_gate: NOT_REACHED
-execution_packet_generated: false
-cursor_dispatch: 0
-retry: 0
-fallback: 0
-qwen_calls: 0
+starting_head: d1a2077e82e177bb205bcdb166b7b696d8656dd3
+final_head: PENDING_COMMIT
+case: B
+case_label: EXISTING_EVIDENCE_NOT_AVAILABLE
+attempt9_wf40: 285346
+attempt9_wf61: 285347
+wf61_execution_present: false
+raw_sse_body_available: false
+sanitized_event_type_census: unavailable
+normalizer_mutated: false
+tests_run_for_new_shape: false
+provider_calls: 0
+litellm_requests: 0
+glm_calls: 0
 codex_calls: 0
-gate_closed_final: true
-WF61_final: inactive
-credential_mutations: 0
-network_mutations: 0
-teamviewer_mutations: 0
+qwen_calls: 0
 workflow_mutations: 0
-secret_exposure: false
+remote_runtime_gate: CLOSED
+raw_model_content_persisted: false
+secrets_exposed: false
 
-issue_31: OPEN
-issue_31_comment: 5459670470
+architecture_report: reports/architecture/d0025_glm_sse_terminal_event_remediation.md
 
-architecture_report: reports/architecture/d0025_primary_remote_glm_live_001.md
-
-NEXT: bounded SSE terminal-event remediation (no completed / no output_item.done); gate stays CLOSED
+NEXT: capture sanitized SSE structural census on next authorized live resume; no invented normalizer semantics
 ```
