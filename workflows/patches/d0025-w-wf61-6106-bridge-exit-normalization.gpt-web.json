@@ -1,0 +1,61 @@
+{
+  "schema": "gpt-web-n8n-bounded-delta-v1",
+  "task_ref": "D0025_W_WF61_6106_BRIDGE_EXIT_NORMALIZATION",
+  "authority": "GPT-Web",
+  "workflow_id": "d0025-6100-4001-8001-000000000061",
+  "workflow_template": "workflows/61-litellm-primary-remote-planner.template.json",
+  "expected_node_count": 13,
+  "reason": "Tranche-02 live event 01 reached the bounded helper for ~115s and LiteLLM received no new /v1/responses request. The helper is contractually required to emit one JSON stdout line for HTTP_WALL_TIMEOUT and other terminal transport failures, but node 6107 received no parseable bridge JSON and fell back to HTTP_BRIDGE_OUTPUT_INVALID. The helper exits nonzero on bounded transport failure; n8n Execute Command error handling can therefore hide/drop the helper stdout before node 6107. Normalize only the shell exit of node 6106, exactly as already proven for canonical finalize observability on node 6109, while preserving the helper JSON payload and all downstream logic.",
+  "mutations": [
+    {
+      "node_id": "d0025-6106-4006-8006-000000000006",
+      "node_name": "HTTP Request - LiteLLM primary one-shot",
+      "field": "parameters.command",
+      "operation": "replace_exact",
+      "expected_current": "=node /files/handoff-runtime/control-plane/tools/post-litellm-primary-one-shot.mjs --url-b64 aHR0cDovL2xpdGVsbG0tcHJpbWFyeTo0MDAwL3YxL3Jlc3BvbnNlcw== --body-b64 '{{$json.request_body_b64}}' --wall-timeout-ms 115000 --body-idle-timeout-ms 15000 --max-body-bytes 8388608",
+      "replacement": "=node /files/handoff-runtime/control-plane/tools/post-litellm-primary-one-shot.mjs --url-b64 aHR0cDovL2xpdGVsbG0tcHJpbWFyeTo0MDAwL3YxL3Jlc3BvbnNlcw== --body-b64 '{{$json.request_body_b64}}' --wall-timeout-ms 115000 --body-idle-timeout-ms 15000 --max-body-bytes 8388608 2>&1 || true"
+    }
+  ],
+  "preserve": [
+    "exactly 13 nodes and all node ids/names/types/typeVersions/positions",
+    "all connections and workflow settings",
+    "6104 request_body_b64 semantics",
+    "6106 helper path, arguments, endpoint, wall timeout, body-idle timeout and max-body limit",
+    "6107 parser and transport classification semantics",
+    "6108 HTTP 2xx branching semantics",
+    "6109 canonical finalize command including 2>&1 || true",
+    "6110 CASE B packet_census and deterministic_completion propagation",
+    "6111 and 6112 semantics",
+    "CASE B helper, execution-packet-v1 schema, normalizer and response/schema/policy gates",
+    "WF61 inactive after apply",
+    "runtime gate CLOSED during apply",
+    "WF40 unchanged",
+    "LiteLLM/provider configuration unchanged",
+    "tranche 02 counters unchanged during offline apply"
+  ],
+  "acceptance": [
+    "only node 6106 parameters.command changes",
+    "command differs only by terminal shell suffix 2>&1 || true",
+    "the same post-litellm-primary-one-shot.mjs helper and exact arguments remain",
+    "offline shell-level fixture proves helper nonzero terminal JSON remains parseable stdout after normalization",
+    "offline parser fixture proves HTTP_WALL_TIMEOUT, HTTP_BODY_IDLE_TIMEOUT, HTTP_BODY_TOO_LARGE, HTTP_REQUEST_ERROR and HTTP_RESPONSE_ABORTED survive as transport_classification rather than HTTP_BRIDGE_OUTPUT_INVALID",
+    "HTTP_COMPLETED success remains unchanged and reaches the same downstream fields",
+    "node count remains 13 and connections unchanged",
+    "6109 and 6110 remain template-equivalent",
+    "WF61 remains inactive and runtime gate CLOSED",
+    "provider_calls=0, LiteLLM tranche02 delta=0, GLM tranche02 delta=0"
+  ],
+  "forbidden": [
+    "provider/model calls during apply",
+    "runtime gate enablement during apply",
+    "WF40/WF61 live planning trigger during apply",
+    "helper logic change",
+    "6107 parser redesign",
+    "6112 repair in this pass",
+    "workflow topology change",
+    "schema/normalizer/CASE B/provider-config mutation",
+    "raw request/response/model/auth material persistence",
+    "credential/network/OpenClaw/V4 changes"
+  ],
+  "note": "The secondary n8n error observed at node 6112 in event 01 remains a separately recorded finding. This artifact intentionally does not mutate 6112; first restore deterministic transport classification observability at 6106/6107 without widening scope."
+}
