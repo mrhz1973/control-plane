@@ -9,7 +9,7 @@ task_ref: D0025_W_GLM_SSE_TERMINAL_EVENT_REMEDIATION
 result_cursor: STOP
 reported_via: cursor_direct_persistence
 starting_head: d1a2077e82e177bb205bcdb166b7b696d8656dd3
-final_head: PENDING_COMMIT
+final_head: 151646a032b4b39752157be6369ade772349477d
 case: B
 case_label: EXISTING_EVIDENCE_NOT_AVAILABLE
 attempt9_wf40: 285346
