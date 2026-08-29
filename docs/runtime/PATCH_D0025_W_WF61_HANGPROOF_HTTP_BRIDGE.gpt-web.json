@@ -1,0 +1,87 @@
+{
+  "schema": "gpt-web-bounded-code-delta-v1",
+  "task_ref": "D0025_W_WF61_HANGPROOF_HTTP_BRIDGE",
+  "authority": "GPT-Web",
+  "reason": "Offline diagnosis proved WF61 execution 286310 stalled inside n8n HTTP Request node 6106 after the LiteLLM request reached HTTP 200. Nodes 6107-6110 never started. The existing n8n HTTP node timeout did not produce a terminal handoff. Replace only the transport mechanism with a bounded Node.js one-shot HTTP bridge that has an independent wall-clock abort and returns one machine-readable line to n8n. Preserve request body, LiteLLM endpoint, canonical finalize/gates, CASE B, unwrap semantics downstream, and all provider/model semantics.",
+  "new_helper": "tools/post-litellm-primary-one-shot.mjs",
+  "helper_contract": {
+    "network_target": "http://litellm-primary:4000/v1/responses",
+    "cli": "node tools/post-litellm-primary-one-shot.mjs --url-b64 <base64> --body-b64 <base64-json> --wall-timeout-ms <ms> --body-idle-timeout-ms <ms> --max-body-bytes <bytes>",
+    "request": {
+      "method": "POST",
+      "content_type": "application/json",
+      "connection": "close",
+      "agent": false,
+      "body": "exact UTF-8 JSON decoded from --body-b64; do not mutate provider payload"
+    },
+    "bounds": {
+      "wall_timeout_ms": 115000,
+      "body_idle_timeout_ms": 15000,
+      "max_body_bytes": 8388608,
+      "independent_wall_timer": true,
+      "wall_timer_scope": "from request start until response body end",
+      "body_idle_timer_scope": "response body only; do not apply a 15s idle timeout before response headers"
+    },
+    "success_stdout_schema": {
+      "schema": "litellm-primary-http-one-shot-v1",
+      "ok": true,
+      "classification": "HTTP_COMPLETED",
+      "statusCode": "integer",
+      "statusMessage": "string|null",
+      "body_b64": "base64 UTF-8 response body",
+      "body_bytes": "integer",
+      "elapsed_ms": "integer"
+    },
+    "failure_stdout_schema": {
+      "schema": "litellm-primary-http-one-shot-v1",
+      "ok": false,
+      "classification": "HTTP_WALL_TIMEOUT|HTTP_BODY_IDLE_TIMEOUT|HTTP_BODY_TOO_LARGE|HTTP_REQUEST_ERROR|HTTP_RESPONSE_ABORTED|INPUT_INVALID",
+      "statusCode": "integer|null",
+      "statusMessage": "string|null",
+      "body_b64": null,
+      "body_bytes": "integer",
+      "elapsed_ms": "integer"
+    },
+    "stdout": "exactly one compact JSON line; no headers, auth, prompt, reasoning, or decoded model text",
+    "exit_code": "0 only when HTTP response body ended cleanly (regardless of HTTP status); nonzero on bounded transport failure",
+    "implementation_requirements": [
+      "Use Node built-ins only; no package install.",
+      "Use http.request for the current private http endpoint; reject unsupported protocol rather than guess.",
+      "Set Content-Length from exact decoded request bytes and Connection: close.",
+      "Use an independent setTimeout wall timer that destroys request/response and guarantees terminal process output even if socket/node callbacks stall.",
+      "Apply response-body idle timeout only after response headers arrive.",
+      "Enforce max response bytes before concatenation can grow unbounded.",
+      "Guard terminal emission so timeout/error/end cannot print more than one result.",
+      "Do not log request body, response body, headers, environment, auth, or secrets. body_b64 is runtime transport output only and must not be copied to reports/repo evidence."
+    ]
+  },
+  "tests": [
+    "local mock HTTP 200 JSON completes and body round-trips byte-identically",
+    "mock 4xx completes with exit 0 plus actual statusCode for downstream HTTP classification",
+    "server that never responds hits wall timeout deterministically",
+    "server that sends headers then stalls body hits body-idle timeout deterministically",
+    "body above max bytes fails HTTP_BODY_TOO_LARGE",
+    "connection error fails HTTP_REQUEST_ERROR",
+    "stdout is exactly one JSON line and contains no request/header values",
+    "no LiteLLM/GLM/Codex/Qwen call during tests"
+  ],
+  "preserve": [
+    "tools/build-llm-gateway-request.mjs request body including stream=false",
+    "tools/run-litellm-primary-cycle.mjs prepare/finalize semantics",
+    "CASE B source-field completion",
+    "execution-packet-v1 schema",
+    "Responses normalizer and canonical response/schema/policy gates",
+    "LiteLLM config/provider aliases",
+    "credentials/network/WF40/WF60/OpenClaw/V4"
+  ],
+  "forbidden": [
+    "provider/model calls in this offline pass",
+    "schema/normalizer/CASE B mutation",
+    "provider payload mutation",
+    "new runtime dependency",
+    "secret/header persistence",
+    "new GLM budget authorization",
+    "workflow topology redesign"
+  ],
+  "next_if_pass": "human gate: authorize a new bounded GLM budget before any live retry; current budget remains 10/10"
+}
