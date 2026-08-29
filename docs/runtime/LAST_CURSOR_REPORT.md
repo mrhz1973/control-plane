@@ -11,7 +11,7 @@ reported_via: cursor_direct_persistence
 starting_head_task_expected: f7f534cf33ccfda4d06f962b4842edbb1c96c6a4
 starting_head_observed: a7525fb7ff35e97eeb452da5559c433b94d3c1a7
 trigger_sha: 34ba537fe9e46906026ac1699debe8424fe70b18
-final_head: PENDING_COMMIT
+final_head: fbb57335587cb7687902d6e7cb7ed60977b50280
 operator_quota_release_reported: true
 
 wf40_execution_id: 285346
