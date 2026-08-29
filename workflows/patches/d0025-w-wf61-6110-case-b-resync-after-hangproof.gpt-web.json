@@ -1,0 +1,65 @@
+{
+  "schema": "gpt-web-n8n-bounded-delta-v1",
+  "task_ref": "D0025_W_WF61_6110_CASE_B_RESYNC_AFTER_HANGPROOF",
+  "authority": "GPT-Web",
+  "workflow_id": "d0025-6100-4001-8001-000000000061",
+  "workflow_template": "workflows/61-litellm-primary-remote-planner.template.json",
+  "expected_node_count": 13,
+  "reason": "Hang-proof transport apply succeeded on 6104/6106/6107, but live WF61 still has pre-existing drift at node 6110 and therefore does not propagate CASE B packet_census/deterministic_completion metadata. Restore only live node 6110 from the canonical template while preserving the new hang-proof transport and all downstream semantics.",
+  "mutations": [
+    {
+      "node_id": "d0025-6110-4010-8010-000000000010",
+      "node_name": "Return canonical cycle result",
+      "field": "parameters.jsCode",
+      "operation": "replace_exact",
+      "replacement": "const r=$json;\nconst stdout=String(r.stdout??'').trim();\nconst exitCode=Number(r.exitCode??r.code??1);\nlet parsed=null;\ntry{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}\nconst http=$('Capture HTTP body + status').item.json;\nconst ok=exitCode===0&&parsed?.ok===true&&parsed?.classification==='PASS';\nconst packetCensus=parsed?.packet_census_before_completion??parsed?.packet_census??null;\nconst completion=parsed?.deterministic_completion??null;\nreturn {json:ok?{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:true,classification:'PASS',task_id:http.task_id,http_status:http.http_status,\n response_source_format:parsed.response_source_format,response_gate:parsed.response_gate,packet:parsed.packet,policy:parsed.policy,\n packet_census:packetCensus,deterministic_completion:completion,cursor_dispatch_allowed:false\n}:{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:false,classification:parsed?.classification||'FINALIZE_FAILED',task_id:http.task_id,http_status:http.http_status,\n reason:parsed?.reason||'canonical finalize failed',packet_census:packetCensus,deterministic_completion:completion,\n sse_census:http.sse_census??null,body_shape:http.body_shape??null,cursor_dispatch_allowed:false\n}};"
+    }
+  ],
+  "preserve": [
+    "all 13 nodes and all node IDs/names/types/typeVersions/positions",
+    "all connections",
+    "hang-proof transport exactly as currently applied on nodes 6104/6106/6107",
+    "node 6108 HTTP 2xx branch semantics",
+    "node 6109 canonical finalize command exactly as currently live; do not change it in this pass",
+    "CASE B helper and finalize integration under tools/",
+    "execution-packet-v1 schema and normalizer",
+    "success packet/policy result semantics",
+    "existing sse_census/body_shape failure evidence",
+    "cursor_dispatch_allowed=false",
+    "WF61 remains inactive after apply",
+    "remote runtime gate remains closed",
+    "WF40 unchanged"
+  ],
+  "sanitized_evidence_only": [
+    "packet_census contains only key names and missing-key names",
+    "deterministic_completion contains only boolean/applied state and completed field names",
+    "no raw arguments",
+    "no model text",
+    "no response_b64",
+    "no prompt/reasoning/auth/token/credential values"
+  ],
+  "acceptance": [
+    "only live node 6110 parameters.jsCode changes",
+    "template file remains unchanged because it is already canonical",
+    "node count remains 13",
+    "connections unchanged",
+    "6104/6106/6107 remain byte-equivalent to the current canonical hang-proof template",
+    "6109 remains unchanged in this pass",
+    "live node 6110 becomes exactly equivalent to canonical template node 6110",
+    "packet_census and deterministic_completion propagate when present and null otherwise",
+    "provider_calls=0 during apply",
+    "LiteLLM delta=0 and GLM delta=0",
+    "WF61 inactive and runtime gate closed after apply"
+  ],
+  "forbidden": [
+    "provider/model calls during apply",
+    "runtime gate arm",
+    "WF40/WF61 planning trigger",
+    "workflow topology changes",
+    "changes to 6104/6106/6107 hang-proof transport",
+    "changes to 6109",
+    "schema/normalizer/CASE B helper/LiteLLM config changes",
+    "raw model/body/arguments persistence",
+    "credential/network/OpenClaw/V4 changes"
+  ]
+}
