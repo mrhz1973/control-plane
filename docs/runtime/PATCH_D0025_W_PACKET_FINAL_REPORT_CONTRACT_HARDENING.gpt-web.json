@@ -1,0 +1,62 @@
+{
+  "schema": "gpt-web-bounded-code-delta-v1",
+  "task_ref": "D0025_W_PACKET_FINAL_REPORT_CONTRACT_HARDENING",
+  "authority": "GPT-Web",
+  "reason": "Attempt 13 proved the primary remote GLM path through LiteLLM and the n8n fullResponse.data unwrap, then failed only because the emitted Execution Packet omitted the schema-required final_report_contract field. The execution-packet-v1 schema already requires that field and constrains it to the canonical constant docs/foundation/CURSOR_PROMPT_TEMPLATE.md. The planner-consumer contract makes the planner responsible for structured packet content, so remediation is planner-instruction hardening, not post-response invention or schema weakening.",
+  "mutations": [
+    {
+      "path": "tools/build-openclaw-responses-request.mjs",
+      "target": "PLANNER_INSTRUCTIONS",
+      "operation": "insert_after_exact_line",
+      "expected_line": "hard_constraints MUST equal consumer_input.hard_constraints exactly: same length, same order, same strings; do not add, remove, rephrase, or infer additional hard constraints.",
+      "insert_lines": [
+        "Every execution-packet-v1 required field MUST be present in emit_execution_packet arguments; do not omit required fields even when their schema value is fixed by const.",
+        "final_report_contract MUST be present and MUST equal docs/foundation/CURSOR_PROMPT_TEMPLATE.md exactly."
+      ]
+    },
+    {
+      "path": "docs/contracts/openclaw-execution-packet-consumer-v1.md",
+      "target": "§3 Planner instructions fixed semantics",
+      "operation": "insert_after_exact_line",
+      "expected_line": "hard_constraints MUST equal consumer_input.hard_constraints exactly: same length, same order, same strings; do not add, remove, rephrase, or infer additional hard constraints.",
+      "insert_lines": [
+        "Every execution-packet-v1 required field MUST be present in emit_execution_packet arguments; do not omit required fields even when their schema value is fixed by const.",
+        "final_report_contract MUST be present and MUST equal docs/foundation/CURSOR_PROMPT_TEMPLATE.md exactly."
+      ]
+    }
+  ],
+  "preserve": [
+    "execution-packet-v1.schema.json unchanged",
+    "final_report_contract remains required and const-constrained by the canonical schema",
+    "planner remains responsible for structured packet content",
+    "no post-response auto-fill or silent repair of missing planner fields",
+    "hard_constraints exact-equality instruction unchanged",
+    "tool parameters remain the canonical execution-packet-v1 schema",
+    "tool_choice remains emit_execution_packet",
+    "no strict=true addition without separate compatibility evidence",
+    "run-litellm-primary-cycle finalize semantics unchanged",
+    "WF40/WF61/runtime gate/provider state unchanged",
+    "fullResponse.data unwrap retained"
+  ],
+  "forbidden": [
+    "weakening execution-packet-v1 schema",
+    "making final_report_contract optional",
+    "injecting final_report_contract after model output",
+    "auto-filling arbitrary missing packet fields",
+    "provider/model calls in this offline apply pass",
+    "workflow mutation",
+    "normalizer mutation",
+    "credential/network/OpenClaw/V4 Qwen changes"
+  ],
+  "validation": [
+    "request builder instructions contain both new exact lines once",
+    "contract §3 contains both new exact lines once",
+    "generated LiteLLM/OpenClaw request still exposes canonical execution-packet-v1 tool parameters with final_report_contract in required[] and const docs/foundation/CURSOR_PROMPT_TEMPLATE.md",
+    "existing openclaw request-builder tests PASS",
+    "existing llm-gateway request-shape/portability tests PASS",
+    "existing execution-packet validator/policy tests PASS",
+    "git diff --check PASS",
+    "provider_calls=0"
+  ],
+  "next_if_pass": "one bounded live resume of D-0025-W-GLM-LIVE-001; max one LiteLLM/GLM attempt; no retry/fallback"
+}
