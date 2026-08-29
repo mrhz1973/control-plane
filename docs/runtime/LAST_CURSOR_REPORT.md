@@ -9,7 +9,7 @@ task_ref: D0025_W_WF61_FULLRESPONSE_DATA_UNWRAP_APPLY
 result_cursor: PASS_N8N_FULLRESPONSE_DATA_UNWRAP_APPLIED_OFFLINE
 reported_via: cursor_direct_persistence
 starting_head: ed42a36b9533788f94d64a0eddc6c7e2c930a5c7
-final_head: PENDING_COMMIT
+final_head: 08e95b3fe3a164427ab592ad116ec949648436bf
 
 apply_phase: PASS
 provider_calls: 0
