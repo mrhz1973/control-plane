@@ -1,0 +1,87 @@
+{
+  "schema": "gpt-web-bounded-code-delta-v1",
+  "task_ref": "D0025_W_PACKET_SOURCE_COMPLETION_CASE_B",
+  "authority": "GPT-Web",
+  "reason": "Attempt 15 repeatedly omitted required allowed_paths despite complete required-field instructions. CASE A could not inspect the purged WF61 child execution, so the previous census gate is unavailable. A safer successor does not guess prior output: apply a missing-only deterministic compatibility transform to the CURRENT response before canonical gates. It may restore only exact consumer_input-owned or schema-const fields, never planner-owned semantics, and it must emit sanitized packet-shape evidence so the final GLM slot cannot fail opaquely.",
+  "deterministic_missing_only_allowlist": {
+    "schema": {"source": "const", "value": "execution-packet-v1"},
+    "task_id": {"source": "consumer_input.task_id"},
+    "source_backlog_ref": {"source": "consumer_input.source_backlog_ref"},
+    "source_backlog_commit": {"source": "consumer_input.source_backlog_commit"},
+    "repository": {"source": "consumer_input.repository"},
+    "branch_target": {"source": "consumer_input.branch_target"},
+    "goal": {"source": "consumer_input.goal"},
+    "executor": {"source": "const", "value": "cursor"},
+    "allowed_paths": {"source": "consumer_input.allowed_paths"},
+    "forbidden_paths": {"source": "consumer_input.forbidden_paths"},
+    "hard_constraints": {"source": "consumer_input.hard_constraints"},
+    "final_report_contract": {"source": "const", "value": "docs/foundation/CURSOR_PROMPT_TEMPLATE.md"}
+  },
+  "planner_owned_required_fields_never_completed": [
+    "packet_id",
+    "packet_revision",
+    "generated_at",
+    "planner",
+    "preflight",
+    "steps",
+    "validation",
+    "acceptance",
+    "loop",
+    "risk_assessment",
+    "gate_recommendation",
+    "context",
+    "review",
+    "status"
+  ],
+  "authorized_implementation": {
+    "new_helper": "tools/complete-primary-remote-packet-source-fields.mjs",
+    "integration_target": "tools/run-litellm-primary-cycle.mjs finalize path only",
+    "sequence": [
+      "Normalize the Responses body exactly as today.",
+      "Locate exactly one emit_execution_packet function call and parse its arguments exactly as today.",
+      "Build a sanitized packet census from the raw parsed argument object: top-level key names; missing top-level execution-packet-v1 required keys; nested key names/missing-required for planner, loop, risk_assessment, gate_recommendation, context, review. No values or model prose.",
+      "Run deterministic source-field completion on the parsed packet plus consumer_input.",
+      "Before adding anything, fail closed PACKET_SOURCE_FIELD_MISMATCH if any PRESENT allowlisted source-owned field differs from its canonical source/const value.",
+      "Add only allowlisted fields whose own-property is absent. Present null/false/[]/empty-string is never treated as missing and is never overwritten.",
+      "Rewrite only the in-memory emit_execution_packet arguments in a cloned response to the deterministically completed packet.",
+      "Run the existing canonical response gate on that cloned response; then extract packet and run the existing policy gate.",
+      "Any planner-owned omission remains schema-invalid; no planner semantic field is synthesized.",
+      "Expose bounded metadata outside the canonical packet: packet_census_before_completion, deterministic_completion_applied, completed_fields."
+    ],
+    "classification_on_source_conflict": "PACKET_SOURCE_FIELD_MISMATCH",
+    "no_schema_mutation": true,
+    "no_normalizer_mutation": true,
+    "no_provider_call": true
+  },
+  "required_tests": [
+    "missing allowed_paths is filled exactly from consumer_input.allowed_paths including []",
+    "missing forbidden_paths and hard_constraints are filled exactly from consumer_input",
+    "missing schema/executor/final_report_contract are filled only with canonical const values",
+    "present allowlisted field with conflicting value fails PACKET_SOURCE_FIELD_MISMATCH and is never overwritten",
+    "present null/false/[]/empty-string is treated as present and is never overwritten",
+    "missing planner-owned steps remains PACKET_SCHEMA_INVALID after completion",
+    "missing planner-owned status remains PACKET_SCHEMA_INVALID after completion",
+    "packet census contains only keys/missing-key names and no model values",
+    "existing primary-cycle response/schema/policy behavior remains PASS for already-valid packets",
+    "execution-packet validator/policy suites PASS",
+    "git diff --check PASS",
+    "provider_calls=0, LiteLLM delta=0, GLM delta=0"
+  ],
+  "workflow_evidence_requirement": {
+    "artifact": "workflows/patches/d0025-w-wf61-packet-census-propagation.gpt-web.json",
+    "purpose": "Propagate sanitized packet_census/deterministic_completion metadata from canonical finalize result through WF61 terminal result so the final GLM slot cannot fail opaquely.",
+    "apply_provider_calls": 0
+  },
+  "next_if_pass": "one final bounded GLM live resume of D-0025-W-GLM-LIVE-001 using GLM slot 10/10 max; retry=0; fallback=0; packet census must be retained on any finalize failure",
+  "forbidden": [
+    "provider/model call in this offline pass",
+    "schema weakening",
+    "planner-owned field synthesis",
+    "generic fill-defaults",
+    "overwriting present model fields",
+    "instruction-only retry",
+    "provider strict=true experimentation",
+    "normalizer mutation",
+    "credential/network/OpenClaw/V4 changes"
+  ]
+}
