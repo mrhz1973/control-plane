@@ -5,7 +5,7 @@
 **Date:** 2026-08-28 / 2026-08-29  
 **Release evidence:** issue #31 comment `5458616370` · standing authorization  
 **Standing authorization:** `docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md`  
-**Status:** **PASS (attempt 11 / census)** — transport preflight PASS · HTTP **200** · sanitized `sse_census` captured (`data_event_count=0`) · gate CLOSED
+**Status:** **PASS (attempt 12 / body_shape)** — body-shape capture applied · HTTP **200** · sanitized `body_shape` + `sse_census` captured · gate CLOSED
 
 ---
 
@@ -24,6 +24,7 @@
 | 9 (post-quota) | `34ba537` | **STOP** | `SSE_NO_COMPLETED_RESPONSE` HTTP 200 · no completed / no output_item.done | **no mutation this block** |
 | 10 (capture) | `4894310` | **STOP** | `LITELLM_HTTP_FAILURE` http_status=0 · LiteLLM Δ0 · `sse_census=null` | **capture applied; census not reached** |
 | 11 (s0+capture) | `f506227` | **CAPTURE PASS** | HTTP 200 · `SSE_NO_COMPLETED_RESPONSE` · sanitized `sse_census` present (0 data events) | **census persisted; no normalizer change** |
+| 12 (body_shape) | `42aba26` | **CAPTURE PASS** | HTTP 200 · `body_shape`=`JSON_OBJECT` keys `data|headers|statusCode|statusMessage` | **n8n fullResponse wrapper identified** |
 
 ---
 
@@ -248,12 +249,60 @@ Structural finding: Capture ran on an HTTP 200 body, but found **zero** `data:` 
 
 ---
 
+## Attempt 12 (body-shape capture apply + resume)
+
+**Block:** `D0025_W_WF61_BODY_SHAPE_CAPTURE_AND_RESUME`  
+**Artifact:** `workflows/patches/d0025-w-wf61-body-shape-capture.gpt-web.json`
+
+### Apply + transport preflight (provider_calls=0)
+
+| Check | Result |
+|---|---|
+| only 6107/6110 jsCode changed | PASS |
+| 13 nodes / connections / HTTP / prepare-finalize | unchanged |
+| gate CLOSED / WF61 inactive during apply | PASS |
+| DNS/TCP/readiness/`root_default` | PASS |
+| LiteLLM Δ during apply+preflight | **0** |
+
+### Live resume
+
+| Metric | Value |
+|---|---|
+| Trigger | `42aba26e1c04c4f4aad8db50462ec1eb2f64b99f` |
+| WF40 / WF61 | `285449` / `285450` |
+| LiteLLM Δ | **1** (total **6**; POST **200**) |
+| GLM Δ | **1** |
+| classification | `SSE_NO_COMPLETED_RESPONSE` |
+| `sse_census` | present · `data_event_count=0` |
+| `body_shape` | present |
+| Gate / WF61 final | **CLOSED** / **inactive** |
+| retry/fallback/qwen/codex/cursor | **0** |
+| GLM budget | **6/10** |
+| raw/model content persisted | **false** |
+
+### Sanitized body_shape
+
+```json
+{
+  "schema": "http-body-structural-census-v1",
+  "framing": "JSON_OBJECT",
+  "top_level_keys": ["data", "headers", "statusCode", "statusMessage"],
+  "selected_field_shapes": [],
+  "first_array_item_keys": [],
+  "nested_key_sets": []
+}
+```
+
+Structural finding: Capture is stringifying the **n8n HTTP fullResponse wrapper** (`data`/`headers`/`statusCode`/`statusMessage`), not the LiteLLM payload inside `data`. That explains empty `sse_census` and normalizer `SSE_NO_COMPLETED_RESPONSE` on a JSON wrapper object. Normalizer untouched in this pass.
+
+---
+
 ## NEXT_GATE
 
-Offline analysis/remediation of the observed body capture shape implied by empty `sse_census` under HTTP 200. Gate remains CLOSED. No normalizer mutation until a deterministic CASE A patch is justified.
+Offline remediation from Attempt 12 `body_shape`: unwrap/capture the n8n `data` field (or equivalent) before Responses/SSE normalization. Gate remains CLOSED until that CASE A patch is authored/authorized.
 
 ---
 
 ## Output line
 
-`PASS — SANITIZED GLM SSE CENSUS CAPTURED / READY FOR OFFLINE REMEDIATION; PROVIDER_CALLS_DELTA=1; GATE_CLOSED=true`
+`PASS — SANITIZED GLM HTTP BODY SHAPE CAPTURED / READY FOR OFFLINE REMEDIATION; PROVIDER_CALLS_DELTA=1; GATE_CLOSED=true`

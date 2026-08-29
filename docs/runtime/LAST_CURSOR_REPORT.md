@@ -5,33 +5,43 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_HTTP200_BODY_SHAPE_INSPECT_AND_OFFLINE_REMEDIATE
-result_cursor: STOP
+task_ref: D0025_W_WF61_BODY_SHAPE_CAPTURE_AND_RESUME
+result_cursor: PASS_BODY_SHAPE_CAPTURED
 reported_via: cursor_direct_persistence
-starting_head: 5c3065bfb38f1d638656a966232a39a617632385
-final_head: 3246f0b15464c6fd6af91ce82f2c1af8ae92420b
-case: B
-case_label: EXISTING_ATTEMPT11_BODY_UNAVAILABLE
-attempt11_wf40: 285414
-attempt11_wf61: 285415
-wf61_execution_present: true
-wf61_runData_empty: true
-response_b64_available: false
-raw_http_body_available: false
-parent_sse_census_only: true
-normalizer_mutated: false
-provider_calls: 0
-litellm_requests: 0
-glm_calls: 0
-codex_calls: 0
+starting_head: 3a537b9d28603c56f03e140a41f0dccc3d29b6fb
+apply_trigger_sha: 42aba26e1c04c4f4aad8db50462ec1eb2f64b99f
+final_head: PENDING_COMMIT
+
+apply_phase: PASS
+preflight: PASS
+apply_provider_calls: 0
+preflight_provider_calls: 0
+nodes_changed: [6107, 6110]
+
+live_resume: CAPTURE_PASS
+wf40_execution_id: 285449
+wf61_execution_id: 285450
+http_status: 200
+classification: SSE_NO_COMPLETED_RESPONSE
+litellm_request_delta: 1
+glm_provider_attempt_delta: 1
+sse_census_present: true
+data_event_count: 0
+body_shape_present: true
+body_shape_framing: JSON_OBJECT
+body_shape_top_level_keys: [data, headers, statusCode, statusMessage]
+retry: 0
+fallback: 0
 qwen_calls: 0
-workflow_mutations: 0
-remote_runtime_gate: CLOSED
-raw_body_persisted: false
-model_content_persisted: false
+codex_calls: 0
+cursor_dispatch: 0
+gate_closed_final: true
+WF61_final: inactive
+normalizer_mutated: false
+raw_model_content_persisted: false
 secrets_exposed: false
 
-architecture_report: reports/architecture/d0025_http200_body_shape_offline_remediation.md
+architecture_report: reports/architecture/d0025_wf61_body_shape_capture.md
 
-NEXT: capture body framing+key shapes (no model text) before next live resume; no invented CASE A
+NEXT: offline remediate n8n fullResponse data unwrap before Responses/SSE normalization
 ```
