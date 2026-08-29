@@ -1,0 +1,75 @@
+{
+  "schema_version": "qwen-local-runtime-v1",
+  "logical_resource": "qwen_local",
+  "primary_backend": "llama_cpp",
+  "compatibility_backends": ["ollama"],
+  "default_profile": "fast_8k",
+  "ar_fallback_forbidden": true,
+  "launcher": {
+    "script": "Documents/AI/QWEN/Start-Qwen-MultiModel-16K.ps1",
+    "server_executable": "llama.cpp-dflash2/build-cuda/bin/llama-server.exe",
+    "models_preset": "llama.cpp-dflash2/qwen-models.ini",
+    "host": "127.0.0.1",
+    "port": 8080,
+    "base_url": "http://127.0.0.1:8080",
+    "openai_api": "/v1",
+    "profile_selection_mode": "multi_model_router_model_id",
+    "context_switch_via_generate_api": false,
+    "context_switch_requires_dedicated_server_restart": false,
+    "notes": [
+      "Context profiles are separate entries in models-preset exposed as /v1/models ids.",
+      "Selecting 8K/16K/32K means choosing the matching model id (e.g. qwen38-original-dflash2-8k).",
+      "Do not change tested launch parameters from the control-plane.",
+      "AR/non-DFlash preset entries exist on the server but are forbidden for normal qwen_local."
+    ]
+  },
+  "tested_runtime_common": {
+    "threads": 20,
+    "cache_type_k": "q8_0",
+    "cache_type_v": "q8_0",
+    "flash_attn": true,
+    "jinja": true,
+    "parallel": 1,
+    "main_model_identity": "Qwen 3.8 27B Original",
+    "draft_model_identity": "Qwen3.8-27B-DFlash2",
+    "draft_quantization": "Q4_K_M",
+    "spec_type": "draft-dflash",
+    "spec_draft_n_max": 7,
+    "n_gpu_layers_draft": "all"
+  },
+  "profiles": {
+    "fast_8k": {
+      "label": "FAST_8K",
+      "backend": "llama_cpp",
+      "dflash_required": true,
+      "context_tokens": 8192,
+      "llama_cpp_model_id": "qwen38-original-dflash2-8k",
+      "n_gpu_layers": 36,
+      "spec_type": "draft-dflash",
+      "spec_draft_n_max": 7,
+      "usage": "default for normal control-plane tasks"
+    },
+    "balanced_16k": {
+      "label": "BALANCED_16K",
+      "backend": "llama_cpp",
+      "dflash_required": true,
+      "context_tokens": 16384,
+      "llama_cpp_model_id": "qwen38-original-dflash2-16k",
+      "n_gpu_layers": 36,
+      "spec_type": "draft-dflash",
+      "spec_draft_n_max": 7,
+      "usage": "only when selected context will not safely fit FAST_8K"
+    },
+    "long_32k": {
+      "label": "LONG_32K",
+      "backend": "llama_cpp",
+      "dflash_required": true,
+      "context_tokens": 32768,
+      "llama_cpp_model_id": "qwen38-original-dflash2-32k",
+      "n_gpu_layers": 32,
+      "spec_type": "draft-dflash",
+      "spec_draft_n_max": 7,
+      "usage": "exceptional large-context tasks only"
+    }
+  }
+}

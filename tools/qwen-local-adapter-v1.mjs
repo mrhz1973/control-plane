@@ -13,9 +13,29 @@ import { readFileSync } from "node:fs";
 import {
   callOllamaGenerate,
   ollamaReachable,
-  parseJsonModelResponse,
+  parseJsonModelResponse as parseOllamaJson,
   resolveOllamaConfig,
 } from "./ollama-json-client-v1.mjs";
+import {
+  callLlamaCppChat,
+  llamaCppReachable,
+  parseJsonModelResponse as parseLlamaCppJson,
+  resolveLlamaCppConfig,
+} from "./llama-cpp-json-client-v1.mjs";
+import {
+  getProfile,
+  loadQwenLocalRuntime,
+  resolveQwenLocalBackend,
+  validateBackend,
+  validateRuntimeDocument,
+} from "./qwen-local-runtime-v1.mjs";
+
+export {
+  resolveQwenLocalBackend,
+  validateBackend,
+} from "./qwen-local-runtime-v1.mjs";
+export { resolveLlamaCppConfig } from "./llama-cpp-json-client-v1.mjs";
+export { resolveOllamaConfig } from "./ollama-json-client-v1.mjs";
 
 export const REQUEST_SCHEMA = "qwen-local-adapter-request-v1";
 export const RESULT_SCHEMA = "qwen-local-adapter-result-v1";
@@ -240,7 +260,7 @@ async function obtainModelObject(request, options) {
   if (options.mock === true) {
     const raw = options.mockResponse;
     if (typeof raw === "string") {
-      const parsed = parseJsonModelResponse(raw);
+      const parsed = parseOllamaJson(raw);
       if (!parsed.ok) {
         return { ok: false, classification: "INVALID_JSON" };
       }
@@ -252,15 +272,77 @@ async function obtainModelObject(request, options) {
     return { ok: false, classification: "MODEL_ERROR" };
   }
 
-  const { baseUrl, model, timeoutMs } = resolveOllamaConfig(options);
-  if (!(await ollamaReachable(baseUrl))) {
+  const backendRaw = resolveQwenLocalBackend(options);
+  const backendCheck = validateBackend(backendRaw);
+  if (!backendCheck.ok) {
+    return { ok: false, classification: "INVALID_INPUT" };
+  }
+  const backend = backendCheck.backend;
+
+  const prompt = buildAdapterPrompt(request);
+
+  if (backend === "ollama") {
+    const { baseUrl, model, timeoutMs } = resolveOllamaConfig(options);
+    if (!(await ollamaReachable(baseUrl))) {
+      return { ok: false, classification: "MODEL_UNAVAILABLE" };
+    }
+    try {
+      const raw = await callOllamaGenerate({ baseUrl, model, prompt, timeoutMs });
+      const parsed = parseOllamaJson(raw);
+      if (!parsed.ok) {
+        return { ok: false, classification: "INVALID_JSON" };
+      }
+      if (!parsed.value || typeof parsed.value !== "object" || Array.isArray(parsed.value)) {
+        return { ok: false, classification: "INVALID_JSON" };
+      }
+      return { ok: true, value: parsed.value };
+    } catch {
+      return { ok: false, classification: "MODEL_ERROR" };
+    }
+  }
+
+  // Primary: llama_cpp (DFlash2 required at runtime profile / server preset level)
+  let runtime;
+  try {
+    runtime = loadQwenLocalRuntime();
+  } catch {
+    return { ok: false, classification: "MODEL_UNAVAILABLE" };
+  }
+  const runtimeOk = validateRuntimeDocument(runtime);
+  if (!runtimeOk.ok) {
+    return { ok: false, classification: "MODEL_UNAVAILABLE" };
+  }
+
+  const profileId = options.profile || runtime.default_profile || "fast_8k";
+  const profileCheck = getProfile(runtime, profileId);
+  if (!profileCheck.ok) {
+    return { ok: false, classification: "MODEL_UNAVAILABLE" };
+  }
+
+  const cfg = resolveLlamaCppConfig({
+    ...options,
+    model:
+      options.model ||
+      process.env.QWEN_LOCAL_MODEL ||
+      profileCheck.profile.llama_cpp_model_id,
+    baseUrl:
+      options.baseUrl ||
+      process.env.QWEN_LOCAL_BASE_URL ||
+      runtime.launcher?.base_url,
+  });
+
+  if (!(await llamaCppReachable(cfg.baseUrl))) {
     return { ok: false, classification: "MODEL_UNAVAILABLE" };
   }
 
   try {
-    const prompt = buildAdapterPrompt(request);
-    const raw = await callOllamaGenerate({ baseUrl, model, prompt, timeoutMs });
-    const parsed = parseJsonModelResponse(raw);
+    const raw = await callLlamaCppChat({
+      baseUrl: cfg.baseUrl,
+      model: cfg.model,
+      prompt,
+      timeoutMs: cfg.timeoutMs,
+    });
+    const parsed = parseLlamaCppJson(raw);
     if (!parsed.ok) {
       return { ok: false, classification: "INVALID_JSON" };
     }
@@ -353,7 +435,9 @@ function printHelp() {
   node tools/qwen-local-adapter-v1.mjs --request-file <path.json> [--mock] [--mock-response '<json>'] [--pretty]
   node tools/qwen-local-adapter-v1.mjs --request-json '<json>' [--mock] [--mock-response '<json>'] [--pretty]
 
-Environment overrides: OLLAMA_BASE_URL, OLLAMA_MODEL, OLLAMA_TIMEOUT_MS
+Backends: llama_cpp (default/primary) | ollama (compatibility)
+Env: QWEN_LOCAL_BACKEND, QWEN_LOCAL_BASE_URL, QWEN_LOCAL_MODEL, QWEN_LOCAL_TIMEOUT_MS
+Ollama compatibility env: OLLAMA_BASE_URL, OLLAMA_MODEL, OLLAMA_TIMEOUT_MS
 Logical resource: qwen_local
 `);
 }
