@@ -393,12 +393,38 @@ Instruction-only required/empty-field hardening did **not** clear `allowed_paths
 
 ---
 
+## Attempt 16 (final live resume after CASE B)
+
+**Block:** `D0025_W_GLM_FINAL_LIVE_RESUME_AFTER_CASE_B`
+**Trigger:** `4c263bd1a59f3a74b311ad1f63fd51b0fb4e9c0b` (retry trigger 16; arm-first)
+**Report:** `reports/architecture/d0025_glm_final_live_resume_after_case_b.md`
+
+### Live result
+
+| Metric | Value |
+|---|---|
+| WF40 / WF61 | `286309` / `286310` |
+| LiteLLM Δ | **1** (total **10**; POST **200**) |
+| GLM Δ | **1** (budget **10/10**) |
+| Terminal classification | **`WF61_HUNG_AFTER_LITELLM_HTTP_200`** |
+| Cycle result / packet_census / deterministic_completion | unavailable / null / null |
+| Gate / WF61 final | **CLOSED** / **inactive** |
+| retry/fallback/qwen/codex/cursor | **0** |
+| CASE B helper mutated this pass | **false** |
+| raw_model_content_persisted / secrets | **false** / **false** |
+
+### Structural finding
+
+Provider event consumed successfully at the gateway (HTTP 200), but WF61 never emitted a recoverable canonical cycle result before watch timeout. No second provider call. GLM budget exhausted.
+
+---
+
 ## NEXT_GATE
 
-Offline CASE A for persistent `PACKET_SCHEMA_INVALID` / missing `allowed_paths` after instruction hardening (without schema weaken or post-fill unless separately authorized). Keep unwrap + prior hardenings. Do not reopen gate until authorized.
+GLM budget **10/10 exhausted**. Any further GLM live call requires a separate canonical budget decision. Remaining D-0025-W item: diagnose/fix WF61 hang after LiteLLM HTTP 200 (no packet census available). Issue **#31** remains OPEN.
 
 ---
 
 ## Output line
 
-`STOP — PACKET_SCHEMA_INVALID (missing allowed_paths); PROVIDER_CALLS_DELTA=1; GATE_CLOSED=true`
+`STOP — WF61_HUNG_AFTER_LITELLM_HTTP_200; PROVIDER_CALLS_DELTA=1; GLM_BUDGET=10/10; GATE_CLOSED=true`
