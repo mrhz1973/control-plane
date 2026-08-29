@@ -10,7 +10,7 @@ result_cursor: PASS_EVIDENCE_INSUFFICIENT
 classification: EVIDENCE_INSUFFICIENT
 reported_via: cursor_direct_persistence
 starting_head: 4668b209587cac8ebd3ffac1f5f3a3e476ba41d2
-final_head: PENDING_COMMIT
+final_head: a31cf0b553e3fccf40f079b1320bc403f70cf7ea
 
 event02_wf40: 287008
 event02_wf61: 287009
