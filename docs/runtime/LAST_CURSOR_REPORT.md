@@ -9,7 +9,7 @@ task_ref: V4_QWEN_LOCAL_LLAMA_CPP_BOUNDED_LIVE_PROOF_RETRY_1
 result_cursor: STOP
 reported_via: cursor_direct_persistence
 starting_head: 08bcacb1671da40d967b74eb0fb3a1f4ecde41be
-final_head: PENDING_COMMIT
+final_head: 7ece502637bda79b78de8d19b7b946080030bb71
 blocker: FAST_8K_DFLASH2_PROFILE_NOT_AVAILABLE
 operator_runtime_manually_loaded: true
 backend: llama_cpp

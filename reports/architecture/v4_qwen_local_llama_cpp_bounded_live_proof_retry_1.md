@@ -2,6 +2,7 @@
 
 **Block ID:** `V4_QWEN_LOCAL_LLAMA_CPP_BOUNDED_LIVE_PROOF_RETRY_1`  
 **Starting HEAD:** `08bcacb1671da40d967b74eb0fb3a1f4ecde41be`  
+**Final HEAD:** `7ece502637bda79b78de8d19b7b946080030bb71`  
 **Result:** **STOP** — `FAST_8K_DFLASH2_PROFILE_NOT_AVAILABLE`  
 **Operator runtime manually loaded:** stated true (not verified by probe)
 
