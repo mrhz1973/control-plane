@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/resource-registry-v1.schema.json",
+  "title": "resource-registry-v1",
+  "description": "Static capability registry for control-plane resources. Answers what a resource CAN do. Separate from RESOURCE_STATUS (availability/quota/cost/reset/freshness). Does not choose planners or implementers.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "resources"],
+  "properties": {
+    "schema_version": { "const": "resource-registry-v1" },
+    "resources": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/resourceEntry" }
+    }
+  },
+  "$defs": {
+    "resourceId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "resourceEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource_type",
+        "execution_location",
+        "roles",
+        "capabilities",
+        "compatible_resources",
+        "requires_network"
+      ],
+      "properties": {
+        "resource_type": {
+          "enum": ["harness", "model", "agent"]
+        },
+        "execution_location": {
+          "enum": ["local", "cloud", "hybrid", "remote"]
+        },
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "planner",
+              "implementation_harness",
+              "implementation_model",
+              "routing_arbiter",
+              "reviewer",
+              "classifier"
+            ]
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "filesystem",
+              "terminal",
+              "code_edit",
+              "planning",
+              "classification",
+              "routing_arbitration",
+              "code_generation",
+              "review",
+              "persistent_agent",
+              "browser"
+            ]
+          }
+        },
+        "compatible_resources": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/resourceId" }
+        },
+        "requires_network": { "type": "boolean" }
+      }
+    }
+  }
+}

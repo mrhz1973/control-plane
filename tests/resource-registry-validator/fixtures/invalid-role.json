@@ -1,0 +1,13 @@
+{
+  "schema_version": "resource-registry-v1",
+  "resources": {
+    "example": {
+      "resource_type": "model",
+      "execution_location": "local",
+      "roles": ["not_a_role"],
+      "capabilities": ["classification"],
+      "compatible_resources": [],
+      "requires_network": false
+    }
+  }
+}

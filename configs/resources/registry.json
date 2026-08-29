@@ -1,0 +1,73 @@
+{
+  "schema_version": "resource-registry-v1",
+  "resources": {
+    "cursor": {
+      "resource_type": "harness",
+      "execution_location": "cloud",
+      "roles": ["implementation_harness"],
+      "capabilities": ["filesystem", "terminal", "code_edit"],
+      "compatible_resources": ["composer", "glm"],
+      "requires_network": true
+    },
+    "opencode": {
+      "resource_type": "harness",
+      "execution_location": "local",
+      "roles": ["implementation_harness"],
+      "capabilities": ["filesystem", "terminal", "code_edit"],
+      "compatible_resources": ["qwen_local"],
+      "requires_network": false
+    },
+    "grok_bot": {
+      "resource_type": "agent",
+      "execution_location": "cloud",
+      "roles": ["routing_arbiter"],
+      "capabilities": ["routing_arbitration", "persistent_agent"],
+      "compatible_resources": [],
+      "requires_network": true
+    },
+    "qwen_local": {
+      "resource_type": "model",
+      "execution_location": "local",
+      "roles": [
+        "planner",
+        "routing_arbiter",
+        "reviewer",
+        "classifier",
+        "implementation_model"
+      ],
+      "capabilities": [
+        "planning",
+        "classification",
+        "routing_arbitration",
+        "code_generation",
+        "review"
+      ],
+      "compatible_resources": ["opencode"],
+      "requires_network": false
+    },
+    "glm": {
+      "resource_type": "model",
+      "execution_location": "cloud",
+      "roles": ["planner", "implementation_model"],
+      "capabilities": ["planning", "code_generation"],
+      "compatible_resources": ["cursor"],
+      "requires_network": true
+    },
+    "codex": {
+      "resource_type": "model",
+      "execution_location": "cloud",
+      "roles": ["planner"],
+      "capabilities": ["planning"],
+      "compatible_resources": [],
+      "requires_network": true
+    },
+    "composer": {
+      "resource_type": "model",
+      "execution_location": "cloud",
+      "roles": ["implementation_model"],
+      "capabilities": ["code_generation"],
+      "compatible_resources": ["cursor"],
+      "requires_network": true
+    }
+  }
+}
