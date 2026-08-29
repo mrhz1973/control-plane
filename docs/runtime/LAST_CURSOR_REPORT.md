@@ -9,7 +9,7 @@ task_ref: D0025_W_HTTP200_BODY_SHAPE_INSPECT_AND_OFFLINE_REMEDIATE
 result_cursor: STOP
 reported_via: cursor_direct_persistence
 starting_head: 5c3065bfb38f1d638656a966232a39a617632385
-final_head: PENDING_COMMIT
+final_head: 3246f0b15464c6fd6af91ce82f2c1af8ae92420b
 case: B
 case_label: EXISTING_ATTEMPT11_BODY_UNAVAILABLE
 attempt11_wf40: 285414
