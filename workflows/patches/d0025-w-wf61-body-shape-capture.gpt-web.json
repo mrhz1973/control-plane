@@ -1,0 +1,85 @@
+{
+  "schema": "gpt-web-n8n-bounded-delta-v1",
+  "task_ref": "D0025_W_WF61_BODY_SHAPE_CAPTURE",
+  "authority": "GPT-Web",
+  "workflow": {
+    "id": "d0025-6100-4001-8001-000000000061",
+    "name": "61 - LiteLLM primary remote planner cycle - GPT-Web authored - INACTIVE",
+    "must_remain_active": false,
+    "template_path": "workflows/61-litellm-primary-remote-planner.template.json"
+  },
+  "reason": "Attempt 11 produced HTTP 200 with an empty SSE census (zero data: lines), but the raw body was not retained. Extend the existing secret-safe capture so the next bounded finalize failure returns only HTTP body framing plus top-level/nested key shapes, never model text or raw response content. This evidence is sufficient to justify or reject a later offline JSON-to-Responses adapter without inventing semantics.",
+  "mutations": [
+    {
+      "node_id": "d0025-6107-4007-8007-000000000007",
+      "node_name": "Capture HTTP body + status",
+      "expected_type": "n8n-nodes-base.code",
+      "field": "parameters.jsCode",
+      "expected_current": "const resp=$json;\nconst prep=$('Parse prepare result fail-closed').item.json;\nconst status=Number(resp.statusCode??resp.status??0);\nconst body=resp.body!==undefined?resp.body:resp;\nconst raw=typeof body==='string'?body:JSON.stringify(body??{});\nfunction add(set,arr,v,limit){if(typeof v!=='string'||!v||set.has(v)||arr.length>=limit)return;set.add(v);arr.push(v);}\nfunction shape(v){if(Array.isArray(v)){const first=v[0];return first&&typeof first==='object'&&!Array.isArray(first)?'array<object:'+Object.keys(first).sort().join(',')+'>':'array';}if(v&&typeof v==='object')return 'object:'+Object.keys(v).sort().join(',');return typeof v;}\nfunction census(text){\n const labels=[],types=[],keySets=[],fieldShapes=[],orderedTypes=[];\n const sl=new Set(),st=new Set(),sk=new Set(),sf=new Set();\n let dataEventCount=0,doneMarkerCount=0,parseErrorCount=0;\n const selected=['response','item','delta','content','output','choices','message'];\n for(const rawLine of String(text??'').split(/\\r?\\n/)){\n  const line=rawLine.trim();if(!line)continue;\n  if(line.startsWith('event:')){add(sl,labels,line.slice(6).trim(),32);continue;}\n  if(!line.startsWith('data:'))continue;\n  dataEventCount+=1;const payload=line.slice(5).trim();\n  if(payload==='[DONE]'){doneMarkerCount+=1;continue;}\n  let p;try{p=JSON.parse(payload);}catch{parseErrorCount+=1;continue;}\n  if(!p||typeof p!=='object'||Array.isArray(p))continue;\n  const keys=Object.keys(p).sort();add(sk,keySets,keys.join('|'),32);\n  if(typeof p.type==='string'){add(st,types,p.type,64);if(orderedTypes.length<256)orderedTypes.push(p.type);}\n  for(const k of selected){if(!(k in p))continue;add(sf,fieldShapes,k+'='+shape(p[k]),64);const v=p[k];if(Array.isArray(v)&&v[0]&&typeof v[0]==='object'&&!Array.isArray(v[0])){for(const nk of ['delta','message','content']){if(nk in v[0])add(sf,fieldShapes,k+'[0].'+nk+'='+shape(v[0][nk]),64);}}}\n }\n return {schema:'sse-structural-census-v1',data_event_count:dataEventCount,done_marker_count:doneMarkerCount,parse_error_count:parseErrorCount,event_labels:labels,event_types:types,first_event_types:orderedTypes.slice(0,8),last_event_types:orderedTypes.slice(-8),top_level_key_sets:keySets,selected_field_shapes:fieldShapes};\n}\nreturn {json:{task_id:prep.task_id,consumer_b64:prep.consumer_b64,http_status:Number.isFinite(status)?status:0,http_ok:status>=200&&status<300,response_b64:Buffer.from(raw,'utf8').toString('base64'),sse_census:census(raw)}};",
+      "replace_with": "const resp=$json;\nconst prep=$('Parse prepare result fail-closed').item.json;\nconst status=Number(resp.statusCode??resp.status??0);\nconst body=resp.body!==undefined?resp.body:resp;\nconst raw=typeof body==='string'?body:JSON.stringify(body??{});\nfunction add(set,arr,v,limit){if(typeof v!=='string'||!v||set.has(v)||arr.length>=limit)return;set.add(v);arr.push(v);}\nfunction shape(v){if(Array.isArray(v)){const first=v[0];return first&&typeof first==='object'&&!Array.isArray(first)?'array<object:'+Object.keys(first).sort().slice(0,32).join(',')+'>':'array';}if(v&&typeof v==='object')return 'object:'+Object.keys(v).sort().slice(0,32).join(',');return typeof v;}\nfunction census(text){\n const labels=[],types=[],keySets=[],fieldShapes=[],orderedTypes=[];\n const sl=new Set(),st=new Set(),sk=new Set(),sf=new Set();\n let dataEventCount=0,doneMarkerCount=0,parseErrorCount=0;\n const selected=['response','item','delta','content','output','choices','message'];\n for(const rawLine of String(text??'').split(/\\r?\\n/)){\n  const line=rawLine.trim();if(!line)continue;\n  if(line.startsWith('event:')){add(sl,labels,line.slice(6).trim(),32);continue;}\n  if(!line.startsWith('data:'))continue;\n  dataEventCount+=1;const payload=line.slice(5).trim();\n  if(payload==='[DONE]'){doneMarkerCount+=1;continue;}\n  let p;try{p=JSON.parse(payload);}catch{parseErrorCount+=1;continue;}\n  if(!p||typeof p!=='object'||Array.isArray(p))continue;\n  const keys=Object.keys(p).sort();add(sk,keySets,keys.join('|'),32);\n  if(typeof p.type==='string'){add(st,types,p.type,64);if(orderedTypes.length<256)orderedTypes.push(p.type);}\n  for(const k of selected){if(!(k in p))continue;add(sf,fieldShapes,k+'='+shape(p[k]),64);const v=p[k];if(Array.isArray(v)&&v[0]&&typeof v[0]==='object'&&!Array.isArray(v[0])){for(const nk of ['delta','message','content']){if(nk in v[0])add(sf,fieldShapes,k+'[0].'+nk+'='+shape(v[0][nk]),64);}}}\n }\n return {schema:'sse-structural-census-v1',data_event_count:dataEventCount,done_marker_count:doneMarkerCount,parse_error_count:parseErrorCount,event_labels:labels,event_types:types,first_event_types:orderedTypes.slice(0,8),last_event_types:orderedTypes.slice(-8),top_level_key_sets:keySets,selected_field_shapes:fieldShapes};\n}\nfunction bodyShape(text){\n const t=String(text??'').trim();\n const selected=['object','type','status','id','response','output','choices','message','content','delta','usage','error'];\n const out={schema:'http-body-structural-census-v1',framing:'TEXT_OTHER',top_level_keys:[],selected_field_shapes:[],first_array_item_keys:[],nested_key_sets:[]};\n if(!t)return {...out,framing:'EMPTY'};\n let parsed,parsedOk=false;\n try{parsed=JSON.parse(t);parsedOk=true;}catch{}\n if(parsedOk){\n  if(Array.isArray(parsed)){\n   out.framing='JSON_ARRAY';\n   const first=parsed[0];\n   if(first&&typeof first==='object'&&!Array.isArray(first)){\n    out.first_array_item_keys=Object.keys(first).sort().slice(0,64);\n    for(const k of selected){if(k in first)out.selected_field_shapes.push('item0.'+k+'='+shape(first[k]));}\n   }\n   return out;\n  }\n  if(parsed&&typeof parsed==='object'){\n   out.framing='JSON_OBJECT';\n   out.top_level_keys=Object.keys(parsed).sort().slice(0,64);\n   for(const k of selected){\n    if(!(k in parsed))continue;\n    out.selected_field_shapes.push(k+'='+shape(parsed[k]));\n    const v=parsed[k];\n    if(v&&typeof v==='object'&&!Array.isArray(v))out.nested_key_sets.push(k+'='+Object.keys(v).sort().slice(0,64).join('|'));\n    if(Array.isArray(v)&&v[0]&&typeof v[0]==='object'&&!Array.isArray(v[0]))out.nested_key_sets.push(k+'[0]='+Object.keys(v[0]).sort().slice(0,64).join('|'));\n   }\n   return out;\n  }\n  return {...out,framing:'JSON_SCALAR'};\n }\n const lines=t.split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean);\n if(lines.some(x=>x.startsWith('data:')||x.startsWith('event:')))return {...out,framing:'SSE_DATA_LINES'};\n if(lines.length>1){\n  let n=0;\n  for(const line of lines){try{const p=JSON.parse(line);if(p&&typeof p==='object')n+=1;}catch{}}\n  if(n===lines.length)return {...out,framing:'NDJSON'};\n }\n return out;\n}\nreturn {json:{task_id:prep.task_id,consumer_b64:prep.consumer_b64,http_status:Number.isFinite(status)?status:0,http_ok:status>=200&&status<300,response_b64:Buffer.from(raw,'utf8').toString('base64'),sse_census:census(raw),body_shape:bodyShape(raw)}};"
+    },
+    {
+      "node_id": "d0025-6110-4010-8010-000000000010",
+      "node_name": "Return canonical cycle result",
+      "expected_type": "n8n-nodes-base.code",
+      "field": "parameters.jsCode",
+      "expected_current": "const r=$json;\nconst stdout=String(r.stdout??'').trim();\nconst exitCode=Number(r.exitCode??r.code??1);\nlet parsed=null;\ntry{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}\nconst http=$('Capture HTTP body + status').item.json;\nconst ok=exitCode===0&&parsed?.ok===true&&parsed?.classification==='PASS';\nreturn {json:ok?{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:true,classification:'PASS',task_id:http.task_id,http_status:http.http_status,\n response_source_format:parsed.response_source_format,response_gate:parsed.response_gate,packet:parsed.packet,policy:parsed.policy,cursor_dispatch_allowed:false\n}:{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:false,classification:parsed?.classification||'FINALIZE_FAILED',task_id:http.task_id,http_status:http.http_status,\n reason:parsed?.reason||'canonical finalize failed',sse_census:http.sse_census??null,cursor_dispatch_allowed:false\n}};",
+      "replace_with": "const r=$json;\nconst stdout=String(r.stdout??'').trim();\nconst exitCode=Number(r.exitCode??r.code??1);\nlet parsed=null;\ntry{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}\nconst http=$('Capture HTTP body + status').item.json;\nconst ok=exitCode===0&&parsed?.ok===true&&parsed?.classification==='PASS';\nreturn {json:ok?{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:true,classification:'PASS',task_id:http.task_id,http_status:http.http_status,\n response_source_format:parsed.response_source_format,response_gate:parsed.response_gate,packet:parsed.packet,policy:parsed.policy,cursor_dispatch_allowed:false\n}:{\n schema:'n8n-litellm-primary-cycle-result-v1',ok:false,classification:parsed?.classification||'FINALIZE_FAILED',task_id:http.task_id,http_status:http.http_status,\n reason:parsed?.reason||'canonical finalize failed',sse_census:http.sse_census??null,body_shape:http.body_shape??null,cursor_dispatch_allowed:false\n}};"
+    }
+  ],
+  "preserve": [
+    "all 13 nodes and all node ids/names/types/typeVersions/positions",
+    "all connections and workflow settings",
+    "HTTP Request - LiteLLM primary one-shot parameters and timeout",
+    "canonical prepare/finalize commands and semantics",
+    "existing response_b64 internal handoff to canonical finalize unchanged",
+    "existing sse_census capture unchanged",
+    "successful cycle result shape unchanged",
+    "response/schema/policy gates unchanged",
+    "retry=0 and fallback=0",
+    "cursor_dispatch_allowed=false",
+    "WF61 inactive before/after apply and bounded resume",
+    "remote runtime gate CLOSED outside the one authorized event",
+    "WF40, WF60/OpenClaw, credentials, network, Tailscale and TeamViewer state"
+  ],
+  "forbidden": [
+    "persisting or returning raw SSE/body/response_b64/model text outside the existing internal response_b64 path",
+    "persisting prompts, generated text, reasoning, authorization headers, tokens or credential values",
+    "capturing string values from object/type/status/id or any model-output field",
+    "normalizer semantic changes before body_shape evidence exists",
+    "node additions/deletions or connection changes",
+    "HTTP/provider configuration changes",
+    "provider fallback, Qwen or Codex invocation",
+    "more than one new WF61 execution in bounded resume",
+    "more than one new LiteLLM/GLM provider attempt in bounded resume",
+    "smoke/proof-only detours"
+  ],
+  "acceptance_apply": [
+    "only node 6107 jsCode and node 6110 jsCode change in WF61/template",
+    "body_shape contains framing/key names/value shapes only and no model text/string values",
+    "existing sse_census remains present and unchanged in semantics",
+    "successful cycle result remains unchanged",
+    "failure cycle result may add only body_shape in addition to existing sse_census",
+    "WF61 remains inactive after apply",
+    "runtime gate remains CLOSED during apply",
+    "provider calls remain unchanged during apply"
+  ],
+  "bounded_capture_resume": {
+    "task_id": "D-0025-W-GLM-LIVE-001",
+    "same_backlog_only": true,
+    "fresh_trigger_required": true,
+    "max_new_wf61_executions": 1,
+    "max_new_litellm_requests": 1,
+    "max_new_glm_provider_attempts": 1,
+    "retry": 0,
+    "fallback": 0,
+    "qwen": 0,
+    "codex": 0,
+    "cursor_auto_dispatch": 0,
+    "required_capture_on_finalize_failure": [
+      "sse_census",
+      "body_shape"
+    ],
+    "terminal_behavior": "At first PASS or failure, close runtime gate and return WF61 inactive. If finalize fails and body_shape is present, make no second provider call; analyze only the sanitized structural evidence."
+  }
+}
