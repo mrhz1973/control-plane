@@ -1,0 +1,18 @@
+{
+  "schema": "operator-gate-resolution-v1",
+  "task_ref": "D-0025-W",
+  "packet_id": "EP-D-0025-W-GLM-LIVE-001",
+  "authorization_source": "operator_explicit_chat_confirmation",
+  "authorized_at": "2026-08-30",
+  "resolution": {
+    "hard_constraints_scope_expansion_required": false,
+    "hard_constraints_destructive_or_irreversible_required": false,
+    "hard_constraints_manual_secret_entry_required": false,
+    "forbidden_paths_remain_binding": true,
+    "no_secret_remains_binding": true,
+    "no_destructive_remains_binding": true,
+    "no_scope_expansion_remains_binding": true
+  },
+  "operator_text": "Confermo: per EP-D-0025-W-GLM-LIVE-001 i tre hard_constraints contraddittori non autorizzano né impongono scope expansion, azioni distruttive/irreversibili o secret entry. Restano vincolanti forbidden_paths, no-secret, no-destructive e no scope expansion.",
+  "effect": "Resolves only the packet human-gate contradiction. All other packet constraints and repository boundaries remain in force."
+}
