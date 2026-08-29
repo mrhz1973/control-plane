@@ -340,7 +340,7 @@ n8n fullResponse `data` unwrap is live-proven: Capture/finalize now see the Lite
 
 ## Attempt 14 (live resume after packet final_report_contract hardening)
 
-**Block:** `D0025_W_GLM_LIVE_RESUME_AFTER_PACKET_HARDENING`  
+**Block:** `D0025_W_GLM_LIVE_RESUME_AFTER_PACKET_HARDENING`
 **Trigger:** `c3ea49249e6988a777fce4817407524bb9b38f22` (retry trigger 14; arm-first)
 
 ### Live result
