@@ -9,7 +9,7 @@ task_ref: D0025_W_PACKET_SOURCE_COMPLETION_CASE_B
 result_cursor: PASS_DETERMINISTIC_SOURCE_COMPLETION_CASE_B_APPLIED_OFFLINE
 reported_via: cursor_direct_persistence
 starting_head: 3b24b065ddc2b4243bc7bea0cd9345b99b7e4623
-final_head: PENDING_SELF_REFERENCE
+final_head: 11017d1ac662c4ccddb351b476690ee72ba62582
 
 helper_path: tools/complete-primary-remote-packet-source-fields.mjs
 integration_target: tools/run-litellm-primary-cycle.mjs finalize
