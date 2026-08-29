@@ -1,5 +1,8 @@
 # V4 - Qwen local bounded live proof
 
+> **STATUS: SUPERSEDED_FOR_PRIMARY_RUNTIME_VALIDATION**
+> Reason: This proof was valid for **Ollama compatibility** transport, but the operator-confirmed / current `qwen_local` primary runtime is **llama.cpp + DFlash2**. See `reports/architecture/v4_qwen_local_llama_cpp_bounded_live_proof.md` for the current primary-runtime proof. Historical measurements below are unchanged.
+
 **Block ID:** `V4_QWEN_LOCAL_BOUNDED_LIVE_PROOF`  
 **Starting HEAD:** `edb25753cde3df8fd11896e47c14e08bbac45537`  
 **Final HEAD:** `fd16efa1bbe9f086a7f41560a51503f64ff51095`  
