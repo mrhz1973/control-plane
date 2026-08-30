@@ -5,38 +5,65 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_QWEN_SHARED_RUNTIME_OCCUPANCY_RECHECK_AFTER_PAUSE
-result_cursor: PASS_QWEN_READY_IDLE
-starting_head: 80ac8eb778675d80a7ddd3fd185d6bd5bef5cfe0
-final_head: 89b3e35d619cdf710dfe3d52ee39d8febaffc6b2
+task_ref: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH
+result_cursor: STOP_LIVE_PROOF_RESPONSE_INVALID
+starting_head: d03930b544c29741aeffd42e844bd799073e5a39
+final_head: PENDING_COMMIT
 
-classification: QWEN_READY_IDLE
+authorization_id: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH
+packet_id: EP-V4-OPENCODE-LIVE-PROOF-REAUTH-001
 
-control_plane_8080_listener: false
-control_plane_model_exposed: false
+occupancy_preflight_classification: QWEN_NOT_RUNNING_SAFE_TO_START
+occupancy_recheck_before_generation: QWEN_READY_IDLE
+competing_workload_detected: false
 
-ollama_runtime_present: true
-ollama_model_loaded: false
+runtime_restore_required: true
+launcher_start_count: 1
+runtime_ready: true
+models_http_status: 200
+qwen_model_exposed: true
 
-blender_running: true
-mcp_processes_seen: true_orphaned_ollama_qwen_proxy_only
-qwen_code_running: false
-cursor_running: true
-opencode_running: false
+opencode_version: 1.18.25
+opencode_execution_count: 1
+opencode_single_turn: true
+opencode_tools_disabled: true
+opencode_auxiliary_generation_paths_disabled: true
+opencode_retry_bound_proven: true
 
-active_inference_evidence: false
-active_8080_clients: none
-active_ollama_clients: none
-occupancy_sampling_window: ~32s_4_snapshots
+qwen_backend: llama_cpp
+qwen_profile: fast_8k
+qwen_model_id: qwen38-original-dflash2-8k
+dflash_required: true
+qwen_generation_calls: 1
 
-qwen_generation_calls: 0
-opencode_execution_count: 0
-process_start_calls: 0
+live_transport_status: exit_0_json_events
+live_elapsed_ms: 58748
+
+response_schema: missing
+response_task_id: missing
+response_route: missing
+response_profile: missing
+response_dflash_required: missing
+response_result: missing
+response_message: missing
+response_validation: FAIL_MAXIMUM_STEPS_TEXT_NOT_REQUIRED_JSON
+
+retry_calls: 0
+fallback_calls: 0
+glm_calls: 0
+codex_calls: 0
+litellm_calls: 0
+n8n_calls: 0
+
 process_kill_calls: 0
 process_stop_calls: 0
-runtime_restart_calls: 0
+repository_mutation_by_opencode: false
+runtime_parameter_mutation: false
+network_mutation: false
 secret_exposure: false
 
-architecture_report: reports/architecture/v4_qwen_shared_runtime_occupancy_recheck_after_pause.md
-NEXT: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH
+gate_closed_final: true
+architecture_report: reports/architecture/v4_opencode_bounded_live_dispatch_proof_reauth.md
+checkpoint_path: docs/runtime/CHECKPOINT_V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH.md
+NEXT: V4_OPENCODE_STEPS1_MAXIMUM_STEPS_DIAGNOSIS_ZERO_GENERATION
 ```
