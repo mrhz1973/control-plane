@@ -5,34 +5,27 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_OPENCODE_EXECUTION_ADAPTER_V1
-result_cursor: PASS_ADAPTER_IMPLEMENTED_TESTS_PASS_BUGBOT_NO_FINDINGS
-starting_head: 819b24d559bbd3948a52b7cf4cc35ddd78b2de22
-final_head: 4c1517f7dfb64f7d58be71be24be520e178ced68
+task_ref: V4_OPENCODE_CONTROL_PLANE_ROUTING_INTEGRATION_OFFLINE
+result_cursor: STOP_TARGET_SUITE_3_OF_15_FAILED_OPERATOR_RELAYED
+evidence_class: operator-relayed_not_independently_verified
+starting_head: 7f0eeba57f19924f522cbc67fa504369b4059ef2
+final_head: 7f0eeba57f19924f522cbc67fa504369b4059ef2
+commit_push_performed: false
+workspace_after_stop: DIRTY_BLOCK_FILES_ONLY_REPORTED
 
-adapter_contract_path: docs/contracts/opencode-execution-adapter-v1.md
-adapter_schema_path: docs/contracts/opencode-execution-adapter-v1.schema.json
-adapter_tool_path: tools/opencode-execution-adapter-v1.mjs
-adapter_test_path: tests/opencode-execution-adapter/run.mjs
-
-authorization_required: true
-default_execution_performed: false
-guard_mandatory: true
-direct_qwen_endpoint_forbidden: true
-occupancy_gate_required: true
-
-dispatch_boundary_modified: false
-execution_router_modified: false
-guard_tool_modified: false
-steps_or_maxsteps_ceiling_used: false
-
-adapter_tests: PASS (23/23)
+target_tests: STOP_12_OF_15_PASS_3_FAIL
 regression_tests: PASS
-  - opencode-single-generation-guard: PASS (16/16)
-  - opencode-execution-dispatch: ALL_PASS (13 suites)
-  - qwen-local-session-manager: PASS (14/14)
-  - qwen-local-resource-status-overlay: PASS (14/14)
-bugbot_result: PASS_NO_FINDINGS
+  - execution-router: PASS_12_OF_12
+  - opencode-execution-dispatch: ALL_PASS_13_SUITES
+  - opencode-execution-adapter: PASS_23_OF_23
+
+failure_1: valid-delegates-exactly-once_capture_not_exposed
+failure_2: no-direct-qwen-endpoint_capture_not_exposed
+failure_3: default-no-runner_expected_classification_mismatch
+
+production_misbehavior_evidenced: false
+corrective_scope: TEST_HARNESS_ONLY
+bugbot_result: NOT_RUN_BY_ONE_PASS_STOP
 
 qwen_generation_calls: 0
 opencode_execution_count: 0
@@ -42,14 +35,10 @@ process_stop_calls: 0
 runtime_restart_calls: 0
 secret_exposure: false
 
-architecture_report: reports/architecture/v4_opencode_execution_adapter_v1.md
-NEXT: V4_OPENCODE_CONTROL_PLANE_ROUTING_INTEGRATION_OFFLINE — wire the adapter into V4 control-plane routing WITHOUT live execution
+architecture_report: reports/architecture/v4_opencode_control_plane_routing_integration_offline_stop_operator_relay.md
+NEXT: V4_OPENCODE_CONTROL_PLANE_ROUTING_INTEGRATION_TEST_HARNESS_CORRECTION_ONE_PASS
 ```
 
 ## NOTE
 
-- Two prior-pass BugBot findings (runner-throw guard accounting discarded;
-  schema_version fail-open) fixed in this pass and covered by new tests
-  (23 total). No findings on the second and only review of this pass.
-- All execution paths use injected mocks offline; default CLI invocation
-  returns AUTHORIZATION_REJECTED with execution_performed=false.
+This report was persisted by GPT Web from the complete Cursor terminal report supplied by the operator after Cursor intentionally stopped before commit/push under the one-pass rule. It is not an independently verified pushed Cursor report.
