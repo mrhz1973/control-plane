@@ -1,0 +1,1 @@
+Offline fixtures for opencode-execution-adapter tests. No secrets. No live data.

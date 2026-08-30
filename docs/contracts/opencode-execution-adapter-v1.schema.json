@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/opencode-execution-adapter-v1.schema.json",
+  "title": "opencode-execution-result-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "execution_id",
+    "status",
+    "classification",
+    "execution_performed",
+    "authorization_id",
+    "authorization_state_final",
+    "route_id",
+    "implementer",
+    "model",
+    "occupancy_classification",
+    "guard_required",
+    "guard_started",
+    "guard_upstream_generation_requests",
+    "guard_blocked_generation_requests",
+    "opencode_execution_count",
+    "qwen_generation_calls",
+    "retry_calls",
+    "fallback_calls",
+    "response_validation",
+    "reason_codes"
+  ],
+  "properties": {
+    "schema_version": { "const": "opencode-execution-result-v1" },
+    "execution_id": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["READY", "EXECUTED", "BLOCKED", "ERROR"] },
+    "classification": { "type": "string", "minLength": 1 },
+    "execution_performed": { "type": "boolean" },
+    "authorization_id": { "type": ["string", "null"] },
+    "authorization_state_final": {
+      "type": "string",
+      "enum": ["ACTIVE", "SPENT", "REJECTED", "ABSENT"]
+    },
+    "route_id": { "type": ["string", "null"] },
+    "implementer": { "type": ["string", "null"] },
+    "model": { "type": ["string", "null"] },
+    "occupancy_classification": { "type": ["string", "null"] },
+    "guard_required": { "type": "boolean" },
+    "guard_started": { "type": "boolean" },
+    "guard_upstream_generation_requests": { "type": "integer", "minimum": 0, "maximum": 1 },
+    "guard_blocked_generation_requests": { "type": "integer", "minimum": 0 },
+    "opencode_execution_count": { "type": "integer", "minimum": 0, "maximum": 1 },
+    "qwen_generation_calls": { "type": "integer", "minimum": 0, "maximum": 1 },
+    "retry_calls": { "type": "integer", "minimum": 0 },
+    "fallback_calls": { "type": "integer", "minimum": 0 },
+    "response_validation": {
+      "type": ["string", "null"],
+      "enum": [null, "VALID", "INVALID", "NOT_VALIDATED"]
+    },
+    "reason_codes": { "type": "array", "items": { "type": "string" } }
+  }
+}

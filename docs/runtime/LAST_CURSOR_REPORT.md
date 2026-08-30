@@ -5,64 +5,51 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2
-result_cursor: PASS_LIVE_DISPATCH_OK
-starting_head: 80a7aad187c816f14ee463b9fc0c5f98a6e7250e
-final_head: 8d1cf2c619731e56b2a1276becabb3976605d97e
+task_ref: V4_OPENCODE_EXECUTION_ADAPTER_V1
+result_cursor: PASS_ADAPTER_IMPLEMENTED_TESTS_PASS_BUGBOT_NO_FINDINGS
+starting_head: 819b24d559bbd3948a52b7cf4cc35ddd78b2de22
+final_head: <stamped post-commit>
 
-authorization_id: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2
-packet_id: EP-V4-OPENCODE-LIVE-PROOF-REAUTH-002
+adapter_contract_path: docs/contracts/opencode-execution-adapter-v1.md
+adapter_schema_path: docs/contracts/opencode-execution-adapter-v1.schema.json
+adapter_tool_path: tools/opencode-execution-adapter-v1.mjs
+adapter_test_path: tests/opencode-execution-adapter/run.mjs
 
-occupancy_preflight_classification: QWEN_READY_IDLE
-occupancy_recheck_before_generation: QWEN_READY_IDLE
-competing_workload_detected: false
+authorization_required: true
+default_execution_performed: false
+guard_mandatory: true
+direct_qwen_endpoint_forbidden: true
+occupancy_gate_required: true
 
-runtime_restore_required: false
-launcher_start_count: 0
-runtime_ready: true
-qwen_model_exposed: true
+dispatch_boundary_modified: false
+execution_router_modified: false
+guard_tool_modified: false
+steps_or_maxsteps_ceiling_used: false
 
-guard_started: true
-guard_bind_host: 127.0.0.1
-guard_listen_port: 12670
-guard_upstream_origin: http://127.0.0.1:8080
-guard_generation_budget: 1
-guard_generation_requests_seen: 1
-guard_upstream_generation_requests: 1
-guard_blocked_generation_requests: 0
-guard_first_generation_terminal: true
+adapter_tests: PASS (23/23)
+regression_tests: PASS
+  - opencode-single-generation-guard: PASS (16/16)
+  - opencode-execution-dispatch: ALL_PASS (13 suites)
+  - qwen-local-session-manager: PASS (14/14)
+  - qwen-local-resource-status-overlay: PASS (14/14)
+bugbot_result: PASS_NO_FINDINGS
 
-opencode_version: 1.18.25
-opencode_execution_count: 1
-opencode_provider_target_is_guard: true
-opencode_tools_disabled: true
-opencode_steps_generation_ceiling_used: false
-
-qwen_profile: fast_8k
-qwen_model_id: qwen38-original-dflash2-8k
-dflash_required: true
-qwen_generation_calls: 1
-
-live_transport_status: exit_0_json_events
-live_elapsed_ms: 167644
-response_validation: VALID
-
-retry_calls: 0
-fallback_calls: 0
-glm_calls: 0
-codex_calls: 0
-litellm_calls: 0
-n8n_calls: 0
-
+qwen_generation_calls: 0
+opencode_execution_count: 0
+provider_calls: 0
 process_kill_calls: 0
 process_stop_calls: 0
-repository_mutation_by_opencode: false
-runtime_parameter_mutation: false
-network_system_mutation: false
+runtime_restart_calls: 0
 secret_exposure: false
 
-gate_closed_final: true
-architecture_report: reports/architecture/v4_opencode_bounded_live_dispatch_proof_reauth_2.md
-checkpoint_path: docs/runtime/CHECKPOINT_V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2.md
-NEXT: V4_OPENCODE_EXECUTION_ADAPTER_V1
+architecture_report: reports/architecture/v4_opencode_execution_adapter_v1.md
+NEXT: V4_OPENCODE_CONTROL_PLANE_ROUTING_INTEGRATION_OFFLINE — wire the adapter into V4 control-plane routing WITHOUT live execution
 ```
+
+## NOTE
+
+- Two prior-pass BugBot findings (runner-throw guard accounting discarded;
+  schema_version fail-open) fixed in this pass and covered by new tests
+  (23 total). No findings on the second and only review of this pass.
+- All execution paths use injected mocks offline; default CLI invocation
+  returns AUTHORIZATION_REJECTED with execution_performed=false.
