@@ -8,7 +8,7 @@
 task_ref: V4_OPENCODE_DISPATCH
 result_cursor: STOP_OPENCODE_NOT_INSTALLED
 starting_head: b23e72bbc87f335752d92ed703400d66ede52fa9
-final_head: PENDING_COMMIT
+final_head: 4c18ce88f0ecd5b8a88bb69758e4aea39d98b47a
 
 opencode_available: false
 opencode_version: null
