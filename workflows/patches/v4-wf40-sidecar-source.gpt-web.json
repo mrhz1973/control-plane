@@ -1,0 +1,283 @@
+{
+  "schema": "control-plane-gpt-web-n8n-delta-v1",
+  "task_ref": "V4_WF40_SIDECAR_SOURCE_PATCH_AUTHORING",
+  "authority": "GPT_WEB",
+  "purpose": "Add the deterministic V4 sidecar-source lane to existing live WF40 before the already-installed V4 sidecar capture node. On the existing primary-remote TRUE branch only, fetch the GPT-Web-authored same-commit EXECUTION_ROUTE_<task_id>.json artifact, invoke build-v4-execution-routing-sidecars-v1.mjs, and continue to WF61 only when a structurally valid PASS_SIDECARS_READY bundle is produced. technical_requirements are never inferred. RESOURCE_STATUS is consume-only: an explicitly supplied upstream resource_status may be passed through; otherwise the adapter uses the committed fail-closed baseline.",
+  "contract_ref": "docs/contracts/v4-execution-route-sidecar-source-v1.md",
+  "adapter_ref": "tools/build-v4-execution-routing-sidecars-v1.mjs",
+  "bundle_schema_ref": "docs/contracts/v4-execution-routing-sidecar-bundle-v1.schema.json",
+  "mount_path": "/files/handoff-runtime/control-plane",
+  "target_workflow": {
+    "live_id": "9ZMj2ACTKyDVhCue",
+    "expected_name": "40 - CP v4 multirepo + classifier bridge - ACTIVE",
+    "expected_active": true,
+    "expected_node_count_before_patch": 50,
+    "expected_version_id_before_patch": "067a6b82-70a0-44dd-88fc-c8e9973f13bc"
+  },
+  "preconditions": {
+    "remote_dispatch_if": {
+      "id": "d0025f40-6107-4007-8007-000000000107",
+      "name": "IF - remote planner dispatch allowed?",
+      "true_target_before_patch": "Code - Capture explicit V4 execution routing sidecar",
+      "false_target_must_remain": "Code - Remote planner gate closed"
+    },
+    "primary_remote_parse_node": {
+      "id": "d0025f40-6106-4006-8006-000000000106",
+      "name": "Code - Parse primary remote adapter result"
+    },
+    "canonical_backlog_detect_node": {
+      "id": "d0025f40-6101-4001-8001-000000000101",
+      "name": "Code - Detect canonical backlog item"
+    },
+    "existing_capture_node": {
+      "id": "v4f40-7101-4001-8101-000000000101",
+      "name": "Code - Capture explicit V4 execution routing sidecar"
+    },
+    "existing_github_credential_source": {
+      "id": "d0025f40-6103-4003-8003-000000000103",
+      "name": "GitHub - Fetch canonical backlog item",
+      "credential_type": "githubApi"
+    },
+    "required_repo_files": [
+      "docs/contracts/v4-execution-route-sidecar-source-v1.md",
+      "docs/contracts/v4-execution-route-sidecar-source-v1.schema.json",
+      "docs/contracts/v4-execution-routing-sidecar-bundle-v1.schema.json",
+      "docs/contracts/execution-route-request-v1.schema.json",
+      "docs/contracts/resource-status-v1.schema.json",
+      "configs/resources/status.fail-closed.json",
+      "tools/build-v4-execution-routing-sidecars-v1.mjs"
+    ],
+    "must_not_already_exist_node_ids": [
+      "v4f40-7201-4001-8201-000000000201",
+      "v4f40-7202-4002-8202-000000000202",
+      "v4f40-7203-4003-8203-000000000203",
+      "v4f40-7204-4004-8204-000000000204",
+      "v4f40-7205-4005-8205-000000000205",
+      "v4f40-7206-4006-8206-000000000206"
+    ],
+    "live_state_must_remain": {
+      "wf61_active": false,
+      "d0025_runtime_gate_enabled": false,
+      "provider_calls_authorized_per_event": 0
+    }
+  },
+  "operations": [
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "url": "={{ 'https://api.github.com/repos/' + $('Code - Detect canonical backlog item').item.json.repo + '/contents/docs/runtime/EXECUTION_ROUTE_' + encodeURIComponent(String($json.task_id || '')) + '.json?ref=' + $('Code - Detect canonical backlog item').item.json.commitSha }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {"name": "Accept", "value": "application/vnd.github+json"},
+              {"name": "User-Agent", "value": "control-plane-v4-route-source"}
+            ]
+          },
+          "options": {}
+        },
+        "id": "v4f40-7201-4001-8201-000000000201",
+        "name": "GitHub - Fetch V4 execution route source",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [1700, 1020],
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      },
+      "credential_binding": {
+        "clone_from_node_id": "d0025f40-6103-4003-8003-000000000103",
+        "clone_only_credential_metadata": true,
+        "must_not_read_or_export_secret_value": true,
+        "required_node_credential_type": "githubApi"
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const resp=$input.item.json??{};const parsed=$('Code - Parse primary remote adapter result').item.json??{};const det=$('Code - Detect canonical backlog item').item.json??{};const gateItem=$('IF - remote planner dispatch allowed?').item.json??{};const task=String(parsed.task_id||'');const risk=String(parsed.consumer_input?.risk_hint||'');const backlogPath=String(det.backlogPath||'');const commit=String(det.commitSha||'');const routePath=task?('docs/runtime/EXECUTION_ROUTE_'+task+'.json'):'';const routeContent=String(resp.content||'').replace(/\\s+/g,'');const b64=v=>Buffer.from(String(v??''),'utf8').toString('base64');const explicitStatus=(gateItem.resource_status&&typeof gateItem.resource_status==='object'&&!Array.isArray(gateItem.resource_status))?gateItem.resource_status:null;const statusB64=explicitStatus?b64(JSON.stringify(explicitStatus)):null;return {json:{task_id:task,route_source_path:routePath,route_source_present:Boolean(routeContent),task_id_b64:b64(task),backlog_path_b64:b64(backlogPath),backlog_commit_b64:b64(commit),risk_hint_b64:b64(risk),route_source_path_b64:b64(routePath),route_source_commit_b64:b64(commit),route_source_b64:routeContent,status_b64:statusB64,status_arg:statusB64?(\" --status-b64 '\"+statusB64+\"'\"):'',status_input_source:statusB64?'explicit_upstream':'absent_use_fail_closed_baseline'}};"
+        },
+        "id": "v4f40-7202-4002-8202-000000000202",
+        "name": "Code - Encode V4 sidecar source adapter input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [1940, 1020]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "command": "=node /files/handoff-runtime/control-plane/tools/build-v4-execution-routing-sidecars-v1.mjs --task-id-b64 '{{$json.task_id_b64}}' --backlog-path-b64 '{{$json.backlog_path_b64}}' --backlog-commit-b64 '{{$json.backlog_commit_b64}}' --risk-hint-b64 '{{$json.risk_hint_b64}}' --route-source-path-b64 '{{$json.route_source_path_b64}}' --route-source-commit-b64 '{{$json.route_source_commit_b64}}' --route-source-b64 '{{$json.route_source_b64}}'{{$json.status_arg}}"
+        },
+        "id": "v4f40-7203-4003-8203-000000000203",
+        "name": "Execute Command - build V4 execution routing sidecars",
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [2180, 1020],
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const r=$input.item.json??{};const stdout=String(r.stdout??'').trim();const exitCode=Number(r.exitCode??r.code??0);let parsed=null;try{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}const structural=Boolean(parsed&&parsed.schema_version==='v4-execution-routing-sidecar-bundle-v1');const ready=Boolean(structural&&parsed.ok===true&&parsed.classification==='PASS_SIDECARS_READY'&&parsed.execution_route_request&&parsed.resource_status);return {json:{schema:'wf40-v4-sidecar-source-result-v1',ok:ready,classification:structural?parsed.classification:(exitCode===0?'V4_SIDECAR_SOURCE_OUTPUT_INVALID':'V4_SIDECAR_SOURCE_COMMAND_FAILED'),task_id:structural?(parsed.task_id??null):null,sidecar_bundle:structural?parsed:null,v4_source_sidecars_ready:ready,execution_route_request:ready?parsed.execution_route_request:null,resource_status:ready?parsed.resource_status:null,status_source:structural?(parsed.status_source??null):null,status_classification:structural?(parsed.status_classification??null):null,wf61_executed:false,provider_call_attempted:false,execution_performed:false}};"
+        },
+        "id": "v4f40-7204-4004-8204-000000000204",
+        "name": "Code - Parse V4 sidecar source adapter result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [2420, 1020]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "conditions": {
+            "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1},
+            "conditions": [
+              {
+                "id": "v4-wf40-sidecar-source-ready",
+                "leftValue": "={{ $json.v4_source_sidecars_ready }}",
+                "rightValue": true,
+                "operator": {"type": "boolean", "operation": "equals"}
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "v4f40-7205-4005-8205-000000000205",
+        "name": "IF - V4 execution route sidecars ready?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [2660, 1020]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "return {json:{schema:'wf40-v4-sidecar-source-result-v1',ok:false,classification:$json.classification||'V4_SIDECAR_SOURCE_NOT_READY',task_id:$json.task_id||null,sidecar_source_ready:false,wf61_executed:false,provider_call_attempted:false,routing_attempted:false,execution_performed:false}};"
+        },
+        "id": "v4f40-7206-4006-8206-000000000206",
+        "name": "Code - V4 execution route sidecar source gate closed",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [2900, 1110]
+      }
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "IF - remote planner dispatch allowed?",
+      "outputs": [[{"node": "GitHub - Fetch V4 execution route source", "type": "main", "index": 0}], [{"node": "Code - Remote planner gate closed", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "GitHub - Fetch V4 execution route source",
+      "outputs": [[{"node": "Code - Encode V4 sidecar source adapter input", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Encode V4 sidecar source adapter input",
+      "outputs": [[{"node": "Execute Command - build V4 execution routing sidecars", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Execute Command - build V4 execution routing sidecars",
+      "outputs": [[{"node": "Code - Parse V4 sidecar source adapter result", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Parse V4 sidecar source adapter result",
+      "outputs": [[{"node": "IF - V4 execution route sidecars ready?", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "IF - V4 execution route sidecars ready?",
+      "outputs": [[{"node": "Code - Capture explicit V4 execution routing sidecar", "type": "main", "index": 0}], [{"node": "Code - V4 execution route sidecar source gate closed", "type": "main", "index": 0}]]
+    }
+  ],
+  "resulting_lane_contract": {
+    "lane": "existing primary-remote gate TRUE -> same-commit route-source fetch -> deterministic sidecar source adapter -> sidecar-ready fail-closed gate -> existing V4 sidecar capture -> WF61 -> existing V4 routing bridge",
+    "node_count_after_patch": 56,
+    "route_source_path": "docs/runtime/EXECUTION_ROUTE_<TASK_ID>.json",
+    "route_source_same_commit_required": true,
+    "technical_requirements_synthesized": false,
+    "resource_status_collection_performed": false,
+    "explicit_upstream_resource_status_supported": true,
+    "absent_status_behavior": "source adapter uses committed configs/resources/status.fail-closed.json",
+    "route_source_failure_behavior": "WF61 is not executed; terminal V4 sidecar-source gate-closed result",
+    "dispatch_attempted": false,
+    "execution_performed": false,
+    "separate_v4_workflow_created": false
+  },
+  "preserve": [
+    "All 50 existing WF40 node IDs/names/types",
+    "WF40 active state",
+    "Remote planner FALSE branch -> Code - Remote planner gate closed",
+    "Existing V4 sidecar capture node and all downstream WF61/V4 bridge nodes unchanged",
+    "Existing PM21 classifier/mock-worker/Telegram lane",
+    "GIS lane",
+    "Data Table lane",
+    "WF60/OpenClaw fallback lane",
+    "WF61 workflow content and inactive state",
+    "D-0025 runtime gate closed",
+    "LiteLLM configuration/runtime",
+    "RESOURCE_REGISTRY static file",
+    "Qwen runtime/session state"
+  ],
+  "forbidden": [
+    "Synthesizing technical_requirements or route-source fields from objective, paths, planner prose, classifier output, commit message, Telegram/chat or model inference",
+    "Fetching the route source from any ref other than the exact backlog commit SHA",
+    "Calling collect-qwen-local-resource-status-v1.mjs or any provider/dashboard/local status collector",
+    "Starting/stopping/restarting/probing Qwen/Ollama/llama-server/OpenCode merely to populate status",
+    "Adding executor dispatch downstream",
+    "Creating a separate V4 n8n workflow",
+    "Changing WF61 content/active state",
+    "Changing D-0025 runtime gate",
+    "Changing WF60/OpenClaw/LiteLLM/network/credentials/secrets",
+    "Reading/exporting/logging/hashing credential values"
+  ],
+  "verification": {
+    "required": [
+      "Secret-safe pre-export: WF40 id/name/active, versionId exact if unchanged, node_count=50",
+      "All 50 existing node IDs/names/types preserved",
+      "Exactly six new node IDs above; resulting node_count=56",
+      "Remote planner FALSE branch unchanged",
+      "Remote planner TRUE branch now enters route-source fetch and reaches existing V4 capture only after PASS_SIDECARS_READY",
+      "Route-source GitHub fetch uses exact commitSha from Code - Detect canonical backlog item",
+      "GitHub credential metadata cloned from existing canonical backlog fetch node without reading a value",
+      "Missing/malformed/mismatched route source terminates before WF61",
+      "No technical_requirements synthesis exists in new nodes",
+      "No status collector call exists in new nodes",
+      "No explicit status means CLI omits --status-b64 and adapter uses fail-closed baseline",
+      "No downstream executor/dispatch node added",
+      "WF61 remains inactive and D-0025 gate remains closed",
+      "No WF40/WF61/bridge/source-adapter workflow execution is used for validation",
+      "Provider/model/Qwen/OpenCode calls=0 and secret_exposure=false"
+    ],
+    "do_not_execute_wf40_for_validation": true,
+    "do_not_execute_wf61_for_validation": true,
+    "do_not_execute_sidecar_source_adapter_for_apply_validation": true,
+    "do_not_execute_bridge_for_validation": true
+  },
+  "stop_conditions": [
+    "WF40 id/name/active/version/node-count precondition mismatch",
+    "Expected existing remote gate, V4 capture, WF61 or bridge topology mismatch",
+    "Any new V4 node id already exists non-equivalently",
+    "Sidecar source contract/schema/tool is absent or differs from committed semantics",
+    "GitHub credential metadata cannot be cloned without exposing credential values",
+    "WF61 is active or D-0025 runtime gate is not closed",
+    "Apply would rewrite/remove a legacy node or an existing V4 routing node",
+    "Apply would require workflow execution, provider/model call, status collection or secret inspection for validation"
+  ]
+}
