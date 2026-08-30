@@ -8,7 +8,7 @@
 task_ref: V4_EXECUTION_ADAPTER_REGISTRY_BOUNDARY
 result_cursor: PASS_REGISTRY_BOUNDARY_VALIDATED
 starting_head: f25405cb714b1764db6a7f7c5b95fa2f06d4732a
-final_head: <stamped post-commit>
+final_head: d450895b195f13c2e3875c1cbab3a522732e8c21
 
 registry_contract_path: docs/contracts/v4-execution-adapter-registry-v1.md
 registry_schema_path: docs/contracts/v4-execution-adapter-registry-v1.schema.json
