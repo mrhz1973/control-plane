@@ -119,6 +119,9 @@ Retry trigger 19: 2026-08-30 — ingress socket observer armed before trigger; t
 - Child-row diagnosis **PASS** — classification `EXECUTION_ENGINE_CHILD_FINALIZATION_BUG` (`reports/architecture/d0025_child_row_287888_accounting_diagnosis.md`).
 - Reconciliation policy v1 **PASS** — 287888 `logical_state=TERMINAL_SUCCESS` · `operational_block=false` · `historical_row_mutation_allowed=false` (`reports/architecture/d0025_child_finalization_reconciliation_policy_v1.md`).
 - No historical DB mutation performed or authorized.
-- Acceptance closure review **PASS** — closure decision **`READY_TO_CLOSE`** (`reports/architecture/d0025_acceptance_closure_review.md`); issue **#31** remains **OPEN** until dedicated closure pass.
-- Blocking D-0025 work remaining per acceptance review: **none**; nonblocking follow-ups: node 6112 failure-path json-shape, child accounting overlay only, optional future Codex integrated-path live proof (not required for closure readiness).
+- Acceptance closure review **PASS** — closure decision **`READY_TO_CLOSE`** (`reports/architecture/d0025_acceptance_closure_review.md`).
+- Dedicated closure evidence persisted in `reports/architecture/d0025_issue31_closure.md`.
+- D-0025-W blocking work remaining: **none**.
+- Issue #31 dedicated closure pass: **COMPLETED** on 2026-08-30 with state reason `completed`.
+- Nonblocking follow-ups retained outside D-0025 closure: node 6112 failure-path json-shape; child accounting engine behavior beyond reconciliation overlay v1; optional future Codex integrated-path live proof.
 - Historical `source_backlog_commit` / retry-trigger semantics above are preserved unchanged.
