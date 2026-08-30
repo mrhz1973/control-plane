@@ -13,6 +13,9 @@ import {
 import {
   validateRuntimeAuthorization,
 } from "../../tools/opencode-execution-adapter-v1.mjs";
+import {
+  registerExecutionAdapter,
+} from "../../tools/v4-execution-adapter-registry-v1.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const results = [];
@@ -272,16 +275,19 @@ async function run() {
   {
     const registry = defaultAdapterRegistry();
     let fallbackTouched = false;
-    registry.set("grok-bot+x", {
-      route_id: "grok-bot+x",
-      adapter_id: "grok-bot-adapter-v0",
+    const reg = registerExecutionAdapter(registry, {
+      route_id: "synthetic_future+model_x",
+      adapter_id: "synthetic-future-adapter-v0",
+      implementer: "synthetic_future",
+      model: "model_x",
       dispatch_required: false,
       run: async () => {
         fallbackTouched = true;
         return { classification: "EXECUTED_OK", status: "EXECUTED", execution_performed: true };
       },
     });
-    // request cursor route: grok adapter registered but must NOT be invoked
+    if (!reg.ok) throw new Error(`synthetic registration failed: ${reg.reason_codes}`);
+    // request cursor route: synthetic adapter registered but must NOT be invoked
     const r = await routeToExecutionAdapter(
       {
         execution_id: "t9",

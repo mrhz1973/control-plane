@@ -5,11 +5,16 @@
  * Never selects implementer/model (EXECUTION_ROUTER owns selection).
  * Never validates/weakens authorization (adapter owns that boundary).
  * Fail-closed: unsupported route => ADAPTER_NOT_REGISTERED, no fallback.
+ * Invalid injected registry => ADAPTER_REGISTRY_INVALID, zero adapter runs.
  */
-import { executeOpenCodeBounded } from "./opencode-execution-adapter-v1.mjs";
+import {
+  createDefaultExecutionAdapterRegistry,
+  validateExecutionAdapterRegistry,
+  OPENCODE_QWEN_LOCAL_ROUTE,
+} from "./v4-execution-adapter-registry-v1.mjs";
 
 export const RESULT_SCHEMA = "v4-execution-adapter-routing-result-v1";
-export const OPENCODE_QWEN_LOCAL_ROUTE = "opencode+qwen_local";
+export { OPENCODE_QWEN_LOCAL_ROUTE };
 export const DISPATCH_READY_CLASSIFICATION = "DISPATCH_READY";
 
 function baseResult(partial) {
@@ -32,48 +37,18 @@ function baseResult(partial) {
 }
 
 /**
- * Adapter registry — extensible without modifying EXECUTION_ROUTER.
- * Each entry: { route_id, adapter_id, dispatch_required, run(request, options) }
+ * Default registry via the validated registry boundary.
+ * Preserves prior export name for callers/tests.
  */
-export function defaultAdapterRegistry(options = {}) {
-  const registry = new Map();
-  registry.set(OPENCODE_QWEN_LOCAL_ROUTE, {
-    route_id: OPENCODE_QWEN_LOCAL_ROUTE,
-    adapter_id: "opencode-execution-adapter-v1",
-    dispatch_required: true,
-    // request routing shape for the opencode execution adapter
-    async run(request) {
-      return executeOpenCodeBounded(
-        {
-          execution_id: request.execution_id,
-          runtime_authorization: request.runtime_authorization ?? null,
-          message: request.execution_packet?.goal ?? null,
-        },
-        {
-          getOccupancy: request.getOccupancy,
-          guardStart: request.guardStart,
-          runOpenCode: request.runOpenCode,
-          upstreamOrigin: request.upstreamOrigin,
-        },
-      );
-    },
-  });
-  return registry;
+export function defaultAdapterRegistry() {
+  return createDefaultExecutionAdapterRegistry();
 }
 
 /**
  * Route an already-selected execution route to its registered adapter.
  *
- * request:
- *   execution_id            string
- *   execution_route_result  ROUTED result from evaluate-execution-route
- *   execution_packet        object
- *   runtime_authorization?  object (passed through; validated by adapter)
- *   dispatch_result?        prebuilt OpenCode dispatch result
- *   getOccupancy/guardStart/runOpenCode/upstreamOrigin?  injected adapter deps
- *
- * options:
- *   registry — Map of route_id -> adapter entry (default: opencode+qwen_local only)
+ * options.registry — validated registry (or Map of entries). Invalid =>
+ * ADAPTER_REGISTRY_INVALID with execution_performed=false and zero runs.
  */
 export async function routeToExecutionAdapter(request, options = {}) {
   const executionId =
@@ -112,8 +87,26 @@ export async function routeToExecutionAdapter(request, options = {}) {
   }
 
   const route = routeResult.execution_route;
-  const registry = options.registry || defaultAdapterRegistry();
-  const entry = registry.get(route.route_id);
+  let registry;
+  if (options.registry === undefined) {
+    registry = createDefaultExecutionAdapterRegistry();
+  } else {
+    const validated = validateExecutionAdapterRegistry(options.registry);
+    if (!validated.ok) {
+      return baseResult({
+        execution_id: executionId,
+        route_id: route.route_id,
+        implementer: route.implementer,
+        model: route.model,
+        classification: "ADAPTER_REGISTRY_INVALID",
+        adapter_registered: false,
+        reason_codes: ["ADAPTER_REGISTRY_INVALID", ...validated.reason_codes],
+      });
+    }
+    registry = options.registry;
+  }
+
+  const entry = typeof registry.get === "function" ? registry.get(route.route_id) : null;
 
   if (!entry || typeof entry.run !== "function") {
     return baseResult({

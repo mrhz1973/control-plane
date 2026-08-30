@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-execution-adapter-registry-v1.schema.json",
+  "title": "v4-execution-adapter-registry-snapshot-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": { "const": "v4-execution-adapter-registry-snapshot-v1" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "route_id",
+          "adapter_id",
+          "implementer",
+          "model",
+          "dispatch_required"
+        ],
+        "properties": {
+          "route_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^+*\\?\\s]+\\+[^+*\\?\\s]+$"
+          },
+          "adapter_id": { "type": "string", "minLength": 1 },
+          "implementer": { "type": "string", "minLength": 1 },
+          "model": { "type": "string", "minLength": 1 },
+          "dispatch_required": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

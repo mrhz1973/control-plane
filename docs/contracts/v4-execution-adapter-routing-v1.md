@@ -18,9 +18,23 @@ v4-execution-adapter-router-v1
 
 ## Registry
 
-Extensible adapter registry keyed by `route_id`. Only
-`opencode+qwen_local` is registered in this pass. A future executor
-(e.g. Grok Bot) registers additively **without modifying EXECUTION_ROUTER**.
+Validated registry boundary: `tools/v4-execution-adapter-registry-v1.mjs`
+(see `docs/contracts/v4-execution-adapter-registry-v1.md`). Exact `route_id`
+lookup only. No aliases, wildcards, fallbacks, or catch-all adapters.
+Invalid injected registry => terminal `ADAPTER_REGISTRY_INVALID` with
+`execution_performed=false` and zero adapter invocations.
+
+Default registered route remains exactly:
+
+```text
+opencode+qwen_local  (adapter_id=opencode-execution-adapter-v1,
+                      implementer=opencode, model=qwen_local,
+                      dispatch_required=true)
+```
+
+A future executor registers additively through the registry boundary
+**without modifying EXECUTION_ROUTER**. Grok Bot is not registered here;
+RESOURCE_REGISTRY still lists it as `routing_arbiter` only.
 
 ## Dispatch gate (opencode+qwen_local only)
 
