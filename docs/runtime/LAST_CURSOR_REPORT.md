@@ -8,7 +8,7 @@
 task_ref: V4_OPENCODE_SINGLE_GENERATION_GUARD_OFFLINE
 result_cursor: PASS_SINGLE_GENERATION_GUARD_READY
 starting_head: 7ee35748903376e080558cb66fd833c451abf292
-final_head: PENDING_COMMIT
+final_head: 0aa2d086350e57692bbde6271ba840b70534df44
 
 guard_contract_path: docs/contracts/opencode-single-generation-guard-v1.md
 guard_schema_path: docs/contracts/opencode-single-generation-guard-v1.schema.json
