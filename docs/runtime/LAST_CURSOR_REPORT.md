@@ -8,7 +8,7 @@
 task_ref: V4_EXECUTION_ROUTE_SIDECAR_SOURCE_ADAPTER_OFFLINE
 result_cursor: PASS_SIDECAR_SOURCE_ADAPTER_OFFLINE
 starting_head: b296547f56cbc3afcd35fc56eef0325142b1d1ee
-final_head: PENDING_COMMIT
+final_head: 2b4e24b762961a302b1257fa4f0ccf3f22d79851
 
 source_contract: docs/contracts/v4-execution-route-sidecar-source-v1.md
 source_schema: docs/contracts/v4-execution-route-sidecar-source-v1.schema.json

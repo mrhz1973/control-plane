@@ -2,7 +2,7 @@
 
 **Block ID:** `V4_EXECUTION_ROUTE_SIDECAR_SOURCE_ADAPTER_OFFLINE`  
 **Starting HEAD:** `b296547f56cbc3afcd35fc56eef0325142b1d1ee`  
-**Final HEAD:** `PENDING_COMMIT`  
+**Final HEAD:** `2b4e24b762961a302b1257fa4f0ccf3f22d79851`  
 **Category:** IMPLEMENTAZIONE OFFLINE  
 **Runtime authorized:** NO
 
