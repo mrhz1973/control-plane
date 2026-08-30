@@ -6,41 +6,55 @@
 |---|---|
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | Adapter registry boundary **VALIDATED** · default=`opencode+qwen_local` only · fail-closed · no fallback · Grok Bot remains routing_arbiter |
-| **BLOCCO ATTIVO** | `V4_N8N_EXECUTION_ROUTING_BRIDGE_INTEGRATION_OFFLINE` |
-| **STATO BLOCCO** | REGISTRY_BOUNDARY_COMPLETE / DEFAULT_OPENCODE_QWEN_LOCAL / GATE_CLOSED |
-| **GATE CORRENTE** | **CLOSED** · all live-proof AUTH spent/non-reusable · no live OpenCode/Qwen generation authorized without a later fresh AUTH · D-0025 gate remains **CLOSED** |
-| **NEXT** | `V4_N8N_EXECUTION_ROUTING_BRIDGE_INTEGRATION_OFFLINE` — wire the completed V4 route → adapter boundary into the existing n8n control-plane path, offline first, without live executor calls. Do **not** mutate n8n/workflows for live execution here. |
+| **ACTIVE WORK** | Adapter registry boundary complete. The new n8n-facing V4 execution-routing bridge exists only in the local dirty Cursor workspace after a one-pass STOP at target 20/23. One minimal production result-propagation defect and one isolated test-fixture defect are deterministically identified. |
+| **BLOCCO ATTIVO** | `V4_N8N_EXECUTION_ROUTING_BRIDGE_CORRECTION_ONE_PASS` |
+| **STATO BLOCCO** | `N8N_ROUTING_BRIDGE_UNCOMMITTED / TARGET_20_OF_23_PASS / OK_PROPAGATION_DEFECT_CONFIRMED / FIXTURE_CORRECTION_DETERMINED / GATE_CLOSED` |
+| **GATE CORRENTE** | **CLOSED** · no live OpenCode/Qwen/provider/n8n execution authorized. Corrective block is offline and one-pass. |
+| **NEXT** | `V4_N8N_EXECUTION_ROUTING_BRIDGE_CORRECTION_ONE_PASS` — preserve current dirty bridge work, minimally propagate top-level `ok`, isolate the unsupported-route test fixture from the free local route, run target once + required regressions once, STOP on any remaining failure, commit/push full bridge deliverable only on PASS. |
 | **WF40 LIVE** | active · preserved v3.2 foundation |
 | **WF61 LIVE** | **inactive** · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
 | **OPENCODE CLI** | installed · `opencode-ai` · v **1.18.25** |
-| **SINGLE-GENERATION GUARD** | **PROVEN LIVE** · `upstream_generation_requests=1` · OpenCode targeted guard only · no `steps` ceiling |
-| **EXECUTION ADAPTER v1** | **IMPLEMENTED (offline-proven)** · auth mandatory · occupancy gate fail-closed · guard mandatory · direct `:8080` forbidden |
-| **ADAPTER ROUTING BRIDGE v1** | **IMPLEMENTED** · dispatch gate · truthful top-level `execution_performed` |
-| **ADAPTER REGISTRY v1** | **IMPLEMENTED** · validated registration · exact route_id lookup · invalid registry => `ADAPTER_REGISTRY_INVALID` · default route unchanged |
+| **SINGLE-GENERATION GUARD** | **PROVEN LIVE** · upstream max-one boundary preserved |
+| **EXECUTION ADAPTER v1** | **IMPLEMENTED (offline-proven)** · auth mandatory · occupancy fail-closed · guard mandatory |
+| **ADAPTER ROUTING BRIDGE v1** | **IMPLEMENTED** · truthful `execution_performed` · dispatch gate preserved |
+| **ADAPTER REGISTRY v1** | **IMPLEMENTED** · validated exact-route registry · no fallback |
 
-## Authorization state
+## Latest operator-relayed STOP
 
-- REAUTH_2 AUTH: **spent / historical / non-reusable**
-- Prior REAUTH / original live-proof AUTH: remain spent
-- No live call remains authorized; default path = no execution
+Report:
+`reports/architecture/v4_n8n_execution_routing_bridge_integration_offline_stop_operator_relay.md`
+
+Evidence class: `operator-relayed` / not independently verified from a pushed Cursor commit because Cursor stopped before commit/push.
+
+Reported state:
+
+- local HEAD/origin at STOP: `42202d9ece9bfd2ed7d86bac317e8c2e38d342eb`
+- workspace dirty only with new bridge block files
+- target: 20/23 PASS
+- regressions not run by one-pass STOP
+- all live/runtime counters zero
+
+## Confirmed corrective scope
+
+1. In new uncommitted `tools/n8n-v4-execution-routing-bridge-v1.mjs`, `base()` drops a successful partial `ok` by hardcoding false. Required semantics: top-level `ok` true iff `p.ok === true`.
+2. The unsupported-route test fixture accidentally exposes both `cursor+composer` and free `opencode+qwen_local`; canonical EXECUTION_ROUTER correctly prefers the local free route. Correct only that fixture so the intended cursor route is isolated.
+3. No planner/routing/registry/adapter redesign.
+4. Target suite exactly once; regressions exactly once only after target PASS. Any failure => STOP, no second edit/test loop.
+5. PASS => commit/push full bridge deliverable and advance to GPT-Web-owned `V4_WF40_EXECUTION_ROUTING_PATCH_AUTHORING`.
 
 ## Boundaries
 
-- Do **not** retry live OpenCode without a new operator AUTH.
-- External guard remains the hard max-one generation boundary.
-- Do **not** use OpenCode `steps=1`/`steps=2` as the generation ceiling.
-- Do **not** kill/stop Qwen/Ollama/proxy/Blender/Edge/Cursor merely to tidy state.
-- No WF40/WF61/n8n/OpenClaw/LiteLLM/D-0025/network/secret/Qwen-parameter mutation.
-- Do **not** register Grok Bot as an executor until a separate authorized execution role/contract exists. RESOURCE_REGISTRY role remains `routing_arbiter`.
+- No live OpenCode/Qwen/provider/n8n execution.
+- No workflow mutation in corrective pass.
+- No WF40/WF61/WF60/OpenClaw/LiteLLM/D-0025/network/secret/Qwen-parameter mutation.
+- No BugBot.
+- Grok Bot remains routing_arbiter only.
 
 ## Puntatori
 
+- Latest STOP: `reports/architecture/v4_n8n_execution_routing_bridge_integration_offline_stop_operator_relay.md`
 - Registry report: `reports/architecture/v4_execution_adapter_registry_boundary.md`
-- Registry contract: `docs/contracts/v4-execution-adapter-registry-v1.md` (+ `.schema.json`)
-- Registry tool: `tools/v4-execution-adapter-registry-v1.mjs` · tests: `tests/v4-execution-adapter-registry/run.mjs`
-- Routing report: `reports/architecture/v4_opencode_control_plane_routing_integration_offline.md`
-- Routing tool: `tools/v4-execution-adapter-router-v1.mjs`
-- Adapter tool: `tools/opencode-execution-adapter-v1.mjs`
-- Existing router: `tools/evaluate-execution-route.mjs`
+- Adapter registry: `tools/v4-execution-adapter-registry-v1.mjs`
+- Existing execution router: `tools/evaluate-execution-route.mjs`
+- Routing bridge: `tools/v4-execution-adapter-router-v1.mjs`
