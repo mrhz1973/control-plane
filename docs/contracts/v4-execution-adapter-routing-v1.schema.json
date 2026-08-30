@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-execution-adapter-routing-v1.schema.json",
+  "title": "v4-execution-adapter-routing-result-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "execution_id",
+    "status",
+    "classification",
+    "execution_performed",
+    "route_id",
+    "implementer",
+    "model",
+    "adapter_id",
+    "adapter_registered",
+    "dispatch_required",
+    "dispatch_classification",
+    "adapter_result",
+    "reason_codes"
+  ],
+  "properties": {
+    "schema_version": { "const": "v4-execution-adapter-routing-result-v1" },
+    "execution_id": { "type": ["string", "null"] },
+    "status": { "type": "string", "enum": ["BLOCKED", "EXECUTED", "ERROR"] },
+    "classification": { "type": "string", "minLength": 1 },
+    "execution_performed": { "type": "boolean" },
+    "route_id": { "type": ["string", "null"] },
+    "implementer": { "type": ["string", "null"] },
+    "model": { "type": ["string", "null"] },
+    "adapter_id": { "type": ["string", "null"] },
+    "adapter_registered": { "type": "boolean" },
+    "dispatch_required": { "type": "boolean" },
+    "dispatch_classification": { "type": ["string", "null"] },
+    "adapter_result": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "https://github.com/mrhz1973/control-plane/docs/contracts/opencode-execution-adapter-v1.schema.json" }
+      ]
+    },
+    "reason_codes": { "type": "array", "items": { "type": "string" } }
+  }
+}
