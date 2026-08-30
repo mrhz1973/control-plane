@@ -1,0 +1,1 @@
+Offline fixtures for v4-resource-status-control-plane-source. Synthetic only. No secrets.

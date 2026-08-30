@@ -5,50 +5,43 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_WF40_SIDECAR_SOURCE_PATCH_APPLY_OFFLINE
-result_cursor: PASS_WF40_50_TO_56_EXACT_GPT_WEB_DELTA
-starting_head: 77a9311f214f4237aea256175e3f16c32ff31882
-final_head: b31e7eccd9b970f663bd7419d175994e648d4e70
+task_ref: V4_RESOURCE_STATUS_CONTROL_PLANE_COMPOSER_OFFLINE
+result_cursor: PASS_RESOURCE_STATUS_COMPOSER_OFFLINE
+starting_head: 57a1aa45afb8558ea6b72a3d0e0a65c3fd1a7508
+final_head: PENDING_COMMIT
 
-wf40_id: 9ZMj2ACTKyDVhCue
-wf40_pre_version_id: 067a6b82-70a0-44dd-88fc-c8e9973f13bc
-wf40_post_version_id: ef80943e-535d-430f-958f-56c03baa1c62
-wf40_pre_node_count: 50
-wf40_post_node_count: 56
+source_contract: docs/contracts/v4-resource-status-control-plane-source-v1.md
+contribution_schema: docs/contracts/v4-resource-status-contribution-v1.schema.json
+result_schema: docs/contracts/v4-resource-status-control-plane-source-result-v1.schema.json
+composer_tool: tools/compose-v4-resource-status-control-plane-v1.mjs
+composer_tests: tests/v4-resource-status-control-plane-source/run.mjs
 
-patch_artifact: workflows/patches/v4-wf40-sidecar-source.gpt-web.json
-patch_applied_verbatim: true
-legacy_nodes_preserved: true
-new_sidecar_nodes: 6
-existing_v4_bridge_nodes_preserved: true
+registry_closure: true
+baseline_missing_registry_resource_behavior: synthetic_unavailable_shell
+reserve_floor_source: baseline_or_safe_default
+status_max_age_seconds: 300
+source_precedence: local_probe>provider_api>dashboard_snapshot>internal_ledger>manual
+same_rank_conflict_behavior: fail_closed
 
-route_source_same_commit: true
-technical_requirements_synthesized: false
-explicit_resource_status_supported: true
-status_collector_invoked: false
-fail_closed_status_fallback_preserved: true
-route_source_failure_blocks_wf61: true
+qwen_ready_idle_required: true
+qwen_launch_forbidden: true
+qwen_generation_forbidden: true
+qwen_collector_invoked: false
 
-wf61_active_final: false
-d0025_gate_closed_final: true
+target_tests: PASS_34_34
+regression_tests: PASS_registry_7_status_6_router_12_sidecar_24_bridge_23
 
-workflow_execution_calls: 0
-wf40_execution_calls: 0
-wf61_execution_calls: 0
-sidecar_adapter_execution_calls: 0
-bridge_execution_calls: 0
+workflow_mutations: 0
 provider_calls: 0
+dashboard_calls: 0
 qwen_generation_calls: 0
 qwen_session_manager_calls: 0
+qwen_probe_calls: 0
 opencode_execution_count: 0
-adapter_run_calls: 0
-status_collector_calls: 0
-credential_mutations: 0
-network_mutations: 0
-litellm_mutations: 0
-openclaw_mutations: 0
+collector_calls: 0
+network_calls: 0
 secret_exposure: false
 
-architecture_report: reports/architecture/v4_wf40_sidecar_source_patch_apply_offline.md
-NEXT: V4_RESOURCE_STATUS_CONTROL_PLANE_SOURCE_CONTRACT
+architecture_report: reports/architecture/v4_resource_status_control_plane_composer_offline.md
+NEXT: V4_RESOURCE_STATUS_LOCAL_RUNTIME_READONLY_CONTRIBUTION_ADAPTER
 ```

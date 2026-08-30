@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-resource-status-control-plane-source-result-v1.schema.json",
+  "title": "v4-resource-status-control-plane-source-result-v1",
+  "description": "Non-secret result wrapper from compose-v4-resource-status-control-plane-v1. Never persists raw contribution payloads.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ok",
+    "classification",
+    "resource_status",
+    "resource_decisions",
+    "rejected_contributions",
+    "reason_codes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "v4-resource-status-control-plane-source-result-v1"
+    },
+    "ok": { "type": "boolean" },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "PASS_RESOURCE_STATUS_COMPOSED",
+        "RESOURCE_REGISTRY_INVALID",
+        "FAIL_CLOSED_BASELINE_INVALID",
+        "COMPOSITION_OUTPUT_INVALID"
+      ]
+    },
+    "resource_status": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "$ref": "https://github.com/mrhz1973/control-plane/docs/contracts/resource-status-v1.schema.json"
+        }
+      ]
+    },
+    "resource_decisions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "selected_contribution_id",
+          "selected_source",
+          "classification",
+          "reason_codes"
+        ],
+        "properties": {
+          "selected_contribution_id": { "type": ["string", "null"] },
+          "selected_source": {
+            "type": "string",
+            "enum": [
+              "provider_api",
+              "internal_ledger",
+              "dashboard_snapshot",
+              "local_probe",
+              "manual",
+              "unknown"
+            ]
+          },
+          "classification": { "type": "string", "minLength": 1 },
+          "reason_codes": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "rejected_contributions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["contribution_id", "classification"],
+        "properties": {
+          "contribution_id": { "type": ["string", "null"] },
+          "classification": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
