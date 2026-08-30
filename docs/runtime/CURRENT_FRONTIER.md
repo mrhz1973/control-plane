@@ -8,9 +8,9 @@
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | D-0025-W / issue **#31** — **CLOSED / COMPLETE**; V4 resumes at first missing execution-runtime boundary |
 | **BLOCCO ATTIVO** | `V4_OPENCODE_DISPATCH` |
-| **STATO BLOCCO** | `D0025_COMPLETE / V4_ROUTER_PASS / QWEN_LOCAL_READY / OPENCODE_DISPATCH_NOT_IMPLEMENTED` |
-| **GATE CORRENTE** | D-0025 runtime gate **CLOSED** · V4 dispatch work is repo/offline until a later explicit runtime execution gate |
-| **NEXT** | `V4_OPENCODE_DISPATCH` — implement the bounded dispatch boundary from existing `execution-route-result-v1` route `opencode + qwen_local` to an OpenCode execution adapter, preserving deterministic router policy and v3.2 live foundation. No n8n workflow duplication and no provider/model live call required for the implementation pass. |
+| **STATO BLOCCO** | `D0025_COMPLETE / V4_ROUTER_PASS / QWEN_LOCAL_READY / OPENCODE_DISPATCH_STOPPED_NOT_INSTALLED` |
+| **GATE CORRENTE** | D-0025 runtime gate **CLOSED** · V4 dispatch work is repo/offline until OpenCode CLI is available on execution host |
+| **NEXT** | `V4_OPENCODE_DISPATCH` — **blocked:** OpenCode CLI not on PATH in Cursor execution environment (`OPENCODE_NOT_INSTALLED`). Install/expose OpenCode CLI, then re-run dispatch boundary implementation. No provider/model live call in preflight pass. |
 | **WF40 LIVE** | active · `9ZMj2ACTKyDVhCue` · 44 nodes — preserved v3.2 foundation |
 | **WF61 LIVE** | **inactive** · `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | `enabled=false` · `provider_calls_authorized_per_event=0` · **CLOSED** |
@@ -29,6 +29,7 @@
 
 - Execution router: `reports/architecture/v4_execution_router.md` — deterministic-first router PASS; natural route includes `opencode + qwen_local`.
 - qwen_local RESOURCE_STATUS overlay: `reports/architecture/v4_qwen_local_resource_status_overlay.md` — session READY maps to `qwen_local.available=true`; router/session suites PASS.
+- OpenCode dispatch: `reports/architecture/v4_opencode_dispatch.md` — **STOP** `OPENCODE_NOT_INSTALLED` (read-only preflight; no implementation).
 - v3.2 foundation remains canonical/live; V4 remains additive and must not mutate D-0025/WF60/OpenClaw paths in the next repo-only pass.
 
 ## Boundaries
