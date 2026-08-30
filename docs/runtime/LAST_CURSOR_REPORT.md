@@ -5,43 +5,54 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_OPENCODE_DISPATCH_RESUME_AFTER_CANONICAL_INSTALL
-result_cursor: PASS_OPENCODE_DISPATCH_READY
-starting_head: dddb327cad2c9f09cbe8149392ead29a17708d72
-final_head: 34e420a6703148304fc28da57ab7a9725e774190
+task_ref: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF
+result_cursor: STOP_QWEN_LOCAL_UNAVAILABLE
+starting_head: afab31088e2ca8121b73001502227e3826037bff
+final_head: PENDING_COMMIT
 
-opencode_install_package: opencode-ai
-opencode_available: true
+authorization_id: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF
+packet_id: EP-V4-OPENCODE-LIVE-PROOF-001
+
 opencode_version: 1.18.25
-opencode_dispatch_interface_resolved: true
+opencode_execution_count: 0
+opencode_single_turn: proven_config_not_executed
+opencode_tools_disabled: true
+opencode_auxiliary_generation_paths_disabled: true
+opencode_retry_bound_proven: true_via_steps_1_and_continue_loop_on_deny_false
 
-resource_status_opencode_overlay: true
-qwen_session_manager_reused: true
+qwen_backend: llama_cpp
 qwen_profile: fast_8k
+qwen_model_id: qwen38-original-dflash2-8k
 dflash_required: true
+qwen_session_status: API_UNREACHABLE
+qwen_generation_calls: 0
 
-dispatch_contract_path: docs/contracts/opencode-execution-dispatch-v1.md
-dispatch_tool_path: tools/dispatch-opencode-execution-v1.mjs
-dispatch_test_path: tests/opencode-execution-dispatch/run.mjs
-tests_result: ALL_PASS
-execution_router_tests: PASS
-qwen_session_tests: PASS
-qwen_status_overlay_tests: PASS
+live_http_status_or_transport: not_started
+live_elapsed_ms: 0
 
-generation_calls: 0
-provider_calls: 0
-litellm_calls: 0
+response_schema: null
+response_task_id: null
+response_route: null
+response_profile: null
+response_dflash_required: null
+response_result: null
+response_message: null
+response_validation: NOT_REACHED
+
 glm_calls: 0
 codex_calls: 0
-qwen_generation_calls: 0
-execution_performed: false
-n8n_mutations: 0
-workflow_mutations: 0
-d0025_mutations: 0
+litellm_calls: 0
+n8n_calls: 0
+fallback_calls: 0
+retry_calls: 0
+
+repository_mutation_by_opencode: false
+runtime_parameter_mutation: false
 secret_exposure: false
 
-bugbot_review: PASS_NO_FINDINGS
-architecture_report: reports/architecture/v4_opencode_dispatch.md
+gate_closed_final: true
+architecture_report: reports/architecture/v4_opencode_bounded_live_dispatch_proof.md
+checkpoint_path: docs/runtime/CHECKPOINT_V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF.md
 
-NEXT: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF
+NEXT: V4_QWEN_LOCAL_READY_RESTORE_ZERO_GENERATION
 ```
