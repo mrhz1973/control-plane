@@ -6,36 +6,47 @@
 |---|---|
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | Shared Qwen occupancy diagnosed **BUSY** — wait for idle; no live OpenCode / no new Qwen generation |
-| **BLOCCO ATTIVO** | `V4_QWEN_SHARED_RUNTIME_OCCUPANCY` |
-| **STATO BLOCCO** | `QWEN_BUSY_SHARED_RUNTIME / LIVE_PROOF_GATE_CLOSED / WAIT_IDLE` |
-| **GATE CORRENTE** | **CLOSED** · do not request live-proof AUTH while busy. Historical live-proof AUTH remains **spent/non-reusable**. D-0025 runtime gate remains **CLOSED**. |
-| **NEXT** | `WAIT_QWEN_SHARED_RUNTIME_IDLE` — do **not** stop/kill Blender/MCP/Ollama/Qwen/Edge/Cursor/OpenCode. When the competing workload ends, re-run read-only occupancy diagnosis. Only if `QWEN_READY_IDLE`, proceed to `V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH`. |
+| **ACTIVE WORK** | Shared Qwen occupancy was BUSY; operator now reports competing Blender/MCP project **paused**; idle state must be re-verified read-only |
+| **BLOCCO ATTIVO** | `V4_QWEN_SHARED_RUNTIME_OCCUPANCY_RECHECK_AFTER_PAUSE` |
+| **STATO BLOCCO** | `PRIOR_QWEN_BUSY_SHARED_RUNTIME / OPERATOR_PAUSE_SIGNAL_RECEIVED / IDLE_NOT_YET_PROVEN / LIVE_PROOF_GATE_CLOSED` |
+| **GATE CORRENTE** | **CLOSED** · no live-proof AUTH until read-only occupancy recheck proves `QWEN_READY_IDLE`. Historical live-proof AUTH remains **spent/non-reusable**. D-0025 runtime gate remains **CLOSED**. |
+| **NEXT** | `V4_QWEN_SHARED_RUNTIME_OCCUPANCY_RECHECK_AFTER_PAUSE` — re-run bounded read-only occupancy diagnosis. If and only if `QWEN_READY_IDLE`, proceed to `V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH`. No generation, process start/stop/kill/restart, or Edge close during recheck. |
 | **WF40 LIVE** | active · preserved v3.2 foundation |
 | **WF61 LIVE** | **inactive** · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
 | **OPENCODE CLI** | installed · `opencode-ai` · v **1.18.25** |
-| **QWEN_LOCAL CONTROL-PLANE ENDPOINT** | listener **up** on `127.0.0.1:8080` · `qwen38-original-dflash2-8k` exposed · **not assignable** while shared runtime BUSY |
-| **SHARED-RUNTIME OCCUPANCY** | **`QWEN_BUSY_SHARED_RUNTIME`** — Blender + blender-mcp + qwen-code + ollama_qwen_proxy + Ollama `qwen3.8:27b` on `:31452` with active inference evidence |
+| **QWEN_LOCAL CONTROL-PLANE ENDPOINT** | last known listener up on `127.0.0.1:8080` · `qwen38-original-dflash2-8k` exposed · assignability pending new occupancy recheck |
+| **SHARED-RUNTIME OCCUPANCY** | prior classification `QWEN_BUSY_SHARED_RUNTIME`; operator reports competing Blender/MCP project paused, but pause signal alone is not proof of idle |
 
 ## Occupancy anchors
 
-- Diagnosis: `reports/architecture/v4_qwen_shared_runtime_occupancy_diagnosis.md`
+- Prior diagnosis: `reports/architecture/v4_qwen_shared_runtime_occupancy_diagnosis.md`
+- Operator pause signal: `docs/runtime/OPERATOR_SIGNAL_QWEN_COMPETING_PROJECT_PAUSED_20260830.md`
 - Constraint: `docs/runtime/OPERATOR_CONSTRAINT_QWEN_SHARED_RUNTIME_CONCURRENCY.md`
 - Hold: `docs/runtime/QWEN_POST_RESTORE_OCCUPANCY_HOLD.md`
-- Sampling: ~32s · Ollama llama-server CPU rising · `ollama ps` shows loaded `qwen3.8:27b`
-- `:8080` ESTABLISHED client = Edge WebUI only (not the busy inference consumer)
+
+## Mandatory recheck boundary
+
+Before assigning any new Qwen generation after the operator pause signal:
+
+- perform a bounded **read-only** occupancy recheck for Qwen/llama-server/Ollama/proxy plus Blender/MCP/Cursor/OpenCode/benchmark activity;
+- do not infer idle solely because the project was paused;
+- classify exactly `QWEN_READY_IDLE`, `QWEN_BUSY_SHARED_RUNTIME`, or `QWEN_OCCUPANCY_UNCERTAIN`;
+- do not kill/stop/restart competing processes or close Edge merely to free Qwen;
+- do not request fresh OpenCode live-proof authorization unless the new classification is `QWEN_READY_IDLE`.
 
 ## Boundaries
 
-- Do **not** kill/stop/restart competing workloads to free Qwen.
-- Do **not** assign a new Qwen generation or OpenCode live proof while BUSY.
-- Do **not** close Edge WebUI merely to free `:8080` while ownership/lifecycle is tied to the launcher.
+- Do **not** kill/stop/restart Qwen/Ollama/proxy/llama-server/Blender/MCP/Cursor/OpenCode during recheck.
+- Do **not** assign a Qwen generation or OpenCode live proof until idle is proven.
+- Do **not** close Edge WebUI during recheck; it is tied to the control-plane launcher lifecycle.
 - Do **not** reuse spent historical live-proof authorization.
+- No network, credential, secret, runtime-parameter, n8n, WF40/WF61, OpenClaw, or D-0025 mutation.
 
 ## Puntatori
 
-- Occupancy diagnosis: `reports/architecture/v4_qwen_shared_runtime_occupancy_diagnosis.md`
+- Prior occupancy diagnosis: `reports/architecture/v4_qwen_shared_runtime_occupancy_diagnosis.md`
+- Operator pause signal: `docs/runtime/OPERATOR_SIGNAL_QWEN_COMPETING_PROJECT_PAUSED_20260830.md`
 - Ready restore: `reports/architecture/v4_qwen_local_ready_restore_zero_generation.md`
 - Shared-runtime constraint: `docs/runtime/OPERATOR_CONSTRAINT_QWEN_SHARED_RUNTIME_CONCURRENCY.md`
 - Post-restore hold: `docs/runtime/QWEN_POST_RESTORE_OCCUPANCY_HOLD.md`
