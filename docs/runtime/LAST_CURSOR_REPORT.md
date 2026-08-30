@@ -5,43 +5,40 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_N8N_EXECUTION_ROUTING_BRIDGE_COMMIT_RESUME_ONE_PASS
-result_cursor: PASS_BRIDGE_COMMITTED
-starting_head: 27a68be499adc58c5c381b13159519164e71dd54
-final_head: 4e4035b8d21353285fd5ba6e16a8452898a8c241
+task_ref: V4_WF40_EXECUTION_ROUTING_PATCH_APPLY_OFFLINE
+result_cursor: PASS_WF40_44_TO_50_EXACT_GPT_WEB_DELTA
+starting_head: 4296e9c56f6d3c9763aa07e9c1c9847692014b12
+final_head: <stamped post-commit>
 
-restored_stash: v4-n8n-routing-bridge-fixed-preserve
-older_backup_stash_not_restored: v4-n8n-routing-bridge-correction-preserve
+wf40_id: 9ZMj2ACTKyDVhCue
+wf40_pre_version_id: 07fbfca6-e2f9-4fff-bfd6-c59d31f124b7
+wf40_post_version_id: 067a6b82-70a0-44dd-88fc-c8e9973f13bc
+wf40_pre_node_count: 44
+wf40_post_node_count: 50
 
-bridge_contract_path: docs/contracts/n8n-v4-execution-routing-bridge-v1.md
-bridge_schema_path: docs/contracts/n8n-v4-execution-routing-bridge-v1.schema.json
-bridge_tool_path: tools/n8n-v4-execution-routing-bridge-v1.mjs
-bridge_test_path: tests/n8n-v4-execution-routing-bridge/run.mjs
+patch_artifact: workflows/patches/v4-wf40-execution-routing-bridge.gpt-web.json
+patch_applied_verbatim: true
+legacy_nodes_preserved: true
+new_v4_nodes: 6
+wf61_target_preserved: d0025-6100-4001-8001-000000000061
+wf61_active_final: false
+d0025_gate_closed_final: true
 
-top_level_ok_propagation_fixed: true
-unsupported_route_fixture_isolated: true
 explicit_route_request_required: true
+explicit_resource_status_required: true
 technical_requirements_synthesized: false
-execution_router_reused: true
-adapter_registry_reused: true
+missing_sidecar_fail_closed: true
+dispatch_node_added: false
+execution_node_added: false
+separate_v4_workflow_created: false
 
-target_tests: PASS_23_OF_23
-regression_tests: PASS
-  - v4-execution-adapter-registry: PASS_19_OF_19
-  - v4-execution-adapter-router: PASS_15_OF_15
-  - execution-router: PASS_12_OF_12
-  - litellm-primary-cycle: PASS_18_OF_18
-
+workflow_execution_calls: 0
+provider_calls: 0
 qwen_generation_calls: 0
-qwen_session_manager_calls: 0
 opencode_execution_count: 0
 adapter_run_calls: 0
-provider_calls: 0
-n8n_execution_calls: 0
-workflow_mutations: 0
-network_mutations: 0
 secret_exposure: false
 
-architecture_report: reports/architecture/v4_n8n_execution_routing_bridge_integration_offline.md
-NEXT: V4_WF40_EXECUTION_ROUTING_PATCH_AUTHORING
+architecture_report: reports/architecture/v4_wf40_execution_routing_patch_apply_offline.md
+NEXT: V4_EXECUTION_ROUTE_SIDECAR_SOURCE_CONTRACT
 ```
