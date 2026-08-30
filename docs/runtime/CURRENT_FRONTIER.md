@@ -6,33 +6,48 @@
 |---|---|
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | WF40 V4 execution-routing lane **APPLIED LIVE** · 44→50 · exact GPT-Web delta · metadata-only · zero executions |
-| **BLOCCO ATTIVO** | `V4_EXECUTION_ROUTE_SIDECAR_SOURCE_CONTRACT` |
-| **STATO BLOCCO** | WF40_PATCH_APPLIED / GATE_CLOSED / SIDECAR_SOURCE_NEEDED |
-| **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` · `provider_calls_authorized_per_event=0` · no live OpenCode/Qwen/provider generation authorized without a later fresh AUTH |
-| **NEXT** | `V4_EXECUTION_ROUTE_SIDECAR_SOURCE_CONTRACT` — define the canonical explicit source for `execution-route-request-v1` + RESOURCE_STATUS snapshot so WF40 can feed the installed bridge lane without inventing technical_requirements. Do **not** implement that source in the apply pass (already satisfied). |
+| **ACTIVE WORK** | WF40 V4 execution-routing lane **APPLIED LIVE** · sidecar source contract **GPT-WEB AUTHORED** · explicit task route source + transient/fail-closed RESOURCE_STATUS |
+| **BLOCCO ATTIVO** | `V4_EXECUTION_ROUTE_SIDECAR_SOURCE_ADAPTER_OFFLINE` |
+| **STATO BLOCCO** | WF40_PATCH_APPLIED / SIDECAR_SOURCE_CONTRACT_COMPLETE / ADAPTER_PENDING / GATE_CLOSED |
+| **GATE CORRENTE** | **CLOSED** · D-0025 closed · no live OpenCode/Qwen/provider generation authorized · source-adapter block is offline only |
+| **NEXT** | `V4_EXECUTION_ROUTE_SIDECAR_SOURCE_ADAPTER_OFFLINE` — implement deterministic construction of `execution-route-request-v1` from same-commit `docs/runtime/EXECUTION_ROUTE_<TASK_ID>.json` plus explicit fresh `resource-status-v1` or fail-closed baseline. No workflow mutation; no status collection; no Qwen/provider/OpenCode calls. |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **50 nodes** · versionId `067a6b82-70a0-44dd-88fc-c8e9973f13bc` · V4 routing lane installed · no downstream executor |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
-| **N8N ROUTING BRIDGE v1** | **COMMITTED** · invoked by WF40 Execute Command only when explicit sidecars present · `dispatch_prepared=false` · `execution_performed=false` |
+| **N8N ROUTING BRIDGE v1** | **COMMITTED** · explicit sidecars required · `dispatch_prepared=false` · `execution_performed=false` |
+| **SIDECAR SOURCE CONTRACT** | `docs/contracts/v4-execution-route-sidecar-source-v1.md` · route source persistent/GPT-Web-authored · RESOURCE_STATUS transient/separate · 300s freshness · fail-closed baseline fallback |
+
+## Canonical sidecar source
+
+- Route source path: `docs/runtime/EXECUTION_ROUTE_<TASK_ID>.json`.
+- Route source and backlog MUST be fetched from the same Git commit.
+- `task_id` must equal backlog id; `source_backlog_path` exact; `created_by=gpt-web`.
+- `technical_requirements` are explicit GPT-Web values; never synthesized from packet/goal/paths/planner/classifier/chat.
+- `risk_level` must equal backlog `risk_hint`.
+- Deterministic route request mapping: `request_id = task_id`; requirements/risk copied verbatim.
+- RESOURCE_STATUS explicit transient snapshot must validate and be <=300s old; otherwise use committed `configs/resources/status.fail-closed.json`.
+- The sidecar source adapter consumes status only; it does not call status collectors.
 
 ## Authorization / D-0025
 
-- D-0025: **CLOSED** (not reopened)
-- V4 lane remains fail-closed without explicit `execution_route_request` + `resource_status` sidecars
-- No live OpenCode/Qwen/provider call authorized by this apply
+- D-0025: **CLOSED**.
+- No live OpenCode/Qwen/provider call authorized.
+- Existing `collect-qwen-local-resource-status-v1.mjs` is not automatically invoked by the source adapter.
+- Qwen shared-runtime occupancy rules remain mandatory for any later live collector.
 
 ## Boundaries
 
-- Do **not** synthesize technical_requirements from packet/goal/paths/planner/classifier/chat.
-- External single-generation guard remains the hard max-one generation ceiling for OpenCode.
-- No WF40/WF61 execution was used to validate this apply.
+- No WF40/WF61 execution or mutation in the source-adapter block.
+- No provider/dashboard/network status collection in the source-adapter block.
+- No synthesis of missing route semantics.
+- No separate V4 n8n workflow.
 - No LiteLLM/OpenClaw/network/secret mutation.
 
 ## Puntatori
 
-- Apply report: `reports/architecture/v4_wf40_execution_routing_patch_apply_offline.md`
-- Patch artifact: `workflows/patches/v4-wf40-execution-routing-bridge.gpt-web.json`
+- Sidecar source contract: `docs/contracts/v4-execution-route-sidecar-source-v1.md` (+ `.schema.json`)
+- Source contract report: `reports/architecture/v4_execution_route_sidecar_source_contract.md`
+- WF40 apply report: `reports/architecture/v4_wf40_execution_routing_patch_apply_offline.md`
 - Bridge tool: `tools/n8n-v4-execution-routing-bridge-v1.mjs`
-- Bridge contract: `docs/contracts/n8n-v4-execution-routing-bridge-v1.md`
-- Mount: `/files/handoff-runtime/control-plane`
+- RESOURCE_STATUS schema: `docs/contracts/resource-status-v1.schema.json`
+- Fail-closed status baseline: `configs/resources/status.fail-closed.json`
