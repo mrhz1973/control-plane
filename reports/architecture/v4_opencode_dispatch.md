@@ -1,9 +1,9 @@
 # V4 — OpenCode execution dispatch
 
-**Block ID:** `V4_OPENCODE_DISPATCH_RESUME_AFTER_CANONICAL_INSTALL`  
-**Prior block:** `V4_OPENCODE_DISPATCH` → STOP `OPENCODE_NOT_INSTALLED`  
-**Starting HEAD / expected origin/main:** `dddb327cad2c9f09cbe8149392ead29a17708d72`  
-**Status:** **PASS** — `DISPATCH_READY` boundary implemented; no generation  
+**Block ID:** `V4_OPENCODE_DISPATCH_RESUME_AFTER_CANONICAL_INSTALL`
+**Prior block:** `V4_OPENCODE_DISPATCH` → STOP `OPENCODE_NOT_INSTALLED`
+**Starting HEAD / expected origin/main:** `dddb327cad2c9f09cbe8149392ead29a17708d72`
+**Status:** **PASS** — `DISPATCH_READY` boundary implemented; no generation
 **Install package:** `opencode-ai@latest` (npm global)
 
 ---

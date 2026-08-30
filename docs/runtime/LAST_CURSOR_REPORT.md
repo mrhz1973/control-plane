@@ -8,7 +8,7 @@
 task_ref: V4_OPENCODE_DISPATCH_RESUME_AFTER_CANONICAL_INSTALL
 result_cursor: PASS_OPENCODE_DISPATCH_READY
 starting_head: dddb327cad2c9f09cbe8149392ead29a17708d72
-final_head: PENDING_COMMIT
+final_head: 34e420a6703148304fc28da57ab7a9725e774190
 
 opencode_install_package: opencode-ai
 opencode_available: true
