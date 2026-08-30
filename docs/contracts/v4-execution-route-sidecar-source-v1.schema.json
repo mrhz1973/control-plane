@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-execution-route-sidecar-source-v1.schema.json",
+  "title": "v4-execution-route-source-v1",
+  "description": "Persistent GPT-Web-authored source for deterministic construction of execution-route-request-v1. RESOURCE_STATUS remains transient and separate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "source_backlog_path",
+    "created_by",
+    "technical_requirements",
+    "risk_level"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "v4-execution-route-source-v1"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._-]+$"
+    },
+    "source_backlog_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^docs/runtime/BACKLOG_[^/]+\\.md$"
+    },
+    "created_by": {
+      "const": "gpt-web"
+    },
+    "technical_requirements": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "filesystem",
+          "terminal",
+          "code_edit",
+          "planning",
+          "classification",
+          "routing_arbitration",
+          "code_generation",
+          "review",
+          "persistent_agent",
+          "browser"
+        ]
+      }
+    },
+    "risk_level": {
+      "enum": ["low", "medium", "high"]
+    }
+  }
+}
