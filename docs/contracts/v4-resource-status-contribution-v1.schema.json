@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-resource-status-contribution-v1.schema.json",
+  "title": "v4-resource-status-contribution-v1",
+  "description": "Transient, non-secret observation contribution consumed by the V4 RESOURCE_STATUS control-plane composer. Contributions never carry reserve policy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contribution_id",
+    "producer_id",
+    "source",
+    "produced_at",
+    "resources"
+  ],
+  "properties": {
+    "schema_version": { "const": "v4-resource-status-contribution-v1" },
+    "contribution_id": { "type": "string", "minLength": 1 },
+    "producer_id": { "type": "string", "minLength": 1 },
+    "source": {
+      "enum": [
+        "provider_api",
+        "internal_ledger",
+        "dashboard_snapshot",
+        "local_probe",
+        "manual"
+      ]
+    },
+    "produced_at": { "type": "string", "format": "date-time" },
+    "resources": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/resourceObservation" }
+    }
+  },
+  "$defs": {
+    "quotaRemaining": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": ["number", "null"] },
+        "unit": {
+          "enum": ["percent", "calls", "tokens", "credits", "unlimited", "unknown"]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "unit": { "const": "unlimited" } }, "required": ["unit"] },
+          "then": { "properties": { "value": { "type": "null" } } }
+        }
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["source_snapshot", "qwen_occupancy"] },
+        "classification": { "type": ["string", "null"] },
+        "launch_performed": { "type": ["boolean", "null"] },
+        "generation_calls": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "resourceObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "available",
+        "quota_remaining",
+        "reset_at",
+        "cost_mode",
+        "location",
+        "updated_at",
+        "evidence"
+      ],
+      "properties": {
+        "available": { "type": "boolean" },
+        "quota_remaining": { "$ref": "#/$defs/quotaRemaining" },
+        "reset_at": { "type": ["string", "null"], "format": "date-time" },
+        "cost_mode": {
+          "enum": ["free", "included", "metered", "on_demand", "unknown"]
+        },
+        "location": {
+          "enum": ["local", "cloud", "remote", "hybrid", "unknown"]
+        },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "evidence": { "$ref": "#/$defs/evidence" }
+      }
+    }
+  }
+}
