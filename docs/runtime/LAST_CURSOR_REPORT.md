@@ -8,7 +8,7 @@
 task_ref: V4_WF40_EXECUTION_ROUTING_PATCH_APPLY_OFFLINE
 result_cursor: PASS_WF40_44_TO_50_EXACT_GPT_WEB_DELTA
 starting_head: 4296e9c56f6d3c9763aa07e9c1c9847692014b12
-final_head: <stamped post-commit>
+final_head: a89bf451c055358b9f836ca4375d260302882eb4
 
 wf40_id: 9ZMj2ACTKyDVhCue
 wf40_pre_version_id: 07fbfca6-e2f9-4fff-bfd6-c59d31f124b7
