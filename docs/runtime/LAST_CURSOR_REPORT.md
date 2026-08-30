@@ -5,44 +5,39 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_OPENCODE_STEPS1_MAXIMUM_STEPS_DIAGNOSIS_ZERO_GENERATION
-result_cursor: PASS_EXTERNAL_SINGLE_GENERATION_GUARD_REQUIRED
-starting_head: ececdae516ff1d5c57d06abda16fb20d480d2d44
-final_head: 04566e3e43adf52ba864809c6b7ca2cef3230f80
+task_ref: V4_OPENCODE_SINGLE_GENERATION_GUARD_OFFLINE
+result_cursor: PASS_SINGLE_GENERATION_GUARD_READY
+starting_head: 7ee35748903376e080558cb66fd833c451abf292
+final_head: PENDING_COMMIT
 
-opencode_version: 1.18.25
-installed_source_resolved: opencode-ai@1.18.25_bun_binary_opencode.exe
-maximum_steps_literal_resolved: true
-maximum_steps_code_path: SessionPrompt.run_Rplusplus_then_R_ge_steps_inject_assistant_oa_or_P_
-step_counter_initial_value: 0
-step_counter_increment_point: start_of_each_agentic_loop_iteration_before_model_call
-steps_comparison_semantics: isLastStep_equals_R_ge_steps_default_Infinity
+guard_contract_path: docs/contracts/opencode-single-generation-guard-v1.md
+guard_schema_path: docs/contracts/opencode-single-generation-guard-v1.schema.json
+guard_tool_path: tools/opencode-single-generation-guard-v1.mjs
+guard_test_path: tests/opencode-single-generation-guard/run.mjs
 
-steps_omitted_max_model_generations: unbounded_Infinity
-steps_1_max_model_generations: 1_but_first_call_is_max_steps_injection
-steps_2_max_model_generations: 2_first_usable_second_injected
+bind_host: 127.0.0.1
+loopback_only: true
+max_upstream_generation_requests: 1
 
-maximum_steps_text_origin: opencode_injected_assistant_prefill_into_llm_request
-observed_live_event_explanation: steps_1_makes_first_iteration_isLastStep_so_step_start_text_maxsteps_step_finish
-observed_token_accounting_explanation: one_model_call_with_prefill_dominated_request_output_tokens_1_text_matches_template
+first_request_forwarded: true
+second_request_blocked: true
+concurrent_race_test: true
+failed_first_consumes_budget: true
+streaming_passthrough_test: true
+models_probe_budget_free: true
+alternate_generation_endpoints_blocked: true
+secret_header_rejection: true
+body_persistence: false
+tests_result: PASS_16_of_16_plus_regressions
 
-tools_disabled_effect: does_not_disable_steps_counter_or_last_step_injection
-finish_reason_stop_effect: exits_after_iteration_but_cannot_prevent_pre_call_injection_when_R_ge_steps
-continue_loop_on_deny_effect: when_not_true_deny_sets_shouldBreak_still_does_not_make_steps_1_usable
-
-diagnosis_classification: EXTERNAL_SINGLE_GENERATION_GUARD_REQUIRED
-safe_config_delta: none_proven_for_usable_first_and_hard_max_1
-external_guard_required: true
-opencode_patch_required: false
-
-opencode_execution_count: 0
 qwen_generation_calls: 0
-process_start_calls: 0
+opencode_execution_count: 0
+provider_calls: 0
 process_kill_calls: 0
 process_stop_calls: 0
 runtime_restart_calls: 0
-
 secret_exposure: false
-architecture_report: reports/architecture/v4_opencode_steps1_maximum_steps_diagnosis.md
-NEXT: V4_OPENCODE_SINGLE_GENERATION_GUARD_OFFLINE
+
+architecture_report: reports/architecture/v4_opencode_single_generation_guard_offline.md
+NEXT: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2
 ```

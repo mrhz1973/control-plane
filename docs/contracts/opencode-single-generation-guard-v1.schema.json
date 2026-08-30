@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/opencode-single-generation-guard-v1.schema.json",
+  "title": "opencode-single-generation-guard-accounting-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "guard_state",
+    "bind_host",
+    "listen_port",
+    "upstream_origin",
+    "generation_budget",
+    "generation_requests_seen",
+    "upstream_generation_requests",
+    "blocked_generation_requests",
+    "informational_requests_forwarded",
+    "rejected_requests",
+    "first_generation_started",
+    "first_generation_terminal",
+    "secret_bearing_requests_rejected"
+  ],
+  "properties": {
+    "schema_version": { "const": "opencode-single-generation-guard-accounting-v1" },
+    "guard_state": {
+      "type": "string",
+      "enum": ["listening", "closed", "error"]
+    },
+    "bind_host": { "const": "127.0.0.1" },
+    "listen_port": { "type": "integer", "minimum": 0, "maximum": 65535 },
+    "upstream_origin": {
+      "type": "string",
+      "pattern": "^http://(127\\.0\\.0\\.1|localhost)(:\\d+)?$"
+    },
+    "generation_budget": { "const": 1 },
+    "generation_requests_seen": { "type": "integer", "minimum": 0 },
+    "upstream_generation_requests": { "type": "integer", "minimum": 0, "maximum": 1 },
+    "blocked_generation_requests": { "type": "integer", "minimum": 0 },
+    "informational_requests_forwarded": { "type": "integer", "minimum": 0 },
+    "rejected_requests": { "type": "integer", "minimum": 0 },
+    "first_generation_started": { "type": "boolean" },
+    "first_generation_terminal": { "type": "boolean" },
+    "secret_bearing_requests_rejected": { "type": "integer", "minimum": 0 }
+  }
+}
