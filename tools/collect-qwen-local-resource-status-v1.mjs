@@ -16,6 +16,11 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ensureQwenLocalReady } from "./qwen-local-session-manager-v1.mjs";
 import { validateResourceStatusObject } from "./validate-resource-status-v1.mjs";
+import {
+  opencodeResourceEntryReady,
+  opencodeResourceEntryUnavailable,
+  probeOpenCodeLocal,
+} from "./probe-opencode-local-v1.mjs";
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const BASELINE_PATH = resolve(
@@ -157,6 +162,19 @@ export async function collectQwenLocalResourceStatus(options = {}) {
     ? qwenEntryReady(stamp)
     : qwenEntryUnavailable(stamp);
 
+  if (options.probeOpenCode !== false) {
+    const probeFn = options.probeOpenCode || probeOpenCodeLocal;
+    const opencodeProbe =
+      typeof probeFn === "function" ? probeFn(options.opencodeProbeOptions) : probeFn;
+    const opencodeReady =
+      opencodeProbe &&
+      opencodeProbe.available === true &&
+      opencodeProbe.dispatch_interface_resolved === true;
+    overlay.resources.opencode = opencodeReady
+      ? opencodeResourceEntryReady(stamp)
+      : opencodeResourceEntryUnavailable(stamp);
+  }
+
   const validation = await validateResourceStatusObject(overlay);
   if (!validation.ok) {
     return {
@@ -175,6 +193,8 @@ export async function collectQwenLocalResourceStatus(options = {}) {
     status: overlay,
     session,
     qwen_local_available: overlay.resources.qwen_local.available === true,
+    opencode_available: overlay.resources.opencode?.available === true,
+    opencode_probe: options.probeOpenCode === false ? null : undefined,
   };
 }
 

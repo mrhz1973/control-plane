@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/opencode-execution-dispatch-v1.schema.json",
+  "title": "opencode-execution-dispatch-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dispatch_id",
+    "execution_route_result",
+    "execution_packet",
+    "repository",
+    "branch"
+  ],
+  "properties": {
+    "schema_version": { "const": "opencode-execution-dispatch-v1" },
+    "dispatch_id": { "type": "string", "minLength": 1 },
+    "execution_route_result": { "type": "object" },
+    "execution_packet": { "type": "object" },
+    "repository": { "type": "string", "minLength": 1 },
+    "branch": { "type": "string", "minLength": 1 }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schema": "execution-packet-v1",
+  "packet_id": "EP-V4-OPENCODE-DISPATCH-TEST-001",
+  "packet_revision": 1,
+  "task_id": "V4-OPENCODE-DISPATCH-TEST",
+  "source_backlog_ref": "github:mrhz1973/control-plane@test",
+  "source_backlog_commit": null,
+  "generated_at": "2026-08-30T00:00:00.000Z",
+  "planner": {
+    "requested": "qwen",
+    "used": "qwen",
+    "fallback_used": false,
+    "fallback_reason": null,
+    "provider_state_ref": null
+  },
+  "executor": "cursor",
+  "repository": "mrhz1973/control-plane",
+  "branch_target": "main",
+  "goal": "Implement a bounded offline test artifact under tools/ only.",
+  "preflight": ["Confirm workspace clean."],
+  "allowed_paths": ["tools/", "tests/"],
+  "forbidden_paths": ["credentials", "secrets"],
+  "hard_constraints": ["no provider calls"],
+  "steps": ["Create the minimal test fixture."],
+  "validation": ["Verify diff scope."],
+  "acceptance": ["Fixture validates against execution-packet-v1"],
+  "loop": {
+    "enabled": false,
+    "stop_when": ["acceptance satisfied"],
+    "max_rounds": 1,
+    "on_exhaustion": "blocked"
+  },
+  "risk_assessment": {
+    "level": "low",
+    "reasons": ["offline test fixture"],
+    "scope_expansion": false,
+    "destructive": false,
+    "production_sensitive": false,
+    "credentials_or_billing": false
+  },
+  "gate_recommendation": {
+    "required": false,
+    "reason": null
+  },
+  "context": {
+    "read_set": ["docs/contracts/execution-packet-v1.md"],
+    "checkpoint_policy": "required",
+    "checkpoint_contract": "docs/contracts/execution-checkpoint-v1.md"
+  },
+  "review": {
+    "bugbot": "optional",
+    "max_review_rounds": 1,
+    "autofix_cloud": false
+  },
+  "final_report_contract": "docs/foundation/CURSOR_PROMPT_TEMPLATE.md",
+  "status": "READY_FOR_EXECUTION"
+}

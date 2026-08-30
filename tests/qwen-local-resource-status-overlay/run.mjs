@@ -57,7 +57,7 @@ function check(name, pass, detail = "ok") {
 
 function othersRemainFailClosed(status) {
   for (const id of Object.keys(status.resources)) {
-    if (id === "qwen_local") continue;
+    if (id === "qwen_local" || id === "opencode") continue;
     if (status.resources[id].available !== false) return false;
   }
   return true;
@@ -213,6 +213,7 @@ async function run() {
       ensureReady: async () => sessionReady("READY"),
       clock: () => FIXED_TS,
       baseline: BASELINE,
+      probeOpenCode: false,
     });
     const status = JSON.parse(JSON.stringify(collected.status));
     status.resources.opencode = {

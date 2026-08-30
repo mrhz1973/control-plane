@@ -1,9 +1,10 @@
 # V4 — OpenCode execution dispatch
 
-**Block ID:** `V4_OPENCODE_DISPATCH`  
-**Starting HEAD / expected origin/main:** `b23e72bbc87f335752d92ed703400d66ede52fa9`  
-**Status:** **STOP** — `OPENCODE_NOT_INSTALLED`  
-**Generation calls:** **0** · provider calls **0**
+**Block ID:** `V4_OPENCODE_DISPATCH_RESUME_AFTER_CANONICAL_INSTALL`  
+**Prior block:** `V4_OPENCODE_DISPATCH` → STOP `OPENCODE_NOT_INSTALLED`  
+**Starting HEAD / expected origin/main:** `dddb327cad2c9f09cbe8149392ead29a17708d72`  
+**Status:** **PASS** — `DISPATCH_READY` boundary implemented; no generation  
+**Install package:** `opencode-ai@latest` (npm global)
 
 ---
 
@@ -11,106 +12,121 @@
 
 | Check | Result |
 |---|---|
-| branch main · HEAD == origin/main == expected | PASS |
-| workspace clean | PASS |
-| CURRENT_FRONTIER NEXT = `V4_OPENCODE_DISPATCH` | PASS |
-| D-0025 issue #31 CLOSED / COMPLETE | PASS (`reports/architecture/d0025_issue31_closure.md`) |
-| D-0025 runtime gate CLOSED · WF61 inactive | PASS (frontier) |
+| branch main · HEAD == origin/main | PASS |
+| CURRENT_FRONTIER blocker cleared | PASS |
+| D-0025 CLOSED · gate CLOSED · WF61 inactive | PASS |
+| npm available | PASS |
 
 ---
 
-## OpenCode read-only preflight (Cursor execution environment)
-
-Platform: Windows (PowerShell). Read-only discovery only; no install/upgrade.
-
-| Probe | Result |
-|---|---|
-| `Get-Command opencode` | **not found** |
-| `where.exe opencode` | **not found** |
-| `Get-Command opencode-go` | **not found** |
-| Global npm binary `opencode*` under `%APPDATA%\npm` | **none** (only OpenClaw extension paths under `openclaw` package) |
-| `npm search opencode` / `npx opencode` | package **not in npm registry** |
-
-### Persisted preflight fields
+## Canonical install + CLI verify
 
 | Field | Value |
 |---|---|
-| `opencode_available` | **false** |
-| `opencode_version` | **null** (CLI absent) |
-| executable class | **not on PATH**; no standalone `opencode` or `opencode-go` shim discovered |
-| `--help` / dispatch syntax | **not obtainable** — CLI absent |
+| install command | `npm install -g opencode-ai@latest` |
+| `opencode_available` | **true** |
+| `opencode_version` | **1.18.25** |
+| executable class | npm global shim (`opencode.cmd`) |
+| `opencode run --help` | **present** |
+| `opencode_dispatch_interface_resolved` | **true** |
 
-OpenClaw-related paths under `%APPDATA%\npm\node_modules\openclaw\dist\extensions\opencode*` are **plugin documentation/extensions**, not an invocable OpenCode dispatch CLI in PATH.
+Noninteractive dispatch syntax (from installed `--help`):
 
----
+```text
+opencode run --dir <repository> -m qwen_local/<llama_cpp_model_id> --format json --auto <message>
+```
 
-## Stop decision
-
-Per block specification: when OpenCode is absent, stop with **`OPENCODE_NOT_INSTALLED`**, zero model/provider calls, and **no implementation mutation**.
-
-Therefore **not performed** in this pass:
-
-- dispatch contract / schema
-- `tools/dispatch-opencode-execution-v1.mjs`
-- OpenCode RESOURCE_STATUS local probe overlay
-- deterministic dispatch test suite
-- Bugbot review (no implementation delta)
+No `opencode run <prompt>` executed. No provider authentication.
 
 ---
 
-## Unblocked next step (operator/environment)
+## Deliverables
 
-Install or expose a canonical OpenCode CLI on the execution host PATH, then re-run `V4_OPENCODE_DISPATCH` so read-only preflight can capture `--version` / `--help` and establish deterministic noninteractive dispatch syntax before implementation.
+| Artifact | Path |
+|---|---|
+| Dispatch contract | `docs/contracts/opencode-execution-dispatch-v1.md` |
+| Dispatch schema | `docs/contracts/opencode-execution-dispatch-v1.schema.json` |
+| OpenCode probe | `tools/probe-opencode-local-v1.mjs` |
+| Dispatch tool | `tools/dispatch-opencode-execution-v1.mjs` |
+| Tests | `tests/opencode-execution-dispatch/run.mjs` |
 
-Do **not** install OpenCode in this stopped pass.
+## RESOURCE_STATUS overlay
+
+Extended `tools/collect-qwen-local-resource-status-v1.mjs` to compose OpenCode `local_probe` overlay when CLI resolves. Committed `configs/resources/status.fail-closed.json` **unchanged**.
+
+OpenCode READY entry: `available=true` · `cost_mode=free` · `source=local_probe` · fresh `updated_at`.
+
+---
+
+## Route acceptance
+
+Only `ROUTED` + `implementer=opencode` + `model=qwen_local` → may reach `DISPATCH_READY`. All other routes fail closed (`ROUTE_NOT_OPENCODE_QWEN_LOCAL`).
+
+Execution packet validated via existing `validate-execution-packet-v1` — **unchanged**.
+
+Qwen binding: logical `qwen_local` · profile **`fast_8k`** · DFlash2 required · `127.0.0.1:8080` OpenAI-compatible endpoint in provider overlay (no API key).
+
+---
+
+## Tests
+
+| Suite | Result |
+|---|---|
+| `tests/opencode-execution-dispatch/run.mjs` (A–J) | **ALL_PASS** |
+| `tests/execution-router/run.mjs` | **PASS** |
+| `tests/qwen-local-session-manager/run.mjs` | **PASS** |
+| `tests/qwen-local-resource-status-overlay/run.mjs` | **14/14 PASS** |
+
+`execution_performed=false` enforced in all paths.
+
+---
+
+## Counters
+
+| Counter | Value |
+|---|---|
+| generation_calls | **0** |
+| provider_calls | **0** |
+| litellm_calls | **0** |
+| glm_calls | **0** |
+| codex_calls | **0** |
+| qwen_generation_calls | **0** |
+| execution_performed | **false** |
+| n8n_mutations | **0** |
+| workflow_mutations | **0** |
+| d0025_mutations | **0** |
+| secret_exposure | **false** |
+
+---
+
+## Bugbot
+
+Initial review flagged overlay test assumption for probed OpenCode — **fixed** (`othersRemainFailClosed` excludes intentional `opencode` probe). **PASS_NO_FINDINGS** after fix.
 
 ---
 
 ## Persisted fields
 
 ```yaml
-result_cursor: STOP_OPENCODE_NOT_INSTALLED
-starting_head: b23e72bbc87f335752d92ed703400d66ede52fa9
-final_head: PENDING_COMMIT
-
-opencode_available: false
-opencode_version: null
-opencode_dispatch_interface_resolved: false
-
-resource_status_opencode_overlay: not_implemented
-qwen_session_manager_reused: not_applicable
+result_cursor: PASS_OPENCODE_DISPATCH_READY
+opencode_install_package: opencode-ai
+opencode_available: true
+opencode_version: 1.18.25
+opencode_dispatch_interface_resolved: true
+resource_status_opencode_overlay: true
+qwen_session_manager_reused: true
 qwen_profile: fast_8k
 dflash_required: true
-
-dispatch_contract_path: null
-dispatch_tool_path: null
-dispatch_test_path: null
-
-tests_result: not_run
-execution_router_tests: not_run
-qwen_session_tests: not_run
-qwen_status_overlay_tests: not_run
-
-generation_calls: 0
-provider_calls: 0
-litellm_calls: 0
-glm_calls: 0
-codex_calls: 0
-qwen_generation_calls: 0
-
-execution_performed: false
-n8n_mutations: 0
-workflow_mutations: 0
-d0025_mutations: 0
-secret_exposure: false
-
-bugbot_review: not_applicable
-architecture_report: reports/architecture/v4_opencode_dispatch.md
-NEXT: V4_OPENCODE_DISPATCH
+dispatch_contract_path: docs/contracts/opencode-execution-dispatch-v1.md
+dispatch_tool_path: tools/dispatch-opencode-execution-v1.mjs
+dispatch_test_path: tests/opencode-execution-dispatch/run.mjs
+tests_result: ALL_PASS
+bugbot_review: PASS_NO_FINDINGS
+NEXT: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF
 ```
 
 ---
 
 ## Output line
 
-`STOP — OPENCODE_NOT_INSTALLED / GENERATION_CALLS=0`
+`PASS — V4 OPENCODE DISPATCH READY / OPENCODE_INSTALLED=TRUE / EXECUTION_PERFORMED=FALSE / QWEN_GENERATION_CALLS=0`
