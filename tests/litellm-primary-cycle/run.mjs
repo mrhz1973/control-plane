@@ -80,18 +80,51 @@ function validateWf61() {
   if (names.some((n) => /Manual Trigger/i.test(n))) {
     return "Manual Trigger must be absent";
   }
-  const httpNodes = nodes.filter((n) => n.type === "n8n-nodes-base.httpRequest");
-  if (httpNodes.length !== 1) return `expected 1 HTTP node, found ${httpNodes.length}`;
-  const http = httpNodes[0];
-  if (http.parameters?.url !== "http://litellm-primary:4000/v1/responses") {
-    return "HTTP URL must be http://litellm-primary:4000/v1/responses";
+  // Canonical post-00f0132 transport is Execute Command (not httpRequest).
+  const httpRequestNodes = nodes.filter((n) => n.type === "n8n-nodes-base.httpRequest");
+  if (httpRequestNodes.length !== 0) {
+    return `canonical WF61 must have zero httpRequest nodes, found ${httpRequestNodes.length}`;
   }
-  if (http.typeVersion !== 4.2) {
-    return `HTTP typeVersion must be 4.2 for n8n 2.19.5 evidence, got ${http.typeVersion}`;
+  const transportNodes = nodes.filter((n) => n.name === "HTTP Request - LiteLLM primary one-shot");
+  if (transportNodes.length !== 1) {
+    return `expected exactly 1 transport node "HTTP Request - LiteLLM primary one-shot", found ${transportNodes.length}`;
   }
-  if (!String(http.parameters?.jsonBody || "").includes("request_body")) {
-    return "HTTP body must use prepared request_body from runner";
+  const transport = transportNodes[0];
+  if (transport.type !== "n8n-nodes-base.executeCommand") {
+    return `transport type must be n8n-nodes-base.executeCommand, got ${transport.type}`;
   }
+  if (transport.typeVersion !== 1) {
+    return `transport typeVersion must be 1, got ${transport.typeVersion}`;
+  }
+  const transportCmd = String(transport.parameters?.command || "");
+  if (!transportCmd.includes("post-litellm-primary-one-shot.mjs")) {
+    return "transport command must invoke post-litellm-primary-one-shot.mjs";
+  }
+  if (!transportCmd.includes("aHR0cDovL2xpdGVsbG0tcHJpbWFyeTo0MDAwL3YxL3Jlc3BvbnNlcw==")) {
+    return "transport must target canonical LiteLLM URL via url-b64";
+  }
+  if (!transportCmd.includes("request_body_b64")) {
+    return "transport must pass request_body_b64 from prepare";
+  }
+  if (!transportCmd.includes("--wall-timeout-ms 115000")) {
+    return "transport must set --wall-timeout-ms 115000";
+  }
+  if (!transportCmd.includes("--body-idle-timeout-ms 15000")) {
+    return "transport must set --body-idle-timeout-ms 15000";
+  }
+  if (!transportCmd.includes("--max-body-bytes 8388608")) {
+    return "transport must set --max-body-bytes 8388608";
+  }
+  if (!transportCmd.includes("2>&1 || true")) {
+    return "transport must use hang-proof shell form 2>&1 || true";
+  }
+  if (transport.parameters?.authentication || transport.parameters?.genericAuthType || transport.credentials) {
+    return "transport Execute Command must be credentialless";
+  }
+  if (/https?:\/\/(?!json-schema)/i.test(transportCmd)) {
+    return "public HTTP/HTTPS provider target forbidden on transport command";
+  }
+
   const prepareCmd = nodes.filter((n) => n.name === "Execute Command - canonical prepare");
   const finalizeCmd = nodes.filter((n) => n.name === "Execute Command - canonical finalize");
   if (prepareCmd.length !== 1 || finalizeCmd.length !== 1) {
@@ -117,17 +150,8 @@ function validateWf61() {
   if (!execSerialized.includes("QWEN_DEFERRED")) {
     return "WF61 ingress must fail-closed on Qwen";
   }
-  if (/https:\/\/(?!json-schema)/i.test(JSON.stringify(http.parameters || {}))) {
-    return "public https URL forbidden on HTTP node";
-  }
-  const cred = http.credentials?.httpHeaderAuth;
-  if (http.parameters?.authentication || http.parameters?.genericAuthType || http.credentials) {
-    return "HTTP node must be credentialless (no authentication/genericAuthType/credentials)";
-  }
-  if (cred) {
-    return "HTTP Header Auth must not be present on credentialless WF61";
-  }
   if (/Bearer [A-Za-z0-9]{8,}/.test(JSON.stringify(wf))) return "secret literal in WF61";
+  if (/sk-[A-Za-z0-9]{10,}/.test(JSON.stringify(wf))) return "api-key secret literal in WF61";
   if (!names.includes("Return HTTP failure no retry")) return "missing HTTP failure no-retry branch";
   if (!names.includes("Return prepare failure without HTTP")) {
     return "missing prepare failure branch";
@@ -135,12 +159,12 @@ function validateWf61() {
   if (/retry/i.test(names.join("|")) && !/no retry/i.test(JSON.stringify(wf))) {
     return "retry branch semantics unclear";
   }
+  // Canonical 13-node WF61 shape (post-00f0132): no httpRequest.
   const allowedTypeVersions = new Set([
     "n8n-nodes-base.executeWorkflowTrigger@1.2",
     "n8n-nodes-base.code@2",
     "n8n-nodes-base.executeCommand@1",
     "n8n-nodes-base.if@2",
-    "n8n-nodes-base.httpRequest@4.2",
     "n8n-nodes-base.stickyNote@1",
   ]);
   for (const t of types) {
