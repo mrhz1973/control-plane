@@ -5,40 +5,42 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_WF40_EXECUTION_ROUTING_PATCH_APPLY_OFFLINE
-result_cursor: PASS_WF40_44_TO_50_EXACT_GPT_WEB_DELTA
-starting_head: 4296e9c56f6d3c9763aa07e9c1c9847692014b12
-final_head: a89bf451c055358b9f836ca4375d260302882eb4
+task_ref: V4_EXECUTION_ROUTE_SIDECAR_SOURCE_ADAPTER_OFFLINE
+result_cursor: PASS_SIDECAR_SOURCE_ADAPTER_OFFLINE
+starting_head: b296547f56cbc3afcd35fc56eef0325142b1d1ee
+final_head: PENDING_COMMIT
 
-wf40_id: 9ZMj2ACTKyDVhCue
-wf40_pre_version_id: 07fbfca6-e2f9-4fff-bfd6-c59d31f124b7
-wf40_post_version_id: 067a6b82-70a0-44dd-88fc-c8e9973f13bc
-wf40_pre_node_count: 44
-wf40_post_node_count: 50
+source_contract: docs/contracts/v4-execution-route-sidecar-source-v1.md
+source_schema: docs/contracts/v4-execution-route-sidecar-source-v1.schema.json
+bundle_schema: docs/contracts/v4-execution-routing-sidecar-bundle-v1.schema.json
+adapter_tool: tools/build-v4-execution-routing-sidecars-v1.mjs
+adapter_tests: tests/v4-execution-route-sidecar-source/run.mjs
 
-patch_artifact: workflows/patches/v4-wf40-execution-routing-bridge.gpt-web.json
-patch_applied_verbatim: true
-legacy_nodes_preserved: true
-new_v4_nodes: 6
-wf61_target_preserved: d0025-6100-4001-8001-000000000061
-wf61_active_final: false
-d0025_gate_closed_final: true
-
-explicit_route_request_required: true
-explicit_resource_status_required: true
+same_commit_required: true
+task_binding_required: true
+backlog_path_binding_required: true
+risk_binding_required: true
 technical_requirements_synthesized: false
-missing_sidecar_fail_closed: true
-dispatch_node_added: false
-execution_node_added: false
-separate_v4_workflow_created: false
 
+status_max_age_seconds: 300
+status_explicit_fresh_supported: true
+status_fail_closed_fallback: true
+status_collector_invoked: false
+
+target_tests: PASS_24_24
+regression_tests: PASS_resource_status_6_execution_router_12_n8n_bridge_23
+
+workflow_mutations: 0
 workflow_execution_calls: 0
 provider_calls: 0
 qwen_generation_calls: 0
+qwen_session_manager_calls: 0
 opencode_execution_count: 0
 adapter_run_calls: 0
+network_calls: 0
+network_mutations: 0
 secret_exposure: false
 
-architecture_report: reports/architecture/v4_wf40_execution_routing_patch_apply_offline.md
-NEXT: V4_EXECUTION_ROUTE_SIDECAR_SOURCE_CONTRACT
+architecture_report: reports/architecture/v4_execution_route_sidecar_source_adapter_offline.md
+NEXT: V4_WF40_SIDECAR_SOURCE_PATCH_AUTHORING
 ```

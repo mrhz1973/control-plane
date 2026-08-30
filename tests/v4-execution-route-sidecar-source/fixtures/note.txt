@@ -1,0 +1,1 @@
+Offline fixtures for v4-execution-route-sidecar-source. Synthetic only. No secrets.

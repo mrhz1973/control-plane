@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-execution-routing-sidecar-bundle-v1.schema.json",
+  "title": "v4-execution-routing-sidecar-bundle-v1",
+  "description": "Deterministic offline output of build-v4-execution-routing-sidecars-v1. Contains execution_route_request + resource_status for the installed WF40 V4 capture lane, plus provenance. No secrets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ok",
+    "classification",
+    "task_id",
+    "execution_route_request",
+    "resource_status",
+    "route_source",
+    "status_source",
+    "status_classification",
+    "reason_codes"
+  ],
+  "properties": {
+    "schema_version": { "const": "v4-execution-routing-sidecar-bundle-v1" },
+    "ok": { "type": "boolean" },
+    "classification": { "type": "string", "minLength": 1 },
+    "task_id": { "type": ["string", "null"] },
+    "execution_route_request": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "https://github.com/mrhz1973/control-plane/docs/contracts/execution-route-request-v1.schema.json" }
+      ]
+    },
+    "resource_status": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "https://github.com/mrhz1973/control-plane/docs/contracts/resource-status-v1.schema.json" }
+      ]
+    },
+    "route_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "commit"],
+      "properties": {
+        "path": { "type": ["string", "null"] },
+        "commit": { "type": ["string", "null"] }
+      }
+    },
+    "status_source": {
+      "type": ["string", "null"],
+      "enum": [null, "explicit_transient", "fail_closed_baseline"]
+    },
+    "status_classification": {
+      "type": ["string", "null"],
+      "enum": [
+        null,
+        "RESOURCE_STATUS_EXPLICIT_FRESH",
+        "RESOURCE_STATUS_FAIL_CLOSED_BASELINE"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
