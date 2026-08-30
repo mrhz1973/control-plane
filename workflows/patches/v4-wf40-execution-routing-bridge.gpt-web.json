@@ -1,0 +1,245 @@
+{
+  "schema": "control-plane-gpt-web-n8n-delta-v1",
+  "task_ref": "V4_WF40_EXECUTION_ROUTING_PATCH_AUTHORING",
+  "authority": "GPT_WEB",
+  "purpose": "Add a fail-closed V4 execution-routing lane to existing WF40 after WF61 planner output, invoking the committed n8n-v4 execution-routing bridge through the existing read-only control-plane mount. The lane captures only explicitly supplied execution_route_request + resource_status sidecars, never synthesizes technical requirements, never dispatches an executor, and remains non-invoking when the sidecars are absent.",
+  "contract_ref": "docs/contracts/n8n-v4-execution-routing-bridge-v1.md",
+  "bridge_ref": "tools/n8n-v4-execution-routing-bridge-v1.mjs",
+  "mount_path": "/files/handoff-runtime/control-plane",
+  "target_workflow": {
+    "live_id": "9ZMj2ACTKyDVhCue",
+    "expected_name": "40 - CP v4 multirepo + classifier bridge - ACTIVE",
+    "expected_active": true,
+    "expected_node_count_before_patch": 44,
+    "expected_version_id_before_patch": null,
+    "version_rule": "capture live versionId before apply; abort on structural precondition mismatch rather than guessing"
+  },
+  "preconditions": {
+    "wf61_execute_node": {
+      "id": "d0025f40-6108-4008-8008-000000000108",
+      "name": "Execute Workflow - WF61 primary remote planner",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "workflow_id": "d0025-6100-4001-8001-000000000061"
+    },
+    "remote_dispatch_if": {
+      "id": "d0025f40-6107-4007-8007-000000000107",
+      "name": "IF - remote planner dispatch allowed?",
+      "true_target_before_patch": "Execute Workflow - WF61 primary remote planner",
+      "false_target_must_remain": "Code - Remote planner gate closed"
+    },
+    "required_repo_files": [
+      "docs/contracts/n8n-v4-execution-routing-bridge-v1.md",
+      "docs/contracts/execution-route-request-v1.md",
+      "docs/contracts/resource-status-v1.md",
+      "tools/n8n-v4-execution-routing-bridge-v1.mjs",
+      "configs/resources/registry.json"
+    ],
+    "must_not_already_exist_node_ids": [
+      "v4f40-7101-4001-8101-000000000101",
+      "v4f40-7102-4002-8102-000000000102",
+      "v4f40-7103-4003-8103-000000000103",
+      "v4f40-7104-4004-8104-000000000104",
+      "v4f40-7105-4005-8105-000000000105",
+      "v4f40-7106-4006-8106-000000000106"
+    ],
+    "live_state_must_remain": {
+      "wf61_active": false,
+      "d0025_runtime_gate_enabled": false,
+      "provider_calls_authorized_per_event": 0
+    }
+  },
+  "operations": [
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const j=$input.item.json??{};const rr=(j.execution_route_request&&typeof j.execution_route_request==='object'&&!Array.isArray(j.execution_route_request))?j.execution_route_request:null;const st=(j.resource_status&&typeof j.resource_status==='object'&&!Array.isArray(j.resource_status))?j.resource_status:null;return {json:{...j,v4_execution_route_request:rr,v4_resource_status:st,v4_sidecar_ready:Boolean(rr&&st)}};"
+        },
+        "id": "v4f40-7101-4001-8101-000000000101",
+        "name": "Code - Capture explicit V4 execution routing sidecar",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [1840, 1180]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const cycle=$input.item.json??{};const side=$('Code - Capture explicit V4 execution routing sidecar').item.json??{};const rr=side.v4_execution_route_request??null;const st=side.v4_resource_status??null;const ready=side.v4_sidecar_ready===true&&rr&&st;const b64=v=>Buffer.from(JSON.stringify(v),'utf8').toString('base64');return {json:{task_id:cycle.task_id??null,v4_bridge_input_ready:Boolean(ready),classification:ready?'V4_BRIDGE_INPUT_READY':'V4_ROUTE_SIDECAR_MISSING',cycle_result_b64:ready?b64(cycle):null,route_request_b64:ready?b64(rr):null,status_b64:ready?b64(st):null,dispatch_attempted:false,execution_performed:false}};"
+        },
+        "id": "v4f40-7102-4002-8102-000000000102",
+        "name": "Code - Prepare V4 execution routing bridge input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [2160, 1280]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "conditions": {
+            "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1},
+            "conditions": [
+              {
+                "id": "v4-wf40-routing-bridge-input-ready",
+                "leftValue": "={{ $json.v4_bridge_input_ready }}",
+                "rightValue": true,
+                "operator": {"type": "boolean", "operation": "equals"}
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "v4f40-7103-4003-8103-000000000103",
+        "name": "IF - V4 routing bridge input ready?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [2400, 1280]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "command": "=node /files/handoff-runtime/control-plane/tools/n8n-v4-execution-routing-bridge-v1.mjs --cycle-result-b64 '{{$json.cycle_result_b64}}' --route-request-b64 '{{$json.route_request_b64}}' --status-b64 '{{$json.status_b64}}'"
+        },
+        "id": "v4f40-7104-4004-8104-000000000104",
+        "name": "Execute Command - V4 execution routing bridge",
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [2640, 1200],
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const r=$input.item.json??{};const stdout=String(r.stdout??'').trim();const exitCode=Number(r.exitCode??r.code??0);let parsed=null;try{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}const structural=parsed&&parsed.schema_version==='n8n-v4-execution-routing-bridge-result-v1';const ready=Boolean(structural&&parsed.ok===true&&parsed.classification==='ROUTING_READY_FOR_DISPATCH');return {json:{schema:'wf40-v4-execution-routing-result-v1',ok:ready,classification:structural?parsed.classification:(exitCode===0?'V4_BRIDGE_OUTPUT_INVALID':'V4_BRIDGE_COMMAND_FAILED'),task_id:structural?(parsed.task_id??null):null,bridge_result:structural?parsed:null,routing_ready_for_dispatch:ready,dispatch_attempted:false,execution_performed:false}};"
+        },
+        "id": "v4f40-7105-4005-8105-000000000105",
+        "name": "Code - Parse V4 execution routing bridge result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [2880, 1200]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const cycle=$('Execute Workflow - WF61 primary remote planner').item.json??{};return {json:{schema:'wf40-v4-execution-routing-result-v1',ok:false,classification:$json.classification||'V4_ROUTE_SIDECAR_MISSING',task_id:cycle.task_id??null,routing_ready_for_dispatch:false,dispatch_attempted:false,execution_performed:false}};"
+        },
+        "id": "v4f40-7106-4006-8106-000000000106",
+        "name": "Code - V4 execution routing bridge gate closed",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [2640, 1380]
+      }
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "IF - remote planner dispatch allowed?",
+      "outputs": [[{"node": "Code - Capture explicit V4 execution routing sidecar", "type": "main", "index": 0}], [{"node": "Code - Remote planner gate closed", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Capture explicit V4 execution routing sidecar",
+      "outputs": [[{"node": "Execute Workflow - WF61 primary remote planner", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Execute Workflow - WF61 primary remote planner",
+      "outputs": [[{"node": "Code - Prepare V4 execution routing bridge input", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Prepare V4 execution routing bridge input",
+      "outputs": [[{"node": "IF - V4 routing bridge input ready?", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "IF - V4 routing bridge input ready?",
+      "outputs": [[{"node": "Execute Command - V4 execution routing bridge", "type": "main", "index": 0}], [{"node": "Code - V4 execution routing bridge gate closed", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Execute Command - V4 execution routing bridge",
+      "outputs": [[{"node": "Code - Parse V4 execution routing bridge result", "type": "main", "index": 0}]]
+    }
+  ],
+  "resulting_lane_contract": {
+    "lane": "existing primary-remote gate -> explicit V4 sidecar capture -> WF61 planner -> V4 bridge input gate -> offline route/adapter metadata bridge -> terminal parsed result",
+    "node_count_after_patch": 50,
+    "technical_requirements_synthesized": false,
+    "explicit_execution_route_request_required": true,
+    "explicit_resource_status_required": true,
+    "sidecar_absent_behavior": "WF61 behavior preserved; V4 bridge command is not invoked; terminal V4_ROUTE_SIDECAR_MISSING",
+    "bridge_success_behavior": "ROUTING_READY_FOR_DISPATCH metadata only; no dispatch node exists downstream in this patch",
+    "dispatch_attempted": false,
+    "execution_performed": false,
+    "separate_v4_workflow_created": false
+  },
+  "preserve": [
+    "All 44 existing WF40 node IDs/names/types and all legacy branches except the single transparent insertion before WF61 plus the new downstream terminal V4 lane",
+    "WF40 active state",
+    "Existing PM21 classifier/mock-worker/Telegram lane",
+    "GIS lane",
+    "Data Table lane",
+    "WF60/OpenClaw fallback lane",
+    "WF61 workflow content and inactive state",
+    "D-0025 runtime gate closed",
+    "LiteLLM configuration/runtime",
+    "RESOURCE_REGISTRY static file",
+    "No Grok Bot executor registration",
+    "No Qwen runtime/session mutation"
+  ],
+  "forbidden": [
+    "Synthesizing execution_route_request or technical_requirements from packet goal, paths, planner prose, commit text, PM21 classifier output, chat history, or risk prose",
+    "Defaulting a missing resource_status to an available/ready snapshot",
+    "Calling collect-qwen-local-resource-status-v1.mjs",
+    "Calling Qwen/Ollama/llama-server/OpenCode/provider during patch apply or validation",
+    "Adding executor dispatch downstream of ROUTING_READY_FOR_DISPATCH",
+    "Creating a separate V4 n8n workflow",
+    "Changing WF61 content/active state",
+    "Changing D-0025 runtime gate",
+    "Changing WF60/OpenClaw/LiteLLM/network/credentials/secrets",
+    "Reading/exporting/logging/hashing secret values"
+  ],
+  "verification": {
+    "required": [
+      "Capture secret-safe live WF40 pre-export and verify id/name/active/node_count=44",
+      "Verify all 44 pre-existing node IDs/names/types remain after patch",
+      "Verify exactly six new V4 node IDs above and total node_count=50",
+      "Verify IF - remote planner dispatch allowed? FALSE branch remains Code - Remote planner gate closed",
+      "Verify TRUE branch now passes transparently through Code - Capture explicit V4 execution routing sidecar into the same WF61 target",
+      "Verify WF61 output connects only to the new V4 preparation lane",
+      "Verify missing sidecars prevent Execute Command - V4 execution routing bridge from running",
+      "Verify no downstream executor/dispatch node exists after parsed V4 result",
+      "Verify WF61 remains inactive and D-0025 runtime gate remains closed",
+      "Verify no workflow execution is used for apply validation",
+      "Verify provider/model/Qwen/OpenCode calls=0 and secret_exposure=false"
+    ],
+    "do_not_execute_wf40_for_validation": true,
+    "do_not_execute_wf61_for_validation": true,
+    "do_not_execute_bridge_for_validation": true
+  },
+  "stop_conditions": [
+    "WF40 id/name/active/node-count structural precondition mismatch",
+    "Expected D-0025 parent nodes or current TRUE/FALSE connection shape mismatch",
+    "Any new V4 node id already exists non-equivalently",
+    "Bridge contract/tool is absent or differs from committed v1 semantics",
+    "WF61 is active or D-0025 runtime gate is not closed",
+    "Apply would remove or rewrite any legacy WF40 node",
+    "Apply would require a workflow execution/provider/model call for validation",
+    "Any secret value would need to be inspected"
+  ]
+}
