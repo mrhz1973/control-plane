@@ -8,7 +8,7 @@
 task_ref: WF61_STRUCTURAL_REGRESSION_BASELINE_RECONCILIATION_OFFLINE_ONE_PASS
 result_cursor: PASS_WF61_STRUCTURAL_BASELINE_RECONCILED
 starting_head: 65dfa07c96cb6dbb6be1aafe7b46aaed0df9577d
-final_head: <stamped post-commit>
+final_head: 8aff79a9ef4eba1938e91ca86a06e5f64045e50c
 
 stale_test_path: tests/litellm-primary-cycle/run.mjs
 canonical_wf61_template_path: workflows/61-litellm-primary-remote-planner.template.json
