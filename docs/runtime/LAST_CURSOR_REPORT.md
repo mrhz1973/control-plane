@@ -8,7 +8,7 @@
 task_ref: D0025_W_CHILD_FINALIZATION_RECONCILIATION_POLICY_V1
 result_cursor: PASS_CHILD_FINALIZATION_RECONCILIATION_V1
 starting_head: fc4f9c9e56cb12a39a416f6331da22333f82b7b1
-final_head: PENDING_COMMIT
+final_head: 1f512ce76ba0c84f68532d6f2373c428060b32b3
 
 contract_path: docs/contracts/n8n-child-execution-reconciliation-v1.md
 tool_path: tools/reconcile-n8n-child-execution-v1.mjs
