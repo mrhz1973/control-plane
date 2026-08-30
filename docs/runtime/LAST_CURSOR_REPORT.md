@@ -9,7 +9,7 @@ task_ref: V4_LOCAL_RUNTIME_READONLY_SINGLE_DIAGNOSTIC_BIND_CORRECTION_ONE_PASS
 result_cursor: PASS_LOCAL_READONLY_SINGLE_DIAGNOSTIC_BIND
 starting_remote_head: e0cedc4730792fa11da4dbe31a6be78d7b0c6d92
 local_preserved_from_head: 1da67135a9bc72794e7c1d3383202996ab7ff581
-final_head: PENDING_COMMIT
+final_head: 3ccbb2d53bd87e6b4cb5b0f3109d6caeea20be98
 
 restored_stash: v4-local-readonly-adapter-double-diagnostic-preserve
 older_backup_stash_not_restored: v4-local-readonly-adapter-28of29-preserve
