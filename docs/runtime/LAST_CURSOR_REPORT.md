@@ -5,65 +5,44 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH
-result_cursor: STOP_LIVE_PROOF_RESPONSE_INVALID
-starting_head: d03930b544c29741aeffd42e844bd799073e5a39
-final_head: ee1979ff2b5e7262bf23a311c4b8f3808bbc9a42
-
-authorization_id: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH
-packet_id: EP-V4-OPENCODE-LIVE-PROOF-REAUTH-001
-
-occupancy_preflight_classification: QWEN_NOT_RUNNING_SAFE_TO_START
-occupancy_recheck_before_generation: QWEN_READY_IDLE
-competing_workload_detected: false
-
-runtime_restore_required: true
-launcher_start_count: 1
-runtime_ready: true
-models_http_status: 200
-qwen_model_exposed: true
+task_ref: V4_OPENCODE_STEPS1_MAXIMUM_STEPS_DIAGNOSIS_ZERO_GENERATION
+result_cursor: PASS_EXTERNAL_SINGLE_GENERATION_GUARD_REQUIRED
+starting_head: ececdae516ff1d5c57d06abda16fb20d480d2d44
+final_head: PENDING_COMMIT
 
 opencode_version: 1.18.25
-opencode_execution_count: 1
-opencode_single_turn: true
-opencode_tools_disabled: true
-opencode_auxiliary_generation_paths_disabled: true
-opencode_retry_bound_proven: true
+installed_source_resolved: opencode-ai@1.18.25_bun_binary_opencode.exe
+maximum_steps_literal_resolved: true
+maximum_steps_code_path: SessionPrompt.run_Rplusplus_then_R_ge_steps_inject_assistant_oa_or_P_
+step_counter_initial_value: 0
+step_counter_increment_point: start_of_each_agentic_loop_iteration_before_model_call
+steps_comparison_semantics: isLastStep_equals_R_ge_steps_default_Infinity
 
-qwen_backend: llama_cpp
-qwen_profile: fast_8k
-qwen_model_id: qwen38-original-dflash2-8k
-dflash_required: true
-qwen_generation_calls: 1
+steps_omitted_max_model_generations: unbounded_Infinity
+steps_1_max_model_generations: 1_but_first_call_is_max_steps_injection
+steps_2_max_model_generations: 2_first_usable_second_injected
 
-live_transport_status: exit_0_json_events
-live_elapsed_ms: 58748
+maximum_steps_text_origin: opencode_injected_assistant_prefill_into_llm_request
+observed_live_event_explanation: steps_1_makes_first_iteration_isLastStep_so_step_start_text_maxsteps_step_finish
+observed_token_accounting_explanation: one_model_call_with_prefill_dominated_request_output_tokens_1_text_matches_template
 
-response_schema: missing
-response_task_id: missing
-response_route: missing
-response_profile: missing
-response_dflash_required: missing
-response_result: missing
-response_message: missing
-response_validation: FAIL_MAXIMUM_STEPS_TEXT_NOT_REQUIRED_JSON
+tools_disabled_effect: does_not_disable_steps_counter_or_last_step_injection
+finish_reason_stop_effect: exits_after_iteration_but_cannot_prevent_pre_call_injection_when_R_ge_steps
+continue_loop_on_deny_effect: when_not_true_deny_sets_shouldBreak_still_does_not_make_steps_1_usable
 
-retry_calls: 0
-fallback_calls: 0
-glm_calls: 0
-codex_calls: 0
-litellm_calls: 0
-n8n_calls: 0
+diagnosis_classification: EXTERNAL_SINGLE_GENERATION_GUARD_REQUIRED
+safe_config_delta: none_proven_for_usable_first_and_hard_max_1
+external_guard_required: true
+opencode_patch_required: false
 
+opencode_execution_count: 0
+qwen_generation_calls: 0
+process_start_calls: 0
 process_kill_calls: 0
 process_stop_calls: 0
-repository_mutation_by_opencode: false
-runtime_parameter_mutation: false
-network_mutation: false
-secret_exposure: false
+runtime_restart_calls: 0
 
-gate_closed_final: true
-architecture_report: reports/architecture/v4_opencode_bounded_live_dispatch_proof_reauth.md
-checkpoint_path: docs/runtime/CHECKPOINT_V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH.md
-NEXT: V4_OPENCODE_STEPS1_MAXIMUM_STEPS_DIAGNOSIS_ZERO_GENERATION
+secret_exposure: false
+architecture_report: reports/architecture/v4_opencode_steps1_maximum_steps_diagnosis.md
+NEXT: V4_OPENCODE_SINGLE_GENERATION_GUARD_OFFLINE
 ```
