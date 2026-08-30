@@ -1,0 +1,239 @@
+{
+  "schema": "control-plane-gpt-web-n8n-delta-v1",
+  "task_ref": "V4_RESOURCE_STATUS_WF40_LOCAL_CONTRIBUTION_PATCH_AUTHORING",
+  "authority": "GPT_WEB",
+  "purpose": "Extend the existing WF40 primary-remote TRUE lane with a Tailscale-private read-only local-runtime contribution fetch, deterministic RESOURCE_STATUS composition, and explicit resource_status handoff into the already-installed sidecar-source adapter. Local endpoint failure is nonblocking and fail-closed: zero contributions are composed into canonical unavailable status. No technical requirements are inferred and no executor dispatch is added.",
+  "contract_refs": [
+    "docs/contracts/v4-local-runtime-readonly-private-endpoint-v1.md",
+    "docs/contracts/v4-resource-status-control-plane-source-v1.md",
+    "docs/contracts/v4-resource-status-contribution-v1.schema.json"
+  ],
+  "producer_ref": "tools/produce-v4-local-runtime-readonly-contribution-v1.mjs",
+  "composer_ref": "tools/compose-v4-resource-status-control-plane-v1.mjs",
+  "mount_path": "/files/handoff-runtime/control-plane",
+  "private_endpoint": {
+    "method": "GET",
+    "url": "https://asusdesktop.tailc01234.ts.net/v4/resource-status/local-readonly",
+    "public_exposure_forbidden": true,
+    "request_body": false,
+    "query_parameters": false,
+    "credential_values": false
+  },
+  "target_workflow": {
+    "live_id": "9ZMj2ACTKyDVhCue",
+    "expected_name": "40 - CP v4 multirepo + classifier bridge - ACTIVE",
+    "expected_active": true,
+    "expected_node_count_before_patch": 56,
+    "expected_version_id_before_patch": "ef80943e-535d-430f-958f-56c03baa1c62"
+  },
+  "preconditions": {
+    "remote_dispatch_if": {
+      "id": "d0025f40-6107-4007-8007-000000000107",
+      "name": "IF - remote planner dispatch allowed?",
+      "true_target_before_patch": "GitHub - Fetch V4 execution route source",
+      "false_target_must_remain": "Code - Remote planner gate closed"
+    },
+    "existing_route_source_fetch": {
+      "id": "v4f40-7201-4001-8201-000000000201",
+      "name": "GitHub - Fetch V4 execution route source"
+    },
+    "existing_sidecar_encode": {
+      "id": "v4f40-7202-4002-8202-000000000202",
+      "name": "Code - Encode V4 sidecar source adapter input"
+    },
+    "existing_sidecar_capture": {
+      "id": "v4f40-7101-4001-8101-000000000101",
+      "name": "Code - Capture explicit V4 execution routing sidecar"
+    },
+    "required_repo_files": [
+      "docs/contracts/v4-local-runtime-readonly-private-endpoint-v1.md",
+      "docs/contracts/v4-resource-status-control-plane-source-v1.md",
+      "docs/contracts/v4-resource-status-contribution-v1.schema.json",
+      "docs/contracts/resource-status-v1.schema.json",
+      "configs/resources/registry.json",
+      "configs/resources/status.fail-closed.json",
+      "tools/compose-v4-resource-status-control-plane-v1.mjs"
+    ],
+    "endpoint_runtime_must_be_proven_before_apply": true,
+    "endpoint_required_proof": {
+      "tailscale_private_only": true,
+      "vps_https_reachable": true,
+      "producer_schema_valid": true,
+      "diagnostic_powershell_processes_per_request": 1,
+      "qwen_generation_calls": 0,
+      "qwen_http_calls": 0,
+      "opencode_cli_calls": 0,
+      "process_mutations": 0,
+      "secret_exposure": false
+    },
+    "must_not_already_exist_node_ids": [
+      "v4f40-7301-4001-8301-000000000301",
+      "v4f40-7302-4002-8302-000000000302",
+      "v4f40-7303-4003-8303-000000000303",
+      "v4f40-7304-4004-8304-000000000304",
+      "v4f40-7305-4005-8305-000000000305"
+    ],
+    "live_state_must_remain": {
+      "wf61_active": false,
+      "d0025_runtime_gate_enabled": false,
+      "provider_calls_authorized_per_event": 0
+    }
+  },
+  "operations": [
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "url": "https://asusdesktop.tailc01234.ts.net/v4/resource-status/local-readonly",
+          "options": {}
+        },
+        "id": "v4f40-7301-4001-8301-000000000301",
+        "name": "HTTP - Fetch local runtime read-only contribution",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [1460, 900],
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const raw=$input.item.json??{};let body=raw.body??raw;if(typeof body==='string'){try{body=JSON.parse(body);}catch{body=null;}}const contribution=(body&&body.schema_version==='v4-local-runtime-readonly-contribution-result-v1'&&body.ok===true&&body.launch_performed===false&&body.generation_calls===0&&body.contribution&&body.contribution.schema_version==='v4-resource-status-contribution-v1')?body.contribution:null;const contributions=contribution?[contribution]:[];const task=String($('Code - Parse primary remote adapter result').item.json?.task_id||'');return {json:{schema:'wf40-v4-local-contribution-normalized-v1',task_id:task,local_contribution_valid:Boolean(contribution),local_contribution_classification:contribution?'PASS_LOCAL_CONTRIBUTION_ACCEPTED':'LOCAL_CONTRIBUTION_UNAVAILABLE_FAIL_CLOSED',contributions}};"
+        },
+        "id": "v4f40-7302-4002-8302-000000000302",
+        "name": "Code - Normalize local runtime contribution",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [1700, 900]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const j=$input.item.json??{};const b64=Buffer.from(JSON.stringify(Array.isArray(j.contributions)?j.contributions:[]),'utf8').toString('base64');return {json:{schema:'wf40-v4-local-contribution-composer-input-v1',task_id:String(j.task_id||''),contributions_b64:b64,local_contribution_valid:j.local_contribution_valid===true,local_contribution_classification:j.local_contribution_classification||null}};"
+        },
+        "id": "v4f40-7303-4003-8303-000000000303",
+        "name": "Code - Encode local RESOURCE_STATUS composer input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [1940, 900]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "command": "=node /files/handoff-runtime/control-plane/tools/compose-v4-resource-status-control-plane-v1.mjs --contributions-b64 '{{$json.contributions_b64}}'"
+        },
+        "id": "v4f40-7304-4004-8304-000000000304",
+        "name": "Execute Command - compose local RESOURCE_STATUS",
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [2180, 900],
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const r=$input.item.json??{};const stdout=String(r.stdout??'').trim();let parsed=null;try{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}const valid=Boolean(parsed&&parsed.schema_version==='v4-resource-status-control-plane-source-result-v1'&&parsed.ok===true&&parsed.classification==='PASS_RESOURCE_STATUS_COMPOSED'&&parsed.resource_status&&parsed.resource_status.schema_version==='resource-status-v1');const task=String($('Code - Parse primary remote adapter result').item.json?.task_id||'');return {json:{schema:'wf40-v4-local-resource-status-result-v1',task_id:task,local_resource_status_ready:valid,local_resource_status_classification:valid?'PASS_LOCAL_RESOURCE_STATUS_COMPOSED':'LOCAL_RESOURCE_STATUS_COMPOSER_UNAVAILABLE_FAIL_CLOSED',resource_status:valid?parsed.resource_status:null,resource_decisions:valid?(parsed.resource_decisions??null):null,provider_call_attempted:false,qwen_generation_calls:0,opencode_execution_count:0,execution_performed:false}};"
+        },
+        "id": "v4f40-7305-4005-8305-000000000305",
+        "name": "Code - Attach composed local RESOURCE_STATUS",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [2420, 900]
+      }
+    },
+    {
+      "op": "set_node_parameters_exact",
+      "node_id": "v4f40-7202-4002-8202-000000000202",
+      "expected_name": "Code - Encode V4 sidecar source adapter input",
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const resp=$input.item.json??{};const parsed=$('Code - Parse primary remote adapter result').item.json??{};const det=$('Code - Detect canonical backlog item').item.json??{};const statusItem=$('Code - Attach composed local RESOURCE_STATUS').item.json??{};const task=String(parsed.task_id||'');const risk=String(parsed.consumer_input?.risk_hint||'');const backlogPath=String(det.backlogPath||'');const commit=String(det.commitSha||'');const routePath=task?('docs/runtime/EXECUTION_ROUTE_'+task+'.json'):'';const routeContent=String(resp.content||'').replace(/\\s+/g,'');const b64=v=>Buffer.from(String(v??''),'utf8').toString('base64');const explicitStatus=(statusItem.resource_status&&typeof statusItem.resource_status==='object'&&!Array.isArray(statusItem.resource_status))?statusItem.resource_status:null;const statusB64=explicitStatus?b64(JSON.stringify(explicitStatus)):null;return {json:{task_id:task,route_source_path:routePath,route_source_present:Boolean(routeContent),task_id_b64:b64(task),backlog_path_b64:b64(backlogPath),backlog_commit_b64:b64(commit),risk_hint_b64:b64(risk),route_source_path_b64:b64(routePath),route_source_commit_b64:b64(commit),route_source_b64:routeContent,status_b64:statusB64,status_arg:statusB64?(\" --status-b64 '\"+statusB64+\"'\"):'',status_input_source:statusB64?'explicit_composed_local':'absent_use_fail_closed_baseline'}};"
+      }
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "IF - remote planner dispatch allowed?",
+      "outputs": [[{"node": "HTTP - Fetch local runtime read-only contribution", "type": "main", "index": 0}], [{"node": "Code - Remote planner gate closed", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "HTTP - Fetch local runtime read-only contribution",
+      "outputs": [[{"node": "Code - Normalize local runtime contribution", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Normalize local runtime contribution",
+      "outputs": [[{"node": "Code - Encode local RESOURCE_STATUS composer input", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Encode local RESOURCE_STATUS composer input",
+      "outputs": [[{"node": "Execute Command - compose local RESOURCE_STATUS", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Execute Command - compose local RESOURCE_STATUS",
+      "outputs": [[{"node": "Code - Attach composed local RESOURCE_STATUS", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Attach composed local RESOURCE_STATUS",
+      "outputs": [[{"node": "GitHub - Fetch V4 execution route source", "type": "main", "index": 0}]]
+    }
+  ],
+  "resulting_lane_contract": {
+    "lane": "existing primary-remote gate TRUE -> private local contribution fetch -> deterministic RESOURCE_STATUS composer -> same-commit route-source fetch -> existing sidecar-source adapter -> existing WF61 -> existing routing bridge",
+    "node_count_after_patch": 61,
+    "local_endpoint_private_only": true,
+    "local_endpoint_failure_behavior": "zero contributions -> composer fail-closed snapshot -> continue",
+    "resource_status_composer": "tools/compose-v4-resource-status-control-plane-v1.mjs",
+    "technical_requirements_synthesized": false,
+    "qwen_generation_calls_from_wf40_status_lane": 0,
+    "opencode_execution_calls_from_wf40_status_lane": 0,
+    "provider_calls_for_status": 0,
+    "route_source_same_commit_required": true,
+    "executor_dispatch_added": false,
+    "execution_performed": false,
+    "separate_v4_workflow_created": false
+  },
+  "preserve": [
+    "All existing WF40 node IDs/names/types except the exact parameter update to v4f40-7202 status-source reference",
+    "WF40 active state",
+    "Remote planner FALSE branch -> Code - Remote planner gate closed",
+    "Existing route-source same-commit fetch",
+    "Existing sidecar-source adapter nodes and sidecar-ready gate",
+    "Existing WF61 target/content and inactive state",
+    "Existing V4 routing bridge lane",
+    "Existing PM21/Telegram/GIS/Data Table/WF60/OpenClaw lanes",
+    "D-0025 runtime gate closed",
+    "LiteLLM configuration/runtime",
+    "RESOURCE_REGISTRY static file",
+    "Qwen runtime/session state"
+  ],
+  "forbidden": [
+    "Applying this workflow patch before the private endpoint implementation/reachability proof is complete",
+    "Public Funnel/public Internet exposure of the local contribution endpoint",
+    "Adding credentials, tokens or secret values to the endpoint call",
+    "Calling Qwen/OpenCode/provider APIs to discover status",
+    "Starting/stopping/restarting/killing local runtimes from WF40",
+    "Synthesizing technical_requirements or route semantics from status data",
+    "Changing the route-source exact-commit binding",
+    "Adding executor dispatch downstream",
+    "Creating a separate V4 n8n workflow",
+    "Changing WF61 active state or D-0025 gate"
+  ],
+  "next_after_authoring": "V4_LOCAL_RUNTIME_READONLY_PRIVATE_ENDPOINT_IMPLEMENTATION",
+  "apply_after_endpoint_pass": "V4_RESOURCE_STATUS_WF40_LOCAL_CONTRIBUTION_PATCH_APPLY_OFFLINE"
+}
