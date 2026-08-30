@@ -5,39 +5,64 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_OPENCODE_SINGLE_GENERATION_GUARD_OFFLINE
-result_cursor: PASS_SINGLE_GENERATION_GUARD_READY
-starting_head: 7ee35748903376e080558cb66fd833c451abf292
-final_head: 0aa2d086350e57692bbde6271ba840b70534df44
+task_ref: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2
+result_cursor: PASS_LIVE_DISPATCH_OK
+starting_head: 80a7aad187c816f14ee463b9fc0c5f98a6e7250e
+final_head: PENDING_COMMIT
 
-guard_contract_path: docs/contracts/opencode-single-generation-guard-v1.md
-guard_schema_path: docs/contracts/opencode-single-generation-guard-v1.schema.json
-guard_tool_path: tools/opencode-single-generation-guard-v1.mjs
-guard_test_path: tests/opencode-single-generation-guard/run.mjs
+authorization_id: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2
+packet_id: EP-V4-OPENCODE-LIVE-PROOF-REAUTH-002
 
-bind_host: 127.0.0.1
-loopback_only: true
-max_upstream_generation_requests: 1
+occupancy_preflight_classification: QWEN_READY_IDLE
+occupancy_recheck_before_generation: QWEN_READY_IDLE
+competing_workload_detected: false
 
-first_request_forwarded: true
-second_request_blocked: true
-concurrent_race_test: true
-failed_first_consumes_budget: true
-streaming_passthrough_test: true
-models_probe_budget_free: true
-alternate_generation_endpoints_blocked: true
-secret_header_rejection: true
-body_persistence: false
-tests_result: PASS_16_of_16_plus_regressions
+runtime_restore_required: false
+launcher_start_count: 0
+runtime_ready: true
+qwen_model_exposed: true
 
-qwen_generation_calls: 0
-opencode_execution_count: 0
-provider_calls: 0
+guard_started: true
+guard_bind_host: 127.0.0.1
+guard_listen_port: 12670
+guard_upstream_origin: http://127.0.0.1:8080
+guard_generation_budget: 1
+guard_generation_requests_seen: 1
+guard_upstream_generation_requests: 1
+guard_blocked_generation_requests: 0
+guard_first_generation_terminal: true
+
+opencode_version: 1.18.25
+opencode_execution_count: 1
+opencode_provider_target_is_guard: true
+opencode_tools_disabled: true
+opencode_steps_generation_ceiling_used: false
+
+qwen_profile: fast_8k
+qwen_model_id: qwen38-original-dflash2-8k
+dflash_required: true
+qwen_generation_calls: 1
+
+live_transport_status: exit_0_json_events
+live_elapsed_ms: 167644
+response_validation: VALID
+
+retry_calls: 0
+fallback_calls: 0
+glm_calls: 0
+codex_calls: 0
+litellm_calls: 0
+n8n_calls: 0
+
 process_kill_calls: 0
 process_stop_calls: 0
-runtime_restart_calls: 0
+repository_mutation_by_opencode: false
+runtime_parameter_mutation: false
+network_system_mutation: false
 secret_exposure: false
 
-architecture_report: reports/architecture/v4_opencode_single_generation_guard_offline.md
-NEXT: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2
+gate_closed_final: true
+architecture_report: reports/architecture/v4_opencode_bounded_live_dispatch_proof_reauth_2.md
+checkpoint_path: docs/runtime/CHECKPOINT_V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2.md
+NEXT: V4_OPENCODE_EXECUTION_ADAPTER_V1
 ```
