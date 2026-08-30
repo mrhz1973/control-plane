@@ -8,7 +8,7 @@
 task_ref: V4_WF40_SIDECAR_SOURCE_PATCH_APPLY_OFFLINE
 result_cursor: PASS_WF40_50_TO_56_EXACT_GPT_WEB_DELTA
 starting_head: 77a9311f214f4237aea256175e3f16c32ff31882
-final_head: PENDING_COMMIT
+final_head: b31e7eccd9b970f663bd7419d175994e648d4e70
 
 wf40_id: 9ZMj2ACTKyDVhCue
 wf40_pre_version_id: 067a6b82-70a0-44dd-88fc-c8e9973f13bc
