@@ -113,4 +113,12 @@ Retry trigger 19: 2026-08-30 — ingress socket observer armed before trigger; t
 - GPT-Web selected the bounded packet implementation item: **IPv6 observer coverage** (`D0025_W_PACKET_IPV6_OBSERVER_COVERAGE`).
 - Outcome on main: **PASS** — `tools/observe-litellm-primary-network.mjs` now observes/classifies IPv6 litellm-primary traffic in addition to IPv4; deterministic offline tests A–J PASS; zero provider calls; tranche 02 remains GLM **1/10** · LiteLLM **1/10**.
 - Remaining separate bounded D-0025-W item: **child-row execution accounting for 287888** (`D0025_W_CHILD_ROW_287888_ACCOUNTING_DIAGNOSIS`).
+
+## Post-diagnosis / reconciliation / acceptance outcome (appended)
+
+- Child-row diagnosis **PASS** — classification `EXECUTION_ENGINE_CHILD_FINALIZATION_BUG` (`reports/architecture/d0025_child_row_287888_accounting_diagnosis.md`).
+- Reconciliation policy v1 **PASS** — 287888 `logical_state=TERMINAL_SUCCESS` · `operational_block=false` · `historical_row_mutation_allowed=false` (`reports/architecture/d0025_child_finalization_reconciliation_policy_v1.md`).
+- No historical DB mutation performed or authorized.
+- Acceptance closure review **PASS** — closure decision **`READY_TO_CLOSE`** (`reports/architecture/d0025_acceptance_closure_review.md`); issue **#31** remains **OPEN** until dedicated closure pass.
+- Blocking D-0025 work remaining per acceptance review: **none**; nonblocking follow-ups: node 6112 failure-path json-shape, child accounting overlay only, optional future Codex integrated-path live proof (not required for closure readiness).
 - Historical `source_backlog_commit` / retry-trigger semantics above are preserved unchanged.

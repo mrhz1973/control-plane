@@ -5,32 +5,39 @@
 ## LATEST
 
 ```yaml
-task_ref: D0025_W_CHILD_FINALIZATION_RECONCILIATION_POLICY_V1
-result_cursor: PASS_CHILD_FINALIZATION_RECONCILIATION_V1
-starting_head: fc4f9c9e56cb12a39a416f6331da22333f82b7b1
-final_head: 1f512ce76ba0c84f68532d6f2373c428060b32b3
+task_ref: D0025_W_ACCEPTANCE_CLOSURE_REVIEW
+result_cursor: PASS_ACCEPTANCE_CLOSURE_REVIEW
+closure_decision: READY_TO_CLOSE
+starting_head: d004b2ce85e21d8972cb2dba3c59445700988550
+final_head: PENDING_COMMIT
 
-contract_path: docs/contracts/n8n-child-execution-reconciliation-v1.md
-tool_path: tools/reconcile-n8n-child-execution-v1.mjs
-test_path: tools/reconcile-n8n-child-execution-v1.test.mjs
-tests_result: ALL_PASS
+architecture_decision_pass: true
+litellm_runtime_pass: true
+n8n_integration_pass: true
+glm_end_to_end_pass: true
+execution_packet_followthrough_pass: true
+child_finalization_resolution: NON_BLOCKING_FOLLOWUP
+child_finalization_blocking: false
+codex_requirement_classification: CODEX_REQUIREMENT_SATISFIED_BY_EXISTING_EVIDENCE
+node_6112_classification: NONBLOCKING_FOLLOWUP
+safety_boundaries_pass: true
 
-historical_287888_fixture_result: LOGICALLY_TERMINAL_ACCOUNTING_PURGED
-logical_state_287888: TERMINAL_SUCCESS
-operational_block_287888: false
-historical_row_mutation_allowed: false
-
+runtime_gate_closed: true
+WF61_inactive: true
 provider_calls_delta: 0
 litellm_responses_delta: 0
 glm_delta: 0
+codex_delta: 0
 tranche_02_glm_used: 1/10
 tranche_02_litellm_used: 1/10
-gate_closed_final: true
-WF61_final: inactive
-issue_31: OPEN
 
-bugbot_review: PASS_NO_FINDINGS
-architecture_report: reports/architecture/d0025_child_finalization_reconciliation_policy_v1.md
+blocking_requirement: null
+remaining_nonblocking_followups:
+  - node_6112_failure_path_json_shape
+  - execution_engine_child_finalization_bug_overlay_only
+  - optional_codex_integrated_path_live_proof
+issue_31_state: OPEN
+architecture_report: reports/architecture/d0025_acceptance_closure_review.md
 
-NEXT: D0025_W_ACCEPTANCE_CLOSURE_REVIEW
+NEXT: D0025_W_ISSUE31_CLOSURE
 ```
