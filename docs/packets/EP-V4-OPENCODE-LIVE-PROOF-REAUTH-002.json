@@ -1,0 +1,135 @@
+{
+  "schema": "execution-packet-v1",
+  "packet_id": "EP-V4-OPENCODE-LIVE-PROOF-REAUTH-002",
+  "packet_revision": 1,
+  "task_id": "V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2",
+  "source_backlog_ref": "github:mrhz1973/control-plane#V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2",
+  "source_backlog_commit": "b190c0b9a78e6d54e5b2b14f55c3fb3ec5c1de2e",
+  "generated_at": "2026-08-30T08:33:00Z",
+  "planner": {
+    "requested": "qwen",
+    "used": "qwen",
+    "fallback_used": false,
+    "fallback_reason": null,
+    "provider_state_ref": "docs/runtime/AUTH_V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2.operator.json"
+  },
+  "executor": "cursor",
+  "repository": "mrhz1973/control-plane",
+  "branch_target": "main",
+  "goal": "Execute exactly one OpenCode noninteractive request against qwen_local fast_8k with DFlash2, routing OpenCode exclusively through the canonical external single-generation guard. No OpenCode tools may be available. Return only one compact JSON object with schema v4-opencode-live-proof-output-v1, task_id V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2, route opencode+qwen_local, profile fast_8k, dflash_required true, result PASS, and message LIVE_DISPATCH_OK. Do not inspect or modify files, run commands, browse, call tools, request follow-up, or produce prose outside that JSON object.",
+  "preflight": [
+    "Confirm fresh REAUTH_2 operator authorization artifact exists and is unused.",
+    "Re-run shared-runtime occupancy preflight and require no competing Qwen inference.",
+    "If qwen_local fast_8k DFlash2 is not READY, restore it zero-generation only through the canonical operator-tested launcher.",
+    "Confirm OpenCode 1.18.25 interface remains available.",
+    "Start the canonical single-generation guard on loopback only with upstream http://127.0.0.1:8080.",
+    "Confirm OpenCode provider base URL points only to the guard and not directly to llama.cpp.",
+    "Do not use steps=1 or steps=2 as the generation ceiling."
+  ],
+  "allowed_paths": [
+    "reports/architecture/",
+    "docs/runtime/"
+  ],
+  "forbidden_paths": [
+    "credentials",
+    "secrets",
+    "workflows/",
+    "configs/litellm/",
+    "OpenClaw",
+    "WF40",
+    "WF61",
+    "network",
+    "Tailscale",
+    "TeamViewer"
+  ],
+  "hard_constraints": [
+    "maximum one OpenCode execution",
+    "maximum one qwen_local generation call",
+    "retry zero",
+    "fallback zero",
+    "external guard tools/opencode-single-generation-guard-v1.mjs is mandatory",
+    "OpenCode must see only the guard endpoint",
+    "guard invariant upstream_generation_requests <= 1",
+    "guard upstream is canonical llama.cpp http://127.0.0.1:8080",
+    "steps=1 and steps=2 are forbidden as generation safety ceilings",
+    "occupancy preflight required immediately before restore and generation",
+    "no process kill or stop to free Qwen runtime",
+    "OpenCode tools disabled for the proof session",
+    "no GLM Codex LiteLLM or n8n calls",
+    "no repository file mutation by OpenCode",
+    "no Qwen runtime parameter mutation",
+    "stop at first terminal result and close gate immediately",
+    "no second live call"
+  ],
+  "steps": [
+    "Re-check shared Qwen runtime occupancy read-only.",
+    "If occupancy is idle and 127.0.0.1:8080 is down, restore the canonical qwen_local runtime zero-generation using only the tested launcher.",
+    "Start the canonical loopback single-generation guard with upstream 127.0.0.1:8080 and generation budget one.",
+    "Build the existing opencode+qwen_local DISPATCH_READY specification from this packet, overriding only the provider base URL so OpenCode targets the guard.",
+    "Use a temporary non-repository OpenCode config that exposes only qwen_local, disables tools and auxiliary external behavior, and does not rely on steps=1 or steps=2 for the generation ceiling.",
+    "Run exactly one noninteractive OpenCode process and capture sanitized JSON events/output plus guard accounting.",
+    "Validate the required compact JSON response and prove guard upstream_generation_requests equals one and never exceeds one.",
+    "Close the live-proof gate immediately after the first terminal result."
+  ],
+  "validation": [
+    "Occupancy is revalidated idle immediately before any generation.",
+    "OpenCode execution count equals one if the live call starts.",
+    "OpenCode provider points to guard base URL, not direct llama.cpp.",
+    "Guard accounting proves upstream_generation_requests <= 1.",
+    "qwen_local generation count is proven not greater than one.",
+    "Response matches the required live-proof JSON object.",
+    "No file or runtime parameter mutation by OpenCode occurred.",
+    "No forbidden provider, process-kill, or network-system mutation occurred."
+  ],
+  "acceptance": [
+    "One real OpenCode to guarded qwen_local fast_8k DFlash2 request returns LIVE_DISPATCH_OK with result PASS.",
+    "The guard proves exactly one upstream generation request and blocks any later attempt.",
+    "No process is killed or stopped to free runtime.",
+    "Runtime gate is closed immediately after the terminal result."
+  ],
+  "loop": {
+    "enabled": false,
+    "stop_when": [
+      "first terminal OpenCode result"
+    ],
+    "max_rounds": 1,
+    "on_exhaustion": "blocked"
+  },
+  "risk_assessment": {
+    "level": "low",
+    "reasons": [
+      "one-shot local model live proof",
+      "fresh shared-runtime occupancy gate",
+      "external single-generation firewall",
+      "tools disabled",
+      "no repository mutation by OpenCode"
+    ],
+    "scope_expansion": false,
+    "destructive": false,
+    "production_sensitive": false,
+    "credentials_or_billing": false
+  },
+  "gate_recommendation": {
+    "required": false,
+    "reason": "Fresh operator reauthorization persisted in docs/runtime/AUTH_V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH_2.operator.json"
+  },
+  "context": {
+    "read_set": [
+      "docs/runtime/CURRENT_FRONTIER.md",
+      "docs/runtime/OPERATOR_CONSTRAINT_QWEN_SHARED_RUNTIME_CONCURRENCY.md",
+      "docs/contracts/opencode-execution-dispatch-v1.md",
+      "docs/contracts/opencode-single-generation-guard-v1.md",
+      "reports/architecture/v4_opencode_single_generation_guard_offline.md",
+      "reports/architecture/v4_qwen_shared_runtime_occupancy_recheck_after_pause.md"
+    ],
+    "checkpoint_policy": "required",
+    "checkpoint_contract": "docs/contracts/execution-checkpoint-v1.md"
+  },
+  "review": {
+    "bugbot": "disabled",
+    "max_review_rounds": 0,
+    "autofix_cloud": false
+  },
+  "final_report_contract": "docs/foundation/CURSOR_PROMPT_TEMPLATE.md",
+  "status": "READY_FOR_EXECUTION"
+}
