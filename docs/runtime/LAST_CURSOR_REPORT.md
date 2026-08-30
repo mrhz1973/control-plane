@@ -8,7 +8,7 @@
 task_ref: V4_OPENCODE_EXECUTION_ADAPTER_V1
 result_cursor: PASS_ADAPTER_IMPLEMENTED_TESTS_PASS_BUGBOT_NO_FINDINGS
 starting_head: 819b24d559bbd3948a52b7cf4cc35ddd78b2de22
-final_head: <stamped post-commit>
+final_head: 4c1517f7dfb64f7d58be71be24be520e178ced68
 
 adapter_contract_path: docs/contracts/opencode-execution-adapter-v1.md
 adapter_schema_path: docs/contracts/opencode-execution-adapter-v1.schema.json
