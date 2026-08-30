@@ -8,7 +8,7 @@
 task_ref: V4_RESOURCE_STATUS_CONTROL_PLANE_COMPOSER_OFFLINE
 result_cursor: PASS_RESOURCE_STATUS_COMPOSER_OFFLINE
 starting_head: 57a1aa45afb8558ea6b72a3d0e0a65c3fd1a7508
-final_head: PENDING_COMMIT
+final_head: c6dfdb467af4aae2efe44f960ef2d1f9721d0705
 
 source_contract: docs/contracts/v4-resource-status-control-plane-source-v1.md
 contribution_schema: docs/contracts/v4-resource-status-contribution-v1.schema.json

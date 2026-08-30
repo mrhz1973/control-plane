@@ -2,7 +2,7 @@
 
 **Block ID:** `V4_RESOURCE_STATUS_CONTROL_PLANE_COMPOSER_OFFLINE`  
 **Starting HEAD:** `57a1aa45afb8558ea6b72a3d0e0a65c3fd1a7508`  
-**Final HEAD:** `PENDING_COMMIT`  
+**Final HEAD:** `c6dfdb467af4aae2efe44f960ef2d1f9721d0705`  
 **Category:** IMPLEMENTAZIONE OFFLINE  
 **Runtime authorized:** NO
 
