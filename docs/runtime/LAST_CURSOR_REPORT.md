@@ -8,7 +8,7 @@
 task_ref: V4_N8N_EXECUTION_ROUTING_BRIDGE_COMMIT_RESUME_ONE_PASS
 result_cursor: PASS_BRIDGE_COMMITTED
 starting_head: 27a68be499adc58c5c381b13159519164e71dd54
-final_head: <stamped post-commit>
+final_head: 4e4035b8d21353285fd5ba6e16a8452898a8c241
 
 restored_stash: v4-n8n-routing-bridge-fixed-preserve
 older_backup_stash_not_restored: v4-n8n-routing-bridge-correction-preserve
