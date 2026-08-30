@@ -6,22 +6,25 @@
 |---|---|
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | V4 OpenCode live proof **STOPPED** — `QWEN_LOCAL_UNAVAILABLE` |
+| **ACTIVE WORK** | V4 qwen_local READY restored · live OpenCode proof awaits **fresh** operator AUTH |
 | **BLOCCO ATTIVO** | `V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF` |
-| **STATO BLOCCO** | `D0025_COMPLETE / OPENCODE_DISPATCH_READY / LIVE_PROOF_STOPPED_QWEN_UNAVAILABLE / GATE_CLOSED` |
-| **GATE CORRENTE** | V4 live-proof gate **CLOSED** immediately after pre-run STOP. Prior AUTH artifact is historical only — **not reusable**. D-0025 runtime gate remains **CLOSED**. |
-| **NEXT** | `V4_QWEN_LOCAL_READY_RESTORE_ZERO_GENERATION` — first perform mandatory shared-runtime occupancy preflight; only if Qwen is `QWEN_READY_IDLE` or `QWEN_NOT_RUNNING_SAFE_TO_START`, restore/verify llama.cpp DFlash2 `fast_8k` on `127.0.0.1:8080` exposing `qwen38-original-dflash2-8k` with **zero** OpenCode/Qwen generation. If Blender/MCP/Cursor/OpenCode/benchmark inference is active, STOP `QWEN_BUSY_SHARED_RUNTIME`; if occupancy cannot be proven safely, STOP `QWEN_OCCUPANCY_UNCERTAIN`. Then obtain fresh operator authorization before any live OpenCode retry. |
+| **STATO BLOCCO** | `QWEN_LOCAL_READY_RESTORED / LIVE_PROOF_REAUTH_REQUIRED` |
+| **GATE CORRENTE** | **CLOSED** · fresh operator authorization required. Historical `AUTH_V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF` is **spent/non-reusable**. D-0025 runtime gate remains **CLOSED**. |
+| **NEXT** | `V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH` — obtain a **new** one-shot operator authorization for OpenCode + qwen_local live proof. Before any generation, re-run shared-runtime occupancy preflight per `OPERATOR_CONSTRAINT_QWEN_SHARED_RUNTIME_CONCURRENCY.md`. Do **not** execute live proof until fresh AUTH exists. |
 | **WF40 LIVE** | active · preserved v3.2 foundation |
 | **WF61 LIVE** | **inactive** · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
 | **OPENCODE CLI** | installed · `opencode-ai` · v **1.18.25** |
-| **QWEN_LOCAL** | **NOT READY** · last ensure `API_UNREACHABLE` · generation_calls **0**; runtime may be shared with external Blender/MCP/Cursor agentic tests and must be occupancy-checked before any new assignment/start/restart. |
+| **QWEN_LOCAL** | **READY** · `fast_8k` · `qwen38-original-dflash2-8k` · `http://127.0.0.1:8080` · generation_calls **0** |
 
-## Live-proof outcome
+## Restore anchors
 
-- One-generation OpenCode config proven offline (`steps=1`, tools deny, title/compaction disabled) — **not executed**.
-- Session manager ensure once: `launch_performed=true`, still `API_UNREACHABLE` after ~180s; no listener on `:8080`.
-- `opencode_execution_count=0` · `qwen_generation_calls=0` · gate closed.
+- Report: `reports/architecture/v4_qwen_local_ready_restore_zero_generation.md`
+- Session manager recheck: `READY` · `launch_performed=false`
+- Transient RESOURCE_STATUS: `qwen_local.available=true` · `source=local_probe` · `cost_mode=free`
+- Canonical launcher used once; launcher/runtime parameters **unchanged**
+- Occupancy at restore start: control-plane endpoint `QWEN_NOT_RUNNING_SAFE_TO_START` (`:8080` down); separate Ollama `llama-server` on **31452** left untouched (no process kill)
+- Closing the Edge WebUI started by the launcher will stop the 8080 server (launcher lifecycle)
 
 ## Mandatory Qwen shared-runtime occupancy boundary
 
@@ -37,15 +40,15 @@ Before assigning, starting, restarting, or otherwise consuming local Qwen 3.8 27
 
 ## Boundaries
 
-- Do not reuse closed live-proof authorization.
-- No second OpenCode call without fresh AUTH after READY.
-- No GLM/Codex/LiteLLM/n8n/WF/OpenClaw/network/credential mutation.
-- Do not mutate Qwen launcher runtime parameters unless separately authorized.
+- Do **not** reuse closed/spent live-proof authorization.
+- Do **not** run OpenCode or any model generation without fresh AUTH.
+- Do not mutate Qwen launcher/runtime parameters, network, or credentials.
 - Do not terminate Qwen/Ollama/proxy/llama-server or related Blender/MCP/Cursor/OpenCode processes without first establishing ownership/state; this frontier does not authorize process kills.
 
 ## Puntatori
 
+- Ready restore: `reports/architecture/v4_qwen_local_ready_restore_zero_generation.md`
 - Shared-runtime constraint: `docs/runtime/OPERATOR_CONSTRAINT_QWEN_SHARED_RUNTIME_CONCURRENCY.md`
-- STOP report: `reports/architecture/v4_opencode_bounded_live_dispatch_proof.md`
+- Prior STOP: `reports/architecture/v4_opencode_bounded_live_dispatch_proof.md`
 - Checkpoint: `docs/runtime/CHECKPOINT_V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF.md`
-- Historical AUTH (spent/closed): `docs/runtime/AUTH_V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF.operator.json`
+- Historical AUTH (do not reuse): `docs/runtime/AUTH_V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF.operator.json`
