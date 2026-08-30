@@ -8,7 +8,7 @@
 task_ref: V4_QWEN_SHARED_RUNTIME_OCCUPANCY_RECHECK_AFTER_PAUSE
 result_cursor: PASS_QWEN_READY_IDLE
 starting_head: 80ac8eb778675d80a7ddd3fd185d6bd5bef5cfe0
-final_head: PENDING_COMMIT
+final_head: 89b3e35d619cdf710dfe3d52ee39d8febaffc6b2
 
 classification: QWEN_READY_IDLE
 
