@@ -5,52 +5,45 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_QWEN_LOCAL_READY_RESTORE_ZERO_GENERATION
-result_cursor: PASS_QWEN_LOCAL_READY_RESTORED
-starting_head: 7a0046ba596f3db9cbf5367cf08546e37089b8ba
-final_head: ccfd6bf20e388f79bdbd957ce6b97b93ab228b9d
-PENDING_COMMIT
+task_ref: V4_QWEN_SHARED_RUNTIME_OCCUPANCY_DIAGNOSIS_ZERO_GENERATION
+result_cursor: PASS_QWEN_BUSY_SHARED_RUNTIME
+starting_head: bef52ab6e881e098b43c268df97ec169e803acb3
+final_head: PENDING_COMMIT
 
-initial_llama_process: ollama_llama_server_port_31452_only
-initial_port_8080: not_listening
-initial_models_http: UNREACHABLE
-initial_fast_8k_exposed: false
+classification: QWEN_BUSY_SHARED_RUNTIME
 
-previous_failure_classification: API_UNREACHABLE_AFTER_CANONICAL_LAUNCH
+control_plane_8080_listener: true
+control_plane_8080_pid: 7576
+control_plane_model_exposed: true
 
-launcher_exists: true
-llama_cpp_directory_exists: true
-launcher_start_count: 1
-launcher_exit_or_spawn_behavior: parent_powershell_waits_on_edge_ui_child_dflash2_server_stays_on_8080
+ollama_31452_listener: true
+ollama_31452_pid: 56168
+ollama_model_loaded: qwen3.8:27b
 
-final_llama_process: dflash2_llama_server_listening
-final_port_8080: LISTEN
-final_models_http: HTTP_200
-final_fast_8k_exposed: true
+blender_running: true
+mcp_processes_seen: true
+cursor_running: true
+opencode_running: false
 
-qwen_backend: llama_cpp
-qwen_profile: fast_8k
-qwen_model_id: qwen38-original-dflash2-8k
-dflash_required: true
-session_manager_final_status: READY
-qwen_resource_status_available: true
+active_8080_clients: msedge_webui
+active_31452_clients: ollama_serve
 
-opencode_execution_count: 0
+blender_qwen_correlation: true
+mcp_qwen_correlation: true
+cursor_qwen_correlation: false
+opencode_qwen_correlation: false
+
+active_inference_evidence: true
+benchmark_evidence: false
+occupancy_sampling_window: ~32s_4_snapshots
+
 qwen_generation_calls: 0
-glm_calls: 0
-codex_calls: 0
-litellm_calls: 0
-n8n_calls: 0
-
-launcher_mutations: 0
-runtime_parameter_mutations: 0
-network_mutations: 0
+opencode_execution_count: 0
 process_kill_calls: 0
+process_stop_calls: 0
+runtime_restart_calls: 0
 secret_exposure: false
 
-historical_live_auth_reused: false
-gate_final: CLOSED_REAUTH_REQUIRED
-architecture_report: reports/architecture/v4_qwen_local_ready_restore_zero_generation.md
-
-NEXT: V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF_REAUTH
+architecture_report: reports/architecture/v4_qwen_shared_runtime_occupancy_diagnosis.md
+NEXT: WAIT_QWEN_SHARED_RUNTIME_IDLE
 ```
