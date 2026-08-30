@@ -8,7 +8,7 @@
 task_ref: V4_QWEN_LOCAL_READY_RESTORE_ZERO_GENERATION
 result_cursor: PASS_QWEN_LOCAL_READY_RESTORED
 starting_head: 7a0046ba596f3db9cbf5367cf08546e37089b8ba
-final_head: PENDING_COMMIT
+final_head: ccfd6bf20e388f79bdbd957ce6b97b93ab228b9d
 PENDING_COMMIT
 
 initial_llama_process: ollama_llama_server_port_31452_only
