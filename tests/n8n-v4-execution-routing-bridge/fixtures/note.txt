@@ -1,0 +1,1 @@
+Offline fixtures for n8n-v4-execution-routing-bridge tests. All inputs are synthetic; no secrets, no live endpoints, no workflow payloads.

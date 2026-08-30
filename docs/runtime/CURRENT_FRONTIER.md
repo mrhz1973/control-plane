@@ -6,35 +6,37 @@
 |---|---|
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | WF61 structural regression baseline **RECONCILED** (18/18). V4 n8n routing bridge deliverable remains in preservation stashes awaiting commit-resume. |
-| **BLOCCO ATTIVO** | `V4_N8N_EXECUTION_ROUTING_BRIDGE_COMMIT_RESUME_ONE_PASS` |
-| **STATO BLOCCO** | WF61_STRUCTURAL_BASELINE_GREEN / BRIDGE_STASHED_READY / D0025_CLOSED / GATE_CLOSED |
-| **GATE CORRENTE** | **CLOSED** · D-0025 remains closed · no live OpenCode/Qwen/provider generation authorized without a later fresh AUTH |
-| **NEXT** | `V4_N8N_EXECUTION_ROUTING_BRIDGE_COMMIT_RESUME_ONE_PASS` — restore `v4-n8n-routing-bridge-fixed-preserve`, preserve canonical remote docs, verify bridge target once + green regressions once, then commit/push the completed bridge. Do **not** author the GPT-Web-owned WF40 patch here. |
-| **WF40 LIVE** | active · preserved v3.2 foundation |
-| **WF61 LIVE** | **inactive** · D-0025 complete/preserved · structural test aligned to post-`00f0132` executeCommand transport |
+| **ACTIVE WORK** | n8n V4 execution-routing bridge **COMMITTED** · offline · route→adapter metadata ready · `ROUTING_READY_FOR_DISPATCH` · workflow mutations=0 |
+| **BLOCCO ATTIVO** | `V4_WF40_EXECUTION_ROUTING_PATCH_AUTHORING` |
+| **STATO BLOCCO** | BRIDGE_COMPLETE / TARGET_23_OF_23 / REGRESSIONS_PASS / GATE_CLOSED |
+| **GATE CORRENTE** | **CLOSED** · D-0025 closed · no live OpenCode/Qwen/provider generation authorized without a later fresh AUTH |
+| **NEXT** | `V4_WF40_EXECUTION_ROUTING_PATCH_AUTHORING` — **GPT-Web-owned**. Author the exact additive WF40 workflow delta that invokes `tools/n8n-v4-execution-routing-bridge-v1.mjs` through `/files/handoff-runtime/control-plane`. Preserve all 44 WF40 nodes, planner/Telegram/GIS/Data Table lanes, WF60 fallback, WF61 planner lane. No separate V4 n8n workflow. Fail-closed execution authorization. Do **not** author that patch in Cursor. |
+| **WF40 LIVE** | active · preserved v3.2 foundation · awaiting GPT-Web patch authoring |
+| **WF61 LIVE** | **inactive** · D-0025 complete/preserved · structural baseline reconciled |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
 | **OPENCODE CLI** | installed · `opencode-ai` · v **1.18.25** |
 | **ADAPTER REGISTRY v1** | **IMPLEMENTED** · default `opencode+qwen_local` |
-| **N8N ROUTING BRIDGE v1** | **IMPLEMENTED OFFLINE (stashed)** · target 23/23 already proven · awaiting commit-resume after baseline reconciliation |
+| **N8N ROUTING BRIDGE v1** | **COMMITTED** · explicit route-request sidecar · no synthesized technical_requirements · EXECUTION_ROUTER reused · adapter metadata only · `dispatch_prepared=false` · `execution_performed=false` |
 
 ## Authorization / D-0025
 
-- D-0025: **CLOSED** (not reopened by this maintenance pass)
-- No live OpenCode/Qwen/provider call authorized
-- Bridge preservation stashes kept (not restored in this pass):
-  - `v4-n8n-routing-bridge-fixed-preserve`
-  - `v4-n8n-routing-bridge-correction-preserve`
+- D-0025: **CLOSED**
+- All live-proof AUTH spent/non-reusable
+- Bridge default path = no dispatch / no execution
 
 ## Boundaries
 
-- Do **not** mutate WF40/WF61/WF60/n8n/LiteLLM/OpenClaw/network/secrets.
-- Do **not** reopen D-0025 or issue #31.
-- External single-generation guard remains the hard max-one generation boundary for OpenCode.
+- Do **not** mutate WF40/WF61/WF60 from Cursor in the next GPT-Web-owned patch-authoring block.
+- External single-generation guard remains the hard max-one generation ceiling for OpenCode.
+- Do **not** kill/stop Qwen/Ollama/proxy merely to tidy state.
+- No LiteLLM/OpenClaw/network/secret mutation.
 
 ## Puntatori
 
-- This reconciliation: `reports/architecture/wf61_structural_regression_baseline_reconciliation.md`
-- WF61 template: `workflows/61-litellm-primary-remote-planner.template.json`
-- Canonical resync: `00f01325eaf2f218d0dc3578ec1eed278cbd4403`
-- Registry: `tools/v4-execution-adapter-registry-v1.mjs`
+- Bridge report: `reports/architecture/v4_n8n_execution_routing_bridge_integration_offline.md`
+- Bridge contract: `docs/contracts/n8n-v4-execution-routing-bridge-v1.md` (+ `.schema.json`)
+- Bridge tool: `tools/n8n-v4-execution-routing-bridge-v1.mjs`
+- Bridge tests: `tests/n8n-v4-execution-routing-bridge/run.mjs`
+- WF61 baseline reconciliation: `reports/architecture/wf61_structural_regression_baseline_reconciliation.md`
+- Mount path (n8n): `/files/handoff-runtime/control-plane`
+- WF40 id: `9ZMj2ACTKyDVhCue` · WF61 id: `d0025-6100-4001-8001-000000000061`

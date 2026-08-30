@@ -5,30 +5,43 @@
 ## LATEST
 
 ```yaml
-task_ref: WF61_STRUCTURAL_REGRESSION_BASELINE_RECONCILIATION_OFFLINE_ONE_PASS
-result_cursor: PASS_WF61_STRUCTURAL_BASELINE_RECONCILED
-starting_head: 65dfa07c96cb6dbb6be1aafe7b46aaed0df9577d
-final_head: 8aff79a9ef4eba1938e91ca86a06e5f64045e50c
+task_ref: V4_N8N_EXECUTION_ROUTING_BRIDGE_COMMIT_RESUME_ONE_PASS
+result_cursor: PASS_BRIDGE_COMMITTED
+starting_head: 27a68be499adc58c5c381b13159519164e71dd54
+final_head: <stamped post-commit>
 
-stale_test_path: tests/litellm-primary-cycle/run.mjs
-canonical_wf61_template_path: workflows/61-litellm-primary-remote-planner.template.json
-canonical_resync_commit: 00f01325eaf2f218d0dc3578ec1eed278cbd4403
-old_expected_transport: n8n-nodes-base.httpRequest@4.2
-canonical_transport: n8n-nodes-base.executeCommand@1 (HTTP Request - LiteLLM primary one-shot)
-workflow_modified: false
-d0025_reopened: false
+restored_stash: v4-n8n-routing-bridge-fixed-preserve
+older_backup_stash_not_restored: v4-n8n-routing-bridge-correction-preserve
 
-target_tests: PASS_18_OF_18
+bridge_contract_path: docs/contracts/n8n-v4-execution-routing-bridge-v1.md
+bridge_schema_path: docs/contracts/n8n-v4-execution-routing-bridge-v1.schema.json
+bridge_tool_path: tools/n8n-v4-execution-routing-bridge-v1.mjs
+bridge_test_path: tests/n8n-v4-execution-routing-bridge/run.mjs
 
-bridge_fixed_stash_present: true
-bridge_old_backup_stash_present: true
+top_level_ok_propagation_fixed: true
+unsupported_route_fixture_isolated: true
+explicit_route_request_required: true
+technical_requirements_synthesized: false
+execution_router_reused: true
+adapter_registry_reused: true
 
-provider_calls: 0
+target_tests: PASS_23_OF_23
+regression_tests: PASS
+  - v4-execution-adapter-registry: PASS_19_OF_19
+  - v4-execution-adapter-router: PASS_15_OF_15
+  - execution-router: PASS_12_OF_12
+  - litellm-primary-cycle: PASS_18_OF_18
+
 qwen_generation_calls: 0
+qwen_session_manager_calls: 0
+opencode_execution_count: 0
+adapter_run_calls: 0
+provider_calls: 0
 n8n_execution_calls: 0
 workflow_mutations: 0
+network_mutations: 0
 secret_exposure: false
 
-architecture_report: reports/architecture/wf61_structural_regression_baseline_reconciliation.md
-NEXT: V4_N8N_EXECUTION_ROUTING_BRIDGE_COMMIT_RESUME_ONE_PASS
+architecture_report: reports/architecture/v4_n8n_execution_routing_bridge_integration_offline.md
+NEXT: V4_WF40_EXECUTION_ROUTING_PATCH_AUTHORING
 ```
