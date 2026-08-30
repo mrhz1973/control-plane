@@ -1,0 +1,1 @@
+Offline fixtures for v4-local-runtime-readonly-contribution. Synthetic only. No secrets. No PIDs.
