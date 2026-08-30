@@ -5,43 +5,36 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_RESOURCE_STATUS_CONTROL_PLANE_COMPOSER_OFFLINE
-result_cursor: PASS_RESOURCE_STATUS_COMPOSER_OFFLINE
-starting_head: 57a1aa45afb8558ea6b72a3d0e0a65c3fd1a7508
-final_head: c6dfdb467af4aae2efe44f960ef2d1f9721d0705
+task_ref: V4_RESOURCE_STATUS_LOCAL_RUNTIME_READONLY_CONTRIBUTION_ADAPTER
+result_cursor: STOP_TARGET_TEST_FALSE_POSITIVE_OPERATOR_RELAYED
+report_evidence: operator-relayed_not_independently_verified
+starting_head: a76c40dff30d6fe788354536dda902b4cf7e4b70
+final_head: a76c40dff30d6fe788354536dda902b4cf7e4b70
+commit_push: none
+workspace: dirty_new_block_files_only_reported
 
-source_contract: docs/contracts/v4-resource-status-control-plane-source-v1.md
-contribution_schema: docs/contracts/v4-resource-status-contribution-v1.schema.json
-result_schema: docs/contracts/v4-resource-status-control-plane-source-result-v1.schema.json
-composer_tool: tools/compose-v4-resource-status-control-plane-v1.mjs
-composer_tests: tests/v4-resource-status-control-plane-source/run.mjs
+adapter_contract: docs/contracts/v4-local-runtime-readonly-contribution-adapter-v1.md
+adapter_tool: tools/produce-v4-local-runtime-readonly-contribution-v1.mjs
+adapter_tests: tests/v4-local-runtime-readonly-contribution/run.mjs
 
-registry_closure: true
-baseline_missing_registry_resource_behavior: synthetic_unavailable_shell
-reserve_floor_source: baseline_or_safe_default
-status_max_age_seconds: 300
-source_precedence: local_probe>provider_api>dashboard_snapshot>internal_ledger>manual
-same_rank_conflict_behavior: fail_closed
+target_tests: STOP_28_29
+failing_check: no-commandline-collection
+reported_root_cause: static_substring_guard_matches_compliance_comment_only
+reported_implementation_commandline_collection: false
+reported_implementation_environment_block_collection: false
+reported_powershell_surface: Get-Process+Get-NetTCPConnection_only
 
-qwen_ready_idle_required: true
-qwen_launch_forbidden: true
-qwen_generation_forbidden: true
-qwen_collector_invoked: false
-
-target_tests: PASS_34_34
-regression_tests: PASS_registry_7_status_6_router_12_sidecar_24_bridge_23
-
-workflow_mutations: 0
-provider_calls: 0
-dashboard_calls: 0
+regression_tests: NOT_RUN_DUE_TO_ONE_PASS_STOP
+live_readonly_proof: NOT_RUN_DUE_TO_ONE_PASS_STOP
+diagnostic_powershell_processes: 0
 qwen_generation_calls: 0
-qwen_session_manager_calls: 0
-qwen_probe_calls: 0
-opencode_execution_count: 0
-collector_calls: 0
-network_calls: 0
+opencode_cli_calls: 0
+process_kill_calls: 0
+process_stop_calls: 0
+process_restart_calls: 0
+provider_calls: 0
 secret_exposure: false
 
-architecture_report: reports/architecture/v4_resource_status_control_plane_composer_offline.md
-NEXT: V4_RESOURCE_STATUS_LOCAL_RUNTIME_READONLY_CONTRIBUTION_ADAPTER
+architecture_report: reports/architecture/v4_local_runtime_readonly_contribution_target_stop_operator_relay.md
+NEXT: V4_LOCAL_RUNTIME_READONLY_COMMENT_GUARD_CORRECTION_ONE_PASS
 ```
