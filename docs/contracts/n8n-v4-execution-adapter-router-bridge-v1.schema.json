@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/n8n-v4-execution-adapter-router-bridge-v1.schema.json",
+  "title": "n8n-v4-execution-adapter-router-bridge-result-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ok",
+    "classification",
+    "execution_id",
+    "route_id",
+    "adapter_id",
+    "dispatch_supplied",
+    "runtime_authorization_supplied",
+    "execution_performed",
+    "reason_codes",
+    "router_result"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "n8n-v4-execution-adapter-router-bridge-result-v1"
+    },
+    "ok": { "type": "boolean" },
+    "classification": { "type": "string", "minLength": 1 },
+    "execution_id": { "type": ["string", "null"] },
+    "route_id": { "type": ["string", "null"] },
+    "adapter_id": { "type": ["string", "null"] },
+    "implementer": { "type": ["string", "null"] },
+    "model": { "type": ["string", "null"] },
+    "dispatch_supplied": { "type": "boolean" },
+    "runtime_authorization_supplied": { "type": "boolean" },
+    "execution_performed": { "const": false },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "router_result": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": true
+        }
+      ]
+    }
+  }
+}

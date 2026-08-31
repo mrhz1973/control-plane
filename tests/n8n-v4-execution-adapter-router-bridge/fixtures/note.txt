@@ -1,0 +1,1 @@
+Offline fixtures for n8n-v4-execution-adapter-router-bridge — all cases are constructed in run.mjs; no secrets.

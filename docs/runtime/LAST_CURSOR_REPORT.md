@@ -5,61 +5,43 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_RESOURCE_STATUS_WF40_LOCAL_CONTRIBUTION_PATCH_APPLY_OFFLINE
+task_ref: V4_N8N_EXECUTION_ADAPTER_ROUTER_BRIDGE_OFFLINE
 result_cursor: PASS
-starting_head: 7f2f13a1cba9627f38c85aa0924cce89d1cea3a5
-final_head: 0289cede5c523d68fa519605380c5b05f46b4c85
+starting_head: 8555ecf297de74281267df33afe4e35a30d2fff9
+final_head: TO_BE_VERIFIED_AFTER_PUSH
 
-wf40_id: 9ZMj2ACTKyDVhCue
-wf40_pre_version_id: ef80943e-535d-430f-958f-56c03baa1c62
-wf40_post_version_id: 1257ed3f-12ad-4fa1-b6ce-ae3e62149b7c
-wf40_pre_node_count: 56
-wf40_post_node_count: 61
+bridge_tool: tools/n8n-v4-execution-adapter-router-bridge-v1.mjs
+bridge_schema: docs/contracts/n8n-v4-execution-adapter-router-bridge-v1.schema.json
+bridge_contract: docs/contracts/n8n-v4-execution-adapter-router-bridge-v1.md
+bridge_tests: tests/n8n-v4-execution-adapter-router-bridge/run.mjs
 
-patch_artifact: workflows/patches/v4-wf40-local-resource-status-contribution.gpt-web.json
-patch_blob_sha: 7f7aefaa0df6afa4e9a74f55a27d70b9a2436849
-patch_applied_verbatim: true
+target_tests: PASS_17_OF_17
+regression_tests:
+  v4-execution-adapter-router: PASS_15_OF_15
+  v4-execution-adapter-registry: PASS_19_OF_19
+  opencode-execution-adapter: PASS_23_OF_23
 
-legacy_nodes_preserved: true
-new_local_status_nodes:
-  - v4f40-7301-4001-8301-000000000301
-  - v4f40-7302-4002-8302-000000000302
-  - v4f40-7303-4003-8303-000000000303
-  - v4f40-7304-4004-8304-000000000304
-  - v4f40-7305-4005-8305-000000000305
-sidecar_encode_parameter_update_exact: true
+delegates_to_routeToExecutionAdapter: true
+uses_canonical_registry: true
+dispatch_synthesized: false
+runtime_authorization_synthesized: false
+getOccupancy_injected: false
+guardStart_injected: false
+runOpenCode_injected: false
+live_runner_present: false
 
-private_endpoint_url: https://asusdesktop.tailc01234.ts.net/v4/resource-status/local-readonly
-endpoint_reprobed: false
-
-fail_closed_empty_contributions_preserved: true
-technical_requirements_synthesized: false
-route_source_same_commit_preserved: true
-
-wf61_active_final: false
-d0025_gate_closed_final: true
-executor_dispatch_added: false
-
-workflow_execution_calls: 0
-wf40_execution_calls: 0
-wf61_execution_calls: 0
-endpoint_http_calls: 0
-composer_runtime_calls: 0
-sidecar_adapter_execution_calls: 0
-bridge_execution_calls: 0
-provider_calls: 0
+execution_performed: false
 qwen_generation_calls: 0
-qwen_http_calls: 0
-qwen_session_manager_calls: 0
-qwen_launcher_calls: 0
 opencode_cli_calls: 0
-opencode_execution_count: 0
-credential_mutations: 0
-network_mutations: 0
-litellm_mutations: 0
-openclaw_mutations: 0
+provider_calls: 0
+network_calls: 0
+workflow_mutations: 0
+wf40_node_count_unchanged: 61
+wf40_adapter_router_patch_applied: false
+wf61_active: false
+d0025_gate_closed: true
 secret_exposure: false
 
-architecture_report: reports/architecture/v4_resource_status_wf40_local_contribution_patch_apply_offline.md
-NEXT: V4_WF40_EXECUTION_ADAPTER_ROUTER_PATCH_AUTHORING
+architecture_report: reports/architecture/v4_n8n_execution_adapter_router_bridge_offline.md
+NEXT: V4_WF40_EXECUTION_ADAPTER_ROUTER_PATCH_APPLY_OFFLINE
 ```
