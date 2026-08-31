@@ -6,11 +6,11 @@
 |---|---|
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | WF40 V4 routing + sidecar-source + local RESOURCE_STATUS + execution-adapter-router lanes **APPLIED LIVE (66 nodes)** · n8n adapter-router bridge **OFFLINE / LIVE-INCAPABLE** · Windows-local execution endpoint **OFFLINE COMPLETE + PERSISTED ON LOOPBACK 127.0.0.1:18791 (tailnet-private)** |
-| **BLOCCO ATTIVO** | `V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_VPS_UNAUTHORIZED_REACHABILITY_PROOF` |
-| **STATO BLOCCO** | EXECUTION_ENDPOINT_OFFLINE_PASS / PRIVATE_SERVICE_PERSISTED / SCHEDULED_TASK_ControlPlane-V4-LocalExecutionEndpoint_RUNNING / TAILSCALE_PRIVATE_ROUTE_APPLIED / FUNNEL_ABSENT / LISTENER_18791_ACTIVE / EXECUTION_REQUESTS=0 / WF40_66_UNCHANGED / WF61_INACTIVE / D0025_CLOSED / LIVE_EXECUTION_CLOSED |
-| **GATE CORRENTE** | **CLOSED TO LIVE EXECUTION** · D-0025 closed · no Qwen/OpenCode/provider generation authorized · loopback execution service persisted and listening structurally (zero requests sent); next block is one deliberately unauthorized VPS request expecting `AUTHORIZATION_REJECTED`, with execution/generation counters zero |
-| **NEXT** | `V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_VPS_UNAUTHORIZED_REACHABILITY_PROOF` — single VPS request deliberately unauthorized; expected `AUTHORIZATION_REJECTED`; execution/generation counters zero; no authorized request; no OpenCode/Qwen/provider execution |
+| **ACTIVE WORK** | WF40 V4 routing + sidecar-source + local RESOURCE_STATUS + execution-adapter-router lanes **APPLIED LIVE (66 nodes)** · n8n adapter-router bridge **OFFLINE / LIVE-INCAPABLE** · Windows-local execution endpoint **OFFLINE COMPLETE + PERSISTED ON LOOPBACK 127.0.0.1:18791 (tailnet-private)** · authorization provenance gap **CONFIRMED** |
+| **BLOCCO ATTIVO** | `V4_RUNTIME_AUTHORIZATION_PROVENANCE_HARDENING` |
+| **STATO BLOCCO** | EXECUTION_ENDPOINT_OFFLINE_PASS / PRIVATE_SERVICE_PERSISTED / LISTENER_18791_ACTIVE / AUTHORIZATION_PROVENANCE_GAP_CONFIRMED / VPS_UNAUTHORIZED_PROOF_BLOCKED / EXECUTION_REQUESTS=0 / WF40_66_UNCHANGED / WF61_INACTIVE / D0025_CLOSED / LIVE_EXECUTION_CLOSED |
+| **GATE CORRENTE** | **CLOSED TO LIVE EXECUTION** · D-0025 closed · no Qwen/OpenCode/provider generation authorized · provenance gap confirmed: adapter+schema validate shape only, any caller can synthesize a semantically-valid authorization; hardening block must add server-side issued-authorization verification before any VPS proof |
+| **NEXT** | `V4_RUNTIME_AUTHORIZATION_PROVENANCE_HARDENING` — minimal fail-closed server-side issued-authorization registry (user-local, outside Git; unknown authorization_id → `AUTHORIZATION_REJECTED` before occupancy/runner; ACTIVE→SPENT server-side; durable-ledger seed). `VPS_UNAUTHORIZED_REACHABILITY_PROOF BLOCKED UNTIL PROVENANCE HARDENING PASS` |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **66 nodes** · versionId `60f9b75e-39b8-410a-bcd1-364073992df0` |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
@@ -71,6 +71,7 @@ The existing read-only endpoint on `127.0.0.1:18790` / `/v4/resource-status/loca
 
 ## Puntatori
 
+- Provenance gap discovery: `reports/architecture/v4_runtime_authorization_provenance_gap_discovery.md`
 - Private service persistence report: `reports/architecture/v4_windows_local_execution_endpoint_private_service_persistence.md`
 - Offline implementation report: `reports/architecture/v4_windows_local_execution_endpoint_offline_implementation.md`
 - Endpoint tool: `tools/serve-v4-windows-local-execution-endpoint-v1.mjs`
