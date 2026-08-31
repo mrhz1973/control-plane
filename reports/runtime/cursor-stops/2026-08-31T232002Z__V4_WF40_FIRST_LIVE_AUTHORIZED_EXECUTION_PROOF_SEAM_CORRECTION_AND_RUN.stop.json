@@ -1,0 +1,66 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF_SEAM_CORRECTION_AND_RUN",
+  "run_nonce": "WF40_LIVE_SEAM_PROOF_20260901_01",
+  "block_id": "V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF_SEAM_CORRECTION_AND_RUN",
+  "category": "WF40_SEAM_CORRECTION_PLUS_LIVE_PROOF",
+  "result": "STOP",
+  "dispatch_base_head": "819acc147a8dba3a42d2b24f14143e1bb3991e8a",
+  "utc_timestamp": "2026-08-31T232002Z",
+  "finding": "BUGBOT_ACTIONABLE_FINDING",
+  "finding_detail": "Phase A confirmed live WF40 seam defect (Prepare adapter-router read dispatch/auth from pre-WF61 capture). Offline sidecar helper + 20/20 tests PASS. Regressions PASS. WF40 additive post-WF61 lane was applied (71→83) then BugBot returned one actionable medium finding: status-poll parser treats any non-ok HTTP/transport error as terminal instead of remaining in the bounded pending poll loop, so a transient status failure after human APPROVE can drop a valid ISSUED authorization. No Autofix. Live WF40 restored to pre-seam baseline (71 nodes / versionId e2d600d6-48d9-45fe-9527-3f3e0b47d358). Live proof not started. SECOND_PROVIDER=0 SECOND_REGISTER=0 SECOND_EXECUTION=0.",
+  "bugbot": {
+    "result": "ACTIONABLE_FINDING",
+    "findings": [
+      {
+        "severity": "medium",
+        "location": "tmp-apply-wf40-live-seam.py:71-80 (PARSE_STATUS_JS; also materialized in live node Code - Parse WF40 authorization status before restore)",
+        "finding": "Status poll aborts on HTTP errors: non-ok HTTP/transport responses set still_pending=false and exit the poll loop instead of retrying within the bounded TTL, risking permanent drop of a later ISSUED authorization."
+      }
+    ]
+  },
+  "phase_progress": {
+    "phase_a_live_precheck": "PASS",
+    "phase_b_helper_contract_tests": "PASS",
+    "phase_c_offline_target": "PASS_20_20",
+    "phase_d_wf40_patch_applied_then_restored": true,
+    "regressions": {
+      "v4-execution-adapter-router": "15/15",
+      "n8n-v4-execution-adapter-router-bridge": "17/17",
+      "v4-windows-local-execution-endpoint": "65/65",
+      "v4-runtime-authorization-issuance": "60/60",
+      "opencode-execution-adapter": "23/23",
+      "opencode-single-generation-guard": "16/16"
+    },
+    "phase_e_live_proof": "NOT_STARTED"
+  },
+  "hard_counters": {
+    "wf40_executions": 0,
+    "wf61_executions": 0,
+    "remote_planner_calls": 0,
+    "telegram_messages": 0,
+    "authorization_registrations": 0,
+    "execution_endpoint_post": 0,
+    "opencode": 0,
+    "qwen_generations": 0,
+    "second_provider": 0,
+    "second_register": 0,
+    "second_execution": 0
+  },
+  "restored_live_baseline": {
+    "wf40_id": "9ZMj2ACTKyDVhCue",
+    "nodes": 71,
+    "versionId_after_restore": "b040014d-100a-4604-82c7-d9236bd60a6b",
+    "pre_seam_versionId": "e2d600d6-48d9-45fe-9527-3f3e0b47d358",
+    "has_live_proposal_nodes": false,
+    "wf61_active": false,
+    "d0025_gate_enabled": false,
+    "provider_calls_authorized_per_event": 0
+  },
+  "artifacts_preserved_dirty": [
+    "docs/contracts/v4-wf40-live-execution-sidecar-source-v1.md",
+    "tools/build-v4-wf40-live-execution-sidecars-v1.mjs",
+    "tests/v4-wf40-live-execution-sidecars/run.mjs"
+  ],
+  "next_required_before_retry": "Fix status-poll transient HTTP handling so still_pending remains true for transport/parse errors within poll_count<300 / pending TTL, re-run target+regressions+BugBot once, then re-apply WF40 seam lane and continue live proof with new run."
+}
