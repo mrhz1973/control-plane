@@ -11,7 +11,7 @@ import { EventEmitter } from "node:events";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { executeOpenCodeBounded } from "../../tools/opencode-execution-adapter-v1.mjs";
 import {
@@ -20,6 +20,12 @@ import {
   loadRegistry as realLoad,
   REGISTRY_SCHEMA_VERSION,
 } from "../../tools/v4-runtime-authorization-provenance-registry-v1.mjs";
+import {
+  inspectDurableSpend as realInspectLedger,
+  recordDurableSpend as realRecordLedger,
+  loadSpendLedger as realLoadLedger,
+  LEDGER_SCHEMA_VERSION,
+} from "../../tools/v4-runtime-authorization-durable-spend-ledger-v1.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -192,8 +198,21 @@ function writeRegistry(path, entries) {
   writeFileSync(path, `${JSON.stringify({ schema_version: REGISTRY_SCHEMA_VERSION, entries }, null, 2)}\n`);
 }
 
+function writeLedger(path, spends = []) {
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(
+    path,
+    `${JSON.stringify({ schema_version: LEDGER_SCHEMA_VERSION, spends }, null, 2)}\n`,
+  );
+}
+
+function ledgerState(path) {
+  return JSON.parse(readFileSync(path, "utf8"));
+}
+
 const REG_DIR = mkdtempSync(join(tmpdir(), "v4-auth-reg-"));
 const REGISTRY_PATH = join(REG_DIR, "registry.json");
+const LEDGER_PATH = join(REG_DIR, "ledger.json");
 
 function activeEntry(authorization_id, overrides = {}) {
   return {
@@ -210,6 +229,9 @@ function activeEntry(authorization_id, overrides = {}) {
 let adapterCalls = 0;
 
 async function startEphemeral(extra = {}) {
+  if (!extra.authorizationSpendLedgerPath && !existsSync(LEDGER_PATH)) {
+    writeLedger(LEDGER_PATH, []);
+  }
   return mod.startWindowsLocalExecutionService({
     host: "127.0.0.1",
     port: 0,
@@ -218,8 +240,29 @@ async function startEphemeral(extra = {}) {
     runOpenCode: mockRunner(),
     executeOpenCodeBounded: countingAdapter(),
     authorizationRegistryPath: REGISTRY_PATH,
+    authorizationSpendLedgerPath: LEDGER_PATH,
     inspectAuthorization: (path, id, opts) => realInspect(path, id, opts),
     admitAuthorization: (path, id, opts) => realAdmit(path, id, opts),
+    inspectDurableSpend: (path, id, opts) => realInspectLedger(path, id, opts),
+    recordDurableSpend: (path, rec, opts) => realRecordLedger(path, rec, opts),
+    ...extra,
+  });
+}
+
+async function startWithPaths(regPath, ledgerPath, extra = {}) {
+  return mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: regPath,
+    authorizationSpendLedgerPath: ledgerPath,
+    inspectAuthorization: (path, id, opts) => realInspect(path, id, opts),
+    admitAuthorization: (path, id, opts) => realAdmit(path, id, opts),
+    inspectDurableSpend: (path, id, opts) => realInspectLedger(path, id, opts),
+    recordDurableSpend: (path, rec, opts) => realRecordLedger(path, rec, opts),
+    getOccupancy: mockOccupancy(),
+    runOpenCode: mockRunner(),
+    executeOpenCodeBounded: countingAdapter(),
     ...extra,
   });
 }
@@ -321,6 +364,7 @@ await test("service binds ephemeral port 0 only", async () => {
     activeEntry("AUTH-SHAPE-1"),
     activeEntry("AUTH-NZ-EXIT-1"),
   ]);
+  writeLedger(LEDGER_PATH, []);
   srv = await startEphemeral();
   port = srv.address.port;
   assert.ok(port > 0);
@@ -452,6 +496,7 @@ await test("invalid authorization (schema) → zero occupancy/runner", async () 
 await test("occupancy blocked → zero runner", async () => {
   await srv.close();
   writeRegistry(REGISTRY_PATH, [activeEntry("AUTH-OCC")]);
+  writeLedger(LEDGER_PATH, []);
   runnerCalls = 0;
   occupancyCalls = 0;
   srv = await startEphemeral({
@@ -470,6 +515,7 @@ await test("occupancy blocked → zero runner", async () => {
 await test("same execution_id + same request → cached replay, zero second execution", async () => {
   await srv.close();
   writeRegistry(REGISTRY_PATH, [activeEntry("AUTH-REPLAY-1")]);
+  writeLedger(LEDGER_PATH, []);
   runnerCalls = 0;
   occupancyCalls = 0;
   srv = await startEphemeral();
@@ -516,6 +562,7 @@ await test("SPENT authorization cannot produce a second execution", async () => 
   await srv.close();
   runnerCalls = 0;
   writeRegistry(REGISTRY_PATH, [activeEntry("AUTH-SPENT-1")]);
+  writeLedger(LEDGER_PATH, []);
   srv = await startEphemeral();
   port = srv.address.port;
   const r1 = await post(port, validBody({ execution_id: "spent-1", authorization_id: "AUTH-SPENT-1" }));
@@ -532,6 +579,7 @@ await test("SPENT authorization cannot produce a second execution", async () => 
 await test("single-flight concurrency → second request fail-closed without execution", async () => {
   await srv.close();
   writeRegistry(REGISTRY_PATH, [activeEntry("AUTH-BUSY-1"), activeEntry("AUTH-BUSY-2")]);
+  writeLedger(LEDGER_PATH, []);
   let release;
   const gate = new Promise((r) => {
     release = r;
@@ -567,6 +615,7 @@ await test("single-flight concurrency → second request fail-closed without exe
 await test("runtime authorization forwarded unchanged to adapter", async () => {
   await srv.close();
   writeRegistry(REGISTRY_PATH, [activeEntry("AUTH-FWD-1")]);
+  writeLedger(LEDGER_PATH, []);
   let seenAuth = null;
   srv = await startEphemeral({
     getOccupancy: mockOccupancy(),
@@ -594,6 +643,7 @@ await test("workspace is server-side only; request cannot override", async () =>
 
 await test("response conforms and execution_performed matches adapter", async () => {
   writeRegistry(REGISTRY_PATH, [activeEntry("AUTH-SHAPE-1")]);
+  writeLedger(LEDGER_PATH, []);
   const r = await post(port, validBody({ execution_id: "shape-1", authorization_id: "AUTH-SHAPE-1" }));
   assert.equal(r.json.schema_version, "v4-windows-local-execution-endpoint-result-v1");
   for (const k of [
@@ -785,14 +835,10 @@ await test("production runner signal termination fails closed", async () => {
 await test("endpoint non-zero OpenCode exit → ERROR/SPENT/execution_performed=false", async () => {
   let spawnCount = 0;
   const nzReg = join(REG_DIR, "nz-exit.json");
+  const nzLed = join(REG_DIR, "nz-exit.ledger.json");
   writeRegistry(nzReg, [activeEntry("AUTH-NZ-EXIT-1")]);
-  const failSrv = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: nzReg,
-    inspectAuthorization: (path, id, opts) => realInspect(path, id, opts),
-    admitAuthorization: (path, id, opts) => realAdmit(path, id, opts),
+  writeLedger(nzLed, []);
+  const failSrv = await startWithPaths(nzReg, nzLed, {
     getOccupancy: mockOccupancy(),
     runOpenCode: productionRunnerWithSpawn(() => {
       spawnCount += 1;
@@ -863,30 +909,46 @@ await test("production runner rejects direct Qwen endpoint as OpenCode target", 
   );
 });
 
-// ---------- provenance registry tests ----------
+// ---------- provenance registry + durable ledger tests ----------
 
 function registryState(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
+function pairPaths(name) {
+  return {
+    reg: join(REG_DIR, `${name}.json`),
+    led: join(REG_DIR, `${name}.ledger.json`),
+  };
+}
+
 await test("P1 registry empty + unknown schema-valid id → rejected, zero adapter/occupancy/runner", async () => {
-  const regPath = join(REG_DIR, "p1.json");
-  writeRegistry(regPath, []);
+  const { reg, led } = pairPaths("p1");
+  writeRegistry(reg, []);
+  writeLedger(led, []);
   let occ = 0;
   let run = 0;
   let exec = 0;
-  const s = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: regPath,
-    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
-    getOccupancy: async () => { occ += 1; return "QWEN_READY_IDLE"; },
-    runOpenCode: async () => { run += 1; return { opencode_execution_count: 1, retry_calls: 0, fallback_calls: 0, response_validation: "NOT_VALIDATED" }; },
-    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
+  const s = await startWithPaths(reg, led, {
+    getOccupancy: async () => {
+      occ += 1;
+      return "QWEN_READY_IDLE";
+    },
+    runOpenCode: async () => {
+      run += 1;
+      return {
+        opencode_execution_count: 1,
+        retry_calls: 0,
+        fallback_calls: 0,
+        response_validation: "NOT_VALIDATED",
+      };
+    },
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
   });
-  const p = s.address.port;
-  const r = await post(p, validBody({ execution_id: "p1-1", authorization_id: "AUTH-UNKNOWN-1" }));
+  const r = await post(s.address.port, validBody({ execution_id: "p1-1", authorization_id: "AUTH-UNKNOWN-1" }));
   assert.equal(r.status, 200);
   assert.equal(r.json.ok, false);
   assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
@@ -901,17 +963,14 @@ await test("P1 registry empty + unknown schema-valid id → rejected, zero adapt
 });
 
 await test("P2 registry missing → fail closed pre-adapter", async () => {
-  const regPath = join(REG_DIR, "missing.json");
+  const { reg, led } = pairPaths("p2");
+  writeLedger(led, []);
   let exec = 0;
-  const s = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: regPath,
-    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
-    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
-    getOccupancy: async () => "QWEN_READY_IDLE",
-    runOpenCode: async () => ({ opencode_execution_count: 1, retry_calls: 0, fallback_calls: 0, response_validation: "NOT_VALIDATED" }),
+  const s = await startWithPaths(reg, led, {
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
   });
   const r = await post(s.address.port, validBody({ execution_id: "p2-1", authorization_id: "AUTH-P2" }));
   assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
@@ -921,19 +980,16 @@ await test("P2 registry missing → fail closed pre-adapter", async () => {
 });
 
 await test("P3 registry malformed → fail closed pre-adapter", async () => {
-  const regPath = join(REG_DIR, "malformed.json");
-  mkdirSync(dirname(regPath), { recursive: true });
-  writeFileSync(regPath, "{ not json");
+  const { reg, led } = pairPaths("p3");
+  mkdirSync(dirname(reg), { recursive: true });
+  writeFileSync(reg, "{ not json");
+  writeLedger(led, []);
   let exec = 0;
-  const s = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: regPath,
-    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
-    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
-    getOccupancy: async () => "QWEN_READY_IDLE",
-    runOpenCode: async () => ({ opencode_execution_count: 1, retry_calls: 0, fallback_calls: 0, response_validation: "NOT_VALIDATED" }),
+  const s = await startWithPaths(reg, led, {
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
   });
   const r = await post(s.address.port, validBody({ execution_id: "p3-1", authorization_id: "AUTH-P3" }));
   assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
@@ -943,8 +999,6 @@ await test("P3 registry malformed → fail closed pre-adapter", async () => {
 });
 
 await test("P4 duplicate authorization_id in registry → fail closed", async () => {
-  const r = realAdmit(join(REG_DIR, "dup.json"), "X", {});
-  void r;
   const regPath = join(REG_DIR, "dup.json");
   writeRegistry(regPath, [activeEntry("AUTH-DUP"), activeEntry("AUTH-DUP")]);
   const result = realAdmit(regPath, "AUTH-DUP", {});
@@ -976,20 +1030,16 @@ await test("P7 invalid registry route_id → AUTHORIZATION_REGISTRY_INVALID", as
   assert.ok(result.reason_codes.includes("AUTHORIZATION_REGISTRY_INVALID"));
 });
 
-await test("P8 ACTIVE valid id → registry transitions SPENT before adapter invocation", async () => {
-  const regPath = join(REG_DIR, "p8.json");
-  writeRegistry(regPath, [activeEntry("AUTH-P8")]);
+await test("P8 ACTIVE valid id → ledger+registry spent before adapter", async () => {
+  const { reg, led } = pairPaths("p8");
+  writeRegistry(reg, [activeEntry("AUTH-P8")]);
+  writeLedger(led, []);
   let registryStateAtAdapter = null;
-  const s = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: regPath,
-    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
-    getOccupancy: async () => "QWEN_READY_IDLE",
-    runOpenCode: mockRunner(),
+  let ledgerStateAtAdapter = null;
+  const s = await startWithPaths(reg, led, {
     executeOpenCodeBounded: async (req, o) => {
-      registryStateAtAdapter = registryState(regPath);
+      registryStateAtAdapter = registryState(reg);
+      ledgerStateAtAdapter = ledgerState(led);
       return executeOpenCodeBounded(req, o);
     },
   });
@@ -998,18 +1048,17 @@ await test("P8 ACTIVE valid id → registry transitions SPENT before adapter inv
   const entry = registryStateAtAdapter.entries.find((e) => e.authorization_id === "AUTH-P8");
   assert.equal(entry.state, "SPENT");
   assert.ok(entry.spent_at);
+  assert.equal(ledgerStateAtAdapter.spends.length, 1);
+  assert.equal(ledgerStateAtAdapter.spends[0].authorization_id, "AUTH-P8");
   await s.close();
 });
 
-await test("P9 SPENT persistence failure → adapter calls 0", async () => {
-  const regPath = join(REG_DIR, "p9.json");
-  writeRegistry(regPath, [activeEntry("AUTH-P9")]);
+await test("P9 registry spend persistence failure after ledger → adapter 0, ledger durable", async () => {
+  const { reg, led } = pairPaths("p9");
+  writeRegistry(reg, [activeEntry("AUTH-P9")]);
+  writeLedger(led, []);
   let exec = 0;
-  const s = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: regPath,
+  const s = await startWithPaths(reg, led, {
     admitAuthorization: (p, id, o) =>
       realAdmit(p, id, {
         ...o,
@@ -1017,30 +1066,30 @@ await test("P9 SPENT persistence failure → adapter calls 0", async () => {
           throw new Error("DISK_FULL");
         },
       }),
-    executeOpenCodeBounded: async (req, opts) => { exec += 1; return executeOpenCodeBounded(req, opts); },
-    getOccupancy: async () => "QWEN_READY_IDLE",
-    runOpenCode: mockRunner(),
+    executeOpenCodeBounded: async (req, opts) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, opts);
+    },
   });
   const r = await post(s.address.port, validBody({ execution_id: "p9-1", authorization_id: "AUTH-P9" }));
   assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
   assert.ok(r.json.reason_codes.includes("AUTHORIZATION_REGISTRY_UNAVAILABLE"));
   assert.equal(exec, 0);
+  assert.equal(ledgerState(led).spends.length, 1);
+  assert.equal(registryState(reg).entries.find((e) => e.authorization_id === "AUTH-P9").state, "ACTIVE");
   await s.close();
 });
 
 await test("P10 second request same authorization_id → rejected server-side, no second adapter", async () => {
-  const regPath = join(REG_DIR, "p10.json");
-  writeRegistry(regPath, [activeEntry("AUTH-P10")]);
+  const { reg, led } = pairPaths("p10");
+  writeRegistry(reg, [activeEntry("AUTH-P10")]);
+  writeLedger(led, []);
   let exec = 0;
-  const s = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: regPath,
-    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
-    getOccupancy: mockOccupancy(),
-    runOpenCode: mockRunner(),
-    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
+  const s = await startWithPaths(reg, led, {
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
   });
   const p = s.address.port;
   const r1 = await post(p, validBody({ execution_id: "p10-1", authorization_id: "AUTH-P10" }));
@@ -1055,38 +1104,30 @@ await test("P10 second request same authorization_id → rejected server-side, n
   await s.close();
 });
 
-await test("P11 occupancy-blocked after admission → registry stays SPENT", async () => {
-  const regPath = join(REG_DIR, "p11.json");
-  writeRegistry(regPath, [activeEntry("AUTH-P11")]);
-  const s = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: regPath,
-    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
+await test("P11 occupancy-blocked after admission → ledger consumed + registry SPENT", async () => {
+  const { reg, led } = pairPaths("p11");
+  writeRegistry(reg, [activeEntry("AUTH-P11")]);
+  writeLedger(led, []);
+  const s = await startWithPaths(reg, led, {
     getOccupancy: mockOccupancy("QWEN_BUSY"),
-    runOpenCode: mockRunner(),
   });
   const r = await post(s.address.port, validBody({ execution_id: "p11-1", authorization_id: "AUTH-P11" }));
   assert.equal(r.json.adapter_result.classification, "OCCUPANCY_BLOCKED");
-  const after = registryState(regPath).entries.find((e) => e.authorization_id === "AUTH-P11");
-  assert.equal(after.state, "SPENT");
+  assert.equal(registryState(reg).entries.find((e) => e.authorization_id === "AUTH-P11").state, "SPENT");
+  assert.equal(ledgerState(led).spends.length, 1);
   await s.close();
 });
 
 await test("P12 same execution_id + same fingerprint retained replay preserved", async () => {
-  const regPath = join(REG_DIR, "p12.json");
-  writeRegistry(regPath, [activeEntry("AUTH-P12")]);
+  const { reg, led } = pairPaths("p12");
+  writeRegistry(reg, [activeEntry("AUTH-P12")]);
+  writeLedger(led, []);
   let exec = 0;
-  const s = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: regPath,
-    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
-    getOccupancy: mockOccupancy(),
-    runOpenCode: mockRunner(),
-    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
+  const s = await startWithPaths(reg, led, {
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
   });
   const p = s.address.port;
   const body = validBody({ execution_id: "p12-replay", authorization_id: "AUTH-P12" });
@@ -1099,17 +1140,10 @@ await test("P12 same execution_id + same fingerprint retained replay preserved",
 });
 
 await test("P13 same execution_id + different fingerprint → EXECUTION_ID_CONFLICT preserved", async () => {
-  const regPath = join(REG_DIR, "p13.json");
-  writeRegistry(regPath, [activeEntry("AUTH-P13")]);
-  const s = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: regPath,
-    admitAuthorization: (pp, id, o) => realAdmit(pp, id, o),
-    getOccupancy: mockOccupancy(),
-    runOpenCode: mockRunner(),
-  });
+  const { reg, led } = pairPaths("p13");
+  writeRegistry(reg, [activeEntry("AUTH-P13")]);
+  writeLedger(led, []);
+  const s = await startWithPaths(reg, led, {});
   const p = s.address.port;
   await post(p, validBody({ execution_id: "p13-x", authorization_id: "AUTH-P13" }));
   const r2 = await post(p, validBody({ execution_id: "p13-x", authorization_id: "AUTH-P13", message: "changed" }));
@@ -1123,6 +1157,8 @@ await test("P14 request-supplied registry/path override impossible", async () =>
     ...validBody({ execution_id: "p14-1", authorization_id: "AUTH-OK-1" }),
     authorization_registry: "C:\\\\evil\\\\reg.json",
     registry_path: "C:\\\\evil\\\\reg.json",
+    authorization_spend_ledger: "C:\\\\evil\\\\led.json",
+    spend_ledger_path: "C:\\\\evil\\\\led.json",
   };
   const r = await post(port, body);
   assert.equal(r.status, 400);
@@ -1130,18 +1166,15 @@ await test("P14 request-supplied registry/path override impossible", async () =>
 });
 
 await test("P15 old Git operator auth ids are NOT automatically trusted", async () => {
-  const regPath = join(REG_DIR, "p15.json");
-  writeRegistry(regPath, []); // empty registry = nothing trusted
+  const { reg, led } = pairPaths("p15");
+  writeRegistry(reg, []);
+  writeLedger(led, []);
   let exec = 0;
-  const s = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: regPath,
-    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
-    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
-    getOccupancy: mockOccupancy(),
-    runOpenCode: mockRunner(),
+  const s = await startWithPaths(reg, led, {
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
   });
   const r = await post(
     s.address.port,
@@ -1157,17 +1190,10 @@ await test("P15 old Git operator auth ids are NOT automatically trusted", async 
 });
 
 await test("P16 response contains no registry filesystem details", async () => {
-  const regPath = join(REG_DIR, "p16.json");
-  writeRegistry(regPath, [activeEntry("AUTH-P16")]);
-  const s = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: regPath,
-    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
-    getOccupancy: mockOccupancy(),
-    runOpenCode: mockRunner(),
-  });
+  const { reg, led } = pairPaths("p16");
+  writeRegistry(reg, [activeEntry("AUTH-P16")]);
+  writeLedger(led, []);
+  const s = await startWithPaths(reg, led, {});
   const r = await post(s.address.port, validBody({ execution_id: "p16-1", authorization_id: "AUTH-P16" }));
   assert.ok(!r.text.includes("p16.json"));
   assert.ok(!r.text.includes("v4-auth-reg"));
@@ -1177,21 +1203,303 @@ await test("P16 response contains no registry filesystem details", async () => {
 });
 
 await test("P17 no registry path configured → fail closed pre-adapter", async () => {
+  const led = join(REG_DIR, "p17.ledger.json");
+  writeLedger(led, []);
   let exec = 0;
-  const s = await mod.startWindowsLocalExecutionService({
-    host: "127.0.0.1",
-    port: 0,
-    workspaceRoot: ROOT,
-    authorizationRegistryPath: null,
-    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
-    getOccupancy: mockOccupancy(),
-    runOpenCode: mockRunner(),
+  const s = await startWithPaths(null, led, {
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
   });
   const r = await post(s.address.port, validBody({ execution_id: "p17-1", authorization_id: "AUTH-P17" }));
   assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
   assert.ok(r.json.reason_codes.includes("AUTHORIZATION_REGISTRY_UNAVAILABLE"));
   assert.equal(exec, 0);
   await s.close();
+});
+
+await test("L13 missing ledger → pre-adapter AUTHORIZATION_REJECTED", async () => {
+  const { reg, led } = pairPaths("l13");
+  writeRegistry(reg, [activeEntry("AUTH-L13")]);
+  let exec = 0;
+  const s = await startWithPaths(reg, led, {
+    authorizationSpendLedgerPath: null,
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "l13-1", authorization_id: "AUTH-L13" }));
+  assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r.json.reason_codes.includes("AUTHORIZATION_SPEND_LEDGER_UNAVAILABLE"));
+  assert.equal(exec, 0);
+  await s.close();
+});
+
+await test("L14 spent ledger id → pre-registry/adapter reject", async () => {
+  const { reg, led } = pairPaths("l14");
+  writeRegistry(reg, [activeEntry("AUTH-L14")]);
+  writeLedger(led, [
+    {
+      authorization_id: "AUTH-L14",
+      execution_id: "prior",
+      route_id: "future+other_route",
+      spent_at: rfc3339(-1000),
+      spend_kind: "ADMISSION_CONSUMED",
+    },
+  ]);
+  let exec = 0;
+  let inspectRegCalls = 0;
+  const s = await startWithPaths(reg, led, {
+    inspectAuthorization: (p, id, o) => {
+      inspectRegCalls += 1;
+      return realInspect(p, id, o);
+    },
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "l14-1", authorization_id: "AUTH-L14" }));
+  assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r.json.reason_codes.includes("AUTHORIZATION_ALREADY_SPENT"));
+  assert.equal(r.json.adapter_result, null);
+  assert.equal(exec, 0);
+  assert.equal(inspectRegCalls, 0);
+  await s.close();
+});
+
+await test("L15 ledger persistence failure → registry unspent + adapter 0", async () => {
+  const { reg, led } = pairPaths("l15");
+  writeRegistry(reg, [activeEntry("AUTH-L15")]);
+  writeLedger(led, []);
+  let exec = 0;
+  const s = await startWithPaths(reg, led, {
+    recordDurableSpend: (p, rec, o) =>
+      realRecordLedger(p, rec, {
+        ...o,
+        persistSpendLedger: () => {
+          throw new Error("LEDGER_DISK");
+        },
+      }),
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "l15-1", authorization_id: "AUTH-L15" }));
+  assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r.json.reason_codes.includes("AUTHORIZATION_SPEND_LEDGER_UNAVAILABLE"));
+  assert.equal(exec, 0);
+  assert.equal(ledgerState(led).spends.length, 0);
+  assert.equal(registryState(reg).entries.find((e) => e.authorization_id === "AUTH-L15").state, "ACTIVE");
+  await s.close();
+});
+
+await test("L16 ledger success + registry spend failure → ledger durable + adapter 0", async () => {
+  const { reg, led } = pairPaths("l16");
+  writeRegistry(reg, [activeEntry("AUTH-L16")]);
+  writeLedger(led, []);
+  let exec = 0;
+  const s = await startWithPaths(reg, led, {
+    admitAuthorization: (p, id, o) =>
+      realAdmit(p, id, {
+        ...o,
+        persistRegistry: () => {
+          throw new Error("REG_DISK");
+        },
+      }),
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "l16-1", authorization_id: "AUTH-L16" }));
+  assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r.json.reason_codes.includes("AUTHORIZATION_REGISTRY_UNAVAILABLE"));
+  assert.equal(exec, 0);
+  assert.equal(ledgerState(led).spends.length, 1);
+  assert.equal(registryState(reg).entries.find((e) => e.authorization_id === "AUTH-L16").state, "ACTIVE");
+  await s.close();
+});
+
+await test("L17 retry after L16 partial failure → AUTHORIZATION_ALREADY_SPENT from ledger", async () => {
+  const { reg, led } = pairPaths("l16");
+  let exec = 0;
+  const s = await startWithPaths(reg, led, {
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "l17-1", authorization_id: "AUTH-L16" }));
+  assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r.json.reason_codes.includes("AUTHORIZATION_ALREADY_SPENT"));
+  assert.equal(exec, 0);
+  await s.close();
+});
+
+await test("L18 admission order spy: ledger persist BEFORE registry persist BEFORE adapter", async () => {
+  const { reg, led } = pairPaths("l18");
+  writeRegistry(reg, [activeEntry("AUTH-L18")]);
+  writeLedger(led, []);
+  const order = [];
+  const s = await startWithPaths(reg, led, {
+    recordDurableSpend: (p, rec, o) => {
+      order.push("ledger");
+      return realRecordLedger(p, rec, o);
+    },
+    admitAuthorization: (p, id, o) => {
+      order.push("registry");
+      return realAdmit(p, id, o);
+    },
+    executeOpenCodeBounded: async (req, o) => {
+      order.push("adapter");
+      return executeOpenCodeBounded(req, o);
+    },
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "l18-1", authorization_id: "AUTH-L18" }));
+  assert.equal(r.json.ok, true);
+  assert.deepEqual(order, ["ledger", "registry", "adapter"]);
+  await s.close();
+});
+
+await test("L19 occupancy blocked after admission → ledger consumed + registry SPENT", async () => {
+  const { reg, led } = pairPaths("l19");
+  writeRegistry(reg, [activeEntry("AUTH-L19")]);
+  writeLedger(led, []);
+  const s = await startWithPaths(reg, led, {
+    getOccupancy: mockOccupancy("QWEN_BUSY"),
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "l19-1", authorization_id: "AUTH-L19" }));
+  assert.equal(r.json.adapter_result.classification, "OCCUPANCY_BLOCKED");
+  assert.equal(ledgerState(led).spends.length, 1);
+  assert.equal(registryState(reg).entries.find((e) => e.authorization_id === "AUTH-L19").state, "SPENT");
+  await s.close();
+});
+
+await test("L20 same execution_id/same fingerprint replay before ledger", async () => {
+  const { reg, led } = pairPaths("l20");
+  writeRegistry(reg, [activeEntry("AUTH-L20")]);
+  writeLedger(led, []);
+  let ledgerInspects = 0;
+  let exec = 0;
+  const s = await startWithPaths(reg, led, {
+    inspectDurableSpend: (p, id, o) => {
+      ledgerInspects += 1;
+      return realInspectLedger(p, id, o);
+    },
+    executeOpenCodeBounded: async (req, o) => {
+      exec += 1;
+      return executeOpenCodeBounded(req, o);
+    },
+  });
+  const body = validBody({ execution_id: "l20-replay", authorization_id: "AUTH-L20" });
+  const r1 = await post(s.address.port, body);
+  assert.equal(r1.json.replayed, false);
+  const afterFirst = ledgerInspects;
+  const r2 = await post(s.address.port, body);
+  assert.equal(r2.json.replayed, true);
+  assert.equal(ledgerInspects, afterFirst);
+  assert.equal(exec, 1);
+  await s.close();
+});
+
+await test("L21 same execution_id/different fingerprint conflict before ledger", async () => {
+  const { reg, led } = pairPaths("l21");
+  writeRegistry(reg, [activeEntry("AUTH-L21")]);
+  writeLedger(led, []);
+  let ledgerInspects = 0;
+  const s = await startWithPaths(reg, led, {
+    inspectDurableSpend: (p, id, o) => {
+      ledgerInspects += 1;
+      return realInspectLedger(p, id, o);
+    },
+  });
+  await post(s.address.port, validBody({ execution_id: "l21-x", authorization_id: "AUTH-L21" }));
+  const afterFirst = ledgerInspects;
+  const r2 = await post(
+    s.address.port,
+    validBody({ execution_id: "l21-x", authorization_id: "AUTH-L21", message: "changed" }),
+  );
+  assert.equal(r2.status, 409);
+  assert.equal(r2.json.classification, "EXECUTION_ID_CONFLICT");
+  assert.equal(ledgerInspects, afterFirst);
+  await s.close();
+});
+
+await test("L22 busy path does not consume ledger for second auth", async () => {
+  const { reg, led } = pairPaths("l22");
+  writeRegistry(reg, [activeEntry("AUTH-L22A"), activeEntry("AUTH-L22B")]);
+  writeLedger(led, []);
+  let release;
+  const gate = new Promise((r) => {
+    release = r;
+  });
+  let occStarted = 0;
+  const s = await startWithPaths(reg, led, {
+    getOccupancy: async () => {
+      occStarted += 1;
+      await gate;
+      return "QWEN_READY_IDLE";
+    },
+  });
+  const p1 = post(s.address.port, validBody({ execution_id: "l22-1", authorization_id: "AUTH-L22A" }));
+  for (let i = 0; i < 50 && occStarted < 1; i += 1) {
+    await new Promise((r) => setTimeout(r, 20));
+  }
+  assert.equal(occStarted, 1);
+  const r2 = await post(s.address.port, validBody({ execution_id: "l22-2", authorization_id: "AUTH-L22B" }));
+  assert.equal(r2.status, 409);
+  assert.equal(r2.json.classification, "EXECUTION_BUSY");
+  const mid = ledgerState(led);
+  assert.equal(mid.spends.length, 1);
+  assert.equal(mid.spends[0].authorization_id, "AUTH-L22A");
+  assert.ok(!mid.spends.some((e) => e.authorization_id === "AUTH-L22B"));
+  release();
+  await p1;
+  await s.close();
+});
+
+await test("L23 request cannot override ledger/path", async () => {
+  const body = {
+    ...validBody({ execution_id: "l23-1", authorization_id: "AUTH-SHAPE-1" }),
+    authorization_spend_ledger: "C:\\\\evil\\\\ledger.json",
+    spend_ledger: { spends: [] },
+  };
+  const r = await post(port, body);
+  assert.equal(r.status, 400);
+  assert.equal(r.json.classification, "ENDPOINT_SCHEMA_REJECTED");
+});
+
+await test("L24 response leaks no ledger path/content", async () => {
+  const { reg, led } = pairPaths("l24");
+  writeRegistry(reg, [activeEntry("AUTH-L24")]);
+  writeLedger(led, []);
+  const s = await startWithPaths(reg, led, {});
+  const r = await post(s.address.port, validBody({ execution_id: "l24-1", authorization_id: "AUTH-L24" }));
+  assert.ok(!r.text.includes("l24.ledger"));
+  assert.ok(!r.text.includes("spend-ledger"));
+  assert.ok(!r.text.toLowerCase().includes("localappdata"));
+  assert.ok(!responseLeak(r.json));
+  await s.close();
+});
+
+await test("L25 request/response schema files unchanged vs contracts", async () => {
+  const req = await readFile(
+    join(ROOT, "docs/contracts/v4-windows-local-execution-endpoint-v1.request.schema.json"),
+    "utf8",
+  );
+  const res = await readFile(
+    join(ROOT, "docs/contracts/v4-windows-local-execution-endpoint-v1.response.schema.json"),
+    "utf8",
+  );
+  assert.ok(req.includes("v4-windows-local-execution-endpoint-request-v1"));
+  assert.ok(res.includes("v4-windows-local-execution-endpoint-result-v1"));
+  assert.ok(!req.includes("spend_ledger"));
+  assert.ok(!req.includes("authorization_spend_ledger"));
+  assert.ok(!res.includes("spend_ledger"));
 });
 
 await srv.close();

@@ -29,6 +29,10 @@ import {
   inspectAuthorization,
 } from "./v4-runtime-authorization-provenance-registry-v1.mjs";
 import {
+  inspectDurableSpend,
+  recordDurableSpend,
+} from "./v4-runtime-authorization-durable-spend-ledger-v1.mjs";
+import {
   DISPATCH_CLI_CAPABILITIES,
 } from "./probe-opencode-local-v1.mjs";
 import { buildOpenCodeProviderOverlay } from "./dispatch-opencode-execution-v1.mjs";
@@ -344,8 +348,37 @@ export async function handleExecutionRequest(body, options = {}) {
   }
 
   const registryPath = options.authorizationRegistryPath || null;
+  const ledgerPath = options.authorizationSpendLedgerPath || null;
+  const inspectLedger = options.inspectDurableSpend || inspectDurableSpend;
+  const recordLedger = options.recordDurableSpend || recordDurableSpend;
   const inspect = options.inspectAuthorization || inspectAuthorization;
   const admit = options.admitAuthorization || admitAuthorization;
+
+  if (!ledgerPath) {
+    return {
+      status: 200,
+      body: wrapResult({
+        ok: false,
+        classification: "AUTHORIZATION_REJECTED",
+        execution_id: executionId,
+        reason_codes: ["AUTHORIZATION_SPEND_LEDGER_UNAVAILABLE"],
+      }),
+    };
+  }
+
+  // Durable spend ledger BEFORE provenance registry.
+  const ledgerInspect = inspectLedger(ledgerPath, authId);
+  if (!ledgerInspect.ok) {
+    return {
+      status: 200,
+      body: wrapResult({
+        ok: false,
+        classification: "AUTHORIZATION_REJECTED",
+        execution_id: executionId,
+        reason_codes: ledgerInspect.reason_codes,
+      }),
+    };
+  }
 
   if (!registryPath) {
     return {
@@ -402,11 +435,32 @@ export async function handleExecutionRequest(body, options = {}) {
   state.inFlight = true;
   state.authBinding.set(authId, executionId);
 
-  // Atomic ACTIVE -> SPENT persistence before adapter/occupancy/guard/runner.
+  // Ledger-first durable consume, then registry ACTIVE→SPENT, then adapter.
+  const ledgerRecorded = recordLedger(ledgerPath, {
+    authorization_id: authId,
+    execution_id: executionId,
+    route_id: body.runtime_authorization.route_id,
+    spend_kind: "ADMISSION_CONSUMED",
+  });
+  if (!ledgerRecorded.ok) {
+    state.inFlight = false;
+    state.authBinding.delete(authId);
+    return {
+      status: 200,
+      body: wrapResult({
+        ok: false,
+        classification: "AUTHORIZATION_REJECTED",
+        execution_id: executionId,
+        reason_codes: ledgerRecorded.reason_codes,
+      }),
+    };
+  }
+
   const admitted = admit(registryPath, authId, {
     routeId: body.runtime_authorization.route_id,
   });
   if (!admitted.ok) {
+    // Ledger record intentionally remains; no rollback. Adapter not invoked.
     state.inFlight = false;
     state.authBinding.delete(authId);
     return {
@@ -660,11 +714,23 @@ if (isMain) {
     );
     process.exit(1);
   }
+  const authorizationSpendLedger = args.get("--authorization-spend-ledger") || "";
+  if (!authorizationSpendLedger || !isAbsolute(authorizationSpendLedger)) {
+    process.stderr.write(
+      `${JSON.stringify({
+        schema_version: "v4-windows-local-execution-endpoint-started-v1",
+        ok: false,
+        error_class: "AUTHORIZATION_SPEND_LEDGER_REQUIRED",
+      })}\n`,
+    );
+    process.exit(1);
+  }
   startWindowsLocalExecutionService({
     host,
     port,
     workspaceRoot,
     authorizationRegistryPath: authorizationRegistry,
+    authorizationSpendLedgerPath: authorizationSpendLedger,
   })
     .then(({ address }) => {
       process.stdout.write(

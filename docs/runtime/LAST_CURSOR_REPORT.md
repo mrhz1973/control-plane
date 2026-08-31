@@ -5,62 +5,65 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_WF40_EXECUTION_TRANSPORT_PATCH_APPLY_OFFLINE
+task_ref: V4_RUNTIME_AUTHORIZATION_DURABLE_SPEND_LEDGER_IMPLEMENTATION
 result_cursor: PASS
-starting_head: 7e1907fac599f12cabc253381ee74f241f6b0f54
-final_head: f42b7406676079516bb4e126461632da0d6e7660
+starting_head: 9635bf4cea0e4553624ec185fc06676d302365be
+final_head: pending_commit
 
-category: DELICATO
-runtime_mutations: 0
-workflow_mutations: 1
+category: SECURITY_RUNTIME_INTEGRATION
+runtime_mutations: 2
+workflow_mutations: 0
 network_mutations: 0
 tailscale_mutations: 0
-service_mutations: 0
+service_mutations: 1
 http_execution_endpoint_requests: 0
+wf40_executions: 0
+wf61_executions: 0
 opencode_cli_calls: 0
 qwen_generation_calls: 0
 provider_calls: 0
-authorization_entries_created: 0
-authorization_entries_spent: 0
-registry_mutations: 0
+authorization_issuance: 0
+authorization_spends_production: 0
 secret_exposure: false
-wf40_node_count: 71
-wf40_executions: 0
+wf40_node_count_unchanged: 71
 wf61_active: false
-wf61_executions: 0
 d0025_gate_closed: true
 live_execution: 0
-bugbot_invoked: false
+bugbot_invoked: true
+bugbot_result: PASS_NO_FINDINGS
 
-patch:
-  artifact: workflows/patches/v4-wf40-windows-execution-transport.gpt-web.json
-  blob_sha: 91c1d98dad708b74a9031baa0784a685160820c6
-  applied_verbatim: true
-  artifact_git_unchanged: true
+target_suites:
+  - tests/v4-runtime-authorization-durable-spend-ledger/run.mjs: 13/13 PASS
+  - tests/v4-windows-local-execution-endpoint/run.mjs: 61/61 PASS
 
-wf40:
-  id: 9ZMj2ACTKyDVhCue
-  name: 40 - CP v4 multirepo + classifier bridge - ACTIVE
-  active: true
-  pre_versionId: 60f9b75e-39b8-410a-bcd1-364073992df0
-  post_versionId: e2d600d6-48d9-45fe-9527-3f3e0b47d358
-  pre_nodes: 66
-  post_nodes: 71
-  new_ids:
-    - v4f40-7501-4001-8501-000000000501
-    - v4f40-7502-4002-8502-000000000502
-    - v4f40-7503-4003-8503-000000000503
-    - v4f40-7504-4004-8504-000000000504
-    - v4f40-7505-4005-8505-000000000505
-  topology: parse-adapter-router -> prepare-transport -> IF ready? TRUE=HTTP+parse / FALSE=gate-closed
-  adapter_router_false_gate_terminal: true
-  http_node_structural_only: true
-  ready_gate_fail_closed: true
-  production_registry_empty: true
+regressions:
+  - opencode-execution-adapter: 23/23 PASS
+  - opencode-single-generation-guard: 16/16 PASS
+  - v4-local-runtime-readonly-contribution: 29/29 PASS
+  - v4-local-runtime-readonly-private-endpoint: 22/22 PASS
+
+implementation:
+  tool: tools/v4-runtime-authorization-durable-spend-ledger-v1.mjs
+  endpoint_integration: tools/serve-v4-windows-local-execution-endpoint-v1.mjs
+  admission_order: replay -> ledger -> registry -> binding -> single-flight -> ledger persist -> registry SPENT -> adapter
+  ledger_first_partial_failure: proven
+  request_response_schemas_unchanged: true
+
+runtime_apply:
+  production_ledger: "%LOCALAPPDATA%\\control-plane\\v4-runtime-authorization-spend-ledger-v1.json"
+  production_ledger_spends: 0
+  production_registry_entries: 0
+  scheduled_task: ControlPlane-V4-LocalExecutionEndpoint
+  listener_127_0_0_1_18791: single
+  command_line_has_registry_and_ledger: true
+  tailscale_routes_preserved: true
+  funnel_absent: true
 
 artifacts:
-  - reports/architecture/v4_wf40_execution_transport_patch_apply_offline.md
+  - reports/architecture/v4_runtime_authorization_durable_spend_ledger_implementation.md
+  - tools/v4-runtime-authorization-durable-spend-ledger-v1.mjs
+  - tests/v4-runtime-authorization-durable-spend-ledger/run.mjs
 
-architecture_report: reports/architecture/v4_wf40_execution_transport_patch_apply_offline.md
-NEXT: V4_RUNTIME_AUTHORIZATION_DURABLE_SPEND_LEDGER
+architecture_report: reports/architecture/v4_runtime_authorization_durable_spend_ledger_implementation.md
+NEXT: V4_RUNTIME_AUTHORIZATION_ISSUANCE_PATH_DISCOVERY
 ```

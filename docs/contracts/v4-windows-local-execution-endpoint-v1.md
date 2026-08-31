@@ -164,18 +164,39 @@ The endpoint MUST NOT provide a custom `guardStart` in v1. The adapter's existin
 
 ## 8. Single-flight, idempotency and authorization reuse
 
-The implementation MUST keep all v1 execution-state control in memory only. No durable ledger is authorized by this contract.
+The implementation MUST keep v1 execution-id replay/single-flight control in memory. Durable authorization consumption is owned by the durable spend ledger (see §8.0).
 
-### 8.0 Server-side provenance admission (v1.1 — supersedes in-memory-only for provenance/spend)
+### 8.0 Server-side provenance + durable spend admission (v1.2)
 
-Provenance and durable spend are owned by the server-side issued-authorization registry (`tools/v4-runtime-authorization-provenance-registry-v1.mjs`, contract `docs/contracts/v4-runtime-authorization-provenance-registry-v1.md`). After HTTP schema validation and the in-memory execution_id replay-cache check, and BEFORE occupancy sampling, guard start, runner spawn or any adapter invocation:
+Two server-side files participate in admission:
 
-1. the registry (server-side path supplied only at service construction) is loaded and validated;
-2. the exact `authorization_id` must exist, be `ACTIVE`, unexpired, with matching `route_id`;
-3. failure at any step → HTTP 200, `ok=false`, `classification="AUTHORIZATION_REJECTED"`, `adapter_result=null`, `execution_performed=false`, specific reason code (`AUTHORIZATION_ID_NOT_ISSUED` / `AUTHORIZATION_ALREADY_SPENT` / `AUTHORIZATION_EXPIRED` / `AUTHORIZATION_ROUTE_MISMATCH` / `AUTHORIZATION_REGISTRY_INVALID` / `AUTHORIZATION_REGISTRY_UNAVAILABLE`), and the adapter path is never invoked;
-4. on success the entry is atomically transitioned ACTIVE → SPENT and persisted (temp+rename) BEFORE the adapter is invoked — single-use-at-admission; a later occupancy block does NOT reactivate the authorization.
+1. **Durable spend ledger** (`tools/v4-runtime-authorization-durable-spend-ledger-v1.mjs`, contract `docs/contracts/v4-runtime-authorization-durable-spend-ledger-v1.md`) — global consumed-id history.
+2. **Provenance registry** (`tools/v4-runtime-authorization-provenance-registry-v1.mjs`, contract `docs/contracts/v4-runtime-authorization-provenance-registry-v1.md`) — issuance + current ACTIVE/SPENT state.
 
-The in-memory execution_id replay cache and the authorization_id binding semantics below remain valid and unchanged. This section supersedes the in-memory-only statement above **solely** for the provenance/spend registry; request schema, response schema, adapter ownership and the single-generation guard remain unchanged.
+Mandatory CLI arguments (absolute paths only; never request-selectable):
+
+- `--authorization-registry <absolute-path>`
+- `--authorization-spend-ledger <absolute-path>`
+
+Authoritative order after HTTP schema validation:
+
+1. in-memory `execution_id` replay-cache (same fingerprint → replay; different → `EXECUTION_ID_CONFLICT`);
+2. load + validate durable spend ledger; if `authorization_id` already present → HTTP 200 `AUTHORIZATION_REJECTED` / `AUTHORIZATION_ALREADY_SPENT`, zero registry spend, zero adapter;
+3. load + validate provenance registry; require ACTIVE + unexpired + route match;
+4. in-memory authorization-id binding conflict check;
+5. global single-flight check;
+6. append `ADMISSION_CONSUMED` to the durable ledger and persist atomically (temp+rename);
+7. only after ledger persistence succeeds, ACTIVE → SPENT in the provenance registry and persist atomically;
+8. only after **both** durable writes succeed may the canonical adapter path run.
+
+Partial-failure semantics (ledger-first, intentional):
+
+- ledger persistence failure → registry remains ACTIVE; adapter/occupancy/guard/runner = 0;
+- ledger persistence success + registry spend failure → ledger record remains (no rollback); adapter = 0; any retry is rejected by the ledger as `AUTHORIZATION_ALREADY_SPENT`.
+
+Ledger/registry unavailable or invalid reasons map to HTTP 200 `AUTHORIZATION_REJECTED` with `adapter_result=null` and `execution_performed=false`. No filesystem path or ledger/registry content is returned to the HTTP caller.
+
+Request schema, response schema, adapter ownership and the single-generation guard remain unchanged.
 
 ### 8.1 Global single-flight
 
@@ -203,7 +224,7 @@ If the adapter returns `authorization_state_final=SPENT`, the authorization rema
 
 This prevents transport-level retry with a new execution id while preserving the adapter's own authorization-state semantics.
 
-A durable authorization spend ledger remains a separate later block and is recommended before repeated operational use.
+The durable spend ledger (§8.0) is the cross-restart / cross-route authority for consumed authorization ids; in-memory binding is complementary within a single process lifetime.
 
 ## 9. Response contract
 

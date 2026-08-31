@@ -48,18 +48,19 @@ Machine schema: `docs/contracts/v4-runtime-authorization-provenance-registry-v1.
 
 ## Admission order (authoritative)
 
-After HTTP schema validation and after the in-memory execution_id replay-cache check:
+After HTTP schema validation and after the in-memory execution_id replay-cache check, and after the durable spend ledger has admitted the id as not-yet-consumed:
 
 1. load + validate the server-side registry;
 2. exact `authorization_id` lookup;
 3. verify ACTIVE + unexpired + route match;
-4. execution-id conflict check (existing semantics);
+4. execution-id binding conflict check (existing semantics);
 5. global single-flight check (existing semantics);
-6. atomically transition ACTIVE → SPENT in the registry object;
-7. persist with atomic temp+rename write;
-8. only after successful persistence invoke the canonical adapter path (occupancy → guard → runner).
+6. durable spend ledger append `ADMISSION_CONSUMED` (persisted first — see durable ledger contract);
+7. atomically transition ACTIVE → SPENT in the registry object;
+8. persist with atomic temp+rename write;
+9. only after successful ledger + registry persistence invoke the canonical adapter path (occupancy → guard → runner).
 
-Single-use-at-admission is intentional: an admitted authorization is consumed **before** the execution-side path. A later occupancy block does NOT reactivate it.
+Single-use-at-admission is intentional: an admitted authorization is consumed **before** the execution-side path. A later occupancy block does NOT reactivate it. If ledger persistence succeeds but registry spend persistence fails, the ledger record remains authoritative and is not rolled back.
 
 ## HTTP outcome for provenance-invalid requests
 
@@ -75,10 +76,11 @@ No synthetic `adapter_result`. No registry filesystem details in the response.
 
 ## Ownership boundaries
 
-- Provenance + spend authority: this registry owner (`tools/v4-runtime-authorization-provenance-registry-v1.mjs`).
+- Issuance/provenance + current ACTIVE/SPENT state: this registry owner (`tools/v4-runtime-authorization-provenance-registry-v1.mjs`).
+- Durable global consumed-id history: `v4-runtime-authorization-durable-spend-ledger-v1` (`tools/v4-runtime-authorization-durable-spend-ledger-v1.mjs`).
 - Authorization SHAPE validation: unchanged, `validateRuntimeAuthorization()` in `tools/opencode-execution-adapter-v1.mjs`.
 - Occupancy, guard, runner, accounting: unchanged canonical owners.
-- Durable spend ledger (multi-route): future block; this registry is the seed.
+- A ledger record is not issuance evidence; this registry remains the seed for ACTIVE issuance state.
 
 ## Out of scope
 
