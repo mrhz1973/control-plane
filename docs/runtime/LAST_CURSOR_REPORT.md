@@ -8,7 +8,7 @@
 task_ref: V4_RUNTIME_AUTHORIZATION_DURABLE_SPEND_LEDGER_IMPLEMENTATION
 result_cursor: PASS
 starting_head: 9635bf4cea0e4553624ec185fc06676d302365be
-final_head: pending_commit
+final_head: 02cd89f0bd62a8acbd6ad0ae50a638f74d57b5e1
 
 category: SECURITY_RUNTIME_INTEGRATION
 runtime_mutations: 2
