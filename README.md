@@ -107,14 +107,21 @@ Eseguire:
 1. refresh `origin/main`;
 2. rileggere `CURRENT_FRONTIER.md`;
 3. rileggere ACTIVE WORK pointer se presente;
-4. leggere `docs/runtime/LAST_CURSOR_REPORT.md` **una sola volta** soltanto se il gate/NEXT dipende dal pass Cursor appena concluso;
-5. leggere evidence aggiuntiva solo se esplicitamente puntata e necessaria;
-6. **riepilogare all'operatore l'esito del pass Cursor appena concluso**;
-7. solo dopo il riepilogo applicare AUTO-VIA + STANDING OPERATOR AUTHORIZATION per derivare/emettere l'eventuale TASK DELTA successivo.
+4. ispezionare **solo il delta Git** dal precedente HEAD osservato;
+5. se il delta contiene un nuovo `reports/runtime/cursor-stops/*.stop.json` riferito al task atteso, leggere **solo quel singolo STOP artifact**;
+6. altrimenti leggere `docs/runtime/LAST_CURSOR_REPORT.md` **una sola volta** soltanto se il gate/NEXT dipende dal PASS Cursor appena concluso;
+7. leggere evidence aggiuntiva solo se esplicitamente puntata e necessaria;
+8. **riepilogare all'operatore l'esito del pass Cursor appena concluso**;
+9. solo dopo il riepilogo applicare AUTO-VIA + STANDING OPERATOR AUTHORIZATION per derivare/emettere l'eventuale TASK DELTA successivo.
 
-**Cursor completion persistence invariant:** se il risultato dell'ultimo pass Cursor serve a determinare gate/NEXT, il task Cursor non è evidence-complete finché il report finale non è persistito in `docs/runtime/LAST_CURSOR_REPORT.md` con `task_ref`, risultato, evidence deterministica, mutazioni rilevanti e next-gate/blocker, senza secret. Questa persistenza docs-only deve essere prevista come ultimo step del task Cursor.
+**Cursor completion persistence invariant:**
 
-Se `LAST_CURSOR_REPORT.md` non corrisponde al pass Cursor atteso, `agg` classifica **`EVIDENCE_NOT_PERSISTED`**. Non deve dedurre che il task non sia stato eseguito. Se l'operatore fornisce nello stesso messaggio il report Cursor completo mancante, GPT Web può persisterlo docs-only, marcarlo `operator-relayed` / non indipendentemente verificato e proseguire con AUTO-VIA.
+- **PASS** → il task non è evidence-complete finché il PASS è persistito nel normale bounded evidence path, incluso `docs/runtime/LAST_CURSOR_REPORT.md` compatto/rolling e `CURRENT_FRONTIER.md` quando il LIVE STATE cambia;
+- **STOP** → il task deve creare un solo piccolo artifact immutabile `reports/runtime/cursor-stops/<UTC_TIMESTAMP>__<TASK_REF>.stop.json`, fare commit/push solo di quello, lasciare `CURRENT_FRONTIER.md` e `LAST_CURSOR_REPORT.md` invariati e preservare production/test incompleti dirty/uncommitted.
+
+Gli STOP non vengono accumulati nel rolling PASS report. `agg` non lista né precarica la directory STOP: legge soltanto l'artifact nuovo selezionato dal delta Git del task appena terminato. Regola canonica e minimum shape: `docs/foundation/PROMPT_SEQUENCING_GATE.md`.
+
+Se non esiste né PASS evidence corrispondente né un nuovo STOP artifact corrispondente, `agg` classifica **`EVIDENCE_NOT_PERSISTED`**. Non deve dedurre che il task non sia stato eseguito.
 
 Se report/evidence e frontier confliggono: **CURRENT_FRONTIER prevale per LIVE STATE**; dichiarare l'evidence stale/conflicting, non ricostruire lo stato dalla narrativa.
 
@@ -135,7 +142,7 @@ contratto specifico        = scope/metodo del job
         >
 Execution Checkpoint       = resume task incompleto
         >
-LAST_CURSOR_REPORT / verify = EVIDENCE
+new matching cursor STOP artifact / LAST_CURSOR_REPORT / verify = EVIDENCE
         >
 handoff                    = STABLE SEED / checkpoint storico
         >
@@ -160,7 +167,8 @@ La standing authorization non modifica la precedenza delle fonti: modifica solta
 | Presentazione/sequence prompt Cursor | `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` + `docs/foundation/PROMPT_SEQUENCING_GATE.md` |
 | GLM mode | `docs/advisors/GLM_ADVISOR_METHOD.md` — mode pertinente |
 | Azioni manuali operatore | `docs/foundation/OPERATOR_ACTION_HANDOFF_STANDARD.md` |
-| Evidenza ultimo pass Cursor | `docs/runtime/LAST_CURSOR_REPORT.md` una volta |
+| Evidenza PASS ultimo Cursor | `docs/runtime/LAST_CURSOR_REPORT.md` una volta |
+| Evidenza STOP ultimo Cursor | solo il nuovo `reports/runtime/cursor-stops/*.stop.json` selezionato dal delta Git |
 | Handoff | solo per seed/resume quando il frontier/task non basta |
 | Storia/audit | session log / PM / runtime-packets solo su necessità concreta |
 | Workflow/runtime asset | solo file, diff, range o export necessari al task |
