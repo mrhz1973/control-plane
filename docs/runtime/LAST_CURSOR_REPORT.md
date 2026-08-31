@@ -5,12 +5,12 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_WINDOWS_LOCAL_RUNTIME_RUNNER_TRANSPORT_DISCOVERY
+task_ref: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_OFFLINE_IMPLEMENTATION
 result_cursor: PASS
-starting_head: 3f5398de0e91707d5dfea3f7899af4384940473a
-final_head: 38879b15863e3bde9861693b7f77c61d1aea2052
+starting_head: 35f19b3083b79c5d71932bb6ff3c945b91a1c88f
+final_head: PENDING_COMMIT
 
-category: DOCS_ONLY_DISCOVERY
+category: OFFLINE_ENDPOINT_IMPLEMENTATION
 runtime_mutations: 0
 workflow_mutations: 0
 network_mutations: 0
@@ -24,30 +24,26 @@ secret_exposure: false
 wf40_node_count_unchanged: 66
 wf61_active: false
 d0025_gate_closed: true
+live_execution: 0
 
-read_set:
-  - tools/opencode-execution-adapter-v1.mjs
-  - tools/opencode-single-generation-guard-v1.mjs
-  - tools/qwen-local-session-manager-v1.mjs
-  - tools/produce-v4-local-runtime-readonly-contribution-v1.mjs
-  - docs/contracts/v4-local-runtime-readonly-private-endpoint-v1.md
-  - docs/contracts/v4-local-runtime-readonly-contribution-adapter-v1.md
-  - docs/contracts/n8n-v4-execution-adapter-router-bridge-v1.md
-  - reports/architecture/v4_opencode_execution_adapter_v1.md
-  - reports/architecture/v4_local_runtime_readonly_private_endpoint_implementation.md
+corrective_lineage:
+  - initial_stop_23_24_occupancy_expectation_OCCUPANCY_REJECTED_vs_OCCUPANCY_BLOCKED
+  - occupancy_expectation_corrected
+  - bugbot_nonzero_exit_success_accounting
+  - nonzero_exit_fail_closed
+  - bugbot_synthetic_generation_accounting
+  - guard_accounting_authoritative
+  - bugbot_unbounded_stdout_stderr
+  - child_output_drain_no_retention
+  - final_target_31_31_pass
+  - regressions_pass
+  - bugbot_pass_no_findings
 
-key_findings:
-  occupancy_classifier_owner: tools/produce-v4-local-runtime-readonly-contribution-v1.mjs (classifyQwenSharedRuntime, pure)
-  occupancy_classifier_duplicated: false
-  missing_callbacks: getOccupancy, runOpenCode
-  guardStart_new_wiring_required: false (production default startSingleGenerationGuard already wired in adapter)
-  getOccupancy_owner: windows_local_execution_service (in-process, execution-time)
-  runOpenCode_owner: windows_local_execution_service (in-process, single opencode spawn)
-  trust_boundary: tailscale_private_https_vps_to_windows_loopback
-  existing_readonly_endpoint_reuse: rejected_keep_separate (GET-only no-body observation transport)
-  replay_strategy: single_use_spend_plus_execution_id_idempotency
-  concurrency_strategy: single_flight_fail_closed_reject
+artifacts:
+  - tools/serve-v4-windows-local-execution-endpoint-v1.mjs
+  - tests/v4-windows-local-execution-endpoint/run.mjs
+  - reports/architecture/v4_windows_local_execution_endpoint_offline_implementation.md
 
-architecture_report: reports/architecture/v4_windows_local_runtime_runner_transport_discovery.md
-NEXT: V4_GPT_WEB_EXECUTION_ENDPOINT_CONTRACT_AUTHORING (v4-windows-local-execution-endpoint-v1)
+architecture_report: reports/architecture/v4_windows_local_execution_endpoint_offline_implementation.md
+NEXT: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_PRIVATE_SERVICE_PERSISTENCE
 ```
