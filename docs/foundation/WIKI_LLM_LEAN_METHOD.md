@@ -29,7 +29,8 @@ Everything else is on-demand.
 | `FOUNDATION` | `docs/foundation/PROJECT_VISION.md` | architecture + invariants |
 | `METHOD` | task-specific foundation/method doc | how to perform a class of work |
 | `CONTRACT` | `docs/contracts/**` | machine/human work interfaces |
-| `EVIDENCE` | `LAST_CURSOR_REPORT`, verify/session artifact, test result | what was observed/proved |
+| `EVIDENCE_PASS` | `docs/runtime/LAST_CURSOR_REPORT.md`, verify/session artifact, test result | latest completed bounded PASS evidence |
+| `EVIDENCE_STOP` | `reports/runtime/cursor-stops/*.stop.json` | immutable bounded STOP event evidence |
 | `HISTORY` | PM docs, old handoffs, sessions, runtime-packets, Git history | audit trail only |
 | `RUNTIME_ASSET` | workflows/tools/scripts/data | executable/rebuild artifact |
 
@@ -42,6 +43,7 @@ Do not duplicate in bootstrap/live docs:
 - foundation diagrams;
 - historical decisions;
 - long PASS narratives;
+- STOP event history;
 - old gate chains;
 - current HEAD;
 - entire issue bodies;
@@ -108,38 +110,50 @@ After a Cursor pass:
 remote HEAD
 → CURRENT_FRONTIER
 → ACTIVE WORK
-→ LAST_CURSOR_REPORT once if relevant
+→ inspect only Git delta since previously observed HEAD
+→ if matching new cursor-stops/*.stop.json: read that one STOP artifact only
+→ else LAST_CURSOR_REPORT once if relevant
 → pointed evidence only if necessary
 → summarize the completed Cursor pass to the operator
 → only then derive/emit any next Cursor TASK DELTA via AUTO-VIA
 ```
 
-Never reboot the full project for `agg`.
+Never reboot the full project for `agg`. Never scan the full STOP directory or load old STOP artifacts unless a concrete dependency names them.
 
 ### 7.1 Cursor completion persistence invariant
 
-If the result of a Cursor pass is needed to determine the next gate/NEXT, that pass is not **evidence-complete** until the final report is persisted in `docs/runtime/LAST_CURSOR_REPORT.md`.
+If the result of a Cursor pass is needed to determine the next gate/NEXT, that pass must persist outcome evidence on GitHub before the operator's `agg`.
 
-Minimum persisted fields:
+**PASS minimum:**
 
 - exact `task_ref`;
-- `PASS|BLOCKED|FAILED`;
+- completed PASS result;
 - deterministic evidence relevant to acceptance;
 - observed repo HEAD/workspace when pertinent;
 - runtime mutations performed or explicitly zero;
-- exact `NEXT_GATE_CLASSIFICATION` or blocker;
-- no secrets/tokens.
+- exact `NEXT_GATE_CLASSIFICATION` or next block;
+- no secrets/tokens;
+- compact rolling evidence in `docs/runtime/LAST_CURSOR_REPORT.md`;
+- `CURRENT_FRONTIER.md` updated when LIVE STATE changes.
 
-The persistence step is docs-only bookkeeping and must be included as the final closure step of future Cursor tasks whenever `agg` will depend on their result.
+**STOP minimum:** create one immutable file only under:
 
-**Outcome split (canonical):**
+```text
+reports/runtime/cursor-stops/<UTC_TIMESTAMP>__<TASK_REF>.stop.json
+```
+
+The STOP artifact is deliberately separate from `LAST_CURSOR_REPORT.md` so the rolling PASS report stays lean and does not become an intermediate event log.
+
+Canonical outcome split:
 
 - **PASS** → persist full bounded evidence + update frontier when applicable + normal commit/push.
-- **STOP** → persist **only** `docs/runtime/LAST_CURSOR_REPORT.md` in an evidence-only commit/push; leave incomplete production/test changes dirty and uncommitted; do not update `CURRENT_FRONTIER.md`.
+- **STOP** → preserve incomplete production/test changes dirty and uncommitted; do not change frontier; do not change `LAST_CURSOR_REPORT.md`; commit/push only one new small `.stop.json` artifact.
+
+STOP artifacts must be bounded, machine-readable, secret-free and contain enough information for GPT Web/automation to classify the first blocker without loading logs/diffs. Canonical exact rule and minimum fields: `docs/foundation/PROMPT_SEQUENCING_GATE.md`.
 
 After either outcome, the operator sends only `agg`; GPT Web reads GitHub and derives the next pass — no manual chat relay of Cursor summaries.
 
-If `agg` finds a stale/mismatched `LAST_CURSOR_REPORT`, classify:
+If `agg` finds neither a matching new STOP artifact nor matching PASS evidence, classify:
 
 ```text
 EVIDENCE_NOT_PERSISTED
@@ -147,7 +161,7 @@ EVIDENCE_NOT_PERSISTED
 
 Do **not** infer that the task was not executed.
 
-If the operator supplies the complete missing Cursor report in the same message, GPT Web may persist it docs-only, mark it `operator-relayed` / not independently verified, and continue AUTO-VIA. Otherwise issue a bounded verify/persist-only Cursor step.
+If the operator supplies complete missing evidence in the same message, GPT Web may persist a bounded operator-relayed evidence artifact, clearly marked not independently verified, and continue AUTO-VIA when safe. Otherwise issue a bounded verify/persist-only step.
 
 ### 7.2 Prompt sequencing gate
 
@@ -166,7 +180,25 @@ A provider becoming available, a quota reset, an obvious fix, or generic `vai` /
 
 Canonical detail: `docs/foundation/PROMPT_SEQUENCING_GATE.md`.
 
-## 8. Handoff
+## 8. Automation equivalence
+
+The automation must reuse the exact same evidence semantics rather than inventing a parallel protocol.
+
+Human mode:
+
+```text
+Cursor → GitHub → operator `agg` → orchestrator
+```
+
+Automation mode:
+
+```text
+Cursor → GitHub push event → orchestrator
+```
+
+A pushed `reports/runtime/cursor-stops/*.stop.json` is a machine-readable `CURSOR_STOP` event. A completed PASS follows the ordinary rolling PASS evidence/frontier path. The orchestrator reads only the artifact(s) selected by the push delta/current task.
+
+## 9. Handoff
 
 Default handoff is a stable seed:
 
@@ -180,7 +212,7 @@ Extended handoff only for state that cannot yet be derived from repo live source
 
 Old handoffs are history, not LIVE STATE.
 
-## 9. Context budget guard
+## 10. Context budget guard
 
 - progressive acquisition;
 - no large preload;
@@ -190,7 +222,7 @@ Old handoffs are history, not LIVE STATE.
 - do not copy repo content into chat when a pointer is enough;
 - historical dependency must be named before history is loaded.
 
-## 10. Repository reduction taxonomy
+## 11. Repository reduction taxonomy
 
 Every candidate is classified before removal/move:
 
@@ -204,7 +236,7 @@ Every candidate is classified before removal/move:
 | `DELETE_CANDIDATE` | duplicate/error/no unique evidence; removal only after reference and recovery check |
 | `STALE_BRANCH_CANDIDATE` | merged/abandoned branch; delete only after merge/recovery verification |
 
-## 11. Safe reduction sequence
+## 12. Safe reduction sequence
 
 1. build inventory and classify;
 2. identify inbound references to each candidate;
@@ -217,7 +249,7 @@ Every candidate is classified before removal/move:
 
 No bulk deletion merely because a file is old.
 
-## 12. Semantic-danger priority
+## 13. Semantic-danger priority
 
 Clean first documents that are both:
 
@@ -226,17 +258,18 @@ Clean first documents that are both:
 
 These are more dangerous than large historical evidence files in clearly historical paths.
 
-## 13. Quality target — 9.5
+## 14. Quality target — 9.5
 
 The control-plane reaches the target when:
 
 - fresh CORE BOOT loads only the bootloader + lean frontier + one active pointer;
 - no active-looking stale document competes with frontier/foundation;
 - `agg` needs no broad repo scan;
-- every Cursor pass needed by `agg` persists its final evidence before closure;
+- every Cursor PASS needed by `agg` persists compact rolling PASS evidence;
+- every Cursor STOP needed by `agg` persists exactly one bounded immutable STOP artifact without polluting the PASS report;
 - every new Cursor prompt is emitted only after the prior pass has completed its `agg` + summary sequencing gate, unless explicitly overridden by the operator;
-- a stale/missing Cursor report is classified as `EVIDENCE_NOT_PERSISTED`, not as proof of non-execution;
-- an incomplete Cursor job resumes from packet/checkpoint, not chat;
+- stale/missing outcome evidence is classified as `EVIDENCE_NOT_PERSISTED`, not as proof of non-execution;
+- an incomplete Cursor job resumes from packet/checkpoint/dirty-tree evidence, not chat;
 - historical files are excluded by default and clearly classified;
 - canonical docs do not repeat the same state;
 - stale branches are removed after verification;
