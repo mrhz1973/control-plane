@@ -9,7 +9,7 @@ task_ref: V4_RUNTIME_AUTHORIZATION_ISSUANCE_PRODUCTION_SERVICE_WIRING_AND_PERSIS
 result_cursor: PASS
 starting_head: 41e24f278a694b87acc560987e0c359704d09651
 dispatch_base_head: 41e24f278a694b87acc560987e0c359704d09651
-# final_head filled after commit
+final_head: a369957
 
 category: ROUTINE_CORRECTIVE_RUNTIME (corrective pass over STOP 41e24f2)
 bugbot_corrections: 1
