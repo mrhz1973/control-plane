@@ -1,0 +1,40 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_VPS_UNAUTHORIZED_REACHABILITY_PROOF",
+  "result_cursor": "STOP",
+  "starting_head": "e0bc67cc82cdeb4ef0fb2d14a11c1cadc6b284ee",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "OTHER",
+  "finding": "Exactly one VPS POST reached the execution endpoint but returned HTTP 400 classification ENDPOINT_CONTENT_TYPE_REJECTED (reason APPLICATION_JSON_REQUIRED) instead of expected HTTP 200 AUTHORIZATION_REJECTED / AUTHORIZATION_ID_NOT_ISSUED. Root cause: curl Content-Type header was not transmitted — VPS remote shell quoting mangled -H \"Content-Type: application/json\" into a separate malformed curl argument (curl error: Could not resolve host: application). HTTP request budget is spent; no retry authorized.",
+  "target_result": "NOT_RUN",
+  "regressions_status": "NOT_RUN",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "NOT_RUN",
+  "execution_route_contained": false,
+  "http_execution_endpoint_requests": 1,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "proof_request": {
+    "origin": "VPS ionos-n8n",
+    "route": "https://asusdesktop.tailc01234.ts.net/v4/execution/opencode-local",
+    "execution_id": "v4-vps-unauthorized-reachability-proof-001",
+    "authorization_id": "V4_VPS_UNAUTHORIZED_REACHABILITY_PROOF_NON_ISSUED_001",
+    "observed_http_status": 400,
+    "observed_classification": "ENDPOINT_CONTENT_TYPE_REJECTED",
+    "observed_reason_codes": ["APPLICATION_JSON_REQUIRED"],
+    "expected_http_status": 200,
+    "expected_classification": "AUTHORIZATION_REJECTED",
+    "expected_reason_codes": ["AUTHORIZATION_ID_NOT_ISSUED"]
+  },
+  "post_request_checks": {
+    "production_registry_entries_empty": true,
+    "active_listener_127_0_0_1_18791": true,
+    "tailscale_execution_route_present": true,
+    "tailscale_root_preserved": true,
+    "tailscale_readonly_preserved": true,
+    "funnel_absent": true
+  },
+  "dirty_paths_summary": [],
+  "next_owner": "GPT_WEB"
+}
