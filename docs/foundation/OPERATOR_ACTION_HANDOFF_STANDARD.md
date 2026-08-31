@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/OPERATOR_ACTION_HANDOFF_STANDARD.md`  
-**Versione:** 1.1 — 2026-08-27  
+**Versione:** 1.2 — 2026-08-31  
 **Ruolo:** standard canonico user-facing per ogni istruzione operativa che richiede azioni manuali dell'operatore in UI, terminale, browser, n8n, GitHub, Cursor o altri tool.
 
 ---
@@ -114,14 +114,26 @@ http://127.0.0.1:5678/home/credentials
 
 ## 5. Relazione con Cursor
 
-Per i prompt Cursor resta vigente `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`:
+Per i prompt Cursor resta vigente `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`.
 
-- modalità `AGENT` / `PLAN` prima del prompt;
+Prima del singolo blocco TASK DELTA devono essere mostrate sempre, nell'ordine, le tre righe:
+
+```text
+MODELLO CURSOR: <modello esatto raccomandato>
+BUGBOT: <NO | SÌ>
+MODALITÀ CURSOR: <AGENT | PLAN>
+```
+
+Poi:
+
 - prompt = TASK DELTA;
-- singolo blocco copiabile;
-- `agg` separato.
+- un solo blocco copiabile;
+- `agg` separato;
+- nessun modello `AUTO` o non verificato;
+- BugBot segue esclusivamente il valore dichiarato nell'header;
+- il default esecutivo one-pass è definito dallo standard Cursor e dal `CURSOR_PROMPT_TEMPLATE.md`.
 
-**Eccezione intenzionale alla regola di compattezza:** i prompt Cursor sono contenuti lunghi/strutturati e possono usare il writing block/document block canonico.
+**Eccezione intenzionale alla regola di compattezza:** i prompt Cursor sono contenuti lunghi/strutturati e possono usare la superficie copiabile lunga appropriata.
 
 Questo documento estende la stessa ergonomia **a tutte le altre istruzioni operative**, non solo a Cursor.
 
@@ -146,7 +158,8 @@ Non amplia mai scope o autorizzazioni. In caso di conflitto:
 
 1. `CURRENT_FRONTIER.md` per live state/gate;
 2. foundation/contracts del task;
-3. questo standard per l'ergonomia user-facing.
+3. `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` per la forma specifica dei prompt Cursor;
+4. questo standard per l'ergonomia user-facing generale.
 
 ---
 
