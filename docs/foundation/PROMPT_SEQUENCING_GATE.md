@@ -49,7 +49,62 @@ Generic commands such as `vai`, `procedi`, or `next` do not override this gate w
 
 ## Purpose
 
-Prevent stale `EXPECTED ORIGIN/MAIN`, stale assumptions, overlapping Cursor work, and prompts authored against repository state that may have changed during the previous pass.
+Prevent stale `EXPECTED ORIGIN/MAIN`, stale assumptions, overlapping Cursor work, lost STOP evidence and prompts authored against repository state that may have changed during the previous pass.
+
+## Dispatch/result anchor — HARD INVARIANT
+
+Every emitted Cursor TASK DELTA establishes an immutable result-detection anchor for that pass:
+
+```text
+dispatch_task_ref  = exact BLOCK-ID / task_ref delivered to Cursor
+dispatch_base_head = exact expected_base_head / origin-main SHA delivered to Cursor
+```
+
+This anchor remains active until the matching PASS or STOP has been **ingested and summarized by the orchestrator**.
+
+Rules:
+
+1. `dispatch_base_head` is the base for result detection; it is **not** "the last HEAD GPT Web happened to observe".
+2. Later `origin/main` observations do not replace the active dispatch anchor.
+3. GPT-Web-authored docs/foundation commits made while a Cursor task is outstanding do not replace or advance the active dispatch anchor.
+4. `agg` MUST inspect the bounded range:
+
+```text
+<dispatch_base_head>..origin/main
+```
+
+for the expected `dispatch_task_ref`.
+5. The anchor is cleared only after the matching outcome has been ingested and summarized.
+6. A newly emitted/reissued Cursor prompt may establish a new anchor only after the previous sequencing gate is resolved, unless the operator explicitly overrides that gate.
+
+### Result-ingestion barrier before GPT-Web writes
+
+While a Cursor dispatch anchor is active, **before GPT Web performs any GitHub write** it MUST:
+
+1. refresh `origin/main`;
+2. inspect `<dispatch_base_head>..origin/main` for a matching PASS/STOP outcome;
+3. if matching outcome evidence exists, ingest it before making the GPT-Web write;
+4. never let its own subsequent commit hide or move past an un-ingested Cursor result.
+
+This barrier prevents the exact failure mode where Cursor pushes a STOP, GPT Web later pushes a docs commit on top of it, and a subsequent `agg` incorrectly compares only from the newer GPT-Web commit.
+
+### Recovery if the in-session dispatch anchor is unavailable
+
+Normal operation uses the explicit dispatch anchor. After context/session loss, recover narrowly:
+
+1. derive the expected `task_ref` from `CURRENT_FRONTIER` / ACTIVE WORK / current Execution Packet;
+2. when an Execution Packet exists, use its `expected_base_head` as `dispatch_base_head`;
+3. otherwise search recent commits for the canonical STOP commit subject:
+
+```text
+cursor-stop: <TASK_REF>
+```
+
+and inspect only the matching commit/artifact;
+4. if no STOP commit is found, use matching `LAST_CURSOR_REPORT.md` / frontier PASS evidence as the PASS path;
+5. only as a bounded fallback, inspect the commit range since the most recent canonical completed PASS evidence head; do not scan the whole STOP directory/history.
+
+If no matching bounded evidence can be recovered, classify `EVIDENCE_NOT_PERSISTED`; do not infer non-execution.
 
 ## Operator handshake after Cursor (`agg` only)
 
@@ -92,7 +147,13 @@ reports/runtime/cursor-stops/<UTC_TIMESTAMP>__<TASK_REF>.stop.json
 ```
 
 6. stage/commit/push **only that new `.stop.json` artifact**;
-7. verify the dirty production/test tree remains uncommitted after the evidence-only push.
+7. use this exact first-line commit subject so recovery can locate the event without a directory scan:
+
+```text
+cursor-stop: <TASK_REF>
+```
+
+8. verify the dirty production/test tree remains uncommitted after the evidence-only push.
 
 Canonical STOP artifact minimum shape:
 
@@ -101,7 +162,7 @@ Canonical STOP artifact minimum shape:
   "schema_version": "cursor-stop-evidence-v1",
   "task_ref": "<exact task ref>",
   "result_cursor": "STOP",
-  "starting_head": "<sha>",
+  "starting_head": "<dispatch_base_head>",
   "stop_evidence_commit": "<sha or PENDING_SELF_REFERENCE>",
   "failure_stage": "<PRECHECK|TARGET_TEST|REGRESSION|BUGBOT|RUNTIME_APPLY|OTHER>",
   "finding": "<precise bounded finding>",
@@ -127,13 +188,16 @@ No secrets, raw model output, large logs or diffs belong in STOP artifacts.
 
 After refreshing `origin/main` and `CURRENT_FRONTIER.md`:
 
-1. inspect only the Git delta/commit range since the previously observed HEAD;
-2. if that delta contains a newly added `reports/runtime/cursor-stops/*.stop.json` for the expected task, read **only that one artifact** and treat the pass as STOP;
-3. otherwise follow the PASS path and read `LAST_CURSOR_REPORT.md` once only when needed;
-4. read additional pointed evidence only if necessary;
-5. summarize the just-finished result, then derive the next bounded action.
+1. use the outstanding `dispatch_task_ref` + `dispatch_base_head` for the just-finished pass;
+2. inspect only `<dispatch_base_head>..origin/main` — **not** `last_observed_head..origin/main`;
+3. ignore unrelated/orchestrator-authored commits in that bounded range for outcome classification, but do not move the dispatch anchor because of them;
+4. if the range contains a newly added `reports/runtime/cursor-stops/*.stop.json` matching `dispatch_task_ref`, read **only that one artifact** and treat the pass as STOP;
+5. otherwise follow the PASS path and read `LAST_CURSOR_REPORT.md` once only when needed, requiring matching `task_ref`;
+6. read additional pointed evidence only if necessary;
+7. summarize the just-finished result;
+8. clear the dispatch anchor only now, then derive the next bounded action.
 
-If neither matching PASS evidence nor a matching STOP artifact is persisted, classify `EVIDENCE_NOT_PERSISTED`; do not infer non-execution.
+If neither matching PASS evidence nor a matching STOP artifact is persisted in the dispatch range/recovery path, classify `EVIDENCE_NOT_PERSISTED`; do not infer non-execution.
 
 `CURRENT_FRONTIER.md` remains the authority for LIVE STATE. A STOP artifact is immutable evidence only and never replaces the frontier.
 
@@ -151,4 +215,4 @@ Automation mode:
 Cursor → GitHub push event → orchestrator refresh
 ```
 
-The semantics are identical. A push containing a new `cursor-stops/*.stop.json` is a machine-readable `CURSOR_STOP` event; a completed PASS advances normal PASS evidence/frontier. No separate automation protocol is allowed.
+The semantics are identical. The automation owns the same `dispatch_task_ref` / `dispatch_base_head` from its Execution Packet. A push containing a new `cursor-stops/*.stop.json` is a machine-readable `CURSOR_STOP` event; a completed PASS advances normal PASS evidence/frontier. No separate automation protocol is allowed.
