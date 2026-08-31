@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-runtime-authorization-durable-spend-ledger-v1.schema.json",
+  "title": "v4-runtime-authorization-durable-spend-ledger-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "spends"],
+  "properties": {
+    "schema_version": {
+      "const": "v4-runtime-authorization-durable-spend-ledger-v1"
+    },
+    "spends": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "authorization_id",
+          "execution_id",
+          "route_id",
+          "spent_at",
+          "spend_kind"
+        ],
+        "properties": {
+          "authorization_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "execution_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "route_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "spent_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "spend_kind": {
+            "const": "ADMISSION_CONSUMED"
+          }
+        }
+      }
+    }
+  }
+}
