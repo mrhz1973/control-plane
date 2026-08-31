@@ -8,7 +8,7 @@
 task_ref: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_VPS_UNAUTHORIZED_REACHABILITY_PROOF_QUOTING_CORRECTION
 result_cursor: PASS
 starting_head: 637f087a7190722332cb26dfaaeb8ea599ea1475
-final_head: pending_commit
+final_head: 64356b8cf9162cca7023027b1b92d029fdefd93c
 
 category: ROUTINE
 runtime_mutations: 0
