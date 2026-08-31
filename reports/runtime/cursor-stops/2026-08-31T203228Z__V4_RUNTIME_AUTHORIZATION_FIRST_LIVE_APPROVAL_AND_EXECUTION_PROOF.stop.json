@@ -1,0 +1,65 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "block_id": "V4_RUNTIME_AUTHORIZATION_FIRST_LIVE_APPROVAL_AND_EXECUTION_PROOF",
+  "task_ref": "V4_RUNTIME_AUTHORIZATION_FIRST_LIVE_APPROVAL_AND_EXECUTION_PROOF_RUNTIME_RESTORE",
+  "run_nonce": "RUNTIME_RESTORE_20260831_01",
+  "category": "LIVE_BOUNDED_PROOF",
+  "closure": "FIRST_LIVE_ONE_SHOT",
+  "result": "STOP",
+  "dispatch_base_head": "09d0974bb620fd2db2414456addc8ba670a5d5c6",
+  "utc_timestamp": "2026-08-31T203228Z",
+  "finding": "QWEN_BUSY_SHARED_RUNTIME",
+  "finding_detail": "Runtime restore SUCCEEDED (Start-ScheduledTask ControlPlane-V4-LocalExecutionEndpoint + ControlPlane-V4-LocalRuntimeStatus; listeners 127.0.0.1:18791 and 127.0.0.1:18790 exactly one each; issuance 18792 still one). Continued into prior TASK DELTA Qwen preflight. Canonical produce-v4-local-runtime-readonly-contribution gather path returns DIAGNOSTICS_INCOMPLETE due to a PowerShell parser error in PS_DIAGNOSTIC ([Console]::Out.Write($out | ConvertTo-Json ...)). Equivalent two-sample Get-NetTCPConnection gather + classifyQwenSharedRuntime (same classifier) returned QWEN_BUSY_SHARED_RUNTIME / ESTABLISHED_CLIENT_ON_CANONICAL_PORT (msedge WebUI ESTABLISHED to 127.0.0.1:8080). fast_8k model id exposed on :8080 but occupancy gate forbids PENDING. No process kill attempted. STOP before register-pending.",
+  "runtime_restore": {
+    "attempted": true,
+    "start_scheduled_task": [
+      "ControlPlane-V4-LocalExecutionEndpoint",
+      "ControlPlane-V4-LocalRuntimeStatus"
+    ],
+    "listener_18791_count": 1,
+    "listener_18790_count": 1,
+    "listener_18792_count": 1,
+    "result": "PASS"
+  },
+  "qwen_preflight": {
+    "builtin_contribution_classification": "QWEN_OCCUPANCY_UNCERTAIN",
+    "builtin_contribution_reason": "DIAGNOSTICS_INCOMPLETE",
+    "classifier_with_valid_samples": "QWEN_BUSY_SHARED_RUNTIME",
+    "classifier_reason": "ESTABLISHED_CLIENT_ON_CANONICAL_PORT",
+    "canonical_port": 8080,
+    "established_client_process": "msedge",
+    "fast_8k_exposed": true,
+    "dflash_model_present": true,
+    "generation_calls": 0,
+    "launcher_start_count": 0,
+    "process_kills": 0
+  },
+  "hard_counters": {
+    "pending_registrations": 0,
+    "telegram_decision_messages": 0,
+    "human_approve_decisions": 0,
+    "active_authorizations_issued": 0,
+    "execution_endpoint_post": 0,
+    "opencode_executions": 0,
+    "qwen_generations": 0,
+    "retry": 0,
+    "fallback": 0,
+    "second_auth": 0,
+    "second_execution": 0,
+    "wf40_executions": 0,
+    "wf61_executions": 0,
+    "provider_cloud_calls": 0
+  },
+  "invariants_preserved": {
+    "CURRENT_FRONTIER_unchanged": true,
+    "LAST_CURSOR_REPORT_unchanged": true,
+    "no_pending_created": true,
+    "no_telegram_message": true,
+    "no_registry_write": true,
+    "no_ledger_write": true,
+    "no_edge_kill": true,
+    "live_execution_closed": true,
+    "prior_stop_09d0974_not_reused_as_this_run_evidence": true
+  },
+  "next_required_before_retry": "Clear ESTABLISHED clients on 127.0.0.1:8080 (operator close of launcher WebUI/Edge tab — agent must not kill processes), reconfirm classifyQwenSharedRuntime=QWEN_READY_IDLE with fast_8k+dflash exposed, then reopen first-live proof. Optionally fix PS_DIAGNOSTIC Write/ConvertTo-Json parentheses so the builtin contribution path stops returning DIAGNOSTICS_INCOMPLETE."
+}
