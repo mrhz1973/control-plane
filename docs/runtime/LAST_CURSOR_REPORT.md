@@ -8,7 +8,7 @@
 task_ref: V4_WF40_EXECUTION_ADAPTER_ROUTER_PATCH_APPLY_OFFLINE
 result_cursor: PASS
 starting_head: 44a0c6baee4adfa745b4103678db16a95948002d
-final_head: TO_BE_VERIFIED_AFTER_PUSH
+final_head: ab3e105f4b5da0a757736cc0b8936d45dcf48aaf
 
 wf40_id: 9ZMj2ACTKyDVhCue
 wf40_pre_version_id: 1257ed3f-12ad-4fa1-b6ce-ae3e62149b7c
