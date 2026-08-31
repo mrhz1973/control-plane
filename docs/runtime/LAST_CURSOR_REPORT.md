@@ -5,43 +5,51 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_N8N_EXECUTION_ADAPTER_ROUTER_BRIDGE_OFFLINE
+task_ref: V4_WF40_EXECUTION_ADAPTER_ROUTER_PATCH_APPLY_OFFLINE
 result_cursor: PASS
-starting_head: 8555ecf297de74281267df33afe4e35a30d2fff9
-final_head: 5f56eb6d6d6b2fa4fa108c5f8a23fe81fc49a449
+starting_head: 44a0c6baee4adfa745b4103678db16a95948002d
+final_head: TO_BE_VERIFIED_AFTER_PUSH
 
-bridge_tool: tools/n8n-v4-execution-adapter-router-bridge-v1.mjs
-bridge_schema: docs/contracts/n8n-v4-execution-adapter-router-bridge-v1.schema.json
-bridge_contract: docs/contracts/n8n-v4-execution-adapter-router-bridge-v1.md
-bridge_tests: tests/n8n-v4-execution-adapter-router-bridge/run.mjs
+wf40_id: 9ZMj2ACTKyDVhCue
+wf40_pre_version_id: 1257ed3f-12ad-4fa1-b6ce-ae3e62149b7c
+wf40_post_version_id: 60f9b75e-39b8-410a-bcd1-364073992df0
+wf40_pre_node_count: 61
+wf40_post_node_count: 66
 
-target_tests: PASS_17_OF_17
-regression_tests:
-  v4-execution-adapter-router: PASS_15_OF_15
-  v4-execution-adapter-registry: PASS_19_OF_19
-  opencode-execution-adapter: PASS_23_OF_23
+patch_artifact: workflows/patches/v4-wf40-execution-adapter-router.gpt-web.json
+patch_blob_sha: 81c704a77c58ea0fbf320a429d734dccc83668c9
+patch_applied_verbatim: true
 
-delegates_to_routeToExecutionAdapter: true
-uses_canonical_registry: true
-dispatch_synthesized: false
+legacy_nodes_preserved: true
+new_adapter_router_nodes:
+  - v4f40-7401-4001-8401-000000000401
+  - v4f40-7402-4002-8402-000000000402
+  - v4f40-7403-4003-8403-000000000403
+  - v4f40-7404-4004-8404-000000000404
+  - v4f40-7405-4005-8405-000000000405
+
+topology_proof: PASS
+dispatch_result_synthesized: false
 runtime_authorization_synthesized: false
-getOccupancy_injected: false
-guardStart_injected: false
-runOpenCode_injected: false
-live_runner_present: false
-
 execution_performed: false
-qwen_generation_calls: 0
-opencode_cli_calls: 0
+
+wf40_execution_calls: 0
+wf61_execution_calls: 0
+bridge_execution_calls: 0
 provider_calls: 0
-network_calls: 0
-workflow_mutations: 0
-wf40_node_count_unchanged: 61
-wf40_adapter_router_patch_applied: false
-wf61_active: false
-d0025_gate_closed: true
+qwen_generation_calls: 0
+opencode_execution_count: 0
+credential_mutations: 0
+network_mutations: 0
+litellm_mutations: 0
+openclaw_mutations: 0
+n8n_restart: false
 secret_exposure: false
 
-architecture_report: reports/architecture/v4_n8n_execution_adapter_router_bridge_offline.md
-NEXT: V4_WF40_EXECUTION_ADAPTER_ROUTER_PATCH_APPLY_OFFLINE
+wf61_active_final: false
+d0025_gate_closed_final: true
+provider_calls_authorized_per_event: 0
+
+architecture_report: reports/architecture/v4_wf40_execution_adapter_router_patch_apply_offline.md
+NEXT: SEPARATE_WINDOWS_LOCAL_RUNTIME_RUNNER_OR_OCCUPANCY_TRANSPORT_BLOCK
 ```
