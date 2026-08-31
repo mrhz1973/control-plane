@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-runtime-authorization-issuance-v1.schema.json",
-  "title": "v4-runtime-authorization-issuance-v1 messages",
+  "title": "v4-runtime-authorization-issuance-v1 external API messages",
   "oneOf": [
     { "$ref": "#/$defs/registerPendingRequest" },
     { "$ref": "#/$defs/registerPendingResult" },
-    { "$ref": "#/$defs/issueRequest" },
-    { "$ref": "#/$defs/issueResult" }
+    { "$ref": "#/$defs/statusRequest" },
+    { "$ref": "#/$defs/statusResult" }
   ],
   "$defs": {
     "id200": {
@@ -17,6 +17,18 @@
     "scopeDigest": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
+    },
+    "nullableId": {
+      "oneOf": [
+        { "$ref": "#/$defs/id200" },
+        { "type": "null" }
+      ]
+    },
+    "nullableDateTime": {
+      "oneOf": [
+        { "type": "string", "format": "date-time" },
+        { "type": "null" }
+      ]
     },
     "reasonCodes": {
       "type": "array",
@@ -64,42 +76,23 @@
         "schema_version": { "const": "v4-runtime-authorization-register-pending-result-v1" },
         "ok": { "type": "boolean" },
         "classification": { "type": "string", "minLength": 1, "maxLength": 200 },
-        "pending_decision_id": { "oneOf": [{ "$ref": "#/$defs/id200" }, { "type": "null" }] },
-        "authorization_id": { "oneOf": [{ "$ref": "#/$defs/id200" }, { "type": "null" }] },
+        "pending_decision_id": { "$ref": "#/$defs/nullableId" },
+        "authorization_id": { "$ref": "#/$defs/nullableId" },
         "state": { "oneOf": [{ "const": "PENDING" }, { "type": "null" }] },
-        "pending_expires_at": { "oneOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }] },
+        "pending_expires_at": { "$ref": "#/$defs/nullableDateTime" },
         "reason_codes": { "$ref": "#/$defs/reasonCodes" }
       }
     },
-    "issueRequest": {
+    "statusRequest": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "schema_version",
-        "pending_decision_id",
-        "selected_option",
-        "telegram_update_id",
-        "telegram_chat_id",
-        "task_id",
-        "execution_id",
-        "route_id",
-        "scope_digest",
-        "authorization_expires_at"
-      ],
+      "required": ["schema_version", "pending_decision_id"],
       "properties": {
-        "schema_version": { "const": "v4-runtime-authorization-issue-request-v1" },
-        "pending_decision_id": { "$ref": "#/$defs/id200" },
-        "selected_option": { "enum": ["APPROVE", "REJECT"] },
-        "telegram_update_id": { "$ref": "#/$defs/id200" },
-        "telegram_chat_id": { "$ref": "#/$defs/id200" },
-        "task_id": { "$ref": "#/$defs/id200" },
-        "execution_id": { "$ref": "#/$defs/id200" },
-        "route_id": { "const": "opencode+qwen_local" },
-        "scope_digest": { "$ref": "#/$defs/scopeDigest" },
-        "authorization_expires_at": { "type": "string", "format": "date-time" }
+        "schema_version": { "const": "v4-runtime-authorization-status-request-v1" },
+        "pending_decision_id": { "$ref": "#/$defs/id200" }
       }
     },
-    "issueResult": {
+    "statusResult": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -109,20 +102,24 @@
         "pending_decision_id",
         "authorization_id",
         "state",
+        "pending_expires_at",
+        "authorization_expires_at",
         "reason_codes"
       ],
       "properties": {
-        "schema_version": { "const": "v4-runtime-authorization-issue-result-v1" },
+        "schema_version": { "const": "v4-runtime-authorization-status-result-v1" },
         "ok": { "type": "boolean" },
         "classification": { "type": "string", "minLength": 1, "maxLength": 200 },
-        "pending_decision_id": { "oneOf": [{ "$ref": "#/$defs/id200" }, { "type": "null" }] },
-        "authorization_id": { "oneOf": [{ "$ref": "#/$defs/id200" }, { "type": "null" }] },
+        "pending_decision_id": { "$ref": "#/$defs/nullableId" },
+        "authorization_id": { "$ref": "#/$defs/nullableId" },
         "state": {
           "oneOf": [
-            { "enum": ["APPROVED", "REJECTED", "ISSUED", "EXPIRED"] },
+            { "enum": ["PENDING", "APPROVED", "REJECTED", "ISSUED", "EXPIRED"] },
             { "type": "null" }
           ]
         },
+        "pending_expires_at": { "$ref": "#/$defs/nullableDateTime" },
+        "authorization_expires_at": { "$ref": "#/$defs/nullableDateTime" },
         "reason_codes": { "$ref": "#/$defs/reasonCodes" }
       }
     }
