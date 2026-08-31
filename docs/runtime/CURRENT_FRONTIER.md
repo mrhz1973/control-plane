@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 routing + sidecar-source lanes **APPLIED LIVE (56 nodes)** · RESOURCE_STATUS composer **OFFLINE COMPLETE** · local read-only contribution adapter **COMPLETE** · GPT-Web WF40 local-status patch **AUTHORED / NOT APPLIED** · private endpoint implementation local/uncommitted |
-| **BLOCCO ATTIVO** | `V4_LOCAL_RUNTIME_READONLY_RESPONSE_CLOSE_GUARD_CORRECTION_ONE_PASS` |
-| **STATO BLOCCO** | ENDPOINT_LOCAL_UNCOMMITTED / TARGET_TEST1_PASS / TARGET_TEST2_HUNG / HTTP_CLOSE_GUARD_DEFECT_OPERATOR_RELAYED / REGRESSIONS_NOT_RUN / RUNTIME_UNTOUCHED / GATE_CLOSED |
-| **GATE CORRENTE** | **CLOSED** · D-0025 closed · no Qwen/OpenCode/provider generation authorized · corrective pass may change only the endpoint premature-disconnect guard from request-scoped close handling to response-scoped close handling with `!res.writableEnded` |
-| **NEXT** | `V4_LOCAL_RUNTIME_READONLY_RESPONSE_CLOSE_GUARD_CORRECTION_ONE_PASS` — preserve current uncommitted endpoint block, sync canonical remote docs, restore endpoint artifacts only, apply exactly one HTTP lifecycle correction in `createLocalRuntimeStatusHandler`, then target once; if PASS run required regressions once and continue the original private endpoint runtime proof exactly once. |
+| **BLOCCO ATTIVO** | `V4_LOCAL_RUNTIME_READONLY_TEST_PORT_ISOLATION_CORRECTION_ONE_PASS` |
+| **STATO BLOCCO** | ENDPOINT_LOCAL_UNCOMMITTED / RESPONSE_CLOSE_FIX_DIRTY / TARGET_STOP_EADDRINUSE_TEST_PORT_18799_OPERATOR_RELAYED / REGRESSIONS_NOT_RUN / RUNTIME_UNTOUCHED / GATE_CLOSED |
+| **GATE CORRENTE** | **CLOSED** · D-0025 closed · no Qwen/OpenCode/provider generation authorized · next corrective pass may modify only the endpoint test-harness bind if local inspection confirms fixed test port `18799` is the sole cause |
+| **NEXT** | `V4_LOCAL_RUNTIME_READONLY_TEST_PORT_ISOLATION_CORRECTION_ONE_PASS` — preserve current dirty endpoint block and response-close fix; sync canonical remote; verify target suite uses fixed test port `18799`; if confirmed, replace only the test bind with OS-assigned ephemeral port `0` (or equivalent test-only ephemeral helper), leaving production default `18790` unchanged. Then target once; if PASS regressions once; if PASS continue original Windows persistence + additive Tailscale Serve path + one VPS GET proof. |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **56 nodes** · versionId `ef80943e-535d-430f-958f-56c03baa1c62` · local-status patch not applied |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
@@ -18,32 +18,38 @@
 | **LOCAL READONLY CONTRIBUTION ADAPTER** | `tools/produce-v4-local-runtime-readonly-contribution-v1.mjs` · committed · target 29/29 · single diagnostic bind · live proof PASS |
 | **PRIVATE ENDPOINT CONTRACT** | `docs/contracts/v4-local-runtime-readonly-private-endpoint-v1.md` · GPT-Web authored |
 | **WF40 LOCAL STATUS PATCH** | `workflows/patches/v4-wf40-local-resource-status-contribution.gpt-web.json` · GPT-Web authored · **not applied** · expected 56→61 |
-| **PRIVATE ENDPOINT STOP EVIDENCE** | `reports/architecture/v4_local_runtime_readonly_private_endpoint_target_hang_stop_operator_relay.md` · operator-relayed / not independently verified |
+| **LATEST STOP EVIDENCE** | `reports/architecture/v4_local_runtime_readonly_private_endpoint_test_port_eaddrinuse_stop_operator_relay.md` · operator-relayed / not independently verified |
 
-## Reported endpoint STOP
+## Latest reported STOP
 
-- Target suite started once.
-- Test 1 (bind) passed.
-- Test 2 (`valid GET returns producer wrapper`) hung with no response.
-- Reported defect: `req.on("close")` marks the handler settled when the request message closes, before async producer evaluation resolves; the later success path then suppresses `send(200, ...)`.
-- Reported minimal correction: use response-scoped `res.on("close")` and release only on premature client loss (`!res.writableEnded`).
-- No corrective edit or rerun occurred after the hang.
-- Regressions not run.
-- Scheduled task not created; Tailscale Serve not changed; port 18790 reported free; existing OpenClaw root route preserved.
-- Zero producer evaluations / diagnostics / generations reported.
+- The shell exit `4294967295` was the already-known force-stop of the previous hung target suite, not a new runtime failure.
+- In the response-close corrective pass, the close-guard fix remained local/dirty.
+- The new target run stopped with `EADDRINUSE` on fixed **test port 18799**.
+- Production port **18790** and test port **18799** were reported clear after STOP.
+- Regressions were not run.
+- Scheduled task was not created; Tailscale Serve was not changed; WF40 patch remains unapplied.
+- Preservation stash `v4-private-endpoint-target-hang-preserve` remains kept.
 
 ## Corrective boundary
 
-The corrective pass may modify only the premature-disconnect lifecycle handling inside local uncommitted `createLocalRuntimeStatusHandler`.
+The next pass must inspect the local test harness before editing.
 
-Do not change producer semantics, endpoint route/method contract, in-flight policy, Qwen/OpenCode logic, Tailscale design, tests, schemas, WF40 patch, workflows, composer or standing runtime authorization unless the reported diagnosis proves false; if false, STOP.
+If and only if the target suite binds a hard-coded test port `18799` and the production endpoint already accepts injected bind ports, the only authorized correction is test-only port isolation:
 
-After correction:
+- replace fixed `18799` with port `0` / OS-assigned ephemeral port, or an equivalent deterministic test helper;
+- derive the actual bound port from the server after `listen`;
+- keep production default `127.0.0.1:18790` unchanged;
+- keep the response-close production fix unchanged;
+- do not change endpoint semantics, producer logic, Qwen/OpenCode behavior, Tailscale design, schemas, composer, WF40 patch or workflows.
+
+If that diagnosis is false, STOP without redesign.
+
+After the test-only correction:
 
 1. target exactly once;
-2. if PASS, endpoint regressions exactly once;
-3. if PASS, perform the original bounded Windows persistence + additive Tailscale Serve path + one VPS GET proof;
-4. no repeated endpoint request or proof loop.
+2. if PASS, required regressions exactly once;
+3. if PASS, original bounded runtime implementation once;
+4. one VPS→Windows GET proof only; no retries for prettier classification.
 
 ## Safety boundary
 
@@ -52,13 +58,12 @@ After correction:
 - no OpenCode CLI invocation/execution;
 - no provider calls;
 - no public Funnel/public Internet exposure;
-- one accepted producer request = one evaluation / one diagnostic PowerShell;
-- raw process/socket/PID evidence ephemeral and unpersisted;
+- production endpoint remains loopback `127.0.0.1:18790`;
 - WF40 local-status patch remains unapplied until endpoint proof PASS.
 
 ## Puntatori
 
-- Endpoint STOP relay: `reports/architecture/v4_local_runtime_readonly_private_endpoint_target_hang_stop_operator_relay.md`
+- Latest STOP relay: `reports/architecture/v4_local_runtime_readonly_private_endpoint_test_port_eaddrinuse_stop_operator_relay.md`
 - Endpoint contract: `docs/contracts/v4-local-runtime-readonly-private-endpoint-v1.md`
 - GPT-Web WF40 patch: `workflows/patches/v4-wf40-local-resource-status-contribution.gpt-web.json`
 - Producer: `tools/produce-v4-local-runtime-readonly-contribution-v1.mjs`
