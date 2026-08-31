@@ -1,0 +1,63 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_OPENCODE_RUNNER_PERSIST_RELOAD_AND_FIRST_LIVE_RETRY_003",
+  "run_nonce": "OPENCODE_RELOAD_LIVE_20260901_01",
+  "block_id": "V4_OPENCODE_RUNNER_PERSIST_RELOAD_AND_FIRST_LIVE_RETRY_003",
+  "category": "RUNTIME_PERSIST_RELOAD_PLUS_LIVE_PROOF",
+  "result": "STOP",
+  "dispatch_base_head": "7b7174f576389ac1a0655fb286d5545603b908a2",
+  "runner_fix_commit": "236f80d854d7005dce2c88137bce04627f92acee",
+  "utc_timestamp": "2026-08-31T223412Z",
+  "finding": "ISSUANCE_REGISTER_REQUEST_INVALID",
+  "finding_detail": "Persisted OpenCode native runner (236f80d) and reloaded only ControlPlane-V4-LocalRuntimeStatus + ControlPlane-V4-LocalExecutionEndpoint; 18790/18791 listeners started after reload; 18792 and :8080 unchanged. One /v1/models probe confirmed qwen38-original-dflash2-8k; after >=5s wait, two canonical occupancy samples (>=2s apart) both QWEN_READY_IDLE / PASSIVE_CANONICAL_WEBUI_CLIENT. Exactly one Tailscale register-pending for PEND/AUTH/EXEC-003 returned HTTP 200 ISSUANCE_REJECTED / ISSUANCE_REGISTER_REQUEST_INVALID (request included unauthorized authorization_scope and omitted required pending_ttl_seconds). No PENDING/Telegram/APPROVE/execution. No second register. AUTH 001/002 remain SPENT untouched. 003 IDs unused.",
+  "reload": {
+    "status_18790": "reloaded_after",
+    "execution_18791": "reloaded_after",
+    "issuance_18792": "untouched",
+    "qwen_8080": "untouched",
+    "listeners": { "18790": 1, "18791": 1, "18792": 1, "8080": 1 }
+  },
+  "occupancy": {
+    "models_probe": 1,
+    "models_wait_seconds": 5,
+    "samples": 2,
+    "classification": "QWEN_READY_IDLE",
+    "reason": "PASSIVE_CANONICAL_WEBUI_CLIENT"
+  },
+  "live_003": {
+    "register_attempts": 1,
+    "register_ok": false,
+    "classification": "ISSUANCE_REJECTED",
+    "reason_codes": ["ISSUANCE_REGISTER_REQUEST_INVALID"],
+    "pending_created": false,
+    "telegram_messages": 0,
+    "human_approve": 0,
+    "execution_post": 0,
+    "opencode": 0,
+    "qwen_generations": 0,
+    "second_register": 0,
+    "second_auth": 0,
+    "second_execution": 0
+  },
+  "hard_counters": {
+    "register": 1,
+    "telegram_message": 0,
+    "human_approve": 0,
+    "execution_post": 0,
+    "opencode": 0,
+    "qwen_generation": 0,
+    "retry": 0,
+    "fallback": 0,
+    "second_auth": 0,
+    "second_execution": 0
+  },
+  "invariants_preserved": {
+    "auth_001_spent": true,
+    "auth_002_spent": true,
+    "auth_003_unused": true,
+    "no_second_register": true,
+    "CURRENT_FRONTIER_unchanged": true,
+    "LAST_CURSOR_REPORT_unchanged": true
+  },
+  "next_required_before_retry": "New live IDs (004+). Register-pending body must match schema exactly: schema_version, pending_decision_id, authorization_id, task_id, execution_id, route_id, scope_digest, pending_ttl_seconds (1..900). No authorization_scope field. Do not reuse 001/002/003."
+}
