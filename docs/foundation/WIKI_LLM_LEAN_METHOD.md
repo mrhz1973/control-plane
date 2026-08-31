@@ -104,23 +104,46 @@ Docs-only persistence of evidence for a task already executed is recoverable boo
 
 ## 7. `agg`
 
+Each Cursor dispatch has two immutable result-detection values until its outcome is ingested:
+
+```text
+dispatch_task_ref
+dispatch_base_head
+```
+
+`dispatch_base_head` is the exact `expected_base_head` delivered to Cursor. It is **not** replaced by later HEAD observations or GPT-Web-authored commits.
+
 After a Cursor pass:
 
 ```text
 remote HEAD
 → CURRENT_FRONTIER
 → ACTIVE WORK
-→ inspect only Git delta since previously observed HEAD
+→ compare dispatch_base_head..origin/main
 → if matching new cursor-stops/*.stop.json: read that one STOP artifact only
-→ else LAST_CURSOR_REPORT once if relevant
+→ else LAST_CURSOR_REPORT once if relevant and task_ref matches
 → pointed evidence only if necessary
 → summarize the completed Cursor pass to the operator
+→ clear dispatch anchor
 → only then derive/emit any next Cursor TASK DELTA via AUTO-VIA
 ```
 
 Never reboot the full project for `agg`. Never scan the full STOP directory or load old STOP artifacts unless a concrete dependency names them.
 
-### 7.1 Cursor completion persistence invariant
+### 7.1 Result-ingestion barrier
+
+While a Cursor dispatch is outstanding, GPT Web must not let its own repository writes move the evidence window forward.
+
+Before **any GPT-Web GitHub write** while an anchor is active:
+
+1. refresh `origin/main`;
+2. inspect `dispatch_base_head..origin/main` for matching PASS/STOP evidence;
+3. ingest a matching outcome before writing;
+4. keep the same dispatch anchor until the outcome is summarized.
+
+Thus a later GPT-Web docs commit can never hide an earlier Cursor STOP/PASS already present in the dispatch range.
+
+### 7.2 Cursor completion persistence invariant
 
 If the result of a Cursor pass is needed to determine the next gate/NEXT, that pass must persist outcome evidence on GitHub before the operator's `agg`.
 
@@ -144,6 +167,14 @@ reports/runtime/cursor-stops/<UTC_TIMESTAMP>__<TASK_REF>.stop.json
 
 The STOP artifact is deliberately separate from `LAST_CURSOR_REPORT.md` so the rolling PASS report stays lean and does not become an intermediate event log.
 
+Canonical STOP commit first line:
+
+```text
+cursor-stop: <TASK_REF>
+```
+
+This gives context-loss recovery a bounded commit-search key without scanning the STOP directory.
+
 Canonical outcome split:
 
 - **PASS** → persist full bounded evidence + update frontier when applicable + normal commit/push.
@@ -153,7 +184,7 @@ STOP artifacts must be bounded, machine-readable, secret-free and contain enough
 
 After either outcome, the operator sends only `agg`; GPT Web reads GitHub and derives the next pass — no manual chat relay of Cursor summaries.
 
-If `agg` finds neither a matching new STOP artifact nor matching PASS evidence, classify:
+If `agg` finds neither a matching new STOP artifact nor matching PASS evidence in the dispatch range/recovery path, classify:
 
 ```text
 EVIDENCE_NOT_PERSISTED
@@ -161,9 +192,19 @@ EVIDENCE_NOT_PERSISTED
 
 Do **not** infer that the task was not executed.
 
-If the operator supplies complete missing evidence in the same message, GPT Web may persist a bounded operator-relayed evidence artifact, clearly marked not independently verified, and continue AUTO-VIA when safe. Otherwise issue a bounded verify/persist-only step.
+### 7.3 Recovery after context loss
 
-### 7.2 Prompt sequencing gate
+If the in-session dispatch anchor is unavailable:
+
+1. recover expected `task_ref` from `CURRENT_FRONTIER` / ACTIVE WORK / current Execution Packet;
+2. use the packet's `expected_base_head` when present;
+3. otherwise search recent commits by exact subject `cursor-stop: <TASK_REF>` and inspect only the matching commit;
+4. otherwise use matching rolling PASS evidence;
+5. final bounded fallback: inspect only the range since the most recent canonical completed PASS evidence head.
+
+Do not broad-scan STOP history.
+
+### 7.4 Prompt sequencing gate
 
 For consecutive Cursor passes, the mandatory order is:
 
@@ -171,7 +212,7 @@ For consecutive Cursor passes, the mandatory order is:
 GPT Web prompt N
 → Cursor executes N
 → operator sends `agg`
-→ GPT Web refreshes canonical repo/evidence
+→ GPT Web refreshes canonical repo/evidence using dispatch anchor
 → GPT Web summarizes outcome N
 → only then prompt N+1
 ```
@@ -196,7 +237,7 @@ Automation mode:
 Cursor → GitHub push event → orchestrator
 ```
 
-A pushed `reports/runtime/cursor-stops/*.stop.json` is a machine-readable `CURSOR_STOP` event. A completed PASS follows the ordinary rolling PASS evidence/frontier path. The orchestrator reads only the artifact(s) selected by the push delta/current task.
+The Execution Packet already supplies `task_ref` / `expected_base_head`, so automation uses them as the same dispatch anchor. A pushed `reports/runtime/cursor-stops/*.stop.json` is a machine-readable `CURSOR_STOP` event. A completed PASS follows the ordinary rolling PASS evidence/frontier path. The orchestrator reads only artifacts selected by the dispatch range/current task.
 
 ## 9. Handoff
 
@@ -265,6 +306,8 @@ The control-plane reaches the target when:
 - fresh CORE BOOT loads only the bootloader + lean frontier + one active pointer;
 - no active-looking stale document competes with frontier/foundation;
 - `agg` needs no broad repo scan;
+- `agg` uses the immutable dispatch-base range rather than the latest incidental observed HEAD;
+- GPT-Web repository writes cannot hide an un-ingested Cursor outcome;
 - every Cursor PASS needed by `agg` persists compact rolling PASS evidence;
 - every Cursor STOP needed by `agg` persists exactly one bounded immutable STOP artifact without polluting the PASS report;
 - every new Cursor prompt is emitted only after the prior pass has completed its `agg` + summary sequencing gate, unless explicitly overridden by the operator;
