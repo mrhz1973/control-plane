@@ -2,6 +2,7 @@
 
 **Status:** CANONICAL
 **Effective:** 2026-08-28
+**Updated:** 2026-08-31
 
 The operator grants standing authorization for bounded project execution within the current control-plane architecture and active task scope.
 
@@ -22,6 +23,37 @@ Default behavior:
 - do not create a separate test/probe/smoke pass unless a canonical contract makes that test the actual required next step or the implementation cannot be safely completed without it;
 - no repeated retries/probes merely to gather more evidence;
 - do not stop between implementation and its minimal validation for operator approval.
+
+## One-pass bounded execution — DEFAULT
+
+For Cursor and equivalent bounded implementation passes, the default is one pass, not an implicit corrective loop:
+
+```text
+implement
+→ target test once
+→ required regressions once
+→ review once only when explicitly requested by the pass
+→ evidence
+→ commit/push
+```
+
+At the first blocker, failed required test, failed regression, actionable/blocking review finding, unavailable required reviewer, or other acceptance failure:
+
+```text
+STOP — <precise cause>
+```
+
+Do **not** automatically continue in the same pass with:
+
+```text
+fix → test → fix → test
+```
+
+A diagnosed failure becomes a new small corrective pass after the canonical evidence/`agg` sequencing cycle.
+
+Exception: a current task may explicitly authorize a bounded corrective loop. That authorization must be present in the task/Execution Packet itself and must define scope, stop conditions and a finite bound. Standing authorization alone never implies such a loop.
+
+This one-pass default complements `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` and `docs/foundation/CURSOR_PROMPT_TEMPLATE.md` and overrides older generic loop examples when the active task does not explicitly authorize a corrective loop.
 
 ## WAIT only for real blockers
 
