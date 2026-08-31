@@ -8,7 +8,7 @@
 task_ref: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_PRIVATE_SERVICE_PERSISTENCE
 result_cursor: PASS
 starting_head: ca1be3089ada70e47a84d1273109e468ea59a6f2
-final_head: PENDING_COMMIT
+final_head: cc738ad327d4f29d99d861e94ec08fa2e66789c0
 
 category: RUNTIME_INTEGRATION
 runtime_mutations:
