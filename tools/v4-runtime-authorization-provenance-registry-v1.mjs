@@ -202,6 +202,95 @@ export function admitAuthorization(registryPath, authorizationId, options = {}) 
   return { ok: true, spent: true, authorization_id: authorizationId };
 }
 
+/**
+ * Sole ACTIVE-entry writer for the issuance owner (bounded extension).
+ * Appends exactly one ACTIVE entry for a pre-bound authorization id.
+ * Never spends, never touches the spend ledger, never invokes execution.
+ * Collision / invalid / unavailable registry → fail closed, registry untouched.
+ */
+export function issueActiveEntry(registryPath, entry, options = {}) {
+  const load = options.loadRegistry || loadRegistry;
+  const persist = options.persistRegistry || persistRegistry;
+  const now = options.now || new Date();
+
+  if (
+    !registryPath ||
+    typeof registryPath !== "string" ||
+    !isAbsolute(registryPath)
+  ) {
+    return reject("AUTHORIZATION_REGISTRY_UNAVAILABLE");
+  }
+  if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+    return reject("AUTHORIZATION_REGISTRY_INVALID");
+  }
+  const id = entry.authorization_id;
+  if (typeof id !== "string" || id.length === 0 || id.length > 200) {
+    return reject("AUTHORIZATION_REGISTRY_INVALID");
+  }
+  if (entry.route_id !== "opencode+qwen_local") {
+    return reject("AUTHORIZATION_REGISTRY_INVALID");
+  }
+
+  const loaded = load(registryPath);
+  if (!loaded.ok) {
+    return reject(loaded.reason_codes[0]);
+  }
+
+  if (loaded.registry.entries.some((e) => e.authorization_id === id)) {
+    return reject("AUTHORIZATION_REGISTRY_INVALID", {
+      reason_codes: ["AUTHORIZATION_REGISTRY_INVALID"],
+      collision: true,
+    });
+  }
+
+  const nowMs = now instanceof Date ? now.getTime() : Date.parse(now);
+  const issuedAt =
+    entry.issued_at ||
+    (now instanceof Date ? now.toISOString() : new Date(nowMs).toISOString());
+  const expiresAt = entry.expires_at;
+  if (
+    !validDate(expiresAt) ||
+    parseInstant(expiresAt) === null ||
+    parseInstant(expiresAt) <= nowMs
+  ) {
+    return reject("AUTHORIZATION_REGISTRY_INVALID");
+  }
+
+  const next = {
+    schema_version: REGISTRY_SCHEMA_VERSION,
+    entries: [
+      ...loaded.registry.entries.map((e) => ({ ...e })),
+      {
+        authorization_id: id,
+        state: "ACTIVE",
+        route_id: "opencode+qwen_local",
+        issued_at: issuedAt,
+        expires_at: expiresAt,
+        spent_at: null,
+      },
+    ],
+  };
+
+  // Self-check: the appended object must still validate before persisting.
+  const selfCheck = validateRegistryObject(next);
+  if (!selfCheck.ok) {
+    return reject(selfCheck.reason);
+  }
+
+  try {
+    persist(registryPath, next, options);
+  } catch {
+    return reject("AUTHORIZATION_REGISTRY_UNAVAILABLE");
+  }
+
+  return {
+    ok: true,
+    issued: true,
+    authorization_id: id,
+    entry: next.entries[next.entries.length - 1],
+  };
+}
+
 const isMain =
   process.argv[1] &&
   process.argv[1]
@@ -221,7 +310,7 @@ if (isMain) {
       schema_version: "v4-runtime-authorization-provenance-registry-check-v1",
       ok: result.ok === true,
       ...(result.registryPath ? { registry_path: result.registryPath } : {}),
-      ...(result.entries ? { entry_count: result.entries.length } : {}),
+      ...(result.registry ? { entry_count: result.registry.entries.length } : {}),
       ...(result.reason_codes ? { reason_codes: result.reason_codes } : {}),
     })}\n`,
   );
