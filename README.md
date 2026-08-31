@@ -102,26 +102,39 @@ Per i prompt Cursor resta inoltre obbligatorio `docs/foundation/CURSOR_PROMPT_US
 
 `agg` significa **aggiornamento minimo evidence-aware**, non reboot completo.
 
+Ogni prompt Cursor aperto mantiene fino all'ingestione del risultato:
+
+```text
+dispatch_task_ref  = task/BLOCK-ID consegnato
+dispatch_base_head = expected origin/main consegnato a Cursor
+```
+
+La HEAD osservata successivamente **non sostituisce** questo anchor. Nemmeno un commit docs/foundation scritto da GPT Web mentre il pass Cursor è ancora aperto può spostarlo.
+
 Eseguire:
 
 1. refresh `origin/main`;
 2. rileggere `CURRENT_FRONTIER.md`;
 3. rileggere ACTIVE WORK pointer se presente;
-4. ispezionare **solo il delta Git** dal precedente HEAD osservato;
-5. se il delta contiene un nuovo `reports/runtime/cursor-stops/*.stop.json` riferito al task atteso, leggere **solo quel singolo STOP artifact**;
-6. altrimenti leggere `docs/runtime/LAST_CURSOR_REPORT.md` **una sola volta** soltanto se il gate/NEXT dipende dal PASS Cursor appena concluso;
+4. ispezionare **solo** il range Git `<dispatch_base_head>..origin/main` del task atteso — non il range dal più recente HEAD incidentalmente osservato;
+5. se il range contiene un nuovo `reports/runtime/cursor-stops/*.stop.json` riferito a `dispatch_task_ref`, leggere **solo quel singolo STOP artifact**;
+6. altrimenti leggere `docs/runtime/LAST_CURSOR_REPORT.md` **una sola volta** soltanto se il gate/NEXT dipende dal PASS Cursor appena concluso e richiedere `task_ref` coerente;
 7. leggere evidence aggiuntiva solo se esplicitamente puntata e necessaria;
 8. **riepilogare all'operatore l'esito del pass Cursor appena concluso**;
-9. solo dopo il riepilogo applicare AUTO-VIA + STANDING OPERATOR AUTHORIZATION per derivare/emettere l'eventuale TASK DELTA successivo.
+9. solo dopo il riepilogo chiudere l'anchor e applicare AUTO-VIA + STANDING OPERATOR AUTHORIZATION per derivare/emettere l'eventuale TASK DELTA successivo.
+
+**Result-ingestion barrier:** finché esiste un dispatch anchor aperto, prima di qualsiasi scrittura GitHub propria GPT Web deve refreshare `origin/main` e controllare `<dispatch_base_head>..origin/main` per un PASS/STOP matching. Se l'outcome esiste, va ingerito prima della scrittura. I commit dell'orchestratore non devono mai nascondere evidence Cursor già pushata.
+
+**Recovery dopo perdita di contesto:** usare `expected_base_head` dell'Execution Packet quando disponibile; altrimenti cercare il commit STOP con subject canonico `cursor-stop: <TASK_REF>` e leggere solo l'artifact associato; poi PASS rolling evidence; solo come fallback usare un range bounded dal più recente PASS canonico. Niente broad scan della directory STOP.
 
 **Cursor completion persistence invariant:**
 
 - **PASS** → il task non è evidence-complete finché il PASS è persistito nel normale bounded evidence path, incluso `docs/runtime/LAST_CURSOR_REPORT.md` compatto/rolling e `CURRENT_FRONTIER.md` quando il LIVE STATE cambia;
-- **STOP** → il task deve creare un solo piccolo artifact immutabile `reports/runtime/cursor-stops/<UTC_TIMESTAMP>__<TASK_REF>.stop.json`, fare commit/push solo di quello, lasciare `CURRENT_FRONTIER.md` e `LAST_CURSOR_REPORT.md` invariati e preservare production/test incompleti dirty/uncommitted.
+- **STOP** → il task deve creare un solo piccolo artifact immutabile `reports/runtime/cursor-stops/<UTC_TIMESTAMP>__<TASK_REF>.stop.json`, fare commit/push solo di quello con subject `cursor-stop: <TASK_REF>`, lasciare `CURRENT_FRONTIER.md` e `LAST_CURSOR_REPORT.md` invariati e preservare production/test incompleti dirty/uncommitted.
 
-Gli STOP non vengono accumulati nel rolling PASS report. `agg` non lista né precarica la directory STOP: legge soltanto l'artifact nuovo selezionato dal delta Git del task appena terminato. Regola canonica e minimum shape: `docs/foundation/PROMPT_SEQUENCING_GATE.md`.
+Gli STOP non vengono accumulati nel rolling PASS report. `agg` non lista né precarica la directory STOP: legge soltanto l'artifact nuovo selezionato dal dispatch range del task appena terminato. Regola canonica e minimum shape: `docs/foundation/PROMPT_SEQUENCING_GATE.md`.
 
-Se non esiste né PASS evidence corrispondente né un nuovo STOP artifact corrispondente, `agg` classifica **`EVIDENCE_NOT_PERSISTED`**. Non deve dedurre che il task non sia stato eseguito.
+Se non esiste né PASS evidence corrispondente né un nuovo STOP artifact corrispondente nel dispatch range/recovery path, `agg` classifica **`EVIDENCE_NOT_PERSISTED`**. Non deve dedurre che il task non sia stato eseguito.
 
 Se report/evidence e frontier confliggono: **CURRENT_FRONTIER prevale per LIVE STATE**; dichiarare l'evidence stale/conflicting, non ricostruire lo stato dalla narrativa.
 
@@ -168,7 +181,7 @@ La standing authorization non modifica la precedenza delle fonti: modifica solta
 | GLM mode | `docs/advisors/GLM_ADVISOR_METHOD.md` — mode pertinente |
 | Azioni manuali operatore | `docs/foundation/OPERATOR_ACTION_HANDOFF_STANDARD.md` |
 | Evidenza PASS ultimo Cursor | `docs/runtime/LAST_CURSOR_REPORT.md` una volta |
-| Evidenza STOP ultimo Cursor | solo il nuovo `reports/runtime/cursor-stops/*.stop.json` selezionato dal delta Git |
+| Evidenza STOP ultimo Cursor | solo il nuovo `reports/runtime/cursor-stops/*.stop.json` selezionato dal dispatch range |
 | Handoff | solo per seed/resume quando il frontier/task non basta |
 | Storia/audit | session log / PM / runtime-packets solo su necessità concreta |
 | Workflow/runtime asset | solo file, diff, range o export necessari al task |
