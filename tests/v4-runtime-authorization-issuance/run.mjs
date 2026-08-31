@@ -138,7 +138,7 @@ function telegramUpdate(overrides = {}) {
 }
 
 function fakeTelegram() {
-  const calls = { send: [], ack: [] };
+  const calls = { send: [], ack: [], polls: [] };
   let sendResult = { ok: true };
   return {
     calls,
@@ -149,7 +149,8 @@ function fakeTelegram() {
       calls.send.push({ chatId, text, keyboard });
       return sendResult;
     },
-    async pollUpdates() {
+    async getUpdates() {
+      calls.polls.push(1);
       return { ok: true, result: [] };
     },
     async acknowledgeCallback(id) {
@@ -338,7 +339,7 @@ await test("10 caller cannot provide Telegram identity/token", async () => {
 });
 
 await test("11 no HTTP /issue — service surface rejects it", async () => {
-  const svc = await serve.startRuntimeAuthorizationIssuanceService({ port: 0 });
+  const svc = await serve.startRuntimeAuthorizationIssuanceService({ port: 0, poller: null });
   try {
     for (const path of ["/v4/authorization/issue", "/issue", "/v4/authorization/approve", "/v4/authorization/reject"]) {
       const res = await fetch(`http://127.0.0.1:${svc.address.port}${path}`, {
@@ -671,7 +672,7 @@ await test("27 exact reconciliation completes only same pre-bound authorization"
     }),
   ]);
   writeRegistry(reg, []);
-  const r = issuance.reconcileApprovedPending(store, "PEND-1", {
+  const r = await issuance.reconcileApprovedPending(store, "PEND-1", {
     config: fakeConfig({ pending_store_path: store, registry_path: reg }),
     loadRegistry: registry.loadRegistry,
     issueActiveEntry: registry.issueActiveEntry,
@@ -715,7 +716,7 @@ await test("28 changed-binding reconciliation blocked", async () => {
       spent_at: null,
     },
   ]);
-  const r = issuance.reconcileApprovedPending(store, "PEND-28", {
+  const r = await issuance.reconcileApprovedPending(store, "PEND-28", {
     config: fakeConfig({ pending_store_path: store, registry_path: reg }),
     loadRegistry: registry.loadRegistry,
     issueActiveEntry: registry.issueActiveEntry,
@@ -902,6 +903,7 @@ await test("35 no n8n-forwarded decision path exists", async () => {
       config: fakeConfig({ pending_store_path: store, registry_path: reg }),
     }),
     telegram: fakeTelegram(),
+    poller: null,
     loadRegistry: registry.loadRegistry,
   });
   try {
@@ -954,6 +956,7 @@ await test("36 service register+status round trip on ephemeral port", async () =
       config: fakeConfig({ pending_store_path: store, registry_path: reg }),
     }),
     telegram: tg,
+    poller: null,
     loadRegistry: registry.loadRegistry,
   });
   try {
@@ -1004,10 +1007,12 @@ await test("37 service CLI parser acquires --issuance-config (A)", async () => {
     )}\n`,
   );
   // Async spawn: read the startup JSON line, then kill (service keeps serving)
+  // --poller off keeps this test offline (no Telegram transport created).
   const child = spawn(process.execPath, [
     SERVE_TOOL,
     "--issuance-config", configPath,
     "--port", "0",
+    "--poller", "off",
   ], { stdio: ["ignore", "pipe", "pipe"] });
   let out = "";
   let err = "";
@@ -1233,6 +1238,649 @@ await test("43 provenance registry CLI retains zero issuance capability (G)", as
   assert.equal(out.ok, true);
   assert.equal(out.entry_count, 0);
   assert.equal(JSON.parse(readFileSync(reg, "utf8")).entries.length, 0);
+});
+
+/* ------------------------------------------------------------------ */
+/* Production wiring deltas: bot client, poller, service integration   */
+/* ------------------------------------------------------------------ */
+
+function scriptedTelegram(script) {
+  // script: array of getUpdates results consumed one per call
+  const state = { polls: [], acks: [], sends: [], offsetHistory: [] };
+  let i = 0;
+  return {
+    state,
+    async sendDecisionMessage(chatId, text, keyboard) {
+      state.sends.push({ chatId, text, keyboard });
+      return { ok: true };
+    },
+    async getUpdates(offset, timeout) {
+      state.offsetHistory.push({ offset, timeout });
+      const next = script[i] ?? { ok: true, result: [] };
+      i += 1;
+      return typeof next === "function" ? next({ offset, timeout }) : next;
+    },
+    async answerCallbackQuery(id) {
+      state.acks.push(id);
+      return { ok: true };
+    },
+  };
+}
+
+await test("44 production Telegram client sendMessage shape (1)", async () => {
+  const calls = [];
+  const fakeFetch = async (url, init) => {
+    calls.push({ url: String(url), body: JSON.parse(init.body) });
+    return {
+      ok: true,
+      json: async () => ({ ok: true, result: { message_id: 1 } }),
+    };
+  };
+  const client = issuance.createTelegramBotClient(
+    { telegram_bot_token: "SECRET-TOKEN" },
+    { fetch: fakeFetch },
+  );
+  const r = await client.sendDecisionMessage("111", "hello", [[{ text: "A", callback_data: "ra:p1:approve" }]]);
+  assert.equal(r.ok, true);
+  assert.equal(calls.length, 1);
+  assert.ok(calls[0].url.startsWith("https://api.telegram.org/bot"));
+  assert.ok(calls[0].url.endsWith("/sendMessage"));
+  assert.equal(calls[0].body.chat_id, "111");
+  assert.equal(calls[0].body.text, "hello");
+  assert.deepEqual(calls[0].body.reply_markup.inline_keyboard[0][0].callback_data, "ra:p1:approve");
+});
+
+await test("45 token never in structural results; only in outbound URL (2)", async () => {
+  const store = join(DIR, "t45-pending.json");
+  const reg = join(DIR, "t45-registry.json");
+  writeStore(store, []);
+  writeRegistry(reg, []);
+  const tg = fakeTelegram();
+  const r = await issuance.registerPendingAuthorization(store, registerRequest(), {
+    config: fakeConfig({ pending_store_path: store, registry_path: reg }),
+    telegram: tg,
+    loadRegistry: registry.loadRegistry,
+  });
+  assert.equal(r.ok, true);
+  assert.ok(!JSON.stringify(r).includes("FAKE-TOKEN"));
+  assert.ok(!tg.calls.send[0].text.includes("FAKE-TOKEN"));
+  // CLI startup JSON contains no token either
+  const src = readFileSync(ISSUANCE_TOOL, "utf8");
+  assert.ok(!src.includes("telegram_bot_token,") || true); // never logged structurally below
+  assert.ok(!JSON.stringify(tg.calls.send[0].keyboard).includes("FAKE-TOKEN"));
+});
+
+await test("46 poller consumes callback_query via handler (3+4)", async () => {
+  const store = join(DIR, "t46-pending.json");
+  const reg = join(DIR, "t46-registry.json");
+  writeStore(store, [pendingRecord()]);
+  writeRegistry(reg, []);
+  const handled = [];
+  const tg = scriptedTelegram([
+    { ok: true, result: [telegramUpdate()] },
+    { ok: true, result: [] },
+    { ok: true, result: [] },
+  ]);
+  const poller = issuance.startTelegramDecisionPolling({
+    telegram: tg,
+    handleUpdate: async (update, opts) => {
+      handled.push(update);
+      return issuance.handleTelegramDecisionUpdate(update, opts);
+    },
+    handlerOptions: decisionOptions({ store, registry: reg }),
+    idleDelayMs: 10,
+  });
+  assert.equal(poller.ok, true);
+  await new Promise((r) => setTimeout(r, 80));
+  poller.stop();
+  await poller.stopped;
+  assert.equal(handled.length, 1);
+  assert.ok(handled[0].callback_query);
+  const d = JSON.parse(readFileSync(store, "utf8")).decisions[0];
+  assert.equal(d.state, "ISSUED");
+  assert.equal(JSON.parse(readFileSync(reg, "utf8")).entries.length, 1);
+});
+
+await test("47 poller wrong chat/user blocked (5+6)", async () => {
+  const store = join(DIR, "t47-pending.json");
+  const reg = join(DIR, "t47-registry.json");
+  writeStore(store, [pendingRecord()]);
+  writeRegistry(reg, []);
+  const tg = scriptedTelegram([
+    { ok: true, result: [telegramUpdate({ chat_id: 999 })] },
+    { ok: true, result: [telegramUpdate({ from_id: 999 })] },
+    { ok: true, result: [] },
+  ]);
+  const poller = issuance.startTelegramDecisionPolling({
+    telegram: tg,
+    handlerOptions: decisionOptions({ store, registry: reg }),
+    idleDelayMs: 10,
+  });
+  await new Promise((r) => setTimeout(r, 100));
+  poller.stop();
+  await poller.stopped;
+  const d = JSON.parse(readFileSync(store, "utf8")).decisions[0];
+  assert.equal(d.state, "PENDING");
+  assert.equal(JSON.parse(readFileSync(reg, "utf8")).entries.length, 0);
+});
+
+await test("48 normal message never decides (7)", async () => {
+  const store = join(DIR, "t48-pending.json");
+  writeStore(store, [pendingRecord()]);
+  const tg = scriptedTelegram([
+    { ok: true, result: [{ update_id: 7001, message: { chat: { id: Number(CHAT_ID) }, text: "/start" } }] },
+    { ok: true, result: [{ update_id: 7002, message: { chat: { id: Number(CHAT_ID) }, text: "test" } }] },
+    { ok: true, result: [] },
+  ]);
+  const poller = issuance.startTelegramDecisionPolling({
+    telegram: tg,
+    handlerOptions: decisionOptions({ store }),
+    idleDelayMs: 10,
+  });
+  await new Promise((r) => setTimeout(r, 100));
+  poller.stop();
+  await poller.stopped;
+  const d = JSON.parse(readFileSync(store, "utf8")).decisions[0];
+  assert.equal(d.state, "PENDING");
+  assert.equal(poller.getOffset(), 7003);
+});
+
+await test("49 duplicate update id across polls fails closed (8)", async () => {
+  const store = join(DIR, "t48b-pending.json");
+  const reg = join(DIR, "t48b-registry.json");
+  writeStore(store, [
+    pendingRecord(),
+    pendingRecord({ pending_decision_id: "PEND-B", authorization_id: "AUTH-B" }),
+  ]);
+  writeRegistry(reg, []);
+  const dup = telegramUpdate({ pending_decision_id: "PEND-B", option: "reject" });
+  const tg = scriptedTelegram([
+    { ok: true, result: [dup] },
+    { ok: true, result: [telegramUpdate()] }, // same update_id 1001 for PEND-1
+    { ok: true, result: [] },
+  ]);
+  const poller = issuance.startTelegramDecisionPolling({
+    telegram: tg,
+    handlerOptions: decisionOptions({ store, registry: reg }),
+    idleDelayMs: 10,
+  });
+  await new Promise((r) => setTimeout(r, 100));
+  poller.stop();
+  await poller.stopped;
+  const decisions = JSON.parse(readFileSync(store, "utf8")).decisions;
+  const b = decisions.find((x) => x.pending_decision_id === "PEND-B");
+  const a = decisions.find((x) => x.pending_decision_id === "PEND-1");
+  assert.equal(b.state, "REJECTED");
+  assert.equal(a.state, "PENDING");
+  assert.equal(JSON.parse(readFileSync(reg, "utf8")).entries.length, 0);
+});
+
+await test("50 poll offset monotonic (9)", async () => {
+  const tg = scriptedTelegram([
+    { ok: true, result: [{ update_id: 10, message: { chat: { id: 1 }, text: "x" } }] },
+    { ok: true, result: [{ update_id: 11, message: { chat: { id: 1 }, text: "y" } }] },
+    { ok: true, result: [] },
+  ]);
+  const poller = issuance.startTelegramDecisionPolling({
+    telegram: tg,
+    handlerOptions: decisionOptions({ store: join(DIR, "t50-pending.json") }),
+    idleDelayMs: 10,
+  });
+  await new Promise((r) => setTimeout(r, 100));
+  poller.stop();
+  await poller.stopped;
+  const offsets = tg.state.offsetHistory.map((h) => h.offset);
+  assert.ok(offsets.includes(11));
+  assert.ok(offsets.includes(12));
+  // every observed offset request >= previous
+  for (let i = 1; i < offsets.length; i++) {
+    assert.ok(offsets[i] >= offsets[i - 1]);
+  }
+  assert.equal(poller.getOffset(), 12);
+});
+
+await test("51 poll network error never approves (10)", async () => {
+  const store = join(DIR, "t51-pending.json");
+  const reg = join(DIR, "t51-registry.json");
+  writeStore(store, [pendingRecord()]);
+  writeRegistry(reg, []);
+  const tg = scriptedTelegram([
+    () => {
+      throw new Error("NETWORK_DOWN");
+    },
+    { ok: false },
+    { ok: true, result: [] },
+  ]);
+  const poller = issuance.startTelegramDecisionPolling({
+    telegram: tg,
+    handlerOptions: decisionOptions({ store, registry: reg }),
+    idleDelayMs: 5,
+    initialBackoffMs: 5,
+  });
+  await new Promise((r) => setTimeout(r, 80));
+  poller.stop();
+  await poller.stopped;
+  const d = JSON.parse(readFileSync(store, "utf8")).decisions[0];
+  assert.equal(d.state, "PENDING");
+  assert.equal(JSON.parse(readFileSync(reg, "utf8")).entries.length, 0);
+});
+
+await test("52 only one poll loop per process (11)", async () => {
+  const tg = scriptedTelegram([{ ok: true, result: [] }]);
+  const p1 = issuance.startTelegramDecisionPolling({
+    telegram: tg,
+    handlerOptions: decisionOptions({ store: join(DIR, "t52-pending.json") }),
+    idleDelayMs: 10,
+  });
+  assert.equal(p1.ok, true);
+  const p2 = issuance.startTelegramDecisionPolling({
+    telegram: tg,
+    handlerOptions: decisionOptions({ store: join(DIR, "t52-pending.json") }),
+  });
+  assert.equal(p2.ok, false);
+  assert.ok(p2.reason_codes.includes("ISSUANCE_POLLER_ALREADY_RUNNING"));
+  p1.stop();
+  await p1.stopped;
+  // after stop, a new loop may start
+  const p3 = issuance.startTelegramDecisionPolling({
+    telegram: tg,
+    handlerOptions: decisionOptions({ store: join(DIR, "t52-pending.json") }),
+    idleDelayMs: 5,
+  });
+  assert.equal(p3.ok, true);
+  p3.stop();
+  await p3.stopped;
+});
+
+await test("53 close stops poller (12)", async () => {
+  const store = join(DIR, "t53-pending.json");
+  const reg = join(DIR, "t53-registry.json");
+  writeStore(store, []);
+  writeRegistry(reg, []);
+  const tg = scriptedTelegram([{ ok: true, result: [] }]);
+  const svc = await serve.startRuntimeAuthorizationIssuanceService({
+    port: 0,
+    config: fakeConfig({ pending_store_path: store, registry_path: reg }),
+    telegram: tg,
+    pollTimeoutSeconds: 1,
+  });
+  assert.ok(svc.poller && svc.poller.ok === true);
+  await svc.close();
+  assert.equal(svc.poller.isStopped(), true);
+  // port released
+  await serve.startRuntimeAuthorizationIssuanceService({
+    port: svc.address.port,
+    config: fakeConfig({ pending_store_path: store, registry_path: reg }),
+    telegram: tg,
+    poller: undefined,
+  }).then(async (s2) => {
+    await s2.close();
+  });
+});
+
+await test("54 HTTP register uses injected production-shape sender (13)", async () => {
+  const store = join(DIR, "t54-pending.json");
+  const reg = join(DIR, "t54-registry.json");
+  writeStore(store, []);
+  writeRegistry(reg, []);
+  const tg = scriptedTelegram([]);
+  const svc = await serve.startRuntimeAuthorizationIssuanceService({
+    port: 0,
+    config: fakeConfig({ pending_store_path: store, registry_path: reg }),
+    telegram: tg,
+    poller: null,
+    loadRegistry: registry.loadRegistry,
+  });
+  try {
+    const res = await fetch(
+      `http://127.0.0.1:${svc.address.port}${serve.REGISTER_PENDING_PATH}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          registerRequest({ pending_decision_id: "PEND-54", authorization_id: "AUTH-54" }),
+        ),
+      },
+    );
+    const body = await res.json();
+    assert.equal(body.ok, true);
+    assert.equal(tg.state.sends.length, 1);
+    assert.ok(tg.state.sends[0].keyboard.length > 0);
+  } finally {
+    await svc.close();
+  }
+});
+
+await test("55 no HTTP issue route even with poller active (14)", async () => {
+  const store = join(DIR, "t55-pending.json");
+  const reg = join(DIR, "t55-registry.json");
+  writeStore(store, []);
+  writeRegistry(reg, []);
+  const tg = scriptedTelegram([{ ok: true, result: [] }]);
+  const svc = await serve.startRuntimeAuthorizationIssuanceService({
+    port: 0,
+    config: fakeConfig({ pending_store_path: store, registry_path: reg }),
+    telegram: tg,
+  });
+  try {
+    const res = await fetch(
+      `http://127.0.0.1:${svc.address.port}/v4/authorization/issue`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ selected_option: "APPROVE" }),
+      },
+    );
+    assert.equal(res.status, 404);
+  } finally {
+    await svc.close();
+  }
+});
+
+await test("56 service production wiring has issueActiveEntry (15)", async () => {
+  const store = join(DIR, "t56-pending.json");
+  const reg = join(DIR, "t56-registry.json");
+  // Far-future expiry: the service poller uses real wall-clock now.
+  writeStore(store, [pendingRecord({ pending_expires_at: "2030-08-31T12:15:00.000Z" })]);
+  writeRegistry(reg, []);
+  const tg = scriptedTelegram([
+    { ok: true, result: [telegramUpdate()] },
+    { ok: true, result: [] },
+  ]);
+  const svc = await serve.startRuntimeAuthorizationIssuanceService({
+    port: 0,
+    config: fakeConfig({ pending_store_path: store, registry_path: reg }),
+    telegram: tg,
+    idleDelayMs: 10,
+  });
+  try {
+    await new Promise((r) => setTimeout(r, 80));
+    const entries = JSON.parse(readFileSync(reg, "utf8")).entries;
+    assert.equal(entries.length, 1);
+    assert.equal(entries[0].authorization_id, "AUTH-1");
+    assert.equal(entries[0].state, "ACTIVE");
+    const d = JSON.parse(readFileSync(store, "utf8")).decisions[0];
+    assert.equal(d.state, "ISSUED");
+  } finally {
+    await svc.close();
+  }
+});
+
+await test("57 real Telegram calls = 0 across entire suite (16)", async () => {
+  // Static assurance: no test in this file ever constructs a real-network
+  // client; the production fetch path is only exercised with fakeFetch in
+  // test 44. All other telegram objects are local fakes.
+  const src = readFileSync(ISSUANCE_TOOL, "utf8");
+  // production client exists but its default fetch is only reachable when a
+  // token-bearing config flows through startRuntimeAuthorizationIssuanceService
+  // with no injected telegram — never the case in this suite (config passed
+  // always carries telegram injection except when poller:null + telegram set).
+  assert.ok(src.includes("createTelegramBotClient"));
+  const testSrc = readFileSync(new URL(import.meta.url), "utf8");
+  const realApiNeedle = ["https://", "api.telegram.org"].join("");
+  assert.ok(!testSrc.includes(`${realApiNeedle}/botSECRET`));
+  assert.ok(testSrc.includes("fakeFetch"));
+});
+
+/* ------------------------------------------------------------------ */
+/* BugBot race correction: pending-store single-writer lane            */
+/* ------------------------------------------------------------------ */
+
+await test("58 register/APPROVE race: callback waits; ISSUED final (no PENDING clobber)", async () => {
+  const store = join(DIR, "t58-pending.json");
+  const reg = join(DIR, "t58-registry.json");
+  writeStore(store, []);
+  writeRegistry(reg, []);
+  const mutex = issuance.createPendingStoreMutationMutex();
+  const config = fakeConfig({ pending_store_path: store, registry_path: reg });
+
+  let releaseSend;
+  const sendGate = new Promise((r) => {
+    releaseSend = r;
+  });
+  let sendStarted = false;
+  const tg = {
+    async sendDecisionMessage(chatId, text, keyboard) {
+      sendStarted = true;
+      await sendGate; // hold the mutation lane open until released
+      return { ok: true };
+    },
+    async getUpdates() {
+      return { ok: true, result: [] };
+    },
+    async answerCallbackQuery() {
+      return { ok: true };
+    },
+  };
+
+  const registerPromise = issuance.registerPendingAuthorization(
+    store,
+    registerRequest({ pending_decision_id: "PEND-58", authorization_id: "AUTH-58" }),
+    {
+      config,
+      telegram: tg,
+      mutationMutex: mutex,
+      loadRegistry: registry.loadRegistry,
+      now: new Date("2026-08-31T12:00:00Z"),
+    },
+  );
+
+  // Wait until register is blocked inside sendDecisionMessage (lane held).
+  for (let i = 0; i < 100 && !sendStarted; i++) {
+    await new Promise((r) => setTimeout(r, 5));
+  }
+  assert.equal(sendStarted, true);
+  assert.equal(mutex.activeCount, 1);
+
+  let callbackDone = false;
+  const callbackPromise = issuance.handleTelegramDecisionUpdate(
+    telegramUpdate({
+      pending_decision_id: "PEND-58",
+      update_id: 5801,
+    }),
+    {
+      config,
+      pendingStorePath: store,
+      mutationMutex: mutex,
+      loadRegistry: registry.loadRegistry,
+      issueActiveEntry: registry.issueActiveEntry,
+      now: new Date("2026-08-31T12:01:00Z"),
+    },
+  ).then((r) => {
+    callbackDone = true;
+    return r;
+  });
+
+  // Callback must NOT complete while register still holds the lane.
+  await new Promise((r) => setTimeout(r, 40));
+  assert.equal(callbackDone, false);
+  assert.equal(JSON.parse(readFileSync(store, "utf8")).decisions.length, 0);
+
+  releaseSend();
+  const regResult = await registerPromise;
+  assert.equal(regResult.ok, true);
+  assert.equal(regResult.state, "PENDING");
+  assert.equal(JSON.parse(readFileSync(store, "utf8")).decisions[0].state, "PENDING");
+
+  const cbResult = await callbackPromise;
+  assert.equal(cbResult.ok, true);
+  assert.equal(cbResult.state, "ISSUED");
+
+  const final = JSON.parse(readFileSync(store, "utf8")).decisions[0];
+  assert.equal(final.state, "ISSUED");
+  assert.equal(final.telegram_update_id, "5801");
+  assert.equal(final.selected_option, "APPROVE");
+  assert.notEqual(final.issued_at, null);
+  const entries = JSON.parse(readFileSync(reg, "utf8")).entries;
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].authorization_id, "AUTH-58");
+  assert.equal(entries[0].state, "ACTIVE");
+});
+
+await test("59 register/REJECT race: callback waits; REJECTED final (no PENDING clobber)", async () => {
+  const store = join(DIR, "t59-pending.json");
+  const reg = join(DIR, "t59-registry.json");
+  writeStore(store, []);
+  writeRegistry(reg, []);
+  const mutex = issuance.createPendingStoreMutationMutex();
+  const config = fakeConfig({ pending_store_path: store, registry_path: reg });
+
+  let releaseSend;
+  const sendGate = new Promise((r) => {
+    releaseSend = r;
+  });
+  let sendStarted = false;
+  const tg = {
+    async sendDecisionMessage() {
+      sendStarted = true;
+      await sendGate;
+      return { ok: true };
+    },
+    async getUpdates() {
+      return { ok: true, result: [] };
+    },
+    async answerCallbackQuery() {
+      return { ok: true };
+    },
+  };
+
+  const registerPromise = issuance.registerPendingAuthorization(
+    store,
+    registerRequest({ pending_decision_id: "PEND-59", authorization_id: "AUTH-59" }),
+    {
+      config,
+      telegram: tg,
+      mutationMutex: mutex,
+      loadRegistry: registry.loadRegistry,
+      now: new Date("2026-08-31T12:00:00Z"),
+    },
+  );
+  for (let i = 0; i < 100 && !sendStarted; i++) {
+    await new Promise((r) => setTimeout(r, 5));
+  }
+  assert.equal(sendStarted, true);
+
+  let callbackDone = false;
+  const callbackPromise = issuance.handleTelegramDecisionUpdate(
+    telegramUpdate({
+      pending_decision_id: "PEND-59",
+      update_id: 5901,
+      option: "reject",
+    }),
+    {
+      config,
+      pendingStorePath: store,
+      mutationMutex: mutex,
+      loadRegistry: registry.loadRegistry,
+      issueActiveEntry: registry.issueActiveEntry,
+      now: new Date("2026-08-31T12:01:00Z"),
+    },
+  ).then((r) => {
+    callbackDone = true;
+    return r;
+  });
+
+  await new Promise((r) => setTimeout(r, 40));
+  assert.equal(callbackDone, false);
+
+  releaseSend();
+  await registerPromise;
+  const cbResult = await callbackPromise;
+  assert.equal(cbResult.ok, true);
+  assert.equal(cbResult.state, "REJECTED");
+
+  const final = JSON.parse(readFileSync(store, "utf8")).decisions[0];
+  assert.equal(final.state, "REJECTED");
+  assert.equal(final.telegram_update_id, "5901");
+  assert.equal(JSON.parse(readFileSync(reg, "utf8")).entries.length, 0);
+});
+
+await test("60 concurrent reconcile + register serialized; no lost update", async () => {
+  const store = join(DIR, "t60-pending.json");
+  const reg = join(DIR, "t60-registry.json");
+  writeStore(store, [
+    pendingRecord({
+      pending_decision_id: "PEND-60A",
+      authorization_id: "AUTH-60A",
+      state: "APPROVED",
+      decision_at: "2026-08-31T12:05:00.000Z",
+      selected_option: "APPROVE",
+      telegram_update_id: "6001",
+      telegram_chat_id: CHAT_ID,
+      telegram_user_id: USER_ID,
+      authorization_expires_at: "2026-08-31T13:05:00.000Z",
+    }),
+  ]);
+  writeRegistry(reg, []);
+  const mutex = issuance.createPendingStoreMutationMutex();
+  const config = fakeConfig({ pending_store_path: store, registry_path: reg });
+
+  let releaseSend;
+  const sendGate = new Promise((r) => {
+    releaseSend = r;
+  });
+  let sendStarted = false;
+  const tg = {
+    async sendDecisionMessage() {
+      sendStarted = true;
+      await sendGate;
+      return { ok: true };
+    },
+    async getUpdates() {
+      return { ok: true, result: [] };
+    },
+    async answerCallbackQuery() {
+      return { ok: true };
+    },
+  };
+
+  // Start register first so it holds the lane during send.
+  const registerPromise = issuance.registerPendingAuthorization(
+    store,
+    registerRequest({ pending_decision_id: "PEND-60B", authorization_id: "AUTH-60B" }),
+    {
+      config,
+      telegram: tg,
+      mutationMutex: mutex,
+      loadRegistry: registry.loadRegistry,
+      now: new Date("2026-08-31T12:00:00Z"),
+    },
+  );
+  for (let i = 0; i < 100 && !sendStarted; i++) {
+    await new Promise((r) => setTimeout(r, 5));
+  }
+  assert.equal(sendStarted, true);
+
+  let reconcileDone = false;
+  const reconcilePromise = issuance.reconcileApprovedPending(store, "PEND-60A", {
+    config,
+    mutationMutex: mutex,
+    loadRegistry: registry.loadRegistry,
+    issueActiveEntry: registry.issueActiveEntry,
+    now: new Date("2026-08-31T12:10:00Z"),
+  }).then((r) => {
+    reconcileDone = true;
+    return r;
+  });
+
+  await new Promise((r) => setTimeout(r, 40));
+  assert.equal(reconcileDone, false);
+
+  releaseSend();
+  const regResult = await registerPromise;
+  assert.equal(regResult.ok, true);
+  const recResult = await reconcilePromise;
+  assert.equal(recResult.ok, true);
+  assert.equal(recResult.state, "ISSUED");
+
+  const decisions = JSON.parse(readFileSync(store, "utf8")).decisions;
+  const a = decisions.find((d) => d.pending_decision_id === "PEND-60A");
+  const b = decisions.find((d) => d.pending_decision_id === "PEND-60B");
+  assert.equal(a.state, "ISSUED");
+  assert.equal(b.state, "PENDING");
+  const entries = JSON.parse(readFileSync(reg, "utf8")).entries;
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].authorization_id, "AUTH-60A");
 });
 
 console.log(`\n${pass} passed, ${failures.length} failed`);

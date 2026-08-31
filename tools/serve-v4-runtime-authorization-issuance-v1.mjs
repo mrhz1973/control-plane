@@ -18,8 +18,15 @@ import {
   loadIssuanceConfig,
   registerPendingAuthorization,
   getPendingAuthorizationStatus,
+  handleTelegramDecisionUpdate,
+  createTelegramBotClient,
+  startTelegramDecisionPolling,
+  createPendingStoreMutationMutex,
 } from "./v4-runtime-authorization-issuance-v1.mjs";
-import { loadRegistry } from "./v4-runtime-authorization-provenance-registry-v1.mjs";
+import {
+  loadRegistry,
+  issueActiveEntry,
+} from "./v4-runtime-authorization-provenance-registry-v1.mjs";
 
 export const DEFAULT_HOST = "127.0.0.1";
 export const DEFAULT_PORT = 18792;
@@ -69,29 +76,34 @@ export async function handleIssuanceRequest(pathname, body, options = {}) {
     };
   }
 
+  // Config resolution: prefer an already-resolved config (service startup),
+  // else load from the configured absolute path. Never from the request.
   const configLoader = options.loadIssuanceConfig || loadIssuanceConfig;
   const configPath = options.issuanceConfigPath;
-  if (!configPath || typeof configPath !== "string" || !isAbsolute(configPath)) {
-    return {
-      status: 200,
-      body: wrapRegisterResult({
-        ok: false,
-        classification: ISSUANCE_REJECT,
-        reason_codes: ["ISSUANCE_CONFIG_UNAVAILABLE"],
-      }),
-    };
+  let config = options.config || null;
+  if (!config) {
+    if (!configPath || typeof configPath !== "string" || !isAbsolute(configPath)) {
+      return {
+        status: 200,
+        body: wrapRegisterResult({
+          ok: false,
+          classification: ISSUANCE_REJECT,
+          reason_codes: ["ISSUANCE_CONFIG_UNAVAILABLE"],
+        }),
+      };
+    }
+    const configResult = configLoader(configPath);
+    if (!configResult.ok) {
+      return {
+        status: 200,
+        body:
+          pathname === REGISTER_PENDING_PATH
+            ? wrapRegisterResult(configResult)
+            : wrapStatusResult(configResult),
+      };
+    }
+    config = configResult.config;
   }
-  const configResult = configLoader(configPath);
-  if (!configResult.ok) {
-    return {
-      status: 200,
-      body:
-        pathname === REGISTER_PENDING_PATH
-          ? wrapRegisterResult(configResult)
-          : wrapStatusResult(configResult),
-    };
-  }
-  const config = configResult.config;
 
   if (pathname === STATUS_PATH) {
     if (
@@ -219,13 +231,55 @@ export async function createIssuanceRequestHandler(options = {}) {
 }
 
 /**
- * Start HTTP service. host/port injectable; tests MUST use port 0.
- * No production startup/apply in this offline pass.
+ * Start the issuance service.
+ * Production default: loads config, creates the DIRECT Telegram bot client,
+ * wires issueActiveEntry/loadRegistry into the decision handler, starts HTTP,
+ * then starts exactly ONE Telegram poll loop. close() stops both.
+ * Tests inject fake telegram / poller via options (DI only, zero real calls).
  */
 export async function startRuntimeAuthorizationIssuanceService(options = {}) {
   const host = options.host || DEFAULT_HOST;
   const port = options.port ?? DEFAULT_PORT;
-  const handler = await createIssuanceRequestHandler(options);
+
+  const configLoader = options.loadIssuanceConfig || loadIssuanceConfig;
+  let config = options.config || null;
+  if (!config && options.issuanceConfigPath) {
+    const configResult = configLoader(options.issuanceConfigPath);
+    if (!configResult.ok) {
+      throw new Error(configResult.reason_codes?.[0] || "ISSUANCE_CONFIG_UNAVAILABLE");
+    }
+    config = configResult.config;
+  }
+
+  // Telegram transport: injected in tests; production client from config
+  // ONLY when explicitly allowed (CLI sets the flag). Otherwise a missing
+  // injection is a startup error — never a silent real-network client.
+  let telegram = options.telegram || null;
+  let abortController = null;
+  if (!telegram && config) {
+    if (options.allowProductionTelegramClient !== true) {
+      throw new Error("ISSUANCE_TELEGRAM_TRANSPORT_UNAVAILABLE");
+    }
+    abortController = new AbortController();
+    telegram = options.createTelegramClient
+      ? options.createTelegramClient(config)
+      : createTelegramBotClient(config, { signal: abortController.signal });
+  }
+
+  // One pending-store mutation lane per process — shared by HTTP register
+  // and the Telegram decision poller so neither can clobber the other.
+  const mutationMutex =
+    options.mutationMutex || createPendingStoreMutationMutex();
+
+  const handlerOptions = {
+    ...options,
+    config,
+    telegram,
+    mutationMutex,
+    loadRegistry: options.loadRegistry || loadRegistry,
+  };
+  const handler = await createIssuanceRequestHandler(handlerOptions);
+
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
       handler(req, res).catch(() => {
@@ -247,12 +301,49 @@ export async function startRuntimeAuthorizationIssuanceService(options = {}) {
     });
     server.on("error", reject);
     server.listen(port, host, () => {
+      // Direct Telegram decision poller: one loop, decision-handler wired.
+      let poller = null;
+      if (options.poller !== null && telegram && config) {
+        const candidate =
+          options.poller ||
+          startTelegramDecisionPolling({
+            telegram,
+            handlerOptions: {
+              config,
+              pendingStorePath: config.pending_store_path,
+              mutationMutex,
+              loadRegistry: options.loadRegistry || loadRegistry,
+              issueActiveEntry: options.issueActiveEntry || issueActiveEntry,
+              acknowledgeCallback: async (id) =>
+                telegram.answerCallbackQuery(id),
+            },
+            onAbort: abortController ? () => abortController.abort() : null,
+            pollTimeoutSeconds: options.pollTimeoutSeconds,
+            idleDelayMs: options.idleDelayMs,
+            initialBackoffMs: options.initialBackoffMs,
+            maxBackoffMs: options.maxBackoffMs,
+          });
+        if (candidate && candidate.ok === true && typeof candidate.stop === "function") {
+          poller = candidate;
+        }
+      }
       resolve({
         server,
         address: server.address(),
+        telegram,
+        poller,
+        mutationMutex,
         close: () =>
           new Promise((r) => {
-            server.close(() => r());
+            if (poller && typeof poller.stop === "function") {
+              poller.stop();
+              Promise.race([
+                poller.stopped,
+                new Promise((r2) => setTimeout(r2, 30000)),
+              ]).then(() => server.close(() => r()));
+            } else {
+              server.close(() => r());
+            }
           }),
       });
     });
@@ -283,10 +374,16 @@ if (isMain) {
   }
   const host = args.get("--host") || DEFAULT_HOST;
   const port = Number(args.get("--port") || DEFAULT_PORT);
+  // Test-only escape hatch: "--poller off" disables the Telegram poll loop so
+  // offline test harnesses can exercise CLI parsing with zero network. The
+  // canonical production command line never uses it.
+  const pollerOff = args.get("--poller") === "off";
   startRuntimeAuthorizationIssuanceService({
     host,
     port,
     issuanceConfigPath: configPath,
+    allowProductionTelegramClient: true,
+    ...(pollerOff ? { poller: null } : {}),
   })
     .then(({ address }) => {
       process.stdout.write(

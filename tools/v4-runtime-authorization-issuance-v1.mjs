@@ -303,6 +303,71 @@ function emptyStore() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Pending-store single-writer mutation lane (per-process)             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Create a per-process FIFO async mutation lane for the pending store.
+ * Exactly one critical write sequence runs at a time; exception-safe release.
+ * Shared by registerPendingAuthorization, handleTelegramDecisionUpdate and
+ * reconcileApprovedPending so a stale register snapshot can never clobber
+ * a decision made while Telegram send was in flight.
+ */
+export function createPendingStoreMutationMutex() {
+  let tail = Promise.resolve();
+  let depth = 0;
+  return {
+    runExclusive(asyncFn) {
+      const run = new Promise((resolve, reject) => {
+        const start = () => {
+          depth += 1;
+          Promise.resolve()
+            .then(() => asyncFn())
+            .then(
+              (value) => {
+                depth -= 1;
+                resolve(value);
+              },
+              (err) => {
+                depth -= 1;
+                reject(err);
+              },
+            );
+        };
+        // Chain onto the previous waiter; recover so a rejection never stalls the lane.
+        tail = tail.then(start, start);
+      });
+      // Keep the lane alive even if this run rejects.
+      tail = run.then(
+        () => {},
+        () => {},
+      );
+      return run;
+    },
+    /** Test/introspection: number of currently nested exclusive holders (0 or 1). */
+    get activeCount() {
+      return depth;
+    },
+  };
+}
+
+/** Passthrough lane used when no shared mutex is injected (single-threaded tests). */
+function passthroughMutex() {
+  return {
+    runExclusive(asyncFn) {
+      return Promise.resolve().then(() => asyncFn());
+    },
+    get activeCount() {
+      return 0;
+    },
+  };
+}
+
+function resolveMutationMutex(options) {
+  return options.mutationMutex || passthroughMutex();
+}
+
+/* ------------------------------------------------------------------ */
 /* Telegram client abstraction (DI; production fetch never invoked here)*/
 /* ------------------------------------------------------------------ */
 
@@ -333,17 +398,24 @@ export function buildCallbackData(pendingDecisionId) {
 }
 
 /**
- * Production Telegram client using fetch against the Bot API.
- * NOT invoked in this offline pass; injected in tests as fakes.
+ * Production Telegram bot client (canonical). Token comes ONLY from the
+ * server-side issuance config. Never from HTTP callers, n8n, env or query.
+ * Results never echo the token or the request URL. An optional AbortController
+ * signal lets the polling worker cancel an in-flight long poll on shutdown.
  */
-export function createProductionTelegramClient(options = {}) {
+export function createTelegramBotClient(config, options = {}) {
   const fetchImpl = options.fetch || ((...a) => fetch(...a));
-  const baseUrl = `https://api.telegram.org/bot${options.botToken}`;
+  const signal = options.signal || null;
+  const token = config?.telegram_bot_token;
+  if (typeof token !== "string" || token.length === 0) {
+    throw new Error("TELEGRAM_BOT_TOKEN_MISSING");
+  }
   async function call(method, payload) {
-    const res = await fetchImpl(`${baseUrl}/${method}`, {
+    const res = await fetchImpl(`https://api.telegram.org/bot${token}/${method}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
+      ...(signal ? { signal } : {}),
     });
     if (!res.ok) {
       return { ok: false, status: res.status };
@@ -362,16 +434,133 @@ export function createProductionTelegramClient(options = {}) {
         reply_markup: { inline_keyboard: keyboard },
       });
     },
-    async pollUpdates(offset, timeout) {
+    async getUpdates(offset, timeout) {
       return call("getUpdates", {
         offset,
         timeout,
         allowed_updates: ["callback_query"],
       });
     },
-    async acknowledgeCallback(callbackQueryId) {
+    async answerCallbackQuery(callbackQueryId) {
       return call("answerCallbackQuery", { callback_query_id: callbackQueryId });
     },
+  };
+}
+
+/** Backward-compatible alias; token still comes only from the config. */
+export function createProductionTelegramClient(config, options = {}) {
+  return createTelegramBotClient(config, options);
+}
+
+/* ------------------------------------------------------------------ */
+/* Direct Telegram decision polling worker                             */
+/* ------------------------------------------------------------------ */
+
+let pollerLoopActive = false;
+
+/**
+ * Single long-poll loop consuming Telegram updates directly server-side.
+ * - one loop per process (second start while running fails closed);
+ * - monotonic offset: max(update_id) + 1, advanced for EVERY update type;
+ * - non-callback updates (e.g. /start, plain text) never decide anything;
+ * - each callback_query update goes VERBATIM to handleTelegramDecisionUpdate;
+ * - poll/transport errors back off bounded and never create decisions;
+ * - stop() aborts an in-flight long poll via the supplied onAbort hook.
+ */
+export function startTelegramDecisionPolling(options = {}) {
+  if (pollerLoopActive) {
+    return { ok: false, reason_codes: ["ISSUANCE_POLLER_ALREADY_RUNNING"] };
+  }
+  const telegram = options.telegram;
+  if (
+    !telegram ||
+    typeof telegram.getUpdates !== "function" ||
+    typeof telegram.answerCallbackQuery !== "function"
+  ) {
+    return { ok: false, reason_codes: ["ISSUANCE_TELEGRAM_TRANSPORT_UNAVAILABLE"] };
+  }
+  const handleUpdate = options.handleUpdate || handleTelegramDecisionUpdate;
+  const handlerOptions = options.handlerOptions || {};
+  const pollTimeoutSeconds = options.pollTimeoutSeconds ?? 25;
+  const idleDelayMs = options.idleDelayMs ?? 0;
+  const initialBackoffMs = options.initialBackoffMs ?? 1000;
+  const maxBackoffMs = options.maxBackoffMs ?? 60000;
+  const sleep = options.sleep || ((ms) => new Promise((r) => setTimeout(r, ms)));
+  const onAbort = typeof options.onAbort === "function" ? options.onAbort : null;
+
+  let stopped = false;
+  let offset = Number.isInteger(options.initialOffset) ? options.initialOffset : 0;
+  let backoffMs = initialBackoffMs;
+  pollerLoopActive = true;
+
+  const loopPromise = (async () => {
+    while (!stopped) {
+      let res;
+      try {
+        res = await telegram.getUpdates(offset, pollTimeoutSeconds);
+      } catch {
+        if (stopped) break;
+        await sleep(backoffMs);
+        backoffMs = Math.min(backoffMs * 2, maxBackoffMs);
+        continue;
+      }
+      if (stopped) break;
+      if (!res || res.ok !== true || !Array.isArray(res.result)) {
+        await sleep(backoffMs);
+        backoffMs = Math.min(backoffMs * 2, maxBackoffMs);
+        continue;
+      }
+      backoffMs = initialBackoffMs;
+      for (const update of res.result) {
+        const updateId = update?.update_id;
+        // Advance BEFORE handling: at-least-once delivery is safe because the
+        // durable pending store dedupes update ids and terminal states.
+        if (Number.isInteger(updateId) && updateId + 1 > offset) {
+          offset = updateId + 1;
+        }
+        if (update && update.callback_query) {
+          try {
+            await handleUpdate(update, handlerOptions);
+          } catch {
+            // fail closed: poller errors never approve anything
+          }
+        }
+        // Plain messages (/start, text) are ignored; offset already advanced.
+      }
+      // Always yield to the event loop between polls, even on empty batches,
+      // so a zero-delay fake transport cannot produce a tight spin.
+      if (!stopped) {
+        await sleep(Math.max(idleDelayMs, 1));
+      }
+    }
+  })();
+
+  const stoppedPromise = loopPromise.then(
+    () => {
+      pollerLoopActive = false;
+      return true;
+    },
+    () => {
+      pollerLoopActive = false;
+      return true;
+    },
+  );
+
+  return {
+    ok: true,
+    stop() {
+      stopped = true;
+      if (onAbort) {
+        try {
+          onAbort();
+        } catch {
+          /* ignore */
+        }
+      }
+    },
+    getOffset: () => offset,
+    isStopped: () => stopped,
+    stopped: stoppedPromise,
   };
 }
 
@@ -430,6 +619,10 @@ function validateRegisterPendingRequest(body, config) {
  * Register one pending authorization. Writes exactly one PENDING record and
  * sends the decision message through the injected Telegram client ONLY.
  * Never writes the registry, ledger, or execution state.
+ *
+ * Holds the pending-store mutation lane across the entire
+ * load → send Telegram → persist sequence so a concurrent callback cannot
+ * observe a stale store and a concurrent register cannot clobber a decision.
  */
 export async function registerPendingAuthorization(storePath, body, options = {}) {
   const config = options.config;
@@ -439,6 +632,7 @@ export async function registerPendingAuthorization(storePath, body, options = {}
   const now = options.now || new Date();
   const loadRegistryFn = options.loadRegistry;
   const registryPath = options.registryPath || config?.registry_path || null;
+  const mutex = resolveMutationMutex(options);
 
   if (!config) {
     return reject("ISSUANCE_CONFIG_UNAVAILABLE");
@@ -452,113 +646,117 @@ export async function registerPendingAuthorization(storePath, body, options = {}
     return reject(shape.reason);
   }
 
-  const loaded = loadStore(storePath);
-  if (!loaded.ok) {
-    return reject(loaded.reason_codes[0]);
-  }
-
-  const decisions = loaded.store.decisions;
-  if (decisions.some((d) => d.pending_decision_id === body.pending_decision_id)) {
-    return reject("ISSUANCE_PENDING_ID_CONFLICT", {
-      pending_decision_id: body.pending_decision_id,
-    });
-  }
-  if (decisions.some((d) => d.authorization_id === body.authorization_id)) {
-    return reject("ISSUANCE_AUTHORIZATION_ID_CONFLICT", {
-      authorization_id: body.authorization_id,
-    });
-  }
-
-  if (loadRegistryFn && registryPath) {
-    const reg = loadRegistryFn(registryPath);
-    if (!reg.ok) {
-      return reject(reg.reason_codes[0].startsWith("AUTHORIZATION_")
-        ? "ISSUANCE_REGISTRY_UNAVAILABLE"
-        : reg.reason_codes[0]);
+  return mutex.runExclusive(async () => {
+    const loaded = loadStore(storePath);
+    if (!loaded.ok) {
+      return reject(loaded.reason_codes[0]);
     }
-    if (reg.registry.entries.some((e) => e.authorization_id === body.authorization_id)) {
+
+    const decisions = loaded.store.decisions;
+    if (decisions.some((d) => d.pending_decision_id === body.pending_decision_id)) {
+      return reject("ISSUANCE_PENDING_ID_CONFLICT", {
+        pending_decision_id: body.pending_decision_id,
+      });
+    }
+    if (decisions.some((d) => d.authorization_id === body.authorization_id)) {
       return reject("ISSUANCE_AUTHORIZATION_ID_CONFLICT", {
         authorization_id: body.authorization_id,
       });
     }
-  }
 
-  const createdAt = toIso(now);
-  const expiresMs = nowMsOf(now) + body.pending_ttl_seconds * 1000;
-  const pendingExpiresAt = new Date(expiresMs).toISOString();
-  const decision = {
-    pending_decision_id: body.pending_decision_id,
-    authorization_id: body.authorization_id,
-    task_id: body.task_id,
-    execution_id: body.execution_id,
-    route_id: body.route_id,
-    scope_digest: body.scope_digest,
-    created_at: createdAt,
-    pending_expires_at: pendingExpiresAt,
-    state: "PENDING",
-    decision_at: null,
-    selected_option: null,
-    telegram_update_id: null,
-    telegram_chat_id: null,
-    telegram_user_id: null,
-    authorization_expires_at: null,
-    issued_at: null,
-  };
+    if (loadRegistryFn && registryPath) {
+      const reg = loadRegistryFn(registryPath);
+      if (!reg.ok) {
+        return reject(reg.reason_codes[0].startsWith("AUTHORIZATION_")
+          ? "ISSUANCE_REGISTRY_UNAVAILABLE"
+          : reg.reason_codes[0]);
+      }
+      if (reg.registry.entries.some((e) => e.authorization_id === body.authorization_id)) {
+        return reject("ISSUANCE_AUTHORIZATION_ID_CONFLICT", {
+          authorization_id: body.authorization_id,
+        });
+      }
+    }
 
-  const next = {
-    schema_version: PENDING_STORE_SCHEMA_VERSION,
-    decisions: [...decisions.map(cloneDecision), decision],
-  };
-  const selfCheck = validatePendingStoreObject(next);
-  if (!selfCheck.ok) {
-    return reject(selfCheck.reason);
-  }
+    const createdAt = toIso(now);
+    const expiresMs = nowMsOf(now) + body.pending_ttl_seconds * 1000;
+    const pendingExpiresAt = new Date(expiresMs).toISOString();
+    const decision = {
+      pending_decision_id: body.pending_decision_id,
+      authorization_id: body.authorization_id,
+      task_id: body.task_id,
+      execution_id: body.execution_id,
+      route_id: body.route_id,
+      scope_digest: body.scope_digest,
+      created_at: createdAt,
+      pending_expires_at: pendingExpiresAt,
+      state: "PENDING",
+      decision_at: null,
+      selected_option: null,
+      telegram_update_id: null,
+      telegram_chat_id: null,
+      telegram_user_id: null,
+      authorization_expires_at: null,
+      issued_at: null,
+    };
 
-  let telegramOk = false;
-  try {
-    const cb = buildCallbackData(decision.pending_decision_id);
-    const keyboard = [[
-      { text: "APPROVE", callback_data: cb.approve },
-      { text: "REJECT", callback_data: cb.reject },
-    ]];
-    const sent = await telegram.sendDecisionMessage(
-      config.operator_telegram_chat_id,
-      buildDecisionMessageText(decision),
-      keyboard,
-    );
-    telegramOk = sent?.ok === true;
-  } catch {
-    telegramOk = false;
-  }
+    const next = {
+      schema_version: PENDING_STORE_SCHEMA_VERSION,
+      decisions: [...decisions.map(cloneDecision), decision],
+    };
+    const selfCheck = validatePendingStoreObject(next);
+    if (!selfCheck.ok) {
+      return reject(selfCheck.reason);
+    }
 
-  if (!telegramOk) {
-    // Fail closed: no PENDING persisted for a proposal whose operator gate
-    // message was never delivered — the operator cannot decide what they
-    // never saw, and no silent auto-approval path may exist.
-    return reject("ISSUANCE_TELEGRAM_DELIVERY_FAILED", {
+    let telegramOk = false;
+    try {
+      const cb = buildCallbackData(decision.pending_decision_id);
+      const keyboard = [[
+        { text: "APPROVE", callback_data: cb.approve },
+        { text: "REJECT", callback_data: cb.reject },
+      ]];
+      // Hold the mutation lane across the Telegram send so a concurrent
+      // callback cannot mutate the store until PENDING is durably persisted.
+      const sent = await telegram.sendDecisionMessage(
+        config.operator_telegram_chat_id,
+        buildDecisionMessageText(decision),
+        keyboard,
+      );
+      telegramOk = sent?.ok === true;
+    } catch {
+      telegramOk = false;
+    }
+
+    if (!telegramOk) {
+      // Fail closed: no PENDING persisted for a proposal whose operator gate
+      // message was never delivered — the operator cannot decide what they
+      // never saw, and no silent auto-approval path may exist.
+      return reject("ISSUANCE_TELEGRAM_DELIVERY_FAILED", {
+        pending_decision_id: decision.pending_decision_id,
+        authorization_id: decision.authorization_id,
+      });
+    }
+
+    try {
+      persistStore(storePath, next, options);
+    } catch {
+      return reject("ISSUANCE_PENDING_STORE_UNAVAILABLE", {
+        pending_decision_id: decision.pending_decision_id,
+        authorization_id: decision.authorization_id,
+      });
+    }
+
+    return {
+      ok: true,
+      classification: "REGISTER_PENDING_ACCEPTED",
       pending_decision_id: decision.pending_decision_id,
       authorization_id: decision.authorization_id,
-    });
-  }
-
-  try {
-    persistStore(storePath, next, options);
-  } catch {
-    return reject("ISSUANCE_PENDING_STORE_UNAVAILABLE", {
-      pending_decision_id: decision.pending_decision_id,
-      authorization_id: decision.authorization_id,
-    });
-  }
-
-  return {
-    ok: true,
-    classification: "REGISTER_PENDING_ACCEPTED",
-    pending_decision_id: decision.pending_decision_id,
-    authorization_id: decision.authorization_id,
-    state: "PENDING",
-    pending_expires_at: decision.pending_expires_at,
-    reason_codes: [],
-  };
+      state: "PENDING",
+      pending_expires_at: decision.pending_expires_at,
+      reason_codes: [],
+    };
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -629,6 +827,10 @@ function parseCallbackData(data) {
  * Handle ONE direct Telegram update carrying a human decision.
  * The update comes ONLY from the server-side Telegram client (injected).
  * Every identity field is read from the update itself; nothing from HTTP.
+ *
+ * Identity checks run outside the mutation lane (fail-fast). Store load +
+ * state transition + registry ACTIVE append run INSIDE the shared lane so
+ * they cannot race with a concurrent registerPendingAuthorization.
  */
 export async function handleTelegramDecisionUpdate(update, options = {}) {
   const config = options.config;
@@ -638,6 +840,7 @@ export async function handleTelegramDecisionUpdate(update, options = {}) {
   const now = options.now || new Date();
   const issueActiveEntryFn = options.issueActiveEntry;
   const acknowledge = options.acknowledgeCallback;
+  const mutex = resolveMutationMutex(options);
 
   if (!config) {
     return reject("ISSUANCE_CONFIG_UNAVAILABLE");
@@ -669,74 +872,113 @@ export async function handleTelegramDecisionUpdate(update, options = {}) {
     return reject("ISSUANCE_OPERATOR_IDENTITY_MISMATCH");
   }
 
-  const loaded = loadStore(storePath);
-  if (!loaded.ok) {
-    return reject(loaded.reason_codes[0]);
-  }
-  const decisions = loaded.store.decisions;
-  const idx = decisions.findIndex(
-    (d) => d.pending_decision_id === parsed.pendingDecisionId,
-  );
-  if (idx === -1) {
-    return reject("ISSUANCE_PENDING_NOT_FOUND");
-  }
-  const d = decisions[idx];
-
-  const updateIdStr = String(updateId);
-  const updateUsedByOther = decisions.some(
-    (x, i) =>
-      i !== idx &&
-      x.telegram_update_id !== null &&
-      String(x.telegram_update_id) === updateIdStr,
-  );
-  if (updateUsedByOther) {
-    return reject("ISSUANCE_TELEGRAM_UPDATE_REUSED");
-  }
-  if (d.telegram_update_id === updateIdStr && d.state !== "PENDING") {
-    return reject("ISSUANCE_DECISION_ALREADY_CONSUMED");
-  }
-
-  if (d.state !== "PENDING") {
-    return reject("ISSUANCE_DECISION_ALREADY_CONSUMED");
-  }
-  if (nowMsOf(now) >= parseInstant(d.pending_expires_at)) {
-    return reject("ISSUANCE_EXPIRED");
-  }
-
-  // one-shot: consume the update id under a write-lock marker first
-  const receipt = {
-    decision_at: toIso(now),
-    selected_option: parsed.option === "approve" ? "APPROVE" : "REJECT",
-    telegram_update_id: updateIdStr,
-    telegram_chat_id: chatIdStr,
-    telegram_user_id: fromIdStr,
-  };
-
-  if (acknowledge && typeof acknowledge === "function") {
-    try {
-      await acknowledge(cb.id);
-    } catch {
-      // fail-soft: ack failure does not change business classification
+  return mutex.runExclusive(async () => {
+    // Reload CURRENT store under the lane — never trust a pre-lock snapshot.
+    const loaded = loadStore(storePath);
+    if (!loaded.ok) {
+      return reject(loaded.reason_codes[0]);
     }
-  }
+    const decisions = loaded.store.decisions;
+    const idx = decisions.findIndex(
+      (d) => d.pending_decision_id === parsed.pendingDecisionId,
+    );
+    if (idx === -1) {
+      return reject("ISSUANCE_PENDING_NOT_FOUND");
+    }
+    const d = decisions[idx];
 
-  if (parsed.option === "reject") {
-    const rejected = {
+    const updateIdStr = String(updateId);
+    const updateUsedByOther = decisions.some(
+      (x, i) =>
+        i !== idx &&
+        x.telegram_update_id !== null &&
+        String(x.telegram_update_id) === updateIdStr,
+    );
+    if (updateUsedByOther) {
+      return reject("ISSUANCE_TELEGRAM_UPDATE_REUSED");
+    }
+    if (d.telegram_update_id === updateIdStr && d.state !== "PENDING") {
+      return reject("ISSUANCE_DECISION_ALREADY_CONSUMED");
+    }
+
+    if (d.state !== "PENDING") {
+      return reject("ISSUANCE_DECISION_ALREADY_CONSUMED");
+    }
+    if (nowMsOf(now) >= parseInstant(d.pending_expires_at)) {
+      return reject("ISSUANCE_EXPIRED");
+    }
+
+    const receipt = {
+      decision_at: toIso(now),
+      selected_option: parsed.option === "approve" ? "APPROVE" : "REJECT",
+      telegram_update_id: updateIdStr,
+      telegram_chat_id: chatIdStr,
+      telegram_user_id: fromIdStr,
+    };
+
+    if (acknowledge && typeof acknowledge === "function") {
+      try {
+        await acknowledge(cb.id);
+      } catch {
+        // fail-soft: ack failure does not change business classification
+      }
+    }
+
+    if (parsed.option === "reject") {
+      const rejected = {
+        ...d,
+        state: "REJECTED",
+        decision_at: receipt.decision_at,
+        selected_option: "REJECT",
+        telegram_update_id: receipt.telegram_update_id,
+        telegram_chat_id: receipt.telegram_chat_id,
+        telegram_user_id: receipt.telegram_user_id,
+        authorization_expires_at: null,
+        issued_at: null,
+      };
+      const next = {
+        schema_version: PENDING_STORE_SCHEMA_VERSION,
+        decisions: decisions.map((x, i) => (i === idx ? rejected : cloneDecision(x))),
+      };
+      const selfCheck = validatePendingStoreObject(next);
+      if (!selfCheck.ok) {
+        return reject(selfCheck.reason);
+      }
+      try {
+        persistStore(storePath, next, options);
+      } catch {
+        return reject("ISSUANCE_PENDING_STORE_UNAVAILABLE");
+      }
+      return {
+        ok: true,
+        classification: "DECISION_REJECTED",
+        pending_decision_id: d.pending_decision_id,
+        authorization_id: d.authorization_id,
+        state: "REJECTED",
+        reason_codes: [],
+      };
+    }
+
+    // APPROVE
+    const authorizationExpiresAt = new Date(
+      nowMsOf(now) + config.authorization_ttl_seconds_default * 1000,
+    ).toISOString();
+    const approved = {
       ...d,
-      state: "REJECTED",
+      state: "APPROVED",
       decision_at: receipt.decision_at,
-      selected_option: "REJECT",
+      selected_option: "APPROVE",
       telegram_update_id: receipt.telegram_update_id,
       telegram_chat_id: receipt.telegram_chat_id,
       telegram_user_id: receipt.telegram_user_id,
-      authorization_expires_at: null,
+      authorization_expires_at: authorizationExpiresAt,
       issued_at: null,
     };
-    const next = {
+    let next = {
       schema_version: PENDING_STORE_SCHEMA_VERSION,
-      decisions: decisions.map((x, i) => (i === idx ? rejected : cloneDecision(x))),
+      decisions: loaded.store.decisions.map((x, i) => (i === idx ? approved : cloneDecision(x))),
     };
-    const selfCheck = validatePendingStoreObject(next);
+    let selfCheck = validatePendingStoreObject(next);
     if (!selfCheck.ok) {
       return reject(selfCheck.reason);
     }
@@ -745,110 +987,70 @@ export async function handleTelegramDecisionUpdate(update, options = {}) {
     } catch {
       return reject("ISSUANCE_PENDING_STORE_UNAVAILABLE");
     }
-    return {
-      ok: true,
-      classification: "DECISION_REJECTED",
-      pending_decision_id: d.pending_decision_id,
+
+    if (!issueActiveEntryFn) {
+      return reject("ISSUANCE_REGISTRY_UNAVAILABLE");
+    }
+    const issued = issueActiveEntryFn(config.registry_path, {
       authorization_id: d.authorization_id,
-      state: "REJECTED",
-      reason_codes: [],
+      route_id: d.route_id,
+      expires_at: authorizationExpiresAt,
+    }, {
+      loadRegistry: options.loadRegistry,
+      persistRegistry: options.persistRegistry,
+      now,
+    });
+    if (!issued.ok) {
+      return reject(
+        issued.collision === true
+          ? "ISSUANCE_AUTHORIZATION_ID_CONFLICT"
+          : issued.reason_codes[0] === "AUTHORIZATION_REGISTRY_UNAVAILABLE"
+            ? "ISSUANCE_REGISTRY_UNAVAILABLE"
+            : issued.reason_codes[0] === "AUTHORIZATION_REGISTRY_INVALID"
+              ? "ISSUANCE_REGISTRY_INVALID"
+              : "ISSUANCE_REGISTRY_WRITE_FAILED",
+        {
+          pending_decision_id: d.pending_decision_id,
+          authorization_id: d.authorization_id,
+          state: "APPROVED",
+        },
+      );
+    }
+
+    const issuedDecision = {
+      ...approved,
+      state: "ISSUED",
+      issued_at: toIso(now),
     };
-  }
-
-  // APPROVE
-  const authorizationExpiresAt = new Date(
-    nowMsOf(now) + config.authorization_ttl_seconds_default * 1000,
-  ).toISOString();
-  const approved = {
-    ...d,
-    state: "APPROVED",
-    decision_at: receipt.decision_at,
-    selected_option: "APPROVE",
-    telegram_update_id: receipt.telegram_update_id,
-    telegram_chat_id: receipt.telegram_chat_id,
-    telegram_user_id: receipt.telegram_user_id,
-    authorization_expires_at: authorizationExpiresAt,
-    issued_at: null,
-  };
-  let next = {
-    schema_version: PENDING_STORE_SCHEMA_VERSION,
-    decisions: loaded.store.decisions.map((x, i) => (i === idx ? approved : cloneDecision(x))),
-  };
-  let selfCheck = validatePendingStoreObject(next);
-  if (!selfCheck.ok) {
-    return reject(selfCheck.reason);
-  }
-  try {
-    persistStore(storePath, next, options);
-  } catch {
-    return reject("ISSUANCE_PENDING_STORE_UNAVAILABLE");
-  }
-
-  // Registry ACTIVE append (sole ACTIVE writer path)
-  if (!issueActiveEntryFn) {
-    return reject("ISSUANCE_REGISTRY_UNAVAILABLE");
-  }
-  const issued = issueActiveEntryFn(config.registry_path, {
-    authorization_id: d.authorization_id,
-    route_id: d.route_id,
-    expires_at: authorizationExpiresAt,
-  }, {
-    loadRegistry: options.loadRegistry,
-    persistRegistry: options.persistRegistry,
-    now,
-  });
-  if (!issued.ok) {
-    // pending remains APPROVED; bounded reconciliation may retry same bindings
-    return reject(
-      issued.collision === true
-        ? "ISSUANCE_AUTHORIZATION_ID_CONFLICT"
-        : issued.reason_codes[0] === "AUTHORIZATION_REGISTRY_UNAVAILABLE"
-          ? "ISSUANCE_REGISTRY_UNAVAILABLE"
-          : issued.reason_codes[0] === "AUTHORIZATION_REGISTRY_INVALID"
-            ? "ISSUANCE_REGISTRY_INVALID"
-            : "ISSUANCE_REGISTRY_WRITE_FAILED",
-      {
+    next = {
+      schema_version: PENDING_STORE_SCHEMA_VERSION,
+      decisions: next.decisions.map((x) =>
+        x.pending_decision_id === d.pending_decision_id ? issuedDecision : x,
+      ),
+    };
+    selfCheck = validatePendingStoreObject(next);
+    if (!selfCheck.ok) {
+      return reject(selfCheck.reason);
+    }
+    try {
+      persistStore(storePath, next, options);
+    } catch {
+      return reject("ISSUANCE_PENDING_STORE_UNAVAILABLE", {
         pending_decision_id: d.pending_decision_id,
         authorization_id: d.authorization_id,
         state: "APPROVED",
-      },
-    );
-  }
+      });
+    }
 
-  const issuedDecision = {
-    ...approved,
-    state: "ISSUED",
-    issued_at: toIso(now),
-  };
-  next = {
-    schema_version: PENDING_STORE_SCHEMA_VERSION,
-    decisions: next.decisions.map((x) =>
-      x.pending_decision_id === d.pending_decision_id ? issuedDecision : x,
-    ),
-  };
-  selfCheck = validatePendingStoreObject(next);
-  if (!selfCheck.ok) {
-    return reject(selfCheck.reason);
-  }
-  try {
-    persistStore(storePath, next, options);
-  } catch {
-    // Registry ACTIVE persisted; pending stays APPROVED — reconciliation covers
-    return reject("ISSUANCE_PENDING_STORE_UNAVAILABLE", {
+    return {
+      ok: true,
+      classification: "DECISION_ISSUED",
       pending_decision_id: d.pending_decision_id,
       authorization_id: d.authorization_id,
-      state: "APPROVED",
-    });
-  }
-
-  return {
-    ok: true,
-    classification: "DECISION_ISSUED",
-    pending_decision_id: d.pending_decision_id,
-    authorization_id: d.authorization_id,
-    state: "ISSUED",
-    reason_codes: [],
-  };
+      state: "ISSUED",
+      reason_codes: [],
+    };
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -861,14 +1063,17 @@ export async function handleTelegramDecisionUpdate(update, options = {}) {
  * Never callable via HTTP; never mints a replacement id.
  * If the registry already contains the exact matching ACTIVE entry,
  * converges idempotently to ISSUED without appending again.
+ *
+ * Uses the same pending-store mutation lane as register and callback.
  */
-export function reconcileApprovedPending(storePath, pendingDecisionId, options = {}) {
+export async function reconcileApprovedPending(storePath, pendingDecisionId, options = {}) {
   const config = options.config;
   const loadStore = options.loadPendingStore || loadPendingStore;
   const persistStore = options.persistPendingStore || persistPendingStore;
   const now = options.now || new Date();
   const issueActiveEntryFn = options.issueActiveEntry;
   const loadRegistryFn = options.loadRegistry;
+  const mutex = resolveMutationMutex(options);
 
   if (!config) {
     return reject("ISSUANCE_CONFIG_UNAVAILABLE");
@@ -876,124 +1081,125 @@ export function reconcileApprovedPending(storePath, pendingDecisionId, options =
   if (!validId(pendingDecisionId)) {
     return reject("ISSUANCE_PENDING_NOT_FOUND");
   }
-  const loaded = loadStore(storePath);
-  if (!loaded.ok) {
-    return reject(loaded.reason_codes[0]);
-  }
-  const decisions = loaded.store.decisions;
-  const idx = decisions.findIndex((d) => d.pending_decision_id === pendingDecisionId);
-  if (idx === -1) {
-    return reject("ISSUANCE_PENDING_NOT_FOUND");
-  }
-  const d = decisions[idx];
 
-  if (d.state === "ISSUED") {
-    // idempotent replay: no registry append, no state change
+  return mutex.runExclusive(async () => {
+    const loaded = loadStore(storePath);
+    if (!loaded.ok) {
+      return reject(loaded.reason_codes[0]);
+    }
+    const decisions = loaded.store.decisions;
+    const idx = decisions.findIndex((d) => d.pending_decision_id === pendingDecisionId);
+    if (idx === -1) {
+      return reject("ISSUANCE_PENDING_NOT_FOUND");
+    }
+    const d = decisions[idx];
+
+    if (d.state === "ISSUED") {
+      return {
+        ok: true,
+        classification: "RECONCILE_ALREADY_ISSUED",
+        pending_decision_id: d.pending_decision_id,
+        authorization_id: d.authorization_id,
+        state: "ISSUED",
+        reason_codes: [],
+      };
+    }
+    if (d.state !== "APPROVED") {
+      return reject("ISSUANCE_BINDING_MISMATCH");
+    }
+
+    if (loadRegistryFn) {
+      const reg = loadRegistryFn(config.registry_path);
+      if (reg.ok) {
+        const existing = reg.registry.entries.find(
+          (e) => e.authorization_id === d.authorization_id,
+        );
+        if (existing) {
+          const exactMatch =
+            existing.state === "ACTIVE" &&
+            existing.route_id === d.route_id &&
+            existing.expires_at === d.authorization_expires_at;
+          if (exactMatch) {
+            const converged = {
+              ...d,
+              state: "ISSUED",
+              issued_at: toIso(now),
+            };
+            const next = {
+              schema_version: PENDING_STORE_SCHEMA_VERSION,
+              decisions: decisions.map((x, i) => (i === idx ? converged : cloneDecision(x))),
+            };
+            const selfCheck = validatePendingStoreObject(next);
+            if (!selfCheck.ok) {
+              return reject(selfCheck.reason);
+            }
+            try {
+              persistStore(storePath, next, options);
+            } catch {
+              return reject("ISSUANCE_PENDING_STORE_UNAVAILABLE");
+            }
+            return {
+              ok: true,
+              classification: "RECONCILE_CONVERGED",
+              pending_decision_id: d.pending_decision_id,
+              authorization_id: d.authorization_id,
+              state: "ISSUED",
+              reason_codes: [],
+            };
+          }
+          return reject("ISSUANCE_AUTHORIZATION_ID_CONFLICT");
+        }
+      }
+    }
+
+    if (!issueActiveEntryFn) {
+      return reject("ISSUANCE_REGISTRY_UNAVAILABLE");
+    }
+    const issued = issueActiveEntryFn(config.registry_path, {
+      authorization_id: d.authorization_id,
+      route_id: d.route_id,
+      expires_at: d.authorization_expires_at,
+    }, {
+      loadRegistry: loadRegistryFn,
+      persistRegistry: options.persistRegistry,
+      now,
+    });
+    if (!issued.ok) {
+      return reject(
+        issued.collision === true
+          ? "ISSUANCE_AUTHORIZATION_ID_CONFLICT"
+          : issued.reason_codes[0] === "AUTHORIZATION_REGISTRY_UNAVAILABLE"
+            ? "ISSUANCE_REGISTRY_UNAVAILABLE"
+            : issued.reason_codes[0] === "AUTHORIZATION_REGISTRY_INVALID"
+              ? "ISSUANCE_REGISTRY_INVALID"
+              : "ISSUANCE_REGISTRY_WRITE_FAILED",
+        { state: "APPROVED" },
+      );
+    }
+
+    const issuedDecision = { ...d, state: "ISSUED", issued_at: toIso(now) };
+    const next = {
+      schema_version: PENDING_STORE_SCHEMA_VERSION,
+      decisions: decisions.map((x, i) => (i === idx ? issuedDecision : cloneDecision(x))),
+    };
+    const selfCheck = validatePendingStoreObject(next);
+    if (!selfCheck.ok) {
+      return reject(selfCheck.reason);
+    }
+    try {
+      persistStore(storePath, next, options);
+    } catch {
+      return reject("ISSUANCE_PENDING_STORE_UNAVAILABLE", { state: "APPROVED" });
+    }
     return {
       ok: true,
-      classification: "RECONCILE_ALREADY_ISSUED",
+      classification: "RECONCILE_ISSUED",
       pending_decision_id: d.pending_decision_id,
       authorization_id: d.authorization_id,
       state: "ISSUED",
       reason_codes: [],
     };
-  }
-  if (d.state !== "APPROVED") {
-    return reject("ISSUANCE_BINDING_MISMATCH");
-  }
-
-  if (loadRegistryFn) {
-    const reg = loadRegistryFn(config.registry_path);
-    if (reg.ok) {
-      const existing = reg.registry.entries.find(
-        (e) => e.authorization_id === d.authorization_id,
-      );
-      if (existing) {
-        const exactMatch =
-          existing.state === "ACTIVE" &&
-          existing.route_id === d.route_id &&
-          existing.expires_at === d.authorization_expires_at;
-        if (exactMatch) {
-          const converged = {
-            ...d,
-            state: "ISSUED",
-            issued_at: toIso(now),
-          };
-          const next = {
-            schema_version: PENDING_STORE_SCHEMA_VERSION,
-            decisions: decisions.map((x, i) => (i === idx ? converged : cloneDecision(x))),
-          };
-          const selfCheck = validatePendingStoreObject(next);
-          if (!selfCheck.ok) {
-            return reject(selfCheck.reason);
-          }
-          try {
-            persistStore(storePath, next, options);
-          } catch {
-            return reject("ISSUANCE_PENDING_STORE_UNAVAILABLE");
-          }
-          return {
-            ok: true,
-            classification: "RECONCILE_CONVERGED",
-            pending_decision_id: d.pending_decision_id,
-            authorization_id: d.authorization_id,
-            state: "ISSUED",
-            reason_codes: [],
-          };
-        }
-        // Registry holds a DIFFERENT entry for the same id — never overwrite
-        return reject("ISSUANCE_AUTHORIZATION_ID_CONFLICT");
-      }
-    }
-  }
-
-  if (!issueActiveEntryFn) {
-    return reject("ISSUANCE_REGISTRY_UNAVAILABLE");
-  }
-  const issued = issueActiveEntryFn(config.registry_path, {
-    authorization_id: d.authorization_id,
-    route_id: d.route_id,
-    expires_at: d.authorization_expires_at,
-  }, {
-    loadRegistry: loadRegistryFn,
-    persistRegistry: options.persistRegistry,
-    now,
   });
-  if (!issued.ok) {
-    return reject(
-      issued.collision === true
-        ? "ISSUANCE_AUTHORIZATION_ID_CONFLICT"
-        : issued.reason_codes[0] === "AUTHORIZATION_REGISTRY_UNAVAILABLE"
-          ? "ISSUANCE_REGISTRY_UNAVAILABLE"
-          : issued.reason_codes[0] === "AUTHORIZATION_REGISTRY_INVALID"
-            ? "ISSUANCE_REGISTRY_INVALID"
-            : "ISSUANCE_REGISTRY_WRITE_FAILED",
-      { state: "APPROVED" },
-    );
-  }
-
-  const issuedDecision = { ...d, state: "ISSUED", issued_at: toIso(now) };
-  const next = {
-    schema_version: PENDING_STORE_SCHEMA_VERSION,
-    decisions: decisions.map((x, i) => (i === idx ? issuedDecision : cloneDecision(x))),
-  };
-  const selfCheck = validatePendingStoreObject(next);
-  if (!selfCheck.ok) {
-    return reject(selfCheck.reason);
-  }
-  try {
-    persistStore(storePath, next, options);
-  } catch {
-    return reject("ISSUANCE_PENDING_STORE_UNAVAILABLE", { state: "APPROVED" });
-  }
-  return {
-    ok: true,
-    classification: "RECONCILE_ISSUED",
-    pending_decision_id: d.pending_decision_id,
-    authorization_id: d.authorization_id,
-    state: "ISSUED",
-    reason_codes: [],
-  };
 }
 
 const isMain =
