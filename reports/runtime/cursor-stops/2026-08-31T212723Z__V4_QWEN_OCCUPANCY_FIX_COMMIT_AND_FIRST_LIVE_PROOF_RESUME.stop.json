@@ -1,0 +1,57 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_QWEN_OCCUPANCY_FIX_COMMIT_AND_FIRST_LIVE_PROOF_RESUME",
+  "run_nonce": "FIRST_LIVE_RESUME_20260831_01",
+  "block_id": "V4_QWEN_OCCUPANCY_FIX_COMMIT_AND_FIRST_LIVE_PROOF_RESUME",
+  "category": "LIVE_BOUNDED_PROOF",
+  "result": "STOP",
+  "dispatch_base_head": "7ca52da19ab4f27269591374b974f9451cee513e",
+  "utc_timestamp": "2026-08-31T212723Z",
+  "finding": "QWEN_BUSY_SHARED_RUNTIME",
+  "finding_detail": "Occupancy fix committed (f9976bc) and 18790/18791 reloaded; 18792 untouched; :8080 LISTEN with qwen38-original-dflash2-8k exposed. Canonical classify after fix returned QWEN_BUSY_SHARED_RUNTIME / CONFLICTING_INFERENCE_RUNNER_ACTIVE due to process names ollama and ollama app (not msedge). msedge ESTABLISHED WebUI alone was correctly not the busy cause. ollama ps shows zero loaded models, but classifier still treats bare ollama process presence as conflicting. No process kill authorized. STOP before register-pending. First-live IDs still unused. No Telegram message. No execution.",
+  "completed_before_stop": {
+    "occupancy_fix_commit": "f9976bc77fc75d93b82fc97760a132e03a60631a",
+    "commit_subject": "fix: distinguish passive qwen webui from active occupancy",
+    "reloaded_tasks": [
+      "ControlPlane-V4-LocalRuntimeStatus",
+      "ControlPlane-V4-LocalExecutionEndpoint"
+    ],
+    "issuance_task_restarted": false,
+    "listener_18790": 1,
+    "listener_18791": 1,
+    "listener_18792": 1,
+    "listener_8080": 1,
+    "fast_8k_exposed": true
+  },
+  "occupancy": {
+    "classification": "QWEN_BUSY_SHARED_RUNTIME",
+    "reason": "CONFLICTING_INFERENCE_RUNNER_ACTIVE",
+    "conflicting_process_names": ["ollama", "ollama app"],
+    "msedge_webui_established": true,
+    "msedge_alone_not_busy_cause": true,
+    "ollama_models_loaded": 0
+  },
+  "hard_counters": {
+    "pending_registrations": 0,
+    "telegram_decision_messages": 0,
+    "human_approve_decisions": 0,
+    "active_authorizations_issued": 0,
+    "execution_endpoint_post": 0,
+    "opencode_executions": 0,
+    "qwen_generations": 0,
+    "second_auth": 0,
+    "second_execution": 0
+  },
+  "invariants_preserved": {
+    "CURRENT_FRONTIER_unchanged": true,
+    "LAST_CURSOR_REPORT_unchanged": true,
+    "no_pending_created": true,
+    "no_telegram_message": true,
+    "no_registry_write": true,
+    "no_ledger_write": true,
+    "no_process_kill": true,
+    "no_qwen_restart": true,
+    "occupancy_fix_not_reopened": true
+  },
+  "next_required_before_retry": "Resolve CONFLICTING_INFERENCE_RUNNER_ACTIVE from bare ollama/ollama-app process presence without agent process kill (operator-owned), or a separate ratified classifier correction for idle Ollama presence with zero loaded models. Reconfirm QWEN_READY_IDLE, then reopen first-live register→APPROVE→one execution. Do not create PENDING until READY_IDLE."
+}
