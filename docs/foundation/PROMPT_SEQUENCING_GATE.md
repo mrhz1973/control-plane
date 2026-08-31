@@ -50,3 +50,24 @@ Generic commands such as `vai`, `procedi`, or `next` do not override this gate w
 ## Purpose
 
 Prevent stale `EXPECTED ORIGIN/MAIN`, stale assumptions, overlapping Cursor work, and prompts authored against repository state that may have changed during the previous pass.
+
+## Operator handshake after Cursor (`agg` only)
+
+After every Cursor pass completes, the operator's **only** required action is:
+
+```text
+agg
+```
+
+The operator must **not** manually copy Cursor's chat summary into the orchestrator thread. GPT Web reads canonical evidence from GitHub (`origin/main`) and derives the next pass from persisted state.
+
+### Cursor persistence obligation by outcome
+
+| Cursor outcome | What Cursor must persist on GitHub before the operator sends `agg` |
+|---|---|
+| **PASS** | full bounded evidence: architecture report when applicable, `LAST_CURSOR_REPORT.md`, `CURRENT_FRONTIER.md`, and the production/test/docs changes for the completed block — then commit + push normally |
+| **STOP** | **evidence-only** commit of `docs/runtime/LAST_CURSOR_REPORT.md` only; preserve incomplete production/test dirty tree uncommitted; do **not** update `CURRENT_FRONTIER.md` |
+
+On **STOP**, Cursor must push that single evidence commit to `origin/main` so `agg` can read the precise finding without chat relay. The STOP evidence commit does **not** complete the block and does **not** authorize autonomous continuation.
+
+On **PASS**, `agg` refreshes `origin/main`, reads `CURRENT_FRONTIER.md` + `LAST_CURSOR_REPORT.md`, summarizes the completed pass, and only then may GPT Web author the next TASK DELTA.

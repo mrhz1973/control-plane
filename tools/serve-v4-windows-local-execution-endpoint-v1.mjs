@@ -25,6 +25,10 @@ import {
   gatherOpenCodeFilesystemEvidence,
 } from "./produce-v4-local-runtime-readonly-contribution-v1.mjs";
 import {
+  admitAuthorization,
+  inspectAuthorization,
+} from "./v4-runtime-authorization-provenance-registry-v1.mjs";
+import {
   DISPATCH_CLI_CAPABILITIES,
 } from "./probe-opencode-local-v1.mjs";
 import { buildOpenCodeProviderOverlay } from "./dispatch-opencode-execution-v1.mjs";
@@ -339,14 +343,33 @@ export async function handleExecutionRequest(body, options = {}) {
     };
   }
 
-  if (state.spentAuth.has(authId)) {
+  const registryPath = options.authorizationRegistryPath || null;
+  const inspect = options.inspectAuthorization || inspectAuthorization;
+  const admit = options.admitAuthorization || admitAuthorization;
+
+  if (!registryPath) {
     return {
-      status: 409,
+      status: 200,
       body: wrapResult({
         ok: false,
-        classification: "AUTHORIZATION_ID_REUSED",
+        classification: "AUTHORIZATION_REJECTED",
         execution_id: executionId,
-        reason_codes: ["AUTHORIZATION_ID_REUSED", "AUTHORIZATION_SPENT"],
+        reason_codes: ["AUTHORIZATION_REGISTRY_UNAVAILABLE"],
+      }),
+    };
+  }
+
+  const provenance = inspect(registryPath, authId, {
+    routeId: body.runtime_authorization.route_id,
+  });
+  if (!provenance.ok) {
+    return {
+      status: 200,
+      body: wrapResult({
+        ok: false,
+        classification: "AUTHORIZATION_REJECTED",
+        execution_id: executionId,
+        reason_codes: provenance.reason_codes,
       }),
     };
   }
@@ -378,6 +401,24 @@ export async function handleExecutionRequest(body, options = {}) {
 
   state.inFlight = true;
   state.authBinding.set(authId, executionId);
+
+  // Atomic ACTIVE -> SPENT persistence before adapter/occupancy/guard/runner.
+  const admitted = admit(registryPath, authId, {
+    routeId: body.runtime_authorization.route_id,
+  });
+  if (!admitted.ok) {
+    state.inFlight = false;
+    state.authBinding.delete(authId);
+    return {
+      status: 200,
+      body: wrapResult({
+        ok: false,
+        classification: "AUTHORIZATION_REJECTED",
+        execution_id: executionId,
+        reason_codes: admitted.reason_codes,
+      }),
+    };
+  }
 
   try {
     const getOccupancy =
@@ -608,7 +649,23 @@ if (isMain) {
   const host = args.get("--host") || DEFAULT_HOST;
   const port = Number(args.get("--port") || DEFAULT_PORT);
   const workspaceRoot = args.get("--workspace-root") || process.cwd();
-  startWindowsLocalExecutionService({ host, port, workspaceRoot })
+  const authorizationRegistry = args.get("--authorization-registry") || "";
+  if (!authorizationRegistry || !isAbsolute(authorizationRegistry)) {
+    process.stderr.write(
+      `${JSON.stringify({
+        schema_version: "v4-windows-local-execution-endpoint-started-v1",
+        ok: false,
+        error_class: "AUTHORIZATION_REGISTRY_REQUIRED",
+      })}\n`,
+    );
+    process.exit(1);
+  }
+  startWindowsLocalExecutionService({
+    host,
+    port,
+    workspaceRoot,
+    authorizationRegistryPath: authorizationRegistry,
+  })
     .then(({ address }) => {
       process.stdout.write(
         `${JSON.stringify({

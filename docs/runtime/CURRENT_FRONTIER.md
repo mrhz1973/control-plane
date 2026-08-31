@@ -6,17 +6,18 @@
 |---|---|
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | WF40 V4 routing + sidecar-source + local RESOURCE_STATUS + execution-adapter-router lanes **APPLIED LIVE (66 nodes)** · n8n adapter-router bridge **OFFLINE / LIVE-INCAPABLE** · Windows-local execution endpoint **OFFLINE COMPLETE + PERSISTED ON LOOPBACK 127.0.0.1:18791 (tailnet-private)** · authorization provenance gap **CONFIRMED** |
-| **BLOCCO ATTIVO** | `V4_RUNTIME_AUTHORIZATION_PROVENANCE_HARDENING` |
-| **STATO BLOCCO** | EXECUTION_ENDPOINT_OFFLINE_PASS / PRIVATE_SERVICE_PERSISTED / LISTENER_18791_ACTIVE / AUTHORIZATION_PROVENANCE_GAP_CONFIRMED / VPS_UNAUTHORIZED_PROOF_BLOCKED / EXECUTION_REQUESTS=0 / WF40_66_UNCHANGED / WF61_INACTIVE / D0025_CLOSED / LIVE_EXECUTION_CLOSED |
-| **GATE CORRENTE** | **CLOSED TO LIVE EXECUTION** · D-0025 closed · no Qwen/OpenCode/provider generation authorized · provenance gap confirmed: adapter+schema validate shape only, any caller can synthesize a semantically-valid authorization; hardening block must add server-side issued-authorization verification before any VPS proof |
-| **NEXT** | `V4_RUNTIME_AUTHORIZATION_PROVENANCE_HARDENING` — minimal fail-closed server-side issued-authorization registry (user-local, outside Git; unknown authorization_id → `AUTHORIZATION_REJECTED` before occupancy/runner; ACTIVE→SPENT server-side; durable-ledger seed). `VPS_UNAUTHORIZED_REACHABILITY_PROOF BLOCKED UNTIL PROVENANCE HARDENING PASS` |
+| **ACTIVE WORK** | WF40 V4 routing + sidecar-source + local RESOURCE_STATUS + execution-adapter-router lanes **APPLIED LIVE (66 nodes)** · n8n adapter-router bridge **OFFLINE / LIVE-INCAPABLE** · Windows-local execution endpoint **OFFLINE COMPLETE + PERSISTED ON LOOPBACK 127.0.0.1:18791 (tailnet-private)** · authorization provenance hardening **PASS** |
+| **BLOCCO ATTIVO** | `V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_VPS_UNAUTHORIZED_REACHABILITY_PROOF` |
+| **STATO BLOCCO** | PROVENANCE_HARDENING_PASS / SERVER_SIDE_REGISTRY_ACTIVE / EMPTY_REGISTRY_VALID / UNKNOWN_ID_FAIL_CLOSED / EXECUTION_ENDPOINT_PERSISTED / LISTENER_18791_ACTIVE / EXECUTION_ROUTE_RESTORED / EXECUTION_REQUESTS=0 / WF40_66_UNCHANGED / WF61_INACTIVE / D0025_CLOSED / LIVE_EXECUTION_CLOSED |
+| **GATE CORRENTE** | **CLOSED TO LIVE EXECUTION** · D-0025 closed · server-side issued-authorization registry active (user-local, outside Git) · unknown authorization_id fail-closed before occupancy/runner · ACTIVE→SPENT server-side · next: one deliberately unauthorized VPS reachability proof only |
+| **NEXT** | `V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_VPS_UNAUTHORIZED_REACHABILITY_PROOF` — one VPS deliberately unauthorized request; expected `AUTHORIZATION_REJECTED`; execution/generation counters zero |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **66 nodes** · versionId `60f9b75e-39b8-410a-bcd1-364073992df0` |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
 | **RESOURCE_STATUS COMPOSER** | `tools/compose-v4-resource-status-control-plane-v1.mjs` · wired in WF40 TRUE lane |
 | **PRIVATE STATUS ENDPOINT** | `https://asusdesktop.tailc01234.ts.net/v4/resource-status/local-readonly` · Tailscale private · VPS proof PASS |
-| **WINDOWS EXECUTION ENDPOINT** | offline tool `tools/serve-v4-windows-local-execution-endpoint-v1.mjs` · **PERSISTED**: Scheduled Task `ControlPlane-V4-LocalExecutionEndpoint` → loopback `127.0.0.1:18791` · tailnet-private `https://asusdesktop.tailc01234.ts.net/v4/execution/opencode-local` · zero requests sent · live execution NOT authorized |
+| **WINDOWS EXECUTION ENDPOINT** | offline tool `tools/serve-v4-windows-local-execution-endpoint-v1.mjs` · **PERSISTED**: Scheduled Task `ControlPlane-V4-LocalExecutionEndpoint` → loopback `127.0.0.1:18791` with `--authorization-registry` (user-local empty registry) · tailnet-private `https://asusdesktop.tailc01234.ts.net/v4/execution/opencode-local` · zero requests sent · live execution NOT authorized |
+| **AUTHORIZATION PROVENANCE REGISTRY** | `tools/v4-runtime-authorization-provenance-registry-v1.mjs` · production file `%LOCALAPPDATA%\control-plane\v4-runtime-authorization-registry-v1.json` · fail-closed on unknown/spent/expired/invalid |
 | **N8N ADAPTER ROUTER BRIDGE** | `tools/n8n-v4-execution-adapter-router-bridge-v1.mjs` · offline complete · wired in WF40 · deliberately live-incapable |
 | **EXECUTION ADAPTER ROUTER** | `tools/v4-execution-adapter-router-v1.mjs` · default registry exact route `opencode+qwen_local` only |
 | **OPENCODE EXECUTION ADAPTER** | `tools/opencode-execution-adapter-v1.mjs` · no production live runner injected by default |
@@ -40,13 +41,14 @@ IF remote planner TRUE
 
 No live executor is wired downstream yet.
 
-## Offline Windows-local execution endpoint (implemented + persisted)
+## Offline Windows-local execution endpoint (implemented + persisted + provenance hardened)
 
 ```text
 VPS / n8n
   -> Tailscale-private HTTPS POST /v4/execution/opencode-local
   -> Windows loopback service 127.0.0.1:18791 (Scheduled Task ControlPlane-V4-LocalExecutionEndpoint)
   -> tools/serve-v4-windows-local-execution-endpoint-v1.mjs
+  -> server-side authorization provenance registry (inspect + ACTIVE->SPENT)
   -> canonical adapter authorization validation
   -> execution-time canonical occupancy classification
   -> existing single-generation guard
@@ -64,17 +66,20 @@ The existing read-only endpoint on `127.0.0.1:18790` / `/v4/resource-status/loca
 - no provider calls;
 - no authorization or dispatch synthesis;
 - no getOccupancy / runOpenCode injection from WF40;
-- execution endpoint offline/DI complete; persisted on loopback with private tailnet route; zero requests sent; live execution still CLOSED;
+- execution endpoint offline/DI complete; persisted on loopback with private tailnet route; server-side provenance registry active (empty); zero requests sent; live execution still CLOSED;
 - next block is one deliberately unauthorized VPS reachability proof only;
 - WF61 remains inactive; D-0025 remains CLOSED;
 - no Grok Bot executor registration.
 
 ## Puntatori
 
+- Provenance hardening report: `reports/architecture/v4_runtime_authorization_provenance_hardening.md`
 - Provenance gap discovery: `reports/architecture/v4_runtime_authorization_provenance_gap_discovery.md`
+- Registry contract: `docs/contracts/v4-runtime-authorization-provenance-registry-v1.md`
 - Private service persistence report: `reports/architecture/v4_windows_local_execution_endpoint_private_service_persistence.md`
 - Offline implementation report: `reports/architecture/v4_windows_local_execution_endpoint_offline_implementation.md`
 - Endpoint tool: `tools/serve-v4-windows-local-execution-endpoint-v1.mjs`
+- Registry tool: `tools/v4-runtime-authorization-provenance-registry-v1.mjs`
 - Target tests: `tests/v4-windows-local-execution-endpoint/run.mjs`
 - Runner transport discovery: `reports/architecture/v4_windows_local_runtime_runner_transport_discovery.md`
 - Windows execution endpoint contract: `docs/contracts/v4-windows-local-execution-endpoint-v1.md`

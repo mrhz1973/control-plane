@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-runtime-authorization-provenance-registry-v1.schema.json",
+  "title": "v4-runtime-authorization-provenance-registry-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": {
+      "const": "v4-runtime-authorization-provenance-registry-v1"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "authorization_id",
+          "state",
+          "route_id",
+          "issued_at",
+          "expires_at",
+          "spent_at"
+        ],
+        "properties": {
+          "authorization_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "state": {
+            "enum": ["ACTIVE", "SPENT"]
+          },
+          "route_id": {
+            "const": "opencode+qwen_local"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "spent_at": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

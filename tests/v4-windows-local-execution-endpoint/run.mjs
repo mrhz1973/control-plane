@@ -11,7 +11,15 @@ import { EventEmitter } from "node:events";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
+import { mkdtempSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { executeOpenCodeBounded } from "../../tools/opencode-execution-adapter-v1.mjs";
+import {
+  admitAuthorization as realAdmit,
+  inspectAuthorization as realInspect,
+  loadRegistry as realLoad,
+  REGISTRY_SCHEMA_VERSION,
+} from "../../tools/v4-runtime-authorization-provenance-registry-v1.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -146,6 +154,13 @@ let runnerCalls = 0;
 let occupancyCalls = 0;
 let lastRunnerCtx = null;
 
+function countingAdapter() {
+  return async (request, options) => {
+    adapterCalls += 1;
+    return executeOpenCodeBounded(request, options);
+  };
+}
+
 function mockOccupancy(classification = "QWEN_READY_IDLE") {
   return async () => {
     occupancyCalls += 1;
@@ -168,6 +183,32 @@ function mockRunner() {
   };
 }
 
+function rfc3339(offsetMs) {
+  return new Date(Date.now() + offsetMs).toISOString();
+}
+
+function writeRegistry(path, entries) {
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, `${JSON.stringify({ schema_version: REGISTRY_SCHEMA_VERSION, entries }, null, 2)}\n`);
+}
+
+const REG_DIR = mkdtempSync(join(tmpdir(), "v4-auth-reg-"));
+const REGISTRY_PATH = join(REG_DIR, "registry.json");
+
+function activeEntry(authorization_id, overrides = {}) {
+  return {
+    authorization_id,
+    state: "ACTIVE",
+    route_id: "opencode+qwen_local",
+    issued_at: rfc3339(-60_000),
+    expires_at: rfc3339(3_600_000),
+    spent_at: null,
+    ...overrides,
+  };
+}
+
+let adapterCalls = 0;
+
 async function startEphemeral(extra = {}) {
   return mod.startWindowsLocalExecutionService({
     host: "127.0.0.1",
@@ -175,6 +216,10 @@ async function startEphemeral(extra = {}) {
     workspaceRoot: ROOT,
     getOccupancy: mockOccupancy(),
     runOpenCode: mockRunner(),
+    executeOpenCodeBounded: countingAdapter(),
+    authorizationRegistryPath: REGISTRY_PATH,
+    inspectAuthorization: (path, id, opts) => realInspect(path, id, opts),
+    admitAuthorization: (path, id, opts) => realAdmit(path, id, opts),
     ...extra,
   });
 }
@@ -258,6 +303,24 @@ let port;
 await test("service binds ephemeral port 0 only", async () => {
   runnerCalls = 0;
   occupancyCalls = 0;
+  adapterCalls = 0;
+  // Registry with the ids used by the happy-path tests below.
+  writeRegistry(REGISTRY_PATH, [
+    activeEntry("AUTH-OK-1"),
+    activeEntry("AUTH-Q1"),
+    activeEntry("AUTH-CT1"),
+    activeEntry("AUTH-EXTRA-1"),
+    activeEntry("AUTH-BAD"),
+    activeEntry("AUTH-OCC"),
+    activeEntry("AUTH-REPLAY-1"),
+    activeEntry("AUTH-SPENT-1"),
+    activeEntry("AUTH-BUSY-1"),
+    activeEntry("AUTH-BUSY-2"),
+    activeEntry("AUTH-FWD-1"),
+    activeEntry("AUTH-WS-1"),
+    activeEntry("AUTH-SHAPE-1"),
+    activeEntry("AUTH-NZ-EXIT-1"),
+  ]);
   srv = await startEphemeral();
   port = srv.address.port;
   assert.ok(port > 0);
@@ -388,6 +451,7 @@ await test("invalid authorization (schema) → zero occupancy/runner", async () 
 
 await test("occupancy blocked → zero runner", async () => {
   await srv.close();
+  writeRegistry(REGISTRY_PATH, [activeEntry("AUTH-OCC")]);
   runnerCalls = 0;
   occupancyCalls = 0;
   srv = await startEphemeral({
@@ -405,6 +469,7 @@ await test("occupancy blocked → zero runner", async () => {
 
 await test("same execution_id + same request → cached replay, zero second execution", async () => {
   await srv.close();
+  writeRegistry(REGISTRY_PATH, [activeEntry("AUTH-REPLAY-1")]);
   runnerCalls = 0;
   occupancyCalls = 0;
   srv = await startEphemeral();
@@ -434,34 +499,39 @@ await test("same execution_id + changed request → EXECUTION_ID_CONFLICT", asyn
   assert.equal(runnerCalls, beforeR);
 });
 
-await test("same authorization_id + new execution_id → AUTHORIZATION_ID_REUSED", async () => {
+await test("same authorization_id + new execution_id after registry spend → AUTHORIZATION_REJECTED", async () => {
   const beforeR = runnerCalls;
   const r = await post(
     port,
     validBody({ execution_id: "replay-2", authorization_id: "AUTH-REPLAY-1" }),
   );
-  assert.equal(r.status, 409);
-  assert.equal(r.json.classification, "AUTHORIZATION_ID_REUSED");
+  assert.equal(r.status, 200);
+  assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r.json.reason_codes.includes("AUTHORIZATION_ALREADY_SPENT"));
+  assert.equal(r.json.adapter_result, null);
   assert.equal(runnerCalls, beforeR);
 });
 
 await test("SPENT authorization cannot produce a second execution", async () => {
-  // First successful path marks SPENT in adapter when executed.
   await srv.close();
   runnerCalls = 0;
+  writeRegistry(REGISTRY_PATH, [activeEntry("AUTH-SPENT-1")]);
   srv = await startEphemeral();
   port = srv.address.port;
   const r1 = await post(port, validBody({ execution_id: "spent-1", authorization_id: "AUTH-SPENT-1" }));
   assert.equal(r1.json.adapter_result.authorization_state_final, "SPENT");
   assert.equal(runnerCalls, 1);
   const r2 = await post(port, validBody({ execution_id: "spent-2", authorization_id: "AUTH-SPENT-1" }));
-  assert.equal(r2.status, 409);
-  assert.equal(r2.json.classification, "AUTHORIZATION_ID_REUSED");
+  assert.equal(r2.status, 200);
+  assert.equal(r2.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r2.json.reason_codes.includes("AUTHORIZATION_ALREADY_SPENT"));
+  assert.equal(r2.json.adapter_result, null);
   assert.equal(runnerCalls, 1);
 });
 
 await test("single-flight concurrency → second request fail-closed without execution", async () => {
   await srv.close();
+  writeRegistry(REGISTRY_PATH, [activeEntry("AUTH-BUSY-1"), activeEntry("AUTH-BUSY-2")]);
   let release;
   const gate = new Promise((r) => {
     release = r;
@@ -496,6 +566,7 @@ await test("single-flight concurrency → second request fail-closed without exe
 
 await test("runtime authorization forwarded unchanged to adapter", async () => {
   await srv.close();
+  writeRegistry(REGISTRY_PATH, [activeEntry("AUTH-FWD-1")]);
   let seenAuth = null;
   srv = await startEphemeral({
     getOccupancy: mockOccupancy(),
@@ -522,6 +593,7 @@ await test("workspace is server-side only; request cannot override", async () =>
 });
 
 await test("response conforms and execution_performed matches adapter", async () => {
+  writeRegistry(REGISTRY_PATH, [activeEntry("AUTH-SHAPE-1")]);
   const r = await post(port, validBody({ execution_id: "shape-1", authorization_id: "AUTH-SHAPE-1" }));
   assert.equal(r.json.schema_version, "v4-windows-local-execution-endpoint-result-v1");
   for (const k of [
@@ -712,10 +784,15 @@ await test("production runner signal termination fails closed", async () => {
 
 await test("endpoint non-zero OpenCode exit → ERROR/SPENT/execution_performed=false", async () => {
   let spawnCount = 0;
+  const nzReg = join(REG_DIR, "nz-exit.json");
+  writeRegistry(nzReg, [activeEntry("AUTH-NZ-EXIT-1")]);
   const failSrv = await mod.startWindowsLocalExecutionService({
     host: "127.0.0.1",
     port: 0,
     workspaceRoot: ROOT,
+    authorizationRegistryPath: nzReg,
+    inspectAuthorization: (path, id, opts) => realInspect(path, id, opts),
+    admitAuthorization: (path, id, opts) => realAdmit(path, id, opts),
     getOccupancy: mockOccupancy(),
     runOpenCode: productionRunnerWithSpawn(() => {
       spawnCount += 1;
@@ -784,6 +861,337 @@ await test("production runner rejects direct Qwen endpoint as OpenCode target", 
       }),
     /DIRECT_QWEN_ENDPOINT_FORBIDDEN|GUARD_BASE_URL_INVALID/,
   );
+});
+
+// ---------- provenance registry tests ----------
+
+function registryState(path) {
+  return JSON.parse(readFileSync(path, "utf8"));
+}
+
+await test("P1 registry empty + unknown schema-valid id → rejected, zero adapter/occupancy/runner", async () => {
+  const regPath = join(REG_DIR, "p1.json");
+  writeRegistry(regPath, []);
+  let occ = 0;
+  let run = 0;
+  let exec = 0;
+  const s = await mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: regPath,
+    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
+    getOccupancy: async () => { occ += 1; return "QWEN_READY_IDLE"; },
+    runOpenCode: async () => { run += 1; return { opencode_execution_count: 1, retry_calls: 0, fallback_calls: 0, response_validation: "NOT_VALIDATED" }; },
+    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
+  });
+  const p = s.address.port;
+  const r = await post(p, validBody({ execution_id: "p1-1", authorization_id: "AUTH-UNKNOWN-1" }));
+  assert.equal(r.status, 200);
+  assert.equal(r.json.ok, false);
+  assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r.json.reason_codes.includes("AUTHORIZATION_ID_NOT_ISSUED"));
+  assert.equal(r.json.execution_performed, false);
+  assert.equal(r.json.adapter_result, null);
+  assert.equal(r.json.replayed, false);
+  assert.equal(exec, 0);
+  assert.equal(occ, 0);
+  assert.equal(run, 0);
+  await s.close();
+});
+
+await test("P2 registry missing → fail closed pre-adapter", async () => {
+  const regPath = join(REG_DIR, "missing.json");
+  let exec = 0;
+  const s = await mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: regPath,
+    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
+    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
+    getOccupancy: async () => "QWEN_READY_IDLE",
+    runOpenCode: async () => ({ opencode_execution_count: 1, retry_calls: 0, fallback_calls: 0, response_validation: "NOT_VALIDATED" }),
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "p2-1", authorization_id: "AUTH-P2" }));
+  assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r.json.reason_codes.includes("AUTHORIZATION_REGISTRY_UNAVAILABLE"));
+  assert.equal(exec, 0);
+  await s.close();
+});
+
+await test("P3 registry malformed → fail closed pre-adapter", async () => {
+  const regPath = join(REG_DIR, "malformed.json");
+  mkdirSync(dirname(regPath), { recursive: true });
+  writeFileSync(regPath, "{ not json");
+  let exec = 0;
+  const s = await mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: regPath,
+    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
+    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
+    getOccupancy: async () => "QWEN_READY_IDLE",
+    runOpenCode: async () => ({ opencode_execution_count: 1, retry_calls: 0, fallback_calls: 0, response_validation: "NOT_VALIDATED" }),
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "p3-1", authorization_id: "AUTH-P3" }));
+  assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r.json.reason_codes.includes("AUTHORIZATION_REGISTRY_INVALID"));
+  assert.equal(exec, 0);
+  await s.close();
+});
+
+await test("P4 duplicate authorization_id in registry → fail closed", async () => {
+  const r = realAdmit(join(REG_DIR, "dup.json"), "X", {});
+  void r;
+  const regPath = join(REG_DIR, "dup.json");
+  writeRegistry(regPath, [activeEntry("AUTH-DUP"), activeEntry("AUTH-DUP")]);
+  const result = realAdmit(regPath, "AUTH-DUP", {});
+  assert.equal(result.ok, false);
+  assert.ok(result.reason_codes.includes("AUTHORIZATION_REGISTRY_INVALID"));
+});
+
+await test("P5 SPENT id → AUTHORIZATION_ALREADY_SPENT", async () => {
+  const regPath = join(REG_DIR, "p5.json");
+  writeRegistry(regPath, [activeEntry("AUTH-P5", { state: "SPENT", spent_at: rfc3339(-1_000) })]);
+  const result = realAdmit(regPath, "AUTH-P5", {});
+  assert.equal(result.ok, false);
+  assert.ok(result.reason_codes.includes("AUTHORIZATION_ALREADY_SPENT"));
+});
+
+await test("P6 expired id → AUTHORIZATION_EXPIRED", async () => {
+  const regPath = join(REG_DIR, "p6.json");
+  writeRegistry(regPath, [activeEntry("AUTH-P6", { expires_at: rfc3339(-60_000) })]);
+  const result = realAdmit(regPath, "AUTH-P6", {});
+  assert.equal(result.ok, false);
+  assert.ok(result.reason_codes.includes("AUTHORIZATION_EXPIRED"));
+});
+
+await test("P7 invalid registry route_id → AUTHORIZATION_REGISTRY_INVALID", async () => {
+  const regPath = join(REG_DIR, "p7.json");
+  writeRegistry(regPath, [activeEntry("AUTH-P7", { route_id: "other+route" })]);
+  const result = realLoad(regPath);
+  assert.equal(result.ok, false);
+  assert.ok(result.reason_codes.includes("AUTHORIZATION_REGISTRY_INVALID"));
+});
+
+await test("P8 ACTIVE valid id → registry transitions SPENT before adapter invocation", async () => {
+  const regPath = join(REG_DIR, "p8.json");
+  writeRegistry(regPath, [activeEntry("AUTH-P8")]);
+  let registryStateAtAdapter = null;
+  const s = await mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: regPath,
+    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
+    getOccupancy: async () => "QWEN_READY_IDLE",
+    runOpenCode: mockRunner(),
+    executeOpenCodeBounded: async (req, o) => {
+      registryStateAtAdapter = registryState(regPath);
+      return executeOpenCodeBounded(req, o);
+    },
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "p8-1", authorization_id: "AUTH-P8" }));
+  assert.equal(r.json.ok, true);
+  const entry = registryStateAtAdapter.entries.find((e) => e.authorization_id === "AUTH-P8");
+  assert.equal(entry.state, "SPENT");
+  assert.ok(entry.spent_at);
+  await s.close();
+});
+
+await test("P9 SPENT persistence failure → adapter calls 0", async () => {
+  const regPath = join(REG_DIR, "p9.json");
+  writeRegistry(regPath, [activeEntry("AUTH-P9")]);
+  let exec = 0;
+  const s = await mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: regPath,
+    admitAuthorization: (p, id, o) =>
+      realAdmit(p, id, {
+        ...o,
+        persistRegistry: () => {
+          throw new Error("DISK_FULL");
+        },
+      }),
+    executeOpenCodeBounded: async (req, opts) => { exec += 1; return executeOpenCodeBounded(req, opts); },
+    getOccupancy: async () => "QWEN_READY_IDLE",
+    runOpenCode: mockRunner(),
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "p9-1", authorization_id: "AUTH-P9" }));
+  assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r.json.reason_codes.includes("AUTHORIZATION_REGISTRY_UNAVAILABLE"));
+  assert.equal(exec, 0);
+  await s.close();
+});
+
+await test("P10 second request same authorization_id → rejected server-side, no second adapter", async () => {
+  const regPath = join(REG_DIR, "p10.json");
+  writeRegistry(regPath, [activeEntry("AUTH-P10")]);
+  let exec = 0;
+  const s = await mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: regPath,
+    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
+    getOccupancy: mockOccupancy(),
+    runOpenCode: mockRunner(),
+    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
+  });
+  const p = s.address.port;
+  const r1 = await post(p, validBody({ execution_id: "p10-1", authorization_id: "AUTH-P10" }));
+  assert.equal(r1.json.ok, true);
+  const r2 = await post(p, validBody({ execution_id: "p10-2", authorization_id: "AUTH-P10" }));
+  assert.equal(r2.status, 200);
+  assert.equal(r2.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r2.json.reason_codes.includes("AUTHORIZATION_ALREADY_SPENT"));
+  assert.equal(r2.json.adapter_result, null);
+  assert.equal(r2.json.execution_performed, false);
+  assert.equal(exec, 1);
+  await s.close();
+});
+
+await test("P11 occupancy-blocked after admission → registry stays SPENT", async () => {
+  const regPath = join(REG_DIR, "p11.json");
+  writeRegistry(regPath, [activeEntry("AUTH-P11")]);
+  const s = await mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: regPath,
+    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
+    getOccupancy: mockOccupancy("QWEN_BUSY"),
+    runOpenCode: mockRunner(),
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "p11-1", authorization_id: "AUTH-P11" }));
+  assert.equal(r.json.adapter_result.classification, "OCCUPANCY_BLOCKED");
+  const after = registryState(regPath).entries.find((e) => e.authorization_id === "AUTH-P11");
+  assert.equal(after.state, "SPENT");
+  await s.close();
+});
+
+await test("P12 same execution_id + same fingerprint retained replay preserved", async () => {
+  const regPath = join(REG_DIR, "p12.json");
+  writeRegistry(regPath, [activeEntry("AUTH-P12")]);
+  let exec = 0;
+  const s = await mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: regPath,
+    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
+    getOccupancy: mockOccupancy(),
+    runOpenCode: mockRunner(),
+    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
+  });
+  const p = s.address.port;
+  const body = validBody({ execution_id: "p12-replay", authorization_id: "AUTH-P12" });
+  const r1 = await post(p, body);
+  assert.equal(r1.json.replayed, false);
+  const r2 = await post(p, body);
+  assert.equal(r2.json.replayed, true);
+  assert.equal(exec, 1);
+  await s.close();
+});
+
+await test("P13 same execution_id + different fingerprint → EXECUTION_ID_CONFLICT preserved", async () => {
+  const regPath = join(REG_DIR, "p13.json");
+  writeRegistry(regPath, [activeEntry("AUTH-P13")]);
+  const s = await mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: regPath,
+    admitAuthorization: (pp, id, o) => realAdmit(pp, id, o),
+    getOccupancy: mockOccupancy(),
+    runOpenCode: mockRunner(),
+  });
+  const p = s.address.port;
+  await post(p, validBody({ execution_id: "p13-x", authorization_id: "AUTH-P13" }));
+  const r2 = await post(p, validBody({ execution_id: "p13-x", authorization_id: "AUTH-P13", message: "changed" }));
+  assert.equal(r2.status, 409);
+  assert.equal(r2.json.classification, "EXECUTION_ID_CONFLICT");
+  await s.close();
+});
+
+await test("P14 request-supplied registry/path override impossible", async () => {
+  const body = {
+    ...validBody({ execution_id: "p14-1", authorization_id: "AUTH-OK-1" }),
+    authorization_registry: "C:\\\\evil\\\\reg.json",
+    registry_path: "C:\\\\evil\\\\reg.json",
+  };
+  const r = await post(port, body);
+  assert.equal(r.status, 400);
+  assert.equal(r.json.classification, "ENDPOINT_SCHEMA_REJECTED");
+});
+
+await test("P15 old Git operator auth ids are NOT automatically trusted", async () => {
+  const regPath = join(REG_DIR, "p15.json");
+  writeRegistry(regPath, []); // empty registry = nothing trusted
+  let exec = 0;
+  const s = await mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: regPath,
+    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
+    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
+    getOccupancy: mockOccupancy(),
+    runOpenCode: mockRunner(),
+  });
+  const r = await post(
+    s.address.port,
+    validBody({
+      execution_id: "p15-1",
+      authorization_id: "V4_OPENCODE_BOUNDED_LIVE_DISPATCH_PROOF",
+    }),
+  );
+  assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r.json.reason_codes.includes("AUTHORIZATION_ID_NOT_ISSUED"));
+  assert.equal(exec, 0);
+  await s.close();
+});
+
+await test("P16 response contains no registry filesystem details", async () => {
+  const regPath = join(REG_DIR, "p16.json");
+  writeRegistry(regPath, [activeEntry("AUTH-P16")]);
+  const s = await mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: regPath,
+    admitAuthorization: (p, id, o) => realAdmit(p, id, o),
+    getOccupancy: mockOccupancy(),
+    runOpenCode: mockRunner(),
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "p16-1", authorization_id: "AUTH-P16" }));
+  assert.ok(!r.text.includes("p16.json"));
+  assert.ok(!r.text.includes("v4-auth-reg"));
+  assert.ok(!r.text.toLowerCase().includes("localappdata"));
+  assert.ok(!responseLeak(r.json));
+  await s.close();
+});
+
+await test("P17 no registry path configured → fail closed pre-adapter", async () => {
+  let exec = 0;
+  const s = await mod.startWindowsLocalExecutionService({
+    host: "127.0.0.1",
+    port: 0,
+    workspaceRoot: ROOT,
+    authorizationRegistryPath: null,
+    executeOpenCodeBounded: async (req, o) => { exec += 1; return executeOpenCodeBounded(req, o); },
+    getOccupancy: mockOccupancy(),
+    runOpenCode: mockRunner(),
+  });
+  const r = await post(s.address.port, validBody({ execution_id: "p17-1", authorization_id: "AUTH-P17" }));
+  assert.equal(r.json.classification, "AUTHORIZATION_REJECTED");
+  assert.ok(r.json.reason_codes.includes("AUTHORIZATION_REGISTRY_UNAVAILABLE"));
+  assert.equal(exec, 0);
+  await s.close();
 });
 
 await srv.close();

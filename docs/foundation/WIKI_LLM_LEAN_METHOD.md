@@ -132,6 +132,13 @@ Minimum persisted fields:
 
 The persistence step is docs-only bookkeeping and must be included as the final closure step of future Cursor tasks whenever `agg` will depend on their result.
 
+**Outcome split (canonical):**
+
+- **PASS** → persist full bounded evidence + update frontier when applicable + normal commit/push.
+- **STOP** → persist **only** `docs/runtime/LAST_CURSOR_REPORT.md` in an evidence-only commit/push; leave incomplete production/test changes dirty and uncommitted; do not update `CURRENT_FRONTIER.md`.
+
+After either outcome, the operator sends only `agg`; GPT Web reads GitHub and derives the next pass — no manual chat relay of Cursor summaries.
+
 If `agg` finds a stale/mismatched `LAST_CURSOR_REPORT`, classify:
 
 ```text

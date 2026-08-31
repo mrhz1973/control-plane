@@ -166,6 +166,17 @@ The endpoint MUST NOT provide a custom `guardStart` in v1. The adapter's existin
 
 The implementation MUST keep all v1 execution-state control in memory only. No durable ledger is authorized by this contract.
 
+### 8.0 Server-side provenance admission (v1.1 — supersedes in-memory-only for provenance/spend)
+
+Provenance and durable spend are owned by the server-side issued-authorization registry (`tools/v4-runtime-authorization-provenance-registry-v1.mjs`, contract `docs/contracts/v4-runtime-authorization-provenance-registry-v1.md`). After HTTP schema validation and the in-memory execution_id replay-cache check, and BEFORE occupancy sampling, guard start, runner spawn or any adapter invocation:
+
+1. the registry (server-side path supplied only at service construction) is loaded and validated;
+2. the exact `authorization_id` must exist, be `ACTIVE`, unexpired, with matching `route_id`;
+3. failure at any step → HTTP 200, `ok=false`, `classification="AUTHORIZATION_REJECTED"`, `adapter_result=null`, `execution_performed=false`, specific reason code (`AUTHORIZATION_ID_NOT_ISSUED` / `AUTHORIZATION_ALREADY_SPENT` / `AUTHORIZATION_EXPIRED` / `AUTHORIZATION_ROUTE_MISMATCH` / `AUTHORIZATION_REGISTRY_INVALID` / `AUTHORIZATION_REGISTRY_UNAVAILABLE`), and the adapter path is never invoked;
+4. on success the entry is atomically transitioned ACTIVE → SPENT and persisted (temp+rename) BEFORE the adapter is invoked — single-use-at-admission; a later occupancy block does NOT reactivate the authorization.
+
+The in-memory execution_id replay cache and the authorization_id binding semantics below remain valid and unchanged. This section supersedes the in-memory-only statement above **solely** for the provenance/spend registry; request schema, response schema, adapter ownership and the single-generation guard remain unchanged.
+
 ### 8.1 Global single-flight
 
 Only one endpoint execution may be in flight.
