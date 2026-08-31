@@ -1,0 +1,88 @@
+{
+  "block_id": "V4_RUNTIME_AUTHORIZATION_ISSUANCE_PATH_IMPLEMENTATION_OFFLINE",
+  "category": "SECURITY_RUNTIME_INTEGRATION",
+  "result": "STOP",
+  "stop_reason": "BUGBOT_ACTIONABLE_FINDINGS_AFTER_TARGET_AND_REGRESSIONS_PASS",
+  "timestamp_utc": "2026-08-31T15:40:00Z",
+  "dispatch_base_head": "d50f0a917810013d80e0cef0cbc11fdec14f086c",
+  "git_preflight": {
+    "origin_main": "d50f0a917810013d80e0cef0cbc11fdec14f086c",
+    "expected_match": true,
+    "working_tree_at_stop": "dirty — implementation and test tree preserved uncommitted per STOP discipline"
+  },
+  "completed_before_stop": {
+    "implementation": [
+      "tools/v4-runtime-authorization-issuance-v1.mjs (pending store owner + issuance core + direct Telegram abstraction + decision handler + reconciliation)",
+      "tools/serve-v4-runtime-authorization-issuance-v1.mjs (register-pending + status only; no /issue; offline-capable; ephemeral port 0 in tests)",
+      "tools/v4-runtime-authorization-provenance-registry-v1.mjs bounded modification (issueActiveEntry added; CLI remains validation-only)"
+    ],
+    "tests": "tests/v4-runtime-authorization-issuance/run.mjs",
+    "target_results": {
+      "v4-runtime-authorization-issuance": "36/36 PASS",
+      "v4-windows-local-execution-endpoint": "61/61 PASS",
+      "v4-runtime-authorization-durable-spend-ledger": "13/13 PASS"
+    },
+    "regressions": {
+      "opencode-execution-adapter": "23/23 PASS",
+      "opencode-single-generation-guard": "16/16 PASS",
+      "v4-local-runtime-readonly-contribution": "29/29 PASS",
+      "v4-local-runtime-readonly-private-endpoint": "22/22 PASS"
+    },
+    "git_diff_check": "PASS",
+    "bugbot_invoked_once": true,
+    "bugbot_verdict": "4 actionable findings — STOP per pass discipline (no same-pass fix, no Autofix)"
+  },
+  "bugbot_findings": [
+    {
+      "severity": "high",
+      "location": "tools/serve-v4-runtime-authorization-issuance-v1.mjs:270-272",
+      "finding": "CLI arg-parser typo: args.get(process.argv[i + 1]) instead of process.argv[i + 1]; --issuance-config always undefined; CLI startup path exits 1 unconditionally"
+    },
+    {
+      "severity": "medium",
+      "location": "tools/v4-runtime-authorization-issuance-v1.mjs:1005-1007",
+      "finding": "Same argv typo in pending-store CLI: args.set(process.argv[i], args.get(process.argv[i + 1])) — --pending-store always undefined; structural-validation CLI non-functional"
+    },
+    {
+      "severity": "medium",
+      "location": "tools/v4-runtime-authorization-issuance-v1.mjs:219-258",
+      "finding": "validatePendingStoreObject EXPIRED contradiction: shared non-PENDING branch requires decision receipt present while the EXPIRED branch requires it null — EXPIRED records can never validate"
+    },
+    {
+      "severity": "low",
+      "location": "tools/v4-runtime-authorization-issuance-v1.mjs:1016",
+      "finding": "CLI decision_count never emitted: guards on result.decisions but loadPendingStore returns { store } shape"
+    }
+  ],
+  "hard_offline_preserved": {
+    "real_telegram_bot_api_calls": 0,
+    "telegram_messages": 0,
+    "production_pending_store_mutations": 0,
+    "production_issuance_config_mutations": 0,
+    "production_registry_mutations": 0,
+    "production_spend_ledger_mutations": 0,
+    "scheduled_task_mutations": 0,
+    "tailscale_mutations": 0,
+    "n8n_mutations": 0,
+    "wf40_executions": 0,
+    "wf61_executions": 0,
+    "execution_endpoint_http_requests": 0,
+    "opencode_calls": 0,
+    "qwen_generations": 0,
+    "provider_model_calls": 0,
+    "active_production_issuance": 0
+  },
+  "preserved_state": {
+    "wf40_nodes": 71,
+    "wf61_active": false,
+    "d0025": "CLOSED",
+    "execution_endpoint_18791": "unchanged",
+    "readonly_18790": "unchanged",
+    "production_registry": "empty",
+    "production_ledger": "empty",
+    "live_execution": "CLOSED",
+    "live_issuance": "CLOSED"
+  },
+  "frontier": "CURRENT_FRONTIER.md and LAST_CURSOR_REPORT.md intentionally NOT updated on STOP",
+  "next_corrective_pass": "Fix the four CLI/validation findings in a new bounded corrective pass, re-run target+regressions once, then BugBot once more per pass discipline"
+}
