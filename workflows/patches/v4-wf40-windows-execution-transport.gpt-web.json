@@ -1,0 +1,249 @@
+{
+  "schema": "control-plane-gpt-web-n8n-delta-v1",
+  "task_ref": "V4_WF40_EXECUTION_TRANSPORT_PATCH_AUTHORING",
+  "authority": "GPT_WEB",
+  "purpose": "Extend the existing 66-node WF40 V4 lane from the terminal structural execution-adapter-router result to the already-proven Tailscale-private Windows execution endpoint. The transport is fail-closed and may send only when the offline adapter-router has proven exact route/adapter + DISPATCH_READY + a strict endpoint-compatible ACTIVE runtime authorization; no dispatch or authorization is synthesized. Patch authoring/apply validation performs zero workflow executions and zero OpenCode/Qwen/provider calls.",
+  "endpoint_contract_ref": "docs/contracts/v4-windows-local-execution-endpoint-v1.md",
+  "request_schema_ref": "docs/contracts/v4-windows-local-execution-endpoint-v1.request.schema.json",
+  "response_schema_ref": "docs/contracts/v4-windows-local-execution-endpoint-v1.response.schema.json",
+  "reachability_proof_ref": "reports/architecture/v4_windows_local_execution_endpoint_vps_unauthorized_reachability_proof.md",
+  "target_endpoint": "https://asusdesktop.tailc01234.ts.net/v4/execution/opencode-local",
+  "target_workflow": {
+    "live_id": "9ZMj2ACTKyDVhCue",
+    "expected_name": "40 - CP v4 multirepo + classifier bridge - ACTIVE",
+    "expected_active": true,
+    "expected_node_count_before_patch": 66,
+    "expected_version_id_before_patch": "60f9b75e-39b8-410a-bcd1-364073992df0"
+  },
+  "preconditions": {
+    "terminal_adapter_router_parse_node": {
+      "id": "v4f40-7404-4004-8404-000000000404",
+      "name": "Code - Parse V4 execution adapter router result",
+      "must_be_terminal_before_patch": true
+    },
+    "adapter_router_gate_closed_node": {
+      "id": "v4f40-7405-4005-8405-000000000405",
+      "name": "Code - V4 execution adapter router gate closed",
+      "must_remain_terminal": true
+    },
+    "sidecar_capture_node": {
+      "id": "v4f40-7101-4001-8101-000000000101",
+      "name": "Code - Capture explicit V4 execution routing sidecar"
+    },
+    "wf61_execute_node": {
+      "id": "d0025f40-6108-4008-8008-000000000108",
+      "name": "Execute Workflow - WF61 primary remote planner"
+    },
+    "required_repo_files": [
+      "workflows/patches/v4-wf40-execution-adapter-router.gpt-web.json",
+      "docs/contracts/n8n-v4-execution-adapter-router-bridge-v1.md",
+      "docs/contracts/v4-windows-local-execution-endpoint-v1.md",
+      "docs/contracts/v4-windows-local-execution-endpoint-v1.request.schema.json",
+      "docs/contracts/v4-windows-local-execution-endpoint-v1.response.schema.json",
+      "reports/architecture/v4_windows_local_execution_endpoint_vps_unauthorized_reachability_proof.md"
+    ],
+    "must_not_already_exist_node_ids": [
+      "v4f40-7501-4001-8501-000000000501",
+      "v4f40-7502-4002-8502-000000000502",
+      "v4f40-7503-4003-8503-000000000503",
+      "v4f40-7504-4004-8504-000000000504",
+      "v4f40-7505-4005-8505-000000000505"
+    ],
+    "live_state_must_remain": {
+      "wf61_active": false,
+      "d0025_runtime_gate_enabled": false,
+      "production_authorization_registry_empty": true,
+      "live_execution_authorized": false
+    }
+  },
+  "operations": [
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const ar=$input.item.json??{};const bridge=(ar.adapter_router_result&&typeof ar.adapter_router_result==='object'&&!Array.isArray(ar.adapter_router_result))?ar.adapter_router_result:null;const router=(bridge&&bridge.router_result&&typeof bridge.router_result==='object'&&!Array.isArray(bridge.router_result))?bridge.router_result:null;const adapter=(router&&router.adapter_result&&typeof router.adapter_result==='object'&&!Array.isArray(router.adapter_result))?router.adapter_result:null;const side=$('Code - Capture explicit V4 execution routing sidecar').item.json??{};const cycle=$('Execute Workflow - WF61 primary remote planner').item.json??{};const dispatch=(side.dispatch_result&&typeof side.dispatch_result==='object'&&!Array.isArray(side.dispatch_result))?side.dispatch_result:null;const auth=(side.runtime_authorization&&typeof side.runtime_authorization==='object'&&!Array.isArray(side.runtime_authorization))?side.runtime_authorization:null;const packet=(cycle.packet&&typeof cycle.packet==='object'&&!Array.isArray(cycle.packet))?cycle.packet:null;const exact=(o,keys)=>{if(!o||typeof o!=='object'||Array.isArray(o))return false;const a=Object.keys(o).sort(),b=[...keys].sort();return a.length===b.length&&a.every((v,i)=>v===b[i]);};const authKeys=['schema_version','authorization_id','authorization_state','route_id','scope'];const scopeKeys=['execution_harness','model','single_generation_guard_required','max_opencode_executions','max_qwen_generation_calls','retry','fallback','qwen_profile','dflash_required'];const scope=auth?.scope;const authOk=Boolean(auth&&exact(auth,authKeys)&&exact(scope,scopeKeys)&&auth.schema_version==='operator-runtime-authorization-v1'&&typeof auth.authorization_id==='string'&&auth.authorization_id.length>0&&auth.authorization_id.length<=200&&auth.authorization_state==='ACTIVE'&&auth.route_id==='opencode+qwen_local'&&scope.execution_harness==='opencode'&&scope.model==='qwen_local'&&scope.single_generation_guard_required===true&&scope.max_opencode_executions===1&&scope.max_qwen_generation_calls===1&&scope.retry===0&&scope.fallback===0&&scope.qwen_profile==='fast_8k'&&scope.dflash_required===true);const dispatchOk=Boolean(dispatch&&dispatch.classification==='DISPATCH_READY'&&dispatch.dispatch_ready===true&&dispatch.execution_performed===false&&dispatch.route_id==='opencode+qwen_local'&&dispatch.implementer==='opencode'&&dispatch.model==='qwen_local');const bridgeOk=Boolean(ar.schema==='wf40-v4-execution-adapter-router-result-v1'&&ar.ok===true&&ar.execution_performed===false&&bridge&&bridge.schema_version==='n8n-v4-execution-adapter-router-bridge-result-v1'&&bridge.ok===true&&bridge.execution_performed===false&&bridge.classification==='OCCUPANCY_BLOCKED'&&bridge.route_id==='opencode+qwen_local'&&bridge.adapter_id==='opencode-execution-adapter-v1'&&bridge.dispatch_supplied===true&&bridge.runtime_authorization_supplied===true&&router&&router.adapter_registered===true&&router.dispatch_required===true&&router.dispatch_classification==='DISPATCH_READY'&&adapter&&adapter.classification==='OCCUPANCY_BLOCKED'&&adapter.execution_performed===false&&Array.isArray(adapter.reason_codes)&&adapter.reason_codes.includes('OCCUPANCY_SOURCE_MISSING'));const executionId=String(bridge?.execution_id||'').trim();const message=typeof packet?.goal==='string'?packet.goal.trim():'';const idOk=executionId.length>0&&executionId.length<=200;const messageOk=message.length>0&&message.length<=4096;const ready=Boolean(bridgeOk&&dispatchOk&&authOk&&idOk&&messageOk);const reasons=[];if(!bridgeOk)reasons.push('ADAPTER_ROUTER_NOT_AT_OFFLINE_OCCUPANCY_BOUNDARY');if(!dispatchOk)reasons.push('DISPATCH_NOT_READY');if(!authOk)reasons.push('AUTHORIZATION_SHAPE_INVALID');if(!idOk)reasons.push('EXECUTION_ID_INVALID');if(!messageOk)reasons.push('MESSAGE_INVALID');const req=ready?{schema_version:'v4-windows-local-execution-endpoint-request-v1',execution_id:executionId,runtime_authorization:auth,message}:null;return {json:{schema:'wf40-v4-windows-execution-transport-input-v1',task_id:String(cycle.task_id||bridge?.execution_id||''),packet_id:String(packet?.packet_id||''),execution_transport_ready:ready,classification:ready?'V4_WINDOWS_EXECUTION_TRANSPORT_READY':'V4_WINDOWS_EXECUTION_TRANSPORT_NOT_READY',reason_codes:reasons,execution_id:idOk?executionId:null,execution_request:req,execution_performed:false}};"
+        },
+        "id": "v4f40-7501-4001-8501-000000000501",
+        "name": "Code - Prepare V4 Windows execution transport request",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [4080, 1120]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "conditions": {
+            "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1},
+            "conditions": [
+              {
+                "id": "v4-wf40-windows-execution-transport-ready",
+                "leftValue": "={{ $json.execution_transport_ready }}",
+                "rightValue": true,
+                "operator": {"type": "boolean", "operation": "equals"}
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "v4f40-7502-4002-8502-000000000502",
+        "name": "IF - V4 Windows execution transport ready?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [4320, 1120]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "method": "POST",
+          "url": "https://asusdesktop.tailc01234.ts.net/v4/execution/opencode-local",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {"name": "Content-Type", "value": "application/json"}
+            ]
+          },
+          "sendBody": true,
+          "contentType": "raw",
+          "rawContentType": "application/json",
+          "body": "={{ JSON.stringify($json.execution_request) }}",
+          "options": {
+            "timeout": 20000
+          }
+        },
+        "id": "v4f40-7503-4003-8503-000000000503",
+        "name": "HTTP Request - V4 Windows local execution endpoint",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [4560, 1040],
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const r=$input.item.json??{};const structural=Boolean(r&&r.schema_version==='v4-windows-local-execution-endpoint-result-v1'&&typeof r.ok==='boolean'&&typeof r.classification==='string'&&typeof r.replayed==='boolean'&&typeof r.execution_performed==='boolean'&&Array.isArray(r.reason_codes)&&('adapter_result' in r));return {json:{schema:'wf40-v4-windows-execution-transport-result-v1',ok:Boolean(structural&&r.ok===true),classification:structural?r.classification:'V4_WINDOWS_EXECUTION_TRANSPORT_RESPONSE_INVALID',execution_id:structural?(r.execution_id??null):null,replayed:structural?r.replayed:false,execution_performed:structural?r.execution_performed:false,adapter_result:structural?(r.adapter_result??null):null,reason_codes:structural?r.reason_codes:['V4_WINDOWS_EXECUTION_TRANSPORT_RESPONSE_INVALID'],endpoint_result:structural?r:null}};"
+        },
+        "id": "v4f40-7504-4004-8504-000000000504",
+        "name": "Code - Parse V4 Windows execution transport result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [4800, 1040]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "return {json:{schema:'wf40-v4-windows-execution-transport-result-v1',ok:false,classification:$json.classification||'V4_WINDOWS_EXECUTION_TRANSPORT_NOT_READY',execution_id:$json.execution_id||null,replayed:false,execution_performed:false,adapter_result:null,reason_codes:Array.isArray($json.reason_codes)?$json.reason_codes:['V4_WINDOWS_EXECUTION_TRANSPORT_NOT_READY']}};"
+        },
+        "id": "v4f40-7505-4005-8505-000000000505",
+        "name": "Code - V4 Windows execution transport gate closed",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [4560, 1220]
+      }
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Parse V4 execution adapter router result",
+      "outputs": [[{"node": "Code - Prepare V4 Windows execution transport request", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Prepare V4 Windows execution transport request",
+      "outputs": [[{"node": "IF - V4 Windows execution transport ready?", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "IF - V4 Windows execution transport ready?",
+      "outputs": [[{"node": "HTTP Request - V4 Windows local execution endpoint", "type": "main", "index": 0}], [{"node": "Code - V4 Windows execution transport gate closed", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "HTTP Request - V4 Windows local execution endpoint",
+      "outputs": [[{"node": "Code - Parse V4 Windows execution transport result", "type": "main", "index": 0}]]
+    }
+  ],
+  "resulting_lane_contract": {
+    "lane": "existing terminal structural adapter-router result -> strict transport request builder -> fail-closed readiness gate -> Tailscale-private Windows execution endpoint -> bounded structural response parser",
+    "node_count_after_patch": 71,
+    "route_id": "opencode+qwen_local",
+    "adapter_id": "opencode-execution-adapter-v1",
+    "dispatch_required": "explicit DISPATCH_READY only",
+    "runtime_authorization_required": "explicit strict operator-runtime-authorization-v1 only",
+    "authorization_synthesized": false,
+    "dispatch_synthesized": false,
+    "transport_ready_proof": "offline adapter-router reached OCCUPANCY_BLOCKED/OCCUPANCY_SOURCE_MISSING with exact route/adapter, proving dispatch + authorization shape before network transport",
+    "endpoint_provenance_authority": "server-side user-local authorization registry; workflow cannot issue or mutate registry",
+    "production_registry_state_during_apply": "empty",
+    "apply_validation_http_requests": 0,
+    "apply_validation_workflow_executions": 0,
+    "live_execution_authorized_by_patch": false,
+    "separate_v4_workflow_created": false
+  },
+  "preserve": [
+    "All existing 66 WF40 node IDs/names/types and legacy lanes",
+    "WF40 active state",
+    "existing adapter-router FALSE gate terminal path",
+    "local RESOURCE_STATUS contribution lane",
+    "same-commit route-source lane",
+    "WF61 content and inactive state",
+    "D-0025 runtime gate closed",
+    "OpenClaw root route",
+    "readonly local status route/service",
+    "Windows execution endpoint/service and Tailscale route",
+    "production authorization registry empty during apply",
+    "LiteLLM/configuration/credentials",
+    "Qwen/OpenCode runtime state"
+  ],
+  "forbidden": [
+    "Synthesizing dispatch_result or runtime_authorization",
+    "Creating or mutating server-side authorization registry entries",
+    "Calling the Windows execution endpoint during patch apply/structural validation",
+    "Executing WF40 or WF61 during apply validation",
+    "Starting/stopping/restarting Qwen, OpenCode or Windows execution service",
+    "Changing endpoint URL, request/response contract, adapter, guard, occupancy or runner semantics",
+    "Adding retries, fallback, parallel execution or alternate transports",
+    "Adding credentials/Authorization headers to the private endpoint request",
+    "Changing WF61 active state or D-0025 gate",
+    "Creating a separate V4 workflow",
+    "Reading/exporting/logging secret values"
+  ],
+  "verification": {
+    "required": [
+      "Secret-safe live WF40 export: exact id/name/active, node_count=66, versionId=60f9b75e-39b8-410a-bcd1-364073992df0",
+      "Code - Parse V4 execution adapter router result is terminal before apply",
+      "All five new node IDs absent before apply",
+      "Apply exact GPT-Web operations only; total node_count=71",
+      "All original 66 node IDs/names/types preserved",
+      "Adapter-router gate-closed node remains terminal and unchanged",
+      "New prepare node requires exact route/adapter, DISPATCH_READY, strict ACTIVE endpoint-compatible auth, packet goal <=4096, and offline OCCUPANCY_SOURCE_MISSING boundary",
+      "HTTP node is fixed POST to the proven Tailscale-private URL, application/json raw body from execution_request, no credentials, no retry/fallback node",
+      "No workflow execution, endpoint HTTP request, OpenCode/Qwen/provider call or registry mutation is used for apply validation",
+      "WF61 remains inactive; D-0025 remains CLOSED; production authorization registry remains empty"
+    ],
+    "do_not_execute_wf40_for_validation": true,
+    "do_not_execute_wf61_for_validation": true,
+    "do_not_call_execution_endpoint_for_validation": true
+  },
+  "stop_conditions": [
+    "WF40 id/name/active/node-count/version structural precondition mismatch",
+    "Terminal adapter-router parse node is no longer terminal or expected node identities differ",
+    "Any new node ID already exists non-equivalently",
+    "Production authorization registry is not empty",
+    "Apply would require workflow execution or endpoint HTTP request for validation",
+    "Any secret value would need to be inspected",
+    "Native HTTP Request node cannot represent fixed POST application/json body without changing transport semantics"
+  ],
+  "next_after_authoring": "V4_WF40_EXECUTION_TRANSPORT_PATCH_APPLY_OFFLINE"
+}
