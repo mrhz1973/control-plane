@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`  
-**Versione:** 3.3 — 2026-08-31  
+**Versione:** 3.4 — 2026-08-31  
 **Stato:** CANONICAL  
 **Ruolo:** contratto operativo master per gli Execution Packet destinati a Cursor nel modello multi-planner. Non è un cambiamento runtime.
 
@@ -89,7 +89,24 @@ final_report_contract: cursor-standard-v3
 
 Scope, validation, acceptance, stop policy e checkpoint policy sono obbligatori.
 
-### 2.1 One-pass default
+### 2.1 Dispatch/result anchor
+
+Quando il packet viene effettivamente consegnato a Cursor:
+
+```text
+dispatch_task_ref  = task_id / BLOCK-ID effettivamente consegnato
+dispatch_base_head = expected_base_head effettivamente consegnato
+```
+
+Questi due valori costituiscono l'anchor immutabile per rilevare il risultato del pass fino a quando PASS/STOP non è stato ingerito e riepilogato dall'orchestratore.
+
+- osservare una HEAD più recente non cambia l'anchor;
+- un commit GPT-Web successivo non cambia l'anchor;
+- `agg`/automation confronta `dispatch_base_head..origin/main` per `dispatch_task_ref`;
+- l'anchor si chiude solo dopo outcome ingestion;
+- dettaglio canonico: `PROMPT_SEQUENCING_GATE.md`.
+
+### 2.2 One-pass default
 
 Default:
 
@@ -212,7 +229,13 @@ reports/runtime/cursor-stops/<UTC_TIMESTAMP>__<TASK_REF>.stop.json
 ```
 
 6. stage/commit/push SOLO quel nuovo `.stop.json`;
-7. verificare che il dirty tree produttivo/test resti uncommitted.
+7. usare come prima riga del commit:
+
+```text
+cursor-stop: <TASK_REF>
+```
+
+8. verificare che il dirty tree produttivo/test resti uncommitted.
 
 Shape minima:
 
@@ -221,7 +244,7 @@ Shape minima:
   "schema_version": "cursor-stop-evidence-v1",
   "task_ref": "<exact task ref>",
   "result_cursor": "STOP",
-  "starting_head": "<sha>",
+  "starting_head": "<dispatch_base_head>",
   "stop_evidence_commit": "<sha or PENDING_SELF_REFERENCE>",
   "failure_stage": "<PRECHECK|TARGET_TEST|REGRESSION|BUGBOT|RUNTIME_APPLY|OTHER>",
   "finding": "<precise bounded finding>",
@@ -248,11 +271,29 @@ Human:      Cursor → GitHub → agg → orchestratore
 Automation: Cursor → GitHub push event → orchestratore
 ```
 
-Stessa semantica. Nessun protocollo parallelo.
+Stessa semantica e stesso dispatch anchor. Nessun protocollo parallelo.
 
 ---
 
-## 7. Workflow-authoring boundary
+## 7. Orchestrator result-ingestion barrier
+
+Questa è una regola del metodo master, non un compito dell'operatore.
+
+Finché un pass Cursor ha un dispatch anchor aperto, GPT Web/orchestratore, **prima di qualsiasi propria scrittura GitHub**, deve:
+
+1. refresh `origin/main`;
+2. confrontare `dispatch_base_head..origin/main`;
+3. cercare l'outcome matching `dispatch_task_ref`;
+4. se presente, ingerirlo prima della propria scrittura;
+5. non sostituire l'anchor con la HEAD prodotta dalla propria scrittura.
+
+In questo modo un commit docs dell'orchestratore non può mai nascondere uno STOP/PASS Cursor già pushato.
+
+Recovery dopo context loss segue `PROMPT_SEQUENCING_GATE.md`: packet `expected_base_head` quando disponibile, altrimenti commit search esatto `cursor-stop: <TASK_REF>` e solo fallback bounded.
+
+---
+
+## 8. Workflow-authoring boundary
 
 - GPT Web/GPT-B resta autore autorevole dei workflow n8n e delle istruzioni UI/runtime per l'operatore.
 - Cursor non crea/progetta/modifica autonomamente la logica n8n.
@@ -269,7 +310,7 @@ con artifact completo o patch/hash esatta.
 
 ---
 
-## 8. Modello Cursor / quota
+## 9. Modello Cursor / quota
 
 Il modello Cursor è routing metadata e segue `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`.
 
@@ -288,7 +329,7 @@ Routing tipico:
 
 ---
 
-## 9. Execution Checkpoint
+## 10. Execution Checkpoint
 
 Se la sessione Cursor deve terminare prima del completamento e il job non è in STOP terminale, persistere un checkpoint con almeno:
 
@@ -315,7 +356,7 @@ Una nuova sessione riparte da repo + packet + checkpoint, non dalla vecchia chat
 
 ---
 
-## 10. BugBot
+## 11. BugBot
 
 ### `BUGBOT: NO`
 
@@ -341,7 +382,7 @@ Lo STOP BugBot segue la stessa persistence `cursor-stops/*.stop.json`.
 
 ---
 
-## 11. Commit/push e report finale
+## 12. Commit/push e report finale
 
 Commit sempre selettivo. Mai assumere `git add .` come default.
 
@@ -367,7 +408,7 @@ L'orchestratore non deve chiedere all'operatore shell manuale se GitHub/evidence
 
 ---
 
-## 12. Vietato
+## 13. Vietato
 
 - routing tramite colori UI;
 - `MODELLO CURSOR: AUTO` o modello non verificato;
@@ -384,29 +425,31 @@ L'orchestratore non deve chiedere all'operatore shell manuale se GitHub/evidence
 - dichiarare PASS senza evidence;
 - committare production/test incomplete changes su STOP;
 - scrivere STOP intermedi dentro `LAST_CURSOR_REPORT.md`;
+- usare `last_observed_head` al posto del dispatch anchor per classificare l'ultimo pass;
+- fare una scrittura GPT-Web mentre esiste outcome Cursor non ingerito nel dispatch range;
 - mega-prompt che ricopia il metodo stabile;
 - inventare baseline/SHA/blob/candidate.
 
 ---
 
-## 13. Wiki-LLM lean / context
+## 14. Wiki-LLM lean / context
 
 - `CURRENT_FRONTIER.md` = LIVE STATE compatto.
 - `LAST_CURSOR_REPORT.md` = rolling evidence dell'ultimo PASS completato, letto on-demand.
-- `reports/runtime/cursor-stops/*.stop.json` = STOP evidence immutabile, letta solo se il Git delta del pass la punta.
+- `reports/runtime/cursor-stops/*.stop.json` = STOP evidence immutabile, letta solo se il dispatch range/current task la punta.
 - niente broad scan della cartella STOP durante `agg`;
 - niente chronology nel frontier;
 - niente duplicazione del metodo nei TASK DELTA.
 
 ---
 
-## 14. Relazione con gli altri documenti
+## 15. Relazione con gli altri documenti
 
 - `docs/runtime/CURRENT_FRONTIER.md` = stato runtime autorevole.
 - `docs/foundation/PROJECT_VISION.md` = foundation/invarianti.
 - `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md` = operating model multi-planner.
 - `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` = forma user-facing, model routing, BugBot, TASK DELTA e `agg`.
-- `docs/foundation/PROMPT_SEQUENCING_GATE.md` = sequencing + PASS/STOP persistence + human/automation equivalence.
+- `docs/foundation/PROMPT_SEQUENCING_GATE.md` = sequencing + dispatch anchor + PASS/STOP persistence + human/automation equivalence.
 - `docs/foundation/WIKI_LLM_LEAN_METHOD.md` = metodo lean di navigazione/evidence.
 - Questo file = master operativo dell'Execution Packet destinato a Cursor.
 
