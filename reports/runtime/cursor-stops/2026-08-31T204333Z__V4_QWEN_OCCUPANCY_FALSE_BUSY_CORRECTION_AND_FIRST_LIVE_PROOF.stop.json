@@ -1,0 +1,53 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_QWEN_OCCUPANCY_FALSE_BUSY_CORRECTION_AND_FIRST_LIVE_PROOF",
+  "run_nonce": "QWEN_OCCUPANCY_FIX_LIVE_20260831_01",
+  "block_id": "V4_QWEN_OCCUPANCY_FALSE_BUSY_CORRECTION_AND_FIRST_LIVE_PROOF",
+  "category": "RUNTIME_SAFETY_CORRECTION_PLUS_LIVE_PROOF",
+  "result": "STOP",
+  "dispatch_base_head": "68d35f7fd9783a66e2037b5893bf849f6b211469",
+  "utc_timestamp": "2026-08-31T204333Z",
+  "finding": "QWEN_OCCUPANCY_UNCERTAIN",
+  "finding_detail": "Occupancy code correction completed and verified (PS_DIAGNOSTIC Write parentheses fixed; msedge passive WebUI allowlist → PASSIVE_CANONICAL_WEBUI_CLIENT / READY_IDLE; contribution suite 38/38; regressions PASS; BugBot PASS_NO_FINDINGS). Live continuation blocked: after correction, canonical gather+classify returned QWEN_OCCUPANCY_UNCERTAIN / SERVER_PROCESS_WITHOUT_LISTENER — llama-server process present without LISTEN on 127.0.0.1:8080; GET /v1/models unreachable; fast_8k/dflash not exposed. No process kill authorized. STOP before register-pending. First-live IDs still unused. Dirty tree preserves occupancy fix (not discarded).",
+  "code_correction": {
+    "ps_diagnostic_write_parentheses": "FIXED",
+    "msedge_passive_webui_not_false_busy": "FIXED",
+    "target_suite": "tests/v4-local-runtime-readonly-contribution/run.mjs 38/38 PASS",
+    "regressions": "private-endpoint 22/22; execution-endpoint 61/61; opencode-adapter 23/23; guard 16/16",
+    "git_diff_check": "PASS",
+    "bugbot": "PASS_NO_FINDINGS",
+    "committed_in_this_stop": false,
+    "preserved_in_working_tree": true
+  },
+  "live_gate": {
+    "listeners_18790": 1,
+    "listeners_18791": 1,
+    "listeners_18792": 1,
+    "pending": 0,
+    "registry": 0,
+    "ledger": 0,
+    "occupancy_classification": "QWEN_OCCUPANCY_UNCERTAIN",
+    "occupancy_reason": "SERVER_PROCESS_WITHOUT_LISTENER",
+    "fast_8k_exposed": false,
+    "dflash_present": false,
+    "pending_registrations": 0,
+    "telegram_decision_messages": 0,
+    "human_approve": 0,
+    "execution_endpoint_post": 0,
+    "opencode": 0,
+    "qwen_generations": 0,
+    "second_auth": 0,
+    "second_execution": 0
+  },
+  "invariants_preserved": {
+    "CURRENT_FRONTIER_unchanged": true,
+    "LAST_CURSOR_REPORT_unchanged": true,
+    "no_pending_created": true,
+    "no_telegram_message": true,
+    "no_registry_write": true,
+    "no_ledger_write": true,
+    "no_process_kill": true,
+    "prior_stop_68d35f7_not_reused_as_this_run_evidence": true
+  },
+  "next_required_before_retry": "Operator restore canonical Qwen so classifyQwenSharedRuntime=QWEN_READY_IDLE with fast_8k+dflash exposed (no agent process kill). Keep/commit the dirty occupancy fix, then reopen first-live register→APPROVE→one execution."
+}
