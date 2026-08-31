@@ -1,8 +1,8 @@
 # GLM MODES — control-plane
 
 **File:** `docs/advisors/GLM_ADVISOR_METHOD.md`  
-**Updated:** 2026-08-25  
-**Aligned to:** `PROJECT_VISION.md` v3.0  
+**Updated:** 2026-08-31  
+**Aligned to:** `PROJECT_VISION.md` v3.x  
 **Role:** define the allowed **GLM operating modes** without confusing advisory, planning and execution authority.  
 **Runtime authorized by this document:** **NO**
 
@@ -123,7 +123,7 @@ Planner Mode:
 - does **not** acquire n8n workflow-authoring authority;
 - records fallback/provenance if GLM was not the originally requested planner.
 
-After packet generation, deterministic n8n/policy decides `CURSOR_LOOP` vs `TELEGRAM_GATE`.
+After packet generation, deterministic n8n/policy decides the allowed execution/gate path.
 
 ---
 
@@ -152,9 +152,12 @@ Within the packet:
 - inspect allowed repository paths;
 - edit through Cursor;
 - run allowed terminal/test commands;
-- iterate in the bounded Cursor loop;
+- follow the canonical **one-pass default** from `CURSOR_PROMPT_TEMPLATE.md` / `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`;
+- execute a bounded corrective loop only when the current task explicitly authorizes it with finite bound and stop conditions;
 - create/update required Execution Checkpoint;
 - produce the required final Git/test report.
+
+GLM as Cursor Executor must not infer permission for an internal `fix → test → fix → test` loop merely from having tool access or from a failed test. Under the default policy, the first failed required validation/finding causes STOP and a later corrective pass is issued through the normal sequencing flow.
 
 ### 4.3 Stop/escalate
 
@@ -164,20 +167,21 @@ Stop on:
 - destructive action;
 - credentials/auth/billing mutation;
 - production/runtime gate;
-- max loop/review rounds;
+- first failed required validation/review under the default one-pass policy;
+- explicit corrective-loop bound when such a loop was authorized;
 - conflict impossible to resolve inside the packet;
 - context rollover before a checkpoint can be persisted.
 
 ### 4.4 Not assumed yet
 
-Foundation v3 does **not** claim that the current Cursor installation has already passed:
+Foundation v3 does **not** claim that every current Cursor installation/capability has already passed:
 
-- GLM as main Agent model under the desired loop;
+- GLM as main Agent model under the desired execution policy;
 - GLM as custom subagent;
 - all Cursor tools/subagents with GLM BYOK;
-- cost/usage behavior under long loops.
+- cost/usage behavior under long tasks.
 
-These require dedicated evidence in migration issue #8.
+Use only verified capabilities; do not infer availability from this document.
 
 ---
 
@@ -223,22 +227,23 @@ The routing decision must record planner requested vs planner actually used.
 
 ---
 
-## 7. Relation to Cursor
+## 7. Relation to Cursor model recommendation
 
-Canonical Cursor contract:
+Canonical Cursor execution contract:
 
 `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`
 
-Target economy:
+Canonical **user-facing model recommendation and GLM quota-conservation policy**:
 
-```text
-Cursor harness
-  + GLM BYOK for ordinary implementation
-  + Cursor native models where advantageous
-  + Codex/Qwen advisor tools where verified
-```
+`docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`
 
-Changing Cursor's inference model never changes packet scope or gate policy.
+This document deliberately does not duplicate those thresholds. Invariants here are only:
+
+- changing Cursor's inference model never changes packet scope or gate policy;
+- GLM 5.3 BYOK may be recommended for architecture, difficult debugging, cross-system/runtime integration and technical blockers when verified and quota policy permits;
+- trivial/docs/mechanical work should not consume GLM merely because GLM is available;
+- GLM should not be consumed by repetitive test/proof loops;
+- the exact model name shown to the operator must match a verified usable Cursor option.
 
 ---
 
@@ -279,9 +284,10 @@ This document does not authorize:
 - permanent schedule/loop;
 - public webhook/Telegram Trigger;
 - provider credential changes;
-- Bugbot Autofix cloud;
+- BugBot Autofix cloud;
 - destructive Git;
-- silent production workflow mutation.
+- silent production workflow mutation;
+- implicit corrective loops not authorized by the current task.
 
 Exact runtime values live in `CURRENT_FRONTIER.md`.
 
@@ -294,6 +300,8 @@ Prior session logs that say `GLM = advisor read-only` remain historically correc
 They are **not** current evidence that GLM is forbidden from Planner/Executor roles under foundation v3.
 
 Likewise, old advisor no-write evidence remains valid evidence of those sessions and must not be rewritten.
+
+Old generic references to bounded Cursor loops are superseded by the current one-pass default unless the active task explicitly authorizes a bounded corrective loop.
 
 ---
 
