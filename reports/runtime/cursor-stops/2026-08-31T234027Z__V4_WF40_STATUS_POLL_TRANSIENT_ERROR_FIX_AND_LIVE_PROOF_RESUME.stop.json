@@ -1,0 +1,65 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_WF40_STATUS_POLL_TRANSIENT_ERROR_FIX_AND_LIVE_PROOF_RESUME",
+  "run_nonce": "WF40_STATUS_POLL_FIX_20260901_01",
+  "block_id": "V4_WF40_STATUS_POLL_TRANSIENT_ERROR_FIX_AND_LIVE_PROOF_RESUME",
+  "category": "WF40_STATUS_POLL_FIX_PLUS_LIVE_PROOF",
+  "result": "STOP",
+  "dispatch_base_head": "8689917fc53d81897be4cdb5650e57a3a449505d",
+  "utc_timestamp": "2026-08-31T234027Z",
+  "finding": "QWEN_READY_IDLE_PREFLIGHT_FAILED",
+  "finding_detail": "Status-poll transient-error fix landed offline (27/27 target tests) and BugBot PASS_NO_FINDINGS. WF40 post-WF61 seam re-applied live (71→83) with corrected parse-authorization-status transient handling verified on VPS export. Phase E live WF40 authorized execution proof not started: canonical occupancy preflight failed twice with QWEN_BUSY_SHARED_RUNTIME / NONCANONICAL_INFERENCE_LISTENER_ACTIVE due to an additional llama-server LISTEN socket on 127.0.0.1:58074 while canonical 8080 llama-server is present; qwen_local contribution reports available=false. D-0025 gate remains CLOSED on VPS; WF61 inactive. SECOND_PROVIDER=0 SECOND_REGISTER=0 SECOND_EXECUTION=0.",
+  "bugbot": {
+    "result": "PASS_NO_FINDINGS"
+  },
+  "phase_progress": {
+    "status_poll_fix": "PASS",
+    "target_tests": "27/27",
+    "git_diff_check": "PASS",
+    "wf40_seam_applied": "PASS_71_TO_83",
+    "regressions_rerun_this_pass": {
+      "v4-wf40-live-execution-sidecars": "27/27",
+      "v4-execution-adapter-router": "15/15"
+    },
+    "phase_e_live_proof": "NOT_STARTED"
+  },
+  "hard_counters": {
+    "wf40_executions": 0,
+    "wf61_executions": 0,
+    "remote_planner_calls": 0,
+    "telegram_messages": 0,
+    "authorization_registrations": 0,
+    "execution_endpoint_post": 0,
+    "opencode": 0,
+    "qwen_generations": 0,
+    "second_provider": 0,
+    "second_register": 0,
+    "second_execution": 0
+  },
+  "live_wf40_after_seam": {
+    "wf40_id": "9ZMj2ACTKyDVhCue",
+    "active": true,
+    "nodes": 83,
+    "versionId": "a609ad90-7eb4-4495-9ec5-c4413165cea1",
+    "has_live_proposal_nodes": true,
+    "parse_status_transient_fix": true,
+    "adapter_reads_build_node": true
+  },
+  "qwen_preflight": {
+    "classification": "QWEN_BUSY_SHARED_RUNTIME",
+    "reason": "NONCANONICAL_INFERENCE_LISTENER_ACTIVE",
+    "non_canonical_listeners_observed": [
+      "127.0.0.1:58074 llama-server",
+      "127.0.0.1:11435 python"
+    ],
+    "canonical_listener": "127.0.0.1:8080 llama-server",
+    "qwen_local_available_in_resource_status": false
+  },
+  "restored_live_baseline": {
+    "d0025_gate_enabled": false,
+    "provider_calls_authorized_per_event": 0,
+    "wf61_active": false,
+    "active_authorization_count": 0
+  },
+  "next_required_before_retry": "Restore stable QWEN_READY_IDLE (eliminate or ratify non-canonical llama-server listener on 58074), re-verify qwen_local available=true via local-readonly contribution, then arm bounded D-0025 gate + fresh backlog/route-source and resume Phase E human-gated WF40 live proof without altering the corrected 83-node seam."
+}

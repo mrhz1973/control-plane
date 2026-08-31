@@ -7,11 +7,11 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (71 nodes)** · Windows execution endpoint **PERSISTED** · first human-authorized local OpenCode/Qwen execution **PASS** · AUTH 004 durably spent · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_FIRST_LIVE_AUTHORIZED_EXECUTION_RETRY_004_EXACT_REGISTER_SCHEMA` — **COMPLETE** |
-| **STATO BLOCCO** | REGISTER_SCHEMA_EXACT / QWEN_READY_IDLE_STABLE / HUMAN_APPROVAL_PASS / FIRST_LIVE_EXECUTION_PASS / OPENCODE_EXECUTIONS=1 / QWEN_GENERATIONS=1 / GUARD_UPSTREAM=1 / AUTH_001_SPENT_PRESERVED / AUTH_002_SPENT_PRESERVED / AUTH_003_ABSENT / AUTH_004_SPENT / NO_ACTIVE_AUTHORIZATION / LIVE_GATE_RECLOSED / RETRY=0 / FALLBACK=0 / WF40_EXECUTIONS=0 / WF61_EXECUTIONS=0 / CLOUD_PROVIDER_CALLS=0 |
-| **GATE CORRENTE** | **CLOSED TO LIVE EXECUTION** · first live human-approved proof complete · AUTH 004 SPENT · no ACTIVE authorization |
-| **NEXT** | `V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF` |
-| **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **71 nodes** · versionId `e2d600d6-48d9-45fe-9527-3f3e0b47d358` |
+| **BLOCCO ATTIVO** | `V4_WF40_STATUS_POLL_TRANSIENT_ERROR_FIX_AND_LIVE_PROOF_RESUME` — **STOP (Phase E preflight)** |
+| **STATO BLOCCO** | STATUS_POLL_FIX_PASS · WF40_SEAM_83_LIVE · BUGBOT_PASS · live proof **NOT STARTED** · QWEN_BUSY_SHARED_RUNTIME (`llama-server` on `:58074`) · WF40=0 · WF61=0 · planner=0 · Telegram=0 · AUTH preserved SPENT · no ACTIVE authorization |
+| **GATE CORRENTE** | **CLOSED TO LIVE EXECUTION** · D-0025 gate CLOSED |
+| **NEXT** | Restore stable `QWEN_READY_IDLE`, then resume `V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF` |
+| **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · versionId `a609ad90-7eb4-4495-9ec5-c4413165cea1` · post-WF61 authorization lane with transient status-poll fix |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
 | **RESOURCE_STATUS COMPOSER** | `tools/compose-v4-resource-status-control-plane-v1.mjs` · wired in WF40 TRUE lane |
