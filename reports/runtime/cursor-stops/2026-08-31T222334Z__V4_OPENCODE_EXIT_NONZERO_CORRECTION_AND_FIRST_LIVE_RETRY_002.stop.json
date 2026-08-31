@@ -1,0 +1,65 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_OPENCODE_EXIT_NONZERO_CORRECTION_AND_FIRST_LIVE_RETRY_002",
+  "run_nonce": "OPENCODE_EXIT_FIX_LIVE_20260901_01",
+  "block_id": "V4_OPENCODE_EXIT_NONZERO_CORRECTION_AND_FIRST_LIVE_RETRY_002",
+  "category": "RUNTIME_SAFETY_CORRECTION_PLUS_LIVE_PROOF",
+  "result": "STOP",
+  "dispatch_base_head": "34acd1faaf56e1c45e673c978d2748066df686af",
+  "utc_timestamp": "2026-08-31T222334Z",
+  "finding": "OCCUPANCY_BLOCKED",
+  "finding_detail": "OpenCode runner correction completed offline (native binary spawn; --pure/--title no --auto; tools-deny overlay; classifyOpenCodeProcessFailure; fake-provider diagnostic exit0 with <=1 generation; suites PASS; BugBot PASS_NO_FINDINGS). Live retry 002: register once + human APPROVE → ISSUED/ACTIVE. Pre-exec occupancy READY_IDLE. Exactly one execution POST returned HTTP 200 OCCUPANCY_BLOCKED / QWEN_BUSY_SHARED_RUNTIME with execution_performed=false, OpenCode=0, Qwen=0. Durable post-state: AUTH-V4-FIRST-LIVE-002=SPENT with ADMISSION_CONSUMED ledger record (AUTH-V4-FIRST-LIVE-001 remains SPENT untouched). No second execution. Runner fix preserved in dirty tree.",
+  "code_correction": {
+    "root_cause_001": "OPENCODE_NATIVE_BINARY_INVOKED_VIA_NODE (node.exe spawned opencode.exe)",
+    "fixes": [
+      "spawn native opencode.exe directly",
+      "argv --pure --title, no --auto",
+      "OPENCODE_DISABLE_* suite",
+      "overlay permission *=deny",
+      "bounded nonzero exit classification"
+    ],
+    "fake_provider_diag": "PASS exit0 upstream_hits=1 real_qwen=0",
+    "endpoint_suite": "65/65",
+    "adapter_suite": "23/23",
+    "guard_suite": "16/16",
+    "bugbot": "PASS_NO_FINDINGS",
+    "committed_in_this_stop": false,
+    "preserved_in_working_tree": true
+  },
+  "live_retry_002": {
+    "register": 1,
+    "telegram_decision_messages": 1,
+    "human_approve": 1,
+    "pending_002": "ISSUED",
+    "auth_001": "SPENT",
+    "auth_002": "SPENT",
+    "execution_endpoint_post": 1,
+    "execution_performed": false,
+    "http_classification": "OCCUPANCY_BLOCKED",
+    "occupancy_at_exec": "QWEN_BUSY_SHARED_RUNTIME",
+    "opencode": 0,
+    "qwen_generations": 0,
+    "second_auth": 0,
+    "second_execution": 0
+  },
+  "hard_counters": {
+    "pending_registrations_002": 1,
+    "telegram_decision_messages": 1,
+    "human_approve_decisions": 1,
+    "execution_endpoint_post": 1,
+    "opencode_executions": 0,
+    "qwen_generations": 0,
+    "retry": 0,
+    "fallback": 0,
+    "second_auth": 0,
+    "second_execution": 0
+  },
+  "invariants_preserved": {
+    "CURRENT_FRONTIER_unchanged": true,
+    "LAST_CURSOR_REPORT_unchanged": true,
+    "auth_001_spent_untouched": true,
+    "no_second_execution": true,
+    "no_same_pass_live_recovery": true
+  },
+  "next_required_before_retry": "Commit OpenCode runner fix. Investigate transient ESTABLISHED_INFERENCE_CLIENT race between pre-exec READY_IDLE and in-process occupancy at 18791 (reload contribution classifier if stale). New live IDs required (003+) because AUTH-002 is SPENT. No reuse of 001/002."
+}
