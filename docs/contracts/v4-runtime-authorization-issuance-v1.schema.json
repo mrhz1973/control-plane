@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-runtime-authorization-issuance-v1.schema.json",
+  "title": "v4-runtime-authorization-issuance-v1 messages",
+  "oneOf": [
+    { "$ref": "#/$defs/registerPendingRequest" },
+    { "$ref": "#/$defs/registerPendingResult" },
+    { "$ref": "#/$defs/issueRequest" },
+    { "$ref": "#/$defs/issueResult" }
+  ],
+  "$defs": {
+    "id200": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "scopeDigest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reasonCodes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 200 },
+      "maxItems": 20
+    },
+    "registerPendingRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "pending_decision_id",
+        "authorization_id",
+        "task_id",
+        "execution_id",
+        "route_id",
+        "scope_digest",
+        "pending_ttl_seconds"
+      ],
+      "properties": {
+        "schema_version": { "const": "v4-runtime-authorization-register-pending-request-v1" },
+        "pending_decision_id": { "$ref": "#/$defs/id200" },
+        "authorization_id": { "$ref": "#/$defs/id200" },
+        "task_id": { "$ref": "#/$defs/id200" },
+        "execution_id": { "$ref": "#/$defs/id200" },
+        "route_id": { "const": "opencode+qwen_local" },
+        "scope_digest": { "$ref": "#/$defs/scopeDigest" },
+        "pending_ttl_seconds": { "type": "integer", "minimum": 1, "maximum": 900 }
+      }
+    },
+    "registerPendingResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "ok",
+        "classification",
+        "pending_decision_id",
+        "authorization_id",
+        "state",
+        "pending_expires_at",
+        "reason_codes"
+      ],
+      "properties": {
+        "schema_version": { "const": "v4-runtime-authorization-register-pending-result-v1" },
+        "ok": { "type": "boolean" },
+        "classification": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "pending_decision_id": { "oneOf": [{ "$ref": "#/$defs/id200" }, { "type": "null" }] },
+        "authorization_id": { "oneOf": [{ "$ref": "#/$defs/id200" }, { "type": "null" }] },
+        "state": { "oneOf": [{ "const": "PENDING" }, { "type": "null" }] },
+        "pending_expires_at": { "oneOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }] },
+        "reason_codes": { "$ref": "#/$defs/reasonCodes" }
+      }
+    },
+    "issueRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "pending_decision_id",
+        "selected_option",
+        "telegram_update_id",
+        "telegram_chat_id",
+        "task_id",
+        "execution_id",
+        "route_id",
+        "scope_digest",
+        "authorization_expires_at"
+      ],
+      "properties": {
+        "schema_version": { "const": "v4-runtime-authorization-issue-request-v1" },
+        "pending_decision_id": { "$ref": "#/$defs/id200" },
+        "selected_option": { "enum": ["APPROVE", "REJECT"] },
+        "telegram_update_id": { "$ref": "#/$defs/id200" },
+        "telegram_chat_id": { "$ref": "#/$defs/id200" },
+        "task_id": { "$ref": "#/$defs/id200" },
+        "execution_id": { "$ref": "#/$defs/id200" },
+        "route_id": { "const": "opencode+qwen_local" },
+        "scope_digest": { "$ref": "#/$defs/scopeDigest" },
+        "authorization_expires_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "issueResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "ok",
+        "classification",
+        "pending_decision_id",
+        "authorization_id",
+        "state",
+        "reason_codes"
+      ],
+      "properties": {
+        "schema_version": { "const": "v4-runtime-authorization-issue-result-v1" },
+        "ok": { "type": "boolean" },
+        "classification": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "pending_decision_id": { "oneOf": [{ "$ref": "#/$defs/id200" }, { "type": "null" }] },
+        "authorization_id": { "oneOf": [{ "$ref": "#/$defs/id200" }, { "type": "null" }] },
+        "state": {
+          "oneOf": [
+            { "enum": ["APPROVED", "REJECTED", "ISSUED", "EXPIRED"] },
+            { "type": "null" }
+          ]
+        },
+        "reason_codes": { "$ref": "#/$defs/reasonCodes" }
+      }
+    }
+  }
+}
