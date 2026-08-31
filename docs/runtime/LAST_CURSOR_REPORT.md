@@ -5,81 +5,62 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_RUNTIME_AUTHORIZATION_ISSUANCE_PRODUCTION_SERVICE_WIRING_AND_PERSISTENCE_BUGBOT_CORRECTION
+task_ref: V4_FIRST_LIVE_AUTHORIZED_EXECUTION_RETRY_004_EXACT_REGISTER_SCHEMA
+run_nonce: FIRST_LIVE_004_20260901_01
 result_cursor: PASS
-starting_head: 41e24f278a694b87acc560987e0c359704d09651
-dispatch_base_head: 41e24f278a694b87acc560987e0c359704d09651
-final_head: a369957
+starting_head: 90a284767415deb05b8dff8010e3fd4185fafb9e
+dispatch_base_head: 90a284767415deb05b8dff8010e3fd4185fafb9e
+final_head: PENDING_COMMIT
 
-category: ROUTINE_CORRECTIVE_RUNTIME (corrective pass over STOP 41e24f2)
-bugbot_corrections: 1
-bugbot_result: PASS_NO_FINDINGS
+category: FIRST_LIVE_HUMAN_AUTHORIZED_EXECUTION
+register_schema: exact_eight_keys
+scope_digest: ca501cb41602028c4e575a08bcdfc491a793b7cb462790a6f3a4fc67efdb85aa
+register_requests: 1
+register_result: REGISTER_PENDING_ACCEPTED
+real_telegram_decision_messages: 1
+human_approve_decisions: 1
+pending_004_final: ISSUED
+auth_001: SPENT_PRESERVED
+auth_002: SPENT_PRESERVED
+auth_003: ABSENT_UNISSUED
+auth_004_final: SPENT
+active_authorizations_remaining: 0
+ledger_004_records: 1 ADMISSION_CONSUMED
 
-race_fix: pending-store single-writer async mutation lane (register holds through send+persist)
-race_regression_tests: 58 APPROVE / 59 REJECT / 60 reconcile+register
-
-real_telegram_decision_messages: 0
-telegram_health_getMe: ok
-telegram_health_getUpdates: ok
-runtime_mutations: 1 (Scheduled Task + listener 18792)
-workflow_mutations: 0
-network_mutations: 1 (Tailscale private routes additive)
-tailscale_funnel: absent (tailnet only)
-scheduled_task: ControlPlane-V4-RuntimeAuthorizationIssuance
-listener_18792: exactly_one
-direct_telegram_poller: active
-production_pending_store_mutations: 0 (remains empty)
-production_registry_mutations: 0
-production_spend_ledger_mutations: 0
-n8n_mutations: 0
-http_execution_endpoint_requests: 0
+model_list_probes: 1
+qwen_early_occupancy_samples: 2 QWEN_READY_IDLE
+qwen_final_occupancy: QWEN_READY_IDLE
+http_execution_endpoint_requests: 1
+execution_performed: true
+replayed: false
+adapter_status: EXECUTED
+guard_started: true
+guard_upstream_generation_requests: 1
 wf40_executions: 0
 wf61_executions: 0
-opencode_cli_calls: 0
-qwen_generation_calls: 0
-provider_calls: 0
-authorization_issuance: 0
-authorization_spends_production: 0
-active_production_issuance: 0
-secret_exposure: false
-token_on_cmdline: false
-wf40_node_count_unchanged: 71
-wf61_active: false
-d0025_gate_closed: true
-live_execution: 0
-live_issuance: 0
-
-local_smoke_status: HTTP 200 ISSUANCE_PENDING_NOT_FOUND
-vps_smoke_status: HTTP 200 ISSUANCE_PENDING_NOT_FOUND
-
-target_suites:
-  - tests/v4-runtime-authorization-issuance/run.mjs: 60/60 PASS
-  - tests/v4-windows-local-execution-endpoint/run.mjs: 61/61 PASS
-  - tests/v4-runtime-authorization-durable-spend-ledger/run.mjs: 13/13 PASS
-
-regressions:
-  - opencode-execution-adapter: 23/23 PASS
-  - opencode-single-generation-guard: 16/16 PASS
-  - v4-local-runtime-readonly-contribution: 29/29 PASS
-  - v4-local-runtime-readonly-private-endpoint: 22/22 PASS
-
-git_diff_check: PASS
+opencode_executions: 1
+qwen_generation_calls: 1
+retry_calls: 0
+fallback_calls: 0
+cloud_provider_calls: 0
+response_validation: NOT_VALIDATED
+live_gate: RECLOSED
 
 pass_state:
-  - ISSUANCE_PRODUCTION_SERVICE_PERSISTED
-  - PENDING_STORE_SINGLE_WRITER_PROTECTED
-  - DIRECT_TELEGRAM_POLLER_ACTIVE
-  - ISSUANCE_PRIVATE_ROUTE_ACTIVE
-  - PENDING_STORE_EMPTY
-  - PRODUCTION_REGISTRY_EMPTY
-  - PRODUCTION_LEDGER_EMPTY
-  - READY_FOR_FIRST_LIVE_APPROVAL
-  - LIVE_EXECUTION_CLOSED
+  - REGISTER_SCHEMA_EXACT
+  - QWEN_READY_IDLE_STABLE
+  - HUMAN_APPROVAL_PASS
+  - FIRST_LIVE_EXECUTION_PASS
+  - OPENCODE_EXECUTIONS=1
+  - QWEN_GENERATIONS=1
+  - AUTH_004_SPENT
+  - NO_ACTIVE_AUTHORIZATION
+  - LIVE_GATE_RECLOSED
 
-next: V4_RUNTIME_AUTHORIZATION_FIRST_LIVE_APPROVAL_AND_EXECUTION_PROOF
+next: V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF
 
 evidence:
-  - reports/architecture/v4_runtime_authorization_issuance_production_service_wiring_and_persistence.md
+  - reports/architecture/v4_first_live_authorized_execution_retry_004.md
   - docs/runtime/CURRENT_FRONTIER.md
   - docs/runtime/LAST_CURSOR_REPORT.md
 ```
