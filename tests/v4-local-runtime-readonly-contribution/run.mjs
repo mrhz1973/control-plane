@@ -13,8 +13,12 @@ import {
   buildLocalRuntimeContribution,
   qwenObservation,
   opencodeObservation,
+  gatherQwenDiagnostics,
+  getProductionPsDiagnosticScript,
+  loadRuntimeConfig,
   PRODUCER_ID,
 } from "../../tools/produce-v4-local-runtime-readonly-contribution-v1.mjs";
+import { spawnSync } from "node:child_process";
 import {
   validateAgainstSchema,
 } from "../../tools/compose-v4-resource-status-control-plane-v1.mjs";
@@ -48,14 +52,14 @@ function listener(ownerName = "llama-server", port = 8080) {
   };
 }
 
-function establishedClient(port = 8080) {
+function establishedClient(port = 8080, ownerName = "blender") {
   return {
     localAddress: "127.0.0.1",
     localPort: 54321,
     remoteAddress: "127.0.0.1",
     remotePort: port,
     state: "Established",
-    ownerName: "blender",
+    ownerName,
   };
 }
 
@@ -98,12 +102,17 @@ async function run() {
     );
   }
 
-  // 3 established client socket -> BUSY
+  // 3 established non-WebUI client socket -> BUSY
   {
     const a = sample({ conns: [listener(), establishedClient()], procNames: ["llama-server", "blender"] });
     const b = sample({ conns: [listener()], procNames: ["llama-server"] });
     const r = classifyQwenSharedRuntime(a, b, RUNTIME);
-    check("established-client-busy", r.classification === "QWEN_BUSY_SHARED_RUNTIME", JSON.stringify(r));
+    check(
+      "established-client-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME" &&
+        r.reason === "ESTABLISHED_INFERENCE_CLIENT_ON_CANONICAL_PORT",
+      JSON.stringify(r),
+    );
   }
 
   // 4 BUSY -> available=false
@@ -335,6 +344,151 @@ async function run() {
         parsed.launch_performed === false &&
         parsed.generation_calls === 0,
       JSON.stringify({ lines: lines.length, cls: parsed.qwen_occupancy_classification }),
+    );
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Occupancy false-BUSY + PS_DIAGNOSTIC correction regressions         */
+  /* ------------------------------------------------------------------ */
+
+  // PS diagnostic script contains fixed Write parentheses (syntax defect gone)
+  {
+    const script = getProductionPsDiagnosticScript();
+    check(
+      "ps-diagnostic-write-parentheses-fixed",
+      script.includes("[Console]::Out.Write(($out | ConvertTo-Json -Depth 5 -Compress))") &&
+        !script.includes("[Console]::Out.Write($out | ConvertTo-Json -Depth 5 -Compress)"),
+      "write form mismatch",
+    );
+  }
+
+  // On win32: production diagnostic parses (ParseFile) and runs (not DIAGNOSTICS_INCOMPLETE)
+  if (process.platform === "win32") {
+    const { writeFileSync, unlinkSync, mkdtempSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const dir = mkdtempSync(join(tmpdir(), "cp-ps-diag-"));
+    const scriptPath = join(dir, "diag.ps1");
+    writeFileSync(scriptPath, getProductionPsDiagnosticScript(), "utf8");
+    const parse = spawnSync(
+      "powershell.exe",
+      [
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        `$e=$null; $null=[System.Management.Automation.Language.Parser]::ParseFile('${scriptPath.replace(/'/g, "''")}', [ref]$null, [ref]$e); if($e -and $e.Count -gt 0){ $e|ForEach-Object{ $_.Message }; exit 1 } else { 'PARSE_OK' }`,
+      ],
+      { encoding: "utf8", windowsHide: true, timeout: 30000 },
+    );
+    try {
+      unlinkSync(scriptPath);
+    } catch {
+      /* ignore */
+    }
+    check(
+      "ps-diagnostic-parses",
+      parse.status === 0 && String(parse.stdout || "").includes("PARSE_OK"),
+      JSON.stringify({ status: parse.status, out: parse.stdout, err: (parse.stderr || "").slice(0, 300) }),
+    );
+    const diag = gatherQwenDiagnostics(loadRuntimeConfig());
+    check(
+      "ps-diagnostic-runs-not-incomplete",
+      diag.ok === true && diag.sampleA?.ok === true && diag.sampleB?.ok === true,
+      JSON.stringify({ ok: diag.ok, a: diag.sampleA?.ok, b: diag.sampleB?.ok }),
+    );
+    const live = classifyQwenSharedRuntime(diag.sampleA, diag.sampleB, loadRuntimeConfig());
+    check(
+      "ps-diagnostic-classify-not-incomplete",
+      live.reason !== "DIAGNOSTICS_INCOMPLETE",
+      JSON.stringify(live),
+    );
+  } else {
+    check("ps-diagnostic-parses", true, "skipped-non-win32");
+    check("ps-diagnostic-runs-not-incomplete", true, "skipped-non-win32");
+    check("ps-diagnostic-classify-not-incomplete", true, "skipped-non-win32");
+  }
+
+  // canonical listener + msedge WebUI only -> READY_IDLE
+  {
+    const edge = establishedClient(8080, "msedge");
+    const a = sample({ conns: [listener(), edge], procNames: ["llama-server", "msedge"] });
+    const b = sample({ conns: [listener(), edge], procNames: ["llama-server", "msedge"] });
+    const r = classifyQwenSharedRuntime(a, b, RUNTIME);
+    check(
+      "msedge-webui-only-ready-idle",
+      r.classification === "QWEN_READY_IDLE" && r.reason === "PASSIVE_CANONICAL_WEBUI_CLIENT",
+      JSON.stringify(r),
+    );
+  }
+
+  // msedge + conflicting inference process -> BUSY
+  {
+    const edge = establishedClient(8080, "msedge");
+    const a = sample({
+      conns: [listener(), edge],
+      procNames: ["llama-server", "msedge", "vllm"],
+    });
+    const b = sample({
+      conns: [listener(), edge],
+      procNames: ["llama-server", "msedge", "vllm"],
+    });
+    const r = classifyQwenSharedRuntime(a, b, RUNTIME);
+    check(
+      "msedge-plus-conflicting-runner-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME" &&
+        r.reason === "CONFLICTING_INFERENCE_RUNNER_ACTIVE",
+      JSON.stringify(r),
+    );
+  }
+
+  // opencode-established client -> BUSY
+  {
+    const oc = establishedClient(8080, "opencode");
+    const a = sample({ conns: [listener(), oc], procNames: ["llama-server", "opencode"] });
+    const b = sample({ conns: [listener(), oc], procNames: ["llama-server", "opencode"] });
+    const r = classifyQwenSharedRuntime(a, b, RUNTIME);
+    check(
+      "opencode-established-client-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME" &&
+        r.reason === "ESTABLISHED_INFERENCE_CLIENT_ON_CANONICAL_PORT",
+      JSON.stringify(r),
+    );
+  }
+
+  // unknown established client -> BUSY fail-closed
+  {
+    const unk = establishedClient(8080, "chrome");
+    const a = sample({ conns: [listener(), unk], procNames: ["llama-server", "chrome"] });
+    const b = sample({ conns: [listener(), unk], procNames: ["llama-server", "chrome"] });
+    const r = classifyQwenSharedRuntime(a, b, RUNTIME);
+    check(
+      "unknown-established-client-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME" &&
+        r.reason === "ESTABLISHED_INFERENCE_CLIENT_ON_CANONICAL_PORT",
+      JSON.stringify(r),
+    );
+  }
+
+  // msedge + unknown established -> BUSY (WebUI does not mask real clients)
+  {
+    const edge = establishedClient(8080, "msedge");
+    const unk = {
+      ...establishedClient(8080, "mystery-agent"),
+      localPort: 54322,
+    };
+    const a = sample({
+      conns: [listener(), edge, unk],
+      procNames: ["llama-server", "msedge", "mystery-agent"],
+    });
+    const b = sample({
+      conns: [listener(), edge, unk],
+      procNames: ["llama-server", "msedge", "mystery-agent"],
+    });
+    const r = classifyQwenSharedRuntime(a, b, RUNTIME);
+    check(
+      "msedge-plus-unknown-client-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME",
+      JSON.stringify(r),
     );
   }
 

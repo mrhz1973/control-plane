@@ -64,7 +64,7 @@ $out = [pscustomobject]@{
   sampleA = [pscustomobject]@{ ok = $true; conns = @(MapConns $s1.conns); procNames = @($s1.procs | ForEach-Object { $_.name }) }
   sampleB = [pscustomobject]@{ ok = $true; conns = @(MapConns $s2.conns); procNames = @($s2.procs | ForEach-Object { $_.name }) }
 }
-[Console]::Out.Write($out | ConvertTo-Json -Depth 5 -Compress)
+[Console]::Out.Write(($out | ConvertTo-Json -Depth 5 -Compress))
 `;
 
 const INFERENCE_RE =
@@ -107,6 +107,14 @@ function listenersOnPort(conns, port) {
   );
 }
 
+/**
+ * Bounded allowlist: canonical launcher WebUI only (msedge).
+ * Passive transport to :8080 is NOT active inference — see
+ * reports/architecture/v4_qwen_shared_runtime_occupancy_diagnosis.md.
+ * Do not broaden to other browsers without explicit ratification.
+ */
+const PASSIVE_CANONICAL_WEBUI_OWNERS = new Set(["msedge"]);
+
 function establishedClientsOnPort(conns, port, listenerOwnerNames) {
   const ownerSet = new Set((listenerOwnerNames || []).map(normalizeName));
   return (conns || []).filter((c) => {
@@ -123,6 +131,26 @@ function establishedClientsOnPort(conns, port, listenerOwnerNames) {
     if (ownerSet.has(owner)) return false;
     return true;
   });
+}
+
+function partitionEstablishedClients(conns, port, listenerOwnerNames) {
+  const clients = establishedClientsOnPort(conns, port, listenerOwnerNames);
+  const passiveWebUi = [];
+  const busyClients = [];
+  for (const c of clients) {
+    const owner = normalizeName(c.ownerName);
+    if (PASSIVE_CANONICAL_WEBUI_OWNERS.has(owner)) {
+      passiveWebUi.push(c);
+    } else {
+      busyClients.push(c);
+    }
+  }
+  return { passiveWebUi, busyClients };
+}
+
+/** Test/introspection: whether an owner name is the bounded passive WebUI. */
+export function isPassiveCanonicalWebUiOwner(ownerName) {
+  return PASSIVE_CANONICAL_WEBUI_OWNERS.has(normalizeName(ownerName));
 }
 
 function sampleHasInferenceRunner(procNames, excludeExpected) {
@@ -142,7 +170,11 @@ function analyzeSample(sample, host, port) {
   const serverProcs = (sample.procNames || []).filter((n) =>
     isExpectedServer(n, {}),
   );
-  const clients = establishedClientsOnPort(sample.conns, port, ownerNames);
+  const { passiveWebUi, busyClients } = partitionEstablishedClients(
+    sample.conns,
+    port,
+    ownerNames,
+  );
   const conflicting = sampleHasInferenceRunner(sample.procNames, true);
   return {
     valid: true,
@@ -150,7 +182,10 @@ function analyzeSample(sample, host, port) {
     listenerOwnerNames: ownerNames,
     unexpectedOwner: ownerNames.length === 1 && !isExpectedServer(ownerNames[0], {}),
     serverProcCount: serverProcs.length,
-    hasEstablishedClient: clients.length > 0,
+    hasBusyEstablishedClient: busyClients.length > 0,
+    hasPassiveCanonicalWebUi: passiveWebUi.length > 0,
+    // legacy alias: any non-passive established client (fail-closed busy path)
+    hasEstablishedClient: busyClients.length > 0,
     hasConflictingRunner: conflicting,
   };
 }
@@ -216,16 +251,23 @@ export function classifyQwenSharedRuntime(snapshotA, snapshotB, runtimeConfig) {
       reason: "LISTENER_OWNER_UNRESOLVED",
     };
   }
-  if (a.hasEstablishedClient || b.hasEstablishedClient) {
+  if (a.hasBusyEstablishedClient || b.hasBusyEstablishedClient) {
     return {
       classification: "QWEN_BUSY_SHARED_RUNTIME",
-      reason: "ESTABLISHED_CLIENT_ON_CANONICAL_PORT",
+      reason: "ESTABLISHED_INFERENCE_CLIENT_ON_CANONICAL_PORT",
     };
   }
   if (a.hasConflictingRunner || b.hasConflictingRunner) {
     return {
       classification: "QWEN_BUSY_SHARED_RUNTIME",
       reason: "CONFLICTING_INFERENCE_RUNNER_ACTIVE",
+    };
+  }
+
+  if (a.hasPassiveCanonicalWebUi || b.hasPassiveCanonicalWebUi) {
+    return {
+      classification: "QWEN_READY_IDLE",
+      reason: "PASSIVE_CANONICAL_WEBUI_CLIENT",
     };
   }
 
@@ -366,6 +408,11 @@ export function buildLocalRuntimeContribution({
       opencode: oc,
     },
   };
+}
+
+/** Expose production PS diagnostic text for syntax/regression checks. */
+export function getProductionPsDiagnosticScript() {
+  return PS_DIAGNOSTIC;
 }
 
 /** ONE bounded read-only PowerShell diagnostic. Two fixed samples inside. */
