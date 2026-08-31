@@ -5,64 +5,61 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_LOCAL_RUNTIME_READONLY_TEST_PORT_ISOLATION_CORRECTION_ONE_PASS
+task_ref: V4_RESOURCE_STATUS_WF40_LOCAL_CONTRIBUTION_PATCH_APPLY_OFFLINE
 result_cursor: PASS
-starting_remote_head: 79d988af3d495e6e07226346c19d4f1f3f0cb84c
-local_preserved_from_head: 043283d4f62f28c833d43c87d86e7f2ec2816e7f
-final_head: d9e8b3cb0495b5bcc385171b3e1560525381c91c
-restored_stash: v4-private-endpoint-eaddrinuse-preserve
+starting_head: 7f2f13a1cba9627f38c85aa0924cce89d1cea3a5
+final_head: TO_BE_VERIFIED_AFTER_PUSH
 
-test_port_fixed_before: 18799
-test_port_strategy_after: os_assigned_ephemeral_listen_0
-production_port_unchanged: true
-response_close_guard_fix_preserved: true
-production_tool_modified: false
-tests_modified: true
+wf40_id: 9ZMj2ACTKyDVhCue
+wf40_pre_version_id: ef80943e-535d-430f-958f-56c03baa1c62
+wf40_post_version_id: 1257ed3f-12ad-4fa1-b6ce-ae3e62149b7c
+wf40_pre_node_count: 56
+wf40_post_node_count: 61
 
-endpoint_tool: tools/serve-v4-local-runtime-readonly-contribution-v1.mjs
-endpoint_tests: tests/v4-local-runtime-readonly-private-endpoint/run.mjs
-endpoint_contract: docs/contracts/v4-local-runtime-readonly-private-endpoint-v1.md
-endpoint_url: https://asusdesktop.tailc01234.ts.net/v4/resource-status/local-readonly
-loopback_host: 127.0.0.1
-loopback_port: 18790
+patch_artifact: workflows/patches/v4-wf40-local-resource-status-contribution.gpt-web.json
+patch_blob_sha: 7f7aefaa0df6afa4e9a74f55a27d70b9a2436849
+patch_applied_verbatim: true
 
-target_tests: PASS_22_OF_22
-regression_tests:
-  v4-local-runtime-readonly-contribution: PASS_29_OF_29
-  v4-resource-status-control-plane-source: PASS_34_OF_34
-  resource-status-validator: PASS_6_OF_6
+legacy_nodes_preserved: true
+new_local_status_nodes:
+  - v4f40-7301-4001-8301-000000000301
+  - v4f40-7302-4002-8302-000000000302
+  - v4f40-7303-4003-8303-000000000303
+  - v4f40-7304-4004-8304-000000000304
+  - v4f40-7305-4005-8305-000000000305
+sidecar_encode_parameter_update_exact: true
 
-scheduled_task_name: ControlPlane-V4-LocalRuntimeStatus
-scheduled_task_created: true
-endpoint_listener_ready: true
-tailscale_private_path_added: true
-openclaw_root_route_preserved: true
-public_exposure: false
+private_endpoint_url: https://asusdesktop.tailc01234.ts.net/v4/resource-status/local-readonly
+endpoint_reprobed: false
 
-vps_private_endpoint_proof: PASS
-qwen_occupancy_classification: QWEN_OCCUPANCY_UNCERTAIN
-qwen_available: false
-opencode_static_classification: OPENCODE_STATIC_DISPATCH_READY
-opencode_available: true
+fail_closed_empty_contributions_preserved: true
+technical_requirements_synthesized: false
+route_source_same_commit_preserved: true
 
-endpoint_requests: 1
-producer_evaluations: 1
-diagnostic_powershell_processes: 1
+wf61_active_final: false
+d0025_gate_closed_final: true
+executor_dispatch_added: false
+
+workflow_execution_calls: 0
+wf40_execution_calls: 0
+wf61_execution_calls: 0
+endpoint_http_calls: 0
+composer_runtime_calls: 0
+sidecar_adapter_execution_calls: 0
+bridge_execution_calls: 0
+provider_calls: 0
 qwen_generation_calls: 0
 qwen_http_calls: 0
-qwen_launcher_calls: 0
 qwen_session_manager_calls: 0
+qwen_launcher_calls: 0
 opencode_cli_calls: 0
 opencode_execution_count: 0
-process_kill_calls: 0
-process_stop_calls: 0
-process_restart_calls: 0
-provider_calls: 0
-workflow_execution_calls: 0
-workflow_mutations: 0
+credential_mutations: 0
+network_mutations: 0
+litellm_mutations: 0
+openclaw_mutations: 0
 secret_exposure: false
 
-architecture_report: reports/architecture/v4_local_runtime_readonly_private_endpoint_implementation.md
-NEXT: V4_RESOURCE_STATUS_WF40_LOCAL_CONTRIBUTION_PATCH_APPLY_OFFLINE
+architecture_report: reports/architecture/v4_resource_status_wf40_local_contribution_patch_apply_offline.md
+NEXT: V4_WF40_EXECUTION_ADAPTER_ROUTER_PATCH_AUTHORING
 ```
-

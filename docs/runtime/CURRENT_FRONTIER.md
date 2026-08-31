@@ -6,19 +6,18 @@
 |---|---|
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | WF40 V4 routing + sidecar-source lanes **APPLIED LIVE (56 nodes)** · RESOURCE_STATUS composer **OFFLINE COMPLETE** · local read-only contribution adapter **COMPLETE** · private local-readonly endpoint **LIVE / TAILSCALE PRIVATE** · GPT-Web WF40 local-status patch **AUTHORED / NOT APPLIED** |
-| **BLOCCO ATTIVO** | `V4_RESOURCE_STATUS_WF40_LOCAL_CONTRIBUTION_PATCH_APPLY_OFFLINE` |
-| **STATO BLOCCO** | PRIVATE_ENDPOINT_PASS / TARGET_22_OF_22 / REGRESSIONS_PASS / SCHEDULED_TASK_LIVE / TAILSCALE_PATH_LIVE / VPS_REACHABLE_PASS / DIAGNOSTIC_PS_1 / GENERATIONS_0 / PUBLIC_EXPOSURE_0 / WF40_PATCH_PENDING |
-| **GATE CORRENTE** | **CLOSED** · D-0025 closed · no Qwen/OpenCode/provider generation authorized · private endpoint reachability proven · WF40 local-status patch apply is next authorized structural step |
-| **NEXT** | `V4_RESOURCE_STATUS_WF40_LOCAL_CONTRIBUTION_PATCH_APPLY_OFFLINE` — apply verbatim GPT-Web artifact `workflows/patches/v4-wf40-local-resource-status-contribution.gpt-web.json` (expected 56→61). Do not redesign. Structural proof only; no workflow execution for validation. |
-| **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **56 nodes** · versionId `ef80943e-535d-430f-958f-56c03baa1c62` · local-status patch not applied |
+| **ACTIVE WORK** | WF40 V4 routing + sidecar-source + local RESOURCE_STATUS contribution lanes **APPLIED LIVE (61 nodes)** · RESOURCE_STATUS composer **OFFLINE COMPLETE** · local read-only contribution adapter **COMPLETE** · private local-readonly endpoint **LIVE / TAILSCALE PRIVATE** · GPT-Web WF40 local-status patch **APPLIED** |
+| **BLOCCO ATTIVO** | `V4_WF40_EXECUTION_ADAPTER_ROUTER_PATCH_AUTHORING` |
+| **STATO BLOCCO** | WF40_LOCAL_STATUS_PATCH_PASS / 56_TO_61 / EXACT_GPT_WEB_DELTA / WORKFLOW_EXECUTIONS_0 / ENDPOINT_CALLS_0 / GENERATIONS_0 / WF61_INACTIVE / D0025_CLOSED / EXECUTOR_DISPATCH_ABSENT |
+| **GATE CORRENTE** | **CLOSED** · D-0025 closed · no Qwen/OpenCode/provider generation authorized · next block is GPT-Web-owned authoring of WF40 downstream execution-adapter router delta |
+| **NEXT** | `V4_WF40_EXECUTION_ADAPTER_ROUTER_PATCH_AUTHORING` — GPT-Web authors the additive WF40 downstream execution delta using the already-built v4 execution-adapter router, execution adapter registry, and OpenCode execution adapter. Must consume an already-selected V4 route and preserve all authorization/occupancy gates. Do not apply/execute in this frontier update. |
+| **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **61 nodes** · versionId `1257ed3f-12ad-4fa1-b6ce-ae3e62149b7c` · local-status contribution lane applied |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
-| **RESOURCE_STATUS COMPOSER** | `tools/compose-v4-resource-status-control-plane-v1.mjs` · offline complete · target 34/34 PASS |
-| **LOCAL READONLY CONTRIBUTION ADAPTER** | `tools/produce-v4-local-runtime-readonly-contribution-v1.mjs` · committed · target 29/29 · single diagnostic bind · live proof PASS |
-| **PRIVATE ENDPOINT** | `tools/serve-v4-local-runtime-readonly-contribution-v1.mjs` · loopback `127.0.0.1:18790` · task `ControlPlane-V4-LocalRuntimeStatus` · URL `https://asusdesktop.tailc01234.ts.net/v4/resource-status/local-readonly` · VPS proof PASS |
-| **PRIVATE ENDPOINT CONTRACT** | `docs/contracts/v4-local-runtime-readonly-private-endpoint-v1.md` · GPT-Web authored |
-| **WF40 LOCAL STATUS PATCH** | `workflows/patches/v4-wf40-local-resource-status-contribution.gpt-web.json` · GPT-Web authored · **not applied** · expected 56→61 |
+| **RESOURCE_STATUS COMPOSER** | `tools/compose-v4-resource-status-control-plane-v1.mjs` · offline complete · target 34/34 PASS · wired in WF40 TRUE lane |
+| **LOCAL READONLY CONTRIBUTION ADAPTER** | `tools/produce-v4-local-runtime-readonly-contribution-v1.mjs` · committed · target 29/29 |
+| **PRIVATE ENDPOINT** | `tools/serve-v4-local-runtime-readonly-contribution-v1.mjs` · loopback `127.0.0.1:18790` · task `ControlPlane-V4-LocalRuntimeStatus` · URL `https://asusdesktop.tailc01234.ts.net/v4/resource-status/local-readonly` · VPS proof PASS · not re-probed in this apply |
+| **WF40 LOCAL STATUS PATCH** | `workflows/patches/v4-wf40-local-resource-status-contribution.gpt-web.json` · GPT-Web authored · **applied verbatim** · 56→61 |
 
 ## Installed execution-routing seam
 
@@ -33,51 +32,42 @@ same-commit GPT-Web route source
 
 No executor dispatch is wired downstream yet.
 
-## Live private local RESOURCE_STATUS transport
+## Live local RESOURCE_STATUS contribution lane (WF40)
 
 ```text
 IF remote planner TRUE
-  -> Tailscale-private local contribution endpoint (LIVE)
+  -> Tailscale-private local contribution endpoint
+  -> normalize (invalid => contributions=[])
   -> deterministic RESOURCE_STATUS composer
-  -> explicit resource_status
+  -> attach explicit resource_status
   -> existing same-commit route-source fetch
   -> existing sidecar-source lane
   -> WF61
   -> existing V4 routing bridge
+FALSE
+  -> Code - Remote planner gate closed
 ```
 
-Endpoint failure is nonblocking but fail-closed: zero contributions are composed into canonical unavailable status. No local availability is inferred.
-
-Canonical private URL:
-
-`https://asusdesktop.tailc01234.ts.net/v4/resource-status/local-readonly`
-
-OpenClaw root preserved:
-
-`https://asusdesktop.tailc01234.ts.net/` → `127.0.0.1:18789`
+Endpoint failure is nonblocking but fail-closed: zero contributions are composed into canonical unavailable status. No local availability is inferred. No technical_requirements are synthesized from status.
 
 ## Safety boundary
 
-- no Qwen generation/HTTP inference;
-- no Qwen start/restart/stop/kill;
-- no OpenCode CLI invocation/execution;
-- no provider calls;
-- endpoint accepts no command/model/profile selector;
-- one request must cause at most one producer evaluation and one diagnostic PowerShell process;
-- raw process/socket/PID evidence remains ephemeral and unpersisted;
-- WF40 patch apply is the next block; not authorized until that block starts.
+- no Qwen generation/HTTP inference from WF40 status lane;
+- no OpenCode CLI/execution from WF40 status lane;
+- no provider calls for status;
+- private endpoint not re-probed during structural apply;
+- WF61 remains inactive; D-0025 remains CLOSED;
+- no executor dispatch added.
 
 ## Puntatori
 
+- Apply report: `reports/architecture/v4_resource_status_wf40_local_contribution_patch_apply_offline.md`
+- Patch artifact: `workflows/patches/v4-wf40-local-resource-status-contribution.gpt-web.json`
+- Patch authoring report: `reports/architecture/v4_resource_status_wf40_local_contribution_patch_authoring.md`
 - Endpoint report: `reports/architecture/v4_local_runtime_readonly_private_endpoint_implementation.md`
 - Endpoint contract: `docs/contracts/v4-local-runtime-readonly-private-endpoint-v1.md`
-- GPT-Web WF40 patch: `workflows/patches/v4-wf40-local-resource-status-contribution.gpt-web.json`
-- Patch authoring report: `reports/architecture/v4_resource_status_wf40_local_contribution_patch_authoring.md`
-- Adapter report: `reports/architecture/v4_resource_status_local_runtime_readonly_contribution_adapter.md`
-- Adapter contract: `docs/contracts/v4-local-runtime-readonly-contribution-adapter-v1.md`
+- Composer: `tools/compose-v4-resource-status-control-plane-v1.mjs`
 - Producer: `tools/produce-v4-local-runtime-readonly-contribution-v1.mjs`
 - Endpoint: `tools/serve-v4-local-runtime-readonly-contribution-v1.mjs`
-- Composer: `tools/compose-v4-resource-status-control-plane-v1.mjs`
 - Qwen standing constraint: `docs/runtime/OPERATOR_CONSTRAINT_QWEN_SHARED_RUNTIME_CONCURRENCY.md`
-- Windows fallback/Tailscale evidence: `docs/runtime/D0014_WINDOWS_OPENCLAW_FALLBACK_STATUS.md`
 - WF40 id: `9ZMj2ACTKyDVhCue`
