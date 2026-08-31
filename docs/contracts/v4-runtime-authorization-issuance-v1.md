@@ -11,35 +11,51 @@ Define the sole operator-owned issuance boundary that may create an `ACTIVE` ent
 
 Canonical discovery: `reports/architecture/v4_runtime_authorization_issuance_path_discovery.md`.
 
+### Contract hardening after discovery
+
+The discovery proposed reusing the existing n8n Telegram callback guard as operator-identity evidence. Contract review found that **n8n-forwarded `telegram_chat_id + APPROVE` is not sufficient provenance**, because a compromised/buggy n8n instance could synthesize the same bounded fields.
+
+Therefore v1 hardens the trust boundary:
+
+> for `human_gate` / `HUMAN_GATE_REQUIRED`, the Windows-local issuance owner MUST verify the Telegram decision directly from Telegram using a dedicated issuance bot credential stored user-locally on Windows. n8n may propose and observe status, but MUST NOT attest APPROVE/REJECT.
+
+This supersedes only the Telegram-evidence transport detail from discovery; all pending-store, ACTIVE-writer, expiry, replay and issuance-vs-spend boundaries remain unchanged.
+
 ## Ownership
 
-- Proposal transport / Telegram UX: n8n MAY propose and transport bounded evidence only.
-- Human identity signal: configured Telegram operator chat, verified against server-side user-local issuance config.
-- Pending decision source of truth: `v4-runtime-authorization-pending-store-v1` on the Windows host.
-- Sole ACTIVE-entry writer: new Windows-local issuance owner.
+- Proposal transport: n8n MAY register bounded pending proposals.
+- Human-gate Telegram UX + inbound verification: **Windows-local issuance owner**, using a dedicated issuance bot and direct Bot API interaction.
+- Human identity: exact configured Telegram `chat_id` **and** `from.id` verified server-side from the Telegram update received by the issuance owner.
+- Pending decision source of truth: `v4-runtime-authorization-pending-store-v1` on Windows.
+- Sole ACTIVE-entry writer: Windows-local issuance owner.
 - Provenance ACTIVE/SPENT authority: existing `v4-runtime-authorization-provenance-registry-v1`.
 - Durable consumed-id history: existing `v4-runtime-authorization-durable-spend-ledger-v1`; issuance MUST NOT write it.
 - Execution endpoint: consumption only; MUST NOT gain issuance APIs.
 
 ## Production boundary
 
-Recommended service:
+Planned service:
 
 - loopback: `127.0.0.1:18792`;
-- separate Scheduled Task from `ControlPlane-V4-LocalExecutionEndpoint`;
-- additive Tailscale-private route under `/v4/authorization/*`;
+- separate Scheduled Task from execution endpoint;
+- additive Tailscale-private API route for proposal/status only, under `/v4/authorization/*`;
+- no HTTP route that accepts a human APPROVE/REJECT assertion;
 - no Funnel/public exposure.
 
-Server-side startup configuration is authoritative and cannot be selected by the HTTP caller:
+The service itself owns direct outbound Telegram Bot API calls for the dedicated issuance bot.
+
+Server-side startup config owns and fixes:
 
 - pending store path;
 - provenance registry path;
 - issuance config path;
+- dedicated Telegram bot token/credential reference;
+- operator Telegram chat id;
+- operator Telegram user id;
 - allowed route set;
-- operator Telegram chat identity;
 - bounded TTL maxima.
 
-The issuance owner MUST NOT accept a spend-ledger path because issuance never writes the spend ledger.
+No HTTP caller can select/override any of those values. The issuance owner MUST NOT accept a spend-ledger path.
 
 ## Issuance config
 
@@ -47,120 +63,138 @@ Canonical user-local path:
 
 `%LOCALAPPDATA%\control-plane\v4-runtime-authorization-issuance-config-v1.json`
 
-At minimum it owns:
+At minimum:
 
-- configured operator Telegram chat id;
+- `operator_telegram_chat_id`;
+- `operator_telegram_user_id`;
+- dedicated issuance bot token or server-side credential reference;
 - pending store absolute path;
 - provenance registry absolute path;
-- fixed v1 route allowlist containing only `opencode+qwen_local`;
+- route allowlist: only `opencode+qwen_local` in v1;
 - `pending_ttl_seconds_default = 900`;
 - `pending_ttl_seconds_max = 900`;
 - `authorization_ttl_seconds_default = 3600`;
 - `authorization_ttl_seconds_max = 3600`.
 
-Config is user-local, outside Git. Chat ids and credentials MUST be redacted from repository evidence.
+Config is outside Git. Telegram ids/tokens/credentials are redacted from repo evidence.
 
-## Operation 1 — register pending
+The dedicated issuance bot MUST NOT simultaneously be owned by an n8n webhook/getUpdates consumer. Telegram update consumption for authorization decisions has one owner: the Windows issuance service.
 
-Request schema variant: `v4-runtime-authorization-register-pending-request-v1`.
+## HTTP operation 1 — register pending
 
-Required immutable proposal fields:
+Schema variant: `v4-runtime-authorization-register-pending-request-v1`.
+
+Required immutable fields:
 
 - `pending_decision_id` — non-empty, max 200;
 - `authorization_id` — non-empty, max 200;
 - `task_id` — non-empty, max 200;
 - `execution_id` — non-empty, max 200;
-- `route_id` — exactly `opencode+qwen_local` in v1;
-- `scope_digest` — lowercase hex SHA-256 digest of the exact runtime-authorization scope object, 64 chars;
+- `route_id` — exactly `opencode+qwen_local`;
+- `scope_digest` — lowercase SHA-256 hex of exact runtime-authorization scope, 64 chars;
 - `pending_ttl_seconds` — integer 1..900.
 
-The request MUST NOT contain registry path, pending-store path, spend-ledger path, Telegram token, credentials, arbitrary command, endpoint URL, model URL or provider secret.
+Forbidden caller fields include registry/pending/ledger paths, Telegram token/chat/user ids, credentials, arbitrary command, endpoint/model/provider URLs.
 
 Server behavior:
 
-1. load/validate server-side issuance config;
-2. load/validate pending store;
-3. reject duplicate `pending_decision_id`;
-4. reject an `authorization_id` already bound by another pending record;
-5. reject an `authorization_id` already present in provenance registry;
-6. validate route and TTL against server-side maxima;
-7. create exactly one durable `PENDING` record with immutable bindings and server-derived `created_at` + `pending_expires_at`;
-8. persist atomically via same-directory temp+rename;
-9. return bounded structural result only.
-
-Registration never writes the provenance registry or durable spend ledger and never invokes execution code.
-
-## Operation 2 — decide / issue
-
-The issue request carries sanitized human-decision evidence only. Required fields:
-
-- `pending_decision_id`;
-- `selected_option` exactly `APPROVE` or `REJECT`;
-- `telegram_update_id` non-empty bounded string/integer representation;
-- `telegram_chat_id` non-empty bounded string/integer representation;
-- `task_id`;
-- `execution_id`;
-- `route_id` exactly `opencode+qwen_local`;
-- `scope_digest`;
-- `authorization_expires_at` RFC3339.
-
-No Telegram token or raw callback payload is accepted or persisted.
-
-### Identity and binding verification
-
-Before any state change:
-
 1. load/validate server-side config;
-2. `telegram_chat_id` MUST exactly equal configured operator chat id;
-3. load pending record by `pending_decision_id`;
-4. require state `PENDING`;
-5. require pending not expired;
-6. task, execution, route and scope digest MUST exactly match the immutable pending bindings;
-7. requested authorization expiry MUST be in the future and no later than `now + authorization_ttl_seconds_max`;
-8. Telegram update id MUST not already have been consumed by another decision record;
-9. pending decision MUST be one-shot.
+2. load/validate pending store;
+3. reject duplicate pending id;
+4. reject authorization id already bound by another pending record;
+5. reject authorization id already present in provenance registry;
+6. validate route + TTL;
+7. create exactly one durable `PENDING` record with server-derived timestamps;
+8. persist atomically;
+9. send the approval message **directly from Windows via the dedicated Telegram bot**;
+10. return bounded structural registration result.
 
-Mismatch is fail-closed and MUST NOT create ACTIVE registry state.
+If Telegram send fails, the implementation MUST fail closed. It may preserve the PENDING record with a structural `TELEGRAM_DELIVERY_FAILED` classification, but that record cannot become ISSUED without a later valid direct Telegram callback consumed by the same issuance owner.
 
-## APPROVE state transition
+Registration never writes provenance ACTIVE or durable spend state and never invokes execution code.
 
-For valid `APPROVE`:
+## HTTP operation 2 — status only
 
-1. persist pending `PENDING → APPROVED` with sanitized decision receipt;
-2. call the provenance registry owner to append exactly one ACTIVE entry for the pre-bound `authorization_id` with:
-   - `route_id = opencode+qwen_local`;
-   - server-derived `issued_at`;
-   - validated `expires_at`;
-   - `spent_at = null`;
-3. registry append MUST fail on duplicate authorization id or invalid registry;
-4. only after registry persistence succeeds, persist pending `APPROVED → ISSUED`;
-5. return bounded `ISSUED` result.
+Schema variants: `v4-runtime-authorization-status-request-v1` / `...status-result-v1`.
 
-If registry persistence fails after APPROVED persistence, pending remains `APPROVED` and a later exact replay MAY retry the same issuance without changing bindings. It MUST NOT generate a new authorization id. Once registry ACTIVE is found with exact matching id/route/expiry, the owner may converge the pending record to `ISSUED` idempotently.
+Caller supplies only `pending_decision_id`.
 
-No durable-spend-ledger write occurs during issuance.
+Status may expose bounded non-secret state:
 
-## REJECT state transition
+- `PENDING | APPROVED | REJECTED | ISSUED | EXPIRED`;
+- pre-bound `authorization_id`;
+- `pending_expires_at`;
+- `authorization_expires_at` when issued/approved;
+- reason codes.
 
-For valid `REJECT`:
+Status MUST NOT expose Telegram bot token, operator ids, raw Telegram update, filesystem paths, registry contents, spend-ledger contents or secrets.
 
-- persist `PENDING → REJECTED` with sanitized decision receipt;
-- create no provenance registry entry;
-- create no durable spend entry;
-- perform no execution;
-- terminal state: no later APPROVE is accepted.
+n8n may poll status to learn whether the operator decision produced an ISSUED authorization. Status is read-only.
 
-## Expiry
+## Direct Telegram decision channel — NOT HTTP-callable
 
-- default and maximum pending TTL in v1: 15 minutes / 900 seconds;
-- default and maximum authorization lifetime in v1: 60 minutes / 3600 seconds;
-- no unbounded authorization is valid;
-- expired pending transitions to or is treated as terminal `EXPIRED`;
-- an issue request received after pending expiry is rejected as `ISSUANCE_EXPIRED`.
+The issuance owner receives Telegram updates directly from the dedicated bot using Bot API polling (or another direct Telegram transport ratified later). The implementation exposes an internal/testable handler but **no `/issue` HTTP endpoint for human-gated v1**.
+
+Expected callback namespace:
+
+`ra:<pending_decision_id>:approve|reject`
+
+Before any state change the owner verifies from the Telegram update itself:
+
+1. update originates from the dedicated bot channel consumed directly by this service;
+2. callback query exists and is structurally valid;
+3. `message.chat.id` exactly equals configured operator chat id;
+4. `from.id` exactly equals configured operator user id;
+5. callback pending id exists and is `PENDING`;
+6. pending is not expired;
+7. callback option is exactly approve/reject;
+8. Telegram `update_id` has not already decided another pending record;
+9. pending decision is one-shot.
+
+No caller-provided chat/user identity is trusted.
+
+## APPROVE transition
+
+For a valid direct Telegram APPROVE:
+
+1. server chooses `authorization_expires_at = now + authorization_ttl_seconds_default`, capped by max;
+2. persist pending `PENDING → APPROVED` with sanitized receipt:
+   - server-observed `telegram_update_id`;
+   - server-observed `telegram_chat_id`;
+   - server-observed `telegram_user_id`;
+   - `decision_at`;
+   - selected option;
+   - authorization expiry;
+3. call provenance owner to append exactly one ACTIVE entry for pre-bound authorization id;
+4. registry append fails closed on duplicate/invalid/unavailable;
+5. after registry persistence succeeds, persist `APPROVED → ISSUED` with `issued_at`;
+6. bounded status/result becomes ISSUED.
+
+If registry persistence fails after APPROVED persistence, pending remains APPROVED. A later internally-triggered exact reconciliation may retry only the same pre-bound id/bindings; it cannot mint a replacement id. If matching ACTIVE registry state is already present, the owner may converge to ISSUED idempotently.
+
+No spend-ledger write occurs during issuance.
+
+## REJECT transition
+
+Valid direct Telegram REJECT:
+
+- persist `PENDING → REJECTED` with sanitized server-observed receipt;
+- no registry ACTIVE entry;
+- no durable spend entry;
+- no execution;
+- terminal; later APPROVE ignored/rejected.
+
+## Pending-store / authorization expiry
+
+- pending default/max: 900 seconds;
+- authorization default/max: 3600 seconds;
+- expired pending cannot be decided/issued;
+- no unbounded authorization;
+- expiry is server-derived, not caller-selected in human-gated v1.
 
 ## Replay / idempotency
 
-Fail-closed reasons include:
+Fail-closed reason codes include:
 
 - `ISSUANCE_CONFIG_UNAVAILABLE`
 - `ISSUANCE_CONFIG_INVALID`
@@ -174,6 +208,9 @@ Fail-closed reasons include:
 - `ISSUANCE_EXPIRED`
 - `ISSUANCE_DECISION_ALREADY_CONSUMED`
 - `ISSUANCE_TELEGRAM_UPDATE_REUSED`
+- `ISSUANCE_TELEGRAM_UPDATE_INVALID`
+- `ISSUANCE_TELEGRAM_DELIVERY_FAILED`
+- `ISSUANCE_TELEGRAM_TRANSPORT_UNAVAILABLE`
 - `ISSUANCE_REGISTRY_UNAVAILABLE`
 - `ISSUANCE_REGISTRY_INVALID`
 - `ISSUANCE_REGISTRY_WRITE_FAILED`
@@ -181,67 +218,68 @@ Fail-closed reasons include:
 
 Semantics:
 
-- duplicate/stale/malformed callback evidence never issues;
-- `REJECTED`, `ISSUED`, `EXPIRED` are terminal;
-- exact replay against an `ISSUED` pending may return the same bounded issued result without a second registry append;
-- any replay with changed bindings is rejected;
-- one Telegram update id cannot decide two pending authorizations.
+- duplicate/stale/malformed Telegram update never issues;
+- wrong chat or user id never issues;
+- `REJECTED`, `ISSUED`, `EXPIRED` terminal;
+- exact ISSUED status replay never appends registry again;
+- one Telegram update id decides at most one pending record;
+- service restart preserves pending lifecycle; Telegram offset/update replay must remain fail-closed using durable consumed update ids in pending records.
 
-## HTTP/result semantics
+## Machine schemas
 
-Machine schema: `docs/contracts/v4-runtime-authorization-issuance-v1.schema.json`.
+`docs/contracts/v4-runtime-authorization-issuance-v1.schema.json`
 
-All results are structural and secret-free. No response includes:
+Covers only external API messages:
 
-- filesystem paths;
-- Telegram bot token;
-- credential values;
-- raw callback payload;
-- provenance-registry contents;
-- spend-ledger contents;
-- model prompt/output;
-- stdout/stderr.
+- register-pending request/result;
+- status request/result.
 
-A fail-closed issuance result uses `ok=false`, a bounded `classification`, `pending_decision_id` when safely known, `authorization_id` when safely known, state if known, and `reason_codes`.
+Human decision input is direct Telegram transport and is not modeled as an externally trusted HTTP issuance request.
 
-## Human gate and automation policy
+## Human gate / automation policy
 
-For a proposal classified `human_gate` / `HUMAN_GATE_REQUIRED`, no component may synthesize APPROVE or invoke issuance without explicit verified Telegram operator decision evidence.
+For `human_gate` / `HUMAN_GATE_REQUIRED`, only the direct verified Telegram decision path can issue.
 
-Future automation may bypass Telegram only for a separately ratified policy class that explicitly permits machine issuance. This v1 contract does not authorize such auto-issuance.
+Future machine issuance requires a separate ratified contract/policy and is not authorized by v1.
 
-## Telegram/n8n role
+## n8n role
 
 n8n MAY:
 
+- create bounded proposal values;
 - call register-pending;
-- present immutable bindings in Telegram;
-- receive APPROVE/REJECT callbacks;
-- apply the existing allowed-chat/source-chat guard pattern;
-- reject duplicate/stale callbacks;
-- forward sanitized decision evidence.
+- poll/read bounded status;
+- after ISSUED, transport the already pre-bound runtime authorization into the existing execution path.
 
 n8n MUST NOT:
 
-- write provenance registry JSON;
-- write durable spend ledger JSON;
+- send or attest APPROVE/REJECT to the issuance owner;
+- receive the dedicated issuance bot callbacks;
+- possess the dedicated issuance bot token;
+- write provenance registry or spend ledger;
 - choose server-side paths;
-- mint or replace authorization ids after pending registration;
-- alter task/execution/route/scope bindings;
-- auto-approve a human-gated proposal.
+- alter pending bindings;
+- auto-approve human-gated proposals.
 
-## Production/runtime apply boundary
+## Implementation boundary
 
-Implementation may create the issuance service, empty pending store and user-local config only after offline tests + review PASS. The production provenance registry and durable spend ledger MUST remain empty through implementation/persistence blocks.
+`V4_RUNTIME_AUTHORIZATION_ISSUANCE_PATH_IMPLEMENTATION_OFFLINE` is **offline only**:
 
-No live Telegram message, live ACTIVE issuance, WF40 execution, endpoint execution request, OpenCode call, Qwen generation or provider call is authorized by this contract.
+- tools + tests + direct-Telegram client abstraction/DI;
+- no production pending store/config/service;
+- no real Telegram Bot API call;
+- no Tailscale route;
+- no ACTIVE entry;
+- no WF40 execution.
 
-## First live proof shape — later gate only
+A later persistence/setup block must be separately authorized because it requires a dedicated issuance bot credential and operator ids.
 
-Future proof, not authorized here:
+## First live proof — later gate only
 
-`1 PENDING → 1 verified Telegram APPROVE → 1 ACTIVE registry entry → 1 WF40 bounded execution → 1 durable ledger spend → registry SPENT → max 1 OpenCode → max 1 Qwen generation`.
+Future chain:
 
-## NEXT after contract ratification
+`1 PENDING → direct Windows-owned Telegram message → 1 verified operator callback → 1 ACTIVE → 1 WF40 bounded execution → 1 durable spend → registry SPENT → max 1 OpenCode → max 1 Qwen generation`.
+
+## NEXT
 
 `V4_RUNTIME_AUTHORIZATION_ISSUANCE_PATH_IMPLEMENTATION_OFFLINE`
