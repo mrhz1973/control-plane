@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-windows-local-execution-endpoint-v1.response.schema.json",
+  "title": "v4-windows-local-execution-endpoint-result-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ok",
+    "classification",
+    "execution_id",
+    "replayed",
+    "execution_performed",
+    "adapter_result",
+    "reason_codes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "v4-windows-local-execution-endpoint-result-v1"
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "classification": {
+      "type": "string",
+      "minLength": 1
+    },
+    "execution_id": {
+      "type": ["string", "null"]
+    },
+    "replayed": {
+      "type": "boolean"
+    },
+    "execution_performed": {
+      "type": "boolean"
+    },
+    "adapter_result": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "opencode-execution-adapter-v1.schema.json" }
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
