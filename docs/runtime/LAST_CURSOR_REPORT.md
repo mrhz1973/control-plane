@@ -8,7 +8,7 @@
 task_ref: V4_WF40_EXECUTION_TRANSPORT_PATCH_APPLY_OFFLINE
 result_cursor: PASS
 starting_head: 7e1907fac599f12cabc253381ee74f241f6b0f54
-final_head: pending_commit
+final_head: f42b7406676079516bb4e126461632da0d6e7660
 
 category: DELICATO
 runtime_mutations: 0
