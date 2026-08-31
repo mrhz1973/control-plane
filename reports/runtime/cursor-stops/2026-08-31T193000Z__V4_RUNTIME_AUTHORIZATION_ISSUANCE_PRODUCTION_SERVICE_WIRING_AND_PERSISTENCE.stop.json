@@ -1,0 +1,65 @@
+{
+  "block_id": "V4_RUNTIME_AUTHORIZATION_ISSUANCE_PRODUCTION_SERVICE_WIRING_AND_PERSISTENCE",
+  "category": "CROSS_SYSTEM_RUNTIME_INTEGRATION",
+  "result": "STOP",
+  "stop_reason": "BUGBOT_ACTIONABLE_FINDING: register-pending and Telegram decision poller race clobbers pending-store decision state",
+  "timestamp_utc": "2026-08-31T19:30:00Z",
+  "dispatch_base_head": "d51fcb91a8c4d884abc925ed91a0b0ccf9c4f114",
+  "git_preflight": {
+    "origin_main": "d51fcb91a8c4d884abc925ed91a0b0ccf9c4f114",
+    "expected_match": true,
+    "working_tree_at_stop": "dirty — implementation/test tree preserved uncommitted per STOP discipline"
+  },
+  "completed_before_stop": {
+    "implementation": [
+      "tools/v4-runtime-authorization-issuance-v1.mjs — createTelegramBotClient (fetch HTTPS Bot API, token only from server-side config, abortable), startTelegramDecisionPolling (single loop per process, monotonic offset advance for ALL update types, callback_query routed verbatim to handleTelegramDecisionUpdate, bounded backoff, fail-closed errors, stop/abort), production client gated behind allowProductionTelegramClient flag",
+      "tools/serve-v4-runtime-authorization-issuance-v1.mjs — production service wiring: config load, direct Telegram client, HTTP register/status only, single poll loop with issueActiveEntry/loadRegistry wired into handlerOptions, close() stops poller+HTTP, CLI --poller off test hatch",
+      "config re-resolution bug fixed (handler honored pre-resolved config)"
+    ],
+    "tests": "tests/v4-runtime-authorization-issuance/run.mjs expanded 43 -> 57 with production-wiring deltas 1-16",
+    "target_results": {
+      "v4-runtime-authorization-issuance": "57/57 PASS",
+      "v4-windows-local-execution-endpoint": "61/61 PASS",
+      "v4-runtime-authorization-durable-spend-ledger": "13/13 PASS"
+    },
+    "regressions": {
+      "opencode-execution-adapter": "23/23 PASS",
+      "opencode-single-generation-guard": "16/16 PASS",
+      "v4-local-runtime-readonly-contribution": "29/29 PASS",
+      "v4-local-runtime-readonly-private-endpoint": "22/22 PASS"
+    },
+    "git_diff_check": "PASS",
+    "bugbot_invoked_once": true,
+    "bugbot_verdict": "1 actionable finding — STOP per pass discipline (no same-pass fix, no Autofix)"
+  },
+  "bugbot_finding": {
+    "severity": "medium",
+    "location": "tools/serve-v4-runtime-authorization-issuance-v1.mjs:297-321",
+    "finding": "Register and poller race clobbers decision state: registerPendingAuthorization loads the pending store, awaits sendDecisionMessage (wide async network window), then persists a snapshot built from the stale load. A Telegram callback processed by the poller in that window is silently reverted — ISSUED/REJECTED receipt and telegram_update_id consumption erased while the provenance registry already holds the ACTIVE entry, breaking the ACTIVE-must-have-ISSUED-receipt invariant and re-opening an already-consumed human decision. Two concurrent read-modify-write cycles over the pending store with no mutual exclusion."
+  },
+  "recommended_corrective_pass_scope": [
+    "serialize pending-store mutations with a per-process async mutex (single writer lane) shared by registerPendingAuthorization, handleTelegramDecisionUpdate, reconcileApprovedPending; OR",
+    "persist the PENDING record BEFORE awaiting Telegram send, with a send-failure compensating transition to a terminal/undeliverable state; and",
+    "re-verify no other concurrent writers exist; add a regression test that interleaves a poller-handled callback during the register send window"
+  ],
+  "production_apply_status": "NOT PERFORMED — stopped before validation/apply section A",
+  "hard_offline_preserved": {
+    "real_telegram_bot_api_calls": 0,
+    "telegram_messages": 0,
+    "production_pending_store_mutations": 0,
+    "production_registry_mutations": 0,
+    "production_spend_ledger_mutations": 0,
+    "scheduled_task_mutations": 0,
+    "tailscale_mutations": 0,
+    "n8n_mutations": 0,
+    "wf40_executions": 0,
+    "wf61_executions": 0,
+    "execution_endpoint_http_requests": 0,
+    "opencode_calls": 0,
+    "qwen_generations": 0,
+    "provider_calls": 0,
+    "active_production_issuance": 0
+  },
+  "frontier": "CURRENT_FRONTIER.md and LAST_CURSOR_REPORT.md intentionally NOT updated on STOP",
+  "next": "V4_RUNTIME_AUTHORIZATION_ISSUANCE_PRODUCTION_SERVICE_WIRING_AND_PERSISTENCE_BUGBOT_CORRECTION (bounded corrective pass: serialize pending-store writes, regression test for the interleaving, then re-run targets/regressions/BugBot once each)"
+}
