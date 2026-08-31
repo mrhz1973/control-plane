@@ -5,20 +5,19 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_RUNTIME_AUTHORIZATION_PROVENANCE_HARDENING_VALIDATION_ORDER_CORRECTION
+task_ref: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_VPS_UNAUTHORIZED_REACHABILITY_PROOF_QUOTING_CORRECTION
 result_cursor: PASS
-starting_head: 84a30b9ded82ce01760f34d94b33616cb951143d
-final_head: 2b36a3221f09ae8ec2dcbdcac162029defaa3d15
+starting_head: 637f087a7190722332cb26dfaaeb8ea599ea1475
+final_head: pending_commit
 
-category: DELICATO
-runtime_mutations: 3
+category: ROUTINE
+runtime_mutations: 0
 workflow_mutations: 0
-network_mutations: 1
-tailscale_mutations: 1
-service_mutations: 1
-execution_route_contained_during_dev: true
-execution_route_restored_after_pass: true
-http_execution_endpoint_requests: 0
+network_mutations: 0
+tailscale_mutations: 0
+service_mutations: 0
+http_execution_endpoint_requests: 1
+cumulative_proof_http_requests: 2
 opencode_cli_calls: 0
 qwen_generation_calls: 0
 provider_calls: 0
@@ -27,49 +26,40 @@ wf40_node_count_unchanged: 66
 wf61_active: false
 d0025_gate_closed: true
 live_execution: 0
-bugbot_invoked: true
-bugbot_result: PASS_NO_FINDINGS
+bugbot_invoked: false
 
-target_suite: tests/v4-windows-local-execution-endpoint/run.mjs
-target_result: 48/48 PASS
+proof_lineage:
+  attempt_1:
+    task_ref: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_VPS_UNAUTHORIZED_REACHABILITY_PROOF
+    result: STOP
+    execution_id: v4-vps-unauthorized-reachability-proof-001
+    http_status: 400
+    classification: ENDPOINT_CONTENT_TYPE_REJECTED
+    reason: APPLICATION_JSON_REQUIRED
+    root_cause: curl Content-Type header lost to SSH inline quoting
+    stop_evidence: reports/runtime/cursor-stops/20260831T114157Z__V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_VPS_UNAUTHORIZED_REACHABILITY_PROOF.stop.json
+  attempt_2:
+    task_ref: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_VPS_UNAUTHORIZED_REACHABILITY_PROOF_QUOTING_CORRECTION
+    result: PASS
+    execution_id: v4-vps-unauthorized-reachability-proof-002
+    authorization_id: V4_VPS_UNAUTHORIZED_REACHABILITY_PROOF_NON_ISSUED_002
+    transport: SCP payload + SCP bash script; ssh bash /tmp/v4-vps-proof-002.sh
+    http_status: 200
+    classification: AUTHORIZATION_REJECTED
+    reason_codes: [AUTHORIZATION_ID_NOT_ISSUED]
+    execution_performed: false
+    adapter_result: null
+    replayed: false
 
-regressions:
-  - opencode-execution-adapter: 23/23 PASS
-  - opencode-single-generation-guard: 16/16 PASS
-  - v4-local-runtime-readonly-contribution: 29/29 PASS
-  - v4-local-runtime-readonly-private-endpoint: 22/22 PASS
-
-corrective_lineage:
-  initial_hardening: server-side registry + endpoint integration + P1-P17 tests
-  stop_46_of_48:
-    P7: test expected AUTHORIZATION_ROUTE_MISMATCH for invalid registry route_id; registry v1 const-pins route → corrected to AUTHORIZATION_REGISTRY_INVALID
-    P10: in-memory spentAuth/authBinding intercepted before registry → second request got AUTHORIZATION_ID_REUSED instead of AUTHORIZATION_ALREADY_SPENT
-  corrections_applied:
-    P7: test expectation + contract note (route mismatch unreachable in v1)
-    P10: inspectAuthorization + admission order registry-before-binding
-    registry_isolation: per-test re-seed for replay/occupancy/concurrency after prior spends
-
-runtime_apply:
-  empty_registry: "%LOCALAPPDATA%\\control-plane\\v4-runtime-authorization-registry-v1.json"
-  scheduled_task: ControlPlane-V4-LocalExecutionEndpoint updated with --authorization-registry
-  listener: 127.0.0.1:18791 exactly one
-  readonly_18790: unchanged
-  tailscale_routes:
-    root: 127.0.0.1:18789 preserved
-    readonly: 127.0.0.1:18790 preserved
-    execution: /v4/execution/opencode-local -> 127.0.0.1:18791 restored
-  funnel: absent
+post_proof:
+  production_registry_entries_empty: true
+  listener_127_0_0_1_18791: single active
+  tailscale_routes_preserved: true
+  funnel_absent: true
 
 artifacts:
-  - reports/architecture/v4_runtime_authorization_provenance_hardening.md
-  - tools/v4-runtime-authorization-provenance-registry-v1.mjs
-  - docs/contracts/v4-runtime-authorization-provenance-registry-v1.md
-  - docs/contracts/v4-runtime-authorization-provenance-registry-v1.schema.json
-  - tools/serve-v4-windows-local-execution-endpoint-v1.mjs
-  - tests/v4-windows-local-execution-endpoint/run.mjs
-  - docs/contracts/v4-windows-local-execution-endpoint-v1.md
-  - docs/foundation/PROMPT_SEQUENCING_GATE.md
+  - reports/architecture/v4_windows_local_execution_endpoint_vps_unauthorized_reachability_proof.md
 
-architecture_report: reports/architecture/v4_runtime_authorization_provenance_hardening.md
-NEXT: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_VPS_UNAUTHORIZED_REACHABILITY_PROOF
+architecture_report: reports/architecture/v4_windows_local_execution_endpoint_vps_unauthorized_reachability_proof.md
+NEXT: V4_WF40_EXECUTION_TRANSPORT_PATCH_AUTHORING
 ```
