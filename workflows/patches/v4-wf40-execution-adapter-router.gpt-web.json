@@ -1,0 +1,196 @@
+{
+  "schema": "control-plane-gpt-web-n8n-delta-v1",
+  "task_ref": "V4_WF40_EXECUTION_ADAPTER_ROUTER_PATCH_AUTHORING",
+  "authority": "GPT_WEB",
+  "purpose": "Add a downstream fail-closed execution-adapter-router lane after the existing V4 routing bridge. The lane consumes only the already-selected execution_route_result, unchanged WF61 execution packet, and optional explicit dispatch/runtime-authorization sidecars. The n8n bridge is offline-only and cannot execute OpenCode or Qwen.",
+  "contract_ref": "docs/contracts/n8n-v4-execution-adapter-router-bridge-v1.md",
+  "bridge_ref": "tools/n8n-v4-execution-adapter-router-bridge-v1.mjs",
+  "mount_path": "/files/handoff-runtime/control-plane",
+  "target_workflow": {
+    "live_id": "9ZMj2ACTKyDVhCue",
+    "expected_name": "40 - CP v4 multirepo + classifier bridge - ACTIVE",
+    "expected_active": true,
+    "expected_node_count_before_patch": 61,
+    "expected_version_id_before_patch": "1257ed3f-12ad-4fa1-b6ce-ae3e62149b7c"
+  },
+  "preconditions": {
+    "routing_parse_node": {
+      "id": "v4f40-7105-4005-8105-000000000105",
+      "name": "Code - Parse V4 execution routing bridge result",
+      "must_be_terminal_before_patch": true
+    },
+    "wf61_execute_node": {
+      "id": "d0025f40-6108-4008-8008-000000000108",
+      "name": "Execute Workflow - WF61 primary remote planner"
+    },
+    "sidecar_capture_node": {
+      "id": "v4f40-7101-4001-8101-000000000101",
+      "name": "Code - Capture explicit V4 execution routing sidecar"
+    },
+    "required_repo_files": [
+      "docs/contracts/n8n-v4-execution-adapter-router-bridge-v1.md",
+      "docs/contracts/n8n-v4-execution-adapter-router-bridge-v1.schema.json",
+      "tools/n8n-v4-execution-adapter-router-bridge-v1.mjs",
+      "tools/v4-execution-adapter-router-v1.mjs",
+      "tools/v4-execution-adapter-registry-v1.mjs",
+      "tools/opencode-execution-adapter-v1.mjs"
+    ],
+    "must_not_already_exist_node_ids": [
+      "v4f40-7401-4001-8401-000000000401",
+      "v4f40-7402-4002-8402-000000000402",
+      "v4f40-7403-4003-8403-000000000403",
+      "v4f40-7404-4004-8404-000000000404",
+      "v4f40-7405-4005-8405-000000000405"
+    ],
+    "live_state_must_remain": {
+      "wf61_active": false,
+      "d0025_runtime_gate_enabled": false,
+      "provider_calls_authorized_per_event": 0
+    }
+  },
+  "operations": [
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const routing=$input.item.json??{};const bridge=routing.bridge_result??null;const cycle=$('Execute Workflow - WF61 primary remote planner').item.json??{};const side=$('Code - Capture explicit V4 execution routing sidecar').item.json??{};const route=(bridge&&bridge.execution_route_result&&typeof bridge.execution_route_result==='object')?bridge.execution_route_result:null;const packet=(cycle.packet&&typeof cycle.packet==='object')?cycle.packet:null;const dispatch=(side.dispatch_result&&typeof side.dispatch_result==='object'&&!Array.isArray(side.dispatch_result))?side.dispatch_result:null;const auth=(side.runtime_authorization&&typeof side.runtime_authorization==='object'&&!Array.isArray(side.runtime_authorization))?side.runtime_authorization:null;const ready=Boolean(routing.routing_ready_for_dispatch===true&&bridge&&bridge.classification==='ROUTING_READY_FOR_DISPATCH'&&route&&packet);const task=String(cycle.task_id||bridge?.task_id||'');const packetId=String(packet?.packet_id||bridge?.packet_id||'');const req=ready?{schema_version:'n8n-v4-execution-adapter-router-bridge-input-v1',execution_id:'wf40:'+task+':'+packetId,execution_route_result:route,execution_packet:packet,dispatch_result:dispatch,runtime_authorization:auth}:null;const b64=req?Buffer.from(JSON.stringify(req),'utf8').toString('base64'):null;return {json:{schema:'wf40-v4-execution-adapter-router-input-v1',task_id:task,packet_id:packetId,adapter_router_input_ready:ready,input_b64:b64,dispatch_supplied:Boolean(dispatch),runtime_authorization_supplied:Boolean(auth),execution_performed:false}};"
+        },
+        "id": "v4f40-7401-4001-8401-000000000401",
+        "name": "Code - Prepare V4 execution adapter router input",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [3120, 1200]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "conditions": {
+            "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1},
+            "conditions": [
+              {
+                "id": "v4-wf40-adapter-router-input-ready",
+                "leftValue": "={{ $json.adapter_router_input_ready }}",
+                "rightValue": true,
+                "operator": {"type": "boolean", "operation": "equals"}
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "v4f40-7402-4002-8402-000000000402",
+        "name": "IF - V4 execution adapter router input ready?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [3360, 1200]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "command": "=node /files/handoff-runtime/control-plane/tools/n8n-v4-execution-adapter-router-bridge-v1.mjs --input-b64 '{{$json.input_b64}}'"
+        },
+        "id": "v4f40-7403-4003-8403-000000000403",
+        "name": "Execute Command - V4 execution adapter router bridge",
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [3600, 1120],
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "const r=$input.item.json??{};const stdout=String(r.stdout??'').trim();const exitCode=Number(r.exitCode??r.code??0);let parsed=null;try{const lines=stdout.split(/\\r?\\n/).filter(Boolean);parsed=lines.length?JSON.parse(lines[lines.length-1]):null;}catch{}const structural=Boolean(parsed&&parsed.schema_version==='n8n-v4-execution-adapter-router-bridge-result-v1');const noLive=Boolean(structural&&parsed.execution_performed===false);return {json:{schema:'wf40-v4-execution-adapter-router-result-v1',ok:Boolean(structural&&noLive),classification:structural?(noLive?parsed.classification:'UNEXPECTED_LIVE_EXECUTION'):(exitCode===0?'V4_ADAPTER_ROUTER_OUTPUT_INVALID':'V4_ADAPTER_ROUTER_COMMAND_FAILED'),execution_id:structural?(parsed.execution_id??null):null,adapter_router_result:structural?parsed:null,execution_performed:false}};"
+        },
+        "id": "v4f40-7404-4004-8404-000000000404",
+        "name": "Code - Parse V4 execution adapter router result",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [3840, 1120]
+      }
+    },
+    {
+      "op": "add_node",
+      "node": {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "return {json:{schema:'wf40-v4-execution-adapter-router-result-v1',ok:false,classification:'V4_EXECUTION_ADAPTER_ROUTER_INPUT_NOT_READY',task_id:$json.task_id||null,packet_id:$json.packet_id||null,execution_performed:false}};"
+        },
+        "id": "v4f40-7405-4005-8405-000000000405",
+        "name": "Code - V4 execution adapter router gate closed",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [3600, 1300]
+      }
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Parse V4 execution routing bridge result",
+      "outputs": [[{"node": "Code - Prepare V4 execution adapter router input", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Code - Prepare V4 execution adapter router input",
+      "outputs": [[{"node": "IF - V4 execution adapter router input ready?", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "IF - V4 execution adapter router input ready?",
+      "outputs": [[{"node": "Execute Command - V4 execution adapter router bridge", "type": "main", "index": 0}], [{"node": "Code - V4 execution adapter router gate closed", "type": "main", "index": 0}]]
+    },
+    {
+      "op": "set_connection_exact",
+      "from_node": "Execute Command - V4 execution adapter router bridge",
+      "outputs": [[{"node": "Code - Parse V4 execution adapter router result", "type": "main", "index": 0}]]
+    }
+  ],
+  "resulting_lane_contract": {
+    "lane": "existing V4 routing bridge parsed result -> execution-adapter-router input gate -> offline n8n adapter-router bridge -> terminal structural result",
+    "node_count_after_patch": 66,
+    "route_selection_reused": true,
+    "execution_packet_unchanged": true,
+    "dispatch_result_synthesized": false,
+    "runtime_authorization_synthesized": false,
+    "adapter_registry_exact_lookup": true,
+    "live_runner_injected": false,
+    "qwen_generation_calls": 0,
+    "opencode_execution_calls": 0,
+    "execution_performed": false,
+    "separate_v4_workflow_created": false
+  },
+  "preserve": [
+    "All existing 61 WF40 node IDs/names/types and all existing lanes",
+    "WF40 active state",
+    "local RESOURCE_STATUS contribution lane",
+    "same-commit route-source lane",
+    "WF61 target/content/inactive state",
+    "existing V4 execution-routing bridge",
+    "PM21/Telegram/GIS/Data Table/WF60/OpenClaw lanes",
+    "D-0025 runtime gate closed",
+    "LiteLLM runtime/configuration",
+    "RESOURCE_REGISTRY and execution-adapter registry semantics",
+    "Qwen/OpenCode runtime state"
+  ],
+  "forbidden": [
+    "Synthesizing dispatch readiness or runtime authorization",
+    "Injecting getOccupancy, guardStart, runOpenCode, session-manager or live runner callbacks",
+    "Starting/stopping/restarting Qwen or OpenCode",
+    "Calling a model/provider during patch apply or structural validation",
+    "Adding fallback adapter selection",
+    "Adding Grok Bot executor registration",
+    "Changing EXECUTION_ROUTER selection semantics",
+    "Changing WF61 active state or D-0025 gate",
+    "Creating a separate V4 workflow",
+    "Reading/exporting/logging secret values"
+  ],
+  "apply_prerequisite": "V4_N8N_EXECUTION_ADAPTER_ROUTER_BRIDGE_OFFLINE_PASS",
+  "next_after_authoring": "V4_N8N_EXECUTION_ADAPTER_ROUTER_BRIDGE_OFFLINE"
+}
