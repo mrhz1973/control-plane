@@ -8,7 +8,7 @@
 task_ref: V4_RUNTIME_AUTHORIZATION_PROVENANCE_HARDENING_VALIDATION_ORDER_CORRECTION
 result_cursor: PASS
 starting_head: 84a30b9ded82ce01760f34d94b33616cb951143d
-final_head: pending_commit
+final_head: 2b36a3221f09ae8ec2dcbdcac162029defaa3d15
 
 category: DELICATO
 runtime_mutations: 3
