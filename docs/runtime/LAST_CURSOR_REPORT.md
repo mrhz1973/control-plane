@@ -5,45 +5,45 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_OFFLINE_IMPLEMENTATION
+task_ref: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_PRIVATE_SERVICE_PERSISTENCE
 result_cursor: PASS
-starting_head: 35f19b3083b79c5d71932bb6ff3c945b91a1c88f
-final_head: 41fecb4f3b347f6739d77c3332d62ca23f353bca
+starting_head: ca1be3089ada70e47a84d1273109e468ea59a6f2
+final_head: PENDING_COMMIT
 
-category: OFFLINE_ENDPOINT_IMPLEMENTATION
-runtime_mutations: 0
+category: RUNTIME_INTEGRATION
+runtime_mutations:
+  - new scheduled task ControlPlane-V4-LocalExecutionEndpoint (loopback 127.0.0.1:18791, AtLogOn, InteractiveToken)
+  - user env CONTROL_PLANE_AJV_NODE_MODULES -> stable schema engine path (user-local, no repo secrets)
+  - tailscale serve additive private route /v4/execution/opencode-local -> 127.0.0.1:18791
 workflow_mutations: 0
-network_mutations: 0
-tailscale_mutations: 0
-service_mutations: 0
+funnel_public_exposure: false
 opencode_cli_calls: 0
 qwen_generation_calls: 0
 provider_calls: 0
-process_mutations: 0
+http_execution_endpoint_requests: 0
+process_kills: 0
 secret_exposure: false
 wf40_node_count_unchanged: 66
 wf61_active: false
 d0025_gate_closed: true
 live_execution: 0
+production_code_changes: 0
+bugbot_invoked: false
 
-corrective_lineage:
-  - initial_stop_23_24_occupancy_expectation_OCCUPANCY_REJECTED_vs_OCCUPANCY_BLOCKED
-  - occupancy_expectation_corrected
-  - bugbot_nonzero_exit_success_accounting
-  - nonzero_exit_fail_closed
-  - bugbot_synthetic_generation_accounting
-  - guard_accounting_authoritative
-  - bugbot_unbounded_stdout_stderr
-  - child_output_drain_no_retention
-  - final_target_31_31_pass
-  - regressions_pass
-  - bugbot_pass_no_findings
+key_evidence:
+  listener_count_18791: 1
+  listener_process: node.exe (tool+host+port+workspace verified in cmdline)
+  tailscale_paths:
+    - "/" -> http://127.0.0.1:18789 (OpenClaw preserved)
+    - "/v4/resource-status/local-readonly" -> http://127.0.0.1:18790 (preserved)
+    - "/v4/execution/opencode-local" -> http://127.0.0.1:18791 (new, private)
+  funnel: absent (tailnet only)
+  readonly_scheduled_task_untouched: ControlPlane-V4-LocalRuntimeStatus
+  wf40_versionId: 60f9b75e-39b8-410a-bcd1-364073992df0
 
 artifacts:
-  - tools/serve-v4-windows-local-execution-endpoint-v1.mjs
-  - tests/v4-windows-local-execution-endpoint/run.mjs
-  - reports/architecture/v4_windows_local_execution_endpoint_offline_implementation.md
+  - reports/architecture/v4_windows_local_execution_endpoint_private_service_persistence.md
 
-architecture_report: reports/architecture/v4_windows_local_execution_endpoint_offline_implementation.md
-NEXT: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_PRIVATE_SERVICE_PERSISTENCE
+architecture_report: reports/architecture/v4_windows_local_execution_endpoint_private_service_persistence.md
+NEXT: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_VPS_UNAUTHORIZED_REACHABILITY_PROOF
 ```
