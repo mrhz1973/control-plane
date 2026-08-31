@@ -6,9 +6,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "decisions"],
   "properties": {
-    "schema_version": {
-      "const": "v4-runtime-authorization-pending-store-v1"
-    },
+    "schema_version": { "const": "v4-runtime-authorization-pending-store-v1" },
     "decisions": {
       "type": "array",
       "items": { "$ref": "#/$defs/decision" }
@@ -20,21 +18,12 @@
       "minLength": 1,
       "maxLength": 200
     },
-    "rfc3339": {
-      "type": "string",
-      "format": "date-time"
-    },
+    "rfc3339": { "type": "string", "format": "date-time" },
     "nullableRfc3339": {
-      "oneOf": [
-        { "$ref": "#/$defs/rfc3339" },
-        { "type": "null" }
-      ]
+      "oneOf": [{ "$ref": "#/$defs/rfc3339" }, { "type": "null" }]
     },
     "nullableId": {
-      "oneOf": [
-        { "$ref": "#/$defs/id200" },
-        { "type": "null" }
-      ]
+      "oneOf": [{ "$ref": "#/$defs/id200" }, { "type": "null" }]
     },
     "decision": {
       "type": "object",
@@ -53,6 +42,7 @@
         "selected_option",
         "telegram_update_id",
         "telegram_chat_id",
+        "telegram_user_id",
         "authorization_expires_at",
         "issued_at"
       ],
@@ -62,24 +52,17 @@
         "task_id": { "$ref": "#/$defs/id200" },
         "execution_id": { "$ref": "#/$defs/id200" },
         "route_id": { "const": "opencode+qwen_local" },
-        "scope_digest": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$"
-        },
+        "scope_digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "created_at": { "$ref": "#/$defs/rfc3339" },
         "pending_expires_at": { "$ref": "#/$defs/rfc3339" },
-        "state": {
-          "enum": ["PENDING", "APPROVED", "REJECTED", "ISSUED", "EXPIRED"]
-        },
+        "state": { "enum": ["PENDING", "APPROVED", "REJECTED", "ISSUED", "EXPIRED"] },
         "decision_at": { "$ref": "#/$defs/nullableRfc3339" },
         "selected_option": {
-          "oneOf": [
-            { "enum": ["APPROVE", "REJECT"] },
-            { "type": "null" }
-          ]
+          "oneOf": [{ "enum": ["APPROVE", "REJECT"] }, { "type": "null" }]
         },
         "telegram_update_id": { "$ref": "#/$defs/nullableId" },
         "telegram_chat_id": { "$ref": "#/$defs/nullableId" },
+        "telegram_user_id": { "$ref": "#/$defs/nullableId" },
         "authorization_expires_at": { "$ref": "#/$defs/nullableRfc3339" },
         "issued_at": { "$ref": "#/$defs/nullableRfc3339" }
       },
@@ -92,6 +75,7 @@
               "selected_option": { "type": "null" },
               "telegram_update_id": { "type": "null" },
               "telegram_chat_id": { "type": "null" },
+              "telegram_user_id": { "type": "null" },
               "authorization_expires_at": { "type": "null" },
               "issued_at": { "type": "null" }
             }
@@ -105,6 +89,7 @@
               "selected_option": { "const": "APPROVE" },
               "telegram_update_id": { "$ref": "#/$defs/id200" },
               "telegram_chat_id": { "$ref": "#/$defs/id200" },
+              "telegram_user_id": { "$ref": "#/$defs/id200" },
               "authorization_expires_at": { "$ref": "#/$defs/rfc3339" },
               "issued_at": { "type": "null" }
             }
@@ -118,6 +103,7 @@
               "selected_option": { "const": "REJECT" },
               "telegram_update_id": { "$ref": "#/$defs/id200" },
               "telegram_chat_id": { "$ref": "#/$defs/id200" },
+              "telegram_user_id": { "$ref": "#/$defs/id200" },
               "authorization_expires_at": { "type": "null" },
               "issued_at": { "type": "null" }
             }
@@ -131,6 +117,7 @@
               "selected_option": { "const": "APPROVE" },
               "telegram_update_id": { "$ref": "#/$defs/id200" },
               "telegram_chat_id": { "$ref": "#/$defs/id200" },
+              "telegram_user_id": { "$ref": "#/$defs/id200" },
               "authorization_expires_at": { "$ref": "#/$defs/rfc3339" },
               "issued_at": { "$ref": "#/$defs/rfc3339" }
             }
