@@ -8,7 +8,7 @@
 task_ref: V4_WINDOWS_LOCAL_RUNTIME_RUNNER_TRANSPORT_DISCOVERY
 result_cursor: PASS
 starting_head: 3f5398de0e91707d5dfea3f7899af4384940473a
-final_head: TO_BE_VERIFIED_AFTER_PUSH
+final_head: 38879b15863e3bde9861693b7f77c61d1aea2052
 
 category: DOCS_ONLY_DISCOVERY
 runtime_mutations: 0
