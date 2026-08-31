@@ -2,11 +2,11 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`  
-**Versione:** 3.1 — 2026-08-27  
+**Versione:** 3.2 — 2026-08-31  
 **Ruolo:** contratto di formattazione per gli **Execution Packet** destinati a Cursor nel modello multi-planner. Non è un cambiamento runtime.
 
 **Target operating model:** `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`.  
-**User-facing handoff canonico:** `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` — **TASK DELTA v2.0**.
+**User-facing handoff canonico:** `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` — TASK DELTA + header obbligatori + one-pass default.
 
 ---
 
@@ -25,7 +25,7 @@ Execution Packet
       ↓
 n8n deterministic gate
       ↓
-Cursor execution loop
+Cursor execution pass
 ```
 
 Questo documento definisce il contratto dell'ultimo passaggio.
@@ -37,11 +37,12 @@ Questo documento definisce il contratto dell'ultimo passaggio.
 - Il prompt/Execution Packet Cursor porta **solo il delta necessario al task**.
 - Il boilerplate permanente si richiama per riferimento a questo file e alla foundation; non va reinserito integralmente a ogni giro.
 - Il prompt user-facing consegnato all'operatore deve seguire `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`: **TASK DELTA**, non secondo manuale operativo.
-- Prima del blocco user-facing va sempre indicato `MODALITÀ CURSOR: AGENT` oppure `MODALITÀ CURSOR: PLAN` secondo il pass.
+- Prima del blocco user-facing devono apparire sempre, nell'ordine, `MODELLO CURSOR`, `BUGBOT`, `MODALITÀ CURSOR` con valori concreti secondo lo standard canonico.
 - Repository state, checkpoint e artefatti canonici si leggono dal **repo vivo**, non dalla cronologia della chat planner.
 - Ogni Execution Packet deve poter essere riusato da una nuova sessione Cursor insieme all'ultimo **Execution Checkpoint**.
 - È vietato dipendere da frasi come "come abbiamo detto sopra" o da contenuto disponibile soltanto nella sessione del planner.
 - SHA/build/blob/candidate possono comparire nel TASK DELTA solo se realmente noti e verificabili; **mai inventarli**.
+- Disponibilità modello/quota non si inventano: quando materialmente rilevanti devono provenire da fonte verificata.
 
 ---
 
@@ -51,9 +52,21 @@ Metadati che servono al control-plane e non all'implementatore restano fuori dal
 
 - planner richiesto / planner effettivo;
 - provider/quota/fallback reason;
-- modalità/modello Cursor scelto;
+- modello Cursor raccomandato;
+- BugBot `NO|SÌ`;
+- modalità Cursor `AGENT|PLAN`;
 - repository/path/branch/task usati per instradare la finestra;
 - comandi umani (`aggio`, `format`, `next`, ecc.).
+
+L'header user-facing obbligatorio è:
+
+```text
+MODELLO CURSOR: <modello esatto raccomandato>
+BUGBOT: <NO | SÌ>
+MODALITÀ CURSOR: <AGENT | PLAN>
+```
+
+La policy canonica di scelta modello, incluse le soglie stabili di conservazione quota GLM, vive in `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` e non viene duplicata qui.
 
 Identificazione workspace Cursor canonica:
 
@@ -63,10 +76,6 @@ Identificazione workspace Cursor canonica:
 - task/progetto.
 
 **Mai** routing tramite colori UI.
-
-Esempio fuori dal prompt:
-
-> Workspace: `mrhz1973/control-plane`, branch previsto `main`, task `D-NNNN-X`. Planner: GLM 5.3. Cursor execution model: GLM BYOK / Cursor model secondo policy corrente.
 
 ---
 
@@ -88,9 +97,9 @@ steps: []
 validation: []
 acceptance: []
 loop:
-  enabled: true|false
+  enabled: false
   stop_when: []
-  max_rounds: <bounded integer>
+  max_rounds: 1
 risk_assessment:
   level: low|medium|high
   reasons: []
@@ -101,7 +110,27 @@ context_checkpoint_policy: required
 final_report_contract: cursor-standard-v3
 ```
 
-Il packet può contenere campi aggiuntivi, ma non può omettere scope, validation, acceptance, loop bound e checkpoint policy.
+Il packet può contenere campi aggiuntivi, ma non può omettere scope, validation, acceptance, stop policy e checkpoint policy.
+
+### 3.1 One-pass default nei packet
+
+Il default canonico è:
+
+```yaml
+loop:
+  enabled: false
+  max_rounds: 1
+```
+
+Un bounded corrective loop è ammesso solo quando il task lo autorizza **esplicitamente**. In tal caso il packet deve indicare:
+
+- `loop.enabled: true`;
+- bound numerico o equivalente;
+- condizioni di stop;
+- scope esatto del loop;
+- motivo per cui il loop è necessario nello stesso pass.
+
+La semplice possibilità che un test fallisca non abilita un corrective loop.
 
 ---
 
@@ -157,14 +186,15 @@ Forbidden scope:
 Execute:
 <steps>
 
-Validate:
-<tests/checks>
+Validate once:
+<target tests/checks + required regressions>
 
 Acceptance criteria:
 <deterministic criteria>
 
-Loop policy:
-Continue only within this task until the stop conditions are met or a real gate/blocker is reached.
+Pass policy:
+Default is one-pass. At the first blocker or failed required validation, STOP with the precise cause.
+Do not enter a fix/test loop unless this task explicitly authorizes a bounded corrective loop.
 Do not expand scope to make the task pass.
 
 Context rollover:
@@ -173,27 +203,36 @@ If the current Cursor context must end before completion, write/update the requi
 
 ---
 
-## 6. Loop policy Cursor
+## 6. One-pass policy Cursor — DEFAULT
 
-Il loop è **task-bounded**, non autonomia generale sul repository.
-
-Ogni packet deve specificare:
-
-- `loop.enabled`;
-- `loop.stop_when`;
-- `loop.max_rounds` o un bound equivalente;
-- condizioni di escalation;
-- acceptance criteria verificabili.
-
-Cursor può iterare autonomamente su:
+Salvo autorizzazione esplicita diversa nel TASK DELTA corrente, ogni pass bounded segue una sola sequenza:
 
 ```text
-implement → test → fix → test
+implement
+→ target test una volta
+→ regressioni richieste una volta
+→ review una volta soltanto se BUGBOT:SÌ
+→ evidence
+→ commit/push
 ```
 
-finché resta nello scope autorizzato.
+Al primo blocker/failure:
 
-Cursor deve fermarsi per:
+```text
+STOP — <causa precisa>
+```
+
+Non eseguire nello stesso pass, per default:
+
+```text
+fix → test → fix → test
+```
+
+Un failure già diagnosticato genera un nuovo piccolo corrective pass dopo `agg` + riepilogo secondo `PROMPT_SEQUENCING_GATE.md`.
+
+Un corrective loop interno è ammesso soltanto se il TASK DELTA corrente lo autorizza esplicitamente con bound e stop conditions. Questa regola prevale sul vecchio esempio generico `implement → test → fix → test`.
+
+Cursor deve comunque fermarsi per:
 
 - scope expansion;
 - operazione irreversibile/distruttiva;
@@ -201,7 +240,8 @@ Cursor deve fermarsi per:
 - produzione/deploy/runtime non autorizzato;
 - conflitto con policy;
 - impossibilità di soddisfare acceptance senza cambiare lo scope;
-- max round raggiunto;
+- primo test/review failure nel default one-pass;
+- bound esplicito raggiunto quando un corrective loop è autorizzato;
 - contesto in esaurimento senza checkpoint persistito.
 
 ---
@@ -228,14 +268,22 @@ Regola permanente fino a modifica foundation esplicita:
 
 La scelta del motore Cursor è routing metadata, non parte semantica del task.
 
-Target:
+La raccomandazione concreta del modello deve seguire `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`, che è il canonical owner della policy user-facing e della conservazione quota GLM.
+
+Invarianti:
+
+- usare soltanto nomi modello concretamente verificati/utilizzabili;
+- mai `MODELLO CURSOR: AUTO`;
+- il cambio del motore non autorizza cambio di scope, gate o acceptance;
+- Fast non è il default solo per ragioni di velocità;
+- GLM non va speso in loop di test/proof meramente ripetitivi.
+
+Target capability già descritta dalla foundation:
 
 - **GLM 5.3 BYOK** come main Agent/subagent quando verificato e conveniente;
 - **Cursor native models** per task/subagent in cui danno vantaggio;
 - **Codex OAuth** come advisor/tool esterno via OpenClaw/CLI/MCP solo dopo verifica dedicata; non assumerlo come model-picker nativo;
 - **Qwen 3.8 37B** come advisor locale nello stesso job quando è già caricato e la policy lo consente.
-
-Il cambio del motore non autorizza cambio di scope.
 
 ---
 
@@ -274,30 +322,34 @@ Un checkpoint è incompleto se la nuova sessione deve chiedere "a che punto erav
 
 ---
 
-## 10. Review / Bugbot contract
+## 10. Review / BugBot contract
 
-Quando previsto dal packet:
+Il valore user-facing `BUGBOT` è obbligatorio per ogni prompt Cursor e viene applicato secondo `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`.
+
+### `BUGBOT: NO`
+
+- nessuna invocazione BugBot nel pass;
+- nessuna review BugBot implicita.
+
+### `BUGBOT: SÌ`
+
+Dopo i test richiesti e prima della closure:
 
 ```text
-Cursor implementation
-  ↓
-test PASS
-  ↓
-Bugbot/reviewer
-  ↓
-PASS → final report
-ISSUE → Cursor fix loop
+/review-bugbot
 ```
 
-Default target:
+una sola volta.
 
-- Bugbot = reviewer, non router;
-- niente Autofix cloud automatico salvo autorizzazione separata;
-- review/fix rounds bounded;
-- target iniziale `max_review_rounds = 3`;
-- non convergenza → escalation/Telegram gate.
+Regole:
 
-Findings ancora aperti devono entrare nel checkpoint prima di un context rollover.
+- niente Autofix;
+- nessun finding blocking/actionable → `PASS_NO_FINDINGS` e continuazione verso evidence/closure;
+- finding actionable/blocking → **STOP immediato** con finding preciso;
+- nessun edit, fix o rerun BugBot nello stesso pass;
+- BugBot non disponibile → `STOP BUGBOT_NOT_AVAILABLE`.
+
+Un finding BugBot genera, se ancora necessario e autorizzato, un nuovo corrective pass dopo il normale ciclo `agg` + riepilogo. Non esiste più un default `ISSUE → Cursor fix loop` nello stesso pass.
 
 ---
 
@@ -335,7 +387,7 @@ workspace clean
 
 Niente tabella o riassunto al posto dell'output verbatim.
 
-Se il report contiene già questi output coerenti, l'orchestratore non chiede shell manuale all'utente. Se mancano, prima usare un task/prompt **verify-only Cursor**; shell utente solo come fallback finale.
+Se il report contiene già questi output coerenti, l'orchestratore non chiede shell manuale all'utente. Se mancano, usare il più piccolo pass verify-only coerente con il sequencing gate; shell utente solo come fallback finale.
 
 `docs/runtime/LAST_CURSOR_REPORT.md` e `docs/runtime/LAST_HANDOFF_VERIFY.md` restano gli artefatti rolling secondo la foundation esistente finché non vengono migrati con una decisione separata.
 
@@ -344,14 +396,18 @@ Se il report contiene già questi output coerenti, l'orchestratore non chiede sh
 ## 12. Vietato nel prompt/packet
 
 - routing tramite colori UI;
+- `MODELLO CURSOR: AUTO` o modello non verificato;
+- omissione di `MODELLO CURSOR`, `BUGBOT` o `MODALITÀ CURSOR` nell'handoff user-facing;
+- review BugBot implicita con `BUGBOT: NO`;
+- più di una review BugBot nello stesso pass con `BUGBOT: SÌ`;
+- Autofix BugBot implicito;
 - comandi umani (`aggio`, `format`, `next`) nel corpo Cursor;
 - dipendenze implicite dalla chat del planner;
 - task senza acceptance criteria;
-- loop senza bound;
+- corrective loop implicito;
 - scope expansion automatica;
 - n8n workflow authoring autonomo da Cursor o planner;
 - destructive Git non autorizzato;
-- Autofix cloud implicito;
 - dichiarare PASS senza evidenza richiesta;
 - mega-prompt user-facing che ricopiano il metodo stabile già persistito;
 - inventare baseline/SHA/blob/candidate non verificati.
@@ -364,6 +420,7 @@ Se il report contiene già questi output coerenti, l'orchestratore non chiede sh
 - Non spezzare un singolo task confinato in catene di PREP senza blocker concreto.
 - Dopo evidenza sufficiente, avanzare al prossimo gate reale oppure marcare BLOCKED con blocker nominato.
 - Test opzionali richiedono un rischio concreto.
+- Un test/finding fallito nel default one-pass non apre un loop interno: STOP e nuovo piccolo corrective pass se necessario.
 - PASS basato su output deterministico/evidenza, non narrativa del modello.
 
 ---
@@ -383,7 +440,8 @@ La regola foundation `handoff ora` e il limite massimo storico di 20 prompt uten
 - `docs/runtime/CURRENT_FRONTIER.md` = stato runtime autorevole.
 - `docs/foundation/PROJECT_VISION.md` = foundation/invarianti canoniche esistenti.
 - `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md` = target architetturale accettato 2026-08-25, planning/docs-only.
-- `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` = forma user-facing canonica: **TASK DELTA + MODALITÀ CURSOR + agg separato**.
+- `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` = forma user-facing canonica: **MODELLO CURSOR + BUGBOT + MODALITÀ CURSOR + TASK DELTA + agg separato**, inclusa policy modello/quota GLM.
+- `docs/foundation/PROMPT_SEQUENCING_GATE.md` = gate tra pass consecutivi.
 - Questo file = contratto operativo dell'Execution Packet destinato a Cursor.
 
 Nessuno di questi documenti, da solo, autorizza PM-34, L5, schedule permanente o runtime non già autorizzato.
