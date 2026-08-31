@@ -13,8 +13,8 @@ This store is distinct from:
 
 - provenance registry: ACTIVE/SPENT authorization authority;
 - durable spend ledger: consumed authorization-id history;
-- n8n decision tables: UX/transport state only;
-- Telegram: human decision transport only.
+- n8n state: proposal/status transport only;
+- Telegram: human decision transport directly consumed by the Windows issuance owner.
 
 Canonical production path:
 
@@ -37,70 +37,64 @@ Canonical root:
 
 ## Decision record
 
-Required immutable identity/binding fields:
+Immutable identity/binding fields:
 
-- `pending_decision_id` — globally unique in store;
-- `authorization_id` — unique across non-expired/non-rejected store records and pre-bound before human decision;
+- `pending_decision_id` — globally unique;
+- `authorization_id` — pre-bound before human decision;
 - `task_id`;
 - `execution_id`;
-- `route_id` — `opencode+qwen_local` in v1;
+- `route_id` — exactly `opencode+qwen_local` in v1;
 - `scope_digest` — lowercase SHA-256 hex, 64 chars;
 - `created_at` RFC3339;
 - `pending_expires_at` RFC3339.
 
-Mutable lifecycle fields:
+Lifecycle fields:
 
 - `state`: `PENDING | APPROVED | REJECTED | ISSUED | EXPIRED`;
 - `decision_at`: RFC3339 or null;
 - `selected_option`: `APPROVE | REJECT` or null;
 - `telegram_update_id`: bounded string or null;
 - `telegram_chat_id`: bounded string or null;
+- `telegram_user_id`: bounded string or null;
 - `authorization_expires_at`: RFC3339 or null;
 - `issued_at`: RFC3339 or null.
 
-No Telegram bot token, credentials, raw callback payload, model output, prompts, filesystem path or secret may be stored.
+Telegram receipt values are populated **only from direct Telegram updates consumed by the Windows issuance owner**, never from n8n/HTTP request fields.
+
+No Telegram bot token, credential, raw callback payload, prompt/model output, filesystem path or secret may be stored.
 
 ## State invariants
 
 ### PENDING
 
-- no decision receipt;
-- `decision_at=null`;
-- `selected_option=null`;
-- `telegram_update_id=null`;
-- `telegram_chat_id=null`;
-- `authorization_expires_at=null`;
-- `issued_at=null`.
+All decision receipt fields are null; `authorization_expires_at=null`; `issued_at=null`.
 
 ### APPROVED
 
-- exact human decision receipt exists;
 - `selected_option=APPROVE`;
-- `decision_at`, `telegram_update_id`, `telegram_chat_id`, `authorization_expires_at` are present;
+- `decision_at`, `telegram_update_id`, `telegram_chat_id`, `telegram_user_id`, `authorization_expires_at` present;
 - `issued_at=null` until registry ACTIVE persistence succeeds.
 
 ### REJECTED
 
 - terminal;
 - `selected_option=REJECT`;
-- decision receipt present;
-- no `authorization_expires_at` required;
+- decision receipt including Telegram update/chat/user ids present;
+- `authorization_expires_at=null`;
 - `issued_at=null`.
 
 ### ISSUED
 
 - terminal success;
 - `selected_option=APPROVE`;
-- decision receipt present;
-- `authorization_expires_at` present;
-- `issued_at` present;
-- corresponding provenance registry ACTIVE entry must exist or have existed before later execution spend.
+- full sanitized decision receipt present;
+- `authorization_expires_at` + `issued_at` present.
 
 ### EXPIRED
 
 - terminal;
-- no later APPROVE/REJECT/ISSUE transition;
-- no provenance registry entry is created by expiry.
+- no later decision/issuance transition;
+- no provenance entry created by expiry.
 
 ## Allowed transitions
 
@@ -110,13 +104,11 @@ PENDING -> REJECTED
 PENDING -> EXPIRED
 ```
 
-No other transition is valid.
-
-`ISSUED`, `REJECTED`, `EXPIRED` are terminal.
+No other transition is valid. `ISSUED`, `REJECTED`, `EXPIRED` are terminal.
 
 ## Immutable bindings
 
-After record creation these fields can never change:
+After creation these fields never change:
 
 - `pending_decision_id`
 - `authorization_id`
@@ -127,24 +119,24 @@ After record creation these fields can never change:
 - `created_at`
 - `pending_expires_at`
 
-An issuance request with different task/execution/route/scope bindings is rejected as `ISSUANCE_BINDING_MISMATCH`; the store is not rewritten to fit the caller.
+The store is never rewritten to fit a caller.
 
-## Identity/replay invariants
+## Identity / replay invariants
 
 - one `pending_decision_id` -> at most one terminal human decision;
 - one `authorization_id` -> at most one pending lifecycle;
-- one `telegram_update_id` -> at most one consumed decision across the store;
-- duplicate APPROVE/REJECT after terminal state is fail-closed;
-- exact ISSUED replay may return the existing structural result but never appends another registry entry;
-- changed-binding replay is rejected;
-- restart does not reset state because the store is durable.
+- one direct Telegram `update_id` -> at most one consumed decision across the store;
+- chat id and user id are server-verified against user-local config before receipt persistence;
+- duplicate callbacks after terminal state fail closed;
+- exact ISSUED status replay never appends registry again;
+- restart does not reset state.
 
 ## Expiry
 
-- v1 pending TTL default/max: 900 seconds;
-- `pending_expires_at` is server-derived at registration;
-- once `now >= pending_expires_at`, the record cannot be approved/issued;
-- implementation may materialize `EXPIRED` lazily on next access, but the fail-closed outcome is identical.
+- pending TTL default/max: 900 seconds;
+- `pending_expires_at` server-derived;
+- `now >= pending_expires_at` blocks approve/reject/issue;
+- implementation may materialize `EXPIRED` lazily, with identical fail-closed result.
 
 ## Persistence
 
@@ -152,19 +144,19 @@ Implementation owner:
 
 `tools/v4-runtime-authorization-issuance-v1.mjs`
 
-Required behavior:
+Required:
 
-- validate complete object before use;
+- validate entire object before use;
 - missing/unreadable -> fail closed;
 - malformed/duplicate ids/invalid state shape -> fail closed;
-- atomic whole-file persistence with same-directory temp+rename;
-- no delete/compaction API in v1;
-- existing immutable bindings preserved byte-semantically across lifecycle updates;
-- no normal-flow rollback from terminal state.
+- atomic whole-file same-directory temp+rename;
+- no delete/compaction API v1;
+- immutable bindings preserved;
+- no rollback from terminal state.
 
 ## Initialization
 
-First production pending store:
+Future first production store, in a later persistence block only:
 
 ```json
 {
@@ -173,22 +165,22 @@ First production pending store:
 }
 ```
 
-No backfill from Git artifacts, chat history, old decision tables or runtime reports.
+No backfill from Git, chat history, n8n decision tables or old runtime reports.
 
 ## n8n boundary
 
-n8n may hold presentation/callback state, but this Windows-local store remains authoritative for issuance. A VPS/n8n row cannot create or modify a pending record except through the bounded issuance-owner API.
+n8n may call bounded register/status APIs. It cannot write decision receipt fields and cannot attest APPROVE/REJECT. The Windows-local store remains authoritative.
 
 ## Out of scope
 
 - execution spend;
-- durable spend-ledger writes;
-- ACTIVE/SPENT registry consumption;
-- Telegram bot credentials;
+- spend-ledger writes;
+- ACTIVE/SPENT consumption;
+- Telegram bot credential storage in the store;
 - auto-issuance;
 - retention/compaction/deletion;
 - first live execution.
 
 ## NEXT
 
-Implemented together with `v4-runtime-authorization-issuance-v1` under `V4_RUNTIME_AUTHORIZATION_ISSUANCE_PATH_IMPLEMENTATION_OFFLINE`.
+Implemented with `v4-runtime-authorization-issuance-v1` under `V4_RUNTIME_AUTHORIZATION_ISSUANCE_PATH_IMPLEMENTATION_OFFLINE`.
