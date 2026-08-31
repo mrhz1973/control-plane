@@ -2,19 +2,20 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`  
-**Versione:** 3.2 — 2026-08-31  
-**Ruolo:** contratto di formattazione per gli **Execution Packet** destinati a Cursor nel modello multi-planner. Non è un cambiamento runtime.
+**Versione:** 3.3 — 2026-08-31  
+**Stato:** CANONICAL  
+**Ruolo:** contratto operativo master per gli Execution Packet destinati a Cursor nel modello multi-planner. Non è un cambiamento runtime.
 
-**Target operating model:** `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`.  
-**User-facing handoff canonico:** `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` — TASK DELTA + header obbligatori + one-pass default.
+**Target operating model:** `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`  
+**User-facing handoff:** `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`  
+**Sequencing / PASS-STOP persistence:** `docs/foundation/PROMPT_SEQUENCING_GATE.md`  
+**Wiki-LLM lean:** `docs/foundation/WIKI_LLM_LEAN_METHOD.md`
 
 ---
 
-## 0. Ruolo nel nuovo flusso
+## 0. Ruolo nel flusso
 
-GPT Web crea il **Backlog Item** strategico. Il planner selezionato — **Qwen 3.8 37B / GLM 5.3 / Codex** — genera il vero **Execution Packet** per Cursor.
-
-Cursor non deve ricevere un obiettivo vago da reinterpretare a livello di progetto. Deve ricevere un task bounded con scope, acceptance criteria, gate e stop condition già definiti.
+GPT Web crea il Backlog Item strategico. Il planner selezionato — Qwen / GLM / Codex — genera un Execution Packet bounded. Cursor esegue il pass, valida una volta secondo il task, persiste evidence e torna al control-plane tramite GitHub.
 
 ```text
 GPT Web backlog
@@ -25,40 +26,25 @@ Execution Packet
       ↓
 n8n deterministic gate
       ↓
-Cursor execution pass
+Cursor bounded pass
+      ↓
+GitHub evidence
+      ↓
+agg umano / push-event automatico
+      ↓
+orchestratore
 ```
 
-Questo documento definisce il contratto dell'ultimo passaggio.
+GitHub è la memoria persistente. La chat Cursor non è una fonte canonica di stato.
 
 ---
 
-## 1. Disciplina prompt-size e contesto
+## 1. Prompt-size / TASK DELTA
 
-- Il prompt/Execution Packet Cursor porta **solo il delta necessario al task**.
-- Il boilerplate permanente si richiama per riferimento a questo file e alla foundation; non va reinserito integralmente a ogni giro.
-- Il prompt user-facing consegnato all'operatore deve seguire `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`: **TASK DELTA**, non secondo manuale operativo.
-- Prima del blocco user-facing devono apparire sempre, nell'ordine, `MODELLO CURSOR`, `BUGBOT`, `MODALITÀ CURSOR` con valori concreti secondo lo standard canonico.
-- Repository state, checkpoint e artefatti canonici si leggono dal **repo vivo**, non dalla cronologia della chat planner.
-- Ogni Execution Packet deve poter essere riusato da una nuova sessione Cursor insieme all'ultimo **Execution Checkpoint**.
-- È vietato dipendere da frasi come "come abbiamo detto sopra" o da contenuto disponibile soltanto nella sessione del planner.
-- SHA/build/blob/candidate possono comparire nel TASK DELTA solo se realmente noti e verificabili; **mai inventarli**.
-- Disponibilità modello/quota non si inventano: quando materialmente rilevanti devono provenire da fonte verificata.
-
----
-
-## 2. Routing metadata fuori dal corpo esecutivo
-
-Metadati che servono al control-plane e non all'implementatore restano fuori dal corpo operativo quando possibile:
-
-- planner richiesto / planner effettivo;
-- provider/quota/fallback reason;
-- modello Cursor raccomandato;
-- BugBot `NO|SÌ`;
-- modalità Cursor `AGENT|PLAN`;
-- repository/path/branch/task usati per instradare la finestra;
-- comandi umani (`aggio`, `format`, `next`, ecc.).
-
-L'header user-facing obbligatorio è:
+- Il prompt Cursor porta solo il delta necessario al pass corrente.
+- Il metodo stabile resta nel repository e non va ricopiato a ogni giro.
+- Il prompt user-facing segue `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`.
+- Prima del blocco TASK DELTA compaiono sempre, nell'ordine:
 
 ```text
 MODELLO CURSOR: <modello esatto raccomandato>
@@ -66,22 +52,13 @@ BUGBOT: <NO | SÌ>
 MODALITÀ CURSOR: <AGENT | PLAN>
 ```
 
-La policy canonica di scelta modello, incluse le soglie stabili di conservazione quota GLM, vive in `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` e non viene duplicata qui.
-
-Identificazione workspace Cursor canonica:
-
-- repository full name;
-- path locale quando necessario;
-- branch;
-- task/progetto.
-
-**Mai** routing tramite colori UI.
+- Repository state, checkpoint ed evidence si leggono dal repo vivo, non dalla chat del planner.
+- SHA/build/blob/candidate compaiono solo se verificati; mai inventarli.
+- Disponibilità modello/quota si usa solo da fonte verificata.
 
 ---
 
-## 3. Execution Packet — campi obbligatori
-
-Il planner deve produrre almeno:
+## 2. Execution Packet — campi minimi
 
 ```yaml
 task_id: D-NNNN-X
@@ -110,11 +87,11 @@ context_checkpoint_policy: required
 final_report_contract: cursor-standard-v3
 ```
 
-Il packet può contenere campi aggiuntivi, ma non può omettere scope, validation, acceptance, stop policy e checkpoint policy.
+Scope, validation, acceptance, stop policy e checkpoint policy sono obbligatori.
 
-### 3.1 One-pass default nei packet
+### 2.1 One-pass default
 
-Il default canonico è:
+Default:
 
 ```yaml
 loop:
@@ -122,21 +99,13 @@ loop:
   max_rounds: 1
 ```
 
-Un bounded corrective loop è ammesso solo quando il task lo autorizza **esplicitamente**. In tal caso il packet deve indicare:
-
-- `loop.enabled: true`;
-- bound numerico o equivalente;
-- condizioni di stop;
-- scope esatto del loop;
-- motivo per cui il loop è necessario nello stesso pass.
-
-La semplice possibilità che un test fallisca non abilita un corrective loop.
+Un bounded corrective loop interno è ammesso solo se il TASK DELTA lo autorizza esplicitamente con scope, bound e stop conditions. La semplice possibilità che un test fallisca non abilita un loop.
 
 ---
 
-## 4. Preflight implementatore — obbligatorio
+## 3. Preflight implementatore
 
-Prima di editare, Cursor esegue nel workspace corrente:
+Prima di editare, Cursor verifica repo, branch, working tree e remote state. Il metodo canonico può usare:
 
 ```bash
 git fetch --prune origin
@@ -151,61 +120,37 @@ git rev-parse origin/main
 
 Regole:
 
-1. verificare repository e branch;
-2. se `expected_base_head` è valorizzato, verificare la corrispondenza;
-3. se workspace è dirty inatteso, branch/repo errato, pull rifiutato, auth failure o conflitto → **STOP/BLOCKED**;
-4. nessuna pulizia distruttiva autonoma (`reset --hard`, `clean`, force push, ecc.).
+1. repo/branch devono essere quelli attesi;
+2. `expected_base_head`, quando valorizzato, deve corrispondere;
+3. dirty tree inatteso, auth failure, pull non fast-forward o conflitto → STOP;
+4. vietata pulizia distruttiva autonoma (`reset --hard`, `clean`, force-push, ecc.).
 
-L'utente non deve eseguire fetch/pull/status di routine al posto di Cursor.
-
-Nel **TASK DELTA user-facing** non è necessario ricopiare tutti questi comandi: è sufficiente richiamare il metodo canonico e specificare solo baseline/override realmente pertinenti al pass.
+Nel TASK DELTA user-facing si riporta solo la baseline/override specifica; il boilerplate non va duplicato.
 
 ---
 
-## 5. Corpo operativo del task
+## 4. Corpo semantico del task
 
-Il corpo destinato a Cursor deve iniziare direttamente con l'istruzione eseguibile, non con una lunga spiegazione del progetto.
+Ogni pass deve definire almeno:
 
-Il seguente pattern descrive la semantica del task/Execution Packet, ma **non obbliga GPT Web a ricopiarne tutto il boilerplate nel prompt user-facing**. La presentazione all'operatore segue il TASK DELTA definito da `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`.
+- OBIETTIVO bounded;
+- SCOPE consentito;
+- PRESERVARE;
+- OUT OF SCOPE;
+- PRECHECK specifici;
+- ACCEPTANCE deterministiche;
+- STOP conditions;
+- eventuale OVERRIDE DEL PASS;
+- EVIDENCE/GIT specifica;
+- OUTPUT finale.
 
-Pattern semantico:
-
-```text
-You are working in the current Cursor workspace.
-Run the required repository/branch preflight first.
-
-Goal:
-<single bounded goal>
-
-Allowed scope:
-<paths/actions>
-
-Forbidden scope:
-<paths/actions>
-
-Execute:
-<steps>
-
-Validate once:
-<target tests/checks + required regressions>
-
-Acceptance criteria:
-<deterministic criteria>
-
-Pass policy:
-Default is one-pass. At the first blocker or failed required validation, STOP with the precise cause.
-Do not enter a fix/test loop unless this task explicitly authorizes a bounded corrective loop.
-Do not expand scope to make the task pass.
-
-Context rollover:
-If the current Cursor context must end before completion, write/update the required Execution Checkpoint and stop cleanly. A new session must resume from repository state + Execution Packet + latest checkpoint.
-```
+Cursor non amplia lo scope per far passare un task.
 
 ---
 
-## 6. One-pass policy Cursor — DEFAULT
+## 5. One-pass Cursor — DEFAULT
 
-Salvo autorizzazione esplicita diversa nel TASK DELTA corrente, ogni pass bounded segue una sola sequenza:
+Salvo override esplicito:
 
 ```text
 implement
@@ -213,83 +158,139 @@ implement
 → regressioni richieste una volta
 → review una volta soltanto se BUGBOT:SÌ
 → evidence
-→ commit/push
+→ closure Git coerente con PASS/STOP
 ```
 
-Al primo blocker/failure:
+Al primo blocker/failure/actionable finding:
 
 ```text
 STOP — <causa precisa>
 ```
 
-Non eseguire nello stesso pass, per default:
+Non eseguire implicitamente:
 
 ```text
 fix → test → fix → test
 ```
 
-Un failure già diagnosticato genera un nuovo piccolo corrective pass dopo `agg` + riepilogo secondo `PROMPT_SEQUENCING_GATE.md`.
+Un failure diagnosticato genera un nuovo piccolo corrective pass dopo il normale `agg` + riepilogo secondo `PROMPT_SEQUENCING_GATE.md`.
 
-Un corrective loop interno è ammesso soltanto se il TASK DELTA corrente lo autorizza esplicitamente con bound e stop conditions. Questa regola prevale sul vecchio esempio generico `implement → test → fix → test`.
-
-Cursor deve comunque fermarsi per:
-
-- scope expansion;
-- operazione irreversibile/distruttiva;
-- credenziali/auth/billing;
-- produzione/deploy/runtime non autorizzato;
-- conflitto con policy;
-- impossibilità di soddisfare acceptance senza cambiare lo scope;
-- primo test/review failure nel default one-pass;
-- bound esplicito raggiunto quando un corrective loop è autorizzato;
-- contesto in esaurimento senza checkpoint persistito.
+Cursor deve fermarsi anche per scope expansion, operazione distruttiva non autorizzata, runtime/deploy fuori gate, conflitto di policy, impossibilità di soddisfare acceptance senza cambiare scope, BugBot actionable finding o bound esplicito raggiunto.
 
 ---
 
-## 7. Workflow-authoring boundary — invariata
+## 6. PASS / STOP persistence — CANONICAL
 
-Regola permanente fino a modifica foundation esplicita:
+Questa sezione recepisce la semantica wiki-LLM lean di `PROMPT_SEQUENCING_GATE.md`.
 
-- **GPT Web/GPT-B** è l'autore autorevole dei workflow n8n e delle istruzioni UI/runtime per l'operatore umano.
-- **Cursor** non crea, progetta, genera o modifica autonomamente la logica dei workflow n8n.
+### PASS
+
+Su PASS completo Cursor persiste normalmente:
+
+- production/test/docs changes bounded;
+- report architetturale/verifica quando pertinente;
+- `docs/runtime/LAST_CURSOR_REPORT.md` come rolling evidence compatta dell'ultimo PASS completato;
+- `docs/runtime/CURRENT_FRONTIER.md` se LIVE STATE/NEXT cambia;
+- commit/push normale e selettivo.
+
+`LAST_CURSOR_REPORT.md` NON è un event log e non deve accumulare STOP intermedi.
+
+### STOP
+
+Su STOP Cursor deve rendere il failure osservabile da GitHub senza contaminare PASS evidence e senza committare codice incompleto.
+
+Obblighi:
+
+1. STOP al primo finding; nessun corrective loop implicito;
+2. preservare production/test dirty tree uncommitted;
+3. NON modificare `CURRENT_FRONTIER.md`;
+4. NON modificare `LAST_CURSOR_REPORT.md`;
+5. creare esattamente un piccolo artifact immutabile:
+
+```text
+reports/runtime/cursor-stops/<UTC_TIMESTAMP>__<TASK_REF>.stop.json
+```
+
+6. stage/commit/push SOLO quel nuovo `.stop.json`;
+7. verificare che il dirty tree produttivo/test resti uncommitted.
+
+Shape minima:
+
+```json
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "<exact task ref>",
+  "result_cursor": "STOP",
+  "starting_head": "<sha>",
+  "stop_evidence_commit": "<sha or PENDING_SELF_REFERENCE>",
+  "failure_stage": "<PRECHECK|TARGET_TEST|REGRESSION|BUGBOT|RUNTIME_APPLY|OTHER>",
+  "finding": "<precise bounded finding>",
+  "target_result": "<result or NOT_RUN>",
+  "regressions_status": "<result or NOT_RUN>",
+  "bugbot_status": "<result or NOT_RUN>",
+  "runtime_apply_status": "<result or NOT_RUN>",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "dirty_paths_summary": ["<bounded paths/patterns>"],
+  "next_owner": "GPT_WEB"
+}
+```
+
+No secret, raw model output, grandi log o diff negli STOP artifact.
+
+### Human / automation equivalence
+
+```text
+Human:      Cursor → GitHub → agg → orchestratore
+Automation: Cursor → GitHub push event → orchestratore
+```
+
+Stessa semantica. Nessun protocollo parallelo.
+
+---
+
+## 7. Workflow-authoring boundary
+
+- GPT Web/GPT-B resta autore autorevole dei workflow n8n e delle istruzioni UI/runtime per l'operatore.
+- Cursor non crea/progetta/modifica autonomamente la logica n8n.
 - `workflows/**` è vietato di default.
-- Cursor può toccare `workflows/**` solo se il packet dichiara esplicitamente:
+- Cursor può toccare `workflows/**` solo quando il task dichiara esplicitamente:
 
-`PERSIST VERBATIM GPT-B-SUPPLIED WORKFLOW ARTIFACT`
+```text
+PERSIST VERBATIM GPT-B-SUPPLIED WORKFLOW ARTIFACT
+```
 
-  e fornisce artefatto completo o patch/hash esatta.
-- In quel caso Cursor può soltanto persistere verbatim, validare sintassi/path, riportare diff, committare e pushare.
-- Nessun planner Qwen/GLM/Codex acquisisce automaticamente l'autorità di n8n workflow authoring.
+con artifact completo o patch/hash esatta.
+- In quel caso può soltanto persistere verbatim, validare, riportare diff, commit/push.
 - Dettaglio mancante/inconsistente → `BLOCKED_WORKFLOW_AUTHORING_RESERVED_TO_GPT_B`.
 
 ---
 
-## 8. Modello di implementazione dentro Cursor
+## 8. Modello Cursor / quota
 
-La scelta del motore Cursor è routing metadata, non parte semantica del task.
-
-La raccomandazione concreta del modello deve seguire `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`, che è il canonical owner della policy user-facing e della conservazione quota GLM.
+Il modello Cursor è routing metadata e segue `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`.
 
 Invarianti:
 
-- usare soltanto nomi modello concretamente verificati/utilizzabili;
+- nomi modello concretamente verificati;
 - mai `MODELLO CURSOR: AUTO`;
-- il cambio del motore non autorizza cambio di scope, gate o acceptance;
-- Fast non è il default solo per ragioni di velocità;
-- GLM non va speso in loop di test/proof meramente ripetitivi.
+- modello non cambia scope/gate/acceptance;
+- Fast non è default solo per velocità;
+- GLM non va speso in proof/test loop meccanici.
 
-Target capability già descritta dalla foundation:
+Routing tipico:
 
-- **GLM 5.3 BYOK** come main Agent/subagent quando verificato e conveniente;
-- **Cursor native models** per task/subagent in cui danno vantaggio;
-- **Codex OAuth** come advisor/tool esterno via OpenClaw/CLI/MCP solo dopo verifica dedicata; non assumerlo come model-picker nativo;
-- **Qwen 3.8 37B** come advisor locale nello stesso job quando è già caricato e la policy lo consente.
+- deterministico/meccanico/docs-only/exact patch/minimal diagnosed correction → Composer 2.5 non-Fast;
+- architettura/debugging difficile/cross-system/runtime blocker → GLM 5.3 BYOK quando disponibile e quota lo consente.
 
 ---
 
-## 9. Execution Checkpoint — obbligatorio per rollover
+## 9. Execution Checkpoint
 
-Se il task non è finito e la sessione Cursor deve terminare, Cursor deve produrre/persistire un checkpoint con almeno:
+Se la sessione Cursor deve terminare prima del completamento e il job non è in STOP terminale, persistere un checkpoint con almeno:
 
 ```yaml
 task_id: D-NNNN-X
@@ -310,46 +311,33 @@ gates_open: []
 resume_read_set: []
 ```
 
-Nuova sessione Cursor:
-
-1. legge Execution Packet;
-2. legge ultimo checkpoint;
-3. verifica repo/branch/HEAD/workspace;
-4. continua dal `next_action`;
-5. non chiede all'utente di ricostruire la vecchia chat.
-
-Un checkpoint è incompleto se la nuova sessione deve chiedere "a che punto eravamo?".
+Una nuova sessione riparte da repo + packet + checkpoint, non dalla vecchia chat.
 
 ---
 
-## 10. Review / BugBot contract
-
-Il valore user-facing `BUGBOT` è obbligatorio per ogni prompt Cursor e viene applicato secondo `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`.
+## 10. BugBot
 
 ### `BUGBOT: NO`
 
-- nessuna invocazione BugBot nel pass;
-- nessuna review BugBot implicita.
+Nessuna invocazione.
 
 ### `BUGBOT: SÌ`
 
-Dopo i test richiesti e prima della closure:
+Dopo i test e prima della closure:
 
 ```text
 /review-bugbot
 ```
 
-una sola volta.
-
-Regole:
+esattamente una volta.
 
 - niente Autofix;
-- nessun finding blocking/actionable → `PASS_NO_FINDINGS` e continuazione verso evidence/closure;
-- finding actionable/blocking → **STOP immediato** con finding preciso;
-- nessun edit, fix o rerun BugBot nello stesso pass;
-- BugBot non disponibile → `STOP BUGBOT_NOT_AVAILABLE`.
+- no finding actionable → `PASS_NO_FINDINGS`;
+- finding actionable/blocking → STOP immediato;
+- nessun fix/rerun BugBot nello stesso pass;
+- unavailable → `STOP BUGBOT_NOT_AVAILABLE`.
 
-Un finding BugBot genera, se ancora necessario e autorizzato, un nuovo corrective pass dopo il normale ciclo `agg` + riepilogo. Non esiste più un default `ISSUE → Cursor fix loop` nello stesso pass.
+Lo STOP BugBot segue la stessa persistence `cursor-stops/*.stop.json`.
 
 ---
 
@@ -357,7 +345,7 @@ Un finding BugBot genera, se ancora necessario e autorizzato, un nuovo correctiv
 
 Commit sempre selettivo. Mai assumere `git add .` come default.
 
-Prima di chiudere:
+Prima di una closure PASS:
 
 ```bash
 git diff --check
@@ -365,19 +353,7 @@ git status --short
 git log --oneline -5
 ```
 
-Dopo un push autorizzato il report finale deve includere l'output testuale **verbatim** di:
-
-```bash
-git log --oneline -5
-git status --short
-git rev-parse HEAD
-git rev-parse origin/main
-git branch --show-current
-git show --stat HEAD
-git ls-remote origin main
-```
-
-PASS remoto:
+Quando il task richiede PASS remoto, verificare coerentemente:
 
 ```text
 HEAD == origin/main == git ls-remote origin main
@@ -385,66 +361,56 @@ branch == main
 workspace clean
 ```
 
-Niente tabella o riassunto al posto dell'output verbatim.
+Lo STOP non richiede clean workspace: richiede invece che SOLO lo STOP artifact sia committato/pushato e che il dirty tree bounded resti preservato.
 
-Se il report contiene già questi output coerenti, l'orchestratore non chiede shell manuale all'utente. Se mancano, usare il più piccolo pass verify-only coerente con il sequencing gate; shell utente solo come fallback finale.
-
-`docs/runtime/LAST_CURSOR_REPORT.md` e `docs/runtime/LAST_HANDOFF_VERIFY.md` restano gli artefatti rolling secondo la foundation esistente finché non vengono migrati con una decisione separata.
+L'orchestratore non deve chiedere all'operatore shell manuale se GitHub/evidence persistita basta a determinare il gate.
 
 ---
 
-## 12. Vietato nel prompt/packet
+## 12. Vietato
 
 - routing tramite colori UI;
 - `MODELLO CURSOR: AUTO` o modello non verificato;
-- omissione di `MODELLO CURSOR`, `BUGBOT` o `MODALITÀ CURSOR` nell'handoff user-facing;
-- review BugBot implicita con `BUGBOT: NO`;
-- più di una review BugBot nello stesso pass con `BUGBOT: SÌ`;
+- omissione di `MODELLO CURSOR`, `BUGBOT`, `MODALITÀ CURSOR`;
+- BugBot implicito con `BUGBOT:NO`;
+- più di una review BugBot nello stesso pass;
 - Autofix BugBot implicito;
-- comandi umani (`aggio`, `format`, `next`) nel corpo Cursor;
-- dipendenze implicite dalla chat del planner;
-- task senza acceptance criteria;
+- dipendenze dalla chat planner;
+- task senza acceptance;
 - corrective loop implicito;
 - scope expansion automatica;
-- n8n workflow authoring autonomo da Cursor o planner;
+- n8n workflow authoring autonomo;
 - destructive Git non autorizzato;
-- dichiarare PASS senza evidenza richiesta;
-- mega-prompt user-facing che ricopiano il metodo stabile già persistito;
-- inventare baseline/SHA/blob/candidate non verificati.
+- dichiarare PASS senza evidence;
+- committare production/test incomplete changes su STOP;
+- scrivere STOP intermedi dentro `LAST_CURSOR_REPORT.md`;
+- mega-prompt che ricopia il metodo stabile;
+- inventare baseline/SHA/blob/candidate.
 
 ---
 
-## 13. Anti-PREP-churn / momentum
+## 13. Wiki-LLM lean / context
 
-- Non creare un nuovo documento se un artefatto esistente può essere aggiornato.
-- Non spezzare un singolo task confinato in catene di PREP senza blocker concreto.
-- Dopo evidenza sufficiente, avanzare al prossimo gate reale oppure marcare BLOCKED con blocker nominato.
-- Test opzionali richiedono un rischio concreto.
-- Un test/finding fallito nel default one-pass non apre un loop interno: STOP e nuovo piccolo corrective pass se necessario.
-- PASS basato su output deterministico/evidenza, non narrativa del modello.
-
----
-
-## 14. Context-window invariant
-
-La sessione è sostituibile; GitHub è persistente.
-
-GPT Web, planner e Cursor devono poter aprire una nuova finestra senza perdita di stato. Il Cursor packet deve quindi puntare a fonti persistenti e produrre checkpoint prima del rollover.
-
-La regola foundation `handoff ora` e il limite massimo storico di 20 prompt utente per GPT Web restano validi finché non vengono formalmente sostituiti.
+- `CURRENT_FRONTIER.md` = LIVE STATE compatto.
+- `LAST_CURSOR_REPORT.md` = rolling evidence dell'ultimo PASS completato, letto on-demand.
+- `reports/runtime/cursor-stops/*.stop.json` = STOP evidence immutabile, letta solo se il Git delta del pass la punta.
+- niente broad scan della cartella STOP durante `agg`;
+- niente chronology nel frontier;
+- niente duplicazione del metodo nei TASK DELTA.
 
 ---
 
-## 15. Relazione con gli altri documenti
+## 14. Relazione con gli altri documenti
 
 - `docs/runtime/CURRENT_FRONTIER.md` = stato runtime autorevole.
-- `docs/foundation/PROJECT_VISION.md` = foundation/invarianti canoniche esistenti.
-- `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md` = target architetturale accettato 2026-08-25, planning/docs-only.
-- `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` = forma user-facing canonica: **MODELLO CURSOR + BUGBOT + MODALITÀ CURSOR + TASK DELTA + agg separato**, inclusa policy modello/quota GLM.
-- `docs/foundation/PROMPT_SEQUENCING_GATE.md` = gate tra pass consecutivi.
-- Questo file = contratto operativo dell'Execution Packet destinato a Cursor.
+- `docs/foundation/PROJECT_VISION.md` = foundation/invarianti.
+- `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md` = operating model multi-planner.
+- `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` = forma user-facing, model routing, BugBot, TASK DELTA e `agg`.
+- `docs/foundation/PROMPT_SEQUENCING_GATE.md` = sequencing + PASS/STOP persistence + human/automation equivalence.
+- `docs/foundation/WIKI_LLM_LEAN_METHOD.md` = metodo lean di navigazione/evidence.
+- Questo file = master operativo dell'Execution Packet destinato a Cursor.
 
-Nessuno di questi documenti, da solo, autorizza PM-34, L5, schedule permanente o runtime non già autorizzato.
+Nessuno di questi documenti, da solo, autorizza runtime non già aperto dal frontier/contratto/task.
 
 ---
 
