@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-windows-local-execution-endpoint-v1.request.schema.json",
+  "title": "v4-windows-local-execution-endpoint-request-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "execution_id",
+    "runtime_authorization",
+    "message"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "v4-windows-local-execution-endpoint-request-v1"
+    },
+    "execution_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "runtime_authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "authorization_id",
+        "authorization_state",
+        "route_id",
+        "scope"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "operator-runtime-authorization-v1"
+        },
+        "authorization_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "authorization_state": {
+          "const": "ACTIVE"
+        },
+        "route_id": {
+          "const": "opencode+qwen_local"
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "execution_harness",
+            "model",
+            "single_generation_guard_required",
+            "max_opencode_executions",
+            "max_qwen_generation_calls",
+            "retry",
+            "fallback",
+            "qwen_profile",
+            "dflash_required"
+          ],
+          "properties": {
+            "execution_harness": {
+              "const": "opencode"
+            },
+            "model": {
+              "const": "qwen_local"
+            },
+            "single_generation_guard_required": {
+              "const": true
+            },
+            "max_opencode_executions": {
+              "const": 1
+            },
+            "max_qwen_generation_calls": {
+              "const": 1
+            },
+            "retry": {
+              "const": 0
+            },
+            "fallback": {
+              "const": 0
+            },
+            "qwen_profile": {
+              "const": "fast_8k"
+            },
+            "dflash_required": {
+              "const": true
+            }
+          }
+        }
+      }
+    }
+  }
+}
