@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mrhz1973/control-plane/docs/contracts/v4-runtime-authorization-pending-store-v1.schema.json",
+  "title": "v4-runtime-authorization-pending-store-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "decisions"],
+  "properties": {
+    "schema_version": {
+      "const": "v4-runtime-authorization-pending-store-v1"
+    },
+    "decisions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/decision" }
+    }
+  },
+  "$defs": {
+    "id200": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "rfc3339": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "nullableRfc3339": {
+      "oneOf": [
+        { "$ref": "#/$defs/rfc3339" },
+        { "type": "null" }
+      ]
+    },
+    "nullableId": {
+      "oneOf": [
+        { "$ref": "#/$defs/id200" },
+        { "type": "null" }
+      ]
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pending_decision_id",
+        "authorization_id",
+        "task_id",
+        "execution_id",
+        "route_id",
+        "scope_digest",
+        "created_at",
+        "pending_expires_at",
+        "state",
+        "decision_at",
+        "selected_option",
+        "telegram_update_id",
+        "telegram_chat_id",
+        "authorization_expires_at",
+        "issued_at"
+      ],
+      "properties": {
+        "pending_decision_id": { "$ref": "#/$defs/id200" },
+        "authorization_id": { "$ref": "#/$defs/id200" },
+        "task_id": { "$ref": "#/$defs/id200" },
+        "execution_id": { "$ref": "#/$defs/id200" },
+        "route_id": { "const": "opencode+qwen_local" },
+        "scope_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "created_at": { "$ref": "#/$defs/rfc3339" },
+        "pending_expires_at": { "$ref": "#/$defs/rfc3339" },
+        "state": {
+          "enum": ["PENDING", "APPROVED", "REJECTED", "ISSUED", "EXPIRED"]
+        },
+        "decision_at": { "$ref": "#/$defs/nullableRfc3339" },
+        "selected_option": {
+          "oneOf": [
+            { "enum": ["APPROVE", "REJECT"] },
+            { "type": "null" }
+          ]
+        },
+        "telegram_update_id": { "$ref": "#/$defs/nullableId" },
+        "telegram_chat_id": { "$ref": "#/$defs/nullableId" },
+        "authorization_expires_at": { "$ref": "#/$defs/nullableRfc3339" },
+        "issued_at": { "$ref": "#/$defs/nullableRfc3339" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "state": { "const": "PENDING" } }, "required": ["state"] },
+          "then": {
+            "properties": {
+              "decision_at": { "type": "null" },
+              "selected_option": { "type": "null" },
+              "telegram_update_id": { "type": "null" },
+              "telegram_chat_id": { "type": "null" },
+              "authorization_expires_at": { "type": "null" },
+              "issued_at": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "state": { "const": "APPROVED" } }, "required": ["state"] },
+          "then": {
+            "properties": {
+              "decision_at": { "$ref": "#/$defs/rfc3339" },
+              "selected_option": { "const": "APPROVE" },
+              "telegram_update_id": { "$ref": "#/$defs/id200" },
+              "telegram_chat_id": { "$ref": "#/$defs/id200" },
+              "authorization_expires_at": { "$ref": "#/$defs/rfc3339" },
+              "issued_at": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "state": { "const": "REJECTED" } }, "required": ["state"] },
+          "then": {
+            "properties": {
+              "decision_at": { "$ref": "#/$defs/rfc3339" },
+              "selected_option": { "const": "REJECT" },
+              "telegram_update_id": { "$ref": "#/$defs/id200" },
+              "telegram_chat_id": { "$ref": "#/$defs/id200" },
+              "authorization_expires_at": { "type": "null" },
+              "issued_at": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "state": { "const": "ISSUED" } }, "required": ["state"] },
+          "then": {
+            "properties": {
+              "decision_at": { "$ref": "#/$defs/rfc3339" },
+              "selected_option": { "const": "APPROVE" },
+              "telegram_update_id": { "$ref": "#/$defs/id200" },
+              "telegram_chat_id": { "$ref": "#/$defs/id200" },
+              "authorization_expires_at": { "$ref": "#/$defs/rfc3339" },
+              "issued_at": { "$ref": "#/$defs/rfc3339" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "state": { "const": "EXPIRED" } }, "required": ["state"] },
+          "then": {
+            "properties": {
+              "selected_option": { "type": "null" },
+              "authorization_expires_at": { "type": "null" },
+              "issued_at": { "type": "null" }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
