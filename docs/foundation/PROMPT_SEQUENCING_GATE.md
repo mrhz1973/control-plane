@@ -28,7 +28,7 @@ A new Cursor prompt is forbidden until all of the following are true:
 
 1. the operator has sent `agg` for the previous Cursor prompt;
 2. GPT Web has refreshed canonical repository state from `origin/main`;
-3. GPT Web has read `CURRENT_FRONTIER.md` and `LAST_CURSOR_REPORT.md` as required by AUTO-VIA;
+3. GPT Web has read `CURRENT_FRONTIER.md` plus only the bounded evidence required by the just-finished pass;
 4. GPT Web has summarized the outcome of the previous prompt to the operator;
 5. the next bounded action is then derived from the refreshed canonical state.
 
@@ -61,13 +61,94 @@ agg
 
 The operator must **not** manually copy Cursor's chat summary into the orchestrator thread. GPT Web reads canonical evidence from GitHub (`origin/main`) and derives the next pass from persisted state.
 
-### Cursor persistence obligation by outcome
+## Cursor persistence obligation by outcome
 
-| Cursor outcome | What Cursor must persist on GitHub before the operator sends `agg` |
-|---|---|
-| **PASS** | full bounded evidence: architecture report when applicable, `LAST_CURSOR_REPORT.md`, `CURRENT_FRONTIER.md`, and the production/test/docs changes for the completed block — then commit + push normally |
-| **STOP** | **evidence-only** commit of `docs/runtime/LAST_CURSOR_REPORT.md` only; preserve incomplete production/test dirty tree uncommitted; do **not** update `CURRENT_FRONTIER.md` |
+### PASS
 
-On **STOP**, Cursor must push that single evidence commit to `origin/main` so `agg` can read the precise finding without chat relay. The STOP evidence commit does **not** complete the block and does **not** authorize autonomous continuation.
+Cursor persists normal completion evidence:
 
-On **PASS**, `agg` refreshes `origin/main`, reads `CURRENT_FRONTIER.md` + `LAST_CURSOR_REPORT.md`, summarizes the completed pass, and only then may GPT Web author the next TASK DELTA.
+- production/test/docs changes for the completed bounded block;
+- architecture/verification report when applicable;
+- `docs/runtime/LAST_CURSOR_REPORT.md` as the compact rolling evidence of the latest **completed PASS**;
+- `docs/runtime/CURRENT_FRONTIER.md` when LIVE STATE/NEXT changes;
+- normal commit + push.
+
+`LAST_CURSOR_REPORT.md` remains compact and rolling. It is not an event log and must not accumulate intermediate STOP history.
+
+### STOP
+
+A STOP must be observable from GitHub without contaminating PASS rolling evidence or committing incomplete code.
+
+Cursor MUST:
+
+1. stop at the first blocker/failure/actionable finding; no same-pass fix loop;
+2. preserve incomplete production/test changes dirty and uncommitted;
+3. leave `CURRENT_FRONTIER.md` unchanged;
+4. leave `LAST_CURSOR_REPORT.md` unchanged;
+5. create exactly one small immutable machine-readable artifact under:
+
+```text
+reports/runtime/cursor-stops/<UTC_TIMESTAMP>__<TASK_REF>.stop.json
+```
+
+6. stage/commit/push **only that new `.stop.json` artifact**;
+7. verify the dirty production/test tree remains uncommitted after the evidence-only push.
+
+Canonical STOP artifact minimum shape:
+
+```json
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "<exact task ref>",
+  "result_cursor": "STOP",
+  "starting_head": "<sha>",
+  "stop_evidence_commit": "<sha or PENDING_SELF_REFERENCE>",
+  "failure_stage": "<PRECHECK|TARGET_TEST|REGRESSION|BUGBOT|RUNTIME_APPLY|OTHER>",
+  "finding": "<precise bounded finding>",
+  "target_result": "<result or NOT_RUN>",
+  "regressions_status": "<result or NOT_RUN>",
+  "bugbot_status": "<result or NOT_RUN>",
+  "runtime_apply_status": "<result or NOT_RUN>",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "dirty_paths_summary": ["<bounded paths/patterns>"],
+  "next_owner": "GPT_WEB"
+}
+```
+
+No secrets, raw model output, large logs or diffs belong in STOP artifacts.
+
+## `agg` evidence routing — wiki-LLM lean
+
+`agg` does not scan STOP history or list the whole directory.
+
+After refreshing `origin/main` and `CURRENT_FRONTIER.md`:
+
+1. inspect only the Git delta/commit range since the previously observed HEAD;
+2. if that delta contains a newly added `reports/runtime/cursor-stops/*.stop.json` for the expected task, read **only that one artifact** and treat the pass as STOP;
+3. otherwise follow the PASS path and read `LAST_CURSOR_REPORT.md` once only when needed;
+4. read additional pointed evidence only if necessary;
+5. summarize the just-finished result, then derive the next bounded action.
+
+If neither matching PASS evidence nor a matching STOP artifact is persisted, classify `EVIDENCE_NOT_PERSISTED`; do not infer non-execution.
+
+`CURRENT_FRONTIER.md` remains the authority for LIVE STATE. A STOP artifact is immutable evidence only and never replaces the frontier.
+
+## Automation equivalence
+
+Human mode:
+
+```text
+Cursor → GitHub evidence → operator `agg` → orchestrator refresh
+```
+
+Automation mode:
+
+```text
+Cursor → GitHub push event → orchestrator refresh
+```
+
+The semantics are identical. A push containing a new `cursor-stops/*.stop.json` is a machine-readable `CURSOR_STOP` event; a completed PASS advances normal PASS evidence/frontier. No separate automation protocol is allowed.
