@@ -8,7 +8,7 @@
 task_ref: V4_RUNTIME_AUTHORIZATION_PROVENANCE_GAP_DISCOVERY
 result_cursor: PASS
 starting_head: 159bcb162d2df6a99cbd955efb6b109dae408af0
-final_head: PENDING_COMMIT
+final_head: 61816daf9605df7e682e0d34d5460255d457ef05
 
 category: DOCS_ONLY_ARCHITECTURE_DISCOVERY
 runtime_mutations: 0
