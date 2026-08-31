@@ -1,4 +1,4 @@
-﻿# LAST CURSOR REPORT - control-plane (rolling)
+# LAST CURSOR REPORT - control-plane (rolling)
 
 **Ruolo:** evidence rolling dell'ultimo pass Cursor completato. Non e LIVE STATE e non sostituisce `CURRENT_FRONTIER.md`.
 
@@ -8,7 +8,7 @@
 task_ref: V4_RESOURCE_STATUS_WF40_LOCAL_CONTRIBUTION_PATCH_APPLY_OFFLINE
 result_cursor: PASS
 starting_head: 7f2f13a1cba9627f38c85aa0924cce89d1cea3a5
-final_head: TO_BE_VERIFIED_AFTER_PUSH
+final_head: 0289cede5c523d68fa519605380c5b05f46b4c85
 
 wf40_id: 9ZMj2ACTKyDVhCue
 wf40_pre_version_id: ef80943e-535d-430f-958f-56c03baa1c62
