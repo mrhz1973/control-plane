@@ -1,0 +1,60 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "block_id": "V4_RUNTIME_AUTHORIZATION_FIRST_LIVE_APPROVAL_AND_EXECUTION_PROOF",
+  "category": "LIVE_BOUNDED_PROOF",
+  "closure": "FIRST_LIVE_ONE_SHOT",
+  "result": "STOP",
+  "dispatch_base_head": "971ecf9603898208f3bc647329e9484fd690ea65",
+  "utc_timestamp": "2026-08-31T200705Z",
+  "finding": "EXECUTION_LISTENER_18791_ABSENT",
+  "finding_detail": "Precheck required exactly one listener on 127.0.0.1:18791 for ControlPlane-V4-LocalExecutionEndpoint. Observed LISTENER_18791_COUNT=0. Scheduled Task exists (State=Ready) but is not running a listener. Issuance listener 127.0.0.1:18792 count=1 (ok). Pending=0, registry=0, ledger=0, ACTIVE=0. No register-pending, no Telegram decision message, no human APPROVE, no execution request attempted.",
+  "precheck": {
+    "origin_main": "971ecf9603898208f3bc647329e9484fd690ea65",
+    "working_tree": "clean",
+    "issuance_task": "ControlPlane-V4-RuntimeAuthorizationIssuance",
+    "issuance_task_state": "Running",
+    "listener_18792_count": 1,
+    "execution_task": "ControlPlane-V4-LocalExecutionEndpoint",
+    "execution_task_state": "Ready",
+    "execution_last_result": 4294967295,
+    "listener_18791_count": 0,
+    "listener_18790_count": 0,
+    "pending_decisions": 0,
+    "registry_entries": 0,
+    "ledger_spends": 0,
+    "first_live_ids_already_used": false,
+    "tailscale_routes_present": [
+      "/v4/authorization/register-pending",
+      "/v4/authorization/status",
+      "/v4/execution/opencode-local"
+    ],
+    "funnel": "absent_tailnet_only"
+  },
+  "hard_counters": {
+    "pending_registrations": 0,
+    "telegram_decision_messages": 0,
+    "human_approve_decisions": 0,
+    "active_authorizations_issued": 0,
+    "execution_endpoint_post": 0,
+    "opencode_executions": 0,
+    "qwen_generations": 0,
+    "retry": 0,
+    "fallback": 0,
+    "second_auth": 0,
+    "second_execution": 0,
+    "wf40_executions": 0,
+    "wf61_executions": 0,
+    "provider_cloud_calls": 0
+  },
+  "invariants_preserved": {
+    "CURRENT_FRONTIER_unchanged": true,
+    "LAST_CURSOR_REPORT_unchanged": true,
+    "no_pending_created": true,
+    "no_telegram_message": true,
+    "no_registry_write": true,
+    "no_ledger_write": true,
+    "no_same_pass_service_start": true,
+    "live_execution_closed": true
+  },
+  "next_required_before_retry": "Restore exactly one listener on 127.0.0.1:18791 for ControlPlane-V4-LocalExecutionEndpoint (and ideally 18790 readonly if expected), re-run precheck, then reopen FIRST_LIVE proof. Do not create PENDING until LISTENER_18791_COUNT=1."
+}
