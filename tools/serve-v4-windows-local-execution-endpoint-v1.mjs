@@ -8,9 +8,9 @@
 import http from "node:http";
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, readFileSync, openSync, readSync, closeSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
-import { dirname, isAbsolute, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve, extname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
 import { execSync } from "node:child_process";
@@ -153,18 +153,21 @@ export function resolveOpenCodeNoShellInvocation(options = {}) {
   };
 }
 
-export function buildOpenCodeArgv({ workspaceRoot, modelId, message }) {
+export function buildOpenCodeArgv({ workspaceRoot, modelId, message, title = "v4-windows-local-execution" }) {
   const caps = DISPATCH_CLI_CAPABILITIES;
   const model = `qwen_local/${modelId}`;
+  // Match ratified live-proof invocation: --pure, fixed --title, NO --auto/--continue/--fork.
   return [
     caps.subcommand,
+    "--pure",
     caps.directory_flag,
     workspaceRoot,
     caps.model_flag,
     model,
     caps.format_flag,
     caps.format_json_value,
-    caps.auto_flag,
+    "--title",
+    String(title || "v4-windows-local-execution"),
     message,
   ];
 }
@@ -189,7 +192,68 @@ export function createProductionGetOccupancy(options = {}) {
 }
 
 /**
+ * Classify whether the resolved OpenCode bin entry is a native binary or a
+ * Node script. OpenCode 1.18+ ships `./bin/opencode.exe` (native) — spawning
+ * it via `node.exe <bin>` yields OPENCODE_EXIT_NONZERO (SyntaxError on PE).
+ */
+export function classifyOpenCodeBinKind(scriptPath) {
+  const p = String(scriptPath || "");
+  const ext = extname(p).toLowerCase();
+  if (ext === ".exe" || ext === ".bin" || ext === ".dll") return "native-binary";
+  if (ext === ".js" || ext === ".mjs" || ext === ".cjs" || ext === ".ts") {
+    return "node-script";
+  }
+  try {
+    const fd = openSync(p, "r");
+    const buf = Buffer.alloc(4);
+    const n = readSync(fd, buf, 0, 4, 0);
+    closeSync(fd);
+    if (n >= 2 && buf[0] === 0x23 && buf[1] === 0x21) return "node-script"; // #!
+    if (n >= 2 && buf[0] === 0x4d && buf[1] === 0x5a) return "native-binary"; // MZ
+    if (n >= 4 && buf[0] === 0x7f && buf[1] === 0x45 && buf[2] === 0x4c && buf[3] === 0x46) {
+      return "native-binary"; // ELF
+    }
+  } catch {
+    /* fall through */
+  }
+  // Conservatively treat extensionless Windows installs as native when .exe sibling exists.
+  if (process.platform === "win32" && existsSync(`${p}.exe`)) return "native-binary";
+  return "node-script";
+}
+
+/**
+ * Bounded structural classification for a non-success OpenCode process exit.
+ * Consumes only short in-memory snippets; never persists raw streams.
+ */
+export function classifyOpenCodeProcessFailure(input = {}) {
+  if (input.signal) return "OPENCODE_TERMINATED_BY_SIGNAL";
+  const stderr = String(input.stderrSnippet || "");
+  const stdout = String(input.stdoutSnippet || "");
+  const combined = `${stderr}\n${stdout}`;
+  const binKind = input.binKind || null;
+  if (
+    binKind === "native-binary" &&
+    input.spawnedViaNode === true
+  ) {
+    return "OPENCODE_NATIVE_BINARY_INVOKED_VIA_NODE";
+  }
+  if (
+    /cannot be run in DOS mode/i.test(combined) ||
+    (/Invalid or unexpected token/i.test(combined) && /SyntaxError/i.test(combined))
+  ) {
+    return "OPENCODE_NATIVE_BINARY_INVOKED_VIA_NODE";
+  }
+  if (Number.isInteger(input.code) && input.code !== 0) {
+    return "OPENCODE_EXIT_NONZERO";
+  }
+  return "OPENCODE_EXIT_NONZERO";
+}
+
+const STDERR_CLASSIFY_CAP = 4096;
+
+/**
  * Production runOpenCode: fixed no-shell spawn. Not invoked by offline tests.
+ * Native OpenCode binaries are spawned directly (never via node.exe).
  */
 export function createProductionRunOpenCode(options = {}) {
   const workspaceRoot = options.workspaceRoot;
@@ -197,6 +261,9 @@ export function createProductionRunOpenCode(options = {}) {
     options.resolveOpenCodeNoShellInvocation || resolveOpenCodeNoShellInvocation;
   const spawnImpl = options.spawnImpl || spawn;
   const writeOverlay = options.writeOverlay || defaultWriteOverlay;
+  const classifyBin = options.classifyOpenCodeBinKind || classifyOpenCodeBinKind;
+  const classifyFailure =
+    options.classifyOpenCodeProcessFailure || classifyOpenCodeProcessFailure;
 
   return async function runOpenCode(ctx) {
     if (!workspaceRoot || typeof workspaceRoot !== "string" || !isAbsolute(workspaceRoot)) {
@@ -231,11 +298,26 @@ export function createProductionRunOpenCode(options = {}) {
     const childEnv = {
       ...process.env,
       OPENCODE_CONFIG: overlayPath,
+      // Ratified live-proof disable suite (no network plugin fetches / autoupdate).
+      OPENCODE_DISABLE_TITLE: "1",
+      OPENCODE_DISABLE_AUTOCOMPACT: "1",
+      OPENCODE_DISABLE_MODELS_FETCH: "1",
+      OPENCODE_DISABLE_DEFAULT_PLUGINS: "1",
+      OPENCODE_DISABLE_CLAUDE_CODE: "1",
+      OPENCODE_DISABLE_LSP_DOWNLOAD: "1",
+      OPENCODE_DISABLE_AUTOUPDATE: "1",
+      OPENCODE_DISABLE_PRUNE: "1",
     };
     // Never pass request-supplied env. Never set shell.
 
+    const binKind = classifyBin(resolved.scriptPath);
+    const spawnFile =
+      binKind === "native-binary" ? resolved.scriptPath : resolved.nodePath;
+    const spawnArgs =
+      binKind === "native-binary" ? [...argv] : [resolved.scriptPath, ...argv];
+
     const accounting = await new Promise((resolvePromise, rejectPromise) => {
-      const child = spawnImpl(resolved.nodePath, [resolved.scriptPath, ...argv], {
+      const child = spawnImpl(spawnFile, spawnArgs, {
         cwd: workspaceRoot,
         env: childEnv,
         shell: false,
@@ -243,22 +325,38 @@ export function createProductionRunOpenCode(options = {}) {
         stdio: ["ignore", "pipe", "pipe"],
       });
       let settled = false;
+      let stderrCap = "";
+      let stdoutCap = "";
       const finish = (err, value) => {
         if (settled) return;
         settled = true;
+        // Drop in-memory snippets before returning — never leak to HTTP.
+        stderrCap = "";
+        stdoutCap = "";
         if (err) rejectPromise(err);
         else resolvePromise(value);
       };
-      // Drain child pipes without retaining any output content.
-      drainChildOutput(child.stdout);
-      drainChildOutput(child.stderr);
+      // Bound in-memory capture for structural failure classification only.
+      if (child.stderr && typeof child.stderr.on === "function") {
+        child.stderr.on("data", (chunk) => {
+          if (stderrCap.length >= STDERR_CLASSIFY_CAP) return;
+          stderrCap += String(chunk).slice(0, STDERR_CLASSIFY_CAP - stderrCap.length);
+        });
+      } else {
+        drainChildOutput(child.stderr);
+      }
+      if (child.stdout && typeof child.stdout.on === "function") {
+        child.stdout.on("data", (chunk) => {
+          if (stdoutCap.length >= STDERR_CLASSIFY_CAP) return;
+          stdoutCap += String(chunk).slice(0, STDERR_CLASSIFY_CAP - stdoutCap.length);
+        });
+      } else {
+        drainChildOutput(child.stdout);
+      }
       child.on("error", (e) => finish(e));
       child.on("close", (code, signal) => {
         // Structural accounting only — never return raw stdout/stderr to HTTP.
         if (code === 0 && !signal) {
-          // Attest only what this runner observes. Do NOT synthesize
-          // qwen_generation_calls / upstream_generation_requests — the
-          // adapter-owned guard accounting is authoritative for those.
           finish(null, {
             opencode_execution_count: 1,
             retry_calls: 0,
@@ -267,11 +365,16 @@ export function createProductionRunOpenCode(options = {}) {
           });
           return;
         }
-        if (signal) {
-          finish(new Error("OPENCODE_TERMINATED_BY_SIGNAL"));
-          return;
-        }
-        finish(new Error("OPENCODE_EXIT_NONZERO"));
+        const reason = classifyFailure({
+          code,
+          signal,
+          stderrSnippet: stderrCap,
+          stdoutSnippet: stdoutCap,
+          binKind,
+          spawnedViaNode: false,
+          scriptPath: resolved.scriptPath,
+        });
+        finish(new Error(reason));
       });
     });
     return accounting;
@@ -297,6 +400,9 @@ function defaultWriteOverlay({ guardBaseUrl, modelId }) {
     baseUrl: guardBaseUrl,
     modelId,
   });
+  // Ratified live-proof: deny tools/permissions so a finish_reason=stop turn
+  // can terminate the agent loop without further generations.
+  overlay.permission = { ...(overlay.permission || {}), "*": "deny" };
   const path = join(
     dir,
     `opencode-overlay-${createHash("sha256").update(`${guardBaseUrl}|${modelId}`).digest("hex").slice(0, 16)}.json`,

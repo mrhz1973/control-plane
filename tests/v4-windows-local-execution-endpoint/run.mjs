@@ -309,15 +309,20 @@ await test("buildOpenCodeArgv uses proven CLI surface only", async () => {
   });
   assert.deepEqual(argv, [
     "run",
+    "--pure",
     "--dir",
     "C:\\\\repo",
     "-m",
     "qwen_local/qwen38-original-dflash2-8k",
     "--format",
     "json",
-    "--auto",
+    "--title",
+    "v4-windows-local-execution",
     "goal text",
   ]);
+  assert.ok(!argv.includes("--auto"));
+  assert.ok(!argv.includes("--continue"));
+  assert.ok(!argv.includes("--fork"));
 });
 
 await test("production getOccupancy uses DI and never PowerShell", async () => {
@@ -692,6 +697,91 @@ function productionRunnerWithSpawn(spawnImpl) {
   });
 }
 
+await test("classifyOpenCodeBinKind: .exe is native-binary", async () => {
+  assert.equal(mod.classifyOpenCodeBinKind("C:\\\\x\\\\opencode.exe"), "native-binary");
+  assert.equal(mod.classifyOpenCodeBinKind("C:\\\\x\\\\run.mjs"), "node-script");
+});
+
+await test("classifyOpenCodeProcessFailure: PE-via-node pattern → OPENCODE_NATIVE_BINARY_INVOKED_VIA_NODE", async () => {
+  const r = mod.classifyOpenCodeProcessFailure({
+    code: 1,
+    stderrSnippet:
+      "opencode.exe:1\nMZx\nThis program cannot be run in DOS mode.\nSyntaxError: Invalid or unexpected token",
+    binKind: "native-binary",
+  });
+  assert.equal(r, "OPENCODE_NATIVE_BINARY_INVOKED_VIA_NODE");
+});
+
+await test("production runner spawns native opencode.exe directly (never via node)", async () => {
+  let seen = null;
+  const fakeExe = join(ROOT, "tools", "serve-v4-windows-local-execution-endpoint-v1.mjs");
+  // Use a real existing path ending in .exe name via classify override
+  const run = mod.createProductionRunOpenCode({
+    workspaceRoot: ROOT,
+    resolveOpenCodeNoShellInvocation: () => ({
+      ok: true,
+      nodePath: process.execPath,
+      scriptPath: "C:\\\\fake\\\\opencode.exe",
+      shell: false,
+    }),
+    classifyOpenCodeBinKind: () => "native-binary",
+    writeOverlay: () => join(ROOT, "package.json"),
+    spawnImpl: (file, args) => {
+      seen = { file, args };
+      return mockSpawnChildClose(0)();
+    },
+  });
+  await run({
+    guardBaseUrl: "http://127.0.0.1:59999",
+    modelId: "m",
+    message: "hi",
+  });
+  assert.equal(seen.file, "C:\\\\fake\\\\opencode.exe");
+  assert.equal(seen.args[0], "run");
+  assert.ok(!String(seen.file).includes("node"));
+  void fakeExe;
+});
+
+await test("legacy node+exe spawn failure classifies as OPENCODE_NATIVE_BINARY_INVOKED_VIA_NODE", async () => {
+  const run = mod.createProductionRunOpenCode({
+    workspaceRoot: ROOT,
+    resolveOpenCodeNoShellInvocation: () => ({
+      ok: true,
+      nodePath: process.execPath,
+      scriptPath: "C:\\\\fake\\\\opencode.exe",
+      shell: false,
+    }),
+    // Force the broken path for regression of the prior live failure mode.
+    classifyOpenCodeBinKind: () => "node-script",
+    writeOverlay: () => join(ROOT, "package.json"),
+    spawnImpl: () => {
+      const child = new EventEmitter();
+      child.stdout = new EventEmitter();
+      child.stderr = new EventEmitter();
+      setImmediate(() => {
+        child.stderr.emit(
+          "data",
+          Buffer.from(
+            "C:\\\\fake\\\\opencode.exe:1\nThis program cannot be run in DOS mode.\nSyntaxError: Invalid or unexpected token",
+          ),
+        );
+        child.emit("close", 1, null);
+      });
+      return child;
+    },
+  });
+  await assert.rejects(
+    () =>
+      run({
+        guardBaseUrl: "http://127.0.0.1:59999",
+        modelId: "m",
+        message: "hi",
+      }),
+    /OPENCODE_NATIVE_BINARY_INVOKED_VIA_NODE/,
+  );
+});
+
+
 await test("production runner exit code 0 returns success accounting", async () => {
   let spawnCount = 0;
   const run = productionRunnerWithSpawn(() => {
@@ -713,20 +803,10 @@ await test("production runner exit code 0 returns success accounting", async () 
 
 await test("voluminous child output is drained without retention and does not leak", async () => {
   const marker = "VOLUMINOUS_RAW_OUTPUT_MUST_NOT_LEAK_" + "X".repeat(1024);
-  let stdoutResumed = false;
-  let stderrResumed = false;
   const run = productionRunnerWithSpawn(() => {
     const child = new EventEmitter();
     child.stdout = new EventEmitter();
     child.stderr = new EventEmitter();
-    child.stdout.resume = function resume() {
-      stdoutResumed = true;
-      return this;
-    };
-    child.stderr.resume = function resume() {
-      stderrResumed = true;
-      return this;
-    };
     setImmediate(() => {
       const chunk = Buffer.from(marker);
       for (let i = 0; i < 40; i += 1) {
@@ -742,10 +822,33 @@ await test("voluminous child output is drained without retention and does not le
     modelId: "m",
     message: "hi",
   });
-  assert.equal(stdoutResumed, true);
-  assert.equal(stderrResumed, true);
   assert.equal(result.opencode_execution_count, 1);
   assert.ok(!JSON.stringify(result).includes("VOLUMINOUS_RAW_OUTPUT"));
+  // Failure classification path also must not leak markers into thrown errors.
+  const failRun = productionRunnerWithSpawn(() => {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter();
+    child.stderr = new EventEmitter();
+    setImmediate(() => {
+      child.stderr.emit("data", Buffer.from(marker));
+      child.emit("close", 7, null);
+    });
+    return child;
+  });
+  await assert.rejects(
+    () =>
+      failRun({
+        guardBaseUrl: "http://127.0.0.1:59999",
+        modelId: "m",
+        message: "hi",
+      }),
+    (err) => {
+      assert.ok(err instanceof Error);
+      assert.ok(!String(err.message).includes("VOLUMINOUS_RAW_OUTPUT"));
+      assert.equal(err.message, "OPENCODE_EXIT_NONZERO");
+      return true;
+    },
+  );
 });
 
 function mockGuardStart(upstream = 0) {
