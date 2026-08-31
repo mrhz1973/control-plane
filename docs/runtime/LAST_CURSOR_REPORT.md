@@ -8,7 +8,7 @@
 task_ref: V4_WINDOWS_LOCAL_EXECUTION_ENDPOINT_OFFLINE_IMPLEMENTATION
 result_cursor: PASS
 starting_head: 35f19b3083b79c5d71932bb6ff3c945b91a1c88f
-final_head: PENDING_COMMIT
+final_head: 41fecb4f3b347f6739d77c3332d62ca23f353bca
 
 category: OFFLINE_ENDPOINT_IMPLEMENTATION
 runtime_mutations: 0
