@@ -1,4 +1,4 @@
-# LAST CURSOR REPORT - control-plane (rolling)
+﻿# LAST CURSOR REPORT - control-plane (rolling)
 
 **Ruolo:** evidence rolling dell'ultimo pass Cursor completato. Non e LIVE STATE e non sostituisce `CURRENT_FRONTIER.md`.
 
@@ -9,7 +9,7 @@ task_ref: V4_LOCAL_RUNTIME_READONLY_TEST_PORT_ISOLATION_CORRECTION_ONE_PASS
 result_cursor: PASS
 starting_remote_head: 79d988af3d495e6e07226346c19d4f1f3f0cb84c
 local_preserved_from_head: 043283d4f62f28c833d43c87d86e7f2ec2816e7f
-final_head: TO_BE_VERIFIED_AFTER_PUSH
+final_head: d9e8b3cb0495b5bcc385171b3e1560525381c91c
 restored_stash: v4-private-endpoint-eaddrinuse-preserve
 
 test_port_fixed_before: 18799
@@ -65,3 +65,4 @@ secret_exposure: false
 architecture_report: reports/architecture/v4_local_runtime_readonly_private_endpoint_implementation.md
 NEXT: V4_RESOURCE_STATUS_WF40_LOCAL_CONTRIBUTION_PATCH_APPLY_OFFLINE
 ```
+
