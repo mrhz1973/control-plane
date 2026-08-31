@@ -492,6 +492,128 @@ async function run() {
     );
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Idle Ollama + noncanonical inference listener correction            */
+  /* ------------------------------------------------------------------ */
+
+  function nonCanonicalListener(port = 31452, ownerName = "llama-server") {
+    return {
+      localAddress: "127.0.0.1",
+      localPort: port,
+      remoteAddress: "0.0.0.0",
+      remotePort: 0,
+      state: "Listen",
+      ownerName,
+    };
+  }
+
+  // canonical :8080 + plain ollama process only -> READY_IDLE
+  {
+    const a = sample({ conns: [listener()], procNames: ["llama-server", "ollama"] });
+    const b = sample({ conns: [listener()], procNames: ["llama-server", "ollama"] });
+    const r = classifyQwenSharedRuntime(a, b, RUNTIME);
+    check(
+      "plain-ollama-only-ready-idle",
+      r.classification === "QWEN_READY_IDLE",
+      JSON.stringify(r),
+    );
+  }
+
+  // canonical :8080 + plain ollama + ollama app only -> READY_IDLE
+  {
+    const a = sample({
+      conns: [listener()],
+      procNames: ["llama-server", "ollama", "ollama app"],
+    });
+    const b = sample({
+      conns: [listener()],
+      procNames: ["llama-server", "ollama", "ollama app"],
+    });
+    const r = classifyQwenSharedRuntime(a, b, RUNTIME);
+    check(
+      "plain-ollama-and-app-ready-idle",
+      r.classification === "QWEN_READY_IDLE",
+      JSON.stringify(r),
+    );
+  }
+
+  // canonical :8080 + ollama_qwen_proxy -> BUSY
+  {
+    const a = sample({
+      conns: [listener()],
+      procNames: ["llama-server", "ollama_qwen_proxy"],
+    });
+    const b = sample({
+      conns: [listener()],
+      procNames: ["llama-server", "ollama_qwen_proxy"],
+    });
+    const r = classifyQwenSharedRuntime(a, b, RUNTIME);
+    check(
+      "ollama-underscore-proxy-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME" &&
+        r.reason === "CONFLICTING_INFERENCE_RUNNER_ACTIVE",
+      JSON.stringify(r),
+    );
+  }
+
+  // canonical :8080 + noncanonical llama-server LISTEN on 31452 -> BUSY
+  {
+    const a = sample({
+      conns: [listener(), nonCanonicalListener(31452, "llama-server")],
+      procNames: ["llama-server"],
+    });
+    const b = sample({
+      conns: [listener(), nonCanonicalListener(31452, "llama-server")],
+      procNames: ["llama-server"],
+    });
+    const r = classifyQwenSharedRuntime(a, b, RUNTIME);
+    check(
+      "noncanonical-llama-server-31452-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME" &&
+        r.reason === "NONCANONICAL_INFERENCE_LISTENER_ACTIVE",
+      JSON.stringify(r),
+    );
+  }
+
+  // canonical :8080 + noncanonical listener + plain ollama -> BUSY
+  {
+    const a = sample({
+      conns: [listener(), nonCanonicalListener(31452, "llama-server")],
+      procNames: ["llama-server", "ollama", "ollama app"],
+    });
+    const b = sample({
+      conns: [listener(), nonCanonicalListener(31452, "llama-server")],
+      procNames: ["llama-server", "ollama", "ollama app"],
+    });
+    const r = classifyQwenSharedRuntime(a, b, RUNTIME);
+    check(
+      "noncanonical-listener-plus-plain-ollama-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME" &&
+        r.reason === "NONCANONICAL_INFERENCE_LISTENER_ACTIVE",
+      JSON.stringify(r),
+    );
+  }
+
+  // :8080 + msedge + plain ollama -> READY_IDLE (passive stack)
+  {
+    const edge = establishedClient(8080, "msedge");
+    const a = sample({
+      conns: [listener(), edge],
+      procNames: ["llama-server", "msedge", "ollama", "ollama app"],
+    });
+    const b = sample({
+      conns: [listener(), edge],
+      procNames: ["llama-server", "msedge", "ollama", "ollama app"],
+    });
+    const r = classifyQwenSharedRuntime(a, b, RUNTIME);
+    check(
+      "msedge-plus-plain-ollama-ready-idle",
+      r.classification === "QWEN_READY_IDLE" &&
+        r.reason === "PASSIVE_CANONICAL_WEBUI_CLIENT",
+      JSON.stringify(r),
+    );
+  }
+
   const failed = results.filter((x) => !x.pass);
   const summary = {
     suite: "v4-local-runtime-readonly-contribution",

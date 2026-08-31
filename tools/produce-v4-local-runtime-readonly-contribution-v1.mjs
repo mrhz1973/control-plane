@@ -87,10 +87,43 @@ function isExpectedServer(name, runtimeConfig) {
   return n.startsWith("llama-server");
 }
 
+/**
+ * Bare Ollama daemon/UI infrastructure — process presence alone is NOT
+ * active inference. Do NOT broaden to ollama_* auxiliary paths.
+ */
+function isPassiveOllamaInfrastructure(name) {
+  const n = normalizeName(name);
+  return n === "ollama" || n === "ollama app";
+}
+
 function isConflictingInferenceProcess(name) {
   const n = normalizeName(name);
   if (isExpectedServer(n, {})) return false;
-  return INFERENCE_RE.test(n) && !/^ollama$/i.test(n) ? true : INFERENCE_RE.test(n);
+  if (isPassiveOllamaInfrastructure(n)) return false;
+  // Explicit auxiliary ollama_* paths remain conflicting (proxy/runner).
+  if (n.startsWith("ollama_")) return true;
+  return INFERENCE_RE.test(n);
+}
+
+/**
+ * Owners that indicate a real inference server LISTEN socket
+ * (noncanonical ports). Plain ollama/ollama-app API daemon owners are
+ * excluded; llama-server on e.g. :31452 remains conflicting.
+ */
+function isInferenceServerFamilyListenerOwner(name) {
+  const n = normalizeName(name);
+  if (isPassiveOllamaInfrastructure(n)) return false;
+  if (n.startsWith("ollama_")) return true;
+  if (n.startsWith("llama-server")) return true;
+  return /^(llamafile|llama_cpp|vllm|lmstudio|localai)(\W|$)/i.test(n);
+}
+
+function hasNonCanonicalInferenceListener(conns, canonicalPort) {
+  return (conns || []).some((c) => {
+    if (String(c.state || "").toUpperCase() !== "LISTEN") return false;
+    if (Number(c.localPort) === Number(canonicalPort)) return false;
+    return isInferenceServerFamilyListenerOwner(c.ownerName);
+  });
 }
 
 function connsOnPort(conns, port) {
@@ -176,6 +209,7 @@ function analyzeSample(sample, host, port) {
     ownerNames,
   );
   const conflicting = sampleHasInferenceRunner(sample.procNames, true);
+  const nonCanonicalListener = hasNonCanonicalInferenceListener(sample.conns, port);
   return {
     valid: true,
     listenerCount: listeners.length,
@@ -187,6 +221,7 @@ function analyzeSample(sample, host, port) {
     // legacy alias: any non-passive established client (fail-closed busy path)
     hasEstablishedClient: busyClients.length > 0,
     hasConflictingRunner: conflicting,
+    hasNonCanonicalInferenceListener: nonCanonicalListener,
   };
 }
 
@@ -211,6 +246,12 @@ export function classifyQwenSharedRuntime(snapshotA, snapshotB, runtimeConfig) {
 
   // No listener path
   if (listenerA === 0 && listenerB === 0) {
+    if (a.hasNonCanonicalInferenceListener || b.hasNonCanonicalInferenceListener) {
+      return {
+        classification: "QWEN_BUSY_SHARED_RUNTIME",
+        reason: "NONCANONICAL_INFERENCE_LISTENER_ACTIVE",
+      };
+    }
     if (a.serverProcCount > 0 || b.serverProcCount > 0) {
       return {
         classification: "QWEN_OCCUPANCY_UNCERTAIN",
@@ -249,6 +290,12 @@ export function classifyQwenSharedRuntime(snapshotA, snapshotB, runtimeConfig) {
     return {
       classification: "QWEN_OCCUPANCY_UNCERTAIN",
       reason: "LISTENER_OWNER_UNRESOLVED",
+    };
+  }
+  if (a.hasNonCanonicalInferenceListener || b.hasNonCanonicalInferenceListener) {
+    return {
+      classification: "QWEN_BUSY_SHARED_RUNTIME",
+      reason: "NONCANONICAL_INFERENCE_LISTENER_ACTIVE",
     };
   }
   if (a.hasBusyEstablishedClient || b.hasBusyEstablishedClient) {
