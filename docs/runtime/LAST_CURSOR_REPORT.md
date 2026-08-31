@@ -8,7 +8,7 @@
 task_ref: V4_RUNTIME_AUTHORIZATION_ISSUANCE_PATH_DISCOVERY
 result_cursor: PASS
 starting_head: 5e923a46308dbcc4d34dc4e332cdb37593486b21
-final_head: 6f3975e
+final_head: 23cca45
 
 category: DOCS_ONLY_ARCHITECTURE_DISCOVERY
 runtime_mutations: 0
