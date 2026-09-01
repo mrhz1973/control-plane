@@ -1,0 +1,22 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF_POST_POSTGRES",
+  "run_nonce": "WF40_PG_FIRST_LIVE_005_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "301f30217eea4aef56cfc1a1d90878d9d791fa11",
+  "classification": "WF40_BACKLOG_PIPELINE_NOT_ENGAGED_COMMIT_COORDINATION_FAILURE",
+  "query_preflight": "PASS",
+  "target_wf40": 0,
+  "provider": 0,
+  "register_pending": 0,
+  "human_approve": 0,
+  "execution_endpoint": 0,
+  "opencode": 0,
+  "qwen": 0,
+  "auth005_state": "ABSENT",
+  "prod_db_after_stop": "POSTGRESQL",
+  "prod_health_after_stop": "PASS",
+  "d0025_final": "CLOSED",
+  "control_plane_last_commit_sha": "d42e25f82f832f002a29367789fb43140614d2ae",
+  "scope_digest": "ca501cb41602028c4e575a08bcdfc491a793b7cb462790a6f3a4fc67efdb85aa"
+}
