@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (71 nodes)** · Windows execution endpoint **PERSISTED** · first human-authorized local OpenCode/Qwen execution **PASS** · AUTH 004 durably spent · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_005_PROVEN_IMPORT_PATH` — **STOP** |
-| **STATO BLOCCO** | Production cutover export/normalization/import **PASS** on downtime · native `import:entities` `IMPORT_EXIT=0` · `workflowtagmapping=228` · equivalence harness **false FAIL** on psql identifier quoting (`published_workflows`, `user`) · automatic rollback **PASS** · produzione di nuovo **SQLite** health 200 · PostgreSQL volume `root_n8n_postgres_data` preservato come evidenza |
+| **BLOCCO ATTIVO** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_006_EQUIVALENCE_HARNESS_FIX` — **STOP** |
+| **STATO BLOCCO** | Equivalence harness fix **PASS** (query preflight + all exit0/numeric queries) · export/normalization/import/equivalence/identity **PASS** on PostgreSQL · produzione avviata su PG · WF40 structural `triggerCount=1` ma **0/10 tick naturali** in 900s · rollback automatico **PASS** · produzione di nuovo **SQLite** health 200 |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_006_EQUIVALENCE_HARNESS_FIX` |
+| **NEXT** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_007_WF40_SCHEDULER_POSTGRES_PROOF` |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · post-WF61 authorization lane + transient poll fix |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |

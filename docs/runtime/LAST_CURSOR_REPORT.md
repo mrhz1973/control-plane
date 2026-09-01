@@ -3,23 +3,23 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_005_PROVEN_IMPORT_PATH
-run_nonce: N8N_PROD_PG_MIGRATION_RETRY005_20260901_01
+task_ref: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_006_EQUIVALENCE_HARNESS_FIX
+run_nonce: N8N_PROD_PG_MIGRATION_RETRY006_20260901_01
 result_cursor: STOP
-classification: PRODUCTION_CUTOVER_STOPPED_AT_EQUIVALENCE_HARNESS_SQL_QUOTING
+classification: PRODUCTION_CUTOVER_STOPPED_AT_WF40_NATURAL_SCHEDULE_OBSERVATION
+query_preflight: PASS
 export: PASS
 normalization: PASS
 import: PASS
-equivalence_harness: FAIL
+equivalence: PASS
 rollback: PASS
 prod_db_after_stop: SQLITE
 prod_health_after_stop: PASS
-workflows_tags_imported: 228/228
-finding: BUSINESS_ENTITY_COUNT_MISMATCH
-root_cause: HARNESS_PSQL_IDENTIFIER_ESCAPING
-next: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_006_EQUIVALENCE_HARNESS_FIX
+finding: WF40_TEN_TICK_WINDOW_INCOMPLETE
+wf40_ticks: 0/10
+next: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_007_WF40_SCHEDULER_POSTGRES_PROOF
 
 evidence:
-  - reports/architecture/v4_n8n_controlled_production_postgres_migration_retry_005_proven_import_path.md
-  - reports/runtime/cursor-stops/2026-09-01T104840Z__V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_005_PROVEN_IMPORT_PATH.stop.json
+  - reports/architecture/v4_n8n_controlled_production_postgres_migration_retry_006_equivalence_harness_fix.md
+  - reports/runtime/cursor-stops/2026-09-01T111551Z__V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_006_EQUIVALENCE_HARNESS_FIX.stop.json
 ```

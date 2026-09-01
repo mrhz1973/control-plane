@@ -1,0 +1,78 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_006_EQUIVALENCE_HARNESS_FIX",
+  "run_nonce": "N8N_PROD_PG_MIGRATION_RETRY006_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "97917cf38919807cf5d15c72a0b3436e7b094adb",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "WF40_TEN_NATURAL_TICKS",
+  "finding": "WF40_TEN_TICK_WINDOW_INCOMPLETE",
+  "finding_detail": "Retry006 corrected the equivalence harness (pre-downtime psql heredoc proof PASS; all business-count queries exit=0 with numeric stdout; published_workflows=3 and user=1 matched source). Export, bounded workflows_tags normalization, PostgreSQL 16.15 schema init, native import, full application equivalence, identity sequences, and production n8n startup on PostgreSQL all passed. Structural regression reported WF40 active/published with triggerCount=1. During the mandatory 900-second natural schedule observation window, zero WF40 executions were recorded (total=0 started=0 terminal=0 throughout). Per contract, automatic rollback restored healthy SQLite production. Retry005 PostgreSQL evidence volume root_n8n_postgres_data and retry006 volume root_n8n_postgres_data_retry006 are both preserved.",
+  "prior_evidence": {
+    "retry005_finding": "BUSINESS_ENTITY_COUNT_MISMATCH",
+    "retry005_root_cause": "HARNESS_PSQL_IDENTIFIER_ESCAPING",
+    "retry005_export": "PASS",
+    "retry005_import": "PASS"
+  },
+  "query_preflight": {
+    "status": "PASS",
+    "published_workflows_result": 2,
+    "user_result": 2,
+    "mechanism": "psql -X -A -t -v ON_ERROR_STOP=1 with literal SQL heredoc"
+  },
+  "equivalence_harness_fix": {
+    "status": "PASS",
+    "published_workflows_query": {"exit_code": 0, "numeric_stdout": true, "value": 3},
+    "user_query": {"exit_code": 0, "numeric_stdout": true, "value": 1},
+    "workflows_tags_source": 228,
+    "workflows_tags_target": 228,
+    "workflows_tags_distinct": 228
+  },
+  "fresh_source_inventory": {
+    "execution_entity": 10442,
+    "execution_data": 10442,
+    "workflows_tags": 228,
+    "published_workflows": 3,
+    "user": 1,
+    "quick_check": "ok"
+  },
+  "fresh_backup": {
+    "path": "/root/n8n-postgres-migration-backups/20260901T105729Z_retry006_pre_postgres"
+  },
+  "export": {"status": "PASS", "exit": 0, "entities": 35951, "original_sha256": "65b6ee0c2fc7a5c836f7b4d5db0ba11541593c18346b60e0c03c52612fab7b64"},
+  "normalization": {"status": "PASS", "removed_member": "workflows_tags.jsonl", "normalized_sha256": "8e85341f12afcd445c8763ceef2e47b046f8c47d4ecfe61fdd0e403779ec9cf4"},
+  "postgres": {
+    "version": "16.15",
+    "production_volume": "root_n8n_postgres_data_retry006",
+    "retry005_evidence_volume": "root_n8n_postgres_data",
+    "schema_init": "PASS",
+    "import": "PASS"
+  },
+  "wf40_regression": {
+    "structural_pass": true,
+    "trigger_count_at_regression": 1,
+    "observation_window_seconds": 900,
+    "ticks_observed": 0,
+    "ticks_started": 0,
+    "ticks_terminal": 0,
+    "stuck_new_over_30s": 0
+  },
+  "downtime_start_utc": "2026-09-01T10:57:28Z",
+  "postgres_uptime_before_stop_utc": "2026-09-01T11:00:15Z",
+  "prod_mutated": 1,
+  "rollback": "PASS",
+  "prod_db_after_stop": "SQLITE",
+  "prod_health_after_stop": "PASS",
+  "query_preflight_status": "PASS",
+  "export_status": "PASS",
+  "import_status": "PASS",
+  "equivalence_status": "PASS",
+  "side_effect_counters": {
+    "provider_calls": 0,
+    "register_calls": 0,
+    "execution_endpoint_calls": 0,
+    "opencode_calls": 0,
+    "qwen_generations": 0
+  },
+  "next": "V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_007_WF40_SCHEDULER_POSTGRES_PROOF"
+}
