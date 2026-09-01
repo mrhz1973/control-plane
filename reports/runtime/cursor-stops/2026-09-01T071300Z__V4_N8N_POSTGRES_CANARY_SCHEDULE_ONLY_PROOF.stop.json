@@ -1,0 +1,52 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_N8N_POSTGRES_CANARY_SCHEDULE_ONLY_PROOF",
+  "run_nonce": "N8N_POSTGRES_SCHEDULE_ONLY_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "58ba29ccd3aeb73c5e0e85d5cbdb6b7f24ce7b36",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "OTHER",
+  "finding": "CANARY_WORKFLOW_IMPORT_STDIN_FAILURE",
+  "finding_detail": "Single authorized canary attempt: isolated PostgreSQL 16 + stock n8n 2.33.3 (digest sha256:769d3a624534ff8b5f3316ef71d4653f48794c47e4339436be7a308d6d6a1cc9) deployed successfully (CANARY_READY iter=3, healthz 200). First blocker: 'n8n import:workflow --input=/dev/stdin < workflow.json' returned 'Unexpected end of JSON input' — stdin redirection through docker exec did not deliver the file content, so workflow import failed before activation. Per contract: no helper-script correction, no retry, no second deployment.",
+  "target_result": "NOT_RUN",
+  "regressions_status": "NOT_RUN",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "NOT_RUN",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "register_calls": 0,
+  "webhook_rerun": 0,
+  "prod_mutation": 0,
+  "canary_attempts": 1,
+  "schedule_counters": {
+    "schedule_unique": 0,
+    "schedule_started": 0,
+    "schedule_terminal": 0,
+    "schedule_stuck_new_over_30s": 0,
+    "schedule_naturality": "NOT_PROVEN"
+  },
+  "canary_cleanup": "PASS",
+  "cleanup_detail": "compose down -v --remove-orphans; LEFT_CONTAINERS=0 LEFT_NETWORKS=0 LEFT_VOLUMES=0; canary assets preserved off-repo at /root/n8n-postgres-canary/N8N_POSTGRES_SCHEDULE_ONLY_20260901_01/ (compose, workflow.json, evidence dir; secrets root-only 600)",
+  "restored_live_baseline": {
+    "n8n_version": "2.33.3",
+    "prod_healthz": "200",
+    "wf40_active": true,
+    "wf61_active": false,
+    "d0025_gate": "CLOSED (verified previous block 07:00Z: enabled=false, authorized_calls=0)",
+    "active_authorization_count": 0
+  },
+  "prior_validated_evidence_reference": {
+    "commit": "58ba29ccd3aeb73c5e0e85d5cbdb6b7f24ce7b36",
+    "webhook_unique": 1000,
+    "webhook_started": 1000,
+    "webhook_terminal": 1000,
+    "webhook_stuck_new_over_30s": 0
+  },
+  "dirty_paths_summary": [
+    "tools/* (pre-existing unrelated untracked helpers from prior tasks)"
+  ],
+  "next": "GPT_WEB"
+}
