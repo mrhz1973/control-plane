@@ -5,48 +5,42 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_WF40_STATUS_POLL_TRANSIENT_ERROR_FIX_AND_LIVE_PROOF_RESUME
-run_nonce: WF40_STATUS_POLL_FIX_20260901_01
+task_ref: V4_QWEN_CANONICAL_MANAGER_WORKER_CLASSIFIER_FIX_AND_WF40_LIVE_RESUME
+run_nonce: QWEN_MANAGER_WORKER_FIX_20260901_01
 result_cursor: STOP
-starting_head: 8689917fc53d81897be4cdb5650e57a3a449505d
-finding: QWEN_READY_IDLE_PREFLIGHT_FAILED
+dispatch_base_head: 8689917fc53d81897be4cdb5650e57a3a449505d
+finding: N8N_SCHEDULER_STALLED_NO_WF40_NATURAL_EVENT
 
-category: WF40_STATUS_POLL_FIX_PLUS_LIVE_PROOF
-status_poll_transient_fix: PASS
-target_tests: 27/27
+classifier_fix: PASS
+target_tests: 57/57
+regressions: private=22 windows=65 opencode=23 guard=16 wf40_sidecar=27
 bugbot: PASS_NO_FINDINGS
-wf40_seam: APPLIED_71_TO_83_LIVE
-wf40_nodes: 83
-wf40_versionId: a609ad90-7eb4-4495-9ec5-c4413165cea1
-parse_status_transient_fix_live: true
 
-phase_e_live_proof: NOT_STARTED
-qwen_occupancy: QWEN_BUSY_SHARED_RUNTIME
-qwen_reason: NONCANONICAL_INFERENCE_LISTENER_ACTIVE
-non_canonical_listener: 127.0.0.1:58074 llama-server
+qwen_ready_idle: PASS
+resource_status_qwen_available: true
+resource_status_opencode_available: true
+canonical_manager_worker: recognized
 
-wf40_executions: 0
+wf40_seam_live: 83 nodes active
+wf40_pipeline_executions: 0
 wf61_executions: 0
 remote_planner_calls: 0
 telegram_messages: 0
 opencode_executions: 0
 qwen_generation_calls: 0
-second_provider: 0
-second_register: 0
-second_execution: 0
 
-d0025_gate: CLOSED
+d0025_gate: RESTORED_CLOSED
 wf61_active: false
-active_authorizations: 0
 
 pass_state_partial:
-  - WF40_STATUS_POLL_TRANSIENT_ERROR_FIXED
+  - QWEN_CANONICAL_MANAGER_WORKER_RECOGNIZED
+  - QWEN_READY_IDLE
+  - RESOURCE_STATUS_QWEN_AVAILABLE
   - WF40_POST_PLANNER_SEAM_PERSISTED
-  - BUGBOT_PASS_NO_FINDINGS
 
-next: restore QWEN_READY_IDLE then resume V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF
+next: restore n8n WF40 scheduler then resume D-V4-WF40-LIVE-001 Phase E
 
 evidence:
-  - reports/architecture/v4_wf40_status_poll_transient_fix_and_live_proof_stop.md
-  - reports/runtime/cursor-stops/2026-08-31T234027Z__V4_WF40_STATUS_POLL_TRANSIENT_ERROR_FIX_AND_LIVE_PROOF_RESUME.stop.json
+  - reports/architecture/v4_qwen_canonical_manager_worker_classifier_fix_and_wf40_live_proof.md
+  - reports/runtime/cursor-stops/2026-09-01T002400Z__V4_QWEN_CANONICAL_MANAGER_WORKER_CLASSIFIER_FIX_AND_WF40_LIVE_RESUME.stop.json
 ```

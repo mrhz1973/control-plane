@@ -1,0 +1,62 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_QWEN_CANONICAL_MANAGER_WORKER_CLASSIFIER_FIX_AND_WF40_LIVE_RESUME",
+  "run_nonce": "QWEN_MANAGER_WORKER_FIX_20260901_01",
+  "block_id": "V4_QWEN_CANONICAL_MANAGER_WORKER_CLASSIFIER_FIX_AND_WF40_LIVE_RESUME",
+  "category": "QWEN_CLASSIFIER_FIX_PLUS_WF40_LIVE_PROOF",
+  "result": "STOP",
+  "dispatch_base_head": "8689917fc53d81897be4cdb5650e57a3a449505d",
+  "utc_timestamp": "2026-09-01T002400Z",
+  "finding": "N8N_SCHEDULER_STALLED_NO_WF40_NATURAL_EVENT",
+  "finding_detail": "Canonical llama.cpp manager/model-worker occupancy classifier fix completed (57/57 tests), pushed to origin, live QWEN_READY_IDLE and RESOURCE_STATUS qwen_local.available=true verified. WF40 83-node seam confirmed live. D-0025 gate armed for proof then restored CLOSED. Backlog D-V4-WF40-LIVE-001 + route source pushed (1764338, retry 8542aa2) but n8n execution_entity shows no workflow executions after id 293784 at 2026-09-01T00:15:02Z while VPS UTC was 00:23:19 — WF40 1-minute scheduler stalled. All WF40 runs today were <2s duplicate-skip paths; no WF61/planner/register/Telegram/execution side effects. SECOND_PROVIDER=0 SECOND_REGISTER=0 SECOND_EXECUTION=0.",
+  "bugbot": {
+    "result": "PASS_NO_FINDINGS",
+    "note": "one low finding on removed tmp-diag.ps1 scratch file"
+  },
+  "phase_progress": {
+    "classifier_fix": "PASS",
+    "target_tests": "57/57",
+    "regressions": {
+      "v4-local-runtime-readonly-private-endpoint": "22/22",
+      "v4-windows-local-execution-endpoint": "65/65",
+      "opencode-execution-adapter": "23/23",
+      "opencode-single-generation-guard": "16/16",
+      "v4-wf40-live-execution-sidecars": "27/27"
+    },
+    "qwen_ready_idle": "PASS",
+    "resource_status_qwen_available": true,
+    "wf40_seam_live": "83 nodes verified",
+    "phase_e_live_proof": "NOT_STARTED",
+    "n8n_last_execution_id": 293784,
+    "n8n_last_execution_at": "2026-09-01T00:15:02.010Z"
+  },
+  "hard_counters": {
+    "wf40_executions": 0,
+    "wf61_executions": 0,
+    "remote_planner_calls": 0,
+    "telegram_messages": 0,
+    "authorization_registrations": 0,
+    "execution_endpoint_post": 0,
+    "opencode": 0,
+    "qwen_generations": 0,
+    "second_provider": 0,
+    "second_register": 0,
+    "second_execution": 0
+  },
+  "pass_state_partial": [
+    "QWEN_CANONICAL_MANAGER_WORKER_RECOGNIZED",
+    "NONCANONICAL_INDEPENDENT_RUNTIME_STILL_GUARDED",
+    "QWEN_READY_IDLE",
+    "RESOURCE_STATUS_QWEN_AVAILABLE",
+    "WF40_POST_PLANNER_SEAM_PERSISTED",
+    "BUGBOT_PASS_NO_FINDINGS"
+  ],
+  "restored_live_baseline": {
+    "d0025_gate_enabled": false,
+    "provider_calls_authorized_per_event": 0,
+    "wf61_active": false,
+    "wf40_nodes": 83,
+    "wf40_active": true
+  },
+  "next_required_before_retry": "Restore n8n scheduler (WF40 1-minute executions resuming), verify natural backlog commit triggers full pipeline, then resume human-gated Phase E for D-V4-WF40-LIVE-001."
+}

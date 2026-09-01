@@ -7,11 +7,11 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (71 nodes)** · Windows execution endpoint **PERSISTED** · first human-authorized local OpenCode/Qwen execution **PASS** · AUTH 004 durably spent · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_WF40_STATUS_POLL_TRANSIENT_ERROR_FIX_AND_LIVE_PROOF_RESUME` — **STOP (Phase E preflight)** |
-| **STATO BLOCCO** | STATUS_POLL_FIX_PASS · WF40_SEAM_83_LIVE · BUGBOT_PASS · live proof **NOT STARTED** · QWEN_BUSY_SHARED_RUNTIME (`llama-server` on `:58074`) · WF40=0 · WF61=0 · planner=0 · Telegram=0 · AUTH preserved SPENT · no ACTIVE authorization |
-| **GATE CORRENTE** | **CLOSED TO LIVE EXECUTION** · D-0025 gate CLOSED |
-| **NEXT** | Restore stable `QWEN_READY_IDLE`, then resume `V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF` |
-| **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · versionId `a609ad90-7eb4-4495-9ec5-c4413165cea1` · post-WF61 authorization lane with transient status-poll fix |
+| **BLOCCO ATTIVO** | `V4_QWEN_CANONICAL_MANAGER_WORKER_CLASSIFIER_FIX_AND_WF40_LIVE_RESUME` — **STOP (Phase E)** |
+| **STATO BLOCCO** | CLASSIFIER_FIX_PASS · QWEN_READY_IDLE · RESOURCE_STATUS qwen/opencode available · WF40 seam 83 live · n8n scheduler stalled (no executions after 00:15Z) · live proof **NOT STARTED** |
+| **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` · `provider_calls_authorized_per_event=0` |
+| **NEXT** | Restore n8n WF40 1-minute scheduler, then resume `D-V4-WF40-LIVE-001` Phase E human-gated proof |
+| **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · post-WF61 authorization lane + transient poll fix |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
 | **RESOURCE_STATUS COMPOSER** | `tools/compose-v4-resource-status-control-plane-v1.mjs` · wired in WF40 TRUE lane |
