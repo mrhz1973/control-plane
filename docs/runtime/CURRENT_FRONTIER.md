@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (71 nodes)** · Windows execution endpoint **PERSISTED** · first human-authorized local OpenCode/Qwen execution **PASS** · AUTH 004 durably spent · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_008_POSTGRES_SCHEDULE_TRIGGER_REGISTRATION_DIAGNOSIS` — **PASS** |
-| **STATO BLOCCO** | Diagnosi A/B retry006: SQLite isolato **≥2 tick/180s** · PostgreSQL isolato **0 tick/180s** · entrambi legacy in-memory · PG registra cron ma non fa fire · `0 published workflows` = indice publication service, non assenza dependency rows · **nessuna mutazione produzione** |
+| **BLOCCO ATTIVO** | `V4_N8N_POSTGRES_LEGACY_SCHEDULE_TRIGGER_CRON_FIRE_RUNTIME_INSTRUMENTATION` — **PASS** |
+| **STATO BLOCCO** | Cron runtime instrumentation: legacy path fires on PG (`HANDLE_TICK` + leader) · executions insert · **`execution_entity_id_seq` desync** masks `id>baseline` tick queries · **no production mutation** |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_N8N_POSTGRES_LEGACY_SCHEDULE_TRIGGER_CRON_FIRE_GPT_WEB_BOUNDED_REMEDY` |
+| **NEXT** | `V4_N8N_POSTGRES_EXECUTION_ENTITY_SEQUENCE_RESYNC_AND_CUTOVER_TICK_VALIDATION` |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · post-WF61 authorization lane + transient poll fix |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
@@ -42,42 +42,15 @@ WF40 structural routing
 
 Live execution is CLOSED after the successful one-shot proof. AUTH 004 is durably SPENT and no ACTIVE authorization remains.
 
-## Ratified human-gated issuance path — first live proof complete
-
-```text
-n8n / operator proposal
-  -> Tailscale-private POST /v4/authorization/register-pending
-  -> 127.0.0.1:18792 (single-writer pending store lane)
-  -> Windows-local pending store: PENDING
-  -> Windows-owned dedicated Telegram bot sends decision message
-  -> Windows issuance owner directly consumes Telegram callback (same lane)
-  -> verify server-side configured chat_id + from.id + one-shot pending binding
-       APPROVE -> APPROVED -> provenance registry ACTIVE -> ISSUED
-       REJECT  -> REJECTED -> no registry write
-  -> n8n may poll bounded status
-  -> later normal execution/spend path
-```
-
-Live cycle 004 completed with one Telegram decision message, one human APPROVE, one execution POST, one OpenCode execution, and one Qwen generation. Pending 004 is ISSUED; AUTH 004 is SPENT; AUTH 003 remains absent.
-
 ## Safety boundary
 
-- dedicated issuance bot configured server-side only (token not on cmdline / not exposed);
-- exactly one Telegram decision message and one human APPROVE in cycle 004;
-- exactly one guarded Qwen generation and one OpenCode execution;
-- retry 0, fallback 0, WF40 executions 0, WF61 executions 0, cloud provider calls 0;
-- AUTH 001/002 preserved SPENT, AUTH 003 absent, AUTH 004 SPENT, no ACTIVE authorization;
-- next block is the WF40 first live authorized execution proof;
 - WF61 inactive; D-0025 CLOSED;
-- live execution CLOSED.
+- live execution CLOSED;
+- PostgreSQL migration blocked pending sequence resync validation;
+- production SQLite unchanged.
 
 ## Puntatori
 
-- First live authorized execution retry 004: `reports/architecture/v4_first_live_authorized_execution_retry_004.md`
-- Issuance production wiring/persistence: `reports/architecture/v4_runtime_authorization_issuance_production_service_wiring_and_persistence.md`
-- Issuance owner tool: `tools/v4-runtime-authorization-issuance-v1.mjs`
-- Issuance service tool: `tools/serve-v4-runtime-authorization-issuance-v1.mjs`
-- Issuance tests: `tests/v4-runtime-authorization-issuance/run.mjs`
-- Issuance contract ratification/hardening: `reports/architecture/v4_runtime_authorization_issuance_path_contract.md`
-- Issuance implementation offline: `reports/architecture/v4_runtime_authorization_issuance_path_implementation_offline.md`
-- Prior STOP (race): `reports/runtime/cursor-stops/2026-08-31T193000Z__V4_RUNTIME_AUTHORIZATION_ISSUANCE_PRODUCTION_SERVICE_WIRING_AND_PERSISTENCE.stop.json`
+- Cron fire instrumentation: `reports/architecture/v4_n8n_postgres_legacy_schedule_trigger_cron_fire_runtime_instrumentation.md`
+- Schedule trigger registration diagnosis retry008: `reports/architecture/v4_n8n_postgres_schedule_trigger_registration_diagnosis_retry008.md`
+- Prior scheduler postgres proof retry007: `reports/architecture/v4_n8n_controlled_production_postgres_migration_retry_007_wf40_scheduler_postgres_proof.md`
