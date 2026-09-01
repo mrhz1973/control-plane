@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (71 nodes)** · Windows execution endpoint **PERSISTED** · first human-authorized local OpenCode/Qwen execution **PASS** · AUTH 004 durably spent · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_N8N_ADMISSION_INTERNAL_TRACE` — **PASS diagnostico (nessuna riparazione)** |
-| **STATO BLOCCO** | Trace logging-only completato · **30/30** tick WF40 terminali · `stuck_new_over_30s=0` · nessuno stall riprodotto · stock n8n 2.33.3 ripristinato · difetto intermittente non risolto |
+| **BLOCCO ATTIVO** | `V4_N8N_POSTGRES_CANARY_BOOTSTRAP_ACTIVATION_DIAGNOSIS` — **PASS diagnostico** |
+| **STATO BLOCCO** | Bootstrap query **non esclude** il workflow (`isArchived=false`) · node type ScheduleTrigger **1.2 risolvibile** · durable scheduler **inactive** · publish-only + restart registra trigger (`triggerCount` 0→1) · prior `triggerCount=0` spiegato da startup activation incompleta, non da bootstrap/node type |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_N8N_POSTGRES_CANARY_AND_ADMISSION_PROOF` |
+| **NEXT** | `V4_N8N_POSTGRES_CANARY_SCHEDULE_SIX_TICK_PROOF` |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · post-WF61 authorization lane + transient poll fix |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
