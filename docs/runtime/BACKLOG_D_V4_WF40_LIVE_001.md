@@ -66,3 +66,5 @@ Trigger: 2026-09-01 — resume WF40 first live authorized execution proof after 
 Retry trigger 2: 2026-09-01 — gate armed; execute D-V4-WF40-LIVE-001 once.
 
 Retry trigger 3: 2026-09-01 — n8n scheduler restored; gate armed; execute D-V4-WF40-LIVE-001 once.
+
+Retry trigger 5: 2026-09-01 — WF40 publish/scheduler state repaired; scheduler healthy; gate armed; execute D-V4-WF40-LIVE-001 once.
