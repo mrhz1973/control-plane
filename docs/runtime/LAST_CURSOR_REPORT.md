@@ -3,18 +3,19 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_N8N_POSTGRES_CANARY_SCHEDULE_SIX_TICK_FINAL_PROOF
-run_nonce: N8N_POSTGRES_SIX_TICK_FINAL_20260901_01
+task_ref: V4_N8N_POSTGRES_IMPORT_REHEARSAL_RETRY_003_WORKFLOWS_TAGS_NATIVE_BUG_NORMALIZATION
+run_nonce: N8N_PG_IMPORT_REHEARSAL_RETRY003_20260901_01
 result_cursor: PASS
-classification: POSTGRES_CANARY_ADMISSION_PASS
-webhook_prior: 1000/1000
-schedule: 6/6
-stuck_new_over_30s: 0
-schedule_naturality: PROVEN
-trigger_count_at_activation: 1
-gate: CLOSED
-next: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_AND_WF40_REGRESSION_PROOF
+classification: POSTGRES_NATIVE_IMPORT_REHEARSAL_PASS_WITH_BOUNDED_WORKFLOWS_TAGS_NORMALIZATION
+normalization: REMOVE_WORKFLOWS_TAGS_JSONL
+original_archive_sha256: 35d78a9a8493e62ff92d9c2e9a9d0b1a43c5deda89fa88554c0d6e44552cc83b
+normalized_archive_sha256: de8bfc359995ce2d929e344613a82d99b2ad56eeb2e8e70e08b74f57c9fdd47c
+import: PASS
+equivalence: PASS
+workflows_tags: 228/228
+prod_mutation: 0
+next: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_005_PROVEN_IMPORT_PATH
 
 evidence:
-  - reports/architecture/v4_n8n_postgres_canary_schedule_six_tick_final_proof.md
+  - reports/architecture/v4_n8n_postgres_import_rehearsal_retry_003_workflows_tags_native_bug_normalization.md
 ```
