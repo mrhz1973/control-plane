@@ -1,0 +1,59 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_N8N_SQLITE_WAL_ADMISSION_REPAIR_AND_WF40_LIVE_RESUME",
+  "run_nonce": "N8N_SQLITE_WAL_ADMISSION_20260901_01",
+  "block_id": "V4_N8N_SQLITE_WAL_ADMISSION_REPAIR_AND_WF40_LIVE_RESUME",
+  "category": "N8N_SQLITE_WAL_ADMISSION_REPAIR",
+  "result": "STOP",
+  "dispatch_base_head": "975c8379e83e88c1e01dd2b34515e72f3a4d043b",
+  "utc_timestamp": "2026-09-01T012500Z",
+  "finding": "SQLITE_WAL_ALREADY_ACTIVE_NOT_ROOT_CAUSE",
+  "next": "V4_N8N_ADMISSION_INTERNAL_TRACE_OR_POSTGRES_CANARY",
+  "finding_detail": "n8n 2.33.3 SQLite already runs WAL with pooling: PRAGMA journal_mode=wal, database.sqlite-wal/-shm actively written, effective poolSize=3 (2.33.3 SqliteConfig default; DB_SQLITE_POOL_SIZE env unset, schema requires >=1). quick_check ok, filesystem 23% used. Concurrency: PRODUCTION_CONCURRENCY_DISABLED (productionLimit default -1, no queue, isEnabled=false). Task runner: TASK_RUNNER_NOT_CAUSAL_FOR_PRE_ADMISSION_STALL (workflow-runner.js:265 setRunning precedes any task-runner involvement). Decisive: stuck execution 293900 occurred at 01:13Z on 2.33.3 while WAL was already active, disproving legacy rollback-journal hypothesis. Per section 5: no backup, no compose change, no recreate. Nonterminal executions at diagnosis: 0 (scheduler ticking through 293918). SECOND_REPAIR=0 SECOND_PROVIDER=0 SECOND_EXECUTION=0.",
+  "diagnosis": {
+    "n8n_version": "2.33.3",
+    "db_type": "sqlite",
+    "db_sqlite_pool_size_env": null,
+    "effective_pool_size": 3,
+    "journal_mode": "wal",
+    "wal_shm_files_present": true,
+    "quick_check": "ok",
+    "filesystem_used_pct": 23,
+    "concurrency_classification": "PRODUCTION_CONCURRENCY_DISABLED",
+    "task_runner_classification": "TASK_RUNNER_NOT_CAUSAL_FOR_PRE_ADMISSION_STALL",
+    "stuck_293900_under_wal": true,
+    "nonterminal_at_diagnosis": 0
+  },
+  "phase_progress": {
+    "repo_precheck": "PASS",
+    "concurrency_proof": "PASS",
+    "task_runner_proof": "PASS",
+    "sqlite_readonly_inspection": "PASS",
+    "root_cause_branch": "STOP_WAL_ALREADY_ACTIVE",
+    "backup": "NOT_PERFORMED_PER_BLOCK",
+    "compose_change": "NOT_PERFORMED",
+    "recreate": "NOT_PERFORMED",
+    "live_proof": "NOT_STARTED"
+  },
+  "hard_counters": {
+    "second_repair": 0,
+    "second_provider": 0,
+    "second_register": 0,
+    "second_execution": 0,
+    "wf40_full_pipeline": 0,
+    "wf61_executions": 0,
+    "remote_planner_calls": 0,
+    "telegram_messages": 0,
+    "opencode": 0,
+    "qwen_generations": 0
+  },
+  "restored_live_baseline": {
+    "n8n_version": "2.33.3",
+    "d0025_gate_enabled": false,
+    "provider_calls_authorized_per_event": 0,
+    "wf40_nodes": 83,
+    "wf40_active": true,
+    "wf61_active": false,
+    "active_authorization_count": 0
+  }
+}

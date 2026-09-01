@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (71 nodes)** · Windows execution endpoint **PERSISTED** · first human-authorized local OpenCode/Qwen execution **PASS** · AUTH 004 durably spent · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_N8N_CONTROLLED_UPGRADE_AND_WF40_REGRESSION_PROOF` — **STOP** |
-| **STATO BLOCCO** | n8n **2.33.3** upgraded · backup verified · WF40 83 nodes preserved · admission defect **recurred** (exec 293900 stuck `new` >80s) · live proof **NOT STARTED** |
+| **BLOCCO ATTIVO** | `V4_N8N_SQLITE_WAL_ADMISSION_REPAIR_AND_WF40_LIVE_RESUME` — **STOP (no mutation)** |
+| **STATO BLOCCO** | SQLite già **WAL** con pool=3 su 2.33.3 · quick_check ok · concurrency disabled · task runner non causale · stall 293900 avvenuto **sotto WAL** → ipotesi rollback-journal smentita · live proof **NOT STARTED** |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | Investigate admission stall on 2.33.3 (task runner / concurrency / execution stop API); rollback package at `/root/n8n-upgrade-backups/20260901T011045Z_pre_2.33.3` |
+| **NEXT** | `V4_N8N_ADMISSION_INTERNAL_TRACE_OR_POSTGRES_CANARY` |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · post-WF61 authorization lane + transient poll fix |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
