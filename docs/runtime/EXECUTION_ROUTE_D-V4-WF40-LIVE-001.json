@@ -1,0 +1,8 @@
+{
+  "schema_version": "v4-execution-route-source-v1",
+  "task_id": "D-V4-WF40-LIVE-001",
+  "source_backlog_path": "docs/runtime/BACKLOG_D_V4_WF40_LIVE_001.md",
+  "created_by": "gpt-web",
+  "technical_requirements": ["filesystem", "code_edit"],
+  "risk_level": "low"
+}
