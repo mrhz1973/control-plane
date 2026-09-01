@@ -1,0 +1,65 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_N8N_POSTGRES_CANARY_SCHEDULE_FILE_PERMISSION_FIX_AND_PROOF",
+  "run_nonce": "N8N_POSTGRES_SCHEDULE_PERM_FIX_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "e1f49ca01bebe1c708a07be7513193a3f0985398",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "OTHER",
+  "finding": "CANARY_SCHEDULE_TRIGGER_NOT_REGISTERED_AFTER_ACTIVATION",
+  "finding_detail": "Single authorized attempt. File-permission fix applied: workflow.json created with umask 022 and mode 0644 (HOST_MODE=644); docker cp verified readable by node user with matching SHA256. Import succeeded (IMPORTED_ROWS=1). publish:workflow + update:workflow --active=true + single restart completed (ACTIVATED_RESTART_READY iter=3). First new blocker after import/activation: workflow_entity state active=true, activeVersionId present, but triggerCount=0 — Schedule Trigger not registered. Per contract: no wait/retry/workaround, immediate STOP before schedule observation.",
+  "target_result": "NOT_RUN",
+  "regressions_status": "NOT_RUN",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "NOT_RUN",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "register_calls": 0,
+  "webhook_rerun": 0,
+  "prod_mutation": 0,
+  "canary_attempts": 1,
+  "import_attempts": 1,
+  "import_result": "SUCCESS",
+  "file_permission_fix": {
+    "host_mode": "0644",
+    "node_user_readable": true,
+    "host_sha256": "283053994af022823665c161890784462e7113bab92c40588042b87326bddd17",
+    "container_sha256_match": true
+  },
+  "activation_state_at_blocker": {
+    "active": true,
+    "activeVersionId_present": true,
+    "triggerCount": 0
+  },
+  "schedule_counters": {
+    "schedule_unique": 0,
+    "schedule_started": 0,
+    "schedule_terminal": 0,
+    "schedule_stuck_new_over_30s": 0,
+    "schedule_naturality": "NOT_PROVEN"
+  },
+  "canary_cleanup": "PASS",
+  "cleanup_detail": "compose down -v --remove-orphans; LEFT_CONTAINERS=0 LEFT_NETWORKS=0 LEFT_VOLUMES=0; canary assets preserved off-repo at /root/n8n-postgres-canary/N8N_POSTGRES_SCHEDULE_PERM_FIX_20260901_01/",
+  "restored_live_baseline": {
+    "n8n_version": "2.33.3",
+    "prod_healthz": "200",
+    "wf40_active": true,
+    "wf61_active": false,
+    "d0025_gate": "CLOSED",
+    "active_authorization_count": 0
+  },
+  "prior_validated_evidence_reference": {
+    "commit": "58ba29ccd3aeb73c5e0e85d5cbdb6b7f24ce7b36",
+    "webhook_unique": 1000,
+    "webhook_started": 1000,
+    "webhook_terminal": 1000,
+    "webhook_stuck_new_over_30s": 0
+  },
+  "dirty_paths_summary": [
+    "tools/* (pre-existing unrelated untracked helpers from prior tasks)"
+  ],
+  "next": "GPT_WEB"
+}
