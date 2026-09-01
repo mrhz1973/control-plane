@@ -1,0 +1,54 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_N8N_POSTGRES_CANARY_SCHEDULE_IMPORT_FIX_AND_PROOF",
+  "run_nonce": "N8N_POSTGRES_SCHEDULE_IMPORT_FIX_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "aa82c861b2406b25a6e3f88a34da13f4e33bb155",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "OTHER",
+  "finding": "CANARY_CONTAINER_FILE_PERMISSION_DENIED",
+  "finding_detail": "Single authorized attempt. Local workflow JSON validated (2 nodes, structure OK, sha256 0ed26d95a36505f66f90888c21523483c65e702c4d7bf1f881eb29c2445add89). Canary deployed OK (CANARY_READY iter=3). docker cp succeeded and in-container size verified (887 bytes), but sha256sum inside container failed: 'Permission denied' — the host workflow.json was created with mode 600 (umask 077 leaked from the secrets-generation block) and docker cp preserved it, so the container 'node' user cannot read /tmp/schedule-canary.json. Blocker hit before the single import attempt; per contract: no retry, no chmod correction, no second deployment.",
+  "target_result": "NOT_RUN",
+  "regressions_status": "NOT_RUN",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "NOT_RUN",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "register_calls": 0,
+  "webhook_rerun": 0,
+  "prod_mutation": 0,
+  "canary_attempts": 1,
+  "import_attempts": 0,
+  "import_transport": "docker cp file path (stdin fix applied as required)",
+  "schedule_counters": {
+    "schedule_unique": 0,
+    "schedule_started": 0,
+    "schedule_terminal": 0,
+    "schedule_stuck_new_over_30s": 0,
+    "schedule_naturality": "NOT_PROVEN"
+  },
+  "canary_cleanup": "PASS",
+  "cleanup_detail": "compose down -v --remove-orphans; LEFT_CONTAINERS=0 LEFT_NETWORKS=0 LEFT_VOLUMES=0; canary assets preserved off-repo at /root/n8n-postgres-canary/N8N_POSTGRES_SCHEDULE_IMPORT_FIX_20260901_01/ (workflow.json mode 600 root-owned confirmed as root cause)",
+  "restored_live_baseline": {
+    "n8n_version": "2.33.3",
+    "prod_healthz": "200",
+    "wf40_active": true,
+    "wf61_active": false,
+    "d0025_gate": "CLOSED",
+    "active_authorization_count": 0
+  },
+  "prior_validated_evidence_reference": {
+    "commit": "58ba29ccd3aeb73c5e0e85d5cbdb6b7f24ce7b36",
+    "webhook_unique": 1000,
+    "webhook_started": 1000,
+    "webhook_terminal": 1000,
+    "webhook_stuck_new_over_30s": 0
+  },
+  "dirty_paths_summary": [
+    "tools/* (pre-existing unrelated untracked helpers from prior tasks)"
+  ],
+  "next": "GPT_WEB"
+}
