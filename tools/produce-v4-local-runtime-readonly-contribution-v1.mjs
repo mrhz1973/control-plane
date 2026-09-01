@@ -24,22 +24,44 @@ const OPENCODE_MAJOR = 1;
 const OPENCODE_MINOR = 18;
 
 // Diagnostic PowerShell: two fixed read-only samples in ONE process.
-// Read-only process/socket metadata only.
-// PIDs are resolved to names inside PowerShell and never emitted.
+// Internal-only proc metadata (pid/parent/cmd) is used for classification only.
 const PS_DIAGNOSTIC = `
 $ErrorActionPreference = 'SilentlyContinue'
 function Get-Sample {
-  $procs = Get-Process | Where-Object { $_.ProcessName } |
-    ForEach-Object { [pscustomobject]@{ pid_ = [int]$_.Id; name = [string]$_.ProcessName } }
-  $conns = Get-NetTCPConnection |
-    ForEach-Object { [pscustomobject]@{
+  $procs = Get-Process | Where-Object { $_.ProcessName } | ForEach-Object {
+    $parentId = 0
+    $cmd = ''
+    $pname = [string]$_.ProcessName
+    if ($pname -match '^llama-server') {
+      try {
+        $w = Get-CimInstance -ClassName Win32_Process -Filter ("ProcessId=" + [int]$_.Id) -ErrorAction Stop
+        if ($w) {
+          if ($w.CommandLine) { $cmd = [string]$w.CommandLine }
+          if ($null -ne $w.ParentProcessId) { $parentId = [int]$w.ParentProcessId }
+        }
+      } catch {
+        try { $parentId = [int]$_.Parent.Id } catch { $parentId = 0 }
+      }
+    } else {
+      try { $parentId = [int]$_.Parent.Id } catch { $parentId = 0 }
+    }
+    [pscustomobject]@{
+      pid_ = [int]$_.Id
+      parentPid_ = $parentId
+      name = $pname
+      cmd_ = $cmd
+    }
+  }
+  $conns = Get-NetTCPConnection | ForEach-Object {
+    [pscustomobject]@{
       localAddress = [string]$_.LocalAddress
       localPort = [int]$_.LocalPort
       remoteAddress = [string]$_.RemoteAddress
       remotePort = [int]$_.RemotePort
       state = [string]$_.State
-      owningPid = [int]$_.OwningProcess
-    } }
+      owningPid_ = [int]$_.OwningProcess
+    }
+  }
   [pscustomobject]@{ procs = $procs; conns = $conns }
 }
 $s1 = Get-Sample
@@ -50,21 +72,31 @@ foreach ($p in $s2.procs) { $pidToName[[string]$p.pid_] = $p.name }
 foreach ($p in $s1.procs) { if (-not $pidToName.ContainsKey([string]$p.pid_)) { $pidToName[[string]$p.pid_] = $p.name } }
 function MapConns($conns) {
   $conns | ForEach-Object {
-    $oname = $pidToName[[string]$_.owningPid]
+    $oname = $pidToName[[string]$_.owningPid_]
     if (-not $oname) { $oname = 'UNKNOWN' }
     [pscustomobject]@{
       localAddress = $_.localAddress; localPort = $_.localPort
       remoteAddress = $_.remoteAddress; remotePort = $_.remotePort
-      state = $_.state; ownerName = $oname
+      state = $_.state; ownerName = $oname; owningPid_ = $_.owningPid_
     }
   }
 }
 $out = [pscustomobject]@{
   ok = $true
-  sampleA = [pscustomobject]@{ ok = $true; conns = @(MapConns $s1.conns); procNames = @($s1.procs | ForEach-Object { $_.name }) }
-  sampleB = [pscustomobject]@{ ok = $true; conns = @(MapConns $s2.conns); procNames = @($s2.procs | ForEach-Object { $_.name }) }
+  sampleA = [pscustomobject]@{
+    ok = $true
+    conns = @(MapConns $s1.conns)
+    procs = @($s1.procs)
+    procNames = @($s1.procs | ForEach-Object { $_.name })
+  }
+  sampleB = [pscustomobject]@{
+    ok = $true
+    conns = @(MapConns $s2.conns)
+    procs = @($s2.procs)
+    procNames = @($s2.procs | ForEach-Object { $_.name })
+  }
 }
-[Console]::Out.Write(($out | ConvertTo-Json -Depth 5 -Compress))
+[Console]::Out.Write(($out | ConvertTo-Json -Depth 6 -Compress))
 `;
 
 const INFERENCE_RE =
@@ -118,8 +150,138 @@ function isInferenceServerFamilyListenerOwner(name) {
   return /^(llamafile|llama_cpp|vllm|lmstudio|localai)(\W|$)/i.test(n);
 }
 
-function hasNonCanonicalInferenceListener(conns, canonicalPort) {
-  return (conns || []).some((c) => {
+function procByPid(procs, pid) {
+  const n = Number(pid);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return (procs || []).find((p) => Number(p.pid_) === n) || null;
+}
+
+/** Bounded models-manager mode on canonical :8080 owner. */
+export function isCanonicalModelsManagerCommand(cmd, canonicalPort = 8080) {
+  const text = String(cmd || "");
+  if (!text) return false;
+  const hasPreset = /--models-preset\b/.test(text);
+  const hasAutoload = /--models-autoload\b/.test(text);
+  const hasPort =
+    new RegExp(`--port\\s+${Number(canonicalPort)}\\b`).test(text) ||
+    new RegExp(`--port=${Number(canonicalPort)}\\b`).test(text);
+  return hasPreset && hasAutoload && hasPort;
+}
+
+/**
+ * Resolve canonical manager + direct child model workers for one sample.
+ * Returns structural facts only — no pid/cmd/path emission.
+ */
+export function resolveCanonicalManagerWorkerTopology(sample, canonicalPort = 8080) {
+  const listeners = listenersOnPort(sample?.conns || [], canonicalPort);
+  if (listeners.length !== 1) {
+    return {
+      ok: false,
+      canonical_manager: false,
+      canonical_model_worker_count: 0,
+      canonical_model_worker_present: false,
+      conflicting_noncanonical_listeners: 0,
+    };
+  }
+  const canonicalConn = listeners[0];
+  const managerPid = Number(canonicalConn.owningPid_ ?? canonicalConn.owningPid);
+  const managerProc = procByPid(sample?.procs, managerPid);
+  const managerName = managerProc?.name || canonicalConn.ownerName;
+  if (!isExpectedServer(managerName, {})) {
+    return {
+      ok: false,
+      canonical_manager: false,
+      canonical_model_worker_count: 0,
+      canonical_model_worker_present: false,
+      conflicting_noncanonical_listeners: 0,
+      unexpected_canonical_owner: true,
+    };
+  }
+  const managerCmd = managerProc?.cmd_ || "";
+  const canonicalManager =
+    Number.isFinite(managerPid) &&
+    managerPid > 0 &&
+    isCanonicalModelsManagerCommand(managerCmd, canonicalPort);
+  if (!canonicalManager) {
+    return {
+      ok: true,
+      canonical_manager: false,
+      canonical_model_worker_count: 0,
+      canonical_model_worker_present: false,
+      conflicting_noncanonical_listeners: countConflictingNonCanonicalListeners(
+        sample,
+        canonicalPort,
+        null,
+      ),
+    };
+  }
+
+  const workers = [];
+  const conflicts = [];
+  for (const c of sample?.conns || []) {
+    if (String(c.state || "").toUpperCase() !== "LISTEN") continue;
+    if (Number(c.localPort) === Number(canonicalPort)) continue;
+    if (!isInferenceServerFamilyListenerOwner(c.ownerName)) continue;
+    const ownerPid = Number(c.owningPid_ ?? c.owningPid);
+    const ownerProc = procByPid(sample?.procs, ownerPid);
+    const ownerName = ownerProc?.name || c.ownerName;
+    if (!isExpectedServer(ownerName, {})) {
+      conflicts.push(c);
+      continue;
+    }
+    const parentPid = Number(ownerProc?.parentPid_);
+    if (!Number.isFinite(ownerPid) || ownerPid <= 0 || !Number.isFinite(parentPid) || parentPid <= 0) {
+      conflicts.push(c);
+      continue;
+    }
+    if (parentPid === managerPid) {
+      workers.push(c);
+      continue;
+    }
+    conflicts.push(c);
+  }
+
+  return {
+    ok: true,
+    canonical_manager: true,
+    canonical_model_worker_count: workers.length,
+    canonical_model_worker_present: workers.length > 0,
+    conflicting_noncanonical_listeners: conflicts.length,
+  };
+}
+
+function countConflictingNonCanonicalListeners(sample, canonicalPort, managerPid) {
+  let conflicts = 0;
+  for (const c of sample?.conns || []) {
+    if (String(c.state || "").toUpperCase() !== "LISTEN") continue;
+    if (Number(c.localPort) === Number(canonicalPort)) continue;
+    if (!isInferenceServerFamilyListenerOwner(c.ownerName)) continue;
+    if (managerPid == null) {
+      conflicts += 1;
+      continue;
+    }
+    const ownerPid = Number(c.owningPid_ ?? c.owningPid);
+    const ownerProc = procByPid(sample?.procs, ownerPid);
+    const ownerName = ownerProc?.name || c.ownerName;
+    if (!isExpectedServer(ownerName, {})) {
+      conflicts += 1;
+      continue;
+    }
+    const parentPid = Number(ownerProc?.parentPid_);
+    if (!Number.isFinite(parentPid) || parentPid <= 0 || parentPid !== managerPid) {
+      conflicts += 1;
+    }
+  }
+  return conflicts;
+}
+
+function hasNonCanonicalInferenceListener(sample, canonicalPort) {
+  const topology = resolveCanonicalManagerWorkerTopology(sample, canonicalPort);
+  if (topology.unexpected_canonical_owner) return false;
+  if (topology.canonical_manager) {
+    return topology.conflicting_noncanonical_listeners > 0;
+  }
+  return (sample?.conns || []).some((c) => {
     if (String(c.state || "").toUpperCase() !== "LISTEN") return false;
     if (Number(c.localPort) === Number(canonicalPort)) return false;
     return isInferenceServerFamilyListenerOwner(c.ownerName);
@@ -209,7 +371,8 @@ function analyzeSample(sample, host, port) {
     ownerNames,
   );
   const conflicting = sampleHasInferenceRunner(sample.procNames, true);
-  const nonCanonicalListener = hasNonCanonicalInferenceListener(sample.conns, port);
+  const topology = resolveCanonicalManagerWorkerTopology(sample, port);
+  const nonCanonicalListener = hasNonCanonicalInferenceListener(sample, port);
   return {
     valid: true,
     listenerCount: listeners.length,
@@ -222,6 +385,7 @@ function analyzeSample(sample, host, port) {
     hasEstablishedClient: busyClients.length > 0,
     hasConflictingRunner: conflicting,
     hasNonCanonicalInferenceListener: nonCanonicalListener,
+    topology,
   };
 }
 
@@ -311,14 +475,47 @@ export function classifyQwenSharedRuntime(snapshotA, snapshotB, runtimeConfig) {
     };
   }
 
+  const structural = {
+    canonical_manager:
+      a.topology?.canonical_manager === true && b.topology?.canonical_manager === true,
+    canonical_model_worker_count: Math.min(
+      Number(a.topology?.canonical_model_worker_count || 0),
+      Number(b.topology?.canonical_model_worker_count || 0),
+    ),
+    canonical_model_worker_present:
+      a.topology?.canonical_model_worker_present === true &&
+      b.topology?.canonical_model_worker_present === true,
+  };
+
   if (a.hasPassiveCanonicalWebUi || b.hasPassiveCanonicalWebUi) {
     return {
       classification: "QWEN_READY_IDLE",
       reason: "PASSIVE_CANONICAL_WEBUI_CLIENT",
+      ...structural,
     };
   }
 
-  return { classification: "QWEN_READY_IDLE", reason: "SINGLE_IDLE_CANONICAL_LISTENER" };
+  if (structural.canonical_manager && structural.canonical_model_worker_present) {
+    return {
+      classification: "QWEN_READY_IDLE",
+      reason: "CANONICAL_MANAGER_MODEL_WORKER",
+      ...structural,
+    };
+  }
+
+  if (structural.canonical_manager && !structural.canonical_model_worker_present) {
+    return {
+      classification: "QWEN_READY_IDLE",
+      reason: "SINGLE_IDLE_CANONICAL_LISTENER",
+      ...structural,
+    };
+  }
+
+  return {
+    classification: "QWEN_READY_IDLE",
+    reason: "SINGLE_IDLE_CANONICAL_LISTENER",
+    ...structural,
+  };
 }
 
 /**
@@ -592,6 +789,9 @@ if (isMain) {
       ok: true,
       qwen_occupancy_classification: qwenClassified.classification,
       qwen_classification_reason: qwenClassified.reason,
+      canonical_manager: qwenClassified.canonical_manager === true,
+      canonical_model_worker_count: Number(qwenClassified.canonical_model_worker_count || 0),
+      canonical_model_worker_present: qwenClassified.canonical_model_worker_present === true,
       opencode_static_classification: opencodeStatic.classification,
       contribution,
       launch_performed: false,

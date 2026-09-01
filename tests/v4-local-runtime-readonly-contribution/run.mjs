@@ -16,6 +16,7 @@ import {
   gatherQwenDiagnostics,
   getProductionPsDiagnosticScript,
   loadRuntimeConfig,
+  isCanonicalModelsManagerCommand,
   PRODUCER_ID,
 } from "../../tools/produce-v4-local-runtime-readonly-contribution-v1.mjs";
 import { spawnSync } from "node:child_process";
@@ -63,8 +64,40 @@ function establishedClient(port = 8080, ownerName = "blender") {
   };
 }
 
-function sample({ conns = [], procNames = ["llama-server"], ok = true } = {}) {
-  return { ok, conns, procNames };
+function sample({ conns = [], procNames = ["llama-server"], procs = null, ok = true } = {}) {
+  return { ok, conns, procNames, procs: procs || undefined };
+}
+
+const MANAGER_CMD =
+  "--models-preset C:\\models\\qwen-models.ini --models-max 1 --models-autoload --host 127.0.0.1 --port 8080";
+
+function managerProc(pid, parentPid = 900, cmd = MANAGER_CMD) {
+  return { pid_: pid, parentPid_: parentPid, name: "llama-server", cmd_: cmd };
+}
+
+function workerProc(pid, managerPid, cmd = "--alias qwen38-original-dflash2-8k --ctx-size 8192") {
+  return { pid_: pid, parentPid_: managerPid, name: "llama-server", cmd_: cmd };
+}
+
+function managerWorkerSample(workerPort, { managerPid = 8080, workerPid = 58074, extraConns = [], extraProcs = [] } = {}) {
+  const actualManagerPid = managerPid === 8080 ? 10001 : managerPid;
+  return sample({
+    conns: [
+      { ...listener(), owningPid_: actualManagerPid },
+      {
+        localAddress: "127.0.0.1",
+        localPort: workerPort,
+        remoteAddress: "0.0.0.0",
+        remotePort: 0,
+        state: "Listen",
+        ownerName: "llama-server",
+        owningPid_: workerPid,
+      },
+      ...extraConns,
+    ],
+    procs: [managerProc(actualManagerPid), workerProc(workerPid, actualManagerPid), ...extraProcs],
+    procNames: ["llama-server"],
+  });
 }
 
 function fsReady(overrides = {}) {
@@ -263,14 +296,6 @@ async function run() {
       "opencode spawn found",
     );
     check(
-      "no-commandline-collection",
-      !src.includes("Win32_Process") &&
-        !src.includes("CommandLine") &&
-        !src.includes("Get-CimInstance") &&
-        !src.includes("environment"),
-      "commandline/env access found",
-    );
-    check(
       "no-qwen-session-collector-imports",
       !src.includes("collect-qwen-local-resource-status") &&
         !src.includes("qwen-local-session-manager") &&
@@ -308,6 +333,14 @@ async function run() {
       "no-pid-process-list",
       !/"pid|process_list|procNames|conns"/.test(flat),
       "raw evidence present",
+    );
+    check(
+      "no-commandline-leak-in-contribution-output",
+      !flat.includes("cmd_") &&
+        !flat.includes("parentPid_") &&
+        !flat.includes("owningPid_") &&
+        !flat.includes("Win32_Process"),
+      "internal diagnostic fields leaked",
     );
     // 23 schema validation
     const sc = await validateAgainstSchema(COMPONENTS_PATH(), contribution);
@@ -356,7 +389,7 @@ async function run() {
     const script = getProductionPsDiagnosticScript();
     check(
       "ps-diagnostic-write-parentheses-fixed",
-      script.includes("[Console]::Out.Write(($out | ConvertTo-Json -Depth 5 -Compress))") &&
+      script.includes("[Console]::Out.Write(($out | ConvertTo-Json -Depth 6 -Compress))") &&
         !script.includes("[Console]::Out.Write($out | ConvertTo-Json -Depth 5 -Compress)"),
       "write form mismatch",
     );
@@ -610,6 +643,204 @@ async function run() {
       "msedge-plus-plain-ollama-ready-idle",
       r.classification === "QWEN_READY_IDLE" &&
         r.reason === "PASSIVE_CANONICAL_WEBUI_CLIENT",
+      JSON.stringify(r),
+    );
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Canonical llama.cpp models-manager + direct model worker topology     */
+  /* ------------------------------------------------------------------ */
+
+  check(
+    "manager-command-flags",
+    isCanonicalModelsManagerCommand(MANAGER_CMD, 8080) === true &&
+      isCanonicalModelsManagerCommand("--port 8080", 8080) === false,
+    "manager command detection",
+  );
+
+  // 1 canonical manager :8080, no worker -> READY_IDLE
+  {
+    const mgrPid = 11001;
+    const s = sample({
+      conns: [{ ...listener(), owningPid_: mgrPid }],
+      procs: [managerProc(mgrPid)],
+      procNames: ["llama-server"],
+    });
+    const r = classifyQwenSharedRuntime(s, s, RUNTIME);
+    check(
+      "manager-only-ready-idle",
+      r.classification === "QWEN_READY_IDLE" &&
+        r.canonical_manager === true &&
+        r.canonical_model_worker_present === false,
+      JSON.stringify(r),
+    );
+  }
+
+  // 2 manager + child worker on 58074 -> READY_IDLE
+  {
+    const s = managerWorkerSample(58074);
+    const r = classifyQwenSharedRuntime(s, s, RUNTIME);
+    check(
+      "manager-worker-58074-ready-idle",
+      r.classification === "QWEN_READY_IDLE" &&
+        r.reason === "CANONICAL_MANAGER_MODEL_WORKER" &&
+        r.canonical_model_worker_count === 1,
+      JSON.stringify(r),
+    );
+  }
+
+  // 3 manager + child worker on arbitrary 43127 -> READY_IDLE
+  {
+    const s = managerWorkerSample(43127, { workerPid: 43128 });
+    const r = classifyQwenSharedRuntime(s, s, RUNTIME);
+    check(
+      "manager-worker-arbitrary-port-ready-idle",
+      r.classification === "QWEN_READY_IDLE" &&
+        r.reason === "CANONICAL_MANAGER_MODEL_WORKER",
+      JSON.stringify(r),
+    );
+  }
+
+  // 4 unrelated llama-server on 58074 with different parent -> BUSY
+  {
+    const mgrPid = 12001;
+    const s = sample({
+      conns: [
+        { ...listener(), owningPid_: mgrPid },
+        {
+          ...nonCanonicalListener(58074, "llama-server"),
+          owningPid_: 12002,
+        },
+      ],
+      procs: [managerProc(mgrPid), workerProc(12002, 99999)],
+      procNames: ["llama-server"],
+    });
+    const r = classifyQwenSharedRuntime(s, s, RUNTIME);
+    check(
+      "unrelated-llama-server-child-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME" &&
+        r.reason === "NONCANONICAL_INFERENCE_LISTENER_ACTIVE",
+      JSON.stringify(r),
+    );
+  }
+
+  // 5 parent unavailable/unknown -> BUSY
+  {
+    const mgrPid = 13001;
+    const s = sample({
+      conns: [
+        { ...listener(), owningPid_: mgrPid },
+        { ...nonCanonicalListener(58074, "llama-server"), owningPid_: 13002 },
+      ],
+      procs: [managerProc(mgrPid), { pid_: 13002, parentPid_: 0, name: "llama-server", cmd_: "" }],
+      procNames: ["llama-server"],
+    });
+    const r = classifyQwenSharedRuntime(s, s, RUNTIME);
+    check(
+      "worker-parent-unknown-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME" &&
+        r.reason === "NONCANONICAL_INFERENCE_LISTENER_ACTIVE",
+      JSON.stringify(r),
+    );
+  }
+
+  // 6 manager + valid worker + independent second llama-server -> BUSY
+  {
+    const s = managerWorkerSample(58074, {
+      extraConns: [{ ...nonCanonicalListener(31452, "llama-server"), owningPid_: 14099 }],
+      extraProcs: [workerProc(14099, 88888)],
+    });
+    const r = classifyQwenSharedRuntime(s, s, RUNTIME);
+    check(
+      "manager-worker-plus-independent-llama-server-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME" &&
+        r.reason === "NONCANONICAL_INFERENCE_LISTENER_ACTIVE",
+      JSON.stringify(r),
+    );
+  }
+
+  // 7 manager + valid worker + ollama_qwen_proxy -> BUSY
+  {
+    const s = managerWorkerSample(58074);
+    s.procNames.push("ollama_qwen_proxy");
+    const r = classifyQwenSharedRuntime(s, s, RUNTIME);
+    check(
+      "manager-worker-plus-ollama-proxy-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME" &&
+        r.reason === "CONFLICTING_INFERENCE_RUNNER_ACTIVE",
+      JSON.stringify(r),
+    );
+  }
+
+  // 8 manager + valid worker + msedge canonical client -> READY_IDLE
+  {
+    const edge = establishedClient(8080, "msedge");
+    const base = managerWorkerSample(58074);
+    const s = sample({
+      conns: [...base.conns, edge],
+      procs: base.procs,
+      procNames: ["llama-server", "msedge"],
+    });
+    const r = classifyQwenSharedRuntime(s, s, RUNTIME);
+    check(
+      "manager-worker-plus-msedge-ready-idle",
+      r.classification === "QWEN_READY_IDLE" &&
+        r.reason === "PASSIVE_CANONICAL_WEBUI_CLIENT",
+      JSON.stringify(r),
+    );
+  }
+
+  // 9 manager + valid worker + unknown established client -> BUSY
+  {
+    const unk = establishedClient(8080, "chrome");
+    const base = managerWorkerSample(58074);
+    const s = sample({
+      conns: [...base.conns, unk],
+      procs: base.procs,
+      procNames: ["llama-server", "chrome"],
+    });
+    const r = classifyQwenSharedRuntime(s, s, RUNTIME);
+    check(
+      "manager-worker-plus-unknown-client-busy",
+      r.classification === "QWEN_BUSY_SHARED_RUNTIME" &&
+        r.reason === "ESTABLISHED_INFERENCE_CLIENT_ON_CANONICAL_PORT",
+      JSON.stringify(r),
+    );
+  }
+
+  // 10 multiple canonical :8080 -> UNCERTAIN
+  {
+    const a = sample({ conns: [listener(), listener("llama-server")], procNames: ["llama-server"] });
+    const b = sample({ conns: [listener(), listener("llama-server")], procNames: ["llama-server"] });
+    const r = classifyQwenSharedRuntime(a, b, RUNTIME);
+    check("manager-multiple-canonical-uncertain", r.classification === "QWEN_OCCUPANCY_UNCERTAIN", JSON.stringify(r));
+  }
+
+  // 11 :8080 owner not llama-server -> UNCERTAIN
+  {
+    const s = sample({ conns: [listener("python")], procNames: ["python"] });
+    const r = classifyQwenSharedRuntime(s, s, RUNTIME);
+    check(
+      "manager-non-llama-canonical-owner-uncertain",
+      r.classification === "QWEN_OCCUPANCY_UNCERTAIN" &&
+        r.reason === "UNEXPECTED_CANONICAL_PORT_OWNER",
+      JSON.stringify(r),
+    );
+  }
+
+  // 12 plain idle ollama + valid canonical manager/worker -> READY_IDLE
+  {
+    const base = managerWorkerSample(58074);
+    const s = sample({
+      conns: base.conns,
+      procs: base.procs,
+      procNames: ["llama-server", "ollama", "ollama app"],
+    });
+    const r = classifyQwenSharedRuntime(s, s, RUNTIME);
+    check(
+      "manager-worker-plus-plain-ollama-ready-idle",
+      r.classification === "QWEN_READY_IDLE" &&
+        r.reason === "CANONICAL_MANAGER_MODEL_WORKER",
       JSON.stringify(r),
     );
   }
