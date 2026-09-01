@@ -3,20 +3,20 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_N8N_STUCK_NEW_EXECUTION_ENGINE_DIAGNOSIS_AND_WF40_LIVE_RESUME
-run_nonce: N8N_STUCK_NEW_DIAG_20260901_01
+task_ref: V4_N8N_CONTROLLED_UPGRADE_AND_WF40_REGRESSION_PROOF
+run_nonce: N8N_UPGRADE_2333_WF40_20260901_01
 result_cursor: STOP
-dispatch_base_head: 4641c5f208708969258af7d76e983872e4c31311
-finding: N8N_2_19_5_EXECUTION_ENGINE_DEFECT_LIKELY
-next: V4_N8N_CONTROLLED_UPGRADE_AND_WF40_REGRESSION_PROOF
+dispatch_base_head: d742f10f8f3b3e0e8df18d67b7d64d220095d88b
+finding: N8N_UPGRADE_DID_NOT_FIX_EXECUTION_ADMISSION
+n8n_version: 2.33.3
+rollback: NOT_REQUIRED
 
-root_cause_primary: PRODUCTION_EXECUTION_CREATED_BUT_NEVER_ADMITTED
-exec_293850: transient_new_not_permanent_stall
-exec_293872: stuck_new_5min_blocking_scheduler
-native_repair: unavailable_no_api_key
-gate: CLOSED
+upgrade: PASS
+wf40_structure: PRESERVED
+admission_regression: FAIL
+stuck_execution: 293900
 
 evidence:
-  - reports/architecture/v4_n8n_stuck_new_execution_engine_diagnosis_and_wf40_live_proof.md
-  - reports/runtime/cursor-stops/2026-09-01T010500Z__V4_N8N_STUCK_NEW_EXECUTION_ENGINE_DIAGNOSIS_AND_WF40_LIVE_RESUME.stop.json
+  - reports/architecture/v4_n8n_controlled_upgrade_and_wf40_regression_proof.md
+  - reports/runtime/cursor-stops/2026-09-01T011500Z__V4_N8N_CONTROLLED_UPGRADE_AND_WF40_REGRESSION_PROOF.stop.json
 ```

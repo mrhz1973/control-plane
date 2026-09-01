@@ -1,0 +1,45 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_N8N_CONTROLLED_UPGRADE_AND_WF40_REGRESSION_PROOF",
+  "run_nonce": "N8N_UPGRADE_2333_WF40_20260901_01",
+  "block_id": "V4_N8N_CONTROLLED_UPGRADE_AND_WF40_REGRESSION_PROOF",
+  "category": "N8N_CONTROLLED_UPGRADE_WF40_REGRESSION",
+  "result": "STOP",
+  "dispatch_base_head": "d742f10f8f3b3e0e8df18d67b7d64d220095d88b",
+  "utc_timestamp": "2026-09-01T011500Z",
+  "finding": "N8N_UPGRADE_DID_NOT_FIX_EXECUTION_ADMISSION",
+  "finding_detail": "Controlled upgrade 2.19.5->2.33.3 via pinned docker.n8n.io/n8nio/n8n:2.33.3. Pre-upgrade backup verified at /root/n8n-upgrade-backups/20260901T011045Z_pre_2.33.3 (SQLite logical backup + volume tar). Migration PASS, healthz ok. WF40 structure preserved: 83 nodes, active, same versionId. Post-upgrade WF40 ticks 293896/293898 success with startedAt set. Execution 293900 WF40 trigger stuck status=new startedAt=null >80s blocking scheduler. Same phenotype as 293872 on 2.19.5. Rollback NOT performed per block rules. Live proof not started.",
+  "n8n_version": "2.33.3",
+  "rollback": "NOT_REQUIRED",
+  "backup_path": "/root/n8n-upgrade-backups/20260901T011045Z_pre_2.33.3",
+  "phase_progress": {
+    "repo_precheck": "PASS",
+    "deployment_discovery": "PASS",
+    "pre_upgrade_backup": "PASS",
+    "rollback_contract": "PASS",
+    "upgrade_to_2_33_3": "PASS",
+    "migration": "PASS",
+    "wf40_structure_preserved": "PASS",
+    "windows_pre_live": "PASS",
+    "execution_admission_regression": "FAIL",
+    "stuck_execution_id": 293900,
+    "stuck_new_over_30s": 1,
+    "live_proof": "NOT_STARTED"
+  },
+  "hard_counters": {
+    "second_provider": 0,
+    "second_register": 0,
+    "second_execution": 0,
+    "wf40_full_pipeline": 0,
+    "wf61_executions": 0
+  },
+  "restored_live_baseline": {
+    "n8n_version": "2.33.3",
+    "d0025_gate_enabled": false,
+    "provider_calls_authorized_per_event": 0,
+    "wf40_nodes": 83,
+    "wf40_active": true,
+    "wf61_active": false,
+    "active_authorization_count": 0
+  }
+}
