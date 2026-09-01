@@ -1,0 +1,60 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_N8N_STUCK_NEW_EXECUTION_ENGINE_DIAGNOSIS_AND_WF40_LIVE_RESUME",
+  "run_nonce": "N8N_STUCK_NEW_DIAG_20260901_01",
+  "block_id": "V4_N8N_STUCK_NEW_EXECUTION_ENGINE_DIAGNOSIS_AND_WF40_LIVE_RESUME",
+  "category": "N8N_STUCK_NEW_EXECUTION_ENGINE_DIAGNOSIS",
+  "result": "STOP",
+  "dispatch_base_head": "4641c5f208708969258af7d76e983872e4c31311",
+  "utc_timestamp": "2026-09-01T010500Z",
+  "finding": "N8N_2_19_5_EXECUTION_ENGINE_DEFECT_LIKELY",
+  "next": "V4_N8N_CONTROLLED_UPGRADE_AND_WF40_REGRESSION_PROOF",
+  "finding_detail": "n8n 2.19.5 regular mode, internal task runner, no queue. WF40 publish valid. Exec 293850 prior stall was transient (admit 18ms, success 372ms). Exec 293872 WF40 trigger stuck status=new startedAt=null 5+ minutes with running=0 waiting=0 blocking scheduler. Exec 293807 was WF42 not WF40 but same admission phenotype. POST /rest/executions/:id/stop exists but requires auth; user_api_keys empty; no CLI stop. No SQL/restart/repair performed. SECOND_REPAIR=0 SECOND_PROVIDER=0 SECOND_REGISTER=0 SECOND_EXECUTION=0.",
+  "root_cause_classification": {
+    "primary": "PRODUCTION_EXECUTION_CREATED_BUT_NEVER_ADMITTED",
+    "escalation": "N8N_2_19_5_EXECUTION_ENGINE_DEFECT_LIKELY"
+  },
+  "execution_config": {
+    "n8n_version": "2.19.5",
+    "execution_mode": "regular",
+    "queue_redis": false,
+    "task_runner_enabled": true,
+    "broker_port": 5679
+  },
+  "phase_progress": {
+    "repo_precheck": "PASS",
+    "readonly_diagnosis": "PASS",
+    "exec_293850_transient_not_permanent": true,
+    "exec_293872_stuck_new_minutes": true,
+    "comparison_293807_vs_293850": "equivalent_phenotype_different_workflow",
+    "native_repair_available": false,
+    "native_repair_performed": false,
+    "scheduler_three_tick_proof": "NOT_ATTEMPTED",
+    "live_proof": "NOT_STARTED"
+  },
+  "hard_counters": {
+    "publish_repair": 0,
+    "second_repair": 0,
+    "wf40_full_pipeline": 0,
+    "wf61_executions": 0,
+    "remote_planner_calls": 0,
+    "telegram_messages": 0,
+    "authorization_registrations": 0,
+    "execution_endpoint_post": 0,
+    "opencode": 0,
+    "qwen_generations": 0,
+    "second_provider": 0,
+    "second_register": 0,
+    "second_execution": 0
+  },
+  "restored_live_baseline": {
+    "d0025_gate_enabled": false,
+    "provider_calls_authorized_per_event": 0,
+    "wf40_nodes": 83,
+    "wf40_active": true,
+    "wf40_published": true,
+    "wf61_active": false,
+    "active_authorization_count": 0,
+    "stuck_execution_id": 293872
+  }
+}

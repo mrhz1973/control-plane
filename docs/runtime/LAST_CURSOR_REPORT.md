@@ -3,23 +3,20 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_N8N_WF40_PUBLISH_STATE_REPAIR_AND_FIRST_LIVE_PROOF_RESUME
-run_nonce: N8N_WF40_PUBLISH_REPAIR_20260901_01
+task_ref: V4_N8N_STUCK_NEW_EXECUTION_ENGINE_DIAGNOSIS_AND_WF40_LIVE_RESUME
+run_nonce: N8N_STUCK_NEW_DIAG_20260901_01
 result_cursor: STOP
-dispatch_base_head: 5b4ea2e143ec369d5994ee04c9710c8006d6ece0
-finding: N8N_SCHEDULER_STALLED_STUCK_EXECUTION_293850_DURING_LIVE_PROOF_WAIT
+dispatch_base_head: 4641c5f208708969258af7d76e983872e4c31311
+finding: N8N_2_19_5_EXECUTION_ENGINE_DEFECT_LIKELY
+next: V4_N8N_CONTROLLED_UPGRADE_AND_WF40_REGRESSION_PROOF
 
-root_cause: ACTIVE_FLAG_TRUE_BUT_NO_PUBLISHED_VERSION
-publish_repair: PASS
-post_repair_scheduler_health: PASS
-retry_trigger_5: a5fa29d
-gate: RESTORED_CLOSED
-
-wf40_full_pipeline: 0
-wf61_executions: 0
-remote_planner_calls: 0
+root_cause_primary: PRODUCTION_EXECUTION_CREATED_BUT_NEVER_ADMITTED
+exec_293850: transient_new_not_permanent_stall
+exec_293872: stuck_new_5min_blocking_scheduler
+native_repair: unavailable_no_api_key
+gate: CLOSED
 
 evidence:
-  - reports/architecture/v4_n8n_wf40_publish_state_repair_and_first_live_proof.md
-  - reports/runtime/cursor-stops/2026-09-01T005200Z__V4_N8N_WF40_PUBLISH_STATE_REPAIR_AND_FIRST_LIVE_PROOF_RESUME.stop.json
+  - reports/architecture/v4_n8n_stuck_new_execution_engine_diagnosis_and_wf40_live_proof.md
+  - reports/runtime/cursor-stops/2026-09-01T010500Z__V4_N8N_STUCK_NEW_EXECUTION_ENGINE_DIAGNOSIS_AND_WF40_LIVE_RESUME.stop.json
 ```
