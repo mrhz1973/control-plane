@@ -94,15 +94,22 @@ Normal operation uses the explicit dispatch anchor. After context/session loss, 
 
 1. derive the expected `task_ref` from `CURRENT_FRONTIER` / ACTIVE WORK / current Execution Packet;
 2. when an Execution Packet exists, use its `expected_base_head` as `dispatch_base_head`;
-3. otherwise search recent commits for the canonical STOP commit subject:
+3. otherwise search `<dispatch_base_head>..origin/main` for the canonical PASS commit subject:
+
+```text
+cursor-pass: <TASK_REF>
+```
+
+and ingest the matching bounded PASS evidence;
+4. if no PASS commit is found, search the same range for the canonical STOP commit subject:
 
 ```text
 cursor-stop: <TASK_REF>
 ```
 
 and inspect only the matching commit/artifact;
-4. if no STOP commit is found, use matching `LAST_CURSOR_REPORT.md` / frontier PASS evidence as the PASS path;
-5. only as a bounded fallback, inspect the commit range since the most recent canonical completed PASS evidence head; do not scan the whole STOP directory/history.
+5. if neither commit is found, use matching `LAST_CURSOR_REPORT.md` / frontier PASS evidence as the PASS path;
+6. only as a bounded fallback, inspect the commit range since the most recent canonical completed PASS evidence head; do not scan the whole STOP directory/history.
 
 If no matching bounded evidence can be recovered, classify `EVIDENCE_NOT_PERSISTED`; do not infer non-execution.
 
@@ -129,6 +136,34 @@ Cursor persists normal completion evidence:
 - normal commit + push.
 
 `LAST_CURSOR_REPORT.md` remains compact and rolling. It is not an event log and must not accumulate intermediate STOP history.
+
+#### PASS remote closure — hard invariant
+
+For every normal bounded Cursor task, a PASS is **not complete** and Cursor **must not** print final PASS until:
+
+1. task PASS evidence is written;
+2. `LAST_CURSOR_REPORT.md` is updated;
+3. `CURRENT_FRONTIER.md` is updated when LIVE STATE/NEXT changes;
+4. bounded PASS files are selectively staged;
+5. PASS commit is created;
+6. PASS commit is pushed to `origin/main`;
+7. remote verification confirms the PASS commit is on `origin/main`.
+
+Canonical PASS commit first line:
+
+```text
+cursor-pass: <TASK_REF>
+```
+
+Canonical STOP commit remains:
+
+```text
+cursor-stop: <TASK_REF>
+```
+
+A TASK DELTA may add stricter persistence requirements but may **not** silently weaken, omit, or contradict this PASS/STOP remote closure. Wording such as «commit only on STOP», «STOP artifact must be committed», or omission of a PASS commit subsection **must not** be interpreted as permission to leave a successful PASS local. The canonical foundation persistence contract remains inherited unless a future explicit repository-level method revision changes it.
+
+If PASS work succeeds but commit/push/remote verification cannot be completed: do **not** output PASS; classify `PASS_EVIDENCE_NOT_PERSISTED` and preserve the workspace for recovery.
 
 ### STOP
 
@@ -191,11 +226,12 @@ After refreshing `origin/main` and `CURRENT_FRONTIER.md`:
 1. use the outstanding `dispatch_task_ref` + `dispatch_base_head` for the just-finished pass;
 2. inspect only `<dispatch_base_head>..origin/main` — **not** `last_observed_head..origin/main`;
 3. ignore unrelated/orchestrator-authored commits in that bounded range for outcome classification, but do not move the dispatch anchor because of them;
-4. if the range contains a newly added `reports/runtime/cursor-stops/*.stop.json` matching `dispatch_task_ref`, read **only that one artifact** and treat the pass as STOP;
-5. otherwise follow the PASS path and read `LAST_CURSOR_REPORT.md` once only when needed, requiring matching `task_ref`;
-6. read additional pointed evidence only if necessary;
-7. summarize the just-finished result;
-8. clear the dispatch anchor only now, then derive the next bounded action.
+4. if the range contains a commit with subject `cursor-pass: <dispatch_task_ref>`, treat the pass as PASS and read bounded PASS evidence (`LAST_CURSOR_REPORT.md` when needed, requiring matching `task_ref`);
+5. if the range contains a newly added `reports/runtime/cursor-stops/*.stop.json` matching `dispatch_task_ref`, read **only that one artifact** and treat the pass as STOP;
+6. otherwise follow the PASS path and read `LAST_CURSOR_REPORT.md` once only when needed, requiring matching `task_ref`;
+7. read additional pointed evidence only if necessary;
+8. summarize the just-finished result;
+9. clear the dispatch anchor only now, then derive the next bounded action.
 
 If neither matching PASS evidence nor a matching STOP artifact is persisted in the dispatch range/recovery path, classify `EVIDENCE_NOT_PERSISTED`; do not infer non-execution.
 

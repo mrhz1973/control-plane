@@ -2,7 +2,7 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`  
-**Versione:** 3.4 — 2026-08-31  
+**Versione:** 3.5 — 2026-09-01
 **Stato:** CANONICAL  
 **Ruolo:** contratto operativo master per gli Execution Packet destinati a Cursor nel modello multi-planner. Non è un cambiamento runtime.
 
@@ -212,6 +212,34 @@ Su PASS completo Cursor persiste normalmente:
 
 `LAST_CURSOR_REPORT.md` NON è un event log e non deve accumulare STOP intermedi.
 
+#### PASS remote closure — hard invariant
+
+Per ogni bounded task Cursor normale, un PASS **non è completo** e Cursor **non deve** stampare PASS finale finché:
+
+1. la PASS evidence del task è scritta;
+2. `LAST_CURSOR_REPORT.md` è aggiornato;
+3. `CURRENT_FRONTIER.md` è aggiornato quando LIVE STATE/NEXT cambia;
+4. i file PASS bounded sono staged selettivamente;
+5. il commit PASS è creato;
+6. il commit PASS è pushato su `origin/main`;
+7. la verifica remota conferma che il commit PASS è su `origin/main`.
+
+Subject canonico del commit PASS — prima riga:
+
+```text
+cursor-pass: <TASK_REF>
+```
+
+Il subject canonico STOP resta:
+
+```text
+cursor-stop: <TASK_REF>
+```
+
+Un TASK DELTA può **aggiungere** requisiti di persistence più stretti ma **non può** indebolire, omettere o contraddurre silenziosamente questa closure PASS/STOP. Formulazioni come «commit only on STOP», «STOP artifact must be committed» o l'assenza di una sottosezione PASS commit **non** autorizzano a lasciare un PASS riuscito solo in locale. Il contratto foundation resta ereditato salvo revisione esplicita a livello repository.
+
+Se il lavoro PASS riesce ma commit/push/verifica remota non possono completarsi: **non** dichiarare PASS; classificare `PASS_EVIDENCE_NOT_PERSISTED` e preservare il workspace per recovery.
+
 ### STOP
 
 Su STOP Cursor deve rendere il failure osservabile da GitHub senza contaminare PASS evidence e senza committare codice incompleto.
@@ -289,7 +317,7 @@ Finché un pass Cursor ha un dispatch anchor aperto, GPT Web/orchestratore, **pr
 
 In questo modo un commit docs dell'orchestratore non può mai nascondere uno STOP/PASS Cursor già pushato.
 
-Recovery dopo context loss segue `PROMPT_SEQUENCING_GATE.md`: packet `expected_base_head` quando disponibile, altrimenti commit search esatto `cursor-stop: <TASK_REF>` e solo fallback bounded.
+Recovery dopo context loss segue `PROMPT_SEQUENCING_GATE.md`: packet `expected_base_head` quando disponibile; poi commit search esatto `cursor-pass: <dispatch_task_ref>` o `cursor-stop: <dispatch_task_ref>` dentro `<dispatch_base_head>..origin/main`; solo fallback bounded su `LAST_CURSOR_REPORT.md`.
 
 ---
 

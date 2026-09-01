@@ -117,19 +117,20 @@ Eseguire:
 2. rileggere `CURRENT_FRONTIER.md`;
 3. rileggere ACTIVE WORK pointer se presente;
 4. ispezionare **solo** il range Git `<dispatch_base_head>..origin/main` del task atteso — non il range dal più recente HEAD incidentalmente osservato;
-5. se il range contiene un nuovo `reports/runtime/cursor-stops/*.stop.json` riferito a `dispatch_task_ref`, leggere **solo quel singolo STOP artifact**;
-6. altrimenti leggere `docs/runtime/LAST_CURSOR_REPORT.md` **una sola volta** soltanto se il gate/NEXT dipende dal PASS Cursor appena concluso e richiedere `task_ref` coerente;
-7. leggere evidence aggiuntiva solo se esplicitamente puntata e necessaria;
-8. **riepilogare all'operatore l'esito del pass Cursor appena concluso**;
-9. solo dopo il riepilogo chiudere l'anchor e applicare AUTO-VIA + STANDING OPERATOR AUTHORIZATION per derivare/emettere l'eventuale TASK DELTA successivo.
+5. se il range contiene un commit con subject `cursor-pass: <dispatch_task_ref>`, trattare il pass come PASS;
+6. se il range contiene un nuovo `reports/runtime/cursor-stops/*.stop.json` riferito a `dispatch_task_ref`, leggere **solo quel singolo STOP artifact**;
+7. altrimenti leggere `docs/runtime/LAST_CURSOR_REPORT.md` **una sola volta** soltanto se il gate/NEXT dipende dal PASS Cursor appena concluso e richiedere `task_ref` coerente;
+8. leggere evidence aggiuntiva solo se esplicitamente puntata e necessaria;
+9. **riepilogare all'operatore l'esito del pass Cursor appena concluso**;
+10. solo dopo il riepilogo chiudere l'anchor e applicare AUTO-VIA + STANDING OPERATOR AUTHORIZATION per derivare/emettere l'eventuale TASK DELTA successivo.
 
 **Result-ingestion barrier:** finché esiste un dispatch anchor aperto, prima di qualsiasi scrittura GitHub propria GPT Web deve refreshare `origin/main` e controllare `<dispatch_base_head>..origin/main` per un PASS/STOP matching. Se l'outcome esiste, va ingerito prima della scrittura. I commit dell'orchestratore non devono mai nascondere evidence Cursor già pushata.
 
-**Recovery dopo perdita di contesto:** usare `expected_base_head` dell'Execution Packet quando disponibile; altrimenti cercare il commit STOP con subject canonico `cursor-stop: <TASK_REF>` e leggere solo l'artifact associato; poi PASS rolling evidence; solo come fallback usare un range bounded dal più recente PASS canonico. Niente broad scan della directory STOP.
+**Recovery dopo perdita di contesto:** usare `expected_base_head` dell'Execution Packet quando disponibile; poi cercare in `<dispatch_base_head>..origin/main` il commit PASS con subject `cursor-pass: <dispatch_task_ref>`; se assente, il commit STOP `cursor-stop: <dispatch_task_ref>` e leggere solo l'artifact associato; poi PASS rolling evidence; solo come fallback usare un range bounded dal più recente PASS canonico. Niente broad scan della directory STOP.
 
 **Cursor completion persistence invariant:**
 
-- **PASS** → il task non è evidence-complete finché il PASS è persistito nel normale bounded evidence path, incluso `docs/runtime/LAST_CURSOR_REPORT.md` compatto/rolling e `CURRENT_FRONTIER.md` quando il LIVE STATE cambia;
+- **PASS remote closure (hard)** — un PASS non è completo finché: (1) PASS evidence scritta; (2) `LAST_CURSOR_REPORT.md` aggiornato; (3) `CURRENT_FRONTIER.md` aggiornato se LIVE STATE/NEXT cambia; (4) file bounded staged selettivamente; (5) commit creato con prima riga `cursor-pass: <TASK_REF>`; (6) push su `origin/main`; (7) verifica remota che il commit PASS sia su `origin/main`. Un TASK DELTA non può indebolire questa closure («commit only on STOP» non autorizza PASS solo locale). Se commit/push/verifica falliscono: classificare `PASS_EVIDENCE_NOT_PERSISTED`, non dichiarare PASS, preservare il workspace;
 - **STOP** → il task deve creare un solo piccolo artifact immutabile `reports/runtime/cursor-stops/<UTC_TIMESTAMP>__<TASK_REF>.stop.json`, fare commit/push solo di quello con subject `cursor-stop: <TASK_REF>`, lasciare `CURRENT_FRONTIER.md` e `LAST_CURSOR_REPORT.md` invariati e preservare production/test incompleti dirty/uncommitted.
 
 Gli STOP non vengono accumulati nel rolling PASS report. `agg` non lista né precarica la directory STOP: legge soltanto l'artifact nuovo selezionato dal dispatch range del task appena terminato. Regola canonica e minimum shape: `docs/foundation/PROMPT_SEQUENCING_GATE.md`.
