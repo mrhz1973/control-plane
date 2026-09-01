@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (71 nodes)** · Windows execution endpoint **PERSISTED** · first human-authorized local OpenCode/Qwen execution **PASS** · AUTH 004 durably spent · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_N8N_POSTGRES_EXECUTION_ENTITY_SEQUENCE_RESYNC_AND_CUTOVER_TICK_VALIDATION` — **STOP** |
-| **STATO BLOCCO** | Isolated sequence resync + WF40 tick proof **PASS** · export/import/equivalence **PASS** · post-import resync **PASS** · proof query `increment_by` invalid → rollback · production **SQLite restored** |
+| **BLOCCO ATTIVO** | `V4_N8N_POSTGRES_EXECUTION_ENTITY_SEQUENCE_RESYNC_AND_CUTOVER_TICK_VALIDATION_RETRY` — **PASS** |
+| **STATO BLOCCO** | Production cutover **PASS** · PostgreSQL 16.15 live · post-import sequence resync · 10/10 natural WF40 ticks · ids 295450–295459 monotonic · stuck_new=0 |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_N8N_POSTGRES_EXECUTION_ENTITY_SEQUENCE_RESYNC_AND_CUTOVER_TICK_VALIDATION_RETRY` (fix post-import proof query only; no second attempt this run) |
+| **NEXT** | `V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF_POST_POSTGRES` |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · post-WF61 authorization lane + transient poll fix |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
@@ -46,12 +46,13 @@ Live execution is CLOSED after the successful one-shot proof. AUTH 004 is durabl
 
 - WF61 inactive; D-0025 CLOSED;
 - live execution CLOSED;
-- PostgreSQL cutover blocked at post-import sequence proof query; isolated resync proven; fix in repo;
-- production SQLite restored (rollback PASS).
+- production **PostgreSQL 16.15** (cutover PASS);
+- SQLite backup preserved at `20260901T143040Z_sequence_resync_retry_pre_postgres`;
 
 ## Puntatori
 
-- Sequence resync cutover stop: `reports/architecture/v4_n8n_postgres_execution_entity_sequence_resync_and_cutover_tick_validation.md`
+- Sequence resync cutover retry PASS: `reports/architecture/v4_n8n_postgres_execution_entity_sequence_resync_and_cutover_tick_validation_retry.md`
+- Prior cutover stop: `reports/architecture/v4_n8n_postgres_execution_entity_sequence_resync_and_cutover_tick_validation.md`
 - Cron fire instrumentation: `reports/architecture/v4_n8n_postgres_legacy_schedule_trigger_cron_fire_runtime_instrumentation.md`
 - Schedule trigger registration diagnosis retry008: `reports/architecture/v4_n8n_postgres_schedule_trigger_registration_diagnosis_retry008.md`
 - Prior scheduler postgres proof retry007: `reports/architecture/v4_n8n_controlled_production_postgres_migration_retry_007_wf40_scheduler_postgres_proof.md`
