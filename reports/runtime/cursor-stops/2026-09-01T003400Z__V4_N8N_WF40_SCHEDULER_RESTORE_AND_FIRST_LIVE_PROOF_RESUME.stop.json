@@ -1,0 +1,45 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_N8N_WF40_SCHEDULER_RESTORE_AND_FIRST_LIVE_PROOF_RESUME",
+  "run_nonce": "N8N_SCHEDULER_RESTORE_WF40_LIVE_20260901_01",
+  "block_id": "V4_N8N_WF40_SCHEDULER_RESTORE_AND_FIRST_LIVE_PROOF_RESUME",
+  "category": "N8N_SCHEDULER_RESTORE_PLUS_WF40_LIVE_PROOF",
+  "result": "STOP",
+  "dispatch_base_head": "1021410ab96521dc1481c4cf61669897a8b30797",
+  "utc_timestamp": "2026-09-01T003400Z",
+  "finding": "N8N_SCHEDULER_STALLED_STUCK_EXECUTION_293807",
+  "finding_detail": "Initial precheck showed scheduler resumed (WF40 ticks through 00:24Z) so no restart per section 2. Pre-live invariants PASS. Retry trigger 3 committed/pushed (07b2a0c), gate armed on VPS. During pipeline wait execution 293807 (workflow HVCzN3FoBdLGe9Hx) stuck in status=new with null timestamps; no WF40 runs after 293806 at 00:26:02Z through 00:33:49Z. No WF61/planner/register/Telegram/execution. Gate restored CLOSED. SECOND_PROVIDER=0 SECOND_REGISTER=0 SECOND_EXECUTION=0.",
+  "phase_progress": {
+    "scheduler_precheck_resumed": true,
+    "n8n_restart_performed": false,
+    "pre_live_invariants": "PASS",
+    "retry_trigger_3_commit": "07b2a0ce93be574718dd5852078de7dc36f5e4fc",
+    "gate_armed_then_restored": true,
+    "phase_e_pipeline": "NOT_STARTED",
+    "stuck_execution_id": 293807,
+    "stuck_workflow_id": "HVCzN3FoBdLGe9Hx",
+    "last_wf40_execution_id": 293806,
+    "last_wf40_execution_at": "2026-09-01T00:26:02.011Z"
+  },
+  "hard_counters": {
+    "wf40_full_pipeline": 0,
+    "wf61_executions": 0,
+    "remote_planner_calls": 0,
+    "telegram_messages": 0,
+    "authorization_registrations": 0,
+    "execution_endpoint_post": 0,
+    "opencode": 0,
+    "qwen_generations": 0,
+    "second_provider": 0,
+    "second_register": 0,
+    "second_execution": 0
+  },
+  "restored_live_baseline": {
+    "d0025_gate_enabled": false,
+    "provider_calls_authorized_per_event": 0,
+    "wf40_nodes": 83,
+    "wf40_active": true,
+    "wf61_active": false,
+    "active_authorization_count": 0
+  }
+}

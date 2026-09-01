@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (71 nodes)** · Windows execution endpoint **PERSISTED** · first human-authorized local OpenCode/Qwen execution **PASS** · AUTH 004 durably spent · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_QWEN_CANONICAL_MANAGER_WORKER_CLASSIFIER_FIX_AND_WF40_LIVE_RESUME` — **STOP (Phase E)** |
-| **STATO BLOCCO** | CLASSIFIER_FIX_PASS · QWEN_READY_IDLE · RESOURCE_STATUS qwen/opencode available · WF40 seam 83 live · n8n scheduler stalled (no executions after 00:15Z) · live proof **NOT STARTED** |
-| **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` · `provider_calls_authorized_per_event=0` |
-| **NEXT** | Restore n8n WF40 1-minute scheduler, then resume `D-V4-WF40-LIVE-001` Phase E human-gated proof |
+| **BLOCCO ATTIVO** | `V4_N8N_WF40_SCHEDULER_RESTORE_AND_FIRST_LIVE_PROOF_RESUME` — **STOP** |
+| **STATO BLOCCO** | Scheduler resumed at precheck (no restart) · pre-live PASS · retry trigger 3 pushed · gate armed then stalled mid-wait (exec 293807 stuck `new`) · live proof **NOT STARTED** |
+| **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
+| **NEXT** | Bounded `docker restart root-n8n-1` + clear stuck execution, verify WF40 ticks, re-arm gate, resume `D-V4-WF40-LIVE-001` Phase E |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · post-WF61 authorization lane + transient poll fix |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
