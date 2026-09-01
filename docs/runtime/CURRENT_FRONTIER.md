@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (71 nodes)** · Windows execution endpoint **PERSISTED** · first human-authorized local OpenCode/Qwen execution **PASS** · AUTH 004 durably spent · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_N8N_POSTGRES_IMPORT_REHEARSAL_RETRY_003_WORKFLOWS_TAGS_NATIVE_BUG_NORMALIZATION` — **PASS rehearsal import** |
-| **STATO BLOCCO** | Rehearsal isolato SQLite-export → PostgreSQL native-import **PASS** · normalizzazione bounded: rimosso solo `workflows_tags.jsonl`, mantenuto `workflowtagmapping.jsonl` · archive immutabile retry004 invariato (`35d78a9a…cc83b`) · archive normalizzato working copy `de8bfc35…dd47c` · import nativo `IMPORT_EXIT=0` · `workflows_tags=228/228` · equivalenza applicativa completa · produzione ancora **SQLite** `PROD_MUTATION=0` |
+| **BLOCCO ATTIVO** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_005_PROVEN_IMPORT_PATH` — **STOP** |
+| **STATO BLOCCO** | Production cutover export/normalization/import **PASS** on downtime · native `import:entities` `IMPORT_EXIT=0` · `workflowtagmapping=228` · equivalence harness **false FAIL** on psql identifier quoting (`published_workflows`, `user`) · automatic rollback **PASS** · produzione di nuovo **SQLite** health 200 · PostgreSQL volume `root_n8n_postgres_data` preservato come evidenza |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_005_PROVEN_IMPORT_PATH` |
+| **NEXT** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_006_EQUIVALENCE_HARNESS_FIX` |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · post-WF61 authorization lane + transient poll fix |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |

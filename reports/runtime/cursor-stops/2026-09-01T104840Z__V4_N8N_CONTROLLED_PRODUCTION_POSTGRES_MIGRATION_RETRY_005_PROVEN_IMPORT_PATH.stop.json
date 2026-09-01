@@ -1,0 +1,150 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_005_PROVEN_IMPORT_PATH",
+  "run_nonce": "N8N_PROD_PG_MIGRATION_RETRY005_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "97c6bb173bef8458fbf35d56a7393ecdabdd8f2c",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "DATA_EQUIVALENCE",
+  "finding": "BUSINESS_ENTITY_COUNT_MISMATCH",
+  "finding_detail": "Fresh production cutover completed export, bounded workflows_tags normalization, PostgreSQL 16.15 schema init, and native import:entities exactly once with IMPORT_EXIT=0 and workflowtagmapping=228 rows imported. The retry005 harness then compared source vs target business counts using psql -c queries that incorrectly escaped quoted PostgreSQL identifiers inside single-quoted SQL strings (\\\"activeVersionId\\\" and \\\"user\\\"). Those two queries returned empty output, producing a false BUSINESS_ENTITY_COUNT_MISMATCH on published_workflows and user while workflows_tags and all other tables already matched. Per first-blocker contract, automatic rollback restored healthy SQLite production. No second export, normalization, or import was attempted.",
+  "prior_evidence": {
+    "retry003_classification": "POSTGRES_NATIVE_IMPORT_REHEARSAL_PASS_WITH_BOUNDED_WORKFLOWS_TAGS_NORMALIZATION",
+    "retry003_import": "PASS",
+    "retry003_equivalence": "PASS",
+    "retry003_workflows_tags": "228/228"
+  },
+  "pre_downtime_checks": {
+    "storage_safety": "PASS",
+    "n8n_version": "2.33.3",
+    "effective_db": "SQLite",
+    "health": 200,
+    "sqlite_quick_check": "ok",
+    "wf40_nodes": 83,
+    "wf40_active": true,
+    "wf40_active_version_id": "a609ad90-7eb4-4495-9ec5-c4413165cea1",
+    "wf61_active": false,
+    "d0025_enabled": false,
+    "active_authorization_count": 0
+  },
+  "fresh_source_inventory": {
+    "database_bytes": 1483460608,
+    "quick_check": "ok",
+    "workflow_entity": 49,
+    "published_workflows": 3,
+    "credentials_entity": 3,
+    "project": 1,
+    "user": 1,
+    "tag_entity": 70,
+    "execution_entity": 10424,
+    "workflow_history": 52,
+    "shared_workflow": 49,
+    "workflows_tags": 228,
+    "execution_data": 10424,
+    "execution_metadata": 0,
+    "execution_annotations": 0,
+    "execution_annotation_tags": 0,
+    "data_table": 5,
+    "data_table_column": 37,
+    "dynamic_data_table_counts": {
+      "data_table_user_2Xi1tegqD2GYM5t7": 3,
+      "data_table_user_5tWCZNsmV1RW41nt": 1,
+      "data_table_user_FDcTFisQi8mKBUcm": 101,
+      "data_table_user_QAgqDCkoDWa3z7mH": 13,
+      "data_table_user_ZyoprEI019mee628": 9
+    }
+  },
+  "fresh_backup": {
+    "path": "/root/n8n-postgres-migration-backups/20260901T104604Z_retry005_pre_postgres",
+    "critical_artifact_sha256_verification": "PASS"
+  },
+  "export": {
+    "status": "PASS",
+    "attempts": 1,
+    "exit": 0,
+    "tables_processed": 95,
+    "total_entities_exported": 35861,
+    "original_archive_sha256": "f9bf62a63b1abdbf17c32fb896a3ff3179596f606e7577a9bd4231727d67c1bb",
+    "immutable_archive_path": "/root/n8n-postgres-migration-backups/20260901T104604Z_retry005_pre_postgres/evidence/entities.source-immutable.zip",
+    "zip_entry_count": 99,
+    "zip_jsonl_count": 99,
+    "zip_integrity": "PASS"
+  },
+  "normalization": {
+    "status": "PASS",
+    "removed_member": "workflows_tags.jsonl",
+    "removed_member_count": 1,
+    "normalized_archive_sha256": "ab8b98df60ad7aaad8d7539f4580e66df0da1d3fd766435277586fa0e8df945b"
+  },
+  "collision_scan": {
+    "status": "PASS",
+    "non_empty_application_data_collisions": 1,
+    "collision_table": "workflows_tags",
+    "members": [
+      "workflows_tags.jsonl",
+      "workflowtagmapping.jsonl"
+    ]
+  },
+  "postgres": {
+    "started": true,
+    "version": "16.15",
+    "digest": "postgres@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94",
+    "volume": "root_n8n_postgres_data",
+    "schema_init": "PASS",
+    "migration_count": 233,
+    "latest_migration": "ChangeInstalledNodeVersionType1785162364000"
+  },
+  "import": {
+    "status": "PASS",
+    "attempts": 1,
+    "exit": 0,
+    "migration_validation": "PASS",
+    "workflowtagmapping_imported": 228,
+    "workflows_tags_target_count_before_false_diff": 228
+  },
+  "equivalence": {
+    "status": "FAIL",
+    "root_cause": "HARNESS_PSQL_IDENTIFIER_ESCAPING",
+    "false_mismatch_fields": [
+      "published_workflows",
+      "user"
+    ],
+    "matched_before_stop": [
+      "workflows_tags=228",
+      "workflow_entity=49",
+      "credentials_entity=3",
+      "execution_entity=10424",
+      "execution_data=10424"
+    ]
+  },
+  "downtime_start_utc": "2026-09-01T10:46:04Z",
+  "prod_mutated": 1,
+  "rollback": "PASS",
+  "rollback_mode": "AUTOMATIC_EXIT_TRAP",
+  "rollback_count": 1,
+  "prod_db_after_stop": "SQLITE",
+  "prod_health_after_stop": "PASS",
+  "export_attempts": 1,
+  "import_attempts": 1,
+  "postgres_started": true,
+  "wf40_regression_ticks": 0,
+  "side_effect_counters": {
+    "provider_calls": 0,
+    "register_calls": 0,
+    "execution_endpoint_calls": 0,
+    "opencode_calls": 0,
+    "qwen_generations": 0
+  },
+  "retained_backup_paths": {
+    "retry001": "/root/n8n-postgres-migration-backups/20260901T080226Z_pre_postgres",
+    "retry002": "/root/n8n-postgres-migration-backups/20260901T081041Z_retry002_pre_postgres",
+    "retry003": "/root/n8n-postgres-migration-backups/20260901T084638Z_retry003_pre_postgres",
+    "retry004": "/root/n8n-postgres-migration-backups/20260901T090247Z_retry004_pre_postgres",
+    "retry005": "/root/n8n-postgres-migration-backups/20260901T104604Z_retry005_pre_postgres"
+  },
+  "cold_rollback_assets": {
+    "sqlite_volume": "root_n8n_data",
+    "postgres_volume_preserved": "root_n8n_postgres_data"
+  },
+  "next": "V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_006_EQUIVALENCE_HARNESS_FIX"
+}
