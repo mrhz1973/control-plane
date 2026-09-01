@@ -1,0 +1,53 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_N8N_POSTGRES_CANARY_EXISTING_EVIDENCE_VALIDATION",
+  "run_nonce": "N8N_POSTGRES_CANARY_EVIDENCE_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "d7cd2740b918c2be365c74b72785c5a81f67652b",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "OTHER",
+  "finding": "POSTGRES_CANARY_EXISTING_EVIDENCE_INSUFFICIENT",
+  "target_result": "NOT_RUN",
+  "regressions_status": "NOT_RUN",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "NOT_RUN",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "register_calls": 0,
+  "canary_rerun": 0,
+  "prod_mutation": 0,
+  "prior_stop_ref": {
+    "commit": "d7cd2740b918c2be365c74b72785c5a81f67652b",
+    "task_ref": "V4_N8N_POSTGRES_CANARY_AND_ADMISSION_PROOF",
+    "run_nonce": "N8N_POSTGRES_CANARY_20260901_01",
+    "finding": "CANARY_HARNESS_CORRECTIVE_LOOP_EXCEEDED_BOUNDED_TASK"
+  },
+  "evidence_directory": "/root/n8n-postgres-canary/N8N_POSTGRES_CANARY_20260901_01/evidence/",
+  "evidence_inventory_sha256": {
+    "admission_proof.json": "c3569fc3407816cd298ce1efc83ee61f59cb4caff14f82946f8f34750907e40b",
+    "admission_proof_run.log": "31d12e8084f2d53fb87edd91dc4a8f2b29544ee4beeea4adfb3522299b9ff898",
+    "admission_proof_run2.log": "5607a2349e9a8753829bba9dc153b3f0ea2c27ea3d85cdea86163563b2e051fc",
+    "admission_proof_run3.log": "43bf56eddf975877a36cc9812da253134197b3934a500ea6989138dfbe72bff2",
+    "workflow_ids.txt": "f5fb8918e4c20a18fe8849d5429fb02dd8d657fae271db80243061f5b63fa5bf"
+  },
+  "validated_sections": {
+    "run3_identity": "UNAMBIGUOUS — admission_proof.json and admission_proof_run3.log share mtime 2026-09-01T06:39:04.544Z; runs 1/2 have distinct earlier mtimes; postgres canary, n8n 2.33.3, PG 16.15, isolated 127.0.0.1:5679",
+    "webhook_derivable": "requests_sent=1000, http_failures=0, baseline_max_id=2 -> final_max_id=1002 with COUNT=1000 terminal=1000 null_startedAt=0 => 1000 unique execution IDs by ID-range arithmetic; stuck_new_over_30s=0",
+    "image_db_provenance": "n8n 2.33.3 digest sha256:769d3a624534ff8b5f3316ef71d4653f48794c47e4339436be7a308d6d6a1cc9; DB_TYPE=postgresdb; PostgreSQL 16.15 digest sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94; no production SQLite records involved",
+    "production_safety": "prod_mutation=0; provider/register/OpenCode/Qwen/execution-endpoint=0; current read-only: n8n 2.33.3, health 200, WF40 active, WF61 inactive, D-0025 gate enabled=false authorized_calls=0; canary containers/network/volumes absent; cleanup PASS"
+  },
+  "insufficient_sections": {
+    "schedule_tick_timestamps": "NOT PROVABLE — preserved evidence lists tick execution IDs only; per-tick startedAt values were never captured and raw execution rows were deleted with the canary PG volume during cleanup, so approximately-one-minute spacing cannot be independently established",
+    "schedule_tick_mode": "NOT PROVABLE — per-execution mode column not captured; trigger vs manual/synthetic naturality cannot be distinguished from preserved artifacts",
+    "run3_internal_coherence": "NOT ESTABLISHED — schedule tick IDs jump 1020 -> 2022, leaving ~1001 unexplained sequence allocations (IDs 1021..2021) inside the run-3 window after webhook stress had completed; no preserved artifact accounts for them",
+    "raw_row_validation": "IMPOSSIBLE — canary PostgreSQL volume removed in prior PASS cleanup; only harness summary counters remain"
+  },
+  "helper_files_disposition": "7 canary helper scripts archived off-repo to evidence/helper-scripts/ (07:02Z); local untracked copies removed to return repo paths to base state; unrelated dirty paths untouched",
+  "dirty_paths_summary": [
+    "tools/* (pre-existing unrelated untracked helpers from prior tasks)"
+  ],
+  "next": "GPT_WEB"
+}
