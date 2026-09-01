@@ -3,26 +3,29 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_N8N_POSTGRES_LEGACY_SCHEDULE_TRIGGER_CRON_FIRE_RUNTIME_INSTRUMENTATION
-run_nonce: N8N_PG_LEGACY_CRON_FIRE_RUNTIME_20260901_01
-result_cursor: PASS
-classification: POSTGRES_EXECUTION_ENTITY_ID_SEQUENCE_DESYNC_MASKS_TRIGGER_TICK_BASELINE_QUERY
-a_sqlite_ticks: 3
-b_postgres_handle_tick_enter: 3
-b_postgres_ticks_id_baseline_query: 0
-b_postgres_ticks_started_at_query: 4
-postgres_cron_active: YES
-postgres_leader_at_due: YES
-heartbeat: PASS
-patch_hash: ac2894e3e93499bd33545b449c0c80f3cc139b053f7409133b705b32c5848179
-execution_entity_id_seq_last_value: 38
-execution_entity_max_id: 295045
-prod_mutation: 0
-prod_db_after_pass: SQLITE
-prod_health_after_pass: PASS
-next: V4_N8N_POSTGRES_EXECUTION_ENTITY_SEQUENCE_RESYNC_AND_CUTOVER_TICK_VALIDATION
+task_ref: V4_N8N_POSTGRES_EXECUTION_ENTITY_SEQUENCE_RESYNC_AND_CUTOVER_TICK_VALIDATION
+run_nonce: N8N_PG_SEQUENCE_RESYNC_CUTOVER_20260901_01
+result_cursor: STOP
+classification: POSTGRES_SEQUENCE_RESYNC_PROOF_QUERY_INVALID_INCREMENT_BY
+isolated_sequence_proof: PASS
+isolated_wf40_ticks: 3
+isolated_execution_ids: [295047, 295049, 295051]
+execution_max_before_isolated: 295045
+export: PASS
+import: PASS
+post_import_resync: PASS
+post_import_proof_query: FAIL
+equivalence: PASS
+wf40_production_ticks: 0/10
+prod_mutated: 1
+rollback: PASS
+prod_db_after_stop: SQLITE
+prod_health_after_stop: PASS
+source_gap: N8N_IMPORT_ENTITIES_SERIAL_SEQUENCE_DISCOVERY_GAP
+fix_in_repo: sequence-resync-postimport-block.sh increment_by query removed
+next: V4_N8N_POSTGRES_EXECUTION_ENTITY_SEQUENCE_RESYNC_AND_CUTOVER_TICK_VALIDATION_RETRY
 
 evidence:
-  - reports/architecture/v4_n8n_postgres_legacy_schedule_trigger_cron_fire_runtime_instrumentation.md
-  - reports/runtime/cursor-passes/2026-09-01T135200Z__V4_N8N_POSTGRES_LEGACY_SCHEDULE_TRIGGER_CRON_FIRE_RUNTIME_INSTRUMENTATION.pass.json
+  - reports/architecture/v4_n8n_postgres_execution_entity_sequence_resync_and_cutover_tick_validation.md
+  - reports/runtime/cursor-stops/2026-09-01T142350Z__V4_N8N_POSTGRES_EXECUTION_ENTITY_SEQUENCE_RESYNC_AND_CUTOVER_TICK_VALIDATION.stop.json
 ```

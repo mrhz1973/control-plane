@@ -1,0 +1,62 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_N8N_POSTGRES_EXECUTION_ENTITY_SEQUENCE_RESYNC_AND_CUTOVER_TICK_VALIDATION",
+  "run_nonce": "N8N_PG_SEQUENCE_RESYNC_CUTOVER_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "ec5e548bb8ef1fa2f0add0fb3a2e569ed744befb",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "POST_IMPORT_SEQUENCE_AUDIT",
+  "finding": "POSTGRES_SEQUENCE_RESYNC_PROOF_QUERY_INVALID_INCREMENT_BY",
+  "finding_detail": "Isolated sequence resync proof PASS (3 WF40 ticks, ids 295047/295049/295051 > baseline 295045, monotonic). Fresh export/import/equivalence PASS. Post-import pg_get_serial_sequence audit found 3 BEHIND_MAX columns; setval resync completed with 0 BEHIND_MAX remaining. Stop triggered by invalid proof query SELECT last_value,is_called,increment_by FROM execution_entity_id_seq — increment_by is not a column on PostgreSQL sequence relations. Automatic rollback restored SQLite production health=200.",
+  "prior_classification": "POSTGRES_EXECUTION_ENTITY_ID_SEQUENCE_DESYNC_MASKS_TRIGGER_TICK_BASELINE_QUERY",
+  "source_gap_classification": "N8N_IMPORT_ENTITIES_SERIAL_SEQUENCE_DISCOVERY_GAP",
+  "isolated_sequence_proof": {
+    "status": "PASS",
+    "serial_columns": 25,
+    "behind_max_before": 3,
+    "behind_max_after": 0,
+    "execution_entity_max_before": 295045,
+    "execution_entity_seq_last_before": 38,
+    "execution_entity_seq_last_after": 295045,
+    "wf40_ticks_id": 3,
+    "wf40_ticks_started_at": 3,
+    "new_execution_ids": [295047, 295049, 295051]
+  },
+  "fresh_backup": {
+    "path": "/root/n8n-postgres-migration-backups/20260901T142103Z_sequence_resync_pre_postgres"
+  },
+  "export": {"status": "PASS", "attempts": 1},
+  "normalization": {"status": "PASS", "removed_member": "workflows_tags.jsonl"},
+  "postgres": {
+    "version": "16.15",
+    "production_volume_attempted": "root_n8n_postgres_data_seqresync_prod",
+    "schema_init": "PASS",
+    "import": "PASS",
+    "post_import_equivalence": "PASS",
+    "post_import_resync": "PASS",
+    "post_import_proof_query": "FAIL"
+  },
+  "wf40_production_ticks": {
+    "observation_window_seconds": 0,
+    "ticks_observed": 0,
+    "required": 10
+  },
+  "downtime_start_utc": "2026-09-01T14:21:03Z",
+  "prod_mutated": 1,
+  "rollback": "PASS",
+  "prod_db_after_stop": "SQLITE",
+  "prod_health_after_stop": "PASS",
+  "isolated_sequence_proof_status": "PASS",
+  "import_status": "PASS",
+  "sequences_status": "FAIL",
+  "equivalence_status": "PASS",
+  "side_effect_counters": {
+    "provider_calls": 0,
+    "register_calls": 0,
+    "execution_endpoint_calls": 0,
+    "opencode_calls": 0,
+    "qwen_generations": 0
+  },
+  "fix_in_repo": "tools/sequence-resync-postimport-block.sh — proof uses last_value,is_called only; SEQ_INC=1",
+  "next": "V4_N8N_POSTGRES_EXECUTION_ENTITY_SEQUENCE_RESYNC_AND_CUTOVER_TICK_VALIDATION_RETRY"
+}
