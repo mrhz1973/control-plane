@@ -1,0 +1,113 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_N8N_POSTGRES_IMPORT_REHEARSAL_RETRY_002_DOCKER_TOPOLOGY_ASSERTION_FIX",
+  "run_nonce": "N8N_PG_IMPORT_REHEARSAL_RETRY002_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "a9abc3eca82e94297b83f330d4a18622efc8600b",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "prior_stop_resumed": {
+    "task_ref": "V4_N8N_POSTGRES_IMPORT_REHEARSAL_FROM_RETRY004_ARCHIVE",
+    "run_nonce": "N8N_PG_IMPORT_REHEARSAL_RETRY004_20260901_01",
+    "finding": "ISOLATED_POSTGRES_TOPOLOGY_ASSERTION_FAILED_PRE_SCHEMA_INIT",
+    "stop_evidence_commit": "a9abc3eca82e94297b83f330d4a18622efc8600b"
+  },
+  "failure_stage": "NATIVE_IMPORT",
+  "finding": "NATIVE_IMPORT_FAILED",
+  "finding_detail": "The corrected Docker topology assertion passed: HostConfig.PortBindings was persisted as the raw JSON empty object {} and accepted as NO_PUBLIC_PORTS=PASS alongside empty NetworkSettings.Ports host bindings and empty docker port output. Dedicated PostgreSQL 16.15 on the pinned digest reached health=healthy, SHOW server_version succeeded, and the dedicated rehearsal volume/network isolation checks passed (TOPOLOGY_ISOLATION=PASS). Stock n8n 2.33.3 schema initialization against the isolated PostgreSQL completed with 233 migrations and latest migration ChangeInstalledNodeVersionType1785162364000; the temporary schema-init container was removed. Exactly one native import:entities --truncateTables attempt was executed against the immutable retry004 entities.zip archive (SHA-256 35d78a9a8493e62ff92d9c2e9a9d0b1a43c5deda89fa88554c0d6e44552cc83b). Migration validation passed and tables were truncated, but import exited 1 after successfully importing 228 rows into workflows_tags from workflows_tags.jsonl and then attempting workflowtagmapping.jsonl, which n8n also mapped to target table workflows_tags. PostgreSQL rejected the second pass with duplicate key value violates unique constraint pk_workflows_tags. The archive contains both workflows_tags.jsonl and workflowtagmapping.jsonl (100 zip entries total; no duplicate basenames). Per the first-genuine-blocker contract, no second import attempt or corrective loop was performed. Rehearsal cleanup removed all isolated containers, network, volume, n8n home, and secret files. Production remained continuously healthy on SQLite with PROD_MUTATION=0.",
+  "topology_assertion_fix": {
+    "prior_failure": "ISOLATED_POSTGRES_TOPOLOGY_ASSERTION_FAILED_PRE_SCHEMA_INIT",
+    "fix_applied": "Accept HostConfig.PortBindings as null, empty object {}, or structure with no published HostIp/HostPort bindings; persist raw inspect values before asserting; also gate on NetworkSettings.Ports and docker port output",
+    "postgres_no_public_ports": "PASS",
+    "hostconfig_portbindings_raw": "{}",
+    "schema_init_no_public_ports": "PASS",
+    "postgres_volume_isolation": "PASS",
+    "topology_isolation": "PASS"
+  },
+  "retry004_source_evidence": {
+    "archive_path": "/root/n8n-postgres-migration-backups/20260901T090247Z_retry004_pre_postgres/entities/entities.zip",
+    "archive_bytes": 442854993,
+    "archive_sha256": "35d78a9a8493e62ff92d9c2e9a9d0b1a43c5deda89fa88554c0d6e44552cc83b",
+    "zip_entries": 100,
+    "jsonl_entries": 100,
+    "workflows_tags_jsonl_present": true,
+    "workflowtagmapping_jsonl_present": true,
+    "both_map_to_workflows_tags_table": true,
+    "source_inventory_validation": "PASS"
+  },
+  "archive_copy": {
+    "source_sha256_before": "35d78a9a8493e62ff92d9c2e9a9d0b1a43c5deda89fa88554c0d6e44552cc83b",
+    "working_copy_sha256": "35d78a9a8493e62ff92d9c2e9a9d0b1a43c5deda89fa88554c0d6e44552cc83b",
+    "source_archive_modified": false
+  },
+  "isolated_postgres": {
+    "image": "postgres@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94",
+    "container_created": true,
+    "container_started": true,
+    "health": "healthy",
+    "server_version_major": 16,
+    "schema_initialization": "PASS",
+    "migration_count": 233,
+    "target_latest_migration": {
+      "id": 233,
+      "timestamp": 1785162364000,
+      "name": "ChangeInstalledNodeVersionType1785162364000"
+    }
+  },
+  "native_import": {
+    "attempts": 1,
+    "exit_code": 1,
+    "status": "FAIL",
+    "migration_validation": "PASS",
+    "truncate_tables": true,
+    "entities_zip_decompression": "PASS",
+    "foreign_key_disable_enable": "PASS",
+    "workflows_tags_first_pass_entities": 228,
+    "failure_constraint": "pk_workflows_tags",
+    "failure_message": "duplicate key value violates unique constraint pk_workflows_tags",
+    "conflicting_entity_files": [
+      "workflows_tags.jsonl",
+      "workflowtagmapping.jsonl"
+    ],
+    "application_equivalence": "NOT_RUN",
+    "identity_sequence_state": "NOT_RUN"
+  },
+  "cleanup": {
+    "status": "PASS",
+    "temporary_n8n_containers_removed": true,
+    "postgres_container_removed": true,
+    "rehearsal_network_removed": true,
+    "rehearsal_postgres_volume_removed": true,
+    "rehearsal_n8n_home_removed": true,
+    "rehearsal_secret_files_removed": true,
+    "sanitized_evidence_directory_preserved": "/root/n8n-postgres-rehearsal/N8N_PG_IMPORT_REHEARSAL_RETRY002_20260901_01/evidence"
+  },
+  "production_after_stop": {
+    "prod_mutation": 0,
+    "n8n_version": "2.33.3",
+    "db": "SQLITE",
+    "health": "PASS",
+    "health_http_code": 200,
+    "sqlite_quick_check": "ok",
+    "wf40_active": true,
+    "wf40_published": true,
+    "wf40_nodes": 83,
+    "wf40_active_version_id": "a609ad90-7eb4-4495-9ec5-c4413165cea1",
+    "wf61_active": false,
+    "d0025_enabled": false,
+    "active_authorization_count": 0
+  },
+  "side_effect_counters": {
+    "provider_calls": 0,
+    "register_calls": 0,
+    "execution_endpoint_calls": 0,
+    "opencode_calls": 0,
+    "qwen_generations": 0
+  },
+  "retained_backup_paths": {
+    "retry004": "/root/n8n-postgres-migration-backups/20260901T090247Z_retry004_pre_postgres"
+  },
+  "dirty_paths_summary": [
+    "tools/* pre-existing unrelated untracked helpers; not staged"
+  ],
+  "next": "GPT_WEB"
+}
