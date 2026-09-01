@@ -1,0 +1,53 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_002_CLI_FIX_AND_WF40_REGRESSION_PROOF",
+  "run_nonce": "N8N_PROD_PG_MIGRATION_RETRY_002_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "8c08f8363e2b51a7c45d07e3c72a14026b050be5",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "NATIVE_ENTITY_EXPORT",
+  "finding": "EXPORT_ENTITIES_OUTPUT_DIRECTORY_PERMISSION_DENIED",
+  "finding_detail": "Precheck PASS (SQLite n8n 2.33.3 health 200, WF40 83 nodes activeVersionId=a609ad90-7eb4-4495-9ec5-c4413165cea1, WF61 inactive, quick_check=ok). Fresh retry002 inventory captured (workflows=49, executions=10248). Downtime started 2026-09-01T08:10:47Z. Fresh immutable backup created at /root/n8n-postgres-migration-backups/20260901T081041Z_retry002_pre_postgres/ (compose, database.sqlite 1.4GB, root_n8n_data.tar.gz 219MB, SHA-256 verified). Correct CLI invocation used: docker run ... export:entities --outputDir=/migration-export/entities --includeExecutionHistoryDataTables=true (no n8n prefix). Export failed with EACCES: permission denied writing data_table_user_2Xi1tegqD2GYM5t7.jsonl — host entities/ directory root-owned, stock n8n container runs as node uid 1000. No entity files persisted; PostgreSQL never started; import never attempted. Harness set -e pipefail exited before automatic rollback handler; manual emergency SQLite rollback PASS (health 200, WF40 ACTIVE, WF61 INACTIVE, DB_TYPE unset). Prior retry001 backup preserved at 20260901T080226Z_pre_postgres.",
+  "target_result": "NOT_RUN",
+  "regressions_status": "NOT_RUN",
+  "rollback": "PASS",
+  "rollback_note": "Automatic rollback handler not reached due to set -e pipefail exit; manual restore executed",
+  "prod_db_after_stop": "SQLITE",
+  "prod_health_after_stop": "PASS",
+  "provider_calls": 0,
+  "register_calls": 0,
+  "execution_endpoint_calls": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "migration_attempts": 1,
+  "export_attempts": 1,
+  "import_attempts": 0,
+  "postgres_started": false,
+  "wf40_regression_ticks": 0,
+  "prior_stop_reference": {
+    "commit": "8c08f8363e2b51a7c45d07e3c72a14026b050be5",
+    "finding": "NATIVE_EXPORT_ENTITIES_DOCKER_RUN_COMMAND_MISINVOCATION"
+  },
+  "cli_fix_applied": "export:entities via stock entrypoint (no n8n prefix)",
+  "fresh_backup_path": "/root/n8n-postgres-migration-backups/20260901T081041Z_retry002_pre_postgres/",
+  "prior_backup_path": "/root/n8n-postgres-migration-backups/20260901T080226Z_pre_postgres/",
+  "pre_migration_inventory": {
+    "workflows": 49,
+    "published": 3,
+    "credentials": 3,
+    "executions": 10248,
+    "workflow_history": 52,
+    "sqlite_db_size_bytes": 1483460608,
+    "sqlite_quick_check": "ok"
+  },
+  "restored_live_baseline": {
+    "n8n_version": "2.33.3",
+    "db_engine": "sqlite",
+    "prod_healthz": "200",
+    "wf40_active": true,
+    "wf61_active": false,
+    "d0025_gate": "CLOSED",
+    "active_authorization_count": 0
+  },
+  "next": "GPT_WEB"
+}
