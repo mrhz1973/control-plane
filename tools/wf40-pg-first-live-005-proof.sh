@@ -28,11 +28,22 @@ gate_state() {
 }
 
 close_gate() {
-  if [ -f "$GATE_CLOSED" ]; then
-    cp "$GATE_CLOSED" "$GATE_PATH"
-  else
-    /root/restore-vps-gate-closed.sh >/dev/null 2>&1 || true
-  fi
+  cat > "$GATE_PATH" <<'GATE'
+{
+  "schema": "primary-remote-runtime-gate-v1",
+  "enabled": false,
+  "provider_calls_authorized_per_event": 0,
+  "allowed_planners": ["glm", "codex"],
+  "required_fallback_policy": "gate_only",
+  "require_empty_fallback": true,
+  "provider_state": {
+    "qwen": {"available": false, "resource_pressure": "unknown"},
+    "glm": {"available": true, "quota_state": "healthy"},
+    "codex": {"available": true, "quota_state": "healthy"}
+  },
+  "notes": ["Restored CLOSED after WF40 PG live 005 proof."]
+}
+GATE
   gate_state | tee -a "$RUN_DIR/gate-close.txt"
 }
 
@@ -106,9 +117,10 @@ done
 test -f "$RUN_DIR/preceding-tick.txt" || fail "CLOSED_GATE_TICK_TIMEOUT"
 
 log "=== ARM GATE FOR NEXT NATURAL TICK ==="
+PRECEDING_ID=$(cut -d= -f2 "$RUN_DIR/preceding-tick.txt")
 arm_gate
 OBS_START=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-printf 'OBS_START=%s\n' "$OBS_START" > "$RUN_DIR/obs-start.txt"
+printf 'OBS_START=%s\nPRECEDING_ID=%s\n' "$OBS_START" "$PRECEDING_ID" > "$RUN_DIR/obs-start.txt"
 LITELLM_SINCE="$OBS_START"
 
 TARGET_ID=""
@@ -117,7 +129,7 @@ while [ $SECONDS -lt $TARGET_DEADLINE ]; do
   CUR=$(pg_sql "SELECT COALESCE(MAX(id),0) FROM execution_entity WHERE \"workflowId\"='${WF40}';")
   STAT=$(pg_sql "SELECT status FROM execution_entity WHERE id=${CUR};" 2>/dev/null || echo "")
   STARTED=$(pg_sql "SELECT COALESCE(\"startedAt\"::text,'') FROM execution_entity WHERE id=${CUR};" 2>/dev/null || echo "")
-  if [ "$CUR" -gt "$BASE_MAX" ] && [ -n "$STARTED" ]; then
+  if [ "$CUR" -gt "$PRECEDING_ID" ] && [ -n "$STARTED" ]; then
     TARGET_ID="$CUR"
     log "target_wf40_started id=$TARGET_ID status=$STAT"
     break

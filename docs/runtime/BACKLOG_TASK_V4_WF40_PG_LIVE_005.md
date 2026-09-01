@@ -60,3 +60,5 @@ state: READY_FOR_PLANNING
 ```
 
 Trigger: 2026-09-01 — post-PostgreSQL cutover first full WF40 live authorized execution proof (005).
+
+Retry trigger 1: 2026-09-01T16:00:00Z — gate-arm retry after orchestrator target-selection fix; execute TASK-V4-WF40-PG-LIVE-005 once.
