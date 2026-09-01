@@ -1,0 +1,50 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_N8N_WF40_PUBLISH_STATE_REPAIR_AND_FIRST_LIVE_PROOF_RESUME",
+  "run_nonce": "N8N_WF40_PUBLISH_REPAIR_20260901_01",
+  "block_id": "V4_N8N_WF40_PUBLISH_STATE_REPAIR_AND_FIRST_LIVE_PROOF_RESUME",
+  "category": "N8N_WF40_PUBLISH_REPAIR_PLUS_LIVE_PROOF",
+  "result": "STOP",
+  "dispatch_base_head": "5b4ea2e143ec369d5994ee04c9710c8006d6ece0",
+  "utc_timestamp": "2026-09-01T005200Z",
+  "finding": "N8N_SCHEDULER_STALLED_STUCK_EXECUTION_293850_DURING_LIVE_PROOF_WAIT",
+  "finding_detail": "Diagnosis A ACTIVE_FLAG_TRUE_BUT_NO_PUBLISHED_VERSION: WF40 active=1 with 83-node activeVersionId a609ad90 but workflow_publish_history showed only deactivated events for recent versions; WF42 reference had activated+versionId. Single repair n8n publish:workflow --id=9ZMj2ACTKyDVhCue succeeded. Post-repair scheduler health PASS (WF40 ticks 293844-293848 after repair at 00:44:58Z). Pre-live Windows invariants PASS. Gate armed, retry trigger 5 commit a5fa29d pushed. During pipeline wait execution 293850 stuck status=new blocking scheduler; no WF61/planner/register/Telegram/execution. Gate restored CLOSED. SECOND_REPAIR=0 SECOND_PROVIDER=0 SECOND_REGISTER=0 SECOND_EXECUTION=0.",
+  "root_cause_classification": "ACTIVE_FLAG_TRUE_BUT_NO_PUBLISHED_VERSION",
+  "phase_progress": {
+    "repo_precheck": "PASS",
+    "readonly_diagnosis": "PASS",
+    "publish_repair_performed": true,
+    "publish_repair_count": 1,
+    "post_repair_scheduler_health": "PASS",
+    "pre_live_invariants": "PASS",
+    "retry_trigger_5_commit": "a5fa29d88bbfa5214f5f4dee744c6b928cf8ed39",
+    "gate_armed_then_restored": true,
+    "stuck_execution_id": 293850,
+    "last_successful_wf40_execution_id": 293848,
+    "phase_e_pipeline": "NOT_STARTED"
+  },
+  "hard_counters": {
+    "publish_repair": 1,
+    "second_repair": 0,
+    "wf40_full_pipeline": 0,
+    "wf61_executions": 0,
+    "remote_planner_calls": 0,
+    "telegram_messages": 0,
+    "authorization_registrations": 0,
+    "execution_endpoint_post": 0,
+    "opencode": 0,
+    "qwen_generations": 0,
+    "second_provider": 0,
+    "second_register": 0,
+    "second_execution": 0
+  },
+  "restored_live_baseline": {
+    "d0025_gate_enabled": false,
+    "provider_calls_authorized_per_event": 0,
+    "wf40_nodes": 83,
+    "wf40_active": true,
+    "wf40_published": true,
+    "wf61_active": false,
+    "active_authorization_count": 0
+  }
+}

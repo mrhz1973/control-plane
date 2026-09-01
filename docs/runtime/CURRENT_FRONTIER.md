@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (71 nodes)** · Windows execution endpoint **PERSISTED** · first human-authorized local OpenCode/Qwen execution **PASS** · AUTH 004 durably spent · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_N8N_SINGLE_RESTART_AND_WF40_FIRST_LIVE_PROOF_FINAL_RESUME` — **STOP** |
-| **STATO BLOCCO** | Single restart performed · exec 293807 terminal · post-restart **0 WF40 ticks in 180s** · Windows pre-live PASS · live proof **NOT STARTED** |
+| **BLOCCO ATTIVO** | `V4_N8N_WF40_PUBLISH_STATE_REPAIR_AND_FIRST_LIVE_PROOF_RESUME` — **STOP (Phase E)** |
+| **STATO BLOCCO** | Publish repair PASS (A: active but unpublished) · scheduler healthy post-repair · retry trigger 5 pushed · stalled at exec 293850 during pipeline wait · live proof **NOT STARTED** |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | Diagnose n8n publish/scheduler state (0 published workflows post-restart); restore WF40 cron without second restart if possible; resume `D-V4-WF40-LIVE-001` |
+| **NEXT** | Clear stuck execution 293850 / scheduler stall without second restart; resume `D-V4-WF40-LIVE-001` Phase E (trigger 5 on `main`) |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · post-WF61 authorization lane + transient poll fix |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
