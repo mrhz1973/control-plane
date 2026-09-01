@@ -1,0 +1,47 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_007_WF40_SCHEDULER_POSTGRES_PROOF",
+  "run_nonce": "N8N_PROD_PG_MIGRATION_RETRY007_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "2eef1f9f2f6ab6b6e9bad2cc84a2c76e108ef06a",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "ISOLATED_NATIVE_REPUBLISH_PROOF",
+  "finding": "WF40_SCHEDULER_NOT_RECOVERED_BY_NATIVE_REPUBLISH",
+  "finding_detail": "Isolated rehearsal cloned root_n8n_postgres_data_retry006 to a dedicated internal-network PostgreSQL 16.15 + n8n 2.33.3 topology with no production mutation. WF40 active-version Schedule Trigger integrity PASS (83 nodes, typeVersion 1.2, 1-minute interval). After matching production NODES_EXCLUDE=[], WF40 activated on PostgreSQL but passive 240s observation recorded 0 trigger-mode executions (baseline execution id 295045 unchanged). Exactly one native unpublish/publish cycle for WF40 completed with exit 0 and unchanged nodes/connections hashes; a second 240s observation still recorded 0 ticks. Concurrent SQLite production continued 15 WF40 trigger executions in 15 minutes. Per contract, production cutover was not attempted.",
+  "prior_evidence": {
+    "retry006_finding": "WF40_TEN_TICK_WINDOW_INCOMPLETE",
+    "retry006_equivalence": "PASS",
+    "retry006_import": "PASS"
+  },
+  "isolated_scheduler": {
+    "status": "FAIL",
+    "scheduler_branch": "UNRESOLVED",
+    "source_volume": "root_n8n_postgres_data_retry006",
+    "wf40_active_version_integrity": "PASS",
+    "passive_ticks_240s": 0,
+    "passive_required": 2,
+    "republish_cli": "PASS",
+    "republish_state_guard": "PASS",
+    "republish_ticks_240s": 0
+  },
+  "sqlite_control_during_rehearsal": {
+    "wf40_trigger_executions_last_15m": 15,
+    "cadence": "1 per minute"
+  },
+  "prod_mutation": 0,
+  "rollback": "NOT_NEEDED",
+  "prod_db_after_stop": "SQLITE",
+  "prod_health_after_stop": "PASS",
+  "export_status": "NOT_RUN",
+  "import_status": "NOT_RUN",
+  "equivalence_status": "NOT_RUN",
+  "wf40_ticks": "0/10",
+  "side_effect_counters": {
+    "provider_calls": 0,
+    "register_calls": 0,
+    "execution_endpoint_calls": 0,
+    "opencode_calls": 0,
+    "qwen_generations": 0
+  },
+  "next": "V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_008_POSTGRES_SCHEDULE_TRIGGER_REGISTRATION_DIAGNOSIS"
+}

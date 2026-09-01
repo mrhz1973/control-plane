@@ -3,23 +3,26 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_006_EQUIVALENCE_HARNESS_FIX
-run_nonce: N8N_PROD_PG_MIGRATION_RETRY006_20260901_01
+task_ref: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_007_WF40_SCHEDULER_POSTGRES_PROOF
+run_nonce: N8N_PROD_PG_MIGRATION_RETRY007_20260901_01
 result_cursor: STOP
-classification: PRODUCTION_CUTOVER_STOPPED_AT_WF40_NATURAL_SCHEDULE_OBSERVATION
-query_preflight: PASS
-export: PASS
-normalization: PASS
-import: PASS
-equivalence: PASS
-rollback: PASS
+classification: ISOLATED_SCHEDULER_PROOF_FAILED_BEFORE_PRODUCTION_MUTATION
+isolated_scheduler: FAIL
+scheduler_branch: UNRESOLVED
+finding: WF40_SCHEDULER_NOT_RECOVERED_BY_NATIVE_REPUBLISH
+passive_ticks_240s: 0
+republish_ticks_240s: 0
+sqlite_wf40_control_15m: 15
+prod_mutation: 0
+rollback: NOT_NEEDED
 prod_db_after_stop: SQLITE
 prod_health_after_stop: PASS
-finding: WF40_TEN_TICK_WINDOW_INCOMPLETE
-wf40_ticks: 0/10
-next: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_007_WF40_SCHEDULER_POSTGRES_PROOF
+export: NOT_RUN
+import: NOT_RUN
+equivalence: NOT_RUN
+next: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_008_POSTGRES_SCHEDULE_TRIGGER_REGISTRATION_DIAGNOSIS
 
 evidence:
-  - reports/architecture/v4_n8n_controlled_production_postgres_migration_retry_006_equivalence_harness_fix.md
-  - reports/runtime/cursor-stops/2026-09-01T111551Z__V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_006_EQUIVALENCE_HARNESS_FIX.stop.json
+  - reports/architecture/v4_n8n_controlled_production_postgres_migration_retry_007_wf40_scheduler_postgres_proof.md
+  - reports/runtime/cursor-stops/2026-09-01T121512Z__V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_007_WF40_SCHEDULER_POSTGRES_PROOF.stop.json
 ```

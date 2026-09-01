@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (71 nodes)** · Windows execution endpoint **PERSISTED** · first human-authorized local OpenCode/Qwen execution **PASS** · AUTH 004 durably spent · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_006_EQUIVALENCE_HARNESS_FIX` — **STOP** |
-| **STATO BLOCCO** | Equivalence harness fix **PASS** (query preflight + all exit0/numeric queries) · export/normalization/import/equivalence/identity **PASS** on PostgreSQL · produzione avviata su PG · WF40 structural `triggerCount=1` ma **0/10 tick naturali** in 900s · rollback automatico **PASS** · produzione di nuovo **SQLite** health 200 |
+| **BLOCCO ATTIVO** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_007_WF40_SCHEDULER_POSTGRES_PROOF` — **STOP** |
+| **STATO BLOCCO** | Rehearsal isolato su clone retry006 PG: integrità WF40/Schedule Trigger **PASS** · attivazione WF40 su PG **PASS** (con `NODES_EXCLUDE=[]`) · tick passivi 240s **0** · republish nativo **PASS** ma tick 240s **0** · SQLite produzione continua **15 tick/15m** · **nessuna mutazione produzione** |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_007_WF40_SCHEDULER_POSTGRES_PROOF` |
+| **NEXT** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_008_POSTGRES_SCHEDULE_TRIGGER_REGISTRATION_DIAGNOSIS` |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · post-WF61 authorization lane + transient poll fix |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
