@@ -3,26 +3,25 @@
 ## LATEST
 
 ```yaml
-task_ref: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_007_WF40_SCHEDULER_POSTGRES_PROOF
-run_nonce: N8N_PROD_PG_MIGRATION_RETRY007_20260901_01
-result_cursor: STOP
-classification: ISOLATED_SCHEDULER_PROOF_FAILED_BEFORE_PRODUCTION_MUTATION
-isolated_scheduler: FAIL
-scheduler_branch: UNRESOLVED
-finding: WF40_SCHEDULER_NOT_RECOVERED_BY_NATIVE_REPUBLISH
-passive_ticks_240s: 0
-republish_ticks_240s: 0
-sqlite_wf40_control_15m: 15
+task_ref: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_008_POSTGRES_SCHEDULE_TRIGGER_REGISTRATION_DIAGNOSIS
+run_nonce: N8N_PROD_PG_MIGRATION_RETRY008_20260901_01
+result_cursor: PASS
+classification: POSTGRES_LEGACY_SCHEDULE_TRIGGER_RUNTIME_DEFECT_CRON_REGISTERED_NOT_FIRING_ON_POSTGRES
+a_sqlite_ticks: 2
+b_postgres_ticks: 0
+fallback: NOT_APPLICABLE
+scheduler_path_a: LEGACY_IN_MEMORY
+scheduler_path_b: LEGACY_IN_MEMORY
+legacy_boundary: CRON_REGISTERED_NOT_FIRING_ON_POSTGRES
+published_index_classification: ZERO_PUBLISHED_SERVICE_INDEX_WITH_POPULATED_WORKFLOW_DEPENDENCY_TABLE
+effective_scheduler_enabled: false
+effective_publication_service: false
 prod_mutation: 0
-rollback: NOT_NEEDED
-prod_db_after_stop: SQLITE
-prod_health_after_stop: PASS
-export: NOT_RUN
-import: NOT_RUN
-equivalence: NOT_RUN
-next: V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_008_POSTGRES_SCHEDULE_TRIGGER_REGISTRATION_DIAGNOSIS
+prod_db_after_pass: SQLITE
+prod_health_after_pass: PASS
+next: V4_N8N_POSTGRES_LEGACY_SCHEDULE_TRIGGER_CRON_FIRE_GPT_WEB_BOUNDED_REMEDY
 
 evidence:
-  - reports/architecture/v4_n8n_controlled_production_postgres_migration_retry_007_wf40_scheduler_postgres_proof.md
-  - reports/runtime/cursor-stops/2026-09-01T121512Z__V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_007_WF40_SCHEDULER_POSTGRES_PROOF.stop.json
+  - reports/architecture/v4_n8n_postgres_schedule_trigger_registration_diagnosis_retry008.md
+  - reports/runtime/cursor-passes/2026-09-01T130700Z__V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_008_POSTGRES_SCHEDULE_TRIGGER_REGISTRATION_DIAGNOSIS.pass.json
 ```

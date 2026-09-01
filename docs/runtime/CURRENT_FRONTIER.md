@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.2 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (71 nodes)** · Windows execution endpoint **PERSISTED** · first human-authorized local OpenCode/Qwen execution **PASS** · AUTH 004 durably spent · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_007_WF40_SCHEDULER_POSTGRES_PROOF` — **STOP** |
-| **STATO BLOCCO** | Rehearsal isolato su clone retry006 PG: integrità WF40/Schedule Trigger **PASS** · attivazione WF40 su PG **PASS** (con `NODES_EXCLUDE=[]`) · tick passivi 240s **0** · republish nativo **PASS** ma tick 240s **0** · SQLite produzione continua **15 tick/15m** · **nessuna mutazione produzione** |
+| **BLOCCO ATTIVO** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_008_POSTGRES_SCHEDULE_TRIGGER_REGISTRATION_DIAGNOSIS` — **PASS** |
+| **STATO BLOCCO** | Diagnosi A/B retry006: SQLite isolato **≥2 tick/180s** · PostgreSQL isolato **0 tick/180s** · entrambi legacy in-memory · PG registra cron ma non fa fire · `0 published workflows` = indice publication service, non assenza dependency rows · **nessuna mutazione produzione** |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_008_POSTGRES_SCHEDULE_TRIGGER_REGISTRATION_DIAGNOSIS` |
+| **NEXT** | `V4_N8N_POSTGRES_LEGACY_SCHEDULE_TRIGGER_CRON_FIRE_GPT_WEB_BOUNDED_REMEDY` |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · post-WF61 authorization lane + transient poll fix |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |

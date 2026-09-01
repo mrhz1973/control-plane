@@ -1,0 +1,29 @@
+{
+  "schema_version": "cursor-pass-evidence-v1",
+  "task_ref": "V4_N8N_CONTROLLED_PRODUCTION_POSTGRES_MIGRATION_RETRY_008_POSTGRES_SCHEDULE_TRIGGER_REGISTRATION_DIAGNOSIS",
+  "run_nonce": "N8N_PROD_PG_MIGRATION_RETRY008_20260901_01",
+  "result_cursor": "PASS",
+  "starting_head": "0f0982ea0dc17c220a3cded4dcedfd4c85f04c29",
+  "classification": "POSTGRES_LEGACY_SCHEDULE_TRIGGER_RUNTIME_DEFECT_CRON_REGISTERED_NOT_FIRING_ON_POSTGRES",
+  "a_sqlite_ticks": 2,
+  "b_postgres_ticks": 0,
+  "fallback": "NOT_APPLICABLE",
+  "scheduler_path_a": "LEGACY_IN_MEMORY",
+  "scheduler_path_b": "LEGACY_IN_MEMORY",
+  "legacy_boundary": "CRON_REGISTERED_NOT_FIRING_ON_POSTGRES",
+  "published_index_classification": "ZERO_PUBLISHED_SERVICE_INDEX_WITH_POPULATED_WORKFLOW_DEPENDENCY_TABLE",
+  "effective_scheduler_enabled": false,
+  "effective_publication_service": false,
+  "effective_trigger_node_mode": "legacy",
+  "prod_mutation": 0,
+  "prod_db_after_pass": "SQLITE",
+  "prod_health_after_pass": "PASS",
+  "next": "V4_N8N_POSTGRES_LEGACY_SCHEDULE_TRIGGER_CRON_FIRE_GPT_WEB_BOUNDED_REMEDY",
+  "side_effect_counters": {
+    "provider_calls": 0,
+    "register_calls": 0,
+    "execution_endpoint_calls": 0,
+    "opencode_calls": 0,
+    "qwen_generations": 0
+  }
+}
