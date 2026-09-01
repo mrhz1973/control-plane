@@ -1,0 +1,73 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_N8N_POSTGRES_CANARY_PUBLISH_ONLY_SCHEDULE_PROOF",
+  "run_nonce": "N8N_POSTGRES_PUBLISH_ONLY_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "3169b25abcb63e4e776a57bd58cc2bb8032c9b73",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "OTHER",
+  "finding": "CANARY_SCHEDULE_TRIGGER_ACTIVATION_FAILED_WITH_VALID_ACTIVE_VERSION",
+  "finding_detail": "Single authorized attempt with publish-only path (no deprecated update:workflow). Import OK (IMPORTED_ROWS=1). Draft verified: 2 nodes, Schedule Trigger present, 1-minute interval, connection OK. publish:workflow succeeded. Published active version verified from workflow_history: ACTIVE_VERSION_CONTAINS_SCHEDULE_TRIGGER=true, activeVersionId=7a1a9e5e-0ee0-4dcb-a3b4-c71df99d8fdf, nodes_count=2. One canary n8n restart completed (RESTART_READY iter=3). After startup: active=true, activeVersionId present, triggerCount=0. Startup logs show unrelated Python task runner warnings but no 'Activated workflow' line for CanaryPublishOnly001. Per contract: CANARY_SCHEDULE_TRIGGER_ACTIVATION_FAILED_WITH_VALID_ACTIVE_VERSION — no retry.",
+  "target_result": "NOT_RUN",
+  "regressions_status": "NOT_RUN",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "NOT_RUN",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "register_calls": 0,
+  "webhook_rerun": 0,
+  "prod_mutation": 0,
+  "canary_attempts": 1,
+  "import_attempts": 1,
+  "publish_attempts": 1,
+  "publish_only": true,
+  "deprecated_update_workflow_used": false,
+  "draft_verification": {
+    "DRAFT_HAS_SCHEDULE_TRIGGER": true,
+    "versionId": "7a1a9e5e-0ee0-4dcb-a3b4-c71df99d8fdf",
+    "nodes_count": 2
+  },
+  "published_active_verification": {
+    "ACTIVE_VERSION_CONTAINS_SCHEDULE_TRIGGER": true,
+    "activeVersionId": "7a1a9e5e-0ee0-4dcb-a3b4-c71df99d8fdf",
+    "source": "workflow_history",
+    "nodes_count": 2
+  },
+  "activation_state_after_restart": {
+    "active": true,
+    "activeVersionId": "7a1a9e5e-0ee0-4dcb-a3b4-c71df99d8fdf",
+    "triggerCount": 0,
+    "workflow_mentioned_in_startup_logs": false
+  },
+  "schedule_counters": {
+    "schedule_unique": 0,
+    "schedule_started": 0,
+    "schedule_terminal": 0,
+    "schedule_stuck_new_over_30s": 0,
+    "schedule_naturality": "NOT_PROVEN"
+  },
+  "canary_cleanup": "PASS",
+  "canary_evidence_preserved_off_repo": "/root/n8n-postgres-canary/N8N_POSTGRES_PUBLISH_ONLY_20260901_01/evidence/",
+  "restored_live_baseline": {
+    "n8n_version": "2.33.3",
+    "prod_healthz": "200",
+    "wf40_active": true,
+    "wf61_active": false,
+    "d0025_gate": "CLOSED",
+    "active_authorization_count": 0
+  },
+  "prior_validated_evidence_reference": {
+    "commit": "58ba29ccd3aeb73c5e0e85d5cbdb6b7f24ce7b73",
+    "webhook_unique": 1000,
+    "webhook_started": 1000,
+    "webhook_terminal": 1000,
+    "webhook_stuck_new_over_30s": 0
+  },
+  "dirty_paths_summary": [
+    "tools/* (pre-existing unrelated untracked helpers from prior tasks)"
+  ],
+  "next": "GPT_WEB"
+}
