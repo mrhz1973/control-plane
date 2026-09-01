@@ -1,0 +1,86 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_N8N_POSTGRES_CANARY_SCHEDULE_SIX_TICK_PROOF",
+  "run_nonce": "N8N_POSTGRES_SIX_TICK_20260901_01",
+  "result_cursor": "STOP",
+  "starting_head": "ba555046624e3ae4f34b4aeb6194d70ae3a07ec8",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "CANARY_STARTUP_ACTIVATION",
+  "finding": "CANARY_STARTUP_ACTIVATION_NOT_COMPLETE",
+  "finding_detail": "Single authorized canary attempt completed deploy, import (IMPORTED_ROWS=1), publish-only (activeVersionId=c8ee666c-4578-4c20-be6a-9fa3d124da33, isArchived=false, 2-node active version verified), and one n8n restart. Health ready at iter=3. Bounded 60-second post-health activation wait exhausted without meeting all required proofs: 'Finished activating all workflows' absent from startup_since_restart.log; 'Registered cron' and 'Activated trigger node' also absent. Startup log shows 'Start Active Workflows:' and 'Activated workflow \"Six Tick Schedule Canary\" (ID: CanarySixTick001)' only. Per contract CANARY_STARTUP_ACTIVATION_NOT_COMPLETE — no restart/retry. Post-stop diagnostic (outside authorized window, not used for pass): triggerCount=1 observed after wait failure; canary containers/volumes cleaned.",
+  "target_result": "NOT_RUN",
+  "regressions_status": "NOT_RUN",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "NOT_RUN",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "register_calls": 0,
+  "webhook_rerun": 0,
+  "prod_mutation": 0,
+  "canary_attempts": 1,
+  "import_attempts": 1,
+  "publish_attempts": 1,
+  "restart_attempts": 1,
+  "publish_only": true,
+  "deprecated_update_workflow_used": false,
+  "published_active_verification": {
+    "activeVersionId": "c8ee666c-4578-4c20-be6a-9fa3d124da33",
+    "isArchived": false,
+    "nodes_count": 2,
+    "schedule_trigger_typeVersion": 1.2,
+    "interval_minutes": 1
+  },
+  "activation_wait": {
+    "health_ready_iter": 3,
+    "bounded_wait_seconds": 60,
+    "required_log_markers": [
+      "Start Active Workflows",
+      "Registered cron",
+      "Activated trigger node",
+      "Activated workflow",
+      "Finished activating all workflows"
+    ],
+    "observed_log_markers": [
+      "Start Active Workflows:",
+      "Activated workflow \"Six Tick Schedule Canary\" (ID: CanarySixTick001)"
+    ],
+    "missing_log_markers": [
+      "Registered cron",
+      "Activated trigger node",
+      "Finished activating all workflows"
+    ],
+    "triggerCount_within_60s": "unknown_not_1_or_log_incomplete",
+    "post_stop_diagnostic_triggerCount": 1
+  },
+  "schedule_counters": {
+    "schedule_unique": 0,
+    "schedule_started": 0,
+    "schedule_terminal": 0,
+    "schedule_stuck_new_over_30s": 0,
+    "schedule_naturality": "NOT_PROVEN"
+  },
+  "canary_cleanup": "PASS",
+  "canary_evidence_preserved_off_repo": "/root/n8n-postgres-canary/N8N_POSTGRES_SIX_TICK_20260901_01/evidence/",
+  "restored_live_baseline": {
+    "n8n_version": "2.33.3",
+    "prod_healthz": "200",
+    "wf40_active": true,
+    "wf61_active": false,
+    "d0025_gate": "CLOSED",
+    "active_authorization_count": 0
+  },
+  "prior_validated_evidence_reference": {
+    "commit": "58ba29ccd3aeb73c5e0e85d5cbdb6b7f24ce7b36",
+    "webhook_unique": 1000,
+    "webhook_started": 1000,
+    "webhook_terminal": 1000,
+    "webhook_stuck_new_over_30s": 0
+  },
+  "dirty_paths_summary": [
+    "tools/* (pre-existing unrelated untracked helpers from prior tasks)"
+  ],
+  "next": "GPT_WEB"
+}
