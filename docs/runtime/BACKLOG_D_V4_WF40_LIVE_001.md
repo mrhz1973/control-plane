@@ -62,3 +62,5 @@ state: READY_FOR_PLANNING
 ```
 
 Trigger: 2026-09-01 — resume WF40 first live authorized execution proof after canonical manager/worker occupancy fix.
+
+Retry trigger 2: 2026-09-01 — gate armed; execute D-V4-WF40-LIVE-001 once.
