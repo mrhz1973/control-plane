@@ -1,0 +1,87 @@
+{
+  "schema_version": "qwen-local-model-policy-v1",
+  "policy_version": "qwen38-rtx3060-2026-09-02",
+  "scope": "control-plane",
+  "source": {
+    "repository": "mrhz1973/qwen38-blender-lab",
+    "benchmark_commit": "a3b6daef80be62eced02bc6249fa85d45b4ed7bc",
+    "hardware_target": "RTX 3060 12GB / Ryzen 9 3900X / 32GB RAM"
+  },
+  "status": "BENCHMARK_SELECTED_NOT_YET_RUNTIME_INTEGRATED",
+  "default_role": "DAILY_QUALITY",
+  "roles": {
+    "DAILY_QUALITY": {
+      "model_alias": "OPUS_Q3",
+      "model_file": "D:/AI/qwen38-blender-lab/models/qwen38-opus/Qwen3.8-27B-Opus-Distill-v2-Q3_K_M.gguf",
+      "model_sha256": "abca69f6401dfdf361092071687b9a925df9c4846d4f040e4facddb663f74e0b",
+      "runtime_kind": "llama_cpp_cuda",
+      "runtime_executable": "C:/Users/mrhz/llama.cpp-dflash2/build-cuda/bin/llama-server.exe",
+      "runtime_build": "10499",
+      "runtime_commit": "1deefcca3",
+      "use_for": [
+        "complex_reasoning",
+        "planning",
+        "architecture",
+        "high_value_code_generation",
+        "code_review",
+        "decision_support",
+        "prompt_generation_for_implementers"
+      ]
+    },
+    "FAST_AGENT": {
+      "model_alias": "DCFR_IQ3",
+      "model_file": "D:/AI/qwen38-blender-lab/models/qwen38-iq3/Qwen3.8-27B-UD-IQ3_XXS.gguf",
+      "model_sha256": "c0b7c3038681ed2e3040456c1dd45f9858b6c2290bed172c70388a94874f3eee",
+      "runtime_kind": "dcfr_patched_llama_cpp",
+      "runtime_root": "D:/AI/qwen38-blender-lab/runtimes/dcfr/qwen38-27b-rtx3060-dcfr",
+      "runtime_executable": "D:/AI/qwen38-blender-lab/runtimes/dcfr/qwen38-27b-rtx3060-dcfr/third_party/llama.cpp/build-cuda/bin/llama-server.exe",
+      "runtime_version": "0.2.0-dev (build 4, commit c060ca974c77-dcfr)",
+      "runtime_sha256": "fb26db5520d2ccdd57ac0575c62e120ccb6db74a1292ef0cd85bfdec721d631d",
+      "use_for": [
+        "tool_heavy_agent",
+        "mcp_generic",
+        "opencode_execution",
+        "repeated_control_loop",
+        "structured_tool_calls",
+        "latency_sensitive_local_execution",
+        "automation_executor",
+        "polling_and_status"
+      ]
+    }
+  },
+  "routing": {
+    "default": "OPUS_Q3",
+    "executor_default": "DCFR_IQ3",
+    "planner_executor_pattern": "OPUS_Q3 plans/reviews; DCFR_IQ3 executes deterministic tool loops; return to OPUS_Q3 on ambiguity, failure, or high-value review"
+  },
+  "context_presets": {
+    "FAST_INTERACTIVE": {
+      "usage": "routine short control-plane work",
+      "context_tokens": 8192
+    },
+    "AGENT_16K": {
+      "usage": "normal MCP/tool/OpenCode work",
+      "context_tokens": 16384
+    },
+    "AGENT_HEAVY_24K": {
+      "usage": "large tool schemas or large control-plane state",
+      "context_tokens": 24576
+    }
+  },
+  "do_not_promote": {
+    "DFLASH": "decode regression on this workstation",
+    "Q2_DCFR": "raw-speed-only; reasoning collapsed",
+    "FULL_HAUHAU_Q3": "capability/reasoning failure",
+    "EXL3_3_5bpw": "not viable on 12GB VRAM"
+  },
+  "control_plane_exclusions": [
+    "blender_specific_routing",
+    "blender_mcp_policy"
+  ],
+  "migration_requirements": [
+    "Do not treat the benchmark-selected models as exposed on the current :8080 router until launcher/profile integration is mechanically verified.",
+    "Remove DFlash as a production requirement from control-plane runtime contracts before the next live Qwen generation.",
+    "Preserve external human authorization and one-generation guards independently of model discipline.",
+    "DCFR_IQ3 must use its dedicated patched D-CFR runtime; do not launch it under the normal llama.cpp binary and assume benchmark equivalence."
+  ]
+}
