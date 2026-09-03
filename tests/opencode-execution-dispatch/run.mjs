@@ -88,11 +88,29 @@ function check(name, pass, detail = "ok") {
 }
 
 async function run() {
-  // A
+  // A0 AGG: default executor FAST_AGENT on DCFR 24K is UNQUALIFIED — the
+  // DISPATCH_READY boundary must fail closed even with everything else READY.
   {
     const out = await dispatchOpenCodeExecution(baseRequest(), {
       opencodeProbe: opencodeProbeReady(),
       ensureQwenReady: async () => sessionReady(),
+    });
+    check(
+      "A0-agg-fast-agent-unqualified",
+      out.classification === "PROFILE_ROLE_UNQUALIFIED" &&
+        out.dispatch_ready === false &&
+        out.execution_performed === false &&
+        out.reason_codes.includes("ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION"),
+      JSON.stringify(out.classification),
+    );
+  }
+
+  // A (mechanics: injected qualified role gate keeps DISPATCH_READY contract)
+  {
+    const out = await dispatchOpenCodeExecution(baseRequest(), {
+      opencodeProbe: opencodeProbeReady(),
+      ensureQwenReady: async () => sessionReady(),
+      roleGate: () => ({ qualified: true }),
     });
     check(
       "A-dispatch-ready",
@@ -220,11 +238,12 @@ async function run() {
     );
   }
 
-  // H no secrets in spec
+  // H no secrets in spec (qualified role gate injected to reach spec build)
   {
     const out = await dispatchOpenCodeExecution(baseRequest(), {
       opencodeProbe: opencodeProbeReady(),
       ensureQwenReady: async () => sessionReady(),
+      roleGate: () => ({ qualified: true }),
     });
     const specText = JSON.stringify(out.dispatch_spec || {});
     check(

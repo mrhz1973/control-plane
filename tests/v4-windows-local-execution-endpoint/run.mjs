@@ -154,7 +154,13 @@ let lastRunnerCtx = null;
 function countingAdapter() {
   return async (request, options) => {
     adapterCalls += 1;
-    return executeOpenCodeBounded(request, options);
+    // AGG 2026-09-03: FAST_AGENT is UNQUALIFIED by default; endpoint mechanics
+    // tests inject a qualified-role gate so transport/replay/caching behavior
+    // can still be exercised. Production never supplies roleGate.
+    return executeOpenCodeBounded(request, {
+      ...options,
+      roleGate: () => ({ ok: true, qualified: true, reason_codes: [] }),
+    });
   };
 }
 
@@ -865,6 +871,8 @@ await test("exit 0 + guard upstream 0 → ZERO_GENERATION, EXECUTED, no syntheti
       getOccupancy: async () => "QWEN_READY_IDLE",
       runOpenCode,
       guardStart: mockGuardStart(0),
+      // AGG 2026-09-03: offline mechanics injection (FAST_AGENT UNQUALIFIED)
+      roleGate: () => ({ ok: true, qualified: true, reason_codes: [] }),
     },
   );
   assert.equal(adapter.status, "EXECUTED");
@@ -889,6 +897,8 @@ await test("exit 0 + guard upstream 1 → SINGLE_GENERATION from guard accountin
       getOccupancy: async () => "QWEN_READY_IDLE",
       runOpenCode,
       guardStart: mockGuardStart(1),
+      // AGG 2026-09-03: offline mechanics injection (FAST_AGENT UNQUALIFIED)
+      roleGate: () => ({ ok: true, qualified: true, reason_codes: [] }),
     },
   );
   assert.equal(adapter.status, "EXECUTED");

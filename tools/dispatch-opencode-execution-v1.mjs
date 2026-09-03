@@ -6,8 +6,9 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { validatePacketObject } from "./validate-execution-packet-v1.mjs";
 import { ensureQwenLocalReady } from "./qwen-local-session-manager-v1.mjs";
-import { getProfile, loadQwenLocalRuntime } from "./qwen-local-runtime-v1.mjs";
+import { getProfile, loadQwenLocalRuntime, roleQualifiedForLiveExecution } from "./qwen-local-runtime-v1.mjs";
 import { probeOpenCodeLocal, DISPATCH_CLI_CAPABILITIES } from "./probe-opencode-local-v1.mjs";
+
 
 export const REQUEST_SCHEMA = "opencode-execution-dispatch-v1";
 export const RESULT_SCHEMA = "opencode-execution-dispatch-result-v1";
@@ -16,7 +17,9 @@ export const SPEC_SCHEMA = "opencode-dispatch-spec-v1";
 export const ALLOWED_IMPLEMENTER = "opencode";
 export const ALLOWED_MODEL = "qwen_local";
 export const DEFAULT_PROFILE = "qwen38-dcfr-iq3-agent-24k";
+export const DEFAULT_EXECUTION_ROLE = "FAST_AGENT";
 export const QWEN_LOCAL_PROVIDER_ID = "qwen_local";
+
 
 const SECRET_PATTERNS = [
   /\bsk-[a-zA-Z0-9]{8,}\b/,
@@ -312,6 +315,34 @@ export async function dispatchOpenCodeExecution(request, options = {}) {
       qwen_session_status: qwenSession.status,
     });
   }
+
+  // AGG 2026-09-03: role-qualification gate at the DISPATCH_READY boundary.
+  // The dispatch profile's live-execution role must be qualified. The default
+  // executor (FAST_AGENT on DCFR 24K) is UNQUALIFIED pending requalification,
+  // so DISPATCH_READY must not be asserted for it. DCFR long-task dispatch
+  // remains available via an explicitly qualified role/profile.
+  const profileForGate = options.profile || DEFAULT_PROFILE;
+  const roleForGate =
+    typeof options.role === "string" && options.role.trim()
+      ? options.role
+      : DEFAULT_EXECUTION_ROLE;
+  const roleGate = options.roleGate || roleQualifiedForLiveExecution;
+  const gate = roleGate(roleForGate);
+  if (!gate.qualified) {
+    return fail(dispatchId, "PROFILE_ROLE_UNQUALIFIED", [
+      "PROFILE_ROLE_UNQUALIFIED",
+      "ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION",
+      `PROFILE:${profileForGate}`,
+      `ROLE:${roleForGate}`,
+    ], {
+      route_id: route.route_id,
+      implementer: route.implementer,
+      model: route.model,
+      opencode_available: true,
+      qwen_session_status: qwenSession.status,
+    });
+  }
+
 
   if (containsSecretMaterial(JSON.stringify(dispatchSpec))) {
     return fail(dispatchId, "DISPATCH_BUILD_FAILED", ["DISPATCH_SPEC_SECRET_SUSPECT"], {

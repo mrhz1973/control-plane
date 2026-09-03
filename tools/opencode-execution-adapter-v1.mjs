@@ -12,7 +12,8 @@ import {
   getProfile,
   loadQwenLocalRuntime,
 } from "./qwen-local-runtime-v1.mjs";
-import { validateScopeV2 } from "./qwen-execution-scope-v2.mjs";
+import { validateScopeV2, scopeRoleQualifiedForLiveExecution } from "./qwen-execution-scope-v2.mjs";
+
 
 export const RESULT_SCHEMA = "opencode-execution-result-v1";
 export const AUTH_SCHEMA = "operator-runtime-authorization-v1";
@@ -137,6 +138,28 @@ export async function executeOpenCodeBounded(request, options = {}) {
       authorization_id: authCheck.authorization_id,
       authorization_state_final: authInput ? "REJECTED" : "ABSENT",
       reason_codes: authCheck.reason_codes,
+    });
+  }
+
+  // AGG 2026-09-03: role-qualification gate. Cryptographically valid scope is
+  // NOT sufficient — the bound role must also be qualified for live execution.
+  // FAST_AGENT on qwen38-dcfr-iq3-agent-24k is UNQUALIFIED pending requalification;
+  // block before occupancy/guard/runner. DCFR stays qualified for long tasks.
+  // options.roleGate is injectable for offline tests only; production default blocks.
+  const gateFn = options.roleGate || scopeRoleQualifiedForLiveExecution;
+  const scopeRoleGate = gateFn(
+    authInput?.scope && typeof authInput.scope === "object"
+      ? authInput.scope
+      : undefined,
+  );
+  if (!scopeRoleGate || scopeRoleGate.ok === false || scopeRoleGate.qualified !== true) {
+    return baseResult({
+      execution_id: executionId,
+      status: "BLOCKED",
+      classification: AUTH_REJECT,
+      authorization_id: authCheck.authorization_id,
+      authorization_state_final: "ACTIVE",
+      reason_codes: (scopeRoleGate && scopeRoleGate.reason_codes) || ["ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION"],
     });
   }
 

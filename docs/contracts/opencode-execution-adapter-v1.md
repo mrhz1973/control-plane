@@ -35,6 +35,13 @@ Validates (fail-closed before any execution-side action):
 
 Spent / absent / malformed / wrong-route / over-broad → fail closed.
 
+**AGG 2026-09-03 role-qualification gate:** a cryptographically valid scope is
+NOT sufficient. The scope's role must also be `QUALIFIED` in
+`configs/resources/qwen-role-qualification.json`. `FAST_AGENT` (DCFR 24K) is
+currently **UNQUALIFIED** (short-turn interactive latency) → the adapter blocks
+with `ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION` before occupancy/guard/runner. DCFR
+stays qualified for `FAST_THROUGHPUT_LONG_TASK`; no silent substitution.
+
 ## Occupancy gate
 
 Accepts only canonical `QWEN_READY_IDLE` / `QWEN_NOT_RUNNING_SAFE_TO_START`.

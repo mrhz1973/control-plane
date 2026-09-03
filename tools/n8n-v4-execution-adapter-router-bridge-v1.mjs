@@ -58,6 +58,11 @@ export function buildRouterRequest(input) {
   if (runtime_authorization_supplied) {
     request.runtime_authorization = input.runtime_authorization;
   }
+  // AGG 2026-09-03: role-qualification gate passthrough for offline test
+  // injection only; production n8n input never supplies roleGate.
+  if (typeof input?.roleGate === "function") {
+    request.roleGate = input.roleGate;
+  }
   return { request, dispatch_supplied, runtime_authorization_supplied };
 }
 

@@ -92,3 +92,40 @@ export function buildScopeV2(overrides = {}) {
   for (const key of SCOPE_V2_KEYS) ordered[key] = scope[key];
   return ordered;
 }
+
+/**
+ * AGG 2026-09-03 correction: role FAST_AGENT (and short-turn interactive
+ * roles) are UNQUALIFIED for live execution pending comparison of retained
+ * profiles. The v2 scope remains cryptographically unchanged; this gate only
+ * blocks live execution bound to an unqualified role. DCFR is preserved and
+ * remains qualified for FAST_THROUGHPUT/LONG_TASK.
+ */
+import {
+  roleQualifiedForLiveExecution as _roleQualifiedForLiveExecution,
+} from "./qwen-local-runtime-v1.mjs";
+
+export function scopeRoleQualifiedForLiveExecution(scope = FIXED_AUTHORIZATION_SCOPE_V2) {
+  const role = scope && typeof scope === "object" ? scope.role : null;
+  if (!role) {
+    return {
+      ok: false,
+      qualified: false,
+      reason_codes: ["AUTH_ROLE_INVALID", "ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION"],
+    };
+  }
+  const gate = _roleQualifiedForLiveExecution(role);
+  if (!gate.qualified) {
+    return {
+      ok: false,
+      qualified: false,
+      role,
+      value: gate.value,
+      reason_codes: [
+        "ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION",
+        ...(gate.reason_codes || []),
+      ],
+    };
+  }
+  return { ok: true, qualified: true, role, value: gate.value, reason_codes: [] };
+}
+

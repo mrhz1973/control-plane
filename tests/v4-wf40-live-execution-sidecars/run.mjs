@@ -349,6 +349,9 @@ async function main() {
       },
       expected_pending_decision_id: reg.pending_decision_id,
       expected_authorization_id: reg.authorization_id,
+      // AGG 2026-09-03: production default blocks FAST_AGENT minting; inject a
+      // qualified-role gate to verify the unchanged envelope-shape contract.
+      roleGate: () => ({ ok: true, qualified: true, reason_codes: [] }),
     });
     const authKeys = Object.keys(issued.runtime_authorization || {}).sort();
     check(
@@ -368,6 +371,29 @@ async function main() {
           ]),
       JSON.stringify(issued.classification),
     );
+
+    // AGG 2026-09-03: production default (no injected gate) must fail closed
+    // while FAST_AGENT is UNQUALIFIED — no ACTIVE envelope may be minted.
+    {
+      const blocked = buildRuntimeAuthorizationFromStatus({
+        status_result: {
+          ok: true,
+          pending_decision_id: reg.pending_decision_id,
+          authorization_id: reg.authorization_id,
+          state: "ISSUED",
+          authorization_expires_at: futureIso(),
+        },
+        expected_pending_decision_id: reg.pending_decision_id,
+        expected_authorization_id: reg.authorization_id,
+      });
+      check(
+        "14b-issued-blocked-unqualified-role-default",
+        blocked.ok === false &&
+          blocked.classification === "PROFILE_ROLE_UNQUALIFIED" &&
+          blocked.runtime_authorization === null,
+        blocked.classification,
+      );
+    }
 
     const expiredAt = buildRuntimeAuthorizationFromStatus({
       status_result: {
@@ -423,9 +449,29 @@ async function main() {
     });
     check(
       "18-helper-zero-network-runtime-calls",
-      traps.length === 0 && proposal.ok === true && proposal.proposal_ready === true,
+      traps.length === 0 &&
+        proposal.ok === false &&
+        proposal.proposal_ready === false &&
+        proposal.classification === "PROFILE_ROLE_UNQUALIFIED" &&
+        proposal.register_request === null,
       traps.length ? JSON.stringify(traps) : "ok",
     );
+
+    // AGG 2026-09-03: with a qualified role the proposal path itself is intact.
+    {
+      const qualifiedProposal = await buildLiveExecutionProposal({
+        task_id: packet.task_id,
+        execution_packet: packet,
+        execution_route_result: route,
+        resource_status: status,
+        role: "DAILY",
+      });
+      check(
+        "18b-proposal-ready-with-qualified-role",
+        qualifiedProposal.ok === true && qualifiedProposal.proposal_ready === true,
+        qualifiedProposal.classification,
+      );
+    }
 
     // Extra structural sanity on derived IDs.
     const exec = buildExecutionId(packet.task_id, packet.packet_id);

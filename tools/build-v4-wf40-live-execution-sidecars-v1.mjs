@@ -6,11 +6,16 @@
 import { createHash } from "node:crypto";
 import { validatePacketObject } from "./validate-execution-packet-v1.mjs";
 import {
+  roleQualifiedForLiveExecution,
+} from "./qwen-local-runtime-v1.mjs";
+import {
   CANONICAL_SCOPE_DIGEST_V2,
   FIXED_AUTHORIZATION_SCOPE_V2,
   canonicalScopeDigestV2,
   compactScopeV2Json,
+  scopeRoleQualifiedForLiveExecution,
 } from "./qwen-execution-scope-v2.mjs";
+
 
 export const REGISTER_SCHEMA =
   "v4-runtime-authorization-register-pending-request-v1";
@@ -514,6 +519,7 @@ export function buildRuntimeAuthorizationFromStatus({
   expected_pending_decision_id,
   expected_authorization_id,
   nowMs = Date.now(),
+  roleGate = null,
 }) {
   if (!isPlainObject(status_result)) {
     return {
@@ -606,6 +612,20 @@ export function buildRuntimeAuthorizationFromStatus({
     scope: { ...FIXED_AUTHORIZATION_SCOPE },
   };
 
+  // AGG 2026-09-03: never mint an ACTIVE authorization envelope while the
+  // scope's role is unqualified for live execution (FAST_AGENT/DCFR stale).
+  // roleGate is injectable for offline tests only; production default blocks.
+  const gateFn = roleGate || scopeRoleQualifiedForLiveExecution;
+  const roleGateResult = gateFn(FIXED_AUTHORIZATION_SCOPE);
+  if (!roleGateResult || roleGateResult.ok === false || roleGateResult.qualified !== true) {
+    return {
+      ok: false,
+      classification: "PROFILE_ROLE_UNQUALIFIED",
+      reason_codes: (roleGateResult && roleGateResult.reason_codes) || ["ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION"],
+      runtime_authorization: null,
+    };
+  }
+
   return {
     ok: true,
     classification: "RUNTIME_AUTHORIZATION_ACTIVE",
@@ -622,6 +642,8 @@ export async function buildLiveExecutionProposal({
   execution_packet,
   execution_route_result,
   resource_status,
+  role = FIXED_AUTHORIZATION_SCOPE_V2.role,
+  roleGate = roleQualifiedForLiveExecution,
 }) {
   const packetId =
     isPlainObject(execution_packet) && typeof execution_packet.packet_id === "string"
@@ -634,10 +656,35 @@ export async function buildLiveExecutionProposal({
         ? execution_packet.task_id
         : null;
 
+  // AGG 2026-09-03: proposal gate. The canonical scope-v2 role is FAST_AGENT on
+  // qwen38-dcfr-iq3-agent-24k, which is UNQUALIFIED for live execution pending
+  // requalification comparison. Do not propose registration (register delta must
+  // stay 0); do not silently substitute another profile. Scope digest unchanged.
+  const gate = roleGate(role);
+  if (!gate || gate.qualified !== true) {
+    return {
+      ok: false,
+      classification: "PROFILE_ROLE_UNQUALIFIED",
+      reason_codes: [
+        "PROFILE_ROLE_UNQUALIFIED",
+        "ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION",
+        `ROLE:${role}`,
+      ],
+      proposal_ready: false,
+      register_request: null,
+      status_request: null,
+      pending_decision_id: null,
+      authorization_id: null,
+      execution_id: null,
+      dispatch_result: null,
+    };
+  }
+
   const register = buildRegisterPendingRequest({
     task_id: task,
     packet_id: packetId,
   });
+
   if (!register.ok) {
     return {
       ok: false,

@@ -100,6 +100,12 @@ The endpoint v1 intentionally accepts a strict subset of the adapter's backward-
 
 The endpoint MUST forward this authorization object unchanged to `executeOpenCodeBounded()` and MUST NOT weaken adapter validation.
 
+**AGG 2026-09-03:** `FAST_AGENT` on this profile is **UNQUALIFIED** for live
+execution pending requalification (see
+`configs/resources/qwen-role-qualification.json`). A structurally valid request
+still fails closed at the adapter with `ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION` —
+by design, not by error.
+
 No request-supplied guard upstream/base URL is allowed; the adapter uses its canonical Windows-local default.
 
 ### 4.2 Message

@@ -1,7 +1,8 @@
 # Qwen local role-routing policy — Control Plane
 
-Status: **CANONICAL — six-profile MultiModel router integrated**  
-Policy version: `qwen38-rtx3060-2026-09-03`
+Status: **CANONICAL — six-profile MultiModel router integrated (AGG 2026-09-03 role correction applied)**  
+Policy version: `qwen38-rtx3060-2026-09-03`  
+Role-qualification overlay: `qwen38-rtx3060-2026-09-03-agg` (`configs/resources/qwen-role-qualification.json`)
 
 Authoritative runtime: existing MultiModel router at `http://127.0.0.1:8080`  
 Source repository: `mrhz1973/qwen38-blender-lab` (milestone commits through `03198e1587f6388634c9ffd749f1633c05e72aa8`)
@@ -75,7 +76,7 @@ Invariants:
 Benchmark “UNCENSORED_SPECIALIST = RETIRED” means only: do not auto-select for
 sensitive topics. It does **not** authorize removal, hiding, or deletion.
 
-## Next WF40 executor
+## Next WF40 executor — STALE (AGG 2026-09-03)
 
 ```text
 profile_id = qwen38-dcfr-iq3-agent-24k
@@ -84,8 +85,32 @@ endpoint   = http://127.0.0.1:8080
 scope_version = qwen-execution-scope-v2
 ```
 
-Do not target `qwen38-dcfr-iq3-fast-16k`.
-Do not reconstruct `DCFR_IQ3 + context_preset=AGENT_16K`.
+**This mapping is STALE and must not govern the next live execution proof.**
+
+New empirical finding (live local backend tests, RTX 3060 12 GB, bypassing UI
+and router): DCFR IQ3 short-turn interactive performance is unsuitable —
+
+- 34-token prompt: ~19–20 s prompt evaluation
+- 39-token completion: ~4.8–5.0 tok/s
+- total simple request: ~27 s
+- identical at ctx 16K and ctx 8K
+
+Correct interpretation: **DCFR = FAST_THROUGHPUT / LONG_TASK**. The existing
+long-workload benchmark remains valid (cold prefill ~87–90 tok/s at 2K–8K;
+long decode ~12.56 tok/s).
+
+Consequences:
+
+- `FAST_INTERACTIVE` / `FAST_AGENT_SHORT_TURN` are **UNQUALIFIED** pending a
+  comparison of retained profiles (`qwen38-original-ar-16k`,
+  `qwen38-opus-q3-daily-16k`, `qwen38-opus-q3-agent-24k`).
+- Do NOT delete or retire DCFR. Do NOT silently replace it.
+- All six production profiles and router/runtime paths are preserved.
+- Live execution bound to an UNQUALIFIED role fails closed at:
+  dispatch (`PROFILE_ROLE_UNQUALIFIED`), WF40 proposal/authorization minting,
+  and the OpenCode adapter (`ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION`).
+- Blender is OUT OF SCOPE for Control Plane and is not introduced into this
+  change.
 
 ## DFlash2 semantics
 

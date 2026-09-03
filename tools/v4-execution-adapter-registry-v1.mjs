@@ -236,6 +236,9 @@ export function openCodeQwenLocalRegistration() {
           guardStart: request.guardStart,
           runOpenCode: request.runOpenCode,
           upstreamOrigin: request.upstreamOrigin,
+          // AGG 2026-09-03: role-qualification gate passthrough (offline test
+          // injection only; production requests never supply roleGate).
+          roleGate: request.roleGate,
         },
       );
     },

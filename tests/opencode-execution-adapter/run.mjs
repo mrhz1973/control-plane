@@ -83,7 +83,33 @@ function resultHasSecretsOrBodies(result) {
   );
 }
 
+// AGG 2026-09-03: FAST_AGENT is UNQUALIFIED by default; mechanics tests inject
+// a qualified-role gate to exercise guard/bounds paths that assume acceptance.
+const qualifiedRoleGate = () => ({ ok: true, qualified: true, reason_codes: [] });
+
 async function run() {
+  // 0 AGG default: cryptographically valid auth with UNQUALIFIED role blocks
+  {
+    const { guard } = mockGuardFactory();
+    const r = await executeOpenCodeBounded(
+      { execution_id: "t0-agg", runtime_authorization: activeAuth(), message: "m" },
+      {
+        getOccupancy: async () => "QWEN_READY_IDLE",
+        guardStart: async () => guard,
+        runOpenCode: mockRunner(),
+      },
+    );
+    check(
+      "agg-default-unqualified-role-blocks",
+      r.classification === "AUTHORIZATION_REJECTED" &&
+        r.reason_codes.includes("ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION") &&
+        r.execution_performed === false &&
+        r.guard_started === false &&
+        r.opencode_execution_count === 0,
+      JSON.stringify(r.reason_codes),
+    );
+  }
+
   // 1 missing authorization
   {
     const r = await executeOpenCodeBounded({ execution_id: "t1" }, {
@@ -154,7 +180,7 @@ async function run() {
     for (const occ of ["QWEN_BUSY_SHARED_RUNTIME", "QWEN_OCCUPANCY_UNCERTAIN"]) {
       const r = await executeOpenCodeBounded(
         { execution_id: "t56", runtime_authorization: activeAuth() },
-        { getOccupancy: async () => occ, runOpenCode: mockRunner() },
+        { getOccupancy: async () => occ, runOpenCode: mockRunner(), roleGate: qualifiedRoleGate },
       );
       check(
         `occupancy-${occ}-no-execution`,
@@ -176,6 +202,7 @@ async function run() {
         getOccupancy: async () => "QWEN_READY_IDLE",
         guardStart: async () => guard,
         runOpenCode: mockRunner({}, captures),
+        roleGate: qualifiedRoleGate,
       },
     );
     check(
@@ -211,6 +238,7 @@ async function run() {
         getOccupancy: async () => "QWEN_READY_IDLE",
         guardStart: async () => guard,
         runOpenCode: mockRunner({ opencode_execution_count: 2 }),
+        roleGate: qualifiedRoleGate,
       },
     );
     check(
@@ -231,6 +259,7 @@ async function run() {
         getOccupancy: async () => "QWEN_READY_IDLE",
         guardStart: async () => guard,
         runOpenCode: mockRunner(),
+        roleGate: qualifiedRoleGate,
       },
     );
     check(
@@ -251,6 +280,7 @@ async function run() {
         getOccupancy: async () => "QWEN_READY_IDLE",
         guardStart: async () => guard,
         runOpenCode: mockRunner({ qwen_generation_calls: 2 }),
+        roleGate: qualifiedRoleGate,
       },
     );
     check(
@@ -270,6 +300,7 @@ async function run() {
         getOccupancy: async () => "QWEN_READY_IDLE",
         guardStart: async () => guard,
         runOpenCode: mockRunner({ retry_calls: 1 }),
+        roleGate: qualifiedRoleGate,
       },
     );
     const { guard: g2 } = mockGuardFactory();
@@ -279,6 +310,7 @@ async function run() {
         getOccupancy: async () => "QWEN_READY_IDLE",
         guardStart: async () => g2,
         runOpenCode: mockRunner({ fallback_calls: 1 }),
+        roleGate: qualifiedRoleGate,
       },
     );
     check(
@@ -299,6 +331,7 @@ async function run() {
         getOccupancy: async () => "QWEN_READY_IDLE",
         guardStart: async () => guard,
         runOpenCode: mockRunner({ opencode_execution_count: 3 }),
+        roleGate: qualifiedRoleGate,
       },
     );
     check(
@@ -322,6 +355,7 @@ async function run() {
         getOccupancy: async () => "QWEN_READY_IDLE",
         guardStart: async () => direct,
         runOpenCode: mockRunner(),
+        roleGate: qualifiedRoleGate,
       },
     );
     check(
@@ -336,7 +370,7 @@ async function run() {
   {
     const r = await executeOpenCodeBounded(
       { execution_id: "t17", runtime_authorization: activeAuth() },
-      { getOccupancy: async () => "QWEN_READY_IDLE" },
+      { getOccupancy: async () => "QWEN_READY_IDLE", roleGate: qualifiedRoleGate },
     );
     check(
       "default-no-live-execution",
@@ -376,6 +410,7 @@ async function run() {
         runOpenCode: async () => {
           throw new Error("runner crashed after generation");
         },
+        roleGate: qualifiedRoleGate,
       },
     );
     check(

@@ -148,12 +148,37 @@ function cli(inputObj) {
 }
 
 {
+  // AGG 2026-09-03: FAST_AGENT is UNQUALIFIED by default — the bridge must
+  // fail closed with AUTHORIZATION_REJECTED before occupancy.
+  const input = {
+    execution_id: "wf40:T3:PK3-agg",
+    execution_route_result: routedResult(),
+    execution_packet: packet(),
+    dispatch_result: dispatchReady(),
+    runtime_authorization: activeAuth(),
+  };
+  const rAgg = await runN8nExecutionAdapterRouterBridge(input);
+  check(
+    "agg-valid-auth-blocked-unqualified-role",
+    rAgg.ok === true &&
+      rAgg.classification === "AUTHORIZATION_REJECTED" &&
+      rAgg.execution_performed === false &&
+      rAgg.router_result?.adapter_result?.reason_codes?.includes(
+        "ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION",
+      ),
+    rAgg.classification,
+  );
+}
+
+{
   const input = {
     execution_id: "wf40:T3:PK3",
     execution_route_result: routedResult(),
     execution_packet: packet(),
     dispatch_result: dispatchReady(),
     runtime_authorization: activeAuth(),
+    // offline test injection only: qualified-role gate to reach occupancy check
+    roleGate: () => ({ ok: true, qualified: true, reason_codes: [] }),
   };
   const r = await runN8nExecutionAdapterRouterBridge(input);
   check(

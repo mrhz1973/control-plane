@@ -41,6 +41,25 @@ HTTP register-pending body remains exactly eight keys:
 
 `route_id` remains `opencode+qwen_local`.
 
+## Role-qualification gate (AGG 2026-09-03)
+
+The scope's cryptographic contract is **unchanged** (same 11 keys, same digest
+`5261290c…e02261`). On top of it, a **role-qualification gate** now applies:
+
+- `FAST_AGENT` (the scope's role, bound to `qwen38-dcfr-iq3-agent-24k`) is
+  **UNQUALIFIED** for live execution pending a comparison of retained profiles
+  (DCFR short-turn interactive: ~19–20 s prefill / ~4.8–5.0 tok/s decode).
+- Fail-closed points: `buildLiveExecutionProposal` (no register-pending),
+  `buildRuntimeAuthorizationFromStatus` (no ACTIVE envelope),
+  `executeOpenCodeBounded` (`ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION`),
+  `dispatchOpenCodeExecution` (`PROFILE_ROLE_UNQUALIFIED`), WF40 seam snippets.
+- DCFR remains qualified for `FAST_THROUGHPUT_LONG_TASK`; no deletion/retirement;
+  no silent substitution to another profile.
+- Requalification requires an explicit role-qualification overlay update plus a
+  scope-v3 (or operator-authorized overlay change); scope-v2 alone cannot
+  re-enable FAST_AGENT live execution.
+
 ## Tool
 
 `tools/qwen-execution-scope-v2.mjs`
+

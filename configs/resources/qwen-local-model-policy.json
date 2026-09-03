@@ -57,7 +57,8 @@
         "backend_lane": "dcfr_patched_llama_cpp",
         "keep_in_selector": true,
         "selection": "auto_or_explicit",
-        "next_wf40_executor": true
+        "next_wf40_executor": true,
+        "next_wf40_executor_status": "STALE_UNQUALIFIED_PENDING_REQUALIFICATION"
       },
       {
         "profile_id": "qwen38-original-ar-16k",
@@ -126,13 +127,30 @@
     "profile_id": "qwen38-dcfr-iq3-agent-24k",
     "role": "FAST_AGENT",
     "canonical_endpoint": "http://127.0.0.1:8080",
-    "scope_version": "qwen-execution-scope-v2"
+    "scope_version": "qwen-execution-scope-v2",
+    "status": "STALE_UNQUALIFIED_PENDING_REQUALIFICATION",
+    "agg_2026_09_03_note": "DCFR short-turn interactive performance disqualifies FAST_AGENT live execution pending comparison of retained profiles. This mapping must not govern the next live execution proof. No silent replacement."
+  },
+  "role_qualification": {
+    "qualification_version": "qwen38-rtx3060-2026-09-03-agg",
+    "FAST_AGENT": "UNQUALIFIED",
+    "FAST_INTERACTIVE": "UNQUALIFIED",
+    "FAST_AGENT_SHORT_TURN": "UNQUALIFIED",
+    "FAST_THROUGHPUT_LONG_TASK": "QUALIFIED",
+    "requalification_pending_comparison": [
+      "qwen38-original-ar-16k",
+      "qwen38-opus-q3-daily-16k",
+      "qwen38-opus-q3-agent-24k"
+    ],
+    "machine_overlay": "configs/resources/qwen-role-qualification.json"
   },
   "do_not_promote": {
     "DFLASH2_PROFILES": "retired speculative profiles; directory name historical only",
     "Q2_DCFR": "raw-speed-only; reasoning collapsed",
     "FULL_HAUHAU_Q3": "capability/reasoning failure",
     "EXL3_3_5bpw": "not viable on 12GB VRAM",
-    "DCFR_16K_AS_FAST_AGENT": "FAST_AGENT must be qwen38-dcfr-iq3-agent-24k"
+    "DCFR_16K_AS_FAST_AGENT": "FAST_AGENT must be qwen38-dcfr-iq3-agent-24k",
+    "DCFR_AS_SHORT_TURN_INTERACTIVE": "AGG 2026-09-03: unqualified for short-turn interactive agent workloads pending requalification comparison",
+    "SILENT_FAST_AGENT_SUBSTITUTION": "must not silently route FAST_AGENT to another profile before comparison completes"
   }
 }

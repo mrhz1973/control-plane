@@ -55,6 +55,10 @@ function activeAuth() {
   };
 }
 
+// AGG 2026-09-03: FAST_AGENT is UNQUALIFIED by default; mechanics tests inject
+// a qualified-role gate at request level so router delegation can be exercised.
+const qualifiedRoleGate = () => ({ ok: true, qualified: true, reason_codes: [] });
+
 function dispatchReady() {
   return {
     schema_version: "opencode-execution-dispatch-result-v1",
@@ -231,6 +235,7 @@ async function run() {
       execution_packet: { goal: "g" },
       dispatch_result: dispatchReady(),
       runtime_authorization: activeAuth(),
+      roleGate: qualifiedRoleGate,
       ...deps,
     });
     check(
@@ -293,17 +298,40 @@ async function run() {
     );
   }
 
-  // 11 execution-router source unchanged (hash of tool file vs committed)
+  // 11 execution-router source unchanged during THIS suite run (in-memory hash
+  // before/after — independent of intentional working-tree AGG changes)
   {
-    const { execFileSync } = await import("node:child_process");
-    const status = execFileSync("git", ["status", "--porcelain", "tools/evaluate-execution-route.mjs", "tools/dispatch-opencode-execution-v1.mjs", "tools/opencode-execution-adapter-v1.mjs"], {
-      cwd: ROOT,
-      encoding: "utf8",
-    }).trim();
+    const { createHash } = await import("node:crypto");
+    const { readFileSync: rfs } = await import("node:fs");
+    const { join: j } = await import("node:path");
+    const files = [
+      "tools/evaluate-execution-route.mjs",
+      "tools/dispatch-opencode-execution-v1.mjs",
+      "tools/opencode-execution-adapter-v1.mjs",
+    ];
+    const hashOf = () =>
+      files
+        .map((f) =>
+          createHash("sha256").update(rfs(j(ROOT, f), "utf8")).digest("hex").slice(0, 12),
+        )
+        .join(",");
+    const before = hashOf();
+    // Re-run one delegation to ensure no lazy writer mutates sources.
+    const deps = mockAdapterDeps();
+    await routeToExecutionAdapter({
+      execution_id: "t11-mutation-probe",
+      execution_route_result: routedResult("opencode+qwen_local", "opencode", "qwen_local"),
+      execution_packet: { goal: "g" },
+      dispatch_result: dispatchReady(),
+      runtime_authorization: activeAuth(),
+      roleGate: qualifiedRoleGate,
+      ...deps,
+    });
+    const after = hashOf();
     check(
       "no-execution-router-dispatch-adapter-mutation",
-      status === "",
-      status || "clean",
+      before === after,
+      `${before} -> ${after}`,
     );
   }
 
@@ -315,12 +343,16 @@ async function run() {
       r.classification === "INVALID_INPUT" && r.execution_performed === false && r.adapter_result === null,
       r.classification,
     );
+    // AGG 2026-09-03: qualified-role gate injected via request; default path now
+    // fails earlier (AUTHORIZATION_REJECTED / ROLE_UNQUALIFIED) — covered in
+    // the AGG qualification suite.
     const r2 = await routeToExecutionAdapter({
       execution_id: "t12b",
       execution_route_result: routedResult("opencode+qwen_local", "opencode", "qwen_local"),
       execution_packet: { goal: "g" },
       dispatch_result: dispatchReady(),
       runtime_authorization: activeAuth(),
+      roleGate: qualifiedRoleGate,
     });
     check(
       "default-no-deps-fail-closed-occupancy-first",

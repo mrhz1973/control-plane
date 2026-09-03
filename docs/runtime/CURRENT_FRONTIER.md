@@ -6,16 +6,17 @@
 |---|---|
 | **FOUNDATION** | v3.5 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen router Control Plane integration **PASS** · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_QWEN_LOCAL_6_PROFILE_ROUTER_CONTROL_PLANE_INTEGRATION` — **PASS** |
-| **STATO BLOCCO** | Authoritative six-profile MultiModel router bound through `:8080` · policy `qwen38-rtx3060-2026-09-03` · scope v2 digest locked · Uncensored manually retained · DFlash2 profiles retired · normal llama.cpp-dflash2 runtime preserved |
+| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen router Control Plane integration **PASS** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · no ACTIVE authorization |
+| **BLOCCO ATTIVO** | `V4_QWEN_AGG_RUNTIME_ROLE_CORRECTION_DCFR_SHORT_TURN` — **PASS** |
+| **STATO BLOCCO** | DCFR short-turn interactive roles **UNQUALIFIED** (overlay `qwen38-rtx3060-2026-09-03-agg`) · DCFR preserved as FAST_THROUGHPUT/LONG_TASK · next-WF40-executor mapping marked STALE · fail-closed gates at dispatch/proposal/mint/adapter/seam · six profiles + router paths untouched · scope v2 digest unchanged |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF_POST_POSTGRES_RETRY` — `profile_id=qwen38-dcfr-iq3-agent-24k` · `role=FAST_AGENT` · `endpoint=http://127.0.0.1:8080` · `scope_version=qwen-execution-scope-v2` |
+| **NEXT** | `V4_QWEN_SHORT_TURN_PROFILE_COMPARISON_RETAINED_PROFILES` — compare `qwen38-original-ar-16k` / `qwen38-opus-q3-daily-16k` / `qwen38-opus-q3-agent-24k` for short-turn interactive agent workloads; requalification requires overlay update + explicit operator authorization; live WF40 proof deferred until then |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · `activeVersionId=a609ad90-7eb4-4495-9ec5-c4413165cea1` |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
 | **QWEN MODEL POLICY** | `configs/resources/qwen-local-model-policy.json` · policy `qwen38-rtx3060-2026-09-03` · 6/6 profiles · startup `qwen38-opus-q3-daily-16k` · next WF40 executor `qwen38-dcfr-iq3-agent-24k` |
-| **QWEN ROLE POLICY** | `docs/foundation/QWEN_LOCAL_ROLE_ROUTING_POLICY.md` · exact profile_id through `:8080` · Blender_FAST retained on DCFR 24K · Uncensored manual override preserved |
+| **QWEN ROLE POLICY** | `docs/foundation/QWEN_LOCAL_ROLE_ROUTING_POLICY.md` · exact profile_id through `:8080` · **AGG: FAST_AGENT/FAST_INTERACTIVE/FAST_AGENT_SHORT_TURN UNQUALIFIED pending comparison** · Blender_FAST out of Control Plane scope · Uncensored manual override preserved |
+| **QWEN ROLE QUALIFICATION** | `configs/resources/qwen-role-qualification.json` · overlay `qwen38-rtx3060-2026-09-03-agg` · DCFR = FAST_THROUGHPUT/LONG_TASK · live gate `roleQualifiedForLiveExecution` fail-closed for AGG roles |
 | **QWEN SCOPE** | `qwen-execution-scope-v2` · digest `5261290cbdda414de0a6bd5ffd79e939f805eefde3fe2e39a8f490c5a2e02261` · no `dflash_required` |
 | **RESOURCE_STATUS COMPOSER** | `tools/compose-v4-resource-status-control-plane-v1.mjs` · wired in WF40 TRUE lane · collector reports router_assessment for `:8080` catalog/profile/readiness |
 | **PRIVATE STATUS ENDPOINT** | `https://asusdesktop.tailc01234.ts.net/v4/resource-status/local-readonly` · Tailscale private · VPS proof PASS |
@@ -28,7 +29,7 @@
 | **AUTHORIZATION ISSUANCE TESTS** | `tests/v4-runtime-authorization-issuance/run.mjs` · **60/60 PASS** (includes race regressions 58–60) |
 | **N8N ADAPTER ROUTER BRIDGE** | `tools/n8n-v4-execution-adapter-router-bridge-v1.mjs` · offline complete · wired in WF40 · deliberately live-incapable |
 | **EXECUTION ADAPTER ROUTER** | `tools/v4-execution-adapter-router-v1.mjs` · exact route `opencode+qwen_local` |
-| **OPENCODE EXECUTION ADAPTER** | `tools/opencode-execution-adapter-v1.mjs` · bound to scope v2 · `profile_id=qwen38-dcfr-iq3-agent-24k` |
+| **OPENCODE EXECUTION ADAPTER** | `tools/opencode-execution-adapter-v1.mjs` · bound to scope v2 · `profile_id=qwen38-dcfr-iq3-agent-24k` · **AGG: role-qualification gate blocks FAST_AGENT live execution** |
 | **PRODUCTION DATABASE** | n8n 2.33.3 on PostgreSQL 16.15 · health 200 · sequence resync PASS |
 
 ## Installed execution path
@@ -49,7 +50,8 @@ WF40 structural routing
 DAILY/QUALITY          -> qwen38-opus-q3-daily-16k
 QUALITY_AGENT_24K      -> qwen38-opus-q3-agent-24k
 FAST                   -> qwen38-dcfr-iq3-fast-16k
-FAST_AGENT/MCP/BLENDER -> qwen38-dcfr-iq3-agent-24k
+FAST_AGENT/MCP/BLENDER -> qwen38-dcfr-iq3-agent-24k   [AGG: STALE for live short-turn — UNQUALIFIED]
+FAST_THROUGHPUT_LONG_TASK -> qwen38-dcfr-iq3-agent-24k [AGG: QUALIFIED]
 REFERENCE              -> qwen38-original-ar-16k
 MANUAL_UNCENSORED      -> qwen38-uncensored-ar-16k (explicit only)
 ```
@@ -68,6 +70,8 @@ launch commands.
 
 ## Puntatori
 
+- AGG role correction PASS report: `reports/architecture/v4_qwen_agg_runtime_role_correction_dcfr_short_turn.md`
+- Role-qualification overlay: `configs/resources/qwen-role-qualification.json`
 - Integration PASS report: `reports/architecture/v4_qwen_local_6_profile_router_control_plane_integration.md`
 - Scope v2 contract: `docs/contracts/qwen-execution-scope-v2.md`
 - Qwen machine-readable model policy: `configs/resources/qwen-local-model-policy.json`

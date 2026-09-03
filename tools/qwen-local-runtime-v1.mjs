@@ -46,6 +46,108 @@ export const POLICY_CONFIG_PATH = resolve(
   ROOT,
   "configs/resources/qwen-local-model-policy.json",
 );
+export const ROLE_QUALIFICATION_CONFIG_PATH = resolve(
+  ROOT,
+  "configs/resources/qwen-role-qualification.json",
+);
+
+/**
+ * AGG 2026-09-03: DCFR is FAST_THROUGHPUT/LONG_TASK only; short-turn
+ * interactive roles are UNQUALIFIED pending comparison of retained profiles.
+ * The 2026-09-03 integration rule FAST_AGENT -> qwen38-dcfr-iq3-agent-24k is
+ * STALE and must not govern live execution until requalified.
+ */
+export function loadQwenRoleQualification(path = ROLE_QUALIFICATION_CONFIG_PATH) {
+  return JSON.parse(readFileSync(path, "utf8").replace(/^\uFEFF/, ""));
+}
+
+export const UNQUALIFIED = "UNQUALIFIED";
+export const QUALIFIED = "QUALIFIED";
+export const PENDING_COMPARISON = "PENDING_COMPARISON";
+export const OUT_OF_SCOPE = "OUT_OF_SCOPE_CONTROL_PLANE";
+
+function qualificationEntry(q, profileId, role) {
+  if (!q || typeof q !== "object" || Array.isArray(q)) return null;
+  const roles = q.role_qualification || {};
+  const value = roles[role];
+  if (typeof value !== "string") return null;
+  return { role, value: value.trim().toUpperCase() };
+}
+
+/**
+ * Role-level qualification. Defaults to QUALIFIED for roles not listed in the
+ * overlay (legacy roles keep working); any listed role is exactly as listed.
+ */
+export function roleQualification(role, qualification = null) {
+  const key = String(role || "").trim().toUpperCase();
+  if (!key) return { ok: false, reason: "role missing", value: null };
+  let q = qualification;
+  if (q === null || q === undefined) {
+    try {
+      q = loadQwenRoleQualification();
+    } catch {
+      return { ok: false, reason: "qualification config unreadable", value: null };
+    }
+  }
+  const entry = qualificationEntry(q, null, key);
+  if (!entry) return { ok: true, role: key, value: QUALIFIED, listed: false };
+  return { ok: true, role: key, value: entry.value, listed: true };
+}
+
+/**
+ * Gate: is a role currently qualified for live single-shot agent execution?
+ * Fail closed when the role is explicitly UNQUALIFIED or when the overlay is
+ * unreadable and the role is one of the AGG-corrected short-turn roles.
+ */
+export function roleQualifiedForLiveExecution(role, qualification = null) {
+  const key = String(role || "").trim().toUpperCase();
+  const AGG_SHORT_TURN_ROLES = new Set([
+    "FAST_AGENT",
+    "FAST_INTERACTIVE",
+    "FAST_AGENT_SHORT_TURN",
+    "MCP",
+  ]);
+  let q = qualification;
+  if (q === null || q === undefined) {
+    try {
+      q = loadQwenRoleQualification();
+    } catch {
+      q = null;
+    }
+  }
+  // Overlay must be a real object with a role_qualification map; otherwise it
+  // is treated as unreadable.
+  const overlayValid =
+    !!q && typeof q === "object" && !Array.isArray(q) &&
+    q.role_qualification && typeof q.role_qualification === "object" &&
+    !Array.isArray(q.role_qualification);
+
+  if (!overlayValid) {
+    // Unreadable/malformed overlay: fail closed ONLY for AGG-corrected roles;
+    // legacy roles keep their pre-overlay behavior (qualified).
+    if (AGG_SHORT_TURN_ROLES.has(key)) {
+      return {
+        ok: false,
+        qualified: false,
+        role: key,
+        value: UNQUALIFIED,
+        reason: "ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION",
+        reason_codes: ["ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION", "QUALIFICATION_OVERLAY_UNREADABLE"],
+      };
+    }
+    return { ok: true, qualified: true, role: key, value: QUALIFIED };
+  }
+
+  const value = String(q.role_qualification[key] || QUALIFIED).trim().toUpperCase();
+  return {
+    ok: true,
+    qualified: value === QUALIFIED,
+    role: key,
+    value,
+    reason: value === QUALIFIED ? null : "ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION",
+    reason_codes: value === QUALIFIED ? [] : ["ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION"],
+  };
+}
 
 export function loadQwenLocalRuntime(path = RUNTIME_CONFIG_PATH) {
   return JSON.parse(readFileSync(path, "utf8").replace(/^\uFEFF/, ""));
@@ -318,6 +420,7 @@ export function assertFastAgentNotDcfr16k(profileId) {
     };
   }
   if (profileId !== NEXT_WF40_EXECUTOR_PROFILE_ID) {
+
     return {
       ok: false,
       classification: "FAST_AGENT_PROFILE_MISMATCH",

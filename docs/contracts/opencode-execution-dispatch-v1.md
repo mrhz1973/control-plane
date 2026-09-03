@@ -47,6 +47,7 @@ Otherwise: `ROUTE_NOT_OPENCODE_QWEN_LOCAL` (or `INVALID_INPUT` for `NO_ROUTE`).
 | `QWEN_LOCAL_UNAVAILABLE` | Session manager not READY |
 | `PACKET_INVALID` | Packet failed schema validation |
 | `DISPATCH_BUILD_FAILED` | Spec construction failed |
+| `PROFILE_ROLE_UNQUALIFIED` | AGG 2026-09-03: dispatch profile's live-execution role is UNQUALIFIED (e.g. FAST_AGENT on DCFR pending requalification); `DISPATCH_READY` is not asserted |
 
 ## OpenCode CLI (opencode-ai npm)
 

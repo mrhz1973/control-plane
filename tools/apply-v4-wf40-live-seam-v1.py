@@ -56,6 +56,10 @@ const authId='AUTH-WF40-'+digest;
 const scope={"scope_version":"qwen-execution-scope-v2","execution_harness":"opencode","model":"qwen_local","profile_id":"qwen38-dcfr-iq3-agent-24k","role":"FAST_AGENT","canonical_endpoint":"http://127.0.0.1:8080","single_generation_guard_required":true,"max_opencode_executions":1,"max_qwen_generation_calls":1,"retry":0,"fallback":0};
 const scopeDigest=crypto.createHash('sha256').update(JSON.stringify(scope),'utf8').digest('hex');
 if(scopeDigest!=='5261290cbdda414de0a6bd5ffd79e939f805eefde3fe2e39a8f490c5a2e02261') reasons.push('SCOPE_DIGEST_MISMATCH');
+// AGG 2026-09-03: FAST_AGENT on qwen38-dcfr-iq3-agent-24k is UNQUALIFIED for live
+// execution pending requalification comparison of retained profiles. Fail closed
+// before register-pending; no silent profile substitution. DCFR stays preserved.
+if(scope.role==='FAST_AGENT') reasons.push('ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION');
 if(executionId.length>200||pendingId.length>200||authId.length>200) reasons.push('ID_TOO_LONG');
 const ready=reasons.length===0;
 const register_request=ready?{"schema_version":"v4-runtime-authorization-register-pending-request-v1","pending_decision_id":pendingId,"authorization_id":authId,"task_id":task,"execution_id":executionId,"route_id":"opencode+qwen_local","scope_digest":scopeDigest,"pending_ttl_seconds":900}:null;
@@ -73,11 +77,14 @@ PARSE_STATUS_JS = _read_snippet("parse-authorization-status.js")
 BUILD_SIDECARS_JS = r"""const st=$input.item.json??{};
 const prop=$('Code - Prepare WF40 live execution proposal').item.json??{};
 const scope={"scope_version":"qwen-execution-scope-v2","execution_harness":"opencode","model":"qwen_local","profile_id":"qwen38-dcfr-iq3-agent-24k","role":"FAST_AGENT","canonical_endpoint":"http://127.0.0.1:8080","single_generation_guard_required":true,"max_opencode_executions":1,"max_qwen_generation_calls":1,"retry":0,"fallback":0};
+// AGG 2026-09-03: role gate mirrors the proposal node; never reach ACTIVE while
+// FAST_AGENT is UNQUALIFIED pending requalification.
+const roleQualified=scope.role!=='FAST_AGENT';
 const expires=Date.parse(st.authorization_expires_at);
 const future=Number.isFinite(expires)&&expires>Date.now();
 const dispatch=(st.dispatch_result&&typeof st.dispatch_result==='object')?st.dispatch_result:(prop.dispatch_result||null);
 const dispatchOk=Boolean(dispatch&&dispatch.classification==='DISPATCH_READY'&&dispatch.dispatch_ready===true&&dispatch.execution_performed===false&&dispatch.route_id==='opencode+qwen_local');
-const ready=Boolean(st.issued===true&&future&&dispatchOk&&st.authorization_id&&st.pending_decision_id);
+const ready=Boolean(roleQualified&&st.issued===true&&future&&dispatchOk&&st.authorization_id&&st.pending_decision_id);
 const runtime_authorization=ready?{"schema_version":"operator-runtime-authorization-v1","authorization_id":st.authorization_id,"authorization_state":"ACTIVE","route_id":"opencode+qwen_local","scope":scope}:null;
 return {json:{schema:'wf40-live-issued-sidecars-v1',sidecars_ready:ready,classification:ready?'ISSUED_SIDECARS_READY':'ISSUED_SIDECARS_NOT_READY',reason_codes:ready?['ISSUED_SIDECARS_READY']:['ISSUED_SIDECARS_NOT_READY'],pending_decision_id:st.pending_decision_id||null,authorization_id:st.authorization_id||null,execution_id:st.execution_id||prop.execution_id||null,dispatch_result:ready?dispatch:null,runtime_authorization,execution_performed:false}};"""
 
