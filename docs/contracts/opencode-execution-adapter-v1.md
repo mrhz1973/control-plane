@@ -31,7 +31,7 @@ Validates (fail-closed before any execution-side action):
 - `max_qwen_generation_calls == 1`
 - `retry == 0` · `fallback == 0`
 - `single_generation_guard_required == true`
-- `profile == fast_8k` · `dflash_required == true`
+- `profile_id == qwen38-dcfr-iq3-agent-24k` · `role == FAST_AGENT` · no `dflash_required`
 
 Spent / absent / malformed / wrong-route / over-broad → fail closed.
 

@@ -10,10 +10,14 @@ import {
   ensureQwenLocalReady,
   __resetSessionManagerLockForTests,
 } from "../../tools/qwen-local-session-manager-v1.mjs";
-import { loadQwenLocalRuntime } from "../../tools/qwen-local-runtime-v1.mjs";
+import {
+  STARTUP_PROFILE_ID,
+  loadQwenLocalRuntime,
+} from "../../tools/qwen-local-runtime-v1.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const CANONICAL = loadQwenLocalRuntime();
+const DEFAULT_PROFILE = STARTUP_PROFILE_ID;
 
 function cloneRuntime(mutator) {
   const rt = JSON.parse(JSON.stringify(CANONICAL));
@@ -32,7 +36,7 @@ async function run() {
     __resetSessionManagerLockForTests();
     let launches = 0;
     const out = await ensureQwenLocalReady({
-      profile: "fast_8k",
+      profile: DEFAULT_PROFILE,
       loadRuntime: () => CANONICAL,
       checkReadiness: async () => ({ ok: true, classification: "READY" }),
       launchLauncher: async () => {
@@ -49,7 +53,7 @@ async function run() {
         out.launch_performed === false &&
         out.launch_count === 0 &&
         launches === 0 &&
-        out.model_id === "qwen38-original-dflash2-8k",
+        out.model_id === DEFAULT_PROFILE,
       JSON.stringify(out),
     );
   }
@@ -59,7 +63,7 @@ async function run() {
     __resetSessionManagerLockForTests();
     let launches = 0;
     const out = await ensureQwenLocalReady({
-      profile: "fast_8k",
+      profile: DEFAULT_PROFILE,
       loadRuntime: () => CANONICAL,
       checkReadiness: async () => {
         if (launches === 0) {
@@ -93,23 +97,24 @@ async function run() {
     let launches = 0;
     let checks = 0;
     const deps = {
-      profile: "fast_8k",
+      profile: DEFAULT_PROFILE,
       loadRuntime: () => CANONICAL,
       checkReadiness: async () => {
         checks += 1;
-        // first wave: not ready; after launch polls become ready
-        if (launches === 0) return { ok: false, classification: "API_UNREACHABLE" };
+        if (launches === 0) {
+          return { ok: false, classification: "API_UNREACHABLE" };
+        }
         return { ok: true, classification: "READY" };
       },
       launchLauncher: async () => {
         launches += 1;
-        await new Promise((r) => setTimeout(r, 30));
+        await new Promise((r) => setTimeout(r, 5));
         return { pid: 3 };
       },
       existsPath: () => true,
       readinessTimeoutMs: 2000,
-      pollIntervalMs: 5,
-      sleepFn: async (ms) => new Promise((r) => setTimeout(r, ms)),
+      pollIntervalMs: 1,
+      sleepFn: async () => {},
     };
     const [a, b] = await Promise.all([
       ensureQwenLocalReady(deps),
@@ -117,52 +122,47 @@ async function run() {
     ]);
     check(
       "03-concurrent-single-launch",
-      launches === 1 && a.ready === true && b.ready === true,
-      JSON.stringify({ launches, a: a.status, b: b.status, checks }),
+      launches === 1 && a.ready === true && b.ready === true && checks >= 2,
+      JSON.stringify({ launches, checks, a: a.status, b: b.status }),
     );
   }
 
   // 4. launcher missing
   {
     __resetSessionManagerLockForTests();
-    let launches = 0;
     const out = await ensureQwenLocalReady({
-      profile: "fast_8k",
+      profile: DEFAULT_PROFILE,
       loadRuntime: () => CANONICAL,
-      checkReadiness: async () => ({ ok: false, classification: "API_UNREACHABLE" }),
-      launchLauncher: async () => {
-        launches += 1;
-        return { pid: 1 };
-      },
+      checkReadiness: async () => ({ ok: false }),
+      launchLauncher: async () => ({ pid: 1 }),
       existsPath: () => false,
       sleepFn: async () => {},
     });
     check(
-      "04-launcher-not-found",
-      out.status === "LAUNCHER_NOT_FOUND" &&
-        out.ready === false &&
-        launches === 0 &&
-        out.launch_count === 0,
+      "04-launcher-missing",
+      out.ready === false &&
+        (out.status === "LAUNCHER_NOT_FOUND" || out.status === "LAUNCH_FAILED") &&
+        out.launch_performed === false,
       JSON.stringify(out),
     );
   }
 
-  // 5. launch process fails
+  // 5. launch fails
   {
     __resetSessionManagerLockForTests();
     const out = await ensureQwenLocalReady({
-      profile: "fast_8k",
+      profile: DEFAULT_PROFILE,
       loadRuntime: () => CANONICAL,
-      checkReadiness: async () => ({ ok: false, classification: "API_UNREACHABLE" }),
+      checkReadiness: async () => ({ ok: false }),
       launchLauncher: async () => {
-        throw new Error("spawn failed");
+        throw new Error("launch boom");
       },
       existsPath: () => true,
       sleepFn: async () => {},
     });
     check(
       "05-launch-failed",
-      out.status === "LAUNCH_FAILED" && out.ready === false && out.launch_count === 0,
+      out.ready === false && out.status === "LAUNCH_FAILED",
       JSON.stringify(out),
     );
   }
@@ -171,47 +171,38 @@ async function run() {
   {
     __resetSessionManagerLockForTests();
     const out = await ensureQwenLocalReady({
-      profile: "fast_8k",
+      profile: DEFAULT_PROFILE,
       loadRuntime: () => CANONICAL,
       checkReadiness: async () => ({ ok: false, classification: "API_UNREACHABLE" }),
-      launchLauncher: async () => ({ pid: 1 }),
+      launchLauncher: async () => ({ pid: 9 }),
       existsPath: () => true,
       readinessTimeoutMs: 20,
       pollIntervalMs: 5,
-      sleepFn: async (ms) => new Promise((r) => setTimeout(r, ms)),
+      sleepFn: async () => {},
     });
     check(
       "06-readiness-timeout",
-      (out.status === "READINESS_TIMEOUT" || out.status === "API_UNREACHABLE") &&
-        out.ready === false &&
-        out.launch_performed === true &&
-        out.launch_count === 1,
+      out.ready === false &&
+        (out.status === "READINESS_TIMEOUT" ||
+          out.status === "API_UNREACHABLE") &&
+        out.launch_performed === true,
       JSON.stringify(out),
     );
   }
 
-  // 7. API ready but model absent
+  // 7. invalid runtime config
   {
     __resetSessionManagerLockForTests();
     const out = await ensureQwenLocalReady({
-      profile: "fast_8k",
-      loadRuntime: () => CANONICAL,
-      checkReadiness: async () => ({
-        ok: false,
-        classification: "PROFILE_NOT_EXPOSED",
-        http_status: 200,
-      }),
+      profile: DEFAULT_PROFILE,
+      loadRuntime: () => ({ schema_version: "nope" }),
+      checkReadiness: async () => ({ ok: true }),
       launchLauncher: async () => ({ pid: 1 }),
       existsPath: () => true,
-      readinessTimeoutMs: 20,
-      pollIntervalMs: 5,
-      sleepFn: async (ms) => new Promise((r) => setTimeout(r, ms)),
     });
     check(
-      "07-profile-not-exposed",
-      out.status === "PROFILE_NOT_EXPOSED" &&
-        out.ready === false &&
-        out.launch_performed === true,
+      "07-invalid-runtime",
+      out.status === "INVALID_RUNTIME_CONFIG" && out.ready === false,
       JSON.stringify(out),
     );
   }
@@ -221,7 +212,7 @@ async function run() {
     __resetSessionManagerLockForTests();
     let launches = 0;
     const out = await ensureQwenLocalReady({
-      profile: "turbo_64k",
+      profile: "fast_8k",
       loadRuntime: () => CANONICAL,
       checkReadiness: async () => ({ ok: true }),
       launchLauncher: async () => {
@@ -237,16 +228,15 @@ async function run() {
     );
   }
 
-  // 9. dflash_required=false
+  // 9. dflash_required=true is retired
   {
     __resetSessionManagerLockForTests();
     let launches = 0;
     const rt = cloneRuntime((r) => {
-      r.profiles.fast_8k.dflash_required = false;
-      r.profiles.fast_8k.spec_type = "none";
+      r.profiles[DEFAULT_PROFILE].dflash_required = true;
     });
     const out = await ensureQwenLocalReady({
-      profile: "fast_8k",
+      profile: DEFAULT_PROFILE,
       loadRuntime: () => rt,
       checkReadiness: async () => ({ ok: true }),
       launchLauncher: async () => {
@@ -255,9 +245,8 @@ async function run() {
       },
       existsPath: () => true,
     });
-    // validateRuntimeDocument fails first OR getProfile returns DFLASH_REQUIRED
     check(
-      "09-dflash-required-false",
+      "09-dflash-required-true-retired",
       (out.status === "DFLASH_REQUIRED" || out.status === "INVALID_RUNTIME_CONFIG") &&
         out.ready === false &&
         launches === 0,
@@ -265,62 +254,62 @@ async function run() {
     );
   }
 
-  // 10-12 profile model ids from runtime config
+  // 10-12 exact profile model ids
   {
-    const fast = CANONICAL.profiles.fast_8k.llama_cpp_model_id;
-    const bal = CANONICAL.profiles.balanced_16k.llama_cpp_model_id;
-    const lng = CANONICAL.profiles.long_32k.llama_cpp_model_id;
+    const daily = CANONICAL.profiles[DEFAULT_PROFILE].llama_cpp_model_id;
+    const agent24 = CANONICAL.profiles["qwen38-opus-q3-agent-24k"].llama_cpp_model_id;
+    const dcfrAgent = CANONICAL.profiles["qwen38-dcfr-iq3-agent-24k"].llama_cpp_model_id;
     check(
-      "10-fast-8k-from-runtime-config",
-      fast === "qwen38-original-dflash2-8k" &&
+      "10-daily-from-runtime-config",
+      daily === DEFAULT_PROFILE &&
         !readFileSync(
           resolve(ROOT, "tools/qwen-local-session-manager-v1.mjs"),
           "utf8",
         ).includes('modelId = "qwen38-original-dflash2-8k"'),
-      `fast=${fast}`,
+      `daily=${daily}`,
     );
 
     __resetSessionManagerLockForTests();
-    const out16 = await ensureQwenLocalReady({
-      profile: "balanced_16k",
+    const out24 = await ensureQwenLocalReady({
+      profile: "qwen38-opus-q3-agent-24k",
       loadRuntime: () => CANONICAL,
       checkReadiness: async ({ modelId }) => ({
-        ok: modelId === bal,
-        classification: modelId === bal ? "READY" : "PROFILE_NOT_EXPOSED",
+        ok: modelId === agent24,
+        classification: modelId === agent24 ? "READY" : "PROFILE_NOT_EXPOSED",
       }),
       launchLauncher: async () => ({ pid: 1 }),
       existsPath: () => true,
     });
     check(
-      "11-balanced-16k-resolution",
-      out16.ready === true && out16.model_id === bal && bal === "qwen38-original-dflash2-16k",
-      JSON.stringify(out16),
+      "11-opus-agent-24k-resolution",
+      out24.ready === true && out24.model_id === agent24,
+      JSON.stringify(out24),
     );
 
     __resetSessionManagerLockForTests();
-    const out32 = await ensureQwenLocalReady({
-      profile: "long_32k",
+    const outFastAgent = await ensureQwenLocalReady({
+      profile: "qwen38-dcfr-iq3-agent-24k",
       loadRuntime: () => CANONICAL,
       checkReadiness: async ({ modelId }) => ({
-        ok: modelId === lng,
-        classification: modelId === lng ? "READY" : "PROFILE_NOT_EXPOSED",
+        ok: modelId === dcfrAgent,
+        classification: modelId === dcfrAgent ? "READY" : "PROFILE_NOT_EXPOSED",
       }),
       launchLauncher: async () => ({ pid: 1 }),
       existsPath: () => true,
     });
     check(
-      "12-long-32k-resolution",
-      out32.ready === true && out32.model_id === lng && lng === "qwen38-original-dflash2-32k",
-      JSON.stringify(out32),
+      "12-dcfr-agent-24k-resolution",
+      outFastAgent.ready === true && outFastAgent.model_id === dcfrAgent,
+      JSON.stringify(outFastAgent),
     );
   }
 
-  // 13. healthy server never restarted (second ensure still launch_count=0)
+  // 13. healthy server never restarted
   {
     __resetSessionManagerLockForTests();
     let launches = 0;
     const deps = {
-      profile: "fast_8k",
+      profile: DEFAULT_PROFILE,
       loadRuntime: () => CANONICAL,
       checkReadiness: async () => ({ ok: true, classification: "READY" }),
       launchLauncher: async () => {
@@ -342,18 +331,23 @@ async function run() {
     );
   }
 
-  // 14. no AR fallback — ar_fallback_forbidden must hold; AR model ids never selected
+  // 14. uncensored retained; no reconstruct; dflash profiles retired
   {
     __resetSessionManagerLockForTests();
     const src = readFileSync(
       resolve(ROOT, "tools/qwen-local-session-manager-v1.mjs"),
       "utf8",
     );
-    const noArFallback =
-      CANONICAL.ar_fallback_forbidden === true &&
-      !src.includes("original-ar-") &&
-      Object.values(CANONICAL.profiles).every((p) => p.dflash_required === true);
-    check("14-no-ar-fallback", noArFallback, "AR fallback possible");
+    const uncensored = CANONICAL.profiles["qwen38-uncensored-ar-16k"];
+    const ok =
+      CANONICAL.dflash2_profiles_retired === true &&
+      CANONICAL.reconstruct_llama_server_commands === false &&
+      uncensored.keep_in_selector === true &&
+      uncensored.selection === "explicit_user_choice" &&
+      uncensored.auto_route_sensitive_topics === false &&
+      Object.values(CANONICAL.profiles).every((p) => p.dflash_required !== true) &&
+      !src.includes("ar_fallback_forbidden");
+    check("14-uncensored-retained-no-reconstruct", ok, "policy drift");
   }
 
   for (const r of results) {

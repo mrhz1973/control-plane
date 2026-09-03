@@ -57,8 +57,9 @@ opencode run --dir <repository> -m qwen_local/<llama_cpp_model_id> --format json
 ```
 
 Provider overlay (project config) binds `qwen_local` to the existing local
-OpenAI-compatible llama.cpp endpoint (`127.0.0.1:8080`, profile `fast_8k`,
-DFlash2 required). No API key for local unauthenticated endpoint.
+OpenAI-compatible MultiModel router (`127.0.0.1:8080`, next WF40 executor
+`qwen38-dcfr-iq3-agent-24k` / FAST_AGENT via scope v2). No API key for local
+unauthenticated endpoint. No `dflash_required`.
 
 ## Tool
 

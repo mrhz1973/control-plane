@@ -61,32 +61,36 @@ llama_cpp URL/model/timeout precedence:
 
 Ollama compatibility still honors `OLLAMA_BASE_URL` / `OLLAMA_MODEL` / `OLLAMA_TIMEOUT_MS` when `backend=ollama`.
 
-## DFlash2 + context profiles
+## Six-profile MultiModel router
 
-Machine config: `configs/resources/qwen-local-runtime.json`
+Machine config: `configs/resources/qwen-local-runtime.json`  
+Policy: `configs/resources/qwen-local-model-policy.json` (`qwen38-rtx3060-2026-09-03`)
 
-| Profile | Context | Usage |
+Canonical endpoint: `http://127.0.0.1:8080`
+
+| Profile | Context | Role(s) |
 |---|---|---|
-| `fast_8k` (**DEFAULT**) | 8192 | normal control-plane tasks |
-| `balanced_16k` | 16384 | only when 8K will not safely fit |
-| `long_32k` | 32768 | exceptional large-context only |
+| `qwen38-opus-q3-daily-16k` (**DEFAULT**) | 16384 | DAILY / QUALITY |
+| `qwen38-opus-q3-agent-24k` | 24576 | QUALITY_AGENT_24K |
+| `qwen38-dcfr-iq3-fast-16k` | 16384 | FAST |
+| `qwen38-dcfr-iq3-agent-24k` | 24576 | FAST_AGENT / MCP / BLENDER_FAST |
+| `qwen38-original-ar-16k` | 16384 | REFERENCE |
+| `qwen38-uncensored-ar-16k` | 16384 | MANUAL_UNCENSORED (explicit user choice) |
 
-All normal profiles: `dflash_required=true`, `spec_type=draft-dflash`.
+DFlash2 **profiles** are retired. The `llama.cpp-dflash2` directory remains the
+normal production llama.cpp runtime. Control Plane selects exact `profile_id`
+through `:8080`; the router owns backend selection. Do not reconstruct
+llama-server launch commands.
 
-**AR / non-DFlash is forbidden** as a normal fallback. If DFlash2 runtime is
-unavailable, `qwen_local` must fail closed / be unavailable.
-
-The adapter does **not** modify tested launcher runtime parameters (KV cache,
-GPU layers, threads, draft max, etc.).
+Uncensored remains selectable; sensitive topics must not auto-select it.
 
 ### Profile selection boundary
 
 Context size is **not** switched via the generation API.
 
-Verified launcher mode: multi-model router (`--models-preset`) on
-`http://127.0.0.1:8080`. Selecting 8K/16K/32K means selecting the matching
-OpenAI model id (e.g. `qwen38-original-dflash2-8k`). Automatic server restart
-is **out of scope** for this adapter.
+Verified launcher mode: MultiModel router on `http://127.0.0.1:8080`.
+Selecting a profile means selecting the matching OpenAI model id
+(exact profile_id). Automatic server restart is **out of scope** for this adapter.
 
 ## Request
 

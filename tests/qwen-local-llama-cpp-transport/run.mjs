@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * V4 — offline tests for llama.cpp primary qwen_local transport/profile policy.
+ * V4 — offline tests for six-profile qwen_local router transport/policy.
  * Generation calls: zero.
  */
 import {
@@ -8,7 +8,8 @@ import {
   validateBackend,
 } from "../../tools/qwen-local-adapter-v1.mjs";
 import {
-  CONTEXT_TOKENS,
+  PROFILE_IDS,
+  STARTUP_PROFILE_ID,
   getProfile,
   loadQwenLocalRuntime,
   validateProfilePolicy,
@@ -40,22 +41,22 @@ check(
 const runtime = loadQwenLocalRuntime();
 const runtimeOk = validateRuntimeDocument(runtime);
 check(
-  "fast-8k-canonical-default",
-  runtimeOk.ok === true && runtime.default_profile === "fast_8k",
+  "startup-opus-daily-default",
+  runtimeOk.ok === true && runtime.default_profile === STARTUP_PROFILE_ID,
   runtimeOk.reason || `default=${runtime.default_profile}`,
 );
 
-const dflashAll = ["fast_8k", "balanced_16k", "long_32k"].every((id) => {
+const noDflashRequired = PROFILE_IDS.every((id) => {
   const p = getProfile(runtime, id);
-  return p.ok && p.profile.dflash_required === true;
+  return p.ok && p.profile.dflash_required !== true;
 });
-check("all-normal-profiles-require-dflash", dflashAll, "dflash_required missing");
+check("no-profile-requires-dflash", noDflashRequired, "dflash_required still true");
 
 const contextsOk =
-  getProfile(runtime, "fast_8k").profile.context_tokens === 8192 &&
-  getProfile(runtime, "balanced_16k").profile.context_tokens === 16384 &&
-  getProfile(runtime, "long_32k").profile.context_tokens === 32768 &&
-  CONTEXT_TOKENS.length === 3;
+  getProfile(runtime, "qwen38-opus-q3-daily-16k").profile.context_tokens === 16384 &&
+  getProfile(runtime, "qwen38-opus-q3-agent-24k").profile.context_tokens === 24576 &&
+  getProfile(runtime, "qwen38-dcfr-iq3-fast-16k").profile.context_tokens === 16384 &&
+  getProfile(runtime, "qwen38-dcfr-iq3-agent-24k").profile.context_tokens === 24576;
 check("context-token-values-validate", contextsOk, "context token mismatch");
 
 check(
@@ -64,25 +65,33 @@ check(
   "unknown backend should fail",
 );
 
-const badDflash = validateProfilePolicy(
+const retiredDflash = validateProfilePolicy(
   {
-    backend: "llama_cpp",
-    dflash_required: false,
+    backend_lane: "normal_llama_cpp",
+    dflash_required: true,
     context_tokens: 8192,
-    spec_type: "none",
+    llama_cpp_model_id: "synthetic",
+    keep_in_selector: true,
   },
   "synthetic",
 );
 check(
-  "profile-dflash-required-false-fail",
-  badDflash.ok === false && badDflash.classification === "DFLASH_REQUIRED",
-  `got ${badDflash.classification}`,
+  "profile-dflash-required-true-fail",
+  retiredDflash.ok === false && retiredDflash.classification === "DFLASH_PROFILE_RETIRED",
+  `got ${retiredDflash.classification}`,
 );
 
 check(
   "unknown-profile-fail",
-  getProfile(runtime, "turbo_64k").ok === false,
-  "unknown profile should fail",
+  getProfile(runtime, "fast_8k").ok === false,
+  "legacy fast_8k should fail",
+);
+
+check(
+  "normal-llama-runtime-preserved",
+  runtime.normal_llama_cpp_runtime_preserved === true &&
+    String(runtime.launcher.normal_server_executable || "").includes("llama.cpp-dflash2"),
+  "normal runtime path",
 );
 
 if (prevBackend === undefined) {

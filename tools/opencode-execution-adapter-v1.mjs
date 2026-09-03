@@ -7,14 +7,20 @@
  */
 import { startSingleGenerationGuard } from "./opencode-single-generation-guard-v1.mjs";
 import { probeOpenCodeLocal } from "./probe-opencode-local-v1.mjs";
-import { getProfile, loadQwenLocalRuntime } from "./qwen-local-runtime-v1.mjs";
+import {
+  NEXT_WF40_EXECUTOR_PROFILE_ID,
+  getProfile,
+  loadQwenLocalRuntime,
+} from "./qwen-local-runtime-v1.mjs";
+import { validateScopeV2 } from "./qwen-execution-scope-v2.mjs";
 
 export const RESULT_SCHEMA = "opencode-execution-result-v1";
 export const AUTH_SCHEMA = "operator-runtime-authorization-v1";
 export const REQUIRED_ROUTE_ID = "opencode+qwen_local";
 export const REQUIRED_IMPLEMENTER = "opencode";
 export const REQUIRED_MODEL = "qwen_local";
-export const REQUIRED_PROFILE = "fast_8k";
+export const REQUIRED_PROFILE = NEXT_WF40_EXECUTOR_PROFILE_ID;
+export const REQUIRED_ROLE = "FAST_AGENT";
 export const DEFAULT_UPSTREAM_ORIGIN = "http://127.0.0.1:8080";
 export const DIRECT_QWEN_ENDPOINT_FORBIDDEN = "http://127.0.0.1:8080";
 
@@ -78,16 +84,8 @@ export function validateRuntimeAuthorization(auth) {
   if (!scope) {
     codes.push("AUTH_SCOPE_MISSING");
   } else {
-    if (scope.execution_harness !== REQUIRED_IMPLEMENTER) codes.push("AUTH_WRONG_IMPLEMENTER");
-    if (scope.model !== REQUIRED_MODEL) codes.push("AUTH_WRONG_MODEL");
-    if (scope.single_generation_guard_required !== true) codes.push("AUTH_GUARD_NOT_REQUIRED");
-    if (scope.max_opencode_executions !== 1) codes.push("AUTH_MAX_OPENCODE_EXECUTIONS_INVALID");
-    if (scope.max_qwen_generation_calls !== 1) codes.push("AUTH_MAX_QWEN_GENERATIONS_INVALID");
-    if (scope.retry !== 0) codes.push("AUTH_RETRY_INVALID");
-    if (scope.fallback !== 0) codes.push("AUTH_FALLBACK_INVALID");
-    const profile = scope.qwen_profile || scope.profile;
-    if (profile !== REQUIRED_PROFILE) codes.push("AUTH_PROFILE_INVALID");
-    if (scope.dflash_required !== true) codes.push("AUTH_DFLASH_NOT_REQUIRED");
+    const scopeCheck = validateScopeV2(scope);
+    if (!scopeCheck.ok) codes.push(...scopeCheck.reason_codes);
   }
   // Route must be exactly opencode+qwen_local if expressed.
   if (auth.route_id !== undefined && auth.route_id !== REQUIRED_ROUTE_ID) {
@@ -181,13 +179,13 @@ export async function executeOpenCodeBounded(request, options = {}) {
   }
 
   // Resolve runtime profile (offline-safe: config read only).
-  let modelId = "qwen38-original-dflash2-8k";
+  let modelId = REQUIRED_PROFILE;
   try {
     const runtime = loadQwenLocalRuntime();
     const prof = getProfile(runtime, REQUIRED_PROFILE);
     if (prof.ok) modelId = prof.profile.llama_cpp_model_id;
   } catch {
-    /* fall back to canonical model id */
+    /* fall back to canonical FAST_AGENT profile id */
   }
 
   const runOpenCode =

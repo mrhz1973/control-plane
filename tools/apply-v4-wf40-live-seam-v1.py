@@ -53,9 +53,9 @@ const executionId='wf40:'+task+':'+packetId;
 const digest=crypto.createHash('sha256').update(executionId,'utf8').digest('hex');
 const pendingId='PEND-WF40-'+digest;
 const authId='AUTH-WF40-'+digest;
-const scope={"execution_harness":"opencode","model":"qwen_local","single_generation_guard_required":true,"max_opencode_executions":1,"max_qwen_generation_calls":1,"retry":0,"fallback":0,"qwen_profile":"fast_8k","dflash_required":true};
+const scope={"scope_version":"qwen-execution-scope-v2","execution_harness":"opencode","model":"qwen_local","profile_id":"qwen38-dcfr-iq3-agent-24k","role":"FAST_AGENT","canonical_endpoint":"http://127.0.0.1:8080","single_generation_guard_required":true,"max_opencode_executions":1,"max_qwen_generation_calls":1,"retry":0,"fallback":0};
 const scopeDigest=crypto.createHash('sha256').update(JSON.stringify(scope),'utf8').digest('hex');
-if(scopeDigest!=='ca501cb41602028c4e575a08bcdfc491a793b7cb462790a6f3a4fc67efdb85aa') reasons.push('SCOPE_DIGEST_MISMATCH');
+if(scopeDigest!=='5261290cbdda414de0a6bd5ffd79e939f805eefde3fe2e39a8f490c5a2e02261') reasons.push('SCOPE_DIGEST_MISMATCH');
 if(executionId.length>200||pendingId.length>200||authId.length>200) reasons.push('ID_TOO_LONG');
 const ready=reasons.length===0;
 const register_request=ready?{"schema_version":"v4-runtime-authorization-register-pending-request-v1","pending_decision_id":pendingId,"authorization_id":authId,"task_id":task,"execution_id":executionId,"route_id":"opencode+qwen_local","scope_digest":scopeDigest,"pending_ttl_seconds":900}:null;
@@ -72,7 +72,7 @@ PARSE_STATUS_JS = _read_snippet("parse-authorization-status.js")
 
 BUILD_SIDECARS_JS = r"""const st=$input.item.json??{};
 const prop=$('Code - Prepare WF40 live execution proposal').item.json??{};
-const scope={"execution_harness":"opencode","model":"qwen_local","single_generation_guard_required":true,"max_opencode_executions":1,"max_qwen_generation_calls":1,"retry":0,"fallback":0,"qwen_profile":"fast_8k","dflash_required":true};
+const scope={"scope_version":"qwen-execution-scope-v2","execution_harness":"opencode","model":"qwen_local","profile_id":"qwen38-dcfr-iq3-agent-24k","role":"FAST_AGENT","canonical_endpoint":"http://127.0.0.1:8080","single_generation_guard_required":true,"max_opencode_executions":1,"max_qwen_generation_calls":1,"retry":0,"fallback":0};
 const expires=Date.parse(st.authorization_expires_at);
 const future=Number.isFinite(expires)&&expires>Date.now();
 const dispatch=(st.dispatch_result&&typeof st.dispatch_result==='object')?st.dispatch_result:(prop.dispatch_result||null);

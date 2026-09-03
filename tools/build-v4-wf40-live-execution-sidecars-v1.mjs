@@ -5,6 +5,12 @@
  */
 import { createHash } from "node:crypto";
 import { validatePacketObject } from "./validate-execution-packet-v1.mjs";
+import {
+  CANONICAL_SCOPE_DIGEST_V2,
+  FIXED_AUTHORIZATION_SCOPE_V2,
+  canonicalScopeDigestV2,
+  compactScopeV2Json,
+} from "./qwen-execution-scope-v2.mjs";
 
 export const REGISTER_SCHEMA =
   "v4-runtime-authorization-register-pending-request-v1";
@@ -18,21 +24,10 @@ export const PENDING_TTL_SECONDS = 900;
 export const STATUS_POLL_MAX = 300;
 export const ID_MAX = 200;
 
-/** Exact fixed scope — key order is part of the canonical digest. */
-export const FIXED_AUTHORIZATION_SCOPE = {
-  execution_harness: "opencode",
-  model: "qwen_local",
-  single_generation_guard_required: true,
-  max_opencode_executions: 1,
-  max_qwen_generation_calls: 1,
-  retry: 0,
-  fallback: 0,
-  qwen_profile: "fast_8k",
-  dflash_required: true,
-};
+/** Exact fixed scope v2 — key order is part of the canonical digest. */
+export const FIXED_AUTHORIZATION_SCOPE = FIXED_AUTHORIZATION_SCOPE_V2;
 
-export const CANONICAL_SCOPE_DIGEST =
-  "ca501cb41602028c4e575a08bcdfc491a793b7cb462790a6f3a4fc67efdb85aa";
+export const CANONICAL_SCOPE_DIGEST = CANONICAL_SCOPE_DIGEST_V2;
 
 function isPlainObject(v) {
   return !!v && typeof v === "object" && !Array.isArray(v);
@@ -43,11 +38,11 @@ function sha256Hex(text) {
 }
 
 export function compactScopeJson(scope = FIXED_AUTHORIZATION_SCOPE) {
-  return JSON.stringify(scope);
+  return compactScopeV2Json(scope);
 }
 
 export function canonicalScopeDigest(scope = FIXED_AUTHORIZATION_SCOPE) {
-  return sha256Hex(compactScopeJson(scope));
+  return canonicalScopeDigestV2(scope);
 }
 
 export function buildExecutionId(taskId, packetId) {

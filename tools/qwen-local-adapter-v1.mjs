@@ -313,7 +313,7 @@ async function obtainModelObject(request, options) {
     return { ok: false, classification: "MODEL_UNAVAILABLE" };
   }
 
-  const profileId = options.profile || runtime.default_profile || "fast_8k";
+  const profileId = options.profile || runtime.default_profile || "qwen38-opus-q3-daily-16k";
   const profileCheck = getProfile(runtime, profileId);
   if (!profileCheck.ok) {
     return { ok: false, classification: "MODEL_UNAVAILABLE" };

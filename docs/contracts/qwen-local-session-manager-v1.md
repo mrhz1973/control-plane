@@ -8,43 +8,39 @@ Bounded local runtime session manager for logical resource `qwen_local`.
 ensureQwenLocalReady({ profile })
         |
         v
-canonical llama.cpp READY?
+canonical MultiModel router READY on :8080?
    YES -> reuse (launch_performed=false)
-   NO  -> launch OPERATOR-TESTED launcher once
-        -> bounded poll /v1/models for DFlash2 profile
+   NO  -> launch OPERATOR-TESTED MultiModel launcher once
+        -> bounded poll /v1/models for exact profile_id
 ```
 
 Does **not**:
 - reconstruct llama.cpp CLI flags;
+- select/start DCFR sidecars directly (router owns backends);
 - kill/restart healthy servers;
 - mutate launcher / `qwen-models.ini`;
 - generate model text for readiness;
-- integrate EXECUTION_ROUTER / n8n;
-- update committed RESOURCE_STATUS.
+- require DFlash2.
 
 ## Profiles
 
-Resolved only from `configs/resources/qwen-local-runtime.json`:
+Resolved only from `configs/resources/qwen-local-runtime.json` as exact
+`profile_id` values exposed through `http://127.0.0.1:8080`:
 
-| Profile | Model id |
+| Profile | Role |
 |---|---|
-| `fast_8k` (default) | `qwen38-original-dflash2-8k` |
-| `balanced_16k` | `qwen38-original-dflash2-16k` |
-| `long_32k` | `qwen38-original-dflash2-32k` |
-
-All require `dflash_required=true`. AR fallback forbidden.
+| `qwen38-opus-q3-daily-16k` (default/startup) | DAILY / QUALITY |
+| `qwen38-opus-q3-agent-24k` | QUALITY_AGENT_24K |
+| `qwen38-dcfr-iq3-fast-16k` | FAST |
+| `qwen38-dcfr-iq3-agent-24k` | FAST_AGENT / MCP / BLENDER_FAST |
+| `qwen38-original-ar-16k` | REFERENCE |
+| `qwen38-uncensored-ar-16k` | MANUAL_UNCENSORED |
 
 ## Launcher
 
-Verified operator launcher (source of runtime parameters):
+Verified operator launcher (starts MultiModel router, not a reconstructed backend):
 
 `C:\Users\mrhz\Documents\AI\QWEN\Start-Qwen-MultiModel-16K.ps1`
-
-Invocation (when start needed):
-
-```text
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File <launcher>
-```
 
 ## Result statuses / reason codes
 
@@ -59,7 +55,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File <launcher>
 | `READINESS_TIMEOUT` | Bounded wait expired |
 | `API_UNREACHABLE` | API never reachable after launch path |
 | `PROFILE_NOT_EXPOSED` | API up but model id absent |
-| `DFLASH_REQUIRED` | Profile violates DFlash2 requirement |
+| `DFLASH_REQUIRED` | Legacy DFlash profile rejected under retired policy |
 
 ## Result shape
 
@@ -68,8 +64,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File <launcher>
   "schema_version": "qwen-local-session-manager-result-v1",
   "status": "READY",
   "ready": true,
-  "profile": "fast_8k",
-  "model_id": "qwen38-original-dflash2-8k",
+  "profile": "qwen38-opus-q3-daily-16k",
+  "model_id": "qwen38-opus-q3-daily-16k",
   "base_url": "http://127.0.0.1:8080",
   "launch_performed": false,
   "wait_elapsed_ms": 0,

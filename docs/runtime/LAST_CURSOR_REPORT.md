@@ -1,27 +1,28 @@
-# LAST CURSOR REPORT - control-plane (rolling)
+# LAST CURSOR REPORT
 
-## LATEST
+**BLOCK-ID:** `V4_QWEN_LOCAL_6_PROFILE_ROUTER_CONTROL_PLANE_INTEGRATION`  
+**RUN_NONCE:** `QWEN_6_PROFILE_ROUTER_INTEGRATION_20260903_01`  
+**Classification:** `QWEN_LOCAL_6_PROFILE_ROUTER_CONTROL_PLANE_INTEGRATION_PASS`  
+**Timestamp (local):** 2026-09-03
 
-```yaml
-task_ref: V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF_POST_POSTGRES
-run_nonce: WF40_PG_FIRST_LIVE_005_20260901_01
-result_cursor: STOP
-classification: WF40_BACKLOG_PIPELINE_NOT_ENGAGED_COMMIT_COORDINATION_FAILURE
-query_preflight: PASS
-target_wf40: 0
-provider: 0
-register_pending: 0
-human_approve: 0
-execution_endpoint: 0
-opencode: 0
-qwen: 0
-auth005_state: ABSENT
-prod_db_after_stop: POSTGRESQL
-prod_health_after_stop: PASS
-d0025_final: CLOSED
-next: V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF_POST_POSTGRES_RETRY
+## Summary
 
-evidence:
-  - reports/architecture/v4_wf40_first_live_authorized_execution_proof_post_postgres.md
-  - reports/runtime/cursor-stops/2026-09-01T161230Z__V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF_POST_POSTGRES.stop.json
-```
+Migrated ACTIVE Control Plane contracts/config/tools/tests from legacy
+`fast_8k` / `dflash_required` / abstract AGENT_16K assumptions to the
+authoritative six-profile MultiModel router at `http://127.0.0.1:8080`.
+
+- Profiles verified via `/v1/models`: **6/6**
+- Startup/default: `qwen38-opus-q3-daily-16k`
+- Next WF40 executor: `qwen38-dcfr-iq3-agent-24k` / FAST_AGENT
+- Uncensored retained for explicit user selection only
+- Scope v2 digest: `5261290cbdda414de0a6bd5ffd79e939f805eefde3fe2e39a8f490c5a2e02261`
+- Real Qwen generations: **0**
+- D-0025: **CLOSED**
+- Prod DB: PostgreSQL **16.15** · health **200** · WF40 83 nodes active · WF61 inactive · ACTIVE auth **0**
+
+## NEXT
+
+`V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF_POST_POSTGRES_RETRY`
+
+Evidence report:
+`reports/architecture/v4_qwen_local_6_profile_router_control_plane_integration.md`

@@ -1,87 +1,138 @@
 {
   "schema_version": "qwen-local-model-policy-v1",
-  "policy_version": "qwen38-rtx3060-2026-09-02",
+  "policy_version": "qwen38-rtx3060-2026-09-03",
   "scope": "control-plane",
+  "status": "RUNTIME_INTEGRATED_SIX_PROFILE_ROUTER",
   "source": {
     "repository": "mrhz1973/qwen38-blender-lab",
-    "benchmark_commit": "a3b6daef80be62eced02bc6249fa85d45b4ed7bc",
-    "hardware_target": "RTX 3060 12GB / Ryzen 9 3900X / 32GB RAM"
+    "milestone_commits": [
+      "a3b6daef80be62eced02bc6249fa85d45b4ed7bc",
+      "7d5dfbf9e8b5c933a8fdb6be437495f0a5dfa562",
+      "eaf61b845958b7ba1c1461459b6af0289cd9d147",
+      "ec01e6496bf7b5d52bbe1c90550f18eb240bd9d8",
+      "97181726f23c33b6211f7721d12e9f65770c60a9",
+      "686cb27746072059376f10f11575f95b223307da",
+      "03198e1587f6388634c9ffd749f1633c05e72aa8"
+    ],
+    "hardware_target": "RTX 3060 12GB / Ryzen 9 3900X / 32GB RAM",
+    "canonical_endpoint": "http://127.0.0.1:8080",
+    "startup_profile_id": "qwen38-opus-q3-daily-16k",
+    "router_owner": "qwen_runtime_router.py"
   },
-  "status": "BENCHMARK_SELECTED_NOT_YET_RUNTIME_INTEGRATED",
-  "default_role": "DAILY_QUALITY",
-  "roles": {
-    "DAILY_QUALITY": {
-      "model_alias": "OPUS_Q3",
-      "model_file": "D:/AI/qwen38-blender-lab/models/qwen38-opus/Qwen3.8-27B-Opus-Distill-v2-Q3_K_M.gguf",
-      "model_sha256": "abca69f6401dfdf361092071687b9a925df9c4846d4f040e4facddb663f74e0b",
-      "runtime_kind": "llama_cpp_cuda",
-      "runtime_executable": "C:/Users/mrhz/llama.cpp-dflash2/build-cuda/bin/llama-server.exe",
-      "runtime_build": "10499",
-      "runtime_commit": "1deefcca3",
-      "use_for": [
-        "complex_reasoning",
-        "planning",
-        "architecture",
-        "high_value_code_generation",
-        "code_review",
-        "decision_support",
-        "prompt_generation_for_implementers"
-      ]
-    },
-    "FAST_AGENT": {
-      "model_alias": "DCFR_IQ3",
-      "model_file": "D:/AI/qwen38-blender-lab/models/qwen38-iq3/Qwen3.8-27B-UD-IQ3_XXS.gguf",
-      "model_sha256": "c0b7c3038681ed2e3040456c1dd45f9858b6c2290bed172c70388a94874f3eee",
-      "runtime_kind": "dcfr_patched_llama_cpp",
-      "runtime_root": "D:/AI/qwen38-blender-lab/runtimes/dcfr/qwen38-27b-rtx3060-dcfr",
-      "runtime_executable": "D:/AI/qwen38-blender-lab/runtimes/dcfr/qwen38-27b-rtx3060-dcfr/third_party/llama.cpp/build-cuda/bin/llama-server.exe",
-      "runtime_version": "0.2.0-dev (build 4, commit c060ca974c77-dcfr)",
-      "runtime_sha256": "fb26db5520d2ccdd57ac0575c62e120ccb6db74a1292ef0cd85bfdec721d631d",
-      "use_for": [
-        "tool_heavy_agent",
-        "mcp_generic",
-        "opencode_execution",
-        "repeated_control_loop",
-        "structured_tool_calls",
-        "latency_sensitive_local_execution",
-        "automation_executor",
-        "polling_and_status"
-      ]
-    }
+  "catalog": {
+    "required_count": 6,
+    "profiles": [
+      {
+        "profile_id": "qwen38-opus-q3-daily-16k",
+        "roles": ["DAILY", "QUALITY"],
+        "family": "OPUS_Q3",
+        "context_tokens": 16384,
+        "backend_lane": "normal_llama_cpp",
+        "keep_in_selector": true,
+        "selection": "auto_or_explicit"
+      },
+      {
+        "profile_id": "qwen38-opus-q3-agent-24k",
+        "roles": ["QUALITY_AGENT_24K"],
+        "family": "OPUS_Q3",
+        "context_tokens": 24576,
+        "backend_lane": "normal_llama_cpp",
+        "keep_in_selector": true,
+        "selection": "auto_or_explicit"
+      },
+      {
+        "profile_id": "qwen38-dcfr-iq3-fast-16k",
+        "roles": ["FAST"],
+        "family": "DCFR_IQ3",
+        "context_tokens": 16384,
+        "backend_lane": "dcfr_patched_llama_cpp",
+        "keep_in_selector": true,
+        "selection": "auto_or_explicit"
+      },
+      {
+        "profile_id": "qwen38-dcfr-iq3-agent-24k",
+        "roles": ["FAST_AGENT", "MCP", "BLENDER_FAST"],
+        "family": "DCFR_IQ3",
+        "context_tokens": 24576,
+        "backend_lane": "dcfr_patched_llama_cpp",
+        "keep_in_selector": true,
+        "selection": "auto_or_explicit",
+        "next_wf40_executor": true
+      },
+      {
+        "profile_id": "qwen38-original-ar-16k",
+        "roles": ["REFERENCE"],
+        "family": "ORIGINAL_AR",
+        "context_tokens": 16384,
+        "backend_lane": "normal_llama_cpp",
+        "keep_in_selector": true,
+        "selection": "auto_or_explicit"
+      },
+      {
+        "profile_id": "qwen38-uncensored-ar-16k",
+        "roles": ["MANUAL_UNCENSORED", "USER_OVERRIDE"],
+        "family": "UNCENSORED_AR",
+        "context_tokens": 16384,
+        "backend_lane": "normal_llama_cpp",
+        "keep_in_selector": true,
+        "selection": "explicit_user_choice",
+        "auto_route_sensitive_topics": false,
+        "delete_without_explicit_user_authorization": false
+      }
+    ]
   },
-  "routing": {
-    "default": "OPUS_Q3",
-    "executor_default": "DCFR_IQ3",
-    "planner_executor_pattern": "OPUS_Q3 plans/reviews; DCFR_IQ3 executes deterministic tool loops; return to OPUS_Q3 on ambiguity, failure, or high-value review"
+  "role_to_profile_id": {
+    "DAILY": "qwen38-opus-q3-daily-16k",
+    "QUALITY": "qwen38-opus-q3-daily-16k",
+    "QUALITY_AGENT_24K": "qwen38-opus-q3-agent-24k",
+    "FAST": "qwen38-dcfr-iq3-fast-16k",
+    "FAST_AGENT": "qwen38-dcfr-iq3-agent-24k",
+    "MCP": "qwen38-dcfr-iq3-agent-24k",
+    "BLENDER_FAST": "qwen38-dcfr-iq3-agent-24k",
+    "REFERENCE": "qwen38-original-ar-16k",
+    "MANUAL_UNCENSORED": "qwen38-uncensored-ar-16k"
   },
-  "context_presets": {
-    "FAST_INTERACTIVE": {
-      "usage": "routine short control-plane work",
-      "context_tokens": 8192
-    },
-    "AGENT_16K": {
-      "usage": "normal MCP/tool/OpenCode work",
-      "context_tokens": 16384
-    },
-    "AGENT_HEAVY_24K": {
-      "usage": "large tool schemas or large control-plane state",
-      "context_tokens": 24576
-    }
+  "identities": {
+    "opus_model_file": "D:/AI/qwen38-blender-lab/models/qwen38-opus/Qwen3.8-27B-Opus-Distill-v2-Q3_K_M.gguf",
+    "opus_model_sha256": "abca69f6401dfdf361092071687b9a925df9c4846d4f040e4facddb663f74e0b",
+    "normal_llama_runtime": "C:/Users/mrhz/llama.cpp-dflash2/build-cuda/bin/llama-server.exe",
+    "normal_llama_build": "10499",
+    "normal_llama_commit": "1deefcca3",
+    "dcfr_model_file": "D:/AI/qwen38-blender-lab/models/qwen38-iq3/Qwen3.8-27B-UD-IQ3_XXS.gguf",
+    "dcfr_model_sha256": "c0b7c3038681ed2e3040456c1dd45f9858b6c2290bed172c70388a94874f3eee",
+    "dcfr_runtime": "D:/AI/qwen38-blender-lab/runtimes/dcfr/qwen38-27b-rtx3060-dcfr/third_party/llama.cpp/build-cuda/bin/llama-server.exe",
+    "dcfr_runtime_version": "0.2.0-dev (build 4, commit c060ca974c77-dcfr)",
+    "dcfr_runtime_sha256": "fb26db5520d2ccdd57ac0575c62e120ccb6db74a1292ef0cd85bfdec721d631d"
+  },
+  "routing_invariants": {
+    "control_plane_selects": "exact_profile_id_through_8080",
+    "router_selects_backend": true,
+    "reconstruct_llama_server_commands": false,
+    "sensitive_topic_auto_selects_uncensored": false,
+    "fast_agent_may_not_silently_fall_back_to_dcfr_16k": true,
+    "dcfr_may_not_silently_use_normal_runtime": true,
+    "dflash2_profiles_retired": true,
+    "llama_cpp_dflash2_directory_still_required_as_normal_runtime": true
+  },
+  "uncensored_policy": {
+    "profile_id": "qwen38-uncensored-ar-16k",
+    "keep_in_selector": true,
+    "selection": "explicit_user_choice",
+    "auto_route_sensitive_topics": false,
+    "delete_without_explicit_user_authorization": false,
+    "benchmark_retired_means": "do_not_auto_select_for_sensitive_topics_only"
+  },
+  "next_wf40_executor": {
+    "profile_id": "qwen38-dcfr-iq3-agent-24k",
+    "role": "FAST_AGENT",
+    "canonical_endpoint": "http://127.0.0.1:8080",
+    "scope_version": "qwen-execution-scope-v2"
   },
   "do_not_promote": {
-    "DFLASH": "decode regression on this workstation",
+    "DFLASH2_PROFILES": "retired speculative profiles; directory name historical only",
     "Q2_DCFR": "raw-speed-only; reasoning collapsed",
     "FULL_HAUHAU_Q3": "capability/reasoning failure",
-    "EXL3_3_5bpw": "not viable on 12GB VRAM"
-  },
-  "control_plane_exclusions": [
-    "blender_specific_routing",
-    "blender_mcp_policy"
-  ],
-  "migration_requirements": [
-    "Do not treat the benchmark-selected models as exposed on the current :8080 router until launcher/profile integration is mechanically verified.",
-    "Remove DFlash as a production requirement from control-plane runtime contracts before the next live Qwen generation.",
-    "Preserve external human authorization and one-generation guards independently of model discipline.",
-    "DCFR_IQ3 must use its dedicated patched D-CFR runtime; do not launch it under the normal llama.cpp binary and assume benchmark equivalence."
-  ]
+    "EXL3_3_5bpw": "not viable on 12GB VRAM",
+    "DCFR_16K_AS_FAST_AGENT": "FAST_AGENT must be qwen38-dcfr-iq3-agent-24k"
+  }
 }

@@ -1,137 +1,116 @@
 # Qwen local role-routing policy — Control Plane
 
-Status: **CANONICAL POLICY — runtime integration pending**  
-Policy version: `qwen38-rtx3060-2026-09-02`
+Status: **CANONICAL — six-profile MultiModel router integrated**  
+Policy version: `qwen38-rtx3060-2026-09-03`
 
-Source benchmark repository: `mrhz1973/qwen38-blender-lab`  
-Source benchmark commit: `a3b6daef80be62eced02bc6249fa85d45b4ed7bc`
+Authoritative runtime: existing MultiModel router at `http://127.0.0.1:8080`  
+Source repository: `mrhz1973/qwen38-blender-lab` (milestone commits through `03198e1587f6388634c9ffd749f1633c05e72aa8`)
 
-This policy is scoped to the **Control Plane**. Blender-specific routing is deliberately excluded; Blender remains a separate downstream project concern.
+This supersedes the 2026-09-02 abstract OPUS/DCFR + `AGENT_16K` draft and the prior
+`fast_8k` / DFlash2 universal production assumptions.
 
-## Decision
-
-The local Qwen runtime is role-routed. One model is not the default for every workload.
-
-### OPUS_Q3 — DAILY / QUALITY / planner-reviewer
-
-Use for:
-
-- complex reasoning;
-- planning and architecture;
-- high-value code generation and review;
-- task decomposition;
-- implementation/Cursor prompt generation;
-- ambiguous failure analysis;
-- decision support and final review.
-
-Selected model:
-
-`D:\AI\qwen38-blender-lab\models\qwen38-opus\Qwen3.8-27B-Opus-Distill-v2-Q3_K_M.gguf`
-
-SHA-256:
-
-`abca69f6401dfdf361092071687b9a925df9c4846d4f040e4facddb663f74e0b`
-
-Validated runtime lane: normal llama.cpp CUDA, build `10499`, commit `1deefcca3`.
-
-### DCFR_IQ3 — FAST / FAST_AGENT / executor
-
-Use for:
-
-- OpenCode execution;
-- generic MCP/tool-heavy work;
-- repeated control loops;
-- polling/status operations;
-- structured tool calls;
-- deterministic automation steps;
-- latency-sensitive local execution.
-
-Selected model:
-
-`D:\AI\qwen38-blender-lab\models\qwen38-iq3\Qwen3.8-27B-UD-IQ3_XXS.gguf`
-
-SHA-256:
-
-`c0b7c3038681ed2e3040456c1dd45f9858b6c2290bed172c70388a94874f3eee`
-
-Required runtime lane:
-
-`D:\AI\qwen38-blender-lab\runtimes\dcfr\qwen38-27b-rtx3060-dcfr\third_party\llama.cpp\build-cuda\bin\llama-server.exe`
-
-Runtime version: `0.2.0-dev (build 4, commit c060ca974c77-dcfr)`.
-
-DCFR_IQ3 **must not** be silently launched under the normal llama.cpp runtime.
-
-## Routing pattern
+## Architecture
 
 ```text
-STATE / TASK
-    |
-    v
-complex / ambiguous / architectural?
-    | yes
-    v
-OPUS_Q3 planner/reviewer
-    |
-    v
-bounded TASK DELTA
-    |
-    v
-DCFR_IQ3 FAST_AGENT executor
-    |
-    v
-observation
-    |
-    +-- deterministic -> DCFR continues bounded loop
-    |
-    +-- ambiguous / failure / high-value review -> OPUS_Q3
+Control Plane selects exact profile_id
+        |
+        v
+http://127.0.0.1:8080  (qwen_runtime_router.py)
+        |
+        +-- normal llama.cpp backend :18080
+        |
+        +-- D-CFR on-demand sidecars :18200 / :18210
 ```
 
-External human/security gates remain authoritative. Model selection never weakens authorization boundaries.
+Control Plane **must not** reconstruct `llama-server` launch commands.
+The router owns backend selection and the production stream/identity fixes.
 
-## Context presets
+Startup / default profile: `qwen38-opus-q3-daily-16k`.
 
-Context is a runtime preset, not a separate model identity.
+## Six production profiles (immutable catalog)
 
-| Preset | Context | Intended use |
-|---|---:|---|
-| `FAST_INTERACTIVE` | 8K | short routine work |
-| `AGENT_16K` | 16K | normal tool/MCP/OpenCode agent work |
-| `AGENT_HEAVY_24K` | 24K | large tool schema / large control-plane state |
+| profile_id | Role(s) |
+|---|---|
+| `qwen38-opus-q3-daily-16k` | DAILY / QUALITY |
+| `qwen38-opus-q3-agent-24k` | QUALITY_AGENT_24K |
+| `qwen38-dcfr-iq3-fast-16k` | FAST |
+| `qwen38-dcfr-iq3-agent-24k` | FAST_AGENT / MCP / BLENDER_FAST |
+| `qwen38-original-ar-16k` | REFERENCE |
+| `qwen38-uncensored-ar-16k` | MANUAL_UNCENSORED / USER_OVERRIDE |
 
-Do not assume 8K is universally sufficient for tool-heavy sessions.
+`GET /v1/models` through `:8080` must expose exactly these six production profiles.
+Do not remove, rename, hide, retire, or delete any of them.
 
-## Superseded production assumptions
+## Automatic routing (exact profile IDs)
 
-The following old Control Plane production assumptions are superseded by this policy and must be migrated before the next real local-Qwen live generation:
+| Role | profile_id |
+|---|---|
+| DAILY | `qwen38-opus-q3-daily-16k` |
+| QUALITY | `qwen38-opus-q3-daily-16k` |
+| QUALITY_AGENT_24K | `qwen38-opus-q3-agent-24k` |
+| FAST | `qwen38-dcfr-iq3-fast-16k` |
+| FAST_AGENT | `qwen38-dcfr-iq3-agent-24k` |
+| MCP | `qwen38-dcfr-iq3-agent-24k` |
+| BLENDER_FAST | `qwen38-dcfr-iq3-agent-24k` |
+| REFERENCE | `qwen38-original-ar-16k` |
+| MANUAL_UNCENSORED | `qwen38-uncensored-ar-16k` |
 
-- `qwen38-original-dflash2-8k` as the universal production model;
-- `fast_8k` as the universal execution profile;
-- `dflash_required=true` as a production invariant;
-- AR/non-DFlash being categorically forbidden.
+Invariants:
 
-The benchmark found DFlash lanes slower on the target RTX 3060. DFlash is therefore **DO_NOT_PROMOTE** for the current Control Plane hardware.
+- FAST_AGENT must not silently fall back to DCFR 16K.
+- DCFR profiles must not silently use the normal llama.cpp backend.
+- Sensitive topics must **not** auto-select Uncensored.
+- Explicit user selection may override OPUS/DCFR preference, including Uncensored.
+- Human authorization for external/irreversible actions remains unchanged.
 
-## Do not promote
+## Uncensored retention (hard)
 
-- `DFLASH` — decode regression on this workstation;
-- `Q2_DCFR` — raw-speed-only; reasoning collapse;
-- `FULL_HAUHAU_Q3` — capability/reasoning failure;
-- `EXL3_3_5bpw` — non-viable on 12 GB VRAM.
+`qwen38-uncensored-ar-16k` remains available:
 
-## Runtime-integration gate
+- `keep_in_selector = true`
+- `selection = explicit_user_choice`
+- `auto_route_sensitive_topics = false`
+- `delete_without_explicit_user_authorization = false`
 
-This policy does **not** claim that OPUS_Q3 or DCFR_IQ3 are already exposed on the current `127.0.0.1:8080` MultiModel router.
+Benchmark “UNCENSORED_SPECIALIST = RETIRED” means only: do not auto-select for
+sensitive topics. It does **not** authorize removal, hiding, or deletion.
 
-Before any live Control Plane generation using the new policy, implementation must mechanically verify:
+## Next WF40 executor
 
-1. launcher/profile integration for both selected models;
-2. per-profile runtime selection so DCFR uses its patched binary;
-3. `/v1/models` exposes the intended profile/model IDs;
-4. readiness/session-manager logic no longer hardcodes DFlash;
-5. OpenCode/authorization scope binds the chosen role/profile exactly;
-6. one-generation, retry=0, fallback=0 and human authorization invariants remain intact.
+```text
+profile_id = qwen38-dcfr-iq3-agent-24k
+role       = FAST_AGENT
+endpoint   = http://127.0.0.1:8080
+scope_version = qwen-execution-scope-v2
+```
 
-Machine-readable source of truth:
+Do not target `qwen38-dcfr-iq3-fast-16k`.
+Do not reconstruct `DCFR_IQ3 + context_preset=AGENT_16K`.
 
-`configs/resources/qwen-local-model-policy.json`
+## DFlash2 semantics
+
+Production DFlash2 **profiles** are RETIRED (do not restore Original/Uncensored
+DFlash2 8K/16K/32K; do not require `dflash_required=true`).
+
+`C:\Users\mrhz\llama.cpp-dflash2\` remains the **normal** production llama.cpp
+runtime directory. Do not confuse profile retirement with directory unused.
+
+## Identities (attestation only)
+
+- OPUS GGUF SHA-256 `abca69f6401dfdf361092071687b9a925df9c4846d4f040e4facddb663f74e0b`
+- Normal runtime: llama.cpp build `10499` / commit `1deefcca3`
+- DCFR GGUF SHA-256 `c0b7c3038681ed2e3040456c1dd45f9858b6c2290bed172c70388a94874f3eee`
+- DCFR runtime binary SHA-256 `fb26db5520d2ccdd57ac0575c62e120ccb6db74a1292ef0cd85bfdec721d631d`
+
+These are readiness/attestation data, not permission to reconstruct launches.
+
+## Authorization scope
+
+Active producers/consumers use `qwen-execution-scope-v2` (see
+`docs/contracts/qwen-execution-scope-v2.md`). Register-pending HTTP body remains
+exactly eight keys; `route_id` remains `opencode+qwen_local`.
+
+## Machine source of truth
+
+`configs/resources/qwen-local-model-policy.json`  
+`configs/resources/qwen-local-runtime.json`

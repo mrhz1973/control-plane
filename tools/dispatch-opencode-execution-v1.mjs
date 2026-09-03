@@ -15,7 +15,7 @@ export const SPEC_SCHEMA = "opencode-dispatch-spec-v1";
 
 export const ALLOWED_IMPLEMENTER = "opencode";
 export const ALLOWED_MODEL = "qwen_local";
-export const DEFAULT_PROFILE = "fast_8k";
+export const DEFAULT_PROFILE = "qwen38-dcfr-iq3-agent-24k";
 export const QWEN_LOCAL_PROVIDER_ID = "qwen_local";
 
 const SECRET_PATTERNS = [
@@ -191,7 +191,8 @@ export function buildOpenCodeDispatchSpec({
       profile,
       llama_cpp_model_id: modelId,
       base_url: qwenSession.base_url,
-      dflash_required: true,
+      dflash_required: false,
+      canonical_endpoint: "http://127.0.0.1:8080",
     },
     provider_config_overlay: buildOpenCodeProviderOverlay({
       baseUrl: qwenSession.base_url,

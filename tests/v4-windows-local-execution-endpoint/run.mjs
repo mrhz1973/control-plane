@@ -26,6 +26,7 @@ import {
   loadSpendLedger as realLoadLedger,
   LEDGER_SCHEMA_VERSION,
 } from "../../tools/v4-runtime-authorization-durable-spend-ledger-v1.mjs";
+import { FIXED_AUTHORIZATION_SCOPE_V2 } from "../../tools/qwen-execution-scope-v2.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -53,17 +54,7 @@ function validAuth(overrides = {}) {
     authorization_id: overrides.authorization_id || "AUTH-ENDPT-1",
     authorization_state: "ACTIVE",
     route_id: "opencode+qwen_local",
-    scope: {
-      execution_harness: "opencode",
-      model: "qwen_local",
-      single_generation_guard_required: true,
-      max_opencode_executions: 1,
-      max_qwen_generation_calls: 1,
-      retry: 0,
-      fallback: 0,
-      qwen_profile: "fast_8k",
-      dflash_required: true,
-    },
+    scope: { ...FIXED_AUTHORIZATION_SCOPE_V2 },
   };
 }
 
@@ -304,7 +295,7 @@ await test("resolveOpenCodeNoShellInvocation never returns shell:true", async ()
 await test("buildOpenCodeArgv uses proven CLI surface only", async () => {
   const argv = mod.buildOpenCodeArgv({
     workspaceRoot: "C:\\\\repo",
-    modelId: "qwen38-original-dflash2-8k",
+    modelId: "qwen38-dcfr-iq3-agent-24k",
     message: "goal text",
   });
   assert.deepEqual(argv, [
@@ -313,7 +304,7 @@ await test("buildOpenCodeArgv uses proven CLI surface only", async () => {
     "--dir",
     "C:\\\\repo",
     "-m",
-    "qwen_local/qwen38-original-dflash2-8k",
+    "qwen_local/qwen38-dcfr-iq3-agent-24k",
     "--format",
     "json",
     "--title",

@@ -37,19 +37,23 @@ Exact compact JSON object (key order fixed as shown):
 
 ```json
 {
+  "scope_version": "qwen-execution-scope-v2",
   "execution_harness": "opencode",
   "model": "qwen_local",
+  "profile_id": "qwen38-dcfr-iq3-agent-24k",
+  "role": "FAST_AGENT",
+  "canonical_endpoint": "http://127.0.0.1:8080",
   "single_generation_guard_required": true,
   "max_opencode_executions": 1,
   "max_qwen_generation_calls": 1,
   "retry": 0,
-  "fallback": 0,
-  "qwen_profile": "fast_8k",
-  "dflash_required": true
+  "fallback": 0
 }
 ```
 
-`scope_digest` = SHA-256 hex (lowercase) of that exact compact JSON string.
+`scope_digest` = SHA-256 hex (lowercase) of that exact compact JSON string:
+
+`5261290cbdda414de0a6bd5ffd79e939f805eefde3fe2e39a8f490c5a2e02261`
 
 ## Deterministic IDs
 

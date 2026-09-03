@@ -48,8 +48,8 @@ function sessionReady() {
     schema_version: "qwen-local-session-manager-result-v1",
     status: "READY",
     ready: true,
-    profile: "fast_8k",
-    model_id: "qwen38-original-dflash2-8k",
+    profile: "qwen38-dcfr-iq3-agent-24k",
+    model_id: "qwen38-dcfr-iq3-agent-24k",
     base_url: "http://127.0.0.1:8080",
     launch_performed: false,
     wait_elapsed_ms: 0,
@@ -99,7 +99,7 @@ async function run() {
       out.classification === "DISPATCH_READY" &&
         out.dispatch_ready === true &&
         out.execution_performed === false &&
-        out.dispatch_spec?.model_selector === "qwen_local/qwen38-original-dflash2-8k",
+        out.dispatch_spec?.model_selector === "qwen_local/qwen38-dcfr-iq3-agent-24k",
       JSON.stringify(out.classification),
     );
   }

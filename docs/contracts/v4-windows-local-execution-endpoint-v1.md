@@ -92,8 +92,11 @@ The endpoint v1 intentionally accepts a strict subset of the adapter's backward-
 - `scope.max_qwen_generation_calls = 1`
 - `scope.retry = 0`
 - `scope.fallback = 0`
-- `scope.qwen_profile = fast_8k`
-- `scope.dflash_required = true`
+- `scope.scope_version = qwen-execution-scope-v2`
+- `scope.profile_id = qwen38-dcfr-iq3-agent-24k`
+- `scope.role = FAST_AGENT`
+- `scope.canonical_endpoint = http://127.0.0.1:8080`
+- no `dflash_required` / no legacy `qwen_profile`
 
 The endpoint MUST forward this authorization object unchanged to `executeOpenCodeBounded()` and MUST NOT weaken adapter validation.
 

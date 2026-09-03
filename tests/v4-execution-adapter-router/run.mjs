@@ -16,6 +16,7 @@ import {
 import {
   registerExecutionAdapter,
 } from "../../tools/v4-execution-adapter-registry-v1.mjs";
+import { FIXED_AUTHORIZATION_SCOPE_V2 } from "../../tools/qwen-execution-scope-v2.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const results = [];
@@ -50,18 +51,7 @@ function activeAuth() {
     spent: false,
     used: false,
     route_id: "opencode+qwen_local",
-    scope: {
-      execution_harness: "opencode",
-      model: "qwen_local",
-      qwen_profile: "fast_8k",
-      dflash_required: true,
-      max_opencode_executions: 1,
-      max_qwen_generation_calls: 1,
-      retry: 0,
-      fallback: 0,
-      single_generation_guard_required: true,
-      single_generation_guard_upstream: "http://127.0.0.1:8080",
-    },
+    scope: { ...FIXED_AUTHORIZATION_SCOPE_V2 },
   };
 }
 

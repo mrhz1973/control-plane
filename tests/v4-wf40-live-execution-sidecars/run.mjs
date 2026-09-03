@@ -157,7 +157,7 @@ async function main() {
     check(
       "canonical-scope-digest",
       canonicalScopeDigest() === CANONICAL_SCOPE_DIGEST &&
-        Object.keys(FIXED_AUTHORIZATION_SCOPE).length === 9,
+        Object.keys(FIXED_AUTHORIZATION_SCOPE).length === 11,
       `digest=${canonicalScopeDigest()}`,
     );
 

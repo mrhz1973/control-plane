@@ -7,7 +7,7 @@
  * fail-closed baseline. Does NOT mark any non-qwen resource available.
  *
  * Usage:
- *   node tools/collect-qwen-local-resource-status-v1.mjs [--profile fast_8k] [--out <temp-path>]
+ *   node tools/collect-qwen-local-resource-status-v1.mjs [--profile qwen38-opus-q3-daily-16k] [--out <temp-path>]
  *
  * Exit: 0 on schema-valid overlay; non-zero on fail-closed collector error.
  */
@@ -21,6 +21,12 @@ import {
   opencodeResourceEntryUnavailable,
   probeOpenCodeLocal,
 } from "./probe-opencode-local-v1.mjs";
+import {
+  ROLE_TO_PROFILE_ID,
+  STARTUP_PROFILE_ID,
+  loadQwenLocalRuntime,
+  validateRuntimeDocument,
+} from "./qwen-local-runtime-v1.mjs";
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const BASELINE_PATH = resolve(
@@ -99,18 +105,53 @@ function isMalformedSession(session) {
   return false;
 }
 
+function mapSessionToReadinessClass(session) {
+  if (!session || typeof session !== "object") return "UNCERTAIN";
+  if (isReadySession(session)) return "QWEN_READY_IDLE";
+  if (
+    session.status === "API_UNREACHABLE" ||
+    session.status === "LAUNCHER_NOT_FOUND" ||
+    session.reason_code === "API_UNREACHABLE" ||
+    session.reason_code === "LAUNCHER_NOT_FOUND"
+  ) {
+    return "QWEN_NOT_RUNNING_SAFE_TO_START";
+  }
+  if (session.status === "BUSY" || session.reason_code === "BUSY") {
+    return "BUSY";
+  }
+  return "UNCERTAIN";
+}
+
+function assessRouterResource(session, profile, role) {
+  let catalog_valid = false;
+  try {
+    catalog_valid = validateRuntimeDocument(loadQwenLocalRuntime()).ok === true;
+  } catch {
+    catalog_valid = false;
+  }
+  return {
+    canonical_endpoint: "http://127.0.0.1:8080",
+    production_catalog_valid: catalog_valid,
+    selected_profile_id: profile || STARTUP_PROFILE_ID,
+    selected_role: role || null,
+    readiness_class: mapSessionToReadinessClass(session),
+    router_worker_ready: isReadySession(session),
+  };
+}
+
 /**
  * Collect a complete resource-status-v1 overlay with fresh qwen_local.
  *
  * options:
- *   profile — default fast_8k
+ *   profile — default qwen38-opus-q3-daily-16k
  *   ensureReady — injectable session manager
  *   baseline / baselinePath
  *   clock — () => Date|string|number
  *   outPath — optional ephemeral write path (must be explicit)
  */
 export async function collectQwenLocalResourceStatus(options = {}) {
-  const profile = options.profile || "fast_8k";
+  const profile = options.profile || "qwen38-opus-q3-daily-16k";
+  const role = options.role || null;
   const ensureReady = options.ensureReady || ensureQwenLocalReady;
   const clock = options.clock || (() => new Date());
   const baseline =
@@ -120,6 +161,10 @@ export async function collectQwenLocalResourceStatus(options = {}) {
   // Never mutate caller/baseline object.
   const overlay = deepClone(baseline);
   const stamp = isoNow(clock);
+  const resolvedRole =
+    role ||
+    Object.entries(ROLE_TO_PROFILE_ID).find(([, id]) => id === profile)?.[0] ||
+    null;
 
   let session;
   try {
@@ -131,6 +176,7 @@ export async function collectQwenLocalResourceStatus(options = {}) {
       reason: "session manager threw",
       status: null,
       session: null,
+      router_assessment: assessRouterResource(null, profile, resolvedRole),
     };
   }
 
@@ -141,6 +187,7 @@ export async function collectQwenLocalResourceStatus(options = {}) {
       reason: "malformed session-manager result",
       status: null,
       session,
+      router_assessment: assessRouterResource(session, profile, resolvedRole),
     };
   }
 
@@ -152,6 +199,7 @@ export async function collectQwenLocalResourceStatus(options = {}) {
       reason: "baseline missing resources",
       status: null,
       session,
+      router_assessment: assessRouterResource(session, profile, resolvedRole),
     };
   }
 
@@ -184,6 +232,7 @@ export async function collectQwenLocalResourceStatus(options = {}) {
       status: null,
       session,
       validation,
+      router_assessment: assessRouterResource(session, profile, resolvedRole),
     };
   }
 
@@ -195,11 +244,12 @@ export async function collectQwenLocalResourceStatus(options = {}) {
     qwen_local_available: overlay.resources.qwen_local.available === true,
     opencode_available: overlay.resources.opencode?.available === true,
     opencode_probe: options.probeOpenCode === false ? null : undefined,
+    router_assessment: assessRouterResource(session, profile, resolvedRole),
   };
 }
 
 function parseArgs(argv) {
-  const opts = { profile: "fast_8k", outPath: null, help: false };
+  const opts = { profile: "qwen38-opus-q3-daily-16k", outPath: null, help: false };
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === "--profile" && argv[i + 1]) {
       opts.profile = argv[++i];
@@ -216,7 +266,7 @@ async function main() {
   const opts = parseArgs(process.argv);
   if (opts.help) {
     process.stderr.write(
-      "Usage: node tools/collect-qwen-local-resource-status-v1.mjs [--profile fast_8k] [--out <temp-path>]\n",
+      "Usage: node tools/collect-qwen-local-resource-status-v1.mjs [--profile qwen38-opus-q3-daily-16k] [--out <temp-path>]\n",
     );
     process.exit(0);
   }

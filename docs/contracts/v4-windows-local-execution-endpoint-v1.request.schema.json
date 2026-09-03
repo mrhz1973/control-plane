@@ -53,22 +53,36 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
+            "scope_version",
             "execution_harness",
             "model",
+            "profile_id",
+            "role",
+            "canonical_endpoint",
             "single_generation_guard_required",
             "max_opencode_executions",
             "max_qwen_generation_calls",
             "retry",
-            "fallback",
-            "qwen_profile",
-            "dflash_required"
+            "fallback"
           ],
           "properties": {
+            "scope_version": {
+              "const": "qwen-execution-scope-v2"
+            },
             "execution_harness": {
               "const": "opencode"
             },
             "model": {
               "const": "qwen_local"
+            },
+            "profile_id": {
+              "const": "qwen38-dcfr-iq3-agent-24k"
+            },
+            "role": {
+              "const": "FAST_AGENT"
+            },
+            "canonical_endpoint": {
+              "const": "http://127.0.0.1:8080"
             },
             "single_generation_guard_required": {
               "const": true
@@ -84,12 +98,6 @@
             },
             "fallback": {
               "const": 0
-            },
-            "qwen_profile": {
-              "const": "fast_8k"
-            },
-            "dflash_required": {
-              "const": true
             }
           }
         }

@@ -8,7 +8,7 @@
  */
 export const DEFAULT_BASE_URL = "http://127.0.0.1:8080";
 export const DEFAULT_TIMEOUT_MS = 120_000;
-export const DEFAULT_MODEL_ID = "qwen38-original-dflash2-8k";
+export const DEFAULT_MODEL_ID = "qwen38-opus-q3-daily-16k";
 
 /**
  * Binding precedence: explicit option > QWEN_LOCAL_* env > defaults.

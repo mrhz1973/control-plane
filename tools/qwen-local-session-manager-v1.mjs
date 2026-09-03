@@ -7,13 +7,14 @@
  * No kill/restart/shutdown. No model generation.
  *
  * Usage:
- *   node tools/qwen-local-session-manager-v1.mjs [--profile fast_8k]
+ *   node tools/qwen-local-session-manager-v1.mjs [--profile qwen38-opus-q3-daily-16k]
  */
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import {
+  STARTUP_PROFILE_ID,
   getProfile,
   loadQwenLocalRuntime,
   validateRuntimeDocument,
@@ -149,7 +150,7 @@ async function waitForReadiness({
  *   readinessTimeoutMs, pollIntervalMs, launcherPath
  */
 export async function ensureQwenLocalReady(options = {}) {
-  const profileId = options.profile || "fast_8k";
+  const profileId = options.profile || STARTUP_PROFILE_ID;
   const timeoutMs = options.readinessTimeoutMs ?? DEFAULT_TIMEOUT_MS;
   const pollIntervalMs = options.pollIntervalMs ?? DEFAULT_POLL_MS;
   const loadRuntime = options.loadRuntime || loadQwenLocalRuntime;
@@ -181,19 +182,19 @@ export async function ensureQwenLocalReady(options = {}) {
     });
   }
 
-  if (runtime.ar_fallback_forbidden !== true) {
+  if (runtime.reconstruct_llama_server_commands === true) {
     return result({
-      status: "DFLASH_REQUIRED",
+      status: "INVALID_RUNTIME_CONFIG",
       ready: false,
       profile: profileId,
-      reason_code: "DFLASH_REQUIRED",
+      reason_code: "INVALID_RUNTIME_CONFIG",
     });
   }
 
   const profileCheck = getProfile(runtime, profileId);
   if (!profileCheck.ok) {
     const status =
-      profileCheck.classification === "DFLASH_REQUIRED"
+      profileCheck.classification === "DFLASH_PROFILE_RETIRED"
         ? "DFLASH_REQUIRED"
         : "INVALID_PROFILE";
     return result({
@@ -342,7 +343,7 @@ export function __resetSessionManagerLockForTests() {
 }
 
 function parseArgs(argv) {
-  const opts = { profile: "fast_8k", help: false };
+  const opts = { profile: STARTUP_PROFILE_ID, help: false };
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === "--profile" && argv[i + 1]) {
       opts.profile = argv[++i];
@@ -357,7 +358,7 @@ async function main() {
   const opts = parseArgs(process.argv);
   if (opts.help) {
     process.stderr.write(
-      "Usage: node tools/qwen-local-session-manager-v1.mjs [--profile fast_8k|balanced_16k|long_32k]\n",
+      "Usage: node tools/qwen-local-session-manager-v1.mjs [--profile <exact-profile-id>]\n",
     );
     process.exit(0);
   }
