@@ -4,20 +4,18 @@
  * Deterministic key order is part of the digest contract.
  */
 import { createHash } from "node:crypto";
-import {
-  CANONICAL_ENDPOINT,
-  NEXT_WF40_EXECUTOR_PROFILE_ID,
-} from "./qwen-local-runtime-v1.mjs";
+import { CANONICAL_ENDPOINT } from "./qwen-local-runtime-v1.mjs";
 
 export const SCOPE_VERSION = "qwen-execution-scope-v2";
 export const REQUIRED_ROUTE_ID = "opencode+qwen_local";
+export const HISTORICAL_PROFILE_ID = "qwen38-dcfr-iq3-agent-24k";
 
 /** Exact fixed scope — key order is part of the canonical digest. */
 export const FIXED_AUTHORIZATION_SCOPE_V2 = Object.freeze({
   scope_version: SCOPE_VERSION,
   execution_harness: "opencode",
   model: "qwen_local",
-  profile_id: NEXT_WF40_EXECUTOR_PROFILE_ID,
+  profile_id: HISTORICAL_PROFILE_ID,
   role: "FAST_AGENT",
   canonical_endpoint: CANONICAL_ENDPOINT,
   single_generation_guard_required: true,
@@ -69,7 +67,7 @@ export function validateScopeV2(scope) {
   if (scope.scope_version !== SCOPE_VERSION) codes.push("AUTH_SCOPE_VERSION_INVALID");
   if (scope.execution_harness !== "opencode") codes.push("AUTH_WRONG_IMPLEMENTER");
   if (scope.model !== "qwen_local") codes.push("AUTH_WRONG_MODEL");
-  if (scope.profile_id !== NEXT_WF40_EXECUTOR_PROFILE_ID) codes.push("AUTH_PROFILE_INVALID");
+  if (scope.profile_id !== HISTORICAL_PROFILE_ID) codes.push("AUTH_PROFILE_INVALID");
   if (scope.role !== "FAST_AGENT") codes.push("AUTH_ROLE_INVALID");
   if (scope.canonical_endpoint !== CANONICAL_ENDPOINT) codes.push("AUTH_ENDPOINT_INVALID");
   if (scope.single_generation_guard_required !== true) codes.push("AUTH_GUARD_NOT_REQUIRED");

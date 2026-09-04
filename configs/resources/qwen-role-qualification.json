@@ -15,7 +15,11 @@
     "qwen38-opus-q3-agent-24k": {
       "keep_in_selector": true,
       "qualification": {
-        "QUALITY_AGENT_24K": "QUALIFIED"
+        "QUALITY_AGENT_24K": "QUALIFIED",
+        "FAST_AGENT": "QUALIFIED",
+        "FAST_INTERACTIVE": "QUALIFIED",
+        "FAST_AGENT_SHORT_TURN": "QUALIFIED",
+        "think_output_caveat": "Live comparison selected this profile despite visible <think> content in strict exact-output short-response case; do not claim exact-output compliance"
       }
     },
     "qwen38-dcfr-iq3-fast-16k": {
@@ -56,14 +60,13 @@
     }
   },
   "role_qualification": {
-    "FAST_AGENT": "UNQUALIFIED",
-    "FAST_INTERACTIVE": "UNQUALIFIED",
-    "FAST_AGENT_SHORT_TURN": "UNQUALIFIED",
+    "FAST_AGENT": "QUALIFIED",
+    "FAST_INTERACTIVE": "QUALIFIED",
+    "FAST_AGENT_SHORT_TURN": "QUALIFIED",
     "FAST_THROUGHPUT_LONG_TASK": "QUALIFIED",
     "pending_requalification_comparison": [
       "qwen38-original-ar-16k",
-      "qwen38-opus-q3-daily-16k",
-      "qwen38-opus-q3-agent-24k"
+      "qwen38-opus-q3-daily-16k"
     ]
   },
   "policy": {

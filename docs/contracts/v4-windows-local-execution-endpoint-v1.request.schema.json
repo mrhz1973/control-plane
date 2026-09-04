@@ -67,7 +67,7 @@
           ],
           "properties": {
             "scope_version": {
-              "const": "qwen-execution-scope-v2"
+              "const": "qwen-execution-scope-v3"
             },
             "execution_harness": {
               "const": "opencode"
@@ -76,7 +76,7 @@
               "const": "qwen_local"
             },
             "profile_id": {
-              "const": "qwen38-dcfr-iq3-agent-24k"
+              "const": "qwen38-opus-q3-agent-24k"
             },
             "role": {
               "const": "FAST_AGENT"

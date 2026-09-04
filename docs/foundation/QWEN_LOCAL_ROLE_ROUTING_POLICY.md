@@ -38,7 +38,7 @@ Startup / default profile: `qwen38-opus-q3-daily-16k`.
 | `qwen38-opus-q3-daily-16k` | DAILY / QUALITY |
 | `qwen38-opus-q3-agent-24k` | QUALITY_AGENT_24K |
 | `qwen38-dcfr-iq3-fast-16k` | FAST |
-| `qwen38-dcfr-iq3-agent-24k` | FAST_AGENT / MCP / BLENDER_FAST |
+| `qwen38-dcfr-iq3-agent-24k` | FAST_THROUGHPUT_LONG_TASK / MCP / BLENDER_FAST |
 | `qwen38-original-ar-16k` | REFERENCE |
 | `qwen38-uncensored-ar-16k` | MANUAL_UNCENSORED / USER_OVERRIDE |
 
@@ -64,7 +64,9 @@ Machine-readable overlay: `configs/resources/qwen-router-catalog-scope-overlay.j
 | QUALITY | `qwen38-opus-q3-daily-16k` |
 | QUALITY_AGENT_24K | `qwen38-opus-q3-agent-24k` |
 | FAST | `qwen38-dcfr-iq3-fast-16k` |
-| FAST_AGENT | `qwen38-dcfr-iq3-agent-24k` |
+| FAST_AGENT | `qwen38-opus-q3-agent-24k` |
+| FAST_INTERACTIVE | `qwen38-opus-q3-agent-24k` |
+| FAST_AGENT_SHORT_TURN | `qwen38-opus-q3-agent-24k` |
 | MCP | `qwen38-dcfr-iq3-agent-24k` |
 | BLENDER_FAST | `qwen38-dcfr-iq3-agent-24k` |
 | REFERENCE | `qwen38-original-ar-16k` |
@@ -91,16 +93,20 @@ Invariants:
 Benchmark “UNCENSORED_SPECIALIST = RETIRED” means only: do not auto-select for
 sensitive topics. It does **not** authorize removal, hiding, or deletion.
 
-## Next WF40 executor — STALE (AGG 2026-09-03)
+## Next WF40 executor — OPUS24K selected (operator decision 2026-09-04)
 
 ```text
-profile_id = qwen38-dcfr-iq3-agent-24k
+profile_id = qwen38-opus-q3-agent-24k
 role       = FAST_AGENT
 endpoint   = http://127.0.0.1:8080
-scope_version = qwen-execution-scope-v2
+scope_version = qwen-execution-scope-v3
 ```
 
-**This mapping is STALE and must not govern the next live execution proof.**
+The operator selected OPUS Agent 24K based on the bounded retained-profile
+comparison in `reports/architecture/v4_qwen_short_turn_live_comparison_retained_profiles.md`.
+It passed the required single fake-tool decision and was faster than OPUS Daily
+16K in both measured cases. The measured caveat is preserved: OPUS may expose
+`<think>` content; exact-output compliance is not claimed.
 
 New empirical finding (live local backend tests, RTX 3060 12 GB, bypassing UI
 and router): DCFR IQ3 short-turn interactive performance is unsuitable —
@@ -116,15 +122,15 @@ long decode ~12.56 tok/s).
 
 Consequences:
 
-- `FAST_INTERACTIVE` / `FAST_AGENT_SHORT_TURN` are **UNQUALIFIED** pending a
-  comparison of retained profiles (`qwen38-original-ar-16k`,
-  `qwen38-opus-q3-daily-16k`, `qwen38-opus-q3-agent-24k`).
-- Do NOT delete or retire DCFR. Do NOT silently replace it.
+- `FAST_AGENT` / `FAST_INTERACTIVE` / `FAST_AGENT_SHORT_TURN` are now
+  **QUALIFIED for `qwen38-opus-q3-agent-24k`** by this explicit operator
+  decision. The qualification does not claim exact-output compliance.
+- DCFR remains preserved and **UNQUALIFIED for short-turn roles**, while
+  `FAST_THROUGHPUT_LONG_TASK` remains qualified. Do NOT delete or retire DCFR.
 - All six Control Plane production profiles and router/runtime paths are preserved.
 - Additional workstation-local router profiles do not change this qualification result.
-- Live execution bound to an UNQUALIFIED role fails closed at:
-  dispatch (`PROFILE_ROLE_UNQUALIFIED`), WF40 proposal/authorization minting,
-  and the OpenCode adapter (`ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION`).
+- Live execution remains bounded by scope-v3 and the existing single-generation
+  gates.
 - Blender workloads are OUT OF SCOPE for Control Plane and are not imported into this policy beyond the explicit exclusion of the two router-visible local-only profile IDs above.
 
 ## DFlash2 semantics
@@ -148,8 +154,9 @@ The workstation llama-ui agentic Copy fix validated on 2026-09-04 remains an iso
 
 ## Authorization scope
 
-Active producers/consumers use `qwen-execution-scope-v2` (see
-`docs/contracts/qwen-execution-scope-v2.md`). Register-pending HTTP body remains
+Active next-WF40 producers/consumers use `qwen-execution-scope-v3` (see
+`docs/contracts/qwen-execution-scope-v3.md`). Scope-v2 remains historical.
+Register-pending HTTP body remains
 exactly eight keys; `route_id` remains `opencode+qwen_local`.
 
 ## Machine source of truth

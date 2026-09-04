@@ -17,12 +17,12 @@ import {
   validateRuntimeDocument,
 } from "../../tools/qwen-local-runtime-v1.mjs";
 import {
-  FIXED_AUTHORIZATION_SCOPE_V2,
+  FIXED_AUTHORIZATION_SCOPE_V3,
   scopeRoleQualifiedForLiveExecution,
-  validateScopeV2,
-  canonicalScopeDigestV2,
-  CANONICAL_SCOPE_DIGEST_V2,
-} from "../../tools/qwen-execution-scope-v2.mjs";
+  validateScopeV3,
+  canonicalScopeDigestV3,
+  CANONICAL_SCOPE_DIGEST_V3,
+} from "../../tools/qwen-execution-scope-v3.mjs";
 import { buildLiveExecutionProposal, buildRuntimeAuthorizationFromStatus } from "../../tools/build-v4-wf40-live-execution-sidecars-v1.mjs";
 import { executeOpenCodeBounded, validateRuntimeAuthorization } from "../../tools/opencode-execution-adapter-v1.mjs";
 import { dispatchOpenCodeExecution } from "../../tools/dispatch-opencode-execution-v1.mjs";
@@ -52,11 +52,12 @@ check(
 );
 
 check(
-  "fast-agent-unqualified",
-  roleQualification("FAST_AGENT", overlay).value === UNQUALIFIED &&
-    roleQualification("FAST_INTERACTIVE", overlay).value === UNQUALIFIED &&
-    roleQualification("FAST_AGENT_SHORT_TURN", overlay).value === UNQUALIFIED,
-  "short-turn roles",
+  "selected-opus-qualified-dcfr-short-turn-unqualified",
+  roleQualification("FAST_AGENT", overlay).value === QUALIFIED &&
+    roleQualification("FAST_INTERACTIVE", overlay).value === QUALIFIED &&
+    roleQualification("FAST_AGENT_SHORT_TURN", overlay).value === QUALIFIED &&
+    overlay.profiles["qwen38-dcfr-iq3-agent-24k"].qualification.FAST_AGENT === UNQUALIFIED,
+  "selected OPUS versus preserved DCFR",
 );
 
 check(
@@ -75,8 +76,8 @@ check(
 );
 
 check(
-  "live-gate-blocks-fast-agent",
-  roleQualifiedForLiveExecution("FAST_AGENT", overlay).qualified === false,
+  "live-gate-allows-selected-fast-agent",
+  roleQualifiedForLiveExecution("FAST_AGENT", overlay).qualified === true,
   "gate",
 );
 
@@ -87,23 +88,23 @@ check(
 );
 
 check(
-  "gate-fails-closed-unreadable-overlay",
+  "gate-fails-closed-unreadable-short-turn-role",
   roleQualifiedForLiveExecution(
-    "FAST_AGENT",
+    "FAST_INTERACTIVE",
     {},
   ).qualified === false,
   "unreadable overlay must fail closed for AGG roles",
 );
 
-// --- runtime document still valid; DCFR annotated stale ---
+// --- runtime document still valid; selected OPUS and preserved DCFR annotated ---
 
 const runtime = loadQwenLocalRuntime();
 const runtimeOk = validateRuntimeDocument(runtime);
 check(
   "runtime-doc-still-valid-six-profiles",
   runtimeOk.ok === true &&
-    runtime.next_wf40_executor_profile_id === "qwen38-dcfr-iq3-agent-24k" &&
-    runtime.next_wf40_executor_status === "STALE_UNQUALIFIED_PENDING_REQUALIFICATION",
+    runtime.next_wf40_executor_profile_id === "qwen38-opus-q3-agent-24k" &&
+    runtime.next_wf40_executor_status === "SELECTED_OPERATOR_REQUALIFIED_SCOPE_V3",
   runtimeOk.reason || "runtime",
 );
 
@@ -117,17 +118,17 @@ check(
 
 // --- scope v2 unchanged cryptographically; role gate layers on top ---
 
-const scopeCheck = validateScopeV2(FIXED_AUTHORIZATION_SCOPE_V2);
+const scopeCheck = validateScopeV3(FIXED_AUTHORIZATION_SCOPE_V3);
 check(
   "scope-v2-digest-unchanged",
   scopeCheck.ok === true &&
-    canonicalScopeDigestV2() === CANONICAL_SCOPE_DIGEST_V2,
+  canonicalScopeDigestV3() === CANONICAL_SCOPE_DIGEST_V3,
   JSON.stringify(scopeCheck),
 );
 
 check(
-  "scope-role-gate-blocks-v2-scope",
-  scopeRoleQualifiedForLiveExecution(FIXED_AUTHORIZATION_SCOPE_V2).qualified === false,
+  "scope-role-gate-allows-selected-role",
+  scopeRoleQualifiedForLiveExecution(FIXED_AUTHORIZATION_SCOPE_V3).qualified === true,
   "scope gate",
 );
 
@@ -170,11 +171,11 @@ const proposal = await buildLiveExecutionProposal({
   resource_status: resourceStatus,
 });
 check(
-  "wf40-proposal-fails-closed",
-  proposal.ok === false &&
-    proposal.proposal_ready === false &&
-    proposal.classification === "PROFILE_ROLE_UNQUALIFIED" &&
-    proposal.register_request === null,
+  "wf40-proposal-selected-opus-ready",
+  proposal.ok === true &&
+    proposal.proposal_ready === true &&
+    proposal.register_request &&
+    Object.keys(proposal.register_request).length === 8,
   JSON.stringify({ c: proposal.classification, codes: proposal.reason_codes }),
 );
 
@@ -204,10 +205,10 @@ const minted = buildRuntimeAuthorizationFromStatus({
   expected_authorization_id: "AUTH-AGG-1",
 });
 check(
-  "no-active-envelope-while-unqualified",
-  minted.ok === false &&
-    minted.runtime_authorization === null &&
-    minted.classification === "PROFILE_ROLE_UNQUALIFIED",
+  "active-envelope-selected-opus",
+  minted.ok === true &&
+    minted.runtime_authorization?.scope?.scope_version === "qwen-execution-scope-v3" &&
+    minted.runtime_authorization?.scope?.profile_id === "qwen38-opus-q3-agent-24k",
   minted.classification,
 );
 
@@ -223,7 +224,7 @@ const adapterBlocked = await executeOpenCodeBounded(
       spent: false,
       used: false,
       route_id: "opencode+qwen_local",
-      scope: { ...FIXED_AUTHORIZATION_SCOPE_V2 },
+      scope: { ...FIXED_AUTHORIZATION_SCOPE_V3 },
     },
     message: "m",
   },
@@ -238,10 +239,9 @@ const adapterBlocked = await executeOpenCodeBounded(
   },
 );
 check(
-  "adapter-blocks-valid-auth-unqualified-role",
-  adapterBlocked.classification === "AUTHORIZATION_REJECTED" &&
+  "adapter-uses-selected-opus-scope",
+  adapterBlocked.classification === "EXECUTION_BOUNDS_VIOLATION" &&
     adapterBlocked.execution_performed === false &&
-    adapterBlocked.reason_codes.includes("ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION") &&
     adapterBlocked.guard_started === false,
   JSON.stringify(adapterBlocked.reason_codes),
 );
@@ -254,7 +254,7 @@ check(
     authorization_id: "AUTH-AGG-VAL-1",
     authorization_state: "ACTIVE",
     route_id: "opencode+qwen_local",
-    scope: { ...FIXED_AUTHORIZATION_SCOPE_V2 },
+    scope: { ...FIXED_AUTHORIZATION_SCOPE_V3 },
   }).ok === true,
   "validator boundary unchanged",
 );
@@ -293,11 +293,11 @@ const dispatchBlocked = await dispatchOpenCodeExecution(
   },
 );
 check(
-  "dispatch-fails-closed-fast-agent",
-  dispatchBlocked.classification === "PROFILE_ROLE_UNQUALIFIED" &&
-    dispatchBlocked.dispatch_ready === false &&
+  "dispatch-selected-opus-ready",
+  dispatchBlocked.classification === "DISPATCH_READY" &&
+    dispatchBlocked.dispatch_ready === true &&
     dispatchBlocked.execution_performed === false &&
-    dispatchBlocked.reason_codes.includes("ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION"),
+    dispatchBlocked.dispatch_spec?.model_selector === "qwen_local/qwen38-opus-q3-agent-24k",
   JSON.stringify({ c: dispatchBlocked.classification, codes: dispatchBlocked.reason_codes }),
 );
 
@@ -309,8 +309,8 @@ const seamSrc = readFileSync(
 );
 check(
   "seam-embeds-role-gate",
-  seamSrc.includes("ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION") &&
-    seamSrc.includes("roleQualified=scope.role!=='FAST_AGENT'"),
+  seamSrc.includes("qwen-execution-scope-v3") &&
+    seamSrc.includes("qwen38-opus-q3-agent-24k"),
   "seam gate",
 );
 

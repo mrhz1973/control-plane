@@ -48,8 +48,8 @@ function sessionReady() {
     schema_version: "qwen-local-session-manager-result-v1",
     status: "READY",
     ready: true,
-    profile: "qwen38-dcfr-iq3-agent-24k",
-    model_id: "qwen38-dcfr-iq3-agent-24k",
+    profile: "qwen38-opus-q3-agent-24k",
+    model_id: "qwen38-opus-q3-agent-24k",
     base_url: "http://127.0.0.1:8080",
     launch_performed: false,
     wait_elapsed_ms: 0,
@@ -88,19 +88,18 @@ function check(name, pass, detail = "ok") {
 }
 
 async function run() {
-  // A0 AGG: default executor FAST_AGENT on DCFR 24K is UNQUALIFIED — the
-  // DISPATCH_READY boundary must fail closed even with everything else READY.
+  // A0 selected OPUS24K executor: default FAST_AGENT is now qualified.
   {
     const out = await dispatchOpenCodeExecution(baseRequest(), {
       opencodeProbe: opencodeProbeReady(),
       ensureQwenReady: async () => sessionReady(),
     });
     check(
-      "A0-agg-fast-agent-unqualified",
-      out.classification === "PROFILE_ROLE_UNQUALIFIED" &&
-        out.dispatch_ready === false &&
+      "A0-selected-opus-fast-agent-qualified",
+      out.classification === "DISPATCH_READY" &&
+        out.dispatch_ready === true &&
         out.execution_performed === false &&
-        out.reason_codes.includes("ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION"),
+        out.dispatch_spec?.model_selector === "qwen_local/qwen38-opus-q3-agent-24k",
       JSON.stringify(out.classification),
     );
   }
@@ -117,7 +116,7 @@ async function run() {
       out.classification === "DISPATCH_READY" &&
         out.dispatch_ready === true &&
         out.execution_performed === false &&
-        out.dispatch_spec?.model_selector === "qwen_local/qwen38-dcfr-iq3-agent-24k",
+        out.dispatch_spec?.model_selector === "qwen_local/qwen38-opus-q3-agent-24k",
       JSON.stringify(out.classification),
     );
   }

@@ -92,13 +92,15 @@ The endpoint v1 intentionally accepts a strict subset of the adapter's backward-
 - `scope.max_qwen_generation_calls = 1`
 - `scope.retry = 0`
 - `scope.fallback = 0`
-- `scope.scope_version = qwen-execution-scope-v2`
-- `scope.profile_id = qwen38-dcfr-iq3-agent-24k`
+- `scope.scope_version = qwen-execution-scope-v3`
+- `scope.profile_id = qwen38-opus-q3-agent-24k`
 - `scope.role = FAST_AGENT`
 - `scope.canonical_endpoint = http://127.0.0.1:8080`
 - no `dflash_required` / no legacy `qwen_profile`
 
-The endpoint MUST forward this authorization object unchanged to `executeOpenCodeBounded()` and MUST NOT weaken adapter validation.
+The endpoint MUST forward this authorization object unchanged to
+`executeOpenCodeBounded()` and MUST NOT weaken adapter validation. Scope-v2 is
+historical; the active next-WF40 endpoint contract uses scope-v3.
 
 **AGG 2026-09-03:** `FAST_AGENT` on this profile is **UNQUALIFIED** for live
 execution pending requalification (see

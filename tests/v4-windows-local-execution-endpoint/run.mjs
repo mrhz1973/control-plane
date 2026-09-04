@@ -26,7 +26,7 @@ import {
   loadSpendLedger as realLoadLedger,
   LEDGER_SCHEMA_VERSION,
 } from "../../tools/v4-runtime-authorization-durable-spend-ledger-v1.mjs";
-import { FIXED_AUTHORIZATION_SCOPE_V2 } from "../../tools/qwen-execution-scope-v2.mjs";
+import { FIXED_AUTHORIZATION_SCOPE_V3 } from "../../tools/qwen-execution-scope-v3.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -54,7 +54,7 @@ function validAuth(overrides = {}) {
     authorization_id: overrides.authorization_id || "AUTH-ENDPT-1",
     authorization_state: "ACTIVE",
     route_id: "opencode+qwen_local",
-    scope: { ...FIXED_AUTHORIZATION_SCOPE_V2 },
+    scope: { ...FIXED_AUTHORIZATION_SCOPE_V3 },
   };
 }
 
@@ -301,7 +301,7 @@ await test("resolveOpenCodeNoShellInvocation never returns shell:true", async ()
 await test("buildOpenCodeArgv uses proven CLI surface only", async () => {
   const argv = mod.buildOpenCodeArgv({
     workspaceRoot: "C:\\\\repo",
-    modelId: "qwen38-dcfr-iq3-agent-24k",
+    modelId: "qwen38-opus-q3-agent-24k",
     message: "goal text",
   });
   assert.deepEqual(argv, [
@@ -310,7 +310,7 @@ await test("buildOpenCodeArgv uses proven CLI surface only", async () => {
     "--dir",
     "C:\\\\repo",
     "-m",
-    "qwen_local/qwen38-dcfr-iq3-agent-24k",
+    "qwen_local/qwen38-opus-q3-agent-24k",
     "--format",
     "json",
     "--title",

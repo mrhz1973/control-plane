@@ -20,13 +20,13 @@ import {
   validateRuntimeDocument,
 } from "../../tools/qwen-local-runtime-v1.mjs";
 import {
-  CANONICAL_SCOPE_DIGEST_V2,
-  FIXED_AUTHORIZATION_SCOPE_V2,
+  CANONICAL_SCOPE_DIGEST_V3,
+  FIXED_AUTHORIZATION_SCOPE_V3,
   SCOPE_VERSION,
-  buildScopeV2,
-  canonicalScopeDigestV2,
-  validateScopeV2,
-} from "../../tools/qwen-execution-scope-v2.mjs";
+  buildScopeV3,
+  canonicalScopeDigestV3,
+  validateScopeV3,
+} from "../../tools/qwen-execution-scope-v3.mjs";
 import { buildRegisterPendingRequest } from "../../tools/build-v4-wf40-live-execution-sidecars-v1.mjs";
 
 const results = [];
@@ -72,7 +72,7 @@ const roleExpectations = {
   QUALITY: "qwen38-opus-q3-daily-16k",
   QUALITY_AGENT_24K: "qwen38-opus-q3-agent-24k",
   FAST: "qwen38-dcfr-iq3-fast-16k",
-  FAST_AGENT: "qwen38-dcfr-iq3-agent-24k",
+  FAST_AGENT: "qwen38-opus-q3-agent-24k",
   MCP: "qwen38-dcfr-iq3-agent-24k",
   BLENDER_FAST: "qwen38-dcfr-iq3-agent-24k",
   REFERENCE: "qwen38-original-ar-16k",
@@ -118,7 +118,7 @@ check(
   "fast-agent-not-dcfr-16k",
   assertFastAgentNotDcfr16k(NEXT_WF40_EXECUTOR_PROFILE_ID).ok === true &&
     assertFastAgentNotDcfr16k("qwen38-dcfr-iq3-fast-16k").ok === false &&
-    runtime.next_wf40_executor_profile_id === "qwen38-dcfr-iq3-agent-24k",
+    runtime.next_wf40_executor_profile_id === "qwen38-opus-q3-agent-24k",
   "FAST_AGENT fallback",
 );
 
@@ -146,19 +146,19 @@ check(
   "reconstruct flag",
 );
 
-const scopeOk = validateScopeV2(FIXED_AUTHORIZATION_SCOPE_V2);
+const scopeOk = validateScopeV3(FIXED_AUTHORIZATION_SCOPE_V3);
 check(
-  "scope-v2-canonical",
+  "scope-v3-canonical",
   scopeOk.ok === true &&
-    canonicalScopeDigestV2() === CANONICAL_SCOPE_DIGEST_V2 &&
-    FIXED_AUTHORIZATION_SCOPE_V2.scope_version === SCOPE_VERSION &&
-    !("dflash_required" in FIXED_AUTHORIZATION_SCOPE_V2) &&
-    !("qwen_profile" in FIXED_AUTHORIZATION_SCOPE_V2),
+    canonicalScopeDigestV3() === CANONICAL_SCOPE_DIGEST_V3 &&
+    FIXED_AUTHORIZATION_SCOPE_V3.scope_version === SCOPE_VERSION &&
+    !("dflash_required" in FIXED_AUTHORIZATION_SCOPE_V3) &&
+    !("qwen_profile" in FIXED_AUTHORIZATION_SCOPE_V3),
   JSON.stringify(scopeOk),
 );
 
-const badDigest = validateScopeV2(
-  buildScopeV2({ max_qwen_generation_calls: 2 }),
+const badDigest = validateScopeV3(
+  buildScopeV3({ max_qwen_generation_calls: 2 }),
 );
 check(
   "scope-digest-mismatch-fails",
@@ -167,8 +167,8 @@ check(
   JSON.stringify(badDigest.reason_codes),
 );
 
-const badProfile = validateScopeV2(
-  buildScopeV2({ profile_id: "qwen38-dcfr-iq3-fast-16k" }),
+const badProfile = validateScopeV3(
+  buildScopeV3({ profile_id: "qwen38-dcfr-iq3-fast-16k" }),
 );
 check(
   "profile-mismatch-fails",
@@ -180,10 +180,10 @@ check(
 
 check(
   "one-generation-retry-fallback-zero",
-  FIXED_AUTHORIZATION_SCOPE_V2.max_opencode_executions === 1 &&
-    FIXED_AUTHORIZATION_SCOPE_V2.max_qwen_generation_calls === 1 &&
-    FIXED_AUTHORIZATION_SCOPE_V2.retry === 0 &&
-    FIXED_AUTHORIZATION_SCOPE_V2.fallback === 0,
+  FIXED_AUTHORIZATION_SCOPE_V3.max_opencode_executions === 1 &&
+    FIXED_AUTHORIZATION_SCOPE_V3.max_qwen_generation_calls === 1 &&
+    FIXED_AUTHORIZATION_SCOPE_V3.retry === 0 &&
+    FIXED_AUTHORIZATION_SCOPE_V3.fallback === 0,
   "bounds",
 );
 
@@ -196,7 +196,7 @@ check(
   reg.ok === true &&
     Object.keys(reg.request).length === 8 &&
     reg.request.route_id === "opencode+qwen_local" &&
-    reg.request.scope_digest === CANONICAL_SCOPE_DIGEST_V2,
+    reg.request.scope_digest === CANONICAL_SCOPE_DIGEST_V3,
   JSON.stringify(reg),
 );
 

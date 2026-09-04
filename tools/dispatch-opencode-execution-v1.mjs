@@ -16,7 +16,7 @@ export const SPEC_SCHEMA = "opencode-dispatch-spec-v1";
 
 export const ALLOWED_IMPLEMENTER = "opencode";
 export const ALLOWED_MODEL = "qwen_local";
-export const DEFAULT_PROFILE = "qwen38-dcfr-iq3-agent-24k";
+export const DEFAULT_PROFILE = "qwen38-opus-q3-agent-24k";
 export const DEFAULT_EXECUTION_ROLE = "FAST_AGENT";
 export const QWEN_LOCAL_PROVIDER_ID = "qwen_local";
 

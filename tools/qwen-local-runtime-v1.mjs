@@ -25,14 +25,14 @@ export const ROLE_TO_PROFILE_ID = Object.freeze({
   QUALITY: "qwen38-opus-q3-daily-16k",
   QUALITY_AGENT_24K: "qwen38-opus-q3-agent-24k",
   FAST: "qwen38-dcfr-iq3-fast-16k",
-  FAST_AGENT: "qwen38-dcfr-iq3-agent-24k",
+  FAST_AGENT: "qwen38-opus-q3-agent-24k",
   MCP: "qwen38-dcfr-iq3-agent-24k",
   BLENDER_FAST: "qwen38-dcfr-iq3-agent-24k",
   REFERENCE: "qwen38-original-ar-16k",
   MANUAL_UNCENSORED: "qwen38-uncensored-ar-16k",
 });
 
-export const NEXT_WF40_EXECUTOR_PROFILE_ID = "qwen38-dcfr-iq3-agent-24k";
+export const NEXT_WF40_EXECUTOR_PROFILE_ID = "qwen38-opus-q3-agent-24k";
 export const STARTUP_PROFILE_ID = "qwen38-opus-q3-daily-16k";
 export const BACKENDS = Object.freeze(["llama_cpp", "ollama"]);
 export const CONTEXT_TOKENS = Object.freeze([16384, 24576]);
@@ -356,7 +356,7 @@ export function validateRuntimeDocument(runtime) {
     return {
       ok: false,
       classification: "INVALID_RUNTIME",
-      reason: "next_wf40_executor_profile_id must be qwen38-dcfr-iq3-agent-24k",
+      reason: "next_wf40_executor_profile_id must be qwen38-opus-q3-agent-24k",
     };
   }
   if (runtime.dflash2_profiles_retired !== true) {
@@ -424,7 +424,7 @@ export function assertFastAgentNotDcfr16k(profileId) {
     return {
       ok: false,
       classification: "FAST_AGENT_PROFILE_MISMATCH",
-      reason: "FAST_AGENT requires qwen38-dcfr-iq3-agent-24k",
+      reason: "FAST_AGENT requires qwen38-opus-q3-agent-24k",
     };
   }
   return { ok: true, profileId };

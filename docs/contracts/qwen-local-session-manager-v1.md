@@ -32,7 +32,7 @@ Resolved only from `configs/resources/qwen-local-runtime.json` as exact
 | `qwen38-opus-q3-daily-16k` (default/startup) | DAILY / QUALITY |
 | `qwen38-opus-q3-agent-24k` | QUALITY_AGENT_24K |
 | `qwen38-dcfr-iq3-fast-16k` | FAST |
-| `qwen38-dcfr-iq3-agent-24k` | FAST_AGENT / MCP / BLENDER_FAST |
+| `qwen38-dcfr-iq3-agent-24k` | FAST_THROUGHPUT_LONG_TASK / MCP / BLENDER_FAST |
 | `qwen38-original-ar-16k` | REFERENCE |
 | `qwen38-uncensored-ar-16k` | MANUAL_UNCENSORED |
 

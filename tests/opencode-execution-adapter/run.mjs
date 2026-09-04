@@ -12,7 +12,7 @@ import {
   RESULT_SCHEMA,
   REQUIRED_ROUTE_ID,
 } from "../../tools/opencode-execution-adapter-v1.mjs";
-import { FIXED_AUTHORIZATION_SCOPE_V2 } from "../../tools/qwen-execution-scope-v2.mjs";
+import { FIXED_AUTHORIZATION_SCOPE_V3 } from "../../tools/qwen-execution-scope-v3.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const results = [];
@@ -29,7 +29,7 @@ function activeAuth(overrides = {}) {
     spent: false,
     used: false,
     route_id: REQUIRED_ROUTE_ID,
-    scope: { ...FIXED_AUTHORIZATION_SCOPE_V2 },
+    scope: { ...FIXED_AUTHORIZATION_SCOPE_V3 },
     ...overrides,
   };
 }
@@ -88,7 +88,7 @@ function resultHasSecretsOrBodies(result) {
 const qualifiedRoleGate = () => ({ ok: true, qualified: true, reason_codes: [] });
 
 async function run() {
-  // 0 AGG default: cryptographically valid auth with UNQUALIFIED role blocks
+  // 0 selected OPUS24K: cryptographically valid auth is accepted by default
   {
     const { guard } = mockGuardFactory();
     const r = await executeOpenCodeBounded(
@@ -100,12 +100,11 @@ async function run() {
       },
     );
     check(
-      "agg-default-unqualified-role-blocks",
-      r.classification === "AUTHORIZATION_REJECTED" &&
-        r.reason_codes.includes("ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION") &&
-        r.execution_performed === false &&
-        r.guard_started === false &&
-        r.opencode_execution_count === 0,
+      "selected-opus-default-role-accepted",
+      r.classification === "EXECUTED_OK" &&
+        r.execution_performed === true &&
+        r.guard_started === true &&
+        r.opencode_execution_count === 1,
       JSON.stringify(r.reason_codes),
     );
   }

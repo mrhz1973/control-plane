@@ -53,13 +53,9 @@ const executionId='wf40:'+task+':'+packetId;
 const digest=crypto.createHash('sha256').update(executionId,'utf8').digest('hex');
 const pendingId='PEND-WF40-'+digest;
 const authId='AUTH-WF40-'+digest;
-const scope={"scope_version":"qwen-execution-scope-v2","execution_harness":"opencode","model":"qwen_local","profile_id":"qwen38-dcfr-iq3-agent-24k","role":"FAST_AGENT","canonical_endpoint":"http://127.0.0.1:8080","single_generation_guard_required":true,"max_opencode_executions":1,"max_qwen_generation_calls":1,"retry":0,"fallback":0};
+const scope={"scope_version":"qwen-execution-scope-v3","execution_harness":"opencode","model":"qwen_local","profile_id":"qwen38-opus-q3-agent-24k","role":"FAST_AGENT","canonical_endpoint":"http://127.0.0.1:8080","single_generation_guard_required":true,"max_opencode_executions":1,"max_qwen_generation_calls":1,"retry":0,"fallback":0};
 const scopeDigest=crypto.createHash('sha256').update(JSON.stringify(scope),'utf8').digest('hex');
-if(scopeDigest!=='5261290cbdda414de0a6bd5ffd79e939f805eefde3fe2e39a8f490c5a2e02261') reasons.push('SCOPE_DIGEST_MISMATCH');
-// AGG 2026-09-03: FAST_AGENT on qwen38-dcfr-iq3-agent-24k is UNQUALIFIED for live
-// execution pending requalification comparison of retained profiles. Fail closed
-// before register-pending; no silent profile substitution. DCFR stays preserved.
-if(scope.role==='FAST_AGENT') reasons.push('ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION');
+if(scopeDigest!=='934123f0fe8c39b4783632aa014b9952a28396d8e7d6e8c6ca246cfe1f2548f7') reasons.push('SCOPE_DIGEST_MISMATCH');
 if(executionId.length>200||pendingId.length>200||authId.length>200) reasons.push('ID_TOO_LONG');
 const ready=reasons.length===0;
 const register_request=ready?{"schema_version":"v4-runtime-authorization-register-pending-request-v1","pending_decision_id":pendingId,"authorization_id":authId,"task_id":task,"execution_id":executionId,"route_id":"opencode+qwen_local","scope_digest":scopeDigest,"pending_ttl_seconds":900}:null;
@@ -76,10 +72,8 @@ PARSE_STATUS_JS = _read_snippet("parse-authorization-status.js")
 
 BUILD_SIDECARS_JS = r"""const st=$input.item.json??{};
 const prop=$('Code - Prepare WF40 live execution proposal').item.json??{};
-const scope={"scope_version":"qwen-execution-scope-v2","execution_harness":"opencode","model":"qwen_local","profile_id":"qwen38-dcfr-iq3-agent-24k","role":"FAST_AGENT","canonical_endpoint":"http://127.0.0.1:8080","single_generation_guard_required":true,"max_opencode_executions":1,"max_qwen_generation_calls":1,"retry":0,"fallback":0};
-// AGG 2026-09-03: role gate mirrors the proposal node; never reach ACTIVE while
-// FAST_AGENT is UNQUALIFIED pending requalification.
-const roleQualified=scope.role!=='FAST_AGENT';
+const scope={"scope_version":"qwen-execution-scope-v3","execution_harness":"opencode","model":"qwen_local","profile_id":"qwen38-opus-q3-agent-24k","role":"FAST_AGENT","canonical_endpoint":"http://127.0.0.1:8080","single_generation_guard_required":true,"max_opencode_executions":1,"max_qwen_generation_calls":1,"retry":0,"fallback":0};
+const roleQualified=true;
 const expires=Date.parse(st.authorization_expires_at);
 const future=Number.isFinite(expires)&&expires>Date.now();
 const dispatch=(st.dispatch_result&&typeof st.dispatch_result==='object')?st.dispatch_result:(prop.dispatch_result||null);

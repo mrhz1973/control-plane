@@ -9,12 +9,22 @@ import {
   roleQualifiedForLiveExecution,
 } from "./qwen-local-runtime-v1.mjs";
 import {
-  CANONICAL_SCOPE_DIGEST_V2,
-  FIXED_AUTHORIZATION_SCOPE_V2,
-  canonicalScopeDigestV2,
-  compactScopeV2Json,
-  scopeRoleQualifiedForLiveExecution,
-} from "./qwen-execution-scope-v2.mjs";
+  CANONICAL_SCOPE_DIGEST_V3,
+  FIXED_AUTHORIZATION_SCOPE_V3,
+  canonicalScopeDigestV3,
+  compactScopeV3Json,
+  validateScopeV3,
+} from "./qwen-execution-scope-v3.mjs";
+
+function scopeRoleQualifiedForLiveExecution(scope) {
+  const role = scope && typeof scope === "object" ? scope.role : null;
+  const gate = roleQualifiedForLiveExecution(role);
+  return {
+    ...gate,
+    qualified: gate.qualified === true,
+    reason_codes: gate.reason_codes || [],
+  };
+}
 
 
 export const REGISTER_SCHEMA =
@@ -29,10 +39,10 @@ export const PENDING_TTL_SECONDS = 900;
 export const STATUS_POLL_MAX = 300;
 export const ID_MAX = 200;
 
-/** Exact fixed scope v2 — key order is part of the canonical digest. */
-export const FIXED_AUTHORIZATION_SCOPE = FIXED_AUTHORIZATION_SCOPE_V2;
+/** Exact fixed scope v3 — key order is part of the canonical digest. */
+export const FIXED_AUTHORIZATION_SCOPE = FIXED_AUTHORIZATION_SCOPE_V3;
 
-export const CANONICAL_SCOPE_DIGEST = CANONICAL_SCOPE_DIGEST_V2;
+export const CANONICAL_SCOPE_DIGEST = CANONICAL_SCOPE_DIGEST_V3;
 
 function isPlainObject(v) {
   return !!v && typeof v === "object" && !Array.isArray(v);
@@ -43,11 +53,11 @@ function sha256Hex(text) {
 }
 
 export function compactScopeJson(scope = FIXED_AUTHORIZATION_SCOPE) {
-  return compactScopeV2Json(scope);
+  return compactScopeV3Json(scope);
 }
 
 export function canonicalScopeDigest(scope = FIXED_AUTHORIZATION_SCOPE) {
-  return canonicalScopeDigestV2(scope);
+  return canonicalScopeDigestV3(scope);
 }
 
 export function buildExecutionId(taskId, packetId) {
@@ -642,7 +652,7 @@ export async function buildLiveExecutionProposal({
   execution_packet,
   execution_route_result,
   resource_status,
-  role = FIXED_AUTHORIZATION_SCOPE_V2.role,
+  role = FIXED_AUTHORIZATION_SCOPE_V3.role,
   roleGate = roleQualifiedForLiveExecution,
 }) {
   const packetId =
@@ -656,10 +666,9 @@ export async function buildLiveExecutionProposal({
         ? execution_packet.task_id
         : null;
 
-  // AGG 2026-09-03: proposal gate. The canonical scope-v2 role is FAST_AGENT on
-  // qwen38-dcfr-iq3-agent-24k, which is UNQUALIFIED for live execution pending
-  // requalification comparison. Do not propose registration (register delta must
-  // stay 0); do not silently substitute another profile. Scope digest unchanged.
+  // Active scope-v3 proposal gate. The canonical role is FAST_AGENT on the
+  // operator-selected OPUS Agent 24K profile. Do not silently substitute
+  // another profile; scope-v3 digest is validated before registration.
   const gate = roleGate(role);
   if (!gate || gate.qualified !== true) {
     return {

@@ -124,23 +124,23 @@
     "benchmark_retired_means": "do_not_auto_select_for_sensitive_topics_only"
   },
   "next_wf40_executor": {
-    "profile_id": "qwen38-dcfr-iq3-agent-24k",
+    "profile_id": "qwen38-opus-q3-agent-24k",
     "role": "FAST_AGENT",
     "canonical_endpoint": "http://127.0.0.1:8080",
-    "scope_version": "qwen-execution-scope-v2",
-    "status": "STALE_UNQUALIFIED_PENDING_REQUALIFICATION",
-    "agg_2026_09_03_note": "DCFR short-turn interactive performance disqualifies FAST_AGENT live execution pending comparison of retained profiles. This mapping must not govern the next live execution proof. No silent replacement."
+    "scope_version": "qwen-execution-scope-v3",
+    "status": "SELECTED_OPERATOR_REQUALIFIED",
+    "selection_evidence": "reports/architecture/v4_qwen_short_turn_live_comparison_retained_profiles.md",
+    "think_output_caveat": "OPUS may expose <think> content; exact-output compliance is not claimed"
   },
   "role_qualification": {
     "qualification_version": "qwen38-rtx3060-2026-09-03-agg",
-    "FAST_AGENT": "UNQUALIFIED",
-    "FAST_INTERACTIVE": "UNQUALIFIED",
-    "FAST_AGENT_SHORT_TURN": "UNQUALIFIED",
+    "FAST_AGENT": "QUALIFIED",
+    "FAST_INTERACTIVE": "QUALIFIED",
+    "FAST_AGENT_SHORT_TURN": "QUALIFIED",
     "FAST_THROUGHPUT_LONG_TASK": "QUALIFIED",
     "requalification_pending_comparison": [
       "qwen38-original-ar-16k",
-      "qwen38-opus-q3-daily-16k",
-      "qwen38-opus-q3-agent-24k"
+      "qwen38-opus-q3-daily-16k"
     ],
     "machine_overlay": "configs/resources/qwen-role-qualification.json"
   },
@@ -149,7 +149,7 @@
     "Q2_DCFR": "raw-speed-only; reasoning collapsed",
     "FULL_HAUHAU_Q3": "capability/reasoning failure",
     "EXL3_3_5bpw": "not viable on 12GB VRAM",
-    "DCFR_16K_AS_FAST_AGENT": "FAST_AGENT must be qwen38-dcfr-iq3-agent-24k",
+    "DCFR_AS_FAST_AGENT": "FAST_AGENT must use the explicitly selected qwen38-opus-q3-agent-24k scope-v3 path; DCFR remains throughput/long-task only",
     "DCFR_AS_SHORT_TURN_INTERACTIVE": "AGG 2026-09-03: unqualified for short-turn interactive agent workloads pending requalification comparison",
     "SILENT_FAST_AGENT_SUBSTITUTION": "must not silently route FAST_AGENT to another profile before comparison completes"
   }

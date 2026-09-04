@@ -37,10 +37,10 @@ Exact compact JSON object (key order fixed as shown):
 
 ```json
 {
-  "scope_version": "qwen-execution-scope-v2",
+  "scope_version": "qwen-execution-scope-v3",
   "execution_harness": "opencode",
   "model": "qwen_local",
-  "profile_id": "qwen38-dcfr-iq3-agent-24k",
+  "profile_id": "qwen38-opus-q3-agent-24k",
   "role": "FAST_AGENT",
   "canonical_endpoint": "http://127.0.0.1:8080",
   "single_generation_guard_required": true,

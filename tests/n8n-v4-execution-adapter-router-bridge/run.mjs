@@ -18,7 +18,7 @@ import {
   createExecutionAdapterRegistry,
   OPENCODE_QWEN_LOCAL_ROUTE,
 } from "../../tools/v4-execution-adapter-registry-v1.mjs";
-import { FIXED_AUTHORIZATION_SCOPE_V2 } from "../../tools/qwen-execution-scope-v2.mjs";
+import { FIXED_AUTHORIZATION_SCOPE_V3 } from "../../tools/qwen-execution-scope-v3.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const TOOL = resolve(ROOT, "tools/n8n-v4-execution-adapter-router-bridge-v1.mjs");
@@ -62,7 +62,7 @@ function activeAuth() {
     spent: false,
     used: false,
     route_id: "opencode+qwen_local",
-    scope: { ...FIXED_AUTHORIZATION_SCOPE_V2 },
+    scope: { ...FIXED_AUTHORIZATION_SCOPE_V3 },
   };
 }
 
@@ -148,8 +148,8 @@ function cli(inputObj) {
 }
 
 {
-  // AGG 2026-09-03: FAST_AGENT is UNQUALIFIED by default — the bridge must
-  // fail closed with AUTHORIZATION_REJECTED before occupancy.
+  // Selected OPUS24K reaches the bridge; without occupancy it fails closed
+  // at the next boundary.
   const input = {
     execution_id: "wf40:T3:PK3-agg",
     execution_route_result: routedResult(),
@@ -159,12 +159,12 @@ function cli(inputObj) {
   };
   const rAgg = await runN8nExecutionAdapterRouterBridge(input);
   check(
-    "agg-valid-auth-blocked-unqualified-role",
+    "selected-opus-valid-auth-reaches-occupancy-gate",
     rAgg.ok === true &&
-      rAgg.classification === "AUTHORIZATION_REJECTED" &&
+      rAgg.classification === "OCCUPANCY_BLOCKED" &&
       rAgg.execution_performed === false &&
       rAgg.router_result?.adapter_result?.reason_codes?.includes(
-        "ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION",
+        "OCCUPANCY_SOURCE_MISSING",
       ),
     rAgg.classification,
   );

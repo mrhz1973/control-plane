@@ -16,7 +16,7 @@ import {
 import {
   registerExecutionAdapter,
 } from "../../tools/v4-execution-adapter-registry-v1.mjs";
-import { FIXED_AUTHORIZATION_SCOPE_V2 } from "../../tools/qwen-execution-scope-v2.mjs";
+import { FIXED_AUTHORIZATION_SCOPE_V3 } from "../../tools/qwen-execution-scope-v3.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const results = [];
@@ -51,7 +51,7 @@ function activeAuth() {
     spent: false,
     used: false,
     route_id: "opencode+qwen_local",
-    scope: { ...FIXED_AUTHORIZATION_SCOPE_V2 },
+    scope: { ...FIXED_AUTHORIZATION_SCOPE_V3 },
   };
 }
 

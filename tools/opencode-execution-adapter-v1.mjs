@@ -12,7 +12,7 @@ import {
   getProfile,
   loadQwenLocalRuntime,
 } from "./qwen-local-runtime-v1.mjs";
-import { validateScopeV2, scopeRoleQualifiedForLiveExecution } from "./qwen-execution-scope-v2.mjs";
+import { validateScopeV3, scopeRoleQualifiedForLiveExecution } from "./qwen-execution-scope-v3.mjs";
 
 
 export const RESULT_SCHEMA = "opencode-execution-result-v1";
@@ -85,7 +85,7 @@ export function validateRuntimeAuthorization(auth) {
   if (!scope) {
     codes.push("AUTH_SCOPE_MISSING");
   } else {
-    const scopeCheck = validateScopeV2(scope);
+    const scopeCheck = validateScopeV3(scope);
     if (!scopeCheck.ok) codes.push(...scopeCheck.reason_codes);
   }
   // Route must be exactly opencode+qwen_local if expressed.
@@ -143,8 +143,8 @@ export async function executeOpenCodeBounded(request, options = {}) {
 
   // AGG 2026-09-03: role-qualification gate. Cryptographically valid scope is
   // NOT sufficient — the bound role must also be qualified for live execution.
-  // FAST_AGENT on qwen38-dcfr-iq3-agent-24k is UNQUALIFIED pending requalification;
-  // block before occupancy/guard/runner. DCFR stays qualified for long tasks.
+  // FAST_AGENT on the selected OPUS Agent 24K is qualified by the operator
+  // decision. The measured <think> caveat is documented but not parsed here.
   // options.roleGate is injectable for offline tests only; production default blocks.
   const gateFn = options.roleGate || scopeRoleQualifiedForLiveExecution;
   const scopeRoleGate = gateFn(

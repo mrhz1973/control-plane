@@ -31,16 +31,16 @@ Validates (fail-closed before any execution-side action):
 - `max_qwen_generation_calls == 1`
 - `retry == 0` · `fallback == 0`
 - `single_generation_guard_required == true`
-- `profile_id == qwen38-dcfr-iq3-agent-24k` · `role == FAST_AGENT` · no `dflash_required`
+- `profile_id == qwen38-opus-q3-agent-24k` · `role == FAST_AGENT` · no `dflash_required`
 
 Spent / absent / malformed / wrong-route / over-broad → fail closed.
 
-**AGG 2026-09-03 role-qualification gate:** a cryptographically valid scope is
-NOT sufficient. The scope's role must also be `QUALIFIED` in
-`configs/resources/qwen-role-qualification.json`. `FAST_AGENT` (DCFR 24K) is
-currently **UNQUALIFIED** (short-turn interactive latency) → the adapter blocks
-with `ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION` before occupancy/guard/runner. DCFR
-stays qualified for `FAST_THROUGHPUT_LONG_TASK`; no silent substitution.
+**Selected OPUS24K role qualification:** the active adapter validates
+`qwen-execution-scope-v3`; `FAST_AGENT` is explicitly qualified for
+`qwen38-opus-q3-agent-24k` by the bounded operator decision. The measured
+`<think>` output caveat remains documented; exact-output compliance is not
+claimed. DCFR remains unqualified for short-turn roles and qualified for
+`FAST_THROUGHPUT_LONG_TASK`.
 
 ## Occupancy gate
 

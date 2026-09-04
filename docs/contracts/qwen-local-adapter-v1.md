@@ -73,7 +73,7 @@ Canonical endpoint: `http://127.0.0.1:8080`
 | `qwen38-opus-q3-daily-16k` (**DEFAULT**) | 16384 | DAILY / QUALITY |
 | `qwen38-opus-q3-agent-24k` | 24576 | QUALITY_AGENT_24K |
 | `qwen38-dcfr-iq3-fast-16k` | 16384 | FAST |
-| `qwen38-dcfr-iq3-agent-24k` | 24576 | FAST_AGENT / MCP / BLENDER_FAST |
+| `qwen38-dcfr-iq3-agent-24k` | 24576 | FAST_THROUGHPUT_LONG_TASK / MCP / BLENDER_FAST |
 | `qwen38-original-ar-16k` | 16384 | REFERENCE |
 | `qwen38-uncensored-ar-16k` | 16384 | MANUAL_UNCENSORED (explicit user choice) |
 

@@ -47,7 +47,7 @@ Otherwise: `ROUTE_NOT_OPENCODE_QWEN_LOCAL` (or `INVALID_INPUT` for `NO_ROUTE`).
 | `QWEN_LOCAL_UNAVAILABLE` | Session manager not READY |
 | `PACKET_INVALID` | Packet failed schema validation |
 | `DISPATCH_BUILD_FAILED` | Spec construction failed |
-| `PROFILE_ROLE_UNQUALIFIED` | AGG 2026-09-03: dispatch profile's live-execution role is UNQUALIFIED (e.g. FAST_AGENT on DCFR pending requalification); `DISPATCH_READY` is not asserted |
+| `PROFILE_ROLE_UNQUALIFIED` | Dispatch profile's live-execution role is not qualified; `DISPATCH_READY` is not asserted |
 
 ## OpenCode CLI (opencode-ai npm)
 
@@ -59,7 +59,7 @@ opencode run --dir <repository> -m qwen_local/<llama_cpp_model_id> --format json
 
 Provider overlay (project config) binds `qwen_local` to the existing local
 OpenAI-compatible MultiModel router (`127.0.0.1:8080`, next WF40 executor
-`qwen38-dcfr-iq3-agent-24k` / FAST_AGENT via scope v2). No API key for local
+`qwen38-opus-q3-agent-24k` / FAST_AGENT via scope v3). No API key for local
 unauthenticated endpoint. No `dflash_required`.
 
 ## Tool
