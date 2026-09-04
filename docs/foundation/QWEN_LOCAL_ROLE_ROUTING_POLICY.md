@@ -1,11 +1,11 @@
 # Qwen local role-routing policy — Control Plane
 
-Status: **CANONICAL — six-profile MultiModel router integrated (AGG 2026-09-03 role correction applied)**  
+Status: **CANONICAL — six-profile Control Plane eligibility set on MultiModel router superset (AGG 2026-09-03 role correction preserved; 2026-09-04 router-superset reconciliation applied)**  
 Policy version: `qwen38-rtx3060-2026-09-03`  
 Role-qualification overlay: `qwen38-rtx3060-2026-09-03-agg` (`configs/resources/qwen-role-qualification.json`)
 
 Authoritative runtime: existing MultiModel router at `http://127.0.0.1:8080`  
-Source repository: `mrhz1973/qwen38-blender-lab` (milestone commits through `03198e1587f6388634c9ffd749f1633c05e72aa8`)
+Source repository: `mrhz1973/qwen38-blender-lab` (Control Plane six-profile milestone through `03198e1587f6388634c9ffd749f1633c05e72aa8`; workstation router drift observed through `1ba1a1f1497e588f9833cbd5bdcbb3f8602f33a0`)
 
 This supersedes the 2026-09-02 abstract OPUS/DCFR + `AGENT_16K` draft and the prior
 `fast_8k` / DFlash2 universal production assumptions.
@@ -13,14 +13,17 @@ This supersedes the 2026-09-02 abstract OPUS/DCFR + `AGENT_16K` draft and the pr
 ## Architecture
 
 ```text
-Control Plane selects exact profile_id
+Control Plane selects exact eligible profile_id
         |
         v
 http://127.0.0.1:8080  (qwen_runtime_router.py)
         |
-        +-- normal llama.cpp backend :18080
+        +-- normal llama.cpp backend
         |
-        +-- D-CFR on-demand sidecars :18200 / :18210
+        +-- D-CFR on-demand sidecars
+        |
+        +-- additional workstation-local profiles MAY coexist but are not
+            Control Plane-eligible unless explicitly admitted by policy
 ```
 
 Control Plane **must not** reconstruct `llama-server` launch commands.
@@ -28,7 +31,7 @@ The router owns backend selection and the production stream/identity fixes.
 
 Startup / default profile: `qwen38-opus-q3-daily-16k`.
 
-## Six production profiles (immutable catalog)
+## Six Control Plane production profiles (immutable eligibility set)
 
 | profile_id | Role(s) |
 |---|---|
@@ -39,8 +42,19 @@ Startup / default profile: `qwen38-opus-q3-daily-16k`.
 | `qwen38-original-ar-16k` | REFERENCE |
 | `qwen38-uncensored-ar-16k` | MANUAL_UNCENSORED / USER_OVERRIDE |
 
-`GET /v1/models` through `:8080` must expose exactly these six production profiles.
-Do not remove, rename, hide, retire, or delete any of them.
+Control Plane requires all six IDs above to remain exposed and addressable through `:8080`.
+They must not be removed, renamed, hidden, retired, or deleted by Control Plane work.
+
+**Router-catalog superset rule (2026-09-04):** `GET /v1/models` may expose additional workstation-local profiles. Their presence is not a policy failure and does not make them Control Plane-eligible. Control Plane must route only to profile IDs explicitly listed in the six-profile eligibility set above unless a future policy change admits another profile.
+
+Observed current router catalog: 8 visible profiles = 6 Control Plane-eligible + 2 known out-of-scope workstation-local profiles:
+
+- `qwen38-dcfr-iq3-blender-96k`
+- `qwen38-opus-q3-blender-96k`
+
+These two profiles are **OUT OF CONTROL PLANE SCOPE**. They must not affect role qualification, WF40 routing, authorization scope, automatic profile selection, or `NEXT`.
+
+Machine-readable overlay: `configs/resources/qwen-router-catalog-scope-overlay.json`.
 
 ## Automatic routing (exact profile IDs)
 
@@ -62,6 +76,7 @@ Invariants:
 - DCFR profiles must not silently use the normal llama.cpp backend.
 - Sensitive topics must **not** auto-select Uncensored.
 - Explicit user selection may override OPUS/DCFR preference, including Uncensored.
+- Router-visible profiles absent from the six-profile eligibility set must not be auto-routed by Control Plane.
 - Human authorization for external/irreversible actions remains unchanged.
 
 ## Uncensored retention (hard)
@@ -105,12 +120,12 @@ Consequences:
   comparison of retained profiles (`qwen38-original-ar-16k`,
   `qwen38-opus-q3-daily-16k`, `qwen38-opus-q3-agent-24k`).
 - Do NOT delete or retire DCFR. Do NOT silently replace it.
-- All six production profiles and router/runtime paths are preserved.
+- All six Control Plane production profiles and router/runtime paths are preserved.
+- Additional workstation-local router profiles do not change this qualification result.
 - Live execution bound to an UNQUALIFIED role fails closed at:
   dispatch (`PROFILE_ROLE_UNQUALIFIED`), WF40 proposal/authorization minting,
   and the OpenCode adapter (`ROLE_UNQUALIFIED_FOR_LIVE_EXECUTION`).
-- Blender is OUT OF SCOPE for Control Plane and is not introduced into this
-  change.
+- Blender workloads are OUT OF SCOPE for Control Plane and are not imported into this policy beyond the explicit exclusion of the two router-visible local-only profile IDs above.
 
 ## DFlash2 semantics
 
@@ -129,6 +144,8 @@ runtime directory. Do not confuse profile retirement with directory unused.
 
 These are readiness/attestation data, not permission to reconstruct launches.
 
+The workstation llama-ui agentic Copy fix validated on 2026-09-04 remains an isolated/non-production Control Plane concern: the normal production runtime identity above is unchanged until a separately validated switch occurs.
+
 ## Authorization scope
 
 Active producers/consumers use `qwen-execution-scope-v2` (see
@@ -138,4 +155,7 @@ exactly eight keys; `route_id` remains `opencode+qwen_local`.
 ## Machine source of truth
 
 `configs/resources/qwen-local-model-policy.json`  
-`configs/resources/qwen-local-runtime.json`
+`configs/resources/qwen-local-runtime.json`  
+`configs/resources/qwen-router-catalog-scope-overlay.json`
+
+Reconciliation evidence: `reports/architecture/v4_qwen_workstation_runtime_reconciliation_2026-09-04.md`.
