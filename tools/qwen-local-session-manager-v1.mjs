@@ -342,6 +342,145 @@ export function __resetSessionManagerLockForTests() {
   inFlightEnsure = null;
 }
 
+/**
+ * Workstation DEV session bridge (LOCAL_DEV_DOMAIN only).
+ *
+ * Same safe lifecycle as ensureQwenLocalReady (discover/reuse first, launch
+ * the operator-tested launcher at most once, bounded readiness poll, no
+ * reconstructed flags, no kill/restart), but resolves ONLY
+ * runtime.workstation_manual_profiles[profile_id] and does NOT validate the
+ * production runtime document or role maps (production drift must not block
+ * DEV sessions; DEV profiles must never enter the production eligible set).
+ *
+ * Strict DEV profile rules:
+ *   category == "workstation_dev_executor_profile"
+ *   control_plane_eligible !== true · auto_route !== true
+ * model_id = profile.llama_cpp_model_id (when explicitly present) else profile_id.
+ */
+export const DEV_PROFILE_CATEGORY = "workstation_dev_executor_profile";
+
+let inFlightDevEnsure = null;
+
+export function resolveWorkstationDevProfile(runtime, profileId) {
+  const profile = runtime?.workstation_manual_profiles?.[profileId];
+  if (!profile || typeof profile !== "object" || Array.isArray(profile)) {
+    return { ok: false, classification: "DEV_PROFILE_INVALID", reason_codes: ["DEV_PROFILE_INVALID", "PROFILE_UNKNOWN"] };
+  }
+  if (profile.category !== DEV_PROFILE_CATEGORY) {
+    return { ok: false, classification: "DEV_PROFILE_INVALID", reason_codes: ["DEV_PROFILE_INVALID", "CATEGORY_MISMATCH"] };
+  }
+  if (profile.control_plane_eligible === true || profile.auto_route === true) {
+    return { ok: false, classification: "DEV_PROFILE_INVALID", reason_codes: ["DEV_PROFILE_INVALID", "PRODUCTION_FLAGS_PRESENT"] };
+  }
+  const modelId = typeof profile.llama_cpp_model_id === "string" && profile.llama_cpp_model_id.trim()
+    ? profile.llama_cpp_model_id
+    : profileId;
+  return { ok: true, profile, model_id: modelId };
+}
+
+export async function ensureWorkstationDevQwenReady(options = {}) {
+  const profileId = options.profile;
+  if (typeof profileId !== "string" || !profileId.trim()) {
+    return result({ status: "DEV_PROFILE_INVALID", ready: false, profile: null, reason_code: "DEV_PROFILE_INVALID" });
+  }
+  const timeoutMs = options.readinessTimeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const pollIntervalMs = options.pollIntervalMs ?? DEFAULT_POLL_MS;
+  const loadRuntime = options.loadRuntime || loadQwenLocalRuntime;
+  const checkReadiness = options.checkReadiness || defaultCheckReadiness;
+  const launchLauncher = options.launchLauncher || defaultLaunchOperatorLauncher;
+  const existsPath = options.existsPath || existsSync;
+  const sleepFn = options.sleepFn || ((ms) => new Promise((r) => setTimeout(r, ms)));
+
+  let runtime;
+  try {
+    runtime = loadRuntime();
+  } catch {
+    return result({ status: "INVALID_RUNTIME_CONFIG", ready: false, profile: profileId, reason_code: "INVALID_RUNTIME_CONFIG" });
+  }
+  if (!runtime || typeof runtime !== "object" || runtime.reconstruct_llama_server_commands === true) {
+    return result({ status: "INVALID_RUNTIME_CONFIG", ready: false, profile: profileId, reason_code: "INVALID_RUNTIME_CONFIG" });
+  }
+
+  const resolved = resolveWorkstationDevProfile(runtime, profileId);
+  if (!resolved.ok) {
+    return result({ status: resolved.classification, ready: false, profile: profileId, reason_code: resolved.classification });
+  }
+  const modelId = resolved.model_id;
+  const baseUrl = options.baseUrl || runtime.launcher?.base_url || "http://127.0.0.1:8080";
+
+  // Fast path: already READY (reuse healthy router).
+  const readyNow = await checkReadiness({ baseUrl, modelId });
+  if (readyNow.ok) {
+    return result({
+      status: "READY", ready: true, profile: profileId, model_id: modelId,
+      base_url: baseUrl, launch_performed: false, wait_elapsed_ms: 0,
+      reason_code: "READY", launch_count: 0,
+    });
+  }
+
+  if (inFlightDevEnsure) return inFlightDevEnsure;
+
+  inFlightDevEnsure = (async () => {
+    try {
+      const again = await checkReadiness({ baseUrl, modelId });
+      if (again.ok) {
+        return result({
+          status: "READY", ready: true, profile: profileId, model_id: modelId,
+          base_url: baseUrl, launch_performed: false, wait_elapsed_ms: 0,
+          reason_code: "READY", launch_count: 0,
+        });
+      }
+      const launcherPath = resolveLauncherPath(runtime, options);
+      if (!existsPath(launcherPath)) {
+        return result({
+          status: "LAUNCHER_NOT_FOUND", ready: false, profile: profileId,
+          model_id: modelId, base_url: baseUrl, launch_performed: false,
+          reason_code: "LAUNCHER_NOT_FOUND", launch_count: 0,
+        });
+      }
+      let launchCount = 0;
+      try {
+        await launchLauncher({ launcherPath, baseUrl, modelId, profileId });
+        launchCount = 1;
+      } catch {
+        return result({
+          status: "LAUNCH_FAILED", ready: false, profile: profileId,
+          model_id: modelId, base_url: baseUrl, launch_performed: false,
+          reason_code: "LAUNCH_FAILED", launch_count: 0,
+        });
+      }
+      const waited = await waitForReadiness({ baseUrl, modelId, timeoutMs, pollIntervalMs, checkReadiness, sleepFn });
+      if (waited.ok) {
+        return result({
+          status: "LAUNCH_STARTED_AND_READY", ready: true, profile: profileId,
+          model_id: modelId, base_url: baseUrl, launch_performed: true,
+          wait_elapsed_ms: waited.wait_elapsed_ms, reason_code: "LAUNCH_STARTED_AND_READY",
+          launch_count: launchCount,
+        });
+      }
+      const lastClass = waited.last?.classification;
+      let status = "READINESS_TIMEOUT";
+      if (lastClass === "PROFILE_NOT_EXPOSED") status = "PROFILE_NOT_EXPOSED";
+      else if (lastClass === "API_UNREACHABLE") status = "API_UNREACHABLE";
+      return result({
+        status, ready: false, profile: profileId, model_id: modelId,
+        base_url: baseUrl, launch_performed: true,
+        wait_elapsed_ms: waited.wait_elapsed_ms, reason_code: status,
+        launch_count: launchCount,
+      });
+    } finally {
+      inFlightDevEnsure = null;
+    }
+  })();
+
+  return inFlightDevEnsure;
+}
+
+/** Test helper: clear DEV in-process lock between cases. */
+export function __resetDevSessionManagerLockForTests() {
+  inFlightDevEnsure = null;
+}
+
 function parseArgs(argv) {
   const opts = { profile: STARTUP_PROFILE_ID, help: false };
   for (let i = 2; i < argv.length; i++) {

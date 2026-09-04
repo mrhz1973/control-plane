@@ -1,45 +1,44 @@
 # LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_LIVE_SAFETY_ENFORCEMENT_V1`
-**Classification:** `LOCAL_DEV_EXECUTOR_LIVE_SAFETY_ENFORCED`
+**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_WORKSTATION_SESSION_BRIDGE_V1`
+**Classification:** `LOCAL_DEV_WORKSTATION_SESSION_BRIDGE_WIRED`
 **Timestamp (local):** 2026-09-04
 
 ## Summary
 
-Closed the fail-closed enforcement gaps before the first live proof.
-Discovery (read-only `opencode debug config` probes, no model): installed
-OpenCode 1.18.25 is V1 — V2 `permissions` rejected, V1 `permission`
-(bash/edit maps + `webfetch`/`websearch` `"deny"`) accepted, and
-`OPENCODE_CONFIG` env is honored.
+Fixed the live-proof blocker `STOP:QWEN_SESSION_NOT_READY /
+INVALID_RUNTIME_CONFIG`: the DEV executor was routing its workstation-only
+profile through the production six-profile session path, whose whole
+document validation fails on the pre-existing FAST_AGENT role-map drift.
 
-Implemented:
+Implemented the smallest additive workstation DEV session bridge in
+`tools/qwen-local-session-manager-v1.mjs`:
 
-- Hard wall-clock timebox bounding the OpenCode child itself
-  (`BOUNDS_TIMEBOX_EXPIRED` on expiry, no unbounded child)
-- Post-execution path enforcement before tests/staging/push
-  (`STOP:UNEXPECTED_FILE_CHANGES`, zero staging/push after)
-- Deny-all-first V1 bash allowlist (`allowed_commands` only) — technical,
-  not prompt-only
-- Network fail-closed: `webfetch`/`websearch` denied under both
-  `offline` and `localhost_only`; only network path is the DEV guard on
-  127.0.0.1
-- Edit scoping to `allowed_paths`
+- `resolveWorkstationDevProfile` — workstation_manual_profiles ONLY;
+  strict category/flag rules; `DEV_PROFILE_INVALID` otherwise
+- `ensureWorkstationDevQwenReady` — same safe lifecycle primitives,
+  no production document/role-map validation, dedicated dedupe lock
 
-Tests: wiring/enforcement suite **23/23 PASS** (incl. installed-CLI
-schema acceptance of the generated config; source-level production-domain
-absence) + executor regression **20/20 PASS**. Budget: run → one bounded
-correction → final retest.
+`makeEnsureQwenReady` in `tools/run-local-dev-executor-v1.mjs` now uses
+the DEV bridge. Production path unchanged (proven by tests: drifted doc
+still fails production validation; aligned doc resolves READY).
 
-- Real Qwen generations: **0** · OpenCode runs: **0** · services
+Bridge tests **14/14 PASS**; regressions executor **20/20**, wiring
+**23/23**. Budget: run → one bounded correction → final retest.
+
+- Real Qwen generations: **0** · OpenCode: **0** · services
   started/stopped: **0**
-- WF40/D-0025/scope-v3/production authorization/adapter/eligible set/role
-  mappings/Cline: unchanged
+- PROFILE_IDS / runtime.profiles / role_to_profile_id / eligible set /
+  validateRuntimeDocument / validateProfilePolicy / WF40 / D-0025 /
+  scope-v3 / production authorization / adapter: unchanged
+- FAST_AGENT config/module drift intentionally NOT fixed (production
+  follow-up)
 - All pre-existing untracked files preserved
 
 ## NEXT
 
-`V4_LOCAL_DEV_EXECUTOR_QWEN_FIRST_BOUNDED_LIVE_PROOF` (NOT executed in
-this pass)
+`V4_LOCAL_DEV_EXECUTOR_QWEN_FIRST_BOUNDED_LIVE_PROOF_RETRY1` (NOT
+executed in this pass)
 
 Evidence report:
-`reports/architecture/v4_local_dev_executor_live_safety_enforcement_v1.md`
+`reports/architecture/v4_local_dev_executor_workstation_session_bridge_v1.md`

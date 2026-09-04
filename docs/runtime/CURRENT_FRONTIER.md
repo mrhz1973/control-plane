@@ -6,11 +6,11 @@
 |---|---|
 | **FOUNDATION** | v3.5 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 9-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · workstation-only Cline 64K profile **LIVE-VERIFIED / PASS** · LOCAL_DEV_EXECUTOR **V1 IMPLEMENTED + WIRED + SAFETY-ENFORCED** · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_LOCAL_DEV_EXECUTOR_LIVE_SAFETY_ENFORCEMENT_V1` — **PASS** · hard timebox, post-execution path enforcement, V1 command/network permission overlay fail-closed; 23/23 + 20/20 offline tests; zero live executions |
+| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 9-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · workstation-only Cline 64K profile **LIVE-VERIFIED / PASS** · LOCAL_DEV_EXECUTOR **V1 IMPLEMENTED + WIRED + SAFETY-ENFORCED + DEV SESSION BRIDGE** · no ACTIVE authorization |
+| **BLOCCO ATTIVO** | `V4_LOCAL_DEV_EXECUTOR_WORKSTATION_SESSION_BRIDGE_V1` — **PASS** · DEV profiles bypass production document/role-map validation via additive workstation bridge; production session path unchanged; 14/14 + regressions 20/20 + 23/23 |
 | **STATO BLOCCO** | OPUS Agent 24K qualified for FAST_AGENT/FAST_INTERACTIVE/FAST_AGENT_SHORT_TURN · scope-v3 digest `934123f0…f2548f7` · DCFR short-turn remains **UNQUALIFIED** and FAST_THROUGHPUT/LONG_TASK QUALIFIED · `<think>` caveat documented; exact-output compliance not claimed · scope-v2 historical |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_LOCAL_DEV_EXECUTOR_QWEN_FIRST_BOUNDED_LIVE_PROOF` — first bounded live task through LOCAL_DEV_EXECUTOR with explicit TASK DELTA envelope |
+| **NEXT** | `V4_LOCAL_DEV_EXECUTOR_QWEN_FIRST_BOUNDED_LIVE_PROOF_RETRY1` — retry first bounded live proof with DEV session bridge (`INVALID_RUNTIME_CONFIG` blocker cleared) |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · `activeVersionId=a609ad90-7eb4-4495-9ec5-c4413165cea1` |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
@@ -32,7 +32,7 @@
 | **EXECUTION ADAPTER ROUTER** | `tools/v4-execution-adapter-router-v1.mjs` · exact route `opencode+qwen_local` |
 | **OPENCODE EXECUTION ADAPTER** | `tools/opencode-execution-adapter-v1.mjs` · bound to active scope-v3 · `profile_id=qwen38-opus-q3-agent-24k` · `<think>` caveat documented |
 | **PRODUCTION DATABASE** | n8n 2.33.3 on PostgreSQL 16.15 · health 200 · sequence resync PASS |
-| **LOCAL DEV EXECUTOR** | `docs/contracts/local-dev-executor-v1.md` · **V1 IMPLEMENTED + WIRED + SAFETY-ENFORCED** · `tools/local-dev-executor-v1.mjs` + `tools/run-local-dev-executor-v1.mjs` + `tools/local-dev-generation-guard-v1.mjs` · hard timebox + post-execution path enforcement + OpenCode V1 deny-first permission overlay (bash/edit/webfetch/websearch) via temp `OPENCODE_CONFIG` · offline tests **20/20** + wiring/enforcement tests **23/23 PASS** · `workstation_dev_executor_profile` on `qwen38-opus-q3-cline-64k` · provider-neutral `executor-pass:`/`executor-stop:` evidence · real dev executions: 0 |
+| **LOCAL DEV EXECUTOR** | `docs/contracts/local-dev-executor-v1.md` · **V1 IMPLEMENTED + WIRED + SAFETY-ENFORCED + DEV SESSION BRIDGE** · `tools/local-dev-executor-v1.mjs` + `tools/run-local-dev-executor-v1.mjs` + `tools/local-dev-generation-guard-v1.mjs` · hard timebox + path enforcement + V1 deny-first permission overlay · `ensureWorkstationDevQwenReady` DEV bridge (workstation_manual_profiles only, no production doc/role-map validation) · tests **20/20** + **23/23** + bridge **14/14 PASS** · `workstation_dev_executor_profile` on `qwen38-opus-q3-cline-64k` · provider-neutral `executor-pass:`/`executor-stop:` evidence · real dev executions: 0 |
 
 ## Installed execution path
 
@@ -91,6 +91,7 @@ launch commands.
 - LOCAL_DEV_EXECUTOR implementation: `reports/architecture/v4_local_dev_executor_qwen_general_purpose_implementation_v1.md`
 - LOCAL_DEV_EXECUTOR live runner wiring: `reports/architecture/v4_local_dev_executor_live_runner_wiring_v1.md`
 - LOCAL_DEV_EXECUTOR live safety enforcement: `reports/architecture/v4_local_dev_executor_live_safety_enforcement_v1.md`
+- LOCAL_DEV_EXECUTOR workstation session bridge: `reports/architecture/v4_local_dev_executor_workstation_session_bridge_v1.md`
 - AGG role correction PASS report: `reports/architecture/v4_qwen_agg_runtime_role_correction_dcfr_short_turn.md`
 - Role-qualification overlay: `configs/resources/qwen-role-qualification.json`
 - Integration PASS report: `reports/architecture/v4_qwen_local_6_profile_router_control_plane_integration.md`

@@ -22,7 +22,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawn, execFile } from "node:child_process";
 import { executeLocalDevTask, pathAllowed, DEV_PROFILE_CATEGORY } from "./local-dev-executor-v1.mjs";
-import { ensureQwenLocalReady } from "./qwen-local-session-manager-v1.mjs";
+import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
 import { probeOpenCodeLocal } from "./probe-opencode-local-v1.mjs";
 import { startLocalDevGenerationGuard } from "./local-dev-generation-guard-v1.mjs";
 
@@ -109,8 +109,8 @@ export function buildTaskMessage(envelope) {
   return text.length > 4000 ? text.slice(0, 4000) : text;
 }
 
-/** ensureQwenReady adapter: session-manager result + router_was_running flag. */
-export function makeEnsureQwenReady(ensure = ensureQwenLocalReady) {
+/** ensureQwenReady adapter: DEV session bridge + router_was_running flag. */
+export function makeEnsureQwenReady(ensure = ensureWorkstationDevQwenReady) {
   return async ({ profile }) => {
     const session = await ensure({ profile });
     return { ...session, router_was_running: session?.status === "READY" };
@@ -222,7 +222,7 @@ export function makePersistGit(deps = {}) {
 /** Compose the concrete collaborator bundle (all injectable for tests). */
 export function composeRunners(options = {}) {
   return {
-    ensureQwenReady: options.ensureQwenReady || makeEnsureQwenReady(options.ensureQwenLocalReady),
+    ensureQwenReady: options.ensureQwenReady || makeEnsureQwenReady(options.ensureWorkstationDevQwenReady),
     guardStart: options.guardStart || startLocalDevGenerationGuard,
     runOpenCodeTask: options.runOpenCodeTask || makeRunOpenCodeTask(options.opencodeDeps || {}),
     runTests: options.runTests || makeRunTests(options.testDeps || {}),
