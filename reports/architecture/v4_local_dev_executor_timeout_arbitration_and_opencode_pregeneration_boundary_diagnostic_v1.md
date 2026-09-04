@@ -148,3 +148,7 @@ this pass; RETRY5 remains the latest executed proof).
 ## First completed bounded live proof
 
 LOCAL_DEV_EXECUTOR_FIRST_LIVE_PROOF_RETRY7 = QWEN_EXECUTED
+
+## First completed bounded live proof after turn calibration
+
+LOCAL_DEV_EXECUTOR_FIRST_LIVE_PROOF_RETRY8 = QWEN_EXECUTED
