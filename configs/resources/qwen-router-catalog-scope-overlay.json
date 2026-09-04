@@ -1,0 +1,37 @@
+{
+  "schema_version": "qwen-router-catalog-scope-overlay-v1",
+  "observed_date": "2026-09-04",
+  "scope": "control-plane",
+  "canonical_endpoint": "http://127.0.0.1:8080",
+  "router_visible_profile_count": 8,
+  "control_plane_eligible_profile_count": 6,
+  "control_plane_profile_ids": [
+    "qwen38-opus-q3-daily-16k",
+    "qwen38-opus-q3-agent-24k",
+    "qwen38-dcfr-iq3-fast-16k",
+    "qwen38-dcfr-iq3-agent-24k",
+    "qwen38-original-ar-16k",
+    "qwen38-uncensored-ar-16k"
+  ],
+  "known_out_of_scope_profile_ids": [
+    "qwen38-dcfr-iq3-blender-96k",
+    "qwen38-opus-q3-blender-96k"
+  ],
+  "router_catalog_semantics": "SUPERSET_ALLOWED_CONTROL_PLANE_SELECTS_ONLY_ELIGIBLE_PROFILE_IDS",
+  "startup_profile_id": "qwen38-opus-q3-daily-16k",
+  "startup_profile_unchanged": true,
+  "next_wf40_executor_profile_id": "qwen38-dcfr-iq3-agent-24k",
+  "next_wf40_executor_status": "STALE_UNQUALIFIED_PENDING_REQUALIFICATION",
+  "role_qualification_unchanged": true,
+  "qwen_execution_scope_v2_unchanged": true,
+  "source_repo": "mrhz1973/qwen38-blender-lab",
+  "source_repo_head_observed": "1ba1a1f1497e588f9833cbd5bdcbb3f8602f33a0",
+  "invariants": {
+    "additional_router_profiles_do_not_become_control_plane_eligible_implicitly": true,
+    "control_plane_auto_routing_must_ignore_unlisted_profiles": true,
+    "control_plane_role_mapping_unchanged": true,
+    "blender_workloads_out_of_control_plane_scope": true,
+    "no_silent_fast_agent_requalification": true,
+    "normal_llama_cpp_runtime_identity_unchanged": true
+  }
+}
