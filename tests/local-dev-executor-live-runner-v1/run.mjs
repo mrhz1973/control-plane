@@ -108,12 +108,13 @@ await test("DEV profile preserved through ensureQwenReady call and result", asyn
     maxAgentTurns: 4,
   });
   let seenProfile = null;
-  const git = fakeGit({
-    "rev-parse HEAD": { status: 0, stdout: ENVELOPE.dispatch_base_head + "\n" },
-    "remote get-url origin": { status: 0, stdout: ENVELOPE.target_remote + "\n" },
-    "status --porcelain=v1 -uall": { status: 0, stdout: "" },
-  });
-  const ensure = makeEnsureQwenReady(async ({ profile }) => {
+    const git = fakeGit({
+      "rev-parse HEAD": { status: 0, stdout: ENVELOPE.dispatch_base_head + "\n" },
+      "remote get-url origin": { status: 0, stdout: ENVELOPE.target_remote + "\n" },
+      "status --porcelain=v1 -uall": { status: 0, stdout: "" },
+      "status --porcelain=v1 --untracked-files=no": { status: 0, stdout: "" },
+    });
+    const ensure = makeEnsureQwenReady(async ({ profile }) => {
     seenProfile = profile;
     return { ready: true, status: "READY", base_url: `http://127.0.0.1:${upstream.address().port}`, launch_performed: false };
   });
@@ -164,6 +165,7 @@ await test("concrete guard URL reaches OpenCode collaborator (loopback, not 8080
       "rev-parse HEAD": { status: 0, stdout: ENVELOPE.dispatch_base_head + "\n" },
       "remote get-url origin": { status: 0, stdout: ENVELOPE.target_remote + "\n" },
       "status --porcelain=v1 -uall": { status: 0, stdout: "" },
+      "status --porcelain=v1 --untracked-files=no": { status: 0, stdout: "" },
     });
     const result = await executeLocalDevTask(ENVELOPE, {
       git,
@@ -308,6 +310,176 @@ await test("releaseRouterIfStarted: not owned -> no release", async () => {
   assert.deepEqual(out, { released: false, reason: "not_owned" });
 });
 
+// ---------- 11. LIVE SAFETY ENFORCEMENT ----------
+await test("hard timeout bounds the OpenCode child process", async () => {
+  const { makeRunOpenCodeTask } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  let killed = false;
+  const neverResolvingSpawn = () => new Promise(() => {}); // simulates hung child
+  const run = makeRunOpenCodeTask({
+    probe: () => ({ available: true, executable: "opencode-x", dispatch_interface_resolved: true, capabilities: null }),
+    spawnProc: neverResolvingSpawn,
+    makeTempConfig: () => "/tmp/x.json",
+    removeTempConfig: () => {},
+  });
+  const t0 = Date.now();
+  await assert.rejects(
+    () => run({
+      guardBaseUrl: "http://127.0.0.1:54321",
+      modelId: "m", modelSelector: "qwen_local/m",
+      providerOverlay: { provider: {} },
+      capabilities: { subcommand: "run", directory_flag: "--dir", model_flag: "-m", format_flag: "--format", format_json_value: "json", auto_flag: "--auto" },
+      envelope: { ...ENVELOPE, timebox_seconds: 1 },
+    }),
+    (e) => e.code === "BOUNDS_TIMEBOX_EXPIRED" && e.terminated === true,
+  );
+  const elapsed = Date.now() - t0;
+  assert.ok(elapsed < 5000, `timeout fired late: ${elapsed}ms`);
+});
+
+await test("timeout error propagates as STOP:BOUNDS_TIMEBOX_EXPIRED", async () => {
+  const upstream = await fakeUpstream();
+  const guard = await startLocalDevGenerationGuard({
+    upstreamOrigin: `http://127.0.0.1:${upstream.address().port}`,
+    maxAgentTurns: 4,
+  });
+  const git = fakeGit({
+    "rev-parse HEAD": { status: 0, stdout: ENVELOPE.dispatch_base_head + "\n" },
+    "remote get-url origin": { status: 0, stdout: ENVELOPE.target_remote + "\n" },
+    "status --porcelain=v1 -uall": { status: 0, stdout: "" },
+  });
+  let persistCalled = false;
+  const r = await executeLocalDevTask(ENVELOPE, {
+    git,
+    ensureQwenReady: async () => ({ ready: true, status: "READY", base_url: `http://127.0.0.1:${upstream.address().port}`, router_was_running: true, launch_performed: false }),
+    guardStart: async () => guard,
+    runOpenCodeTask: async () => { throw Object.assign(new Error("timebox"), { code: "BOUNDS_TIMEBOX_EXPIRED" }); },
+    runTests: async () => { throw new Error("must not test"); },
+    persistGit: async () => { persistCalled = true; return { ok: true }; },
+  });
+  upstream.close();
+  assert.equal(r.classification, "STOP:BOUNDS_TIMEBOX_EXPIRED");
+  assert.equal(persistCalled, false);
+});
+
+await test("out-of-scope tracked change produces STOP:UNEXPECTED_FILE_CHANGES", async () => {
+  const upstream = await fakeUpstream();
+  const guard = await startLocalDevGenerationGuard({
+    upstreamOrigin: `http://127.0.0.1:${upstream.address().port}`,
+    maxAgentTurns: 4,
+  });
+  let statusCall = 0;
+  const git = async (repoPath, args) => {
+    const key = args.join(" ");
+    if (key === "rev-parse HEAD") return { status: 0, stdout: ENVELOPE.dispatch_base_head + "\n" };
+    if (key === "remote get-url origin") return { status: 0, stdout: ENVELOPE.target_remote + "\n" };
+    if (key === "status --porcelain=v1 -uall") return { status: 0, stdout: "" };
+    if (key === "status --porcelain=v1 --untracked-files=no") {
+      statusCall += 1;
+      // first call = post-execution path enforcement: agent wrote outside scope
+      return { status: 0, stdout: " M tools/outside.mjs\n M docs/ok.md\n" };
+    }
+    return { status: 1, stdout: "", stderr: `unexpected ${key}` };
+  };
+  let testsCalled = false, persistCalled = false;
+  const r = await executeLocalDevTask(ENVELOPE, {
+    git,
+    ensureQwenReady: async () => ({ ready: true, status: "READY", base_url: `http://127.0.0.1:${upstream.address().port}`, router_was_running: true, launch_performed: false }),
+    guardStart: async () => guard,
+    runOpenCodeTask: async () => ({ ok: true }),
+    runTests: async () => { testsCalled = true; return []; },
+    persistGit: async () => { persistCalled = true; return { ok: true }; },
+  });
+  upstream.close();
+  assert.equal(r.classification, "STOP:UNEXPECTED_FILE_CHANGES");
+  assert.ok(r.reason_codes.some((c) => c.startsWith("PATH:")));
+  assert.equal(testsCalled, false, "tests must not run after unexpected changes");
+  assert.equal(persistCalled, false, "no staging/push after unexpected changes");
+});
+
+await test("permission overlay denies disallowed commands and allows allowlisted ones", async () => {
+  const { buildPermissionOverlay } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const perm = buildPermissionOverlay({
+    allowedCommands: ["node --test tests/run.mjs", "git status"],
+    allowedPaths: ["docs/**"],
+    networkPolicy: "localhost_only",
+  });
+  // ordered rule evaluation: last matching wins (V1 semantics via key order)
+  const bashKeys = Object.keys(perm.bash);
+  assert.equal(perm.bash["*"], "deny");
+  assert.equal(perm.bash["node --test tests/run.mjs"], "allow");
+  assert.equal(perm.bash["git status"], "allow");
+  assert.ok(bashKeys.indexOf("*") < bashKeys.indexOf("node --test tests/run.mjs"));
+  assert.equal(perm.edit["*"], "deny");
+  assert.equal(perm.edit["docs/**"], "allow");
+  assert.equal(perm.edit["docs/*"], "allow");
+  // network fail-closed under both policies
+  assert.equal(perm.webfetch, "deny");
+  assert.equal(perm.websearch, "deny");
+});
+
+await test("permission overlay offline policy identical fail-closed web denial", async () => {
+  const { buildPermissionOverlay } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const offline = buildPermissionOverlay({ allowedCommands: ["git status"], allowedPaths: ["README.md"], networkPolicy: "offline" });
+  const localhost = buildPermissionOverlay({ allowedCommands: ["git status"], allowedPaths: ["README.md"], networkPolicy: "localhost_only" });
+  assert.equal(offline.webfetch, "deny");
+  assert.equal(offline.websearch, "deny");
+  assert.equal(localhost.webfetch, "deny");
+  assert.equal(localhost.websearch, "deny");
+});
+
+await test("runtime config merges provider + permission overlays", async () => {
+  const { buildOpenCodeRuntimeConfig, buildPermissionOverlay } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const cfg = buildOpenCodeRuntimeConfig({
+    providerOverlay: { $schema: "https://opencode.ai/config.json", provider: { qwen_local: {} } },
+    permissionOverlay: buildPermissionOverlay({ allowedCommands: ["git status"], allowedPaths: ["docs/**"], networkPolicy: "localhost_only" }),
+  });
+  assert.ok(cfg.provider.qwen_local);
+  assert.equal(cfg.permission.bash["*"], "deny");
+  assert.equal(cfg.permission.bash["git status"], "allow");
+  assert.equal(cfg.permission.webfetch, "deny");
+});
+
+await test("installed OpenCode CLI accepts the generated V1 permission config", async () => {
+  // schema-acceptance probe against the real installed CLI (no run, no model)
+  const { execFile } = await import("node:child_process");
+  const { mkdtempSync, writeFileSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { buildOpenCodeRuntimeConfig, buildPermissionOverlay } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const cfg = buildOpenCodeRuntimeConfig({
+    providerOverlay: { $schema: "https://opencode.ai/config.json", provider: {} },
+    permissionOverlay: buildPermissionOverlay({ allowedCommands: ENVELOPE.allowed_commands, allowedPaths: ENVELOPE.allowed_paths, networkPolicy: "localhost_only" }),
+  });
+  delete cfg.permission._network_policy; // informational field not part of schema
+  const dir = mkdtempSync(join(tmpdir(), "lde-schema-probe-"));
+  const cfgPath = join(dir, "opencode.json");
+  writeFileSync(cfgPath, JSON.stringify(cfg), "utf8");
+  const exe = join(process.env.APPDATA || "", "npm", "opencode.cmd");
+  try {
+    const result = await new Promise((resolvePromise) => {
+      execFile(exe, ["debug", "config"], { env: { ...process.env, OPENCODE_CONFIG: cfgPath }, windowsHide: true, shell: process.platform === "win32" }, (err, stdout) => resolvePromise({ err, stdout: stdout || "" }));
+    });
+    assert.ok(!result.err, `cli rejected config: ${result.err?.message}`);
+    assert.ok(!/Error|invalid/i.test(result.stdout), result.stdout.slice(0, 200));
+    assert.ok(result.stdout.includes('"permission"'));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+await test("production domain remains untouched by enforcement layer", async () => {
+  const { readFileSync } = await import("node:fs");
+  const runner = readFileSync(new URL("../../tools/run-local-dev-executor-v1.mjs", import.meta.url), "utf8");
+  const executor = readFileSync(new URL("../../tools/local-dev-executor-v1.mjs", import.meta.url), "utf8");
+  for (const src of [runner, executor]) {
+    assert.ok(!src.includes("opencode-execution-adapter-v1"));
+    assert.ok(!src.includes("operator-runtime-authorization"));
+    assert.ok(!src.includes("qwen-execution-scope-v3"));
+  }
+});
+
 // ---------- summary ----------
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
-if (failures.length) process.exit(1);
+// Explicit exit: the CLI schema-acceptance probe spawns a shell (.cmd) child
+// whose handle can keep the event loop alive after all tests complete.
+process.exit(failures.length ? 1 : 0);

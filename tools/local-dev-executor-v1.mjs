@@ -307,6 +307,22 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
     });
   }
 
+  // POST-EXECUTION PATH ENFORCEMENT helper: tracked changes must stay inside
+  // allowed_paths; otherwise STOP before tests/staging/push. Untracked tolerated.
+  const gitForPaths = options.git || defaultGit;
+  const matchForPaths = options.pathMatch || null;
+  const assertPathsInScope = async () => {
+    const status = await gitForPaths(envelope.target_repo_path, ["status", "--porcelain=v1", "--untracked-files=no"]);
+    if (status.status !== 0) {
+      return { ok: false, classification: "STOP:GIT_PERSISTENCE_FAILED", reason_codes: ["GIT_PERSISTENCE_FAILED", "STATUS_FAILED"] };
+    }
+    const outside = status.stdout.split(/\r?\n/).filter(Boolean).map((l) => parseStatusLine(l)).filter(({ path }) => !pathAllowed(envelope.allowed_paths, path, matchForPaths));
+    if (outside.length) {
+      return { ok: false, classification: "STOP:UNEXPECTED_FILE_CHANGES", reason_codes: ["UNEXPECTED_FILE_CHANGES", ...outside.map((e) => `PATH:${e.path}`)] };
+    }
+    return { ok: true };
+  };
+
   // Guard: OpenCode target is ALWAYS the guard base URL, never :8080 direct.
   const guard = await guardStart({
     upstreamOrigin: session.base_url || CANONICAL_QWEN_ENDPOINT,
@@ -356,6 +372,18 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
     return finish({
       classification: "STOP:BOUNDS_TIMEBOX_EXPIRED",
       reason_codes: ["BOUNDS_TIMEBOX_EXPIRED"],
+      turns_used: turns,
+      router_was_running: session.router_was_running ?? null,
+      launch_performed: Boolean(session.launch_performed),
+    });
+  }
+
+  // POST-EXECUTION PATH ENFORCEMENT: before tests/staging/push.
+  const pathCheck = await assertPathsInScope();
+  if (!pathCheck.ok) {
+    return finish({
+      classification: pathCheck.classification,
+      reason_codes: pathCheck.reason_codes,
       turns_used: turns,
       router_was_running: session.router_was_running ?? null,
       launch_performed: Boolean(session.launch_performed),

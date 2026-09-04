@@ -28,6 +28,45 @@ import { startLocalDevGenerationGuard } from "./local-dev-generation-guard-v1.mj
 
 export const DIRECT_QWEN_ENDPOINT = "http://127.0.0.1:8080";
 
+/** Ordered deny-all-first V1 permission overlay (fail-closed enforcement). */
+export function buildPermissionOverlay({ allowedCommands, allowedPaths, networkPolicy }) {
+  const bash = { "*": "deny" };
+  for (const command of allowedCommands) {
+    const trimmed = String(command).trim();
+    if (!trimmed) continue;
+    if (bash[trimmed] === "deny") delete bash[trimmed];
+    bash[trimmed] = "allow";
+  }
+  const edit = { "*": "deny" };
+  for (const pathGlob of allowedPaths) {
+    const trimmed = String(pathGlob).trim();
+    if (!trimmed) continue;
+    edit[trimmed] = "allow";
+    // V1 glob semantics: expose both `dir/*` and `dir/**` forms for path prefixes.
+    if (trimmed.endsWith("/**")) edit[`${trimmed.slice(0, -3)}/*`] = "allow";
+  }
+  const permission = {
+    bash,
+    edit,
+    webfetch: "deny",
+    websearch: "deny",
+  };
+  // localhost_only: the DEV guard upstream (Qwen via guard) is model traffic,
+  // not an agent tool action; agent web tools stay denied under BOTH policies.
+  // offline: identical — no web tools under either policy. Divergence would
+  // only exist if a future OpenCode action allowed raw sockets; none in V1.
+  permission._network_policy = networkPolicy; // informational; not consumed by CLI
+  return permission;
+}
+
+/** Merge provider overlay + V1 permission enforcement into one config. */
+export function buildOpenCodeRuntimeConfig({ providerOverlay, permissionOverlay }) {
+  return {
+    ...providerOverlay,
+    permission: permissionOverlay,
+  };
+}
+
 function defaultSpawn(executable, args, opts = {}) {
   return new Promise((resolvePromise) => {
     const child = spawn(executable, args, {
@@ -78,16 +117,18 @@ export function makeEnsureQwenReady(ensure = ensureQwenLocalReady) {
   };
 }
 
-/** ONE OpenCode process per task; target is ALWAYS the DEV guard URL. */
+/** ONE OpenCode process per task; target is ALWAYS the DEV guard URL.
+ * Hard wall-clock timeout: the child process is terminated on expiry. */
 export function makeRunOpenCodeTask(deps = {}) {
   const probe = deps.probe || probeOpenCodeLocal;
   const spawnProc = deps.spawnProc || defaultSpawn;
+  const hardTimeoutMs = deps.hardTimeoutMs ?? 90_000;
   const makeTempConfig =
     deps.makeTempConfig ||
-    ((overlay) => {
+    ((config) => {
       const dir = mkdtempSync(join(tmpdir(), "lde-oc-config-"));
       const p = join(dir, "opencode.json");
-      writeFileSync(p, JSON.stringify(overlay), "utf8");
+      writeFileSync(p, JSON.stringify(config), "utf8");
       return p;
     });
   const removeTempConfig = deps.removeTempConfig || ((p) => { try { unlinkSync(p); } catch { /* best effort */ } });
@@ -103,7 +144,13 @@ export function makeRunOpenCodeTask(deps = {}) {
       throw Object.assign(new Error("opencode unavailable"), { code: "PREFLIGHT_TOOLING_UNAVAILABLE" });
     }
     const caps = capabilities || probeResult.capabilities;
-    const configPath = makeTempConfig(providerOverlay);
+    const permissionOverlay = buildPermissionOverlay({
+      allowedCommands: envelope.allowed_commands,
+      allowedPaths: envelope.allowed_paths,
+      networkPolicy: envelope.network_policy,
+    });
+    const runtimeConfig = buildOpenCodeRuntimeConfig({ providerOverlay, permissionOverlay });
+    const configPath = makeTempConfig(runtimeConfig);
     let run;
     try {
       const argv = [
@@ -114,10 +161,17 @@ export function makeRunOpenCodeTask(deps = {}) {
         caps.auto_flag,
         buildTaskMessage(envelope),
       ];
-      run = await spawnProc(probeResult.executable, argv, {
-        cwd: envelope.target_repo_path,
-        env: { ...process.env, OPENCODE_CONFIG: configPath },
-      });
+      // HARD TIMEBOX: bound the child process itself, not just post-hoc checks.
+      const timeoutMs = Math.max(1, envelope.timebox_seconds) * 1000;
+      run = await Promise.race([
+        spawnProc(probeResult.executable, argv, {
+          cwd: envelope.target_repo_path,
+          env: { ...process.env, OPENCODE_CONFIG: configPath },
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(Object.assign(new Error(`opencode exceeded hard timebox ${envelope.timebox_seconds}s`), { code: "BOUNDS_TIMEBOX_EXPIRED", terminated: true })), timeoutMs),
+        ),
+      ]);
     } finally {
       removeTempConfig(configPath);
     }

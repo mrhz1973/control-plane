@@ -317,6 +317,7 @@ await test("injected happy path produces PASS evidence envelope", async () => {
     "rev-parse HEAD": { status: 0, stdout: env.dispatch_base_head + "\n" },
     "remote get-url origin": { status: 0, stdout: env.target_remote + "\n" },
     "status --porcelain=v1 -uall": { status: 0, stdout: "" },
+    "status --porcelain=v1 --untracked-files=no": { status: 0, stdout: "" },
   });
 
   const result = await executeLocalDevTask(env, {
@@ -361,6 +362,7 @@ await test("test failure produces STOP:TEST_FAILED", async () => {
     "rev-parse HEAD": { status: 0, stdout: env.dispatch_base_head + "\n" },
     "remote get-url origin": { status: 0, stdout: env.target_remote + "\n" },
     "status --porcelain=v1 -uall": { status: 0, stdout: "" },
+    "status --porcelain=v1 --untracked-files=no": { status: 0, stdout: "" },
   });
   const result = await executeLocalDevTask(env, {
     git,
