@@ -51,11 +51,10 @@ export function buildPermissionOverlay({ allowedCommands, allowedPaths, networkP
     webfetch: "deny",
     websearch: "deny",
   };
-  // localhost_only: the DEV guard upstream (Qwen via guard) is model traffic,
-  // not an agent tool action; agent web tools stay denied under BOTH policies.
-  // offline: identical — no web tools under either policy. Divergence would
-  // only exist if a future OpenCode action allowed raw sockets; none in V1.
-  permission._network_policy = networkPolicy; // informational; not consumed by CLI
+  // network_policy remains executor metadata only. OpenCode V1 treats every
+  // key inside `permission` as a PermissionActionConfig, so undocumented
+  // metadata must never be serialized here. Both supported policies remain
+  // fail-closed for web tools; Qwen model traffic uses the DEV guard.
   return permission;
 }
 

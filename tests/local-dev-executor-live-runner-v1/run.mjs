@@ -441,31 +441,44 @@ await test("runtime config merges provider + permission overlays", async () => {
   assert.equal(cfg.permission.webfetch, "deny");
 });
 
-await test("installed OpenCode CLI accepts the generated V1 permission config", async () => {
+await test("installed OpenCode CLI accepts the exact generated V1 config for both network policies", async () => {
   // schema-acceptance probe against the real installed CLI (no run, no model)
   const { execFile } = await import("node:child_process");
   const { mkdtempSync, writeFileSync, rmSync } = await import("node:fs");
   const { tmpdir } = await import("node:os");
   const { join } = await import("node:path");
   const { buildOpenCodeRuntimeConfig, buildPermissionOverlay } = await import("../../tools/run-local-dev-executor-v1.mjs");
-  const cfg = buildOpenCodeRuntimeConfig({
-    providerOverlay: { $schema: "https://opencode.ai/config.json", provider: {} },
-    permissionOverlay: buildPermissionOverlay({ allowedCommands: ENVELOPE.allowed_commands, allowedPaths: ENVELOPE.allowed_paths, networkPolicy: "localhost_only" }),
-  });
-  delete cfg.permission._network_policy; // informational field not part of schema
-  const dir = mkdtempSync(join(tmpdir(), "lde-schema-probe-"));
-  const cfgPath = join(dir, "opencode.json");
-  writeFileSync(cfgPath, JSON.stringify(cfg), "utf8");
   const exe = join(process.env.APPDATA || "", "npm", "opencode.cmd");
-  try {
-    const result = await new Promise((resolvePromise) => {
-      execFile(exe, ["debug", "config"], { env: { ...process.env, OPENCODE_CONFIG: cfgPath }, windowsHide: true, shell: process.platform === "win32" }, (err, stdout) => resolvePromise({ err, stdout: stdout || "" }));
+  for (const networkPolicy of ["localhost_only", "offline"]) {
+    const cfg = buildOpenCodeRuntimeConfig({
+      providerOverlay: { $schema: "https://opencode.ai/config.json", provider: { qwen_local: {} } },
+      permissionOverlay: buildPermissionOverlay({
+        allowedCommands: ENVELOPE.allowed_commands,
+        allowedPaths: ENVELOPE.allowed_paths,
+        networkPolicy,
+      }),
     });
-    assert.ok(!result.err, `cli rejected config: ${result.err?.message}`);
-    assert.ok(!/Error|invalid/i.test(result.stdout), result.stdout.slice(0, 200));
-    assert.ok(result.stdout.includes('"permission"'));
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
+    assert.equal("_network_policy" in cfg.permission, false);
+    assert.equal(cfg.permission.webfetch, "deny");
+    assert.equal(cfg.permission.websearch, "deny");
+    assert.equal(cfg.permission.bash["*"], "deny");
+    assert.equal(cfg.permission.bash[ENVELOPE.allowed_commands[0]], "allow");
+    assert.equal(cfg.permission.edit["*"], "deny");
+    assert.equal(cfg.permission.edit["docs/**"], "allow");
+    assert.ok(cfg.provider.qwen_local);
+    const dir = mkdtempSync(join(tmpdir(), "lde-schema-probe-"));
+    const cfgPath = join(dir, "opencode.json");
+    writeFileSync(cfgPath, JSON.stringify(cfg), "utf8");
+    try {
+      const result = await new Promise((resolvePromise) => {
+        execFile(exe, ["debug", "config"], { env: { ...process.env, OPENCODE_CONFIG: cfgPath }, windowsHide: true, shell: process.platform === "win32" }, (err, stdout) => resolvePromise({ err, stdout: stdout || "" }));
+      });
+      assert.ok(!result.err, `cli rejected ${networkPolicy}: ${result.err?.message}`);
+      assert.ok(!/Error|invalid/i.test(result.stdout), result.stdout.slice(0, 200));
+      assert.ok(result.stdout.includes('"permission"'));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   }
 });
 
