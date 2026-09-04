@@ -7,10 +7,10 @@
 | **FOUNDATION** | v3.5 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 8-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_QWEN_AGG_RUNTIME_ROLE_CORRECTION_DCFR_SHORT_TURN` — **PASS** |
+| **BLOCCO ATTIVO** | `V4_QWEN_SHORT_TURN_PROFILE_COMPARISON_RETAINED_PROFILES` — **PASS** · `SHORT_TURN_OFFLINE_EVIDENCE_INSUFFICIENT_LIVE_COMPARISON_REQUIRED` |
 | **STATO BLOCCO** | DCFR short-turn interactive roles **UNQUALIFIED** (overlay `qwen38-rtx3060-2026-09-03-agg`) · DCFR preserved as FAST_THROUGHPUT/LONG_TASK · next-WF40-executor mapping marked STALE · fail-closed gates at dispatch/proposal/mint/adapter/seam · six Control Plane profiles preserved · router may expose 2 additional local-only out-of-scope profiles · scope v2 digest unchanged |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_QWEN_SHORT_TURN_PROFILE_COMPARISON_RETAINED_PROFILES` — compare `qwen38-original-ar-16k` / `qwen38-opus-q3-daily-16k` / `qwen38-opus-q3-agent-24k` for short-turn interactive agent workloads; requalification requires overlay update + explicit operator authorization; live WF40 proof deferred until then |
+| **NEXT** | `V4_QWEN_SHORT_TURN_LIVE_COMPARISON_OPERATOR_AUTHORIZATION_GATE` — persisted evidence is insufficient for exact three-profile selection; live comparison requires explicit operator authorization; FAST_AGENT remains UNQUALIFIED |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · `activeVersionId=a609ad90-7eb4-4495-9ec5-c4413165cea1` |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
@@ -77,6 +77,7 @@ launch commands.
 
 - Workstation Qwen reconciliation: `reports/architecture/v4_qwen_workstation_runtime_reconciliation_2026-09-04.md`
 - Router catalog scope overlay: `configs/resources/qwen-router-catalog-scope-overlay.json`
+- Retained-profile comparison: `reports/architecture/v4_qwen_short_turn_profile_comparison_retained_profiles.md`
 - AGG role correction PASS report: `reports/architecture/v4_qwen_agg_runtime_role_correction_dcfr_short_turn.md`
 - Role-qualification overlay: `configs/resources/qwen-role-qualification.json`
 - Integration PASS report: `reports/architecture/v4_qwen_local_6_profile_router_control_plane_integration.md`
