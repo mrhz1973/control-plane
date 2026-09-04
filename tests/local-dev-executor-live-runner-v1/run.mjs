@@ -481,7 +481,6 @@ await test("installed OpenCode CLI accepts the exact generated V1 config for bot
   const { tmpdir } = await import("node:os");
   const { join } = await import("node:path");
   const { buildOpenCodeRuntimeConfig, buildPermissionOverlay } = await import("../../tools/run-local-dev-executor-v1.mjs");
-  const exe = join(process.env.APPDATA || "", "npm", "opencode.cmd");
   for (const networkPolicy of ["localhost_only", "offline"]) {
     const cfg = buildOpenCodeRuntimeConfig({
       providerOverlay: { $schema: "https://opencode.ai/config.json", provider: { qwen_local: {} } },
@@ -503,8 +502,14 @@ await test("installed OpenCode CLI accepts the exact generated V1 config for bot
     const cfgPath = join(dir, "opencode.json");
     writeFileSync(cfgPath, JSON.stringify(cfg), "utf8");
     try {
+      // No-shell schema probe: resolve the REAL binary (same semantics as the
+      // live runner and CLI probe) so no .cmd shim is ever shelled (DEP0190).
+      const { resolveOpenCodeSpawnTarget } = await import("../../tools/run-local-dev-executor-v1.mjs");
+      const shim = join(process.env.APPDATA || "", "npm", "opencode.cmd");
+      const target = resolveOpenCodeSpawnTarget(shim);
+      assert.ok(target.executable, "real binary must resolve for the schema probe");
       const result = await new Promise((resolvePromise) => {
-        execFile(exe, ["debug", "config"], { env: { ...process.env, OPENCODE_CONFIG: cfgPath }, windowsHide: true, shell: process.platform === "win32" }, (err, stdout) => resolvePromise({ err, stdout: stdout || "" }));
+        execFile(target.executable, ["debug", "config"], { env: { ...process.env, OPENCODE_CONFIG: cfgPath }, windowsHide: true, shell: false }, (err, stdout) => resolvePromise({ err, stdout: stdout || "" }));
       });
       assert.ok(!result.err, `cli rejected ${networkPolicy}: ${result.err?.message}`);
       assert.ok(!/Error|invalid/i.test(result.stdout), result.stdout.slice(0, 200));
@@ -723,6 +728,115 @@ await test("STOP:OPENCODE_RUN_FAILED propagates failure evidence; PASS has none"
   });
   assert.equal(passed.status, "PASS");
   assert.equal("failure_diagnostics" in passed, false);
+});
+
+// ---------- 14. TIMEOUT ARBITRATION (Phase A) + OUTPUT CAPTURE (Phase B) ----------
+await test("RETRY5-style race: timeout-triggered child exit 1 stays BOUNDS_TIMEBOX_EXPIRED", async () => {
+  const { makeRunOpenCodeTask } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  let resolveChild;
+  const childPromise = new Promise((res) => { resolveChild = res; });
+  const killResolvingSpawn = () => ({
+    pid: 434343,
+    promise: childPromise,
+    getOutput: () => ({ stdout: "Bearer sk-abc123456 leaked", stderr: "child stderr tail" }),
+    terminate: async () => {
+      // Kill-induced exit resolves the child promise with status 1 BEFORE the
+      // timeout callback completes its rejection: the exact RETRY5 interleaving.
+      resolveChild({ status: 1, stdout: "", stderr: "" });
+      await new Promise((r) => setTimeout(r, 5));
+      return {
+        child_pid: 434343,
+        termination_requested: true,
+        termination_confirmed: true,
+        termination_method: "child.kill",
+        exit_code_after_termination: 1,
+      };
+    },
+  });
+  const run = makeRunOpenCodeTask({
+    probe: () => ({ available: true, executable: "opencode-x", dispatch_interface_resolved: true, capabilities: null }),
+    spawnProc: killResolvingSpawn,
+    makeTempConfig: () => "/tmp/x.json",
+    removeTempConfig: () => {},
+  });
+  const t0 = Date.now();
+  let caught = null;
+  try {
+    await run({
+      guardBaseUrl: "http://127.0.0.1:54321",
+      modelId: "m", modelSelector: "qwen_local/m",
+      providerOverlay: { provider: {} },
+      capabilities: { subcommand: "run", directory_flag: "--dir", model_flag: "-m", format_flag: "--format", format_json_value: "json", auto_flag: "--auto" },
+      envelope: { ...ENVELOPE, timebox_seconds: 1 },
+    });
+  } catch (e) { caught = e; }
+  assert.ok(caught, "must reject");
+  assert.equal(caught.code, "BOUNDS_TIMEBOX_EXPIRED"); // arbitration: NOT OPENCODE_RUN_FAILED
+  assert.equal(caught.timeout_diagnostics.termination_confirmed, true);
+  assert.equal(caught.timeout_diagnostics.exit_code_after_termination, 1); // secondary evidence preserved
+  assert.ok(!caught.timeout_diagnostics.stdout_excerpt.includes("sk-abc123456")); // sanitized
+  assert.ok(caught.timeout_diagnostics.stdout_excerpt.includes("Bearer [REDACTED]"));
+  assert.equal(caught.timeout_diagnostics.stderr_excerpt, "child stderr tail");
+  assert.ok(Date.now() - t0 < 5000, "bounded test window");
+});
+
+await test("defaultSpawn captures stdout/stderr across the whole termination lifecycle", async () => {
+  const { defaultSpawn } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const handle = defaultSpawn(process.execPath, ["-e", "console.log('phaseb-out'); console.error('phaseb-err'); setInterval(() => {}, 500)"], { shell: false });
+  assert.ok(handle.pid, "exact child pid captured");
+  await new Promise((r) => setTimeout(r, 200)); // harmless child prints then idles
+  const before = handle.getOutput(); // callable BEFORE termination, no ReferenceError
+  assert.ok(before.stdout.includes("phaseb-out"), `stdout captured: ${JSON.stringify(before)}`);
+  assert.ok(before.stderr.includes("phaseb-err"), `stderr captured: ${JSON.stringify(before)}`);
+  const termination = await handle.terminate();
+  assert.equal(termination.termination_confirmed, true);
+  assert.equal(termination.child_pid, handle.pid); // exact-child ownership preserved
+  const after = handle.getOutput(); // callable AFTER termination, no ReferenceError
+  assert.ok(after.stdout.includes("phaseb-out"));
+  assert.ok(after.stderr.includes("phaseb-err"));
+});
+
+// ---------- 15. PROBE NO-SHELL (Phase C) ----------
+await test("probe source contains no shell:true path (static, DEP0190 impossible)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const probeSrc = readFileSync(new URL("../../tools/probe-opencode-local-v1.mjs", import.meta.url), "utf8");
+  assert.ok(!/shell\s*:\s*true/.test(probeSrc), "no shell:true in probe");
+  assert.ok(!/shell\s*:\s*process\.platform/.test(probeSrc), "no platform-conditional shell in probe");
+});
+
+await test("real probe run: no DEP0190, --version and run --help PASS, real exe no .cmd", async () => {
+  const { spawn } = await import("node:child_process");
+  const { fileURLToPath } = await import("node:url");
+  const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
+  const toolUrl = new URL("../../tools/probe-opencode-local-v1.mjs", import.meta.url).href;
+  const p = spawn(process.execPath, ["--input-type=module", "-e",
+    `import { probeOpenCodeLocal } from ${JSON.stringify(toolUrl)};
+     const r = probeOpenCodeLocal();
+     console.log(JSON.stringify({ available: r.available, version: r.version, dir: r.dispatch_interface_resolved, reason: r.reason_code, executable: r.executable }));`],
+    { cwd: repoRoot, windowsHide: true, shell: false });
+  let out = "", err = "";
+  p.stdout.on("data", (d) => (out += d));
+  p.stderr.on("data", (d) => (err += d));
+  const code = await new Promise((res) => p.on("close", res));
+  assert.equal(code, 0, `probe child exited ${code}: ${err}`);
+  assert.ok(!err.includes("DEP0190"), `DEP0190 present in probe stderr: ${err}`);
+  const parsed = JSON.parse(out.trim().split(/\r?\n/).pop());
+  assert.equal(parsed.available, true);
+  assert.equal(parsed.dir, true, `--version/run --help must PASS: ${JSON.stringify(parsed)}`);
+  assert.ok(parsed.version && /^\d+\.\d+\.\d+/.test(parsed.version));
+  if (process.platform === "win32") {
+    assert.ok(parsed.executable && !/\.cmd$/i.test(parsed.executable), "real exe, not the shim");
+  }
+});
+
+await test("shared no-shell resolver is the single source used by runner and probe", async () => {
+  const helper = await import("../../tools/opencode-binary-resolution-v1.mjs");
+  const runner = await import("../../tools/run-local-dev-executor-v1.mjs");
+  assert.equal(runner.resolveOpenCodeSpawnTarget, helper.resolveOpenCodeSpawnTarget);
+  const shim = join(process.env.APPDATA, "npm", "opencode.cmd");
+  const t = helper.resolveOpenCodeSpawnTarget(shim);
+  assert.ok(t.executable && t.executable.endsWith("opencode.exe"));
+  assert.equal(t.resolved_from, "npm-package-real-binary");
 });
 
 // ---------- summary ----------

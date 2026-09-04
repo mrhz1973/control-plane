@@ -7,6 +7,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { resolveOpenCodeSpawnTarget } from "./opencode-binary-resolution-v1.mjs";
 
 export const PROBE_SCHEMA = "opencode-local-probe-v1";
 export const DISPATCH_SUBCOMMAND = "run";
@@ -26,18 +27,26 @@ export const DISPATCH_CLI_CAPABILITIES = Object.freeze({
 function resolveDefaultExecutable() {
   if (process.platform === "win32") {
     const npmShim = join(homedir(), "AppData", "Roaming", "npm", "opencode.cmd");
-    if (existsSync(npmShim)) return npmShim;
+    if (existsSync(npmShim)) {
+      // Resolve the REAL opencode.exe (no-shell semantics, same as live runner).
+      // Fail-closed: if the shim cannot be resolved we do NOT fall back to it
+      // (spawning a .cmd without a shell is EINVAL; with a shell it is DEP0190).
+      const target = resolveOpenCodeSpawnTarget(npmShim);
+      return target.executable || npmShim;
+    }
   }
   return "opencode";
 }
 
 function runOpencode(args, options = {}) {
   const executable = options.executable || resolveDefaultExecutable();
+  // The executable here is the REAL binary (or a plain path on non-Windows):
+  // the shell option is never enabled, argv stays literal data (DEP0190 gone).
   const result = spawnSync(executable, args, {
     encoding: "utf8",
     windowsHide: true,
     timeout: options.timeoutMs || 15_000,
-    shell: process.platform === "win32",
+    shell: false,
   });
   return {
     status: result.status,

@@ -6,11 +6,11 @@
 |---|---|
 | **FOUNDATION** | v3.5 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 9-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · workstation-only Cline 64K profile **LIVE-VERIFIED / PASS** · LOCAL_DEV_EXECUTOR **V1 IMPLEMENTED + WIRED + SAFETY-ENFORCED + DEV BRIDGE + WIN SHIM SPAWN FIX + FAILURE EVIDENCE + PERMISSION SCHEMA FIX + HARD PROCESS TIMEOUT** · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_LOCAL_DEV_EXECUTOR_HARD_TIMEOUT_PROCESS_CONTROL_AND_PREFLIGHT_DIAGNOSTICS_V1` — **PASS** · exact child termination + guard accounting; pre-generation diagnosis `OPENCODE_UNKNOWN_PRE_GENERATION_STALL`; 33/33 + regressions |
+| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 9-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · workstation-only Cline 64K profile **LIVE-VERIFIED / PASS** · LOCAL_DEV_EXECUTOR **V1 IMPLEMENTED + WIRED + SAFETY-ENFORCED + DEV BRIDGE + WIN SHIM SPAWN FIX + FAILURE EVIDENCE + PERMISSION SCHEMA FIX + HARD PROCESS TIMEOUT + TIMEOUT ARBITRATION + NO-SHELL PROBE + PREGEN BOUNDARY DIAGNOSTIC** · no ACTIVE authorization |
+| **BLOCCO ATTIVO** | `V4_LOCAL_DEV_EXECUTOR_TIMEOUT_ARBITRATION_AND_OPENCODE_PREGEN_BOUNDARY_DIAGNOSTIC_V1` — **PASS** · timeout-triggered kill can no longer reclassify as OPENCODE_RUN_FAILED · RETRY5 reconciled via local logs: alive at +60 s, stalled post-`init` pre-session · boundary `OPENCODE_PRE_PROVIDER_INIT_STALL` · DEV runner now mirrors ratified production invocation shape (stdin-ignore + OPENCODE_DISABLE_* suite) · 38/38 + regressions |
 | **STATO BLOCCO** | OPUS Agent 24K qualified for FAST_AGENT/FAST_INTERACTIVE/FAST_AGENT_SHORT_TURN · scope-v3 digest `934123f0…f2548f7` · DCFR short-turn remains **UNQUALIFIED** and FAST_THROUGHPUT/LONG_TASK QUALIFIED · `<think>` caveat documented; exact-output compliance not claimed · scope-v2 historical |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_LOCAL_DEV_EXECUTOR_QWEN_FIRST_BOUNDED_LIVE_PROOF_RETRY5_DIAGNOSTIC` — bounded retry with exact-child timeout diagnostics; no concrete pre-generation blocker identified |
+| **NEXT** | `V4_LOCAL_DEV_EXECUTOR_QWEN_FIRST_BOUNDED_LIVE_PROOF_RETRY6_DIAGNOSTIC` — bounded live proof (timebox ≤ 90 s) with corrected arbitration: expected PASS path or `STOP:BOUNDS_TIMEBOX_EXPIRED` carrying true sanitized child excerpts. RETRY5 already executed — NOT NEXT, NOT re-run |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · `activeVersionId=a609ad90-7eb4-4495-9ec5-c4413165cea1` |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
@@ -96,6 +96,7 @@ launch commands.
 - LOCAL_DEV_EXECUTOR OpenCode failure evidence: `reports/architecture/v4_local_dev_executor_opencode_failure_evidence_v1.md`
 - LOCAL_DEV_EXECUTOR OpenCode V1 permission schema fix: `reports/architecture/v4_local_dev_executor_opencode_permission_schema_fix_v1.md`
 - LOCAL_DEV_EXECUTOR hard timeout/process control: `reports/architecture/v4_local_dev_executor_hard_timeout_process_control_and_preflight_diagnostics_v1.md`
+- LOCAL_DEV_EXECUTOR timeout arbitration + OpenCode pregen boundary diagnostic: `reports/architecture/v4_local_dev_executor_timeout_arbitration_and_opencode_pregeneration_boundary_diagnostic_v1.md`
 - AGG role correction PASS report: `reports/architecture/v4_qwen_agg_runtime_role_correction_dcfr_short_turn.md`
 - Role-qualification overlay: `configs/resources/qwen-role-qualification.json`
 - Integration PASS report: `reports/architecture/v4_qwen_local_6_profile_router_control_plane_integration.md`

@@ -17,9 +17,9 @@
  * --release-started-router: opt-in; if this task EXCLUSIVELY started the
  * router, rediscover live process identity then stop it (never stale PIDs).
  */
-import { readFileSync, writeFileSync, unlinkSync, mkdtempSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, unlinkSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, dirname, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { spawn, execFile } from "node:child_process";
 import { executeLocalDevTask, pathAllowed, DEV_PROFILE_CATEGORY, sanitizeOpenCodeDiagnostic } from "./local-dev-executor-v1.mjs";
 import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
@@ -69,29 +69,34 @@ export function buildOpenCodeRuntimeConfig({ providerOverlay, permissionOverlay 
 export function defaultSpawn(executable, args, opts = {}) {
   let child;
   let settled = false;
-  let resolveResult;
+  // Phase B fix: stdout/stderr live in the OUTER handle scope so getOutput()
+  // stays valid across the whole child lifecycle (before/after termination).
+  // The promise executor only closes over them — no ReferenceError possible.
+  let stdout = "";
+  let stderr = "";
   const promise = new Promise((resolvePromise) => {
-    resolveResult = resolvePromise;
     child = spawn(executable, args, {
       cwd: opts.cwd,
       env: opts.env,
       windowsHide: true,
       shell: Boolean(opts.shell),
+      // stdin IGNORED: the ratified production invocation shape. An open,
+      // never-closed stdin pipe stalls the OpenCode CLI bootstrap post-init
+      // (RETRY4/RETRY5 pre-generation stall; production adapter proof Aug 31).
+      stdio: ["ignore", "pipe", "pipe"],
     });
-    let stdout = "";
-    let stderr = "";
     child.stdout?.on("data", (d) => (stdout += d));
     child.stderr?.on("data", (d) => (stderr += d));
     child.on("error", (err) => {
       settled = true;
       resolvePromise({
-      status: 1,
-      error: err?.message || "spawn_error",
-      spawn_error: err?.message || "spawn_error",
-      spawn_error_code: err?.code || "SPAWN_ERROR",
-      spawn_failure: true,
-      stdout,
-      stderr,
+        status: 1,
+        error: err?.message || "spawn_error",
+        spawn_error: err?.message || "spawn_error",
+        spawn_error_code: err?.code || "SPAWN_ERROR",
+        spawn_failure: true,
+        stdout,
+        stderr,
       });
     });
     child.on("close", (code) => {
@@ -106,7 +111,8 @@ export function defaultSpawn(executable, args, opts = {}) {
   return {
     pid: child?.pid ?? null,
     promise,
-    getOutput: () => ({ stdout, stderr }),
+    getOutput: () => ({ stdout, stderr }), // outer-scope capture: valid before AND after termination
+
     terminate: async () => {
       const pid = child?.pid ?? null;
       const termination = {
@@ -174,43 +180,14 @@ function defaultGitExec(repoPath, args) {
 }
 
 /**
- * Windows npm-shim spawn fix: spawn() with shell:false cannot execute
- * `.cmd` shims (EINVAL). Resolve the REAL package executable instead of the
- * shim, with NO shell and literal argv (task message stays pure data).
- *
- * Resolution order (Windows only, all no-shell):
- *   1. %APPDATA%\npm\node_modules\opencode-ai\bin\opencode.exe  (real binary)
- *   2. <dir(opencode.cmd)>\node_modules\opencode-ai\bin\opencode.exe
- * A `.cmd`/`.bat`/`.sh` executable that cannot be resolved to the real
- * binary is rejected fail-closed (never silently shelled out).
+ * Windows npm-shim spawn fix: shared no-shell resolver in
+ * tools/opencode-binary-resolution-v1.mjs (single source of truth for both
+ * the live runner and the local CLI probe). Resolve the REAL package
+ * executable instead of the shim; a `.cmd`/`.bat` shim that cannot be
+ * resolved is rejected fail-closed (never silently shelled out).
  */
-export function resolveOpenCodeSpawnTarget(executable) {
-  const exe = String(executable || "").trim();
-  const isCmdShim = /\.cmd$/i.test(exe) || /\.bat$/i.test(exe);
-  if (process.platform !== "win32" && !isCmdShim) {
-    return { executable: exe, resolved_from: "direct" };
-  }
-  if (!isCmdShim) {
-    return { executable: exe, resolved_from: "direct" };
-  }
-  const candidates = [];
-  const appdata = process.env.APPDATA;
-  if (appdata) {
-    candidates.push(join(appdata, "npm", "node_modules", "opencode-ai", "bin", "opencode.exe"));
-  }
-  candidates.push(join(dirname(exe), "node_modules", "opencode-ai", "bin", "opencode.exe"));
-  for (const candidate of candidates) {
-    if (existsSync(candidate)) {
-      return { executable: candidate, resolved_from: "npm-package-real-binary" };
-    }
-  }
-  return {
-    executable: null,
-    resolved_from: "unresolved_cmd_shim",
-    reason_code: "OPENCODE_CMD_SHIM_UNRESOLVED",
-    reason: "opencode resolved to a .cmd shim and the real package binary was not found; refusing shell fallback",
-  };
-}
+import { resolveOpenCodeSpawnTarget } from "./opencode-binary-resolution-v1.mjs";
+export { resolveOpenCodeSpawnTarget };
 
 /** Bounded task message for the single OpenCode run (no secrets, structural). */
 export function buildTaskMessage(envelope) {
@@ -280,6 +257,7 @@ export function makeRunOpenCodeTask(deps = {}) {
     const runtimeConfig = buildOpenCodeRuntimeConfig({ providerOverlay, permissionOverlay });
     const configPath = makeTempConfig(runtimeConfig);
     let run;
+    let timer = null;
     try {
       const argv = [
         caps.subcommand,
@@ -289,15 +267,42 @@ export function makeRunOpenCodeTask(deps = {}) {
         caps.auto_flag,
         buildTaskMessage(envelope),
       ];
-      // HARD TIMEBOX: bound the child process itself, not just post-hoc checks.
+      // HARD TIMEBOX + Phase A arbitration: bound the child process itself.
+      // Once the hard timeout fires, the child's exit (status 1, close event,
+      // promise resolution) is a CONSEQUENCE of task-owned termination and
+      // must NEVER reclassify the result as OPENCODE_RUN_FAILED. The
+      // arbitration flag flips synchronously when the timer fires — BEFORE
+      // terminate() — so any subsequent child resolution is suspended and the
+      // race can only be won by the BOUNDS_TIMEBOX_EXPIRED rejection, which
+      // still carries the FULL termination diagnostics (bounded confirmation
+      // window) and sanitized stdout/stderr excerpts (Phase B capture).
       const timeoutMs = Math.max(1, envelope.timebox_seconds) * 1000;
       const spawned = asSpawnHandle(spawnProc(spawnTarget.executable, argv, {
-          cwd: envelope.target_repo_path,
-          env: { ...process.env, OPENCODE_CONFIG: configPath },
-          shell: false, // no-shell: argv stays literal data, never shell syntax
-        }));
-      const timeout = new Promise((_, reject) =>
-        setTimeout(async () => {
+        cwd: envelope.target_repo_path,
+        env: {
+          ...process.env,
+          OPENCODE_CONFIG: configPath,
+          // Ratified live-proof disable suite (mirrors the production adapter
+          // that reached provider stream on this workstation): no network
+          // plugin fetches / autoupdate during the bounded DEV run.
+          OPENCODE_DISABLE_TITLE: "1",
+          OPENCODE_DISABLE_AUTOCOMPACT: "1",
+          OPENCODE_DISABLE_MODELS_FETCH: "1",
+          OPENCODE_DISABLE_DEFAULT_PLUGINS: "1",
+          OPENCODE_DISABLE_CLAUDE_CODE: "1",
+          OPENCODE_DISABLE_LSP_DOWNLOAD: "1",
+          OPENCODE_DISABLE_AUTOUPDATE: "1",
+          OPENCODE_DISABLE_PRUNE: "1",
+        },
+        shell: false, // no-shell: argv stays literal data, never shell syntax
+      }));
+      let timedOut = false;
+      const childOutcome = spawned.promise.then((r) =>
+        timedOut ? new Promise(() => {}) : r, // suspend: exit is kill evidence, not a classification
+      );
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(async () => {
+          timedOut = true; // Phase A arbitration flips BEFORE any await
           const termination = await spawned.terminate();
           const output = spawned.getOutput ? spawned.getOutput() : {};
           reject(Object.assign(new Error(`opencode exceeded hard timebox ${envelope.timebox_seconds}s`), {
@@ -308,10 +313,11 @@ export function makeRunOpenCodeTask(deps = {}) {
               stderr_excerpt: sanitizeOpenCodeDiagnostic(output.stderr),
             },
           }));
-        }, timeoutMs),
-      );
-      run = await Promise.race([spawned.promise, timeout]);
+        }, timeoutMs);
+      });
+      run = await Promise.race([childOutcome, timeout]);
     } finally {
+      if (timer) clearTimeout(timer); // a PASS must not leave a late unhandled rejection
       removeTempConfig(configPath);
     }
     if (run.status !== 0) {
