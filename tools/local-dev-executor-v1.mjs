@@ -29,6 +29,29 @@ export const CANONICAL_QWEN_ENDPOINT = "http://127.0.0.1:8080";
 export const HARD_TIMEBOX_SECONDS = 1800;
 export const HARD_MAX_AGENT_TURNS = 16;
 export const HARD_MAX_TEST_CYCLES = 3;
+export const MAX_OPENCODE_DIAGNOSTIC_CHARS = 2000;
+
+export function sanitizeOpenCodeDiagnostic(value) {
+  if (value === null || value === undefined) return null;
+  let text = String(value);
+  text = text.replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, "Bearer [REDACTED]");
+  text = text.replace(/(authorization|x-api-key|api-key|token|secret|password)\s*[:=]\s*[^\s,;]+/gi, "$1=[REDACTED]");
+  text = text.replace(/\b(sk-[A-Za-z0-9_-]+|gh[pousr]_[A-Za-z0-9_]+)\b/g, "[REDACTED_TOKEN]");
+  return text.slice(0, MAX_OPENCODE_DIAGNOSTIC_CHARS);
+}
+
+export function buildOpenCodeFailureDiagnostics(error = {}) {
+  const diagnostics = {};
+  if (error.opencode_exit_code !== undefined && error.opencode_exit_code !== null) {
+    diagnostics.opencode_exit_code = Number(error.opencode_exit_code);
+  }
+  if (error.stdout !== undefined) diagnostics.stdout_excerpt = sanitizeOpenCodeDiagnostic(error.stdout);
+  if (error.stderr !== undefined) diagnostics.stderr_excerpt = sanitizeOpenCodeDiagnostic(error.stderr);
+  if (error.spawn_error !== undefined) diagnostics.spawn_error = sanitizeOpenCodeDiagnostic(error.spawn_error);
+  if (error.spawn_error_code !== undefined) diagnostics.spawn_error_code = sanitizeOpenCodeDiagnostic(error.spawn_error_code);
+  if (error.spawn_failure === true) diagnostics.spawn_failure = true;
+  return Object.keys(diagnostics).length ? diagnostics : undefined;
+}
 
 const STRING_FIELDS = [
   "task_ref",
@@ -232,6 +255,7 @@ function baseResult(partial) {
     turns_used: Number(partial.turns_used) || 0,
     timebox_used_s: Number(partial.timebox_used_s) || 0,
     reason_codes: partial.reason_codes || [],
+    ...(partial.failure_diagnostics ? { failure_diagnostics: partial.failure_diagnostics } : {}),
   };
 }
 
@@ -350,6 +374,9 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
     return finish({
       classification: `STOP:${code}`,
       reason_codes: [code],
+      failure_diagnostics: code === "OPENCODE_RUN_FAILED"
+        ? buildOpenCodeFailureDiagnostics(err)
+        : undefined,
       turns_used: guardAccounting.upstream_generation_requests,
       router_was_running: session.router_was_running ?? null,
       launch_performed: Boolean(session.launch_performed),

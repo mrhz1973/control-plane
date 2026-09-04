@@ -600,6 +600,85 @@ await test("no-shell spawn of real binary does not produce EINVAL (real smoke, n
   assert.match(code.out.trim(), /^1\.\d+\.\d+/);
 });
 
+// ---------- 13. OPENCODE FAILURE EVIDENCE ----------
+await test("non-zero OpenCode exit preserves sanitized bounded diagnostics", async () => {
+  const { buildOpenCodeFailureDiagnostics } = await import("../../tools/local-dev-executor-v1.mjs");
+  const d = buildOpenCodeFailureDiagnostics({
+    opencode_exit_code: 1,
+    stderr: `fatal Authorization: Bearer secret-token ${"x".repeat(3000)}`,
+    stdout: `tooling output ${"y".repeat(3000)}`,
+  });
+  assert.equal(d.opencode_exit_code, 1);
+  assert.equal(d.stderr_excerpt.length, 2000);
+  assert.equal(d.stdout_excerpt.length, 2000);
+  assert.ok(!d.stderr_excerpt.includes("secret-token"));
+  assert.ok(d.stderr_excerpt.includes("[REDACTED]"));
+});
+
+await test("spawn failure is structurally distinct from clean non-zero exit", async () => {
+  const { makeRunOpenCodeTask } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const run = makeRunOpenCodeTask({
+    probe: () => ({ available: true, executable: "opencode-test.exe", dispatch_interface_resolved: true, capabilities: null }),
+    spawnProc: async () => ({ status: 1, stdout: "", stderr: "", spawn_error: "spawn failed", spawn_error_code: "ENOENT", spawn_failure: true }),
+    makeTempConfig: () => "/tmp/fake.json",
+    removeTempConfig: () => {},
+  });
+  await assert.rejects(
+    () => run({
+      guardBaseUrl: "http://127.0.0.1:54321", modelId: "m", modelSelector: "qwen_local/m",
+      providerOverlay: { provider: {} },
+      capabilities: { subcommand: "run", directory_flag: "--dir", model_flag: "-m", format_flag: "--format", format_json_value: "json", auto_flag: "--auto" },
+      envelope: ENVELOPE,
+    }),
+    (e) => e.code === "OPENCODE_RUN_FAILED" && e.opencode_exit_code === 1 &&
+      e.spawn_failure === true && e.spawn_error_code === "ENOENT",
+  );
+});
+
+await test("STOP:OPENCODE_RUN_FAILED propagates failure evidence; PASS has none", async () => {
+  const { executeLocalDevTask } = await import("../../tools/local-dev-executor-v1.mjs");
+  const git = fakeGit({
+    "rev-parse HEAD": { status: 0, stdout: ENVELOPE.dispatch_base_head + "\n" },
+    "remote get-url origin": { status: 0, stdout: ENVELOPE.target_remote + "\n" },
+    "status --porcelain=v1 -uall": { status: 0, stdout: "" },
+    "status --porcelain=v1 --untracked-files=no": { status: 0, stdout: "" },
+  });
+  const guardFactory = async () => ({
+    base_url: "http://127.0.0.1:54321",
+    getAccounting: () => ({ upstream_generation_requests: 0, blocked_generation_requests: 0 }),
+    close: async () => {},
+  });
+  const failed = await executeLocalDevTask(ENVELOPE, {
+    git,
+    ensureQwenReady: async () => ({ ready: true, status: "READY", router_was_running: true }),
+    guardStart: guardFactory,
+    runOpenCodeTask: async () => {
+      throw Object.assign(new Error("exit 1"), {
+        code: "OPENCODE_RUN_FAILED", opencode_exit_code: 1,
+        stdout: "stdout tooling", stderr: "stderr tooling",
+      });
+    },
+    runTests: async () => { throw new Error("must not test"); },
+    persistGit: async () => { throw new Error("must not persist"); },
+  });
+  assert.equal(failed.classification, "STOP:OPENCODE_RUN_FAILED");
+  assert.equal(failed.failure_diagnostics.opencode_exit_code, 1);
+  assert.equal(failed.failure_diagnostics.stdout_excerpt, "stdout tooling");
+  assert.equal(failed.failure_diagnostics.stderr_excerpt, "stderr tooling");
+
+  const passed = await executeLocalDevTask(ENVELOPE, {
+    git,
+    ensureQwenReady: async () => ({ ready: true, status: "READY", router_was_running: true }),
+    guardStart: guardFactory,
+    runOpenCodeTask: async () => ({ ok: true }),
+    runTests: async () => [{ command: "test", exit_code: 0, cycle: 1 }],
+    getChangedFiles: async () => [],
+    persistGit: async () => ({ ok: true, final_head: ENVELOPE.dispatch_base_head }),
+  });
+  assert.equal(passed.status, "PASS");
+  assert.equal("failure_diagnostics" in passed, false);
+});
+
 // ---------- summary ----------
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 // Explicit exit: the CLI schema-acceptance probe spawns a shell (.cmd) child

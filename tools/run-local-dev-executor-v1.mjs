@@ -79,7 +79,15 @@ function defaultSpawn(executable, args, opts = {}) {
     let stderr = "";
     child.stdout?.on("data", (d) => (stdout += d));
     child.stderr?.on("data", (d) => (stderr += d));
-    child.on("error", (err) => resolvePromise({ status: 1, error: err?.message || "spawn_error", stdout, stderr }));
+    child.on("error", (err) => resolvePromise({
+      status: 1,
+      error: err?.message || "spawn_error",
+      spawn_error: err?.message || "spawn_error",
+      spawn_error_code: err?.code || "SPAWN_ERROR",
+      spawn_failure: true,
+      stdout,
+      stderr,
+    }));
     child.on("close", (code) => resolvePromise({ status: code ?? 1, stdout, stderr }));
   });
 }
@@ -224,7 +232,15 @@ export function makeRunOpenCodeTask(deps = {}) {
       removeTempConfig(configPath);
     }
     if (run.status !== 0) {
-      throw Object.assign(new Error(`opencode run failed (exit ${run.status})`), { code: "OPENCODE_RUN_FAILED" });
+      throw Object.assign(new Error(`opencode run failed (exit ${run.status})`), {
+        code: "OPENCODE_RUN_FAILED",
+        opencode_exit_code: run.status,
+        stdout: run.stdout,
+        stderr: run.stderr,
+        spawn_failure: Boolean(run.spawn_error),
+        spawn_error: run.spawn_error,
+        spawn_error_code: run.spawn_error_code,
+      });
     }
     return { ok: true, exit_code: run.status, opencode_execution_count: 1, model_id: modelId };
   };
