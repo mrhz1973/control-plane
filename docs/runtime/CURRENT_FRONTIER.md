@@ -6,11 +6,11 @@
 |---|---|
 | **FOUNDATION** | v3.5 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 9-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · workstation-only Cline 64K profile **LIVE-VERIFIED / PASS** · LOCAL_DEV_EXECUTOR **DESIGN PASS** · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_LOCAL_DEV_EXECUTOR_QWEN_GENERAL_PURPOSE_DESIGN` — **PASS** · Form A thin wrapper contract; production domain untouched |
+| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 9-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · workstation-only Cline 64K profile **LIVE-VERIFIED / PASS** · LOCAL_DEV_EXECUTOR **V1 IMPLEMENTED / OFFLINE TESTS PASS** · no ACTIVE authorization |
+| **BLOCCO ATTIVO** | `V4_LOCAL_DEV_EXECUTOR_QWEN_GENERAL_PURPOSE_IMPLEMENTATION_V1` — **PASS** · executor + guard implemented, 20/20 offline tests, zero live executions |
 | **STATO BLOCCO** | OPUS Agent 24K qualified for FAST_AGENT/FAST_INTERACTIVE/FAST_AGENT_SHORT_TURN · scope-v3 digest `934123f0…f2548f7` · DCFR short-turn remains **UNQUALIFIED** and FAST_THROUGHPUT/LONG_TASK QUALIFIED · `<think>` caveat documented; exact-output compliance not claimed · scope-v2 historical |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_LOCAL_DEV_EXECUTOR_QWEN_GENERAL_PURPOSE_IMPLEMENTATION_V1` — thin local-dev executor + deterministic offline tests; NO real Qwen task execution in that pass |
+| **NEXT** | `V4_LOCAL_DEV_EXECUTOR_QWEN_FIRST_BOUNDED_LIVE_PROOF` — first bounded live task through LOCAL_DEV_EXECUTOR with explicit TASK DELTA envelope |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · `activeVersionId=a609ad90-7eb4-4495-9ec5-c4413165cea1` |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
@@ -32,7 +32,7 @@
 | **EXECUTION ADAPTER ROUTER** | `tools/v4-execution-adapter-router-v1.mjs` · exact route `opencode+qwen_local` |
 | **OPENCODE EXECUTION ADAPTER** | `tools/opencode-execution-adapter-v1.mjs` · bound to active scope-v3 · `profile_id=qwen38-opus-q3-agent-24k` · `<think>` caveat documented |
 | **PRODUCTION DATABASE** | n8n 2.33.3 on PostgreSQL 16.15 · health 200 · sequence resync PASS |
-| **LOCAL DEV EXECUTOR** | `docs/contracts/local-dev-executor-v1.md` · **DESIGN PASS** · Form A thin wrapper (session manager + probe + overlay reuse; no production adapter/authorization reuse) · `workstation_dev_executor_profile` category distinct from eligible set · DEV profile `qwen38-opus-q3-cline-64k` (64K, GENERAL_LOCAL_DEV) · provider-neutral `executor-pass:`/`executor-stop:` evidence · not implemented; no runtime |
+| **LOCAL DEV EXECUTOR** | `docs/contracts/local-dev-executor-v1.md` · **V1 IMPLEMENTED** · `tools/local-dev-executor-v1.mjs` + `tools/local-dev-generation-guard-v1.mjs` · offline tests `tests/local-dev-executor-v1/run.mjs` **20/20 PASS** · `workstation_dev_executor_profile` category on `qwen38-opus-q3-cline-64k` (additive field only) · provider-neutral `executor-pass:`/`executor-stop:` evidence · real dev executions: 0 |
 
 ## Installed execution path
 
@@ -88,6 +88,7 @@ launch commands.
 - Cline 64K Control Plane registration: `reports/architecture/qwen38_opus_q3_cline_64k_profile_control_plane.md`
 - Cline 64K live smoke PASS: `reports/architecture/qwen38_opus_q3_cline_64k_live_smoke_test.md`
 - LOCAL_DEV_EXECUTOR design: `docs/contracts/local-dev-executor-v1.md` + `reports/architecture/v4_local_dev_executor_qwen_general_purpose_design.md`
+- LOCAL_DEV_EXECUTOR implementation: `reports/architecture/v4_local_dev_executor_qwen_general_purpose_implementation_v1.md`
 - AGG role correction PASS report: `reports/architecture/v4_qwen_agg_runtime_role_correction_dcfr_short_turn.md`
 - Role-qualification overlay: `configs/resources/qwen-role-qualification.json`
 - Integration PASS report: `reports/architecture/v4_qwen_local_6_profile_router_control_plane_integration.md`

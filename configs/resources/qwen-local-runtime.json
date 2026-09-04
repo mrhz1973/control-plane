@@ -128,7 +128,8 @@
       "wf40": false,
       "scope_v3": false,
       "blender": false,
-      "live_verification": "STAGED_NOT_LIVE_VERIFIED"
+      "live_verification": "STAGED_NOT_LIVE_VERIFIED",
+      "category": "workstation_dev_executor_profile"
     }
   },
   "role_to_profile_id": {
