@@ -1,44 +1,39 @@
 # LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_WORKSTATION_SESSION_BRIDGE_V1`
-**Classification:** `LOCAL_DEV_WORKSTATION_SESSION_BRIDGE_WIRED`
+**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_WINDOWS_OPENCODE_SHIM_SPAWN_FIX_V1`
+**Classification:** `WINDOWS_OPENCODE_SHIM_SPAWN_FIXED`
 **Timestamp (local):** 2026-09-04
 
 ## Summary
 
-Fixed the live-proof blocker `STOP:QWEN_SESSION_NOT_READY /
-INVALID_RUNTIME_CONFIG`: the DEV executor was routing its workstation-only
-profile through the production six-profile session path, whose whole
-document validation fails on the pre-existing FAST_AGENT role-map drift.
+Fixed the live-proof retry blocker `STOP:EINVAL` (router healthy, zero
+turns): the OpenCode probe returns the Windows npm `.cmd` shim, which
+`child_process.spawn(shell:false)` cannot execute.
 
-Implemented the smallest additive workstation DEV session bridge in
-`tools/qwen-local-session-manager-v1.mjs`:
+Implemented the no-shell direct-process fix in
+`tools/run-local-dev-executor-v1.mjs`:
 
-- `resolveWorkstationDevProfile` — workstation_manual_profiles ONLY;
-  strict category/flag rules; `DEV_PROFILE_INVALID` otherwise
-- `ensureWorkstationDevQwenReady` — same safe lifecycle primitives,
-  no production document/role-map validation, dedicated dedupe lock
+- `resolveOpenCodeSpawnTarget` — resolves `.cmd` shims to the REAL package
+  binary (`%APPDATA%\npm\node_modules\opencode-ai\bin\opencode.exe`, with
+  shim-dir fallback); unresolvable shims fail closed
+  (`OPENCODE_CMD_SHIM_UNRESOLVED`) — no shell fallback ever
+- spawn target invoked with explicit `shell:false`; task message remains
+  literal argv data; one process; OPENCODE_CONFIG/cwd/hard timeout/DEV
+  guard/permission overlay all preserved
 
-`makeEnsureQwenReady` in `tools/run-local-dev-executor-v1.mjs` now uses
-the DEV bridge. Production path unchanged (proven by tests: drifted doc
-still fails production validation; aligned doc resolves READY).
+Wiring suite **29/29 PASS** (shim resolution, fail-closed rejection,
+literal metacharacter argv, config/cwd survival, single process, REAL
+no-shell `--version` smoke — no model); regressions executor **20/20**,
+bridge **14/14**. Budget: run → one bounded correction → retest.
 
-Bridge tests **14/14 PASS**; regressions executor **20/20**, wiring
-**23/23**. Budget: run → one bounded correction → final retest.
-
-- Real Qwen generations: **0** · OpenCode: **0** · services
-  started/stopped: **0**
-- PROFILE_IDS / runtime.profiles / role_to_profile_id / eligible set /
-  validateRuntimeDocument / validateProfilePolicy / WF40 / D-0025 /
-  scope-v3 / production authorization / adapter: unchanged
-- FAST_AGENT config/module drift intentionally NOT fixed (production
-  follow-up)
-- All pre-existing untracked files preserved
+- Real Qwen generations: **0** · OpenCode model executions: **0** ·
+  services started/stopped: **0**
+- Production domain untouched; all pre-existing untracked files preserved
 
 ## NEXT
 
-`V4_LOCAL_DEV_EXECUTOR_QWEN_FIRST_BOUNDED_LIVE_PROOF_RETRY1` (NOT
+`V4_LOCAL_DEV_EXECUTOR_QWEN_FIRST_BOUNDED_LIVE_PROOF_RETRY2` (NOT
 executed in this pass)
 
 Evidence report:
-`reports/architecture/v4_local_dev_executor_workstation_session_bridge_v1.md`
+`reports/architecture/v4_local_dev_executor_windows_opencode_shim_spawn_fix_v1.md`

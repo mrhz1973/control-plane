@@ -17,9 +17,9 @@
  * --release-started-router: opt-in; if this task EXCLUSIVELY started the
  * router, rediscover live process identity then stop it (never stale PIDs).
  */
-import { readFileSync, writeFileSync, unlinkSync, mkdtempSync } from "node:fs";
+import { readFileSync, writeFileSync, unlinkSync, mkdtempSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join, dirname, resolve } from "node:path";
 import { spawn, execFile } from "node:child_process";
 import { executeLocalDevTask, pathAllowed, DEV_PROFILE_CATEGORY } from "./local-dev-executor-v1.mjs";
 import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
@@ -92,6 +92,45 @@ function defaultGitExec(repoPath, args) {
   });
 }
 
+/**
+ * Windows npm-shim spawn fix: spawn() with shell:false cannot execute
+ * `.cmd` shims (EINVAL). Resolve the REAL package executable instead of the
+ * shim, with NO shell and literal argv (task message stays pure data).
+ *
+ * Resolution order (Windows only, all no-shell):
+ *   1. %APPDATA%\npm\node_modules\opencode-ai\bin\opencode.exe  (real binary)
+ *   2. <dir(opencode.cmd)>\node_modules\opencode-ai\bin\opencode.exe
+ * A `.cmd`/`.bat`/`.sh` executable that cannot be resolved to the real
+ * binary is rejected fail-closed (never silently shelled out).
+ */
+export function resolveOpenCodeSpawnTarget(executable) {
+  const exe = String(executable || "").trim();
+  const isCmdShim = /\.cmd$/i.test(exe) || /\.bat$/i.test(exe);
+  if (process.platform !== "win32" && !isCmdShim) {
+    return { executable: exe, resolved_from: "direct" };
+  }
+  if (!isCmdShim) {
+    return { executable: exe, resolved_from: "direct" };
+  }
+  const candidates = [];
+  const appdata = process.env.APPDATA;
+  if (appdata) {
+    candidates.push(join(appdata, "npm", "node_modules", "opencode-ai", "bin", "opencode.exe"));
+  }
+  candidates.push(join(dirname(exe), "node_modules", "opencode-ai", "bin", "opencode.exe"));
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      return { executable: candidate, resolved_from: "npm-package-real-binary" };
+    }
+  }
+  return {
+    executable: null,
+    resolved_from: "unresolved_cmd_shim",
+    reason_code: "OPENCODE_CMD_SHIM_UNRESOLVED",
+    reason: "opencode resolved to a .cmd shim and the real package binary was not found; refusing shell fallback",
+  };
+}
+
 /** Bounded task message for the single OpenCode run (no secrets, structural). */
 export function buildTaskMessage(envelope) {
   const lines = [
@@ -143,6 +182,14 @@ export function makeRunOpenCodeTask(deps = {}) {
     if (!probeResult?.available || !probeResult.dispatch_interface_resolved) {
       throw Object.assign(new Error("opencode unavailable"), { code: "PREFLIGHT_TOOLING_UNAVAILABLE" });
     }
+    // Windows shim fix: never spawn the .cmd shim with shell:false (EINVAL);
+    // resolve the real package binary and keep literal no-shell argv.
+    const spawnTarget = resolveOpenCodeSpawnTarget(probeResult.executable);
+    if (!spawnTarget.executable) {
+      throw Object.assign(new Error(spawnTarget.reason || "opencode spawn target unresolved"), {
+        code: spawnTarget.reason_code || "OPENCODE_SPAWN_TARGET_UNRESOLVED",
+      });
+    }
     const caps = capabilities || probeResult.capabilities;
     const permissionOverlay = buildPermissionOverlay({
       allowedCommands: envelope.allowed_commands,
@@ -164,9 +211,10 @@ export function makeRunOpenCodeTask(deps = {}) {
       // HARD TIMEBOX: bound the child process itself, not just post-hoc checks.
       const timeoutMs = Math.max(1, envelope.timebox_seconds) * 1000;
       run = await Promise.race([
-        spawnProc(probeResult.executable, argv, {
+        spawnProc(spawnTarget.executable, argv, {
           cwd: envelope.target_repo_path,
           env: { ...process.env, OPENCODE_CONFIG: configPath },
+          shell: false, // no-shell: argv stays literal data, never shell syntax
         }),
         new Promise((_, reject) =>
           setTimeout(() => reject(Object.assign(new Error(`opencode exceeded hard timebox ${envelope.timebox_seconds}s`), { code: "BOUNDS_TIMEBOX_EXPIRED", terminated: true })), timeoutMs),

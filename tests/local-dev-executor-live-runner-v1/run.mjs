@@ -7,6 +7,8 @@
  */
 import assert from "node:assert/strict";
 import http from "node:http";
+import { tmpdir as tmpdirRoot } from "node:os";
+import { join } from "node:path";
 import {
   composeRunners,
   makeEnsureQwenReady,
@@ -476,6 +478,126 @@ await test("production domain remains untouched by enforcement layer", async () 
     assert.ok(!src.includes("operator-runtime-authorization"));
     assert.ok(!src.includes("qwen-execution-scope-v3"));
   }
+});
+
+// ---------- 12. WINDOWS OPENCODE SHIM SPAWN ----------
+await test("resolveOpenCodeSpawnTarget: real .cmd shim resolves to package binary", async () => {
+  const { resolveOpenCodeSpawnTarget } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const appdata = process.env.APPDATA;
+  const shim = join(appdata, "npm", "opencode.cmd");
+  const t = resolveOpenCodeSpawnTarget(shim);
+  assert.ok(t.executable, JSON.stringify(t));
+  assert.ok(t.executable.endsWith("opencode.exe"));
+  assert.ok(!t.executable.endsWith(".cmd"));
+  assert.equal(t.resolved_from, "npm-package-real-binary");
+  assert.ok(t.executable.startsWith(join(appdata, "npm", "node_modules")));
+});
+
+await test("resolveOpenCodeSpawnTarget: unresolvable .cmd rejected fail-closed (no shell fallback)", async () => {
+  const { resolveOpenCodeSpawnTarget } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const savedAppdata = process.env.APPDATA;
+  process.env.APPDATA = join(tmpdirRoot(), "nonexistent-appdata");
+  try {
+    const t = resolveOpenCodeSpawnTarget("C:\\fake\\npm\\opencode.cmd");
+    assert.equal(t.executable, null);
+    assert.equal(t.reason_code, "OPENCODE_CMD_SHIM_UNRESOLVED");
+  } finally {
+    process.env.APPDATA = savedAppdata;
+  }
+});
+
+await test("resolveOpenCodeSpawnTarget: direct executable passthrough unchanged", async () => {
+  const { resolveOpenCodeSpawnTarget } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const t = resolveOpenCodeSpawnTarget("C:\\tools\\my-opencode.exe");
+  assert.equal(t.executable, "C:\\tools\\my-opencode.exe");
+  assert.equal(t.resolved_from, "direct");
+});
+
+await test("real spawn of .cmd-resolved target: no EINVAL, argv literal, config/cwd survive, one process", async () => {
+  const { makeRunOpenCodeTask, resolveOpenCodeSpawnTarget } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const shim = join(process.env.APPDATA, "npm", "opencode.cmd");
+  const target = resolveOpenCodeSpawnTarget(shim);
+  assert.ok(target.executable, "real binary must resolve on this workstation");
+  const spied = [];
+  const run = makeRunOpenCodeTask({
+    probe: () => ({ available: true, executable: shim, dispatch_interface_resolved: true, capabilities: null }),
+    spawnProc: async (exe, argv, opts) => {
+      spied.push({ exe, argv, opts });
+      return { status: 0, stdout: "{}", stderr: "" };
+    },
+    makeTempConfig: () => "/tmp/fake.json",
+    removeTempConfig: () => {},
+  });
+  const tricky = {
+    ...ENVELOPE,
+    task_delta: "quote ' ` & | < > %PATH% ^ caret ; semicolon",
+    allowed_paths: ["docs/**"],
+  };
+  const out = await run({
+    guardBaseUrl: "http://127.0.0.1:54321",
+    modelId: "qwen38-opus-q3-cline-64k",
+    modelSelector: "qwen_local/qwen38-opus-q3-cline-64k",
+    providerOverlay: { provider: {} },
+    capabilities: { subcommand: "run", directory_flag: "--dir", model_flag: "-m", format_flag: "--format", format_json_value: "json", auto_flag: "--auto" },
+    envelope: tricky,
+  });
+  assert.equal(out.ok, true);
+  assert.equal(out.opencode_execution_count, 1);
+  assert.equal(spied.length, 1, "exactly one task process");
+  assert.equal(spied[0].exe, target.executable); // real binary, not the shim
+  assert.equal(spied[0].opts.shell, false);      // no-shell literal argv
+  assert.equal(spied[0].opts.cwd, tricky.target_repo_path);
+  assert.equal(spied[0].opts.env.OPENCODE_CONFIG, "/tmp/fake.json");
+  // metacharacter-laden message survives as ONE literal argv element
+  const msgArg = spied[0].argv[spied[0].argv.length - 1];
+  assert.ok(msgArg.includes("quote ' ` & | < > %PATH% ^ caret ; semicolon"));
+  assert.equal(typeof msgArg, "string");
+  assert.ok(msgArg.includes(tricky.task_delta));
+});
+
+await test("spawn target resolution is applied inside makeRunOpenCodeTask (fail-closed on unresolvable shim)", async () => {
+  const { makeRunOpenCodeTask } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const savedAppdata = process.env.APPDATA;
+  process.env.APPDATA = join(tmpdirRoot(), "nonexistent-appdata");
+  try {
+    const run = makeRunOpenCodeTask({
+      probe: () => ({ available: true, executable: "C:\\fake\\npm\\opencode.cmd", dispatch_interface_resolved: true, capabilities: null }),
+      spawnProc: async () => { throw new Error("must not spawn"); },
+      makeTempConfig: () => "/tmp/fake.json",
+      removeTempConfig: () => {},
+    });
+    await assert.rejects(
+      () => run({
+        guardBaseUrl: "http://127.0.0.1:54321",
+        modelId: "m", modelSelector: "qwen_local/m",
+        providerOverlay: { provider: {} },
+        capabilities: { subcommand: "run" },
+        envelope: ENVELOPE,
+      }),
+      (e) => e.code === "OPENCODE_CMD_SHIM_UNRESOLVED",
+    );
+  } finally {
+    process.env.APPDATA = savedAppdata;
+  }
+});
+
+await test("no-shell spawn of real binary does not produce EINVAL (real smoke, no model)", async () => {
+  // spawnSync-free: directly spawn the resolved real binary with --version.
+  const { resolveOpenCodeSpawnTarget } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const { spawn } = await import("node:child_process");
+  const shim = join(process.env.APPDATA, "npm", "opencode.cmd");
+  const target = resolveOpenCodeSpawnTarget(shim);
+  assert.ok(target.executable);
+  const p = spawn(target.executable, ["--version"], { shell: false, windowsHide: true });
+  const code = await new Promise((resolvePromise) => {
+    let out = "";
+    p.stdout.on("data", (d) => (out += d));
+    p.on("error", () => resolvePromise({ err: true, out }));
+    p.on("close", (c) => resolvePromise({ err: false, code: c, out }));
+  });
+  assert.equal(code.err, false, "spawn error (EINVAL?) on real binary");
+  assert.equal(code.code, 0);
+  assert.match(code.out.trim(), /^1\.\d+\.\d+/);
 });
 
 // ---------- summary ----------
