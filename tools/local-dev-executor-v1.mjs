@@ -256,6 +256,8 @@ function baseResult(partial) {
     timebox_used_s: Number(partial.timebox_used_s) || 0,
     reason_codes: partial.reason_codes || [],
     ...(partial.failure_diagnostics ? { failure_diagnostics: partial.failure_diagnostics } : {}),
+    ...(partial.timeout_diagnostics ? { timeout_diagnostics: partial.timeout_diagnostics } : {}),
+    ...(partial.guard_accounting ? { guard_accounting: partial.guard_accounting } : {}),
   };
 }
 
@@ -373,10 +375,21 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
     const code = err?.code || "OPENCODE_TASK_ERROR";
     return finish({
       classification: `STOP:${code}`,
-      reason_codes: [code],
+      reason_codes: [code, ...(code === "BOUNDS_TIMEBOX_EXPIRED" && err?.timeout_diagnostics?.termination_confirmed !== true
+        ? ["TASK_CHILD_TERMINATION_UNCONFIRMED"]
+        : [])],
+      timeout_diagnostics: code === "BOUNDS_TIMEBOX_EXPIRED" ? err.timeout_diagnostics : undefined,
       failure_diagnostics: code === "OPENCODE_RUN_FAILED"
         ? buildOpenCodeFailureDiagnostics(err)
         : undefined,
+      guard_accounting: {
+        generation_requests_seen: guardAccounting.generation_requests_seen ?? 0,
+        upstream_generation_requests: guardAccounting.upstream_generation_requests ?? 0,
+        blocked_generation_requests: guardAccounting.blocked_generation_requests ?? 0,
+        informational_requests_forwarded: guardAccounting.informational_requests_forwarded ?? 0,
+        rejected_requests: guardAccounting.rejected_requests ?? 0,
+        secret_bearing_requests_rejected: guardAccounting.secret_bearing_requests_rejected ?? 0,
+      },
       turns_used: guardAccounting.upstream_generation_requests,
       router_was_running: session.router_was_running ?? null,
       launch_performed: Boolean(session.launch_performed),

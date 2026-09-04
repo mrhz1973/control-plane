@@ -21,7 +21,7 @@ import { readFileSync, writeFileSync, unlinkSync, mkdtempSync, existsSync } from
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { spawn, execFile } from "node:child_process";
-import { executeLocalDevTask, pathAllowed, DEV_PROFILE_CATEGORY } from "./local-dev-executor-v1.mjs";
+import { executeLocalDevTask, pathAllowed, DEV_PROFILE_CATEGORY, sanitizeOpenCodeDiagnostic } from "./local-dev-executor-v1.mjs";
 import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
 import { probeOpenCodeLocal } from "./probe-opencode-local-v1.mjs";
 import { startLocalDevGenerationGuard } from "./local-dev-generation-guard-v1.mjs";
@@ -66,9 +66,13 @@ export function buildOpenCodeRuntimeConfig({ providerOverlay, permissionOverlay 
   };
 }
 
-function defaultSpawn(executable, args, opts = {}) {
-  return new Promise((resolvePromise) => {
-    const child = spawn(executable, args, {
+export function defaultSpawn(executable, args, opts = {}) {
+  let child;
+  let settled = false;
+  let resolveResult;
+  const promise = new Promise((resolvePromise) => {
+    resolveResult = resolvePromise;
+    child = spawn(executable, args, {
       cwd: opts.cwd,
       env: opts.env,
       windowsHide: true,
@@ -78,7 +82,9 @@ function defaultSpawn(executable, args, opts = {}) {
     let stderr = "";
     child.stdout?.on("data", (d) => (stdout += d));
     child.stderr?.on("data", (d) => (stderr += d));
-    child.on("error", (err) => resolvePromise({
+    child.on("error", (err) => {
+      settled = true;
+      resolvePromise({
       status: 1,
       error: err?.message || "spawn_error",
       spawn_error: err?.message || "spawn_error",
@@ -86,9 +92,77 @@ function defaultSpawn(executable, args, opts = {}) {
       spawn_failure: true,
       stdout,
       stderr,
-    }));
-    child.on("close", (code) => resolvePromise({ status: code ?? 1, stdout, stderr }));
+      });
+    });
+    child.on("close", (code) => {
+      settled = true;
+      resolvePromise({ status: code ?? 1, stdout, stderr, pid: child.pid });
+    });
   });
+  const waitForExit = (ms) => Promise.race([
+    promise.then(() => true),
+    new Promise((resolvePromise) => setTimeout(() => resolvePromise(false), ms)),
+  ]);
+  return {
+    pid: child?.pid ?? null,
+    promise,
+    getOutput: () => ({ stdout, stderr }),
+    terminate: async () => {
+      const pid = child?.pid ?? null;
+      const termination = {
+        child_pid: pid,
+        termination_requested: true,
+        termination_confirmed: false,
+        termination_method: null,
+        exit_code_after_termination: null,
+      };
+      if (!child || settled) {
+        termination.termination_confirmed = settled;
+        termination.termination_method = settled ? "already_exited" : "no_child_handle";
+        return termination;
+      }
+      try {
+        child.kill();
+        termination.termination_method = "child.kill";
+      } catch {
+        termination.termination_method = "child.kill_failed";
+      }
+      if (await waitForExit(1500)) {
+        termination.termination_confirmed = true;
+        termination.exit_code_after_termination = (await promise).status;
+        return termination;
+      }
+      if (process.platform === "win32" && pid) {
+        await new Promise((resolvePromise) => {
+          execFile("taskkill", ["/PID", String(pid), "/T", "/F"], { windowsHide: true }, () => resolvePromise());
+        });
+        termination.termination_method = "taskkill_pid_tree";
+        if (await waitForExit(1500)) {
+          termination.termination_confirmed = true;
+          termination.exit_code_after_termination = (await promise).status;
+        }
+      }
+      return termination;
+    },
+  };
+}
+
+function asSpawnHandle(value) {
+  if (value && typeof value === "object" && value.promise && typeof value.promise.then === "function") {
+    return value;
+  }
+  return {
+    pid: null,
+    promise: Promise.resolve(value),
+    getOutput: () => ({ stdout: "", stderr: "" }),
+    terminate: async () => ({
+      child_pid: null,
+      termination_requested: true,
+      termination_confirmed: false,
+      termination_method: "no_child_handle",
+      exit_code_after_termination: null,
+    }),
+  };
 }
 
 function defaultGitExec(repoPath, args) {
@@ -217,16 +291,26 @@ export function makeRunOpenCodeTask(deps = {}) {
       ];
       // HARD TIMEBOX: bound the child process itself, not just post-hoc checks.
       const timeoutMs = Math.max(1, envelope.timebox_seconds) * 1000;
-      run = await Promise.race([
-        spawnProc(spawnTarget.executable, argv, {
+      const spawned = asSpawnHandle(spawnProc(spawnTarget.executable, argv, {
           cwd: envelope.target_repo_path,
           env: { ...process.env, OPENCODE_CONFIG: configPath },
           shell: false, // no-shell: argv stays literal data, never shell syntax
-        }),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(Object.assign(new Error(`opencode exceeded hard timebox ${envelope.timebox_seconds}s`), { code: "BOUNDS_TIMEBOX_EXPIRED", terminated: true })), timeoutMs),
-        ),
-      ]);
+        }));
+      const timeout = new Promise((_, reject) =>
+        setTimeout(async () => {
+          const termination = await spawned.terminate();
+          const output = spawned.getOutput ? spawned.getOutput() : {};
+          reject(Object.assign(new Error(`opencode exceeded hard timebox ${envelope.timebox_seconds}s`), {
+            code: "BOUNDS_TIMEBOX_EXPIRED",
+            timeout_diagnostics: {
+              ...termination,
+              stdout_excerpt: sanitizeOpenCodeDiagnostic(output.stdout),
+              stderr_excerpt: sanitizeOpenCodeDiagnostic(output.stderr),
+            },
+          }));
+        }, timeoutMs),
+      );
+      run = await Promise.race([spawned.promise, timeout]);
     } finally {
       removeTempConfig(configPath);
     }

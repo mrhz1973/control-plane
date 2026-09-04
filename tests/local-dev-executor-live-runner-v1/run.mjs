@@ -316,7 +316,21 @@ await test("releaseRouterIfStarted: not owned -> no release", async () => {
 await test("hard timeout bounds the OpenCode child process", async () => {
   const { makeRunOpenCodeTask } = await import("../../tools/run-local-dev-executor-v1.mjs");
   let killed = false;
-  const neverResolvingSpawn = () => new Promise(() => {}); // simulates hung child
+  const neverResolvingSpawn = () => ({
+    pid: 424242,
+    promise: new Promise(() => {}), // simulates hung child
+    getOutput: () => ({ stdout: "child stdout", stderr: "child stderr" }),
+    terminate: async () => {
+      killed = true;
+      return {
+        child_pid: 424242,
+        termination_requested: true,
+        termination_confirmed: true,
+        termination_method: "test_child_handle",
+        exit_code_after_termination: 143,
+      };
+    },
+  });
   const run = makeRunOpenCodeTask({
     probe: () => ({ available: true, executable: "opencode-x", dispatch_interface_resolved: true, capabilities: null }),
     spawnProc: neverResolvingSpawn,
@@ -332,10 +346,25 @@ await test("hard timeout bounds the OpenCode child process", async () => {
       capabilities: { subcommand: "run", directory_flag: "--dir", model_flag: "-m", format_flag: "--format", format_json_value: "json", auto_flag: "--auto" },
       envelope: { ...ENVELOPE, timebox_seconds: 1 },
     }),
-    (e) => e.code === "BOUNDS_TIMEBOX_EXPIRED" && e.terminated === true,
+    (e) => e.code === "BOUNDS_TIMEBOX_EXPIRED" &&
+      e.timeout_diagnostics.termination_confirmed === true &&
+      e.timeout_diagnostics.child_pid === 424242,
   );
+  assert.equal(killed, true);
   const elapsed = Date.now() - t0;
   assert.ok(elapsed < 5000, `timeout fired late: ${elapsed}ms`);
+});
+
+await test("default spawn handle terminates an exact harmless child", async () => {
+  const { defaultSpawn } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const handle = defaultSpawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { shell: false });
+  assert.ok(handle.pid);
+  const startedPid = handle.pid;
+  const termination = await handle.terminate();
+  assert.equal(termination.child_pid, startedPid);
+  assert.equal(termination.termination_requested, true);
+  assert.equal(termination.termination_confirmed, true);
+  assert.ok(["child.kill", "taskkill_pid_tree"].includes(termination.termination_method));
 });
 
 await test("timeout error propagates as STOP:BOUNDS_TIMEBOX_EXPIRED", async () => {
@@ -360,6 +389,10 @@ await test("timeout error propagates as STOP:BOUNDS_TIMEBOX_EXPIRED", async () =
   });
   upstream.close();
   assert.equal(r.classification, "STOP:BOUNDS_TIMEBOX_EXPIRED");
+  assert.ok(r.guard_accounting);
+  assert.equal(r.guard_accounting.upstream_generation_requests, 0);
+  assert.equal(r.turns_used, 0);
+  assert.ok(r.reason_codes.includes("TASK_CHILD_TERMINATION_UNCONFIRMED"));
   assert.equal(persistCalled, false);
 });
 
