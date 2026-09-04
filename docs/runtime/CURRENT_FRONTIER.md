@@ -6,15 +6,15 @@
 |---|---|
 | **FOUNDATION** | v3.5 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 8-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_QWEN_SHORT_TURN_PROFILE_SELECTION_OPUS24K_SCOPE_V3` — **PASS** · OPUS Agent 24K selected and requalified for short-turn roles |
+| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 8-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · workstation-only Cline 64K profile **STAGED / NOT LIVE-VERIFIED** · no ACTIVE authorization |
+| **BLOCCO ATTIVO** | `QWEN38_OPUS_Q3_CLINE_64K_PROFILE_CONTROL_PLANE` — **PASS** · workstation-only profile staged outside Control Plane eligibility |
 | **STATO BLOCCO** | OPUS Agent 24K qualified for FAST_AGENT/FAST_INTERACTIVE/FAST_AGENT_SHORT_TURN · scope-v3 digest `934123f0…f2548f7` · DCFR short-turn remains **UNQUALIFIED** and FAST_THROUGHPUT/LONG_TASK QUALIFIED · `<think>` caveat documented; exact-output compliance not claimed · scope-v2 historical |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_WF40_FIRST_LIVE_AUTHORIZED_EXECUTION_PROOF_POST_POSTGRES_RETRY` — `profile_id=qwen38-opus-q3-agent-24k` · `role=FAST_AGENT` · `scope_version=qwen-execution-scope-v3` · live proof still requires authorization |
+| **NEXT** | `CLINE64K_ROUTER_RESTART_SINGLE_SMOKE_TEST` — verify workstation-only `qwen38-opus-q3-cline-64k`; no Control Plane eligibility or routing change |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · `activeVersionId=a609ad90-7eb4-4495-9ec5-c4413165cea1` |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
-| **QWEN MODEL POLICY** | `configs/resources/qwen-local-model-policy.json` + `configs/resources/qwen-router-catalog-scope-overlay.json` · **6 Control Plane-eligible / 8 router-visible** · startup `qwen38-opus-q3-daily-16k` unchanged · 2 additional workstation-local 96K profiles explicitly OUT OF SCOPE · next WF40 executor `qwen38-opus-q3-agent-24k` selected |
+| **QWEN MODEL POLICY** | `configs/resources/qwen-local-model-policy.json` + `configs/resources/qwen-router-catalog-scope-overlay.json` + `configs/resources/qwen-local-runtime.json` · **6 Control Plane-eligible / 8 router-visible last observed** · startup `qwen38-opus-q3-daily-16k` unchanged · 2 workstation-local 96K profiles OUT OF SCOPE · Cline 64K recorded under `workstation_manual_profiles`, non-eligible/non-routed and not yet live-verified · next WF40 executor `qwen38-opus-q3-agent-24k` unchanged |
 | **QWEN ROLE POLICY** | `docs/foundation/QWEN_LOCAL_ROLE_ROUTING_POLICY.md` · exact eligible profile_id through `:8080` · OPUS Agent 24K qualified for short-turn roles · DCFR short-turn remains **UNQUALIFIED** · Blender workloads out of Control Plane scope · Uncensored manual override preserved |
 | **QWEN ROLE QUALIFICATION** | `configs/resources/qwen-role-qualification.json` · overlay `qwen38-rtx3060-2026-09-03-agg` · DCFR = FAST_THROUGHPUT/LONG_TASK · live gate `roleQualifiedForLiveExecution` fail-closed for AGG roles |
 | **QWEN SCOPE** | Active `qwen-execution-scope-v3` · digest `934123f0fe8c39b4783632aa014b9952a28396d8e7d6e8c6ca246cfe1f2548f7` · scope-v2 historical · no `dflash_required` |
@@ -80,6 +80,7 @@ launch commands.
 - Retained-profile comparison: `reports/architecture/v4_qwen_short_turn_profile_comparison_retained_profiles.md`
 - Live retained-profile comparison: `reports/architecture/v4_qwen_short_turn_live_comparison_retained_profiles.md`
 - OPUS24K scope-v3 selection: `reports/architecture/v4_qwen_short_turn_profile_selection_opus24k_scope_v3.md`
+- Cline 64K Control Plane registration: `reports/architecture/qwen38_opus_q3_cline_64k_profile_control_plane.md`
 - AGG role correction PASS report: `reports/architecture/v4_qwen_agg_runtime_role_correction_dcfr_short_turn.md`
 - Role-qualification overlay: `configs/resources/qwen-role-qualification.json`
 - Integration PASS report: `reports/architecture/v4_qwen_local_6_profile_router_control_plane_integration.md`

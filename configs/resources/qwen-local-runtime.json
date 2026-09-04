@@ -19,7 +19,7 @@
     "script": "Documents/AI/QWEN/Start-Qwen-MultiModel-16K.ps1",
     "router_entrypoint": "Documents/AI/QWEN/qwen_runtime_router.py",
     "router_config": "Documents/AI/QWEN/qwen-runtime-router.json",
-    "models_preset": "Documents/AI/QWEN/qwen-models.ini",
+    "models_preset": "C:/Users/mrhz/llama.cpp-dflash2/qwen-models.ini",
     "normal_server_executable": "C:/Users/mrhz/llama.cpp-dflash2/build-cuda/bin/llama-server.exe",
     "host": "127.0.0.1",
     "port": 8080,
@@ -114,6 +114,21 @@
       "selection": "explicit_user_choice",
       "auto_route_sensitive_topics": false,
       "delete_without_explicit_user_authorization": false
+    }
+  },
+  "workstation_manual_profiles": {
+    "qwen38-opus-q3-cline-64k": {
+      "purpose": "CLINE_GENERAL_DEVELOPMENT",
+      "context_tokens": 65536,
+      "model_path": "D:/AI/qwen38-blender-lab/models/qwen38-opus/Qwen3.8-27B-Opus-Distill-v2-Q3_K_M.gguf",
+      "backend_lane": "normal_llama_cpp",
+      "control_plane_eligible": false,
+      "auto_route": false,
+      "startup_default": false,
+      "wf40": false,
+      "scope_v3": false,
+      "blender": false,
+      "live_verification": "STAGED_NOT_LIVE_VERIFIED"
     }
   },
   "role_to_profile_id": {
