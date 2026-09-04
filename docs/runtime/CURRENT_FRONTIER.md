@@ -6,18 +6,19 @@
 |---|---|
 | **FOUNDATION** | v3.5 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen router Control Plane integration **PASS** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · no ACTIVE authorization |
+| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 8-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · no ACTIVE authorization |
 | **BLOCCO ATTIVO** | `V4_QWEN_AGG_RUNTIME_ROLE_CORRECTION_DCFR_SHORT_TURN` — **PASS** |
-| **STATO BLOCCO** | DCFR short-turn interactive roles **UNQUALIFIED** (overlay `qwen38-rtx3060-2026-09-03-agg`) · DCFR preserved as FAST_THROUGHPUT/LONG_TASK · next-WF40-executor mapping marked STALE · fail-closed gates at dispatch/proposal/mint/adapter/seam · six profiles + router paths untouched · scope v2 digest unchanged |
+| **STATO BLOCCO** | DCFR short-turn interactive roles **UNQUALIFIED** (overlay `qwen38-rtx3060-2026-09-03-agg`) · DCFR preserved as FAST_THROUGHPUT/LONG_TASK · next-WF40-executor mapping marked STALE · fail-closed gates at dispatch/proposal/mint/adapter/seam · six Control Plane profiles preserved · router may expose 2 additional local-only out-of-scope profiles · scope v2 digest unchanged |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
 | **NEXT** | `V4_QWEN_SHORT_TURN_PROFILE_COMPARISON_RETAINED_PROFILES` — compare `qwen38-original-ar-16k` / `qwen38-opus-q3-daily-16k` / `qwen38-opus-q3-agent-24k` for short-turn interactive agent workloads; requalification requires overlay update + explicit operator authorization; live WF40 proof deferred until then |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · `activeVersionId=a609ad90-7eb4-4495-9ec5-c4413165cea1` |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
-| **QWEN MODEL POLICY** | `configs/resources/qwen-local-model-policy.json` · policy `qwen38-rtx3060-2026-09-03` · 6/6 profiles · startup `qwen38-opus-q3-daily-16k` · next WF40 executor `qwen38-dcfr-iq3-agent-24k` |
-| **QWEN ROLE POLICY** | `docs/foundation/QWEN_LOCAL_ROLE_ROUTING_POLICY.md` · exact profile_id through `:8080` · **AGG: FAST_AGENT/FAST_INTERACTIVE/FAST_AGENT_SHORT_TURN UNQUALIFIED pending comparison** · Blender_FAST out of Control Plane scope · Uncensored manual override preserved |
+| **QWEN MODEL POLICY** | `configs/resources/qwen-local-model-policy.json` + `configs/resources/qwen-router-catalog-scope-overlay.json` · **6 Control Plane-eligible / 8 router-visible** · startup `qwen38-opus-q3-daily-16k` unchanged · 2 additional workstation-local 96K profiles explicitly OUT OF SCOPE · next WF40 executor `qwen38-dcfr-iq3-agent-24k` remains STALE |
+| **QWEN ROLE POLICY** | `docs/foundation/QWEN_LOCAL_ROLE_ROUTING_POLICY.md` · exact eligible profile_id through `:8080` · router catalog superset allowed but unlisted profiles ignored · **AGG: FAST_AGENT/FAST_INTERACTIVE/FAST_AGENT_SHORT_TURN UNQUALIFIED pending comparison** · Blender workloads out of Control Plane scope · Uncensored manual override preserved |
 | **QWEN ROLE QUALIFICATION** | `configs/resources/qwen-role-qualification.json` · overlay `qwen38-rtx3060-2026-09-03-agg` · DCFR = FAST_THROUGHPUT/LONG_TASK · live gate `roleQualifiedForLiveExecution` fail-closed for AGG roles |
 | **QWEN SCOPE** | `qwen-execution-scope-v2` · digest `5261290cbdda414de0a6bd5ffd79e939f805eefde3fe2e39a8f490c5a2e02261` · no `dflash_required` |
+| **LLAMA-UI COPY FIX** | workstation agentic/MCP Copy fix source + isolated `build-cuda-copyfix` validation **PASS** · production `build-cuda\bin` not switched during that work · no Control Plane runtime identity change |
 | **RESOURCE_STATUS COMPOSER** | `tools/compose-v4-resource-status-control-plane-v1.mjs` · wired in WF40 TRUE lane · collector reports router_assessment for `:8080` catalog/profile/readiness |
 | **PRIVATE STATUS ENDPOINT** | `https://asusdesktop.tailc01234.ts.net/v4/resource-status/local-readonly` · Tailscale private · VPS proof PASS |
 | **WINDOWS EXECUTION ENDPOINT** | `tools/serve-v4-windows-local-execution-endpoint-v1.mjs` · Scheduled Task `ControlPlane-V4-LocalExecutionEndpoint` → `127.0.0.1:18791` · scope v2 bound · currently no authorization |
@@ -44,7 +45,7 @@ WF40 structural routing
   -> adapter / occupancy / guard / OpenCode / Qwen MultiModel :8080
 ```
 
-## Qwen six-profile routing (authoritative)
+## Qwen Control Plane six-profile routing (authoritative eligibility subset)
 
 ```text
 DAILY/QUALITY          -> qwen38-opus-q3-daily-16k
@@ -56,6 +57,8 @@ REFERENCE              -> qwen38-original-ar-16k
 MANUAL_UNCENSORED      -> qwen38-uncensored-ar-16k (explicit only)
 ```
 
+The router may expose a superset. As observed on 2026-09-04 it exposes 8 profiles; the 2 additional workstation-local 96K profiles are explicitly out of Control Plane scope and must be ignored by Control Plane automatic routing. See `configs/resources/qwen-router-catalog-scope-overlay.json`.
+
 DFlash2 profiles remain retired. The `llama.cpp-dflash2` directory remains the
 normal llama.cpp production runtime. Control Plane must not reconstruct backend
 launch commands.
@@ -66,10 +69,14 @@ launch commands.
 - live execution CLOSED until next authorized WF40 proof;
 - no ACTIVE runtime authorization;
 - production PostgreSQL 16.15 healthy and preserved;
-- this integration block performed zero Qwen generations / OpenCode / Telegram / provider / register calls.
+- six-profile Control Plane eligibility and AGG qualification state preserved despite 8-profile router superset;
+- workstation llama-ui Copy fix is validated but not a Control Plane production-runtime switch;
+- this reconciliation imports no Blender workload/scene/animation state.
 
 ## Puntatori
 
+- Workstation Qwen reconciliation: `reports/architecture/v4_qwen_workstation_runtime_reconciliation_2026-09-04.md`
+- Router catalog scope overlay: `configs/resources/qwen-router-catalog-scope-overlay.json`
 - AGG role correction PASS report: `reports/architecture/v4_qwen_agg_runtime_role_correction_dcfr_short_turn.md`
 - Role-qualification overlay: `configs/resources/qwen-role-qualification.json`
 - Integration PASS report: `reports/architecture/v4_qwen_local_6_profile_router_control_plane_integration.md`
