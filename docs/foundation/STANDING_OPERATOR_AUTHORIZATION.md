@@ -2,7 +2,7 @@
 
 **Status:** CANONICAL
 **Effective:** 2026-08-28
-**Updated:** 2026-08-31
+**Updated:** 2026-09-04
 
 The operator grants standing authorization for bounded project execution within the current control-plane architecture and active task scope.
 
@@ -11,6 +11,29 @@ The operator grants standing authorization for bounded project execution within 
 Do not pause for repeated approval or re-authorization when the next action is already technically determined by `CURRENT_FRONTIER`, ACTIVE WORK, repository contracts, or GPT-Web-authored artifacts. Continue through AUTO-VIA.
 
 This explicitly includes **Cursor prompt generation and execution handoff**: creating the next bounded Cursor prompt is never itself an authorization gate. Do not ask the operator to authorize each prompt, each implementation pass, or each mechanically determined continuation.
+
+## Local service lifecycle ownership — Control Plane, not GPT Web
+
+The operator assigns lifecycle ownership for project-local runtime services to the active Control Plane/orchestrator.
+
+This includes, when they are in scope for the active task, services such as:
+
+- Qwen/router/backend processes;
+- OpenCode-local support processes;
+- Control Plane local endpoints;
+- Blender and Blender MCP bridge processes;
+- other bounded localhost project services introduced by an active execution path.
+
+Rules:
+
+- Control Plane decides which required local services must be started, reused, restarted, or stopped from the active task/resource state.
+- GPT Web must **not** proactively start, stop, restart, or keep alive local services merely to prepare, tidy, or optimize the workstation.
+- GPT Web may inspect/report service state and may provide manual commands only when the operator explicitly requests manual troubleshooting or when an unavoidable manual/external gate prevents the orchestrator from acting itself.
+- A service being documented or installed does not make it always-on. Start it only when the active task needs it; stop/release it when the owning workflow determines that it is no longer needed.
+- Do not infer that a previously observed PID/process is still current; rediscover live identity before consequential process action.
+- This lifecycle rule does not expand Control Plane scope. A service such as Blender remains out of Control Plane workload scope unless the active task/architecture explicitly brings that workload into scope; however, when it is in scope, lifecycle ownership follows this rule.
+
+This operator directive supersedes ad-hoc GPT-Web cleanup/startup guidance for project-local services.
 
 ## No unnecessary tests / proof loops
 
