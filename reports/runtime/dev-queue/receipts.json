@@ -4,5 +4,11 @@
     "source_ref": "github:mrhz1973/control-plane@5f56d80ffa7945e12be78d2747b3bbdbdd8847cc:tests/local-dev-backlog-envelope-bridge-v1/fixtures/READY_D9001T.md",
     "claimed_at": "2026-09-05T04:12:12.404Z",
     "bridge_version": "local-dev-backlog-bridge-v1"
+  },
+  {
+    "task_ref": "LOCAL_DEV_B_D-9007-Q",
+    "source_ref": "github:mrhz1973/control-plane@34e9476cc713b6e55bb3d7eff6e612a07c57c2bb:tests/local-dev-backlog-envelope-bridge-v1/fixtures/READY_D9007Q.md",
+    "claimed_at": "2026-09-05T07:10:00.000Z",
+    "bridge_version": "local-dev-backlog-bridge-v1"
   }
 ]
