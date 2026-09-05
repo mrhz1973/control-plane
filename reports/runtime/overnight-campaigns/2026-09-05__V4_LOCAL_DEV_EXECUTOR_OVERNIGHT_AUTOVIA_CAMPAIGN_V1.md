@@ -15,7 +15,7 @@ session isolation adopted per campaign authorization)
 - seq: 1
 - task_ref: V4_LOCAL_DEV_EXECUTOR_BACKLOG_ENVELOPE_BRIDGE_DESIGN_V1
 - starting_head: 300d03fa06647c2da72f91b06ceb66074369faca
-- ending_head: (pending commit)
+- ending_head: 08c9b7ce802d56c5f3f1f68161fb729278f3a548
 - result: PASS (design-only; no execution activated)
 - tests summary: design pass; no runtime tests required by task class
 - files changed: reports/architecture/v4_local_dev_executor_backlog_envelope_bridge_design_v1.md (+ campaign checkpoint skeleton, runtime docs)
@@ -24,6 +24,33 @@ session isolation adopted per campaign authorization)
   source of envelope law; strict DEV-lane gates (state/human-gate/high-risk/
   unknown-local_dev-keys fail-closed); receipt sidecar idempotency v1;
   CAS/lease deferred
-- elapsed: ~5 min
+- elapsed: ~10 min
 - next derived: V4_LOCAL_DEV_EXECUTOR_BACKLOG_ENVELOPE_BRIDGE_IMPLEMENT_V1
 - AUTO_VIA_ELIGIBLE: YES (mechanically determined, test-contained, repo-local)
+
+## CHECKPOINT 2
+
+- seq: 2
+- task_ref: V4_LOCAL_DEV_EXECUTOR_BACKLOG_ENVELOPE_BRIDGE_IMPLEMENT_V1
+- starting_head: 08c9b7ce802d56c5f3f1f68161fb729278f3a548
+- ending_head: (pending commit)
+- result: PASS
+- tests summary: tests/local-dev-backlog-envelope-bridge-v1 18/18 PASS
+  (offline, deterministic); fix loop 1/3 used — both defects were TEST-side
+  (assertion inverted vs fixture; multi-doc probe needed leading `---` for
+  the reused parser's multi-doc gate); tool itself unchanged since first
+  draft
+- files changed: tools/bridge-backlog-to-local-dev-envelope-v1.mjs (new),
+  tests/local-dev-backlog-envelope-bridge-v1/{run.mjs, fixtures/*6},
+  docs/runtime/{CURRENT_FRONTIER,LAST_CURSOR_REPORT}.md, checkpoint
+- key determinations: pure function + dry-run CLI; gate order
+  state→human-gate→risk→scope→dev-fields→repo→idempotency→validateEnvelope;
+  loop_allowed maps to clamped test cycles (1..2) with the mechanically
+  required declared-loop sentence; hints clamped under hard caps (900/16);
+  receipts sidecar idempotency proven (source_ref AND task_ref collisions
+  refused)
+- elapsed: ~45 min
+- next derived: V4_LOCAL_DEV_EXECUTOR_BACKLOG_ENVELOPE_BRIDGE_DRY_RUN_V1
+  (CLI-shape smoke at a real commit producing envelope+receipt preview
+  artifacts, no execution) — unit tests cover the pure function only
+- AUTO_VIA_ELIGIBLE: YES
