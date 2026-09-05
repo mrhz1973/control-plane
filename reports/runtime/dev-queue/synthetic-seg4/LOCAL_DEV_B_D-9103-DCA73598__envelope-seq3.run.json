@@ -1,0 +1,23 @@
+{
+  "schema_version": "local-dev-task-envelope-v1",
+  "task_ref": "LOCAL_DEV_B_D-9103-DCA73598",
+  "target_repo_path": "C:\\Users\\mrhz\\Documents\\AI\\GitHub\\control-plane",
+  "target_remote": "https://github.com/mrhz1973/control-plane.git",
+  "dispatch_base_head": "fc45ad45abc3f01b9834ddfb95d414b3fa520a7a",
+  "profile_id": "qwen38-opus-q3-cline-24k",
+  "task_delta": "Objective: Append exactly one new line at the end of docs/runtime/AUTOVIA_SYNTHETIC_HEARTBEAT.md: AUTOVIA_SYNTHETIC seq=3 segment=seg4 head=1ca4564f9a34 at=2026-09-05T06:58:22.511Z (do not alter any existing line).\nExecution mode: MODIFY — operate on the existing target using the permitted file edit tool.\nAcceptance criteria:\n1. Line 'AUTOVIA_SYNTHETIC seq=3 segment=seg4 head=1ca4564f9a34 at=2026-09-05T06:58:22.511Z' present exactly once at end of docs/runtime/AUTOVIA_SYNTHETIC_HEARTBEAT.md\n2. All pre-existing lines of the file unchanged\nForbidden (do not touch): tools/**, configs/**, scripts/**\nPerform the change directly in the main agent; no subagents, no delegation; the executor owns tests and git persistence.",
+  "task_kind": "MODIFY",
+  "allowed_paths": [
+    "docs/runtime/AUTOVIA_SYNTHETIC_HEARTBEAT.md"
+  ],
+  "allowed_commands": [
+    "git status --short",
+    "git diff --check"
+  ],
+  "test_command": "git diff --check",
+  "network_policy": "localhost_only",
+  "timebox_seconds": 600,
+  "max_agent_turns": 8,
+  "max_test_cycles": 0,
+  "git_persistence_required": true
+}

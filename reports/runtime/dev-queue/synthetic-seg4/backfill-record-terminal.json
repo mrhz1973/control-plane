@@ -1,0 +1,18 @@
+{
+  "schema_version": "local-dev-idle-backfill-v1",
+  "decided_at": "2026-09-05T07:03:33.041Z",
+  "base_head": "02e5defcabfe843d01f33c4f3e84ab3f8094eefe",
+  "segment": "seg4",
+  "seq_candidate": 4,
+  "scan1": {
+    "unclaimed_admissible": 0,
+    "claimed": 3
+  },
+  "decision": "IDLE",
+  "reason_code": "IDLE_ALL_CLAIMED_SYNTHETIC_LIMIT",
+  "candidate": null,
+  "synthetic_item_created": "NO",
+  "selector_verification": null,
+  "real_ready_preempted": "NO",
+  "policy_version": "local-dev-idle-backfill-policy-v1"
+}
