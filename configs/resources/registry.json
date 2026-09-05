@@ -41,7 +41,7 @@
         "reasoning_requirement": ["low", "medium", "high", "provider_default"],
         "speed_preference": ["fast", "balanced", "quality"]
       },
-      "status": "qualified_for_external_planner; ide_surface_runtime_qualification_pending"
+      "status": "qualified"
     },
     "qwen_local": {
       "model_type": "local_model",
@@ -80,10 +80,10 @@
         "note": "Model identities offered by the Codex IDE extension are refreshable; resolve from current extension/runtime evidence, never frozen here."
       },
       "qualification": {
-        "runtime_qualified": false,
-        "note": "Capability/permission/usage evidence required before any auto-routing (issue #32 A.2). Static registry representation only in this pass."
+        "runtime_qualified": true,
+        "note": "Issue #34 qualification completed 2026-09-05: official Codex IDE extension installed in Cursor; authenticated via ChatGPT Plus subscription (NOT OpenAI API key); model/reasoning UI inventory verified live; bounded repo-read PASS; TASK DELTA generation PASS; fail-closed stale-HEAD behavior PASS; bounded real edit + Git push PASS (commit ad3e5cb 'codex-ide-proof: V4_CODEX_IDE_CURSOR_BOUNDED_EDIT_V1'); quota/usage dashboard source observed. Evidence: reports/architecture/v4_codex_ide_cursor_live_qualification.md + provenance commit ad3e5cb. Runtime qualification is separate from quota collection: no live automatic quota collector exists yet; quota state remains governed by resource-status-v1 observations and stays fail-closed/unknown without a fresh valid observation."
       },
-      "status": "represented_not_yet_runtime_qualified"
+      "status": "runtime_qualified; live_quota_collector_missing"
     },
     "codex_external_planner": {
       "surface_type": "external_cli_worker",
@@ -102,7 +102,7 @@
         "runtime_qualified": true,
         "note": "Codex CLI/OAuth no-op PASS and controlled repo-read PASS already evidenced; see MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md."
       },
-      "status": "represented_not_yet_pool_aware"
+      "status": "runtime_qualified; live_quota_collector_missing"
     },
     "openai_api_route": {
       "surface_type": "none",

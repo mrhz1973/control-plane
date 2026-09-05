@@ -104,9 +104,15 @@ Rules:
 
 - Unknown or unverified allowance ownership is represented explicitly
   (`allowance_ownership.state: "unverified"`) — never fabricated;
-- surfaces not yet runtime-qualified carry `qualification.runtime_qualified: false`
-  and must not be auto-routed (future router slices must treat them as non-selectable
-  until separately qualified);
+- `codex_ide_cursor_extension` is **runtime-qualified** (`qualification.runtime_qualified:
+  true`) by completed issue #34 live evidence (ChatGPT Plus subscription auth,
+  repo-read PASS, TASK DELTA generation PASS, bounded real edit + Git push PASS,
+  dashboard quota source observed) — while `qualification.note` keeps the separate
+  fail-closed fact that **no live automatic quota collector exists yet**; runtime
+  qualification does not imply quota freshness;
+- any other surface not yet runtime-qualified carries
+  `qualification.runtime_qualified: false` and must not be auto-routed
+  (future router slices must treat it as non-selectable until separately qualified);
 - dynamic quota values in this registry are forbidden (`dynamic_values:
   "forbidden_in_registry"`); quota state can only come from governed
   `resource-status-v1` observations with source + freshness rules unchanged;
@@ -116,8 +122,11 @@ Rules:
 
 ## 5. Out of scope for this slice
 
-Live quota collectors/translators, time-window economics, router policy changes,
-Codex IDE-in-Cursor runtime qualification, consumer migration off the projection,
+Live quota collectors/translators (still open — next #32 slice), time-window economics,
+router policy changes, consumer migration off the projection,
 Astra qualification, n8n/workflow changes, provider calls of any kind.
+(Codex IDE-in-Cursor runtime qualification was out of scope for the #37 slice and has
+since been completed via issue #34; the registry metadata was reconciled by
+`V4_REGISTRY_V2_CODEX_IDE_QUALIFICATION_RECONCILIATION_V1`.)
 
 **End of contract.**

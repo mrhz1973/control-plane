@@ -1,65 +1,46 @@
 ﻿# LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_RESOURCE_REGISTRY_V2_MODEL_SURFACE_QUOTA_POOL_V1` (GitHub issue #37, first slice of #32)
-**Classification:** `PASS — REGISTRY V2 CANONICAL (MODEL/ACCESS-SURFACE/QUOTA-POOL SEPARATED); V1 RESOURCES PROJECTION PRESERVED; CODEX + GLM SHARED POOLS REPRESENTED; NO OPENAI API/BYOK ROUTE; RUNTIME/N8N UNCHANGED`
-**Timestamp (local):** 2026-09-05 ~15:4x
-**Base HEAD:** `e07aa2661a55282055f27eb6c684564d66ae3078` (preverified = origin/main, main, tracked clean)
+**BLOCK-ID:** `V4_REGISTRY_V2_CODEX_IDE_QUALIFICATION_RECONCILIATION_V1` (GitHub issue #38, corrective delta after #37)
+**Classification:** `PASS — CODEX IDE QUALIFICATION METADATA RECONCILED WITH COMPLETED #34; SUBSCRIPTION POOL PRESERVED; LIVE COLLECTOR STILL PENDING; RUNTIME UNCHANGED`
+**Timestamp (local):** 2026-09-05 ~15:5x
+**Base HEAD:** `fdc050695da4583ea6982c6833036274fc99ddd2` (preverified = origin/main, main, tracked clean)
 **CLOSURE:** STANDARD_RUNTIME_BUNDLE
 
 ## Outcome
 
-Canonical `configs/resources/registry.json` migrated to `resource-registry-v2`:
+Stale registry-v2 metadata corrected to match completed issue #34:
 
-- New sections: `models` (glm-5.3, glm-5.3-flash, codex_subscription_models, qwen_local,
-  composer), `access_surfaces` (codex_ide_cursor_extension, codex_external_planner,
-  openai_api_route **forbidden/representational**, glm_coding_plan_client,
-  cursor_native_model_route, cursor_byok_route, opencode_local_harness),
-  `quota_pools` (chatgpt_codex_subscription, glm_coding_plan), `registry_metadata`.
-- **Shared pools**: both Codex surfaces → one `chatgpt_codex_subscription`
-  (subscription-only; NO OpenAI API key/BYOK/API billing); `glm-5.3` + `glm-5.3-flash`
-  → one `glm_coding_plan`. No quota duplication/double-count fields.
-- **Cursor = harness only**: no Cursor pool exists; native route allowance explicitly
-  `unverified` with `quota_pool_id: null` (nothing invented).
-- **Qwen/OpenCode local**: `quota_pool_id: null`, `commercial_quota:
-  none_local_unmetered` — no commercial token pool modeled; Qwen runtime untouched.
-- **No dynamic values**: pools carry `dynamic_values: forbidden_in_registry`; the
-  85%/88% dashboard observations were NOT persisted; pool sources allowlisted
-  (`dashboard_snapshot` / future normalized collector).
-- **Dynamic model selection**: Codex observed models (Sol/Terra/Luna/Astra) NOT frozen;
-  all `model_selection_policy.frozen_list: false` (schema `const`), reasoning/speed
-  as per-invocation route metadata.
+- `codex_ide_cursor_extension.qualification.runtime_qualified = true` with full #34
+  evidence note: ChatGPT Plus subscription auth (NO OpenAI API key), model/reasoning UI
+  inventory, repo-read PASS, TASK DELTA generation PASS, fail-closed stale-HEAD PASS,
+  bounded real edit + Git push PASS (provenance commit `ad3e5cb`), dashboard quota
+  source observed. No percentages/reset/multiplier persisted.
+- Status distinction explicit: `runtime_qualified; live_quota_collector_missing` —
+  no `*_pending`/`not_yet_runtime_qualified` wording remains anywhere (regex-enforced).
+- `codex_subscription_models`: stale `ide_surface_runtime_qualification_pending` removed
+  → `qualified`; dynamic model-selection policy untouched.
+- `chatgpt_codex_subscription`: preserved as `active_pool_no_live_collector`, shared by
+  IDE + external planner; no automatic quota freshness claimed.
+- Contract §4/§5 updated: IDE runtime-qualified by #34; collectors still open.
+- CURRENT_FRONTIER checked: no stale IDE-qualification wording → untouched per scope.
 
-## Compatibility (v1 projection preserved)
+## Preserved
 
-`resources` = verbatim `resource-registry-v1` object (deep-equal to base HEAD,
-test-proven). Compat edits (one scope each, behavior-preserving):
-`validate-resource-registry-v1.mjs` projects v2→v1 (fail-closed on truncated v2);
-`evaluate-execution-route.mjs` + `n8n-v4-execution-routing-bridge-v1.mjs` accept
-v1|v2. Census: 6 direct consumers — all compatible. Projection removal deferred to a
-later governed pass.
+registry-v2 schema · `resources` v1 projection (semantic deep-equal) · GLM pool ·
+Cursor allowance unverified · Qwen/OpenCode unmetered semantics · consumer tools
+untouched from #37 · historical #37 report + #34 report (both NOT rewritten).
+No Codex/Qwen generation, no collector, no provider call, no n8n/runtime change.
 
 ## Tests
 
-- New focused suite `tests/registry-v2/run.mjs`: **56/56 PASS** — structure, projection
-  deep-equal, shared-pool proofs, subscription-only boundary, no-dynamic-values regex,
-  referential integrity, Ajv v2-schema positive+negative, validator shim, router parity
-  v2-vs-v1 (identical ROUTED + identical fail-closed).
-- 8 consumer suites re-run: **135/135 PASS** (registry-validator 7, execution-router 12,
-  status-composer 34, qwen overlay 14, qwen-local-adapter 9, adapter-registry 19,
-  routing-bridge 23, planner-selection-evaluator 17). `node --check` OK.
-
-## Untouched (verified)
-
-workflows/n8n · WF40/WF61/D-0025 · dispatcher 18793 · Tailscale · Qwen profiles/router/
-runtime (`qwen-models.ini`, GGUF, 10 profile IDs) · provider credentials · billing ·
-`status.fail-closed.json` · all other contracts/docs · historical reports. Zero
-provider/generation calls. CURRENT_FRONTIER updated with `RESOURCE_REGISTRY` row
-(registry v2 canonical + consumers proven; live quota collectors explicitly NOT yet
-implemented — next #32 slice).
+- `tests/registry-v2/run.mjs`: **64/64 PASS** (56 previous + 8 new #34 assertions incl.
+  runtime_qualified===true, subscription-only auth, evidence refs #34/ad3e5cb, no
+  dynamic quota in note, distinct runtime-vs-collector status, no stale wording,
+  pool still no-live-collector).
+- Consumer suites re-run PASS: registry-validator, execution-router,
+  status-control-plane-source, routing-bridge. `node --check` OK.
 
 Full report:
-`reports/architecture/v4_resource_registry_v2_model_surface_quota_pool_v1.md`
-Contract: `docs/contracts/resource-registry-v2.md` +
-`docs/contracts/resource-registry-v2.schema.json`.
+`reports/architecture/v4_registry_v2_codex_ide_qualification_reconciliation_v1.md`
 
 EXECUTOR_END_HEAD = the `cursor-pass:` commit carrying this report.

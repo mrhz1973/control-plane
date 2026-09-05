@@ -89,6 +89,48 @@ check(
   JSON.stringify([...(POOLS.chatgpt_codex_subscription?.shared_by_surfaces || [])].sort()) ===
     JSON.stringify(["codex_external_planner", "codex_ide_cursor_extension"]),
 );
+// --- #34 reconciliation: Codex IDE runtime-qualified, collector still missing ---
+check(
+  "codex-ide-runtime-qualified",
+  SURFACES.codex_ide_cursor_extension?.qualification?.runtime_qualified === true,
+  JSON.stringify(SURFACES.codex_ide_cursor_extension?.qualification)?.slice(0, 120),
+);
+check(
+  "codex-ide-auth-qualified-subscription-only",
+  JSON.stringify(SURFACES.codex_ide_cursor_extension?.auth?.allowed) ===
+    JSON.stringify(["chatgpt_subscription"]),
+);
+check(
+  "codex-ide-evidence-references-34",
+  /#34/.test(SURFACES.codex_ide_cursor_extension?.qualification?.note || "") &&
+    /ad3e5cb/.test(SURFACES.codex_ide_cursor_extension?.qualification?.note || ""),
+);
+check(
+  "codex-ide-no-dynamic-quota-in-evidence",
+  !/(\d+\s*%|\d+%|percent|reset_at|resets|multiplier)/i.test(
+    SURFACES.codex_ide_cursor_extension?.qualification?.note || "",
+  ),
+);
+check(
+  "codex-ide-distinct-runtime-vs-collector-status",
+  /runtime_qualified/.test(SURFACES.codex_ide_cursor_extension?.status || "") &&
+    /live_quota_collector_missing/.test(SURFACES.codex_ide_cursor_extension?.status || ""),
+);
+check(
+  "no-stale-qualification-pending-wording-anywhere",
+  !/not_yet_runtime_qualified|qualification_pending|runtime_qualification_pending|ide_surface_runtime_qualification_pending|represented_not_yet/.test(
+    JSON.stringify({ models: MODELS, surfaces: SURFACES, pools: POOLS }),
+  ),
+);
+check(
+  "pool-still-no-live-collector",
+  POOLS.chatgpt_codex_subscription?.status === "active_pool_no_live_collector",
+  POOLS.chatgpt_codex_subscription?.status,
+);
+check(
+  "external-planner-also-marked-runtime-qualified",
+  SURFACES.codex_external_planner?.qualification?.runtime_qualified === true,
+);
 check(
   "glm-models-distinct-and-shared-pool",
   MODELS["glm-5.3"] &&
