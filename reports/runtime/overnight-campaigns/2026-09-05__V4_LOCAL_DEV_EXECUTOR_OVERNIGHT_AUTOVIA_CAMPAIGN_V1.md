@@ -270,3 +270,31 @@ Every NEXT is derived only from newly persisted canonical state.
 - artifacts: reports/runtime/dev-queue/selection-seg3.json,
   LOCAL_DEV_B_D-9001-T__envelope-dispatch1.json (+ bare run file),
   LOCAL_DEV_B_D-9001-T__result-dispatch1.json, receipts.json (1 claim)
+
+## CHECKPOINT 9 — SEGMENT 3 PASS 4–5: DISPATCHER PRIMITIVE + LIVE LOOP PROOF (PASS)
+
+- seq: 9 (segment 3, passes 4–5)
+- pass 4 (cursor-pass `34e9476`): V4_LOCAL_DEV_EXECUTOR_DISPATCHER_LOOP_V1 —
+  dispatcher primitive `tools/dispatch-local-dev-queue-loop-v1.mjs`
+  (select→claim→emit, dry-run by construction: it NEVER spawns the executor
+  or OpenCode; execution stays a separate explicit bounded step) + suite 5/5
+  (tests/local-dev-dispatch-loop-v1) incl. "loop NEVER executes" static
+  assertion, duplicate-claim drain, multi-claim ordering.
+- pass 5 (bookkeeping `748934e` + executor-pass `cfc1cf5`): LIVE LOOP PROOF —
+  - dispatcher (real queue + real receipts ledger) claimed LOCAL_DEV_B_D-9007-Q
+    and emitted the run envelope (task_kind=CREATE, single in-scope path);
+  - claim persisted via bookkeeping commit; run envelope anchored to 748934e;
+  - executor ran it on qwen38-opus-q3-cline-24k: **PASS** in 4 turns / 108 s
+    of 600; created NEW in-scope file docs/runtime/QUEUE_DISPATCH_NOTES.md
+    with exactly the required marker line
+    (`queue-dispatch-stub: LOCAL_DEV_B_D-9007-Q`);
+  - task_created_new=[docs/runtime/QUEUE_DISPATCH_NOTES.md] (live exercise of
+    the TASK_CREATED_UNTRACKED selective staging through the LOOP path),
+    preexisting_untracked_protected=35, tracked tree clean post-run,
+    push + remote verified (LOCAL == REMOTE = cfc1cf5).
+- EXECUTOR_END_HEAD (pass 9) = cfc1cf5980d5a99b3774b6a7a0390e2d31d5f6c6
+- FULL LOOP NOW PROVEN LIVE END-TO-END: select → claim (receipts ledger) →
+  emit → executor → OpenCode → Qwen Cline24K → git persistence → remote
+  verify, for BOTH MODIFY (checkpoint 8) and CREATE (this checkpoint).
+- REAL_LOCAL_DEV_EXECUTIONS_ADDED (campaign total) = 5 (2 STOP + 3 PASS)
+- production changed: NO · D-0025 enabled: false
