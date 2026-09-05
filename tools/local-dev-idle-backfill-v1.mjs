@@ -207,7 +207,9 @@ function loadReceipts(path) {
 }
 
 /** Count synthetic items in the queue for THIS segment (files persist after
- * claim; provenance comment carries the segment identity). */
+ * claim). A synthetic ITEM is identified by the exact deterministic
+ * provenance comment emitted by renderSyntheticBacklogMarkdown — never by a
+ * loose substring, so ordinary reports quoting marker lines are NOT counted. */
 export function countSyntheticFilesInQueue(queueDir, segment) {
   try {
     return readdirSync(queueDir)
@@ -215,7 +217,7 @@ export function countSyntheticFilesInQueue(queueDir, segment) {
       .filter((f) => {
         try {
           const md = readFileSync(join(queueDir, f), "utf8");
-          return md.includes(`segment=${segment}`);
+          return md.includes(`| segment=${segment} |`);
         } catch {
           return false;
         }

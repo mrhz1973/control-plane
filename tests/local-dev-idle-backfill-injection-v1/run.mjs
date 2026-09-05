@@ -390,5 +390,23 @@ await test("T-extra scanQueue partitions admissible/claimed deterministically", 
   }
 });
 
+// Regression (delegated auto-repair): a report/proof file that merely QUOTES
+// marker lines must never be counted as a synthetic queue item. The count key
+// is the exact provenance comment, not a loose substring.
+await test("T-extra2 proof/report files quoting markers are NOT counted as synthetics", async () => {
+  const { countSyntheticFilesInQueue } = await import("../../tools/local-dev-idle-backfill-v1.mjs");
+  const tmp = mkdtempSync(join(tmpdir(), "lde-bf-"));
+  try {
+    const q = drainedQueue(tmp);
+    const cand = authorSyntheticCandidate({ head: HEAD, segment: SEG, seq: 1, nowIso: NOW, heartbeatPath: HB, heartbeatExists: false, evidenceRefs: EVIDENCE });
+    writeFileSync(join(q, `SYNTHETIC_${cand.candidate.id}.md`), renderSyntheticBacklogMarkdown(cand.candidate, { repo: REPO, nowIso: NOW, head: HEAD, segment: SEG, seq: 1 }), "utf8");
+    // a report that quotes the marker line (loose substring present):
+    writeFileSync(join(q, "SYNTHETIC_BACKFILL_LIVE_PROOF.md"), `# Proof\n\nThe line "AUTOVIA_SYNTHETIC seq=1 segment=${SEG} head=${HEAD.slice(0, 12)} ..." was appended.\n`, "utf8");
+    assert.equal(countSyntheticFilesInQueue(q, SEG), 1);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 if (failures.length) process.exit(1);
