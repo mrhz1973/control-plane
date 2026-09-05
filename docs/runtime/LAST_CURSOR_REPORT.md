@@ -1,5 +1,57 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_WF90_HTTP409_NORMALIZATION_LIVE_APPLY_V1` (micro-task delta, base `579fa67`)
+**Classification:** `PASS — WF90 NORMALIZER FIX LIVE-APPLIED TO WORKFLOW 90 (90ldaa5a-4000-8000-000000000090 "90 - CP V4 LOCAL DEV ALWAYS-ON DISPATCHER - ACTIVE"); LIVE_MUTATION = ONLY the "Code - Normalize LOCAL_DEV tick result" jsCode replaced with the canonical value from 579fa67212b37449a7761ff47ec9f652bdb8f381 (payload proven single-field diff vs live export; jsCode sha256 prefix 9f4184e9802ea4a0, 2029 chars, byte-equal canonical); WORKFLOW REMAINS ACTIVE (activeVersionId=versionId=febca537-9218-4fb4-8280-847b5e961f6b, published 2026-09-05T22:16:39Z, triggerCount=1, schedule 5-min unchanged); POST-APPLY VERIFICATION 17/17 PASS (id/name/settings/7 node IDs/topology/HTTP node/Tailscale URL/Telegram credential binding all unchanged); NATURAL TICK EVIDENCE: scheduled exec 308056 at 2026-09-05T22:20:41Z ran end-to-end with the new normalizer -> IDLE_CLEAN, response_valid=true, success, no Telegram send; D-0025 enabled=false UNCHANGED; WF40/WF61 UNTOUCHED; NO synthetic work, NO manual enqueue, NO service restart, NO Telegram test message`
+**Timestamp (local):** 2026-09-06 (00:0x, UTC+2)
+**BASE_HEAD:** `579fa67212b37449a7761ff47ec9f652bdb8f381` (fetch + verify: local HEAD == origin/main == canonical)
+**CLOSURE HEAD:** final `cursor-pass: V4_WF90_HTTP409_NORMALIZATION_LIVE_APPLY_V1` commit carrying this report
+**CLOSURE:** MINIMAL_EVIDENCE_BUNDLE (live-apply pass — runtime code unchanged)
+
+## Precheck (before mutation)
+
+- `git fetch origin main`; `HEAD == origin/main == 579fa67212b37449a7761ff47ec9f652bdb8f381`; tracked worktree clean; all pre-existing untracked files preserved; no clean/stash/reset/rebase/force-push.
+- Live WF90 read via `n8n export:workflow --id=90ldaa5a-4000-8000-000000000090` (read-only): id/name/ACTIVE=true confirmed; 7 nodes; all node IDs/types and `connections` byte-identical to the canonical artifact; every non-normalizer node's parameters identical.
+- Expected-and-only drift: the normalizer `jsCode` was still the PRE-FIX value (1313 chars, no `error.message` bounded extraction). The canonical artifact's Telegram node parameters differ from live because the repo artifact intentionally carries a placeholder (its own `notes` mandate cloning live credential metadata in memory only) — documented placeholder, NOT drift; live Telegram node treated as authoritative and untouched.
+- Pre-mutation export backed up on VPS: `/root/n8n-backups/wf90-live-apply-20260906/wf90-pre-mutation.json` (sha256 `d101945e…`).
+
+## Live mutation (single-field, in place, same workflow ID)
+
+- Mutation payload built IN MEMORY from the live export with ONLY `nodes[name="Code - Normalize LOCAL_DEV tick result"].parameters.jsCode` set to the canonical value; a structural diff of payload vs live export proved `mutation_field_diffs: []` outside that field (id, name, active, settings, node count, all node objects, connections, Telegram credentials untouched).
+- Applied with the repo's proven in-place path: `n8n import:workflow` (same ID, no recreate) → `n8n update:workflow --active=true` → `n8n publish:workflow` (publish history row 130: deactivated `snap-manual-fixurl-001` at 2026-09-05T22:16:39Z, then re-activated + published new version `febca537-9218-4fb4-8280-847b5e961f6b`).
+
+## Post-apply verification (17/17 PASS)
+
+1. Re-export: normalizer `jsCode` byte-equal to canonical artifact (sha256 prefix `9f4184e9802ea4a0`, len 2029) — PASS
+2. Workflow ACTIVE before and after; `activeVersionId == versionId == febca537-…`; `triggerCount=1` — PASS
+3. Schedule node unchanged, 5-minute interval intact — PASS
+4. Telegram credential binding present (key names only; no secret/id values printed) and node byte-identical to pre-state — PASS
+5. Node count 7; all node IDs; connections/topology; workflow id/name; settings; HTTP Request node incl. Tailscale URL — all unchanged — PASS
+6. New jsCode contains the bounded `error.message` extraction + guarded `JSON.parse` — PASS
+
+## Natural scheduled tick evidence (read-only observation only)
+
+- Baseline max WF90 exec id before new version: 308045 (22:15:41Z, old version).
+- First natural tick AFTER the new version went live: exec **308056** at **2026-09-05T22:20:41Z**, status `success`.
+- Decoded execution data (read-only): normalized output = `response_valid=true, classification=IDLE_CLEAN, execution_performed=false, task_ref=null, human_gate_required=false, gate_summary=null, reason_codes=["NO_ELIGIBLE_READY"], notify_required=false`; terminal node `tick_completed_at=2026-09-05T22:20:42Z`; IF routed false → no Telegram send. The 2xx path is unaltered and the new jsCode runs cleanly in production.
+- No manual enqueue, no synthetic backlog work, no repo dirtying to force a 409.
+
+## Hard walls honored
+
+D-0025 gate file re-read post-apply: `"enabled": false` (CLOSED, unchanged). WF40 (83 nodes) and WF61 untouched. No service restart (the CLI "restart n8n" notice for CLI-issued updates was NOT acted on; schedule re-registration proven live by natural tick 308056 firing on time). No Tailscale/Windows dispatcher changes. No Telegram test message. No credentials/secrets printed or persisted. No model/provider execution.
+
+## Persistence record
+
+- `WF90_NORMALIZER_FIX = LIVE_APPLIED`
+- Live workflow id: `90ldaa5a-4000-8000-000000000090` ("90 - CP V4 LOCAL DEV ALWAYS-ON DISPATCHER - ACTIVE"), `active=true`
+- Canonical source commit: `579fa67212b37449a7761ff47ec9f652bdb8f381`
+- Verification result: post-apply 17/17 PASS; live jsCode == canonical (sha256 prefix `9f4184e9802ea4a0`); published+active version `febca537-9218-4fb4-8280-847b5e961f6b`
+- Natural tick evidence: exec 308056 IDLE_CLEAN / success with new normalizer
+- `D-0025 unchanged (enabled=false)`
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_WF90_HTTP409_NORMALIZATION_FIX_V1` (micro-task delta, base `616ce9f`)
 **Classification:** `PASS — WF90 NORMALIZER RECOVERS A SCHEMA-VALID local-dev-dispatch-tick-result-v1 EMBEDDED IN AN n8n/Axios ERROR ENVELOPE (error.message "<status> - <json>") AND NORMALIZES IT LIKE A 2xx RESPONSE; MALFORMED PAYLOADS STAY FAIL-CLOSED SERVICE_ERROR; HTTP STATUS ALONE NEVER INFERS HUMAN_GATE_REQUIRED; FOCUSED TESTS 11/11; LIVE_APPLY_PERFORMED=NO; LIVE_APPLY_GATE_REQUIRED=YES; END STATE REPO_FIX_READY_FOR_LIVE_APPLY`
 **Timestamp (local):** 2026-09-05 (late evening)
