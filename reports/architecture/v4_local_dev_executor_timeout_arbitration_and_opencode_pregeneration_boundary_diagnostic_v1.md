@@ -152,3 +152,7 @@ LOCAL_DEV_EXECUTOR_FIRST_LIVE_PROOF_RETRY7 = QWEN_EXECUTED
 ## First completed bounded live proof after turn calibration
 
 LOCAL_DEV_EXECUTOR_FIRST_LIVE_PROOF_RETRY8 = QWEN_EXECUTED
+
+## First full bounded live proof after no-subagent calibration
+
+LOCAL_DEV_EXECUTOR_FIRST_LIVE_PROOF_RETRY9 = QWEN_EXECUTED
