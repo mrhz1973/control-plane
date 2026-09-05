@@ -189,7 +189,9 @@ function defaultGitExec(repoPath, args) {
 import { resolveOpenCodeSpawnTarget } from "./opencode-binary-resolution-v1.mjs";
 export { resolveOpenCodeSpawnTarget };
 
-/** Bounded task message for the single OpenCode run (no secrets, structural). */
+/** Bounded task message for the single OpenCode run (no secrets, structural).
+ * Hardened for convergence: reinforces scope, tool policy, and explicit
+ * create-vs-modify semantics (absence of a CREATE target is EXPECTED). */
 export function buildTaskMessage(envelope) {
   const lines = [
     `LOCAL_DEV task ${envelope.task_ref}`,
@@ -197,6 +199,18 @@ export function buildTaskMessage(envelope) {
     `Allowed paths: ${envelope.allowed_paths.join(", ")}`,
     `Allowed commands: ${envelope.allowed_commands.join("; ")}`,
   ];
+  const kind = envelope.task_kind === "CREATE" ||
+    /Execution mode: CREATE\b/.test(String(envelope.task_delta || ""))
+    ? "CREATE" : "MODIFY";
+  if (kind === "CREATE") {
+    lines.push(
+      "File policy: the target file MAY NOT EXIST yet; its absence is EXPECTED, not a blocker. Create it directly with the file edit tool; never read it before initial creation; never probe existence via shell.",
+    );
+  }
+  lines.push(
+    "Tool policy: use only the permitted file edit tool for file changes and only the allowed commands above; no shell existence probes; no subagents; no delegation.",
+    "Stop exploring as soon as every acceptance criterion is satisfied; do not spend turns on further verification.",
+  );
   if (envelope.test_command) lines.push(`Test command: ${envelope.test_command}`);
   lines.push(
     `Bounds: timebox ${envelope.timebox_seconds}s, max turns ${envelope.max_agent_turns}, max test cycles ${envelope.max_test_cycles}.`,
@@ -228,6 +242,17 @@ export function makeRunOpenCodeTask(deps = {}) {
       writeFileSync(p, JSON.stringify(config), "utf8");
       return p;
     });
+  // Deterministic config-schema gate: the EXACT generated config must be
+  // accepted by the INSTALLED opencode (`debug config` resolves it or we
+  // fail closed before any run). Read-only wrt the repository; the temp
+  // file lives in the OS temp dir. Set deps.debugConfig for tests.
+  const debugConfig = deps.debugConfig || ((configPath) => new Promise((resolvePromise) => {
+    execFile("opencode.exe", ["debug", "config"], {
+      env: { ...process.env, OPENCODE_CONFIG: configPath },
+      timeout: 30_000,
+      windowsHide: true,
+    }, (err, stdout) => resolvePromise({ ok: !err, stdout: stdout || "", error: err?.message }));
+  }));
   const removeTempConfig = deps.removeTempConfig || ((p) => { try { unlinkSync(p); } catch { /* best effort */ } });
 
   return async ({ guardBaseUrl, modelId, modelSelector, providerOverlay, capabilities, envelope }) => {
@@ -256,6 +281,15 @@ export function makeRunOpenCodeTask(deps = {}) {
     });
     const runtimeConfig = buildOpenCodeRuntimeConfig({ providerOverlay, permissionOverlay });
     const configPath = makeTempConfig(runtimeConfig);
+    // Fail closed if the INSTALLED OpenCode rejects the exact generated config.
+    const cfgCheck = await debugConfig(configPath);
+    if (!cfgCheck.ok) {
+      removeTempConfig(configPath);
+      throw Object.assign(new Error("opencode rejected generated config (debug config failed)"), {
+        code: "OPENCODE_CONFIG_REJECTED",
+        detail: cfgCheck.error || "unknown",
+      });
+    }
     let run;
     let timer = null;
     try {
@@ -321,6 +355,10 @@ export function makeRunOpenCodeTask(deps = {}) {
       removeTempConfig(configPath);
     }
     if (run.status !== 0) {
+      // Best-effort: persist the EXACT generated config for failure forensics
+      // (read-only wrt repo; harmless on success path since file is removed).
+      let generated_config_copy = null;
+      try { generated_config_copy = readFileSync(configPath, "utf8"); } catch { /* removed */ }
       throw Object.assign(new Error(`opencode run failed (exit ${run.status})`), {
         code: "OPENCODE_RUN_FAILED",
         opencode_exit_code: run.status,
@@ -329,6 +367,7 @@ export function makeRunOpenCodeTask(deps = {}) {
         spawn_failure: Boolean(run.spawn_error),
         spawn_error: run.spawn_error,
         spawn_error_code: run.spawn_error_code,
+        generated_config_copy,
       });
     }
     return { ok: true, exit_code: run.status, opencode_execution_count: 1, model_id: modelId };

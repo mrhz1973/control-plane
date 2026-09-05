@@ -41,10 +41,41 @@ INVARIANTS_PRESERVED=<list>
 - irreversible changes;
 - unclear safety dominance.
 
-## Usage note (this dispatch)
+## Extension V2 — LOCAL_DEV convergence repair classes (operator-authorized
+## in dispatch V4_LOCAL_DEV_EXECUTOR_OPENCODE_PERMISSION_AND_NEW_FILE_CONVERGENCE_REMEDIATION_V1,
+## 2026-09-05)
 
-This policy was persisted BEFORE the bridged live proof retry below. It
-authorizes only mechanical same-scope repairs (e.g. fixing a proven
-envelope/fixture mismatch discovered inside an authorized proof task). It
-does not authorize re-running a stopped live proof more times than the task
-explicitly allows.
+Unattended LOCAL_DEV campaigns MAY additionally auto-diagnose and auto-repair
+these defect classes WITHOUT an operator gate, when ALL conditions of the
+narrow rule above still hold:
+
+- LOCAL_DEV task-shaping defects (missing deterministic create-vs-modify
+  instructions, convergence-hostile objective wording);
+- OpenCode LOCAL_DEV permission mismatches (missing exact file-tool permission
+  entry proven necessary by installed-OpenCode evidence; always deny-all-first,
+  allowed_paths-derived only);
+- agent convergence failures caused by a missing deterministic instruction;
+- exact DEV file-tool permission omissions (never generic command widening;
+  filesystem-discovery commands such as Test-Path/dir/ls/find/Get-ChildItem
+  must NOT be auto-added);
+- CLI wrapper/shape mismatches between bridge artifacts and runner inputs;
+- test-side defects (assertions or fixtures not matching authorized behavior).
+
+STILL HARD-GATED (Cursor MUST STOP):
+- production architecture; n8n live topology authoring/change
+  (`GPT_WEB_N8N_AUTHORING_REQUIRED`); Telegram policy semantics;
+  credentials/secrets; billing/provider/model policy; destructive or
+  irreversible action; security boundary weakening; materially non-equivalent
+  product/strategy choices; scope expansion outside LOCAL_DEV; unresolved
+  remote/source conflict.
+
+CONVERGENCE RETRY BOOKKEEPING (campaign rule): the same root-cause family
+gets at most 2 automatic repair cycles before the campaign must STOP; a
+genuinely new mechanical root-cause family may receive its own bounded repair
+pass. Every automatic repair MUST record:
+
+```text
+AUTO_REPAIR_SELECTED=<repair>
+RATIONALE=<evidence>
+INVARIANTS_PRESERVED=<list>
+```

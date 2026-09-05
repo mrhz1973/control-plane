@@ -50,6 +50,9 @@ export function buildOpenCodeFailureDiagnostics(error = {}) {
   if (error.spawn_error !== undefined) diagnostics.spawn_error = sanitizeOpenCodeDiagnostic(error.spawn_error);
   if (error.spawn_error_code !== undefined) diagnostics.spawn_error_code = sanitizeOpenCodeDiagnostic(error.spawn_error_code);
   if (error.spawn_failure === true) diagnostics.spawn_failure = true;
+  if (error.generated_config_copy !== undefined && error.generated_config_copy !== null) {
+    diagnostics.generated_config_copy = sanitizeOpenCodeDiagnostic(error.generated_config_copy);
+  }
   return Object.keys(diagnostics).length ? diagnostics : undefined;
 }
 

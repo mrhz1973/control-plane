@@ -64,10 +64,32 @@ function fail(codes) {
   return { ok: false, reason_codes: Array.isArray(codes) ? codes : [codes] };
 }
 
-/** Deterministic task_delta template (declares corrective loop only when allowed). */
+/** Deterministic task_delta template (declares corrective loop only when allowed).
+ * CREATE inference is generic (never fixture-specific): an objective that
+ * declares creation of a missing/new file gets explicit create-flow shaping
+ * so the agent does not read-before-create or shell-probe for existence. */
+export function inferTaskKind(b) {
+  const objective = typeof b.objective === "string" ? b.objective : "";
+  if (/\b(create|add)\b[^.\n]*\b(new\s+)?(file|doc|document|note|report)\b/i.test(objective) ||
+      /\bappend\b[^.\n]*\bto\b[^.\n]*\b[A-Za-z0-9_./\\-]+\.(md|txt|json|ya?ml)\b/i.test(objective)) {
+    return "CREATE";
+  }
+  return "MODIFY";
+}
+
 export function buildTaskDelta(b, maxTestCycles) {
   const lines = [];
   lines.push(`Objective: ${b.objective}`);
+  const taskKind = inferTaskKind(b);
+  if (taskKind === "CREATE") {
+    lines.push(
+      "Execution mode: CREATE — the target file MAY NOT EXIST yet; its absence is EXPECTED, not a blocker.",
+      "Create the file directly with the permitted file edit tool; do NOT read the target before initial creation; do NOT use shell commands to test file or directory existence.",
+      "After creation, verify through the permitted file tooling only.",
+    );
+  } else {
+    lines.push("Execution mode: MODIFY — operate on the existing target using the permitted file edit tool.");
+  }
   if (Array.isArray(b.acceptance) && b.acceptance.length) {
     lines.push("Acceptance criteria:");
     b.acceptance.forEach((a, i) => lines.push(`${i + 1}. ${a}`));
@@ -183,6 +205,7 @@ export function buildLocalDevEnvelopeFromBacklog(input = {}) {
     dispatch_base_head: dispatchBaseHead,
     profile_id: profileId,
     task_delta: buildTaskDelta(b, maxTestCycles),
+    task_kind: inferTaskKind(b),
     allowed_paths: [...b.scope.allowed_areas],
     allowed_commands: allowedCommands,
     test_command: testCommand,

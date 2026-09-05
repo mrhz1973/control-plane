@@ -198,6 +198,7 @@ await test("makeRunOpenCodeTask probes opencode and builds argv with guard URL c
   const madeConfigs = [];
   const run = makeRunOpenCodeTask({
     probe: () => ({ available: true, version: "1.18.0", executable: "opencode-test", dispatch_interface_resolved: true, capabilities: null }),
+    debugConfig: async () => ({ ok: true, stdout: "{}" }),
     spawnProc: async (exe, argv, opts) => {
       madeConfigs.push({ exe, argv, opts });
       return { status: 0, stdout: "{}", stderr: "" };
@@ -334,6 +335,7 @@ await test("hard timeout bounds the OpenCode child process", async () => {
   const run = makeRunOpenCodeTask({
     probe: () => ({ available: true, executable: "opencode-x", dispatch_interface_resolved: true, capabilities: null }),
     spawnProc: neverResolvingSpawn,
+    debugConfig: async () => ({ ok: true, stdout: "{}" }),
     makeTempConfig: () => "/tmp/x.json",
     removeTempConfig: () => {},
   });
@@ -576,6 +578,7 @@ await test("real spawn of .cmd-resolved target: no EINVAL, argv literal, config/
       spied.push({ exe, argv, opts });
       return { status: 0, stdout: "{}", stderr: "" };
     },
+    debugConfig: async () => ({ ok: true, stdout: "{}" }),
     makeTempConfig: () => "/tmp/fake.json",
     removeTempConfig: () => {},
   });
@@ -671,6 +674,7 @@ await test("spawn failure is structurally distinct from clean non-zero exit", as
   const run = makeRunOpenCodeTask({
     probe: () => ({ available: true, executable: "opencode-test.exe", dispatch_interface_resolved: true, capabilities: null }),
     spawnProc: async () => ({ status: 1, stdout: "", stderr: "", spawn_error: "spawn failed", spawn_error_code: "ENOENT", spawn_failure: true }),
+    debugConfig: async () => ({ ok: true, stdout: "{}" }),
     makeTempConfig: () => "/tmp/fake.json",
     removeTempConfig: () => {},
   });
@@ -723,7 +727,6 @@ await test("STOP:OPENCODE_RUN_FAILED propagates failure evidence; PASS has none"
     guardStart: guardFactory,
     runOpenCodeTask: async () => ({ ok: true }),
     runTests: async () => [{ command: "test", exit_code: 0, cycle: 1 }],
-    getChangedFiles: async () => [],
     persistGit: async () => ({ ok: true, final_head: ENVELOPE.dispatch_base_head }),
   });
   assert.equal(passed.status, "PASS");
@@ -756,6 +759,7 @@ await test("RETRY5-style race: timeout-triggered child exit 1 stays BOUNDS_TIMEB
   const run = makeRunOpenCodeTask({
     probe: () => ({ available: true, executable: "opencode-x", dispatch_interface_resolved: true, capabilities: null }),
     spawnProc: killResolvingSpawn,
+    debugConfig: async () => ({ ok: true, stdout: "{}" }),
     makeTempConfig: () => "/tmp/x.json",
     removeTempConfig: () => {},
   });
