@@ -46,7 +46,7 @@ async function joinedFor(contributions, opts = {}) {
   return joinQuotaPoolState(composed, registry, { nowMs: NOW, ...opts });
 }
 
-// 1. independent reviewer chosen (glm reviewer while implementer is codex)
+// 1. independent reviewer preferred (glm reviewer while implementer is codex-ide)
 {
   const joined = await joinedFor([contribution("codex", 62), contribution("glm", 55)]);
   const d = selectQuotaAwareReviewerRoute(
@@ -58,10 +58,11 @@ async function joinedFor(contributions, opts = {}) {
     { implementer_model: "codex-ide", nowMs: NOW },
   );
   check(
-    "independent-reviewer",
-    d.ok === true && d.status === "ROUTE_SELECTED" && d.selected.route_id === "rev-codex" &&
-      d.reason_codes.includes("REVIEWER_INDEPENDENT_OF_IMPLEMENTER"),
-    JSON.stringify({ s: d.selected?.route_id, rc: d.reason_codes }),
+    "independent-reviewer-preferred",
+    d.ok === true && d.status === "ROUTE_SELECTED" && d.selected.route_id === "rev-glm" &&
+      d.reason_codes.includes("REVIEWER_INDEPENDENT_OF_IMPLEMENTER") &&
+      d.rejected_candidates.some((r) => r.reason_codes.includes("REVIEWER_INDEPENDENCE_PREFERENCE_SAME_MODEL_DEMOTED")),
+    JSON.stringify({ s: d.selected?.route_id, rc: d.reason_codes, rej: d.rejected_candidates }),
   );
 }
 
