@@ -1,5 +1,123 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_RT25_CANONICAL_CLI_AND_MIXED_ROUTE_FIX_V1` (issue #41, parent #32; continuation of the canonical-entrypoint correction, base `5322b31`)
+**Classification:** `PASS — EXISTING CLI INVOCATION SHAPES AUTOMATICALLY COMPOSE THE CANONICAL QUOTA STATE (WF61 PREPARE WITHOUT QUOTA FLAG; WF40 BRIDGE WITH CYCLE/ROUTE/STATUS ONLY); MIXED-ROUTE QUOTA NARROWING WITHOUT TEMPORAL-DEAD-ZONE (COMMERCIAL REJECTED, VALID QWEN LOCAL SURVIVES, QUOTA_POOL_NARROWED RECORDED); EXACT CLI PROOFS 31/31; LAWS A..N 104/104; CANONICAL E2E 12/12; FULL REGRESSION 38 SUITES GREEN; D-0025 UNCHANGED (CLOSED); BUGBOT_REVIEW=FINDINGS_FIXED`
+**Timestamp (local):** 2026-09-05 (late evening session)
+**BASE_HEAD:** `5322b31bcc8e98c7c39d23deb072cb0fcfd6b683` (canonical correction closure; inherited worktree from GPT-6 Astra, implementation preserved and completed — never redone/discarded)
+**CLOSURE HEAD:** final `cursor-pass: V4_RT25_CANONICAL_CLI_AND_MIXED_ROUTE_FIX_V1` commit carrying this report
+**CLOSURE:** STANDARD_RUNTIME_BUNDLE
+**HISTORICAL EVIDENCE (preserved, not rewritten):** the canonical-entrypoint correction
+report below stands as the wiring evidence; this slice closes the two residual
+blockers (existing CLI shapes not quota-aware; mixed-route narrowing dead zone)
+and hardens the denial laws found during independent review of the inherited
+diff.
+
+## Corrected truth (this slice)
+
+Two blockers closed on the REAL canonical CLIs (no new flag, no new command):
+
+1. **WF61 `prepare` (no quota flag)** — `main()` defaults `quotaStateOptions = {}`:
+   the canonical quota state composes from the standard runtime ingest lane
+   (registry-v2 + fail-closed baseline + real ingest contributions) and reaches
+   `evaluatePlannerSelection` automatically. Absent/empty/stale lanes fail
+   closed (planner `UNAVAILABLE`, `PLANNER_SELECTION_NOT_PROCEED`, exit 1);
+   fresh controlled evidence admits the preferred planner. Imported
+   `prepareCycle` callers keep the explicit opt-in boundary (absent =
+   legacy); `--quota-state-options-b64` explicit override preserved; explicit
+   INVALID options (null/false/string/array) fail closed
+   `QUOTA_STATE_COMPOSITION_FAILED` + `QUOTA_STATE_OPTIONS_INVALID` — no
+   silent legacy bypass.
+2. **WF40 bridge (cycle/route/status only)** — CLI `main()` passes
+   `{ quotaStateOptions: {} }`: the bridge composes the canonical state, the
+   canonical router runs quota-aware stage 5.5, and the ROUTER-PRODUCED
+   envelope is consumed automatically. No-evidence lanes → `NO_ROUTE` +
+   `QUOTA_POOL_BLOCKED` with the exact `CONSERVE_UNKNOWN_*` pool evaluation in
+   `quota_decision_provenance` (consumed=true); mixed lanes → commercial
+   candidate rejected, valid local candidate routed, `QUOTA_POOL_NARROWED`
+   recorded, zero exceptions.
+
+Independent review findings on the inherited diff (all fixed):
+
+- **Temporal dead zone (blocker B)** — `reasonAccum` was declared after
+  stage 5.5 pushed `QUOTA_POOL_NARROWED`: mixed-route narrowing crashed with
+  ReferenceError. Fixed by hoisting the declaration (Astra had partially
+  moved it; verified complete).
+- **Planner denial leak** — `applyQuotaPoolAdmission` mapped
+  CONSERVE_UNKNOWN_*/RESERVE_INCOMPARABLE denials to legacy `CONSERVE`, which
+  `gate_only`/`normal` policy could still PROCEED on (a denied commercial
+  pool remained selectable). Fixed: ANY admission denial → `UNAVAILABLE`,
+  original pool reason preserved in `quota_pool_refinements`.
+- **Selector evidence loss** — all-rejected decisions emitted empty
+  `pool_evaluations`, so the bridge provenance could not audit the
+  fail-closed evaluation. Fixed: pools touched by REJECTED-for-admission
+  candidates carry their denial evaluation in `pool_evaluations`.
+- **Provenance dropped on adapter failure** — `ADAPTER_REGISTRY_INVALID` /
+  `ADAPTER_NOT_REGISTERED` outcomes discarded the router-produced quota
+  provenance. Fixed: metadata survives (authorization-neutral; those
+  outcomes still fail closed, `dispatch_prepared=false`).
+
+## Proofs
+
+- `tests/rt25-canonical-cli-wiring` — **31/31** (NEW; exact WF61/WF40 CLI
+  commands in a git-tracked sandbox: absent/empty/stale/fresh ingest-lane
+  legs, fail-closed no-evidence, mixed-route narrowing to local without
+  exception, router envelope propagation through the real bridge CLI, real
+  Windows endpoint validator accept/mismatch, invalid-options bypass
+  prevention CLI+library, imported-caller legacy compatibility)
+- `tests/rt25-canonical-entrypoint-wiring` — **104/104** (laws A..N; new M
+  mixed-route narrowing across missing/stale/reserve denials; new N
+  no-legacy-fallback-can-select-a-denied-pool)
+- `tests/rt25-canonical-closed-gate-e2e` — **12/12**
+- full regression battery **38 suites green**: planner 17/17, execution-router
+  12/12, bridge 23/23, adapter-router-bridge 18/18, adapter-router 15/15,
+  adapter-registry 19/19, litellm-primary-cycle 18/18 (CLI leg now carries
+  controlled fresh GLM evidence via the real `ingestGlmQuota`), one-shot 7/7,
+  T02..T24 RT25 suites, registry-v2 64/64, qwen overlay 14/14, backlog
+  adapter 18/18, endpoint 65/65
+- `node --check` all 8 modified `.mjs`; `git diff --check` clean; D-0025
+  `enabled=false` (static); no pre-existing untracked file staged
+- **BUGBOT_REVIEW=FINDINGS_FIXED** — 2 findings, both on PRE-EXISTING
+  untracked files (debug dumps `all_files.txt`/`search_results.txt`/
+  `.cursor/debug-*.log`; live-arm scripts `tools/arm-*.sh`, `tools/n8n-*.sh`).
+  Task law forbids deleting/moving/modifying those files: they are EXCLUDED
+  from the commit (never staged), and none was executed. No finding touched
+  the committed diff.
+
+## Files (this slice)
+
+| File | Change |
+|---|---|
+| `tools/run-litellm-primary-cycle.mjs` | modified — CLI default `quotaStateOptions={}` (WF61 auto-composition); fail-closed `QUOTA_STATE_OPTIONS_INVALID` |
+| `tools/n8n-v4-execution-routing-bridge-v1.mjs` | modified — CLI `{quotaStateOptions:{}}` (WF40 auto-composition); provenance survives adapter-resolution failures |
+| `tools/evaluate-planner-selection.mjs` | modified — ANY pool-admission denial → `UNAVAILABLE` (reason kept in refinements) |
+| `tools/evaluate-execution-route.mjs` | modified — `reasonAccum` hoisted above stage 5.5 (dead-zone fix) |
+| `tools/rt25-planner-quota-aware-selector-v1.mjs` | modified — `pool_evaluations` includes denied pools' evaluation |
+| `tests/rt25-canonical-cli-wiring/` | new — exact CLI proofs (31 checks) |
+| `tests/rt25-canonical-entrypoint-wiring/` | modified — C-leg stricter law + M/N legs (104 checks) |
+| `tests/litellm-primary-cycle/run.mjs` | modified — CLI leg injects controlled fresh GLM evidence (real ingest) |
+| `docs/runtime/CURRENT_FRONTIER.md` | updated — QUOTA_AWARE_RUNTIME row (CLI wiring + fixes proven) |
+| `docs/runtime/LAST_CURSOR_REPORT.md` | updated (this section; previous report preserved as historical evidence below) |
+
+## Hard boundaries
+
+D-0025 CLOSED throughout (static proof) · no production route activation · no
+OpenAI API/BYOK/API billing · Codex subscription surfaces only · no secret
+persistence · no billing/reset/top-up · no invented quota values (controlled
+test observations only; empty/stale lanes fail closed) · no inference for
+quota discovery · no n8n live deployment/activation (live-arm scripts among
+pre-existing untracked files never executed nor staged) · no unauthorized
+model execution (endpoint legs: adapter counters 0).
+
+## Deferred / missing
+
+- GLM live quota credential absent → GLM pool CONSERVE_UNKNOWN_MISSING (fail-closed).
+- Reviewer/retry canonical boundary missing (unchanged dependency, reported in
+  the correction report below).
+
+---
+
+# HISTORICAL — V4_RT25_CANONICAL_ENTRYPOINT_INTEGRATION_CORRECTION_V1 (preserved verbatim)
+
 **BLOCK-ID:** `V4_RT25_CANONICAL_ENTRYPOINT_INTEGRATION_CORRECTION_V1` (issue #41 reopened post-AGG, parent #32)
 **Classification:** `PASS — CANONICAL PLANNER + CANONICAL EXECUTION ROUTER CONSUME THE QUOTA-POOL STATE THROUGH THE REAL CANONICAL CALL PATH; ROUTER-PRODUCED DECISION PROPAGATES TO THE n8n BRIDGE AUTOMATICALLY; CANONICAL CLOSED-GATE E2E 12/12; LAWS A..L 34/34; CONSUMER REGRESSIONS 158/158; D-0025 UNCHANGED (CLOSED)`
 **Timestamp (local):** 2026-09-05 (evening session, post-AGG correction)

@@ -135,12 +135,11 @@ async function loadRoutingValidate() {
  * quota-pool joined state (rt25-canonical-quota-state-v1 → prepareCycle).
  *
  * Law (planner boundary, D-0022-W contract order preserved):
- *   - HEALTHY stays HEALTHY only if the bound pool (if any) admits the route
- *     (fresh + within reserve). Otherwise the state degrades fail-closed:
- *     pool stale/missing/unknown → CONSERVE (conserve unknown, never invent);
- *     pool exhausted / at-below-reserve → UNAVAILABLE.
- *   - CONSERVE / UNAVAILABLE / UNKNOWN and no-pool resources are returned
- *     unchanged (legacy law already encodes their policy).
+ *   - Any pool admission denial makes the planner UNAVAILABLE for selection.
+ *     The original pool reason (including CONSERVE_UNKNOWN) stays in metadata.
+ *     Mapping denial to legacy CONSERVE would still allow gate_only/normal
+ *     selection to PROCEED and could promote an unavailable provider.
+ *   - Admitted and no-pool resources retain their original usability state.
  *   - `quota_state` absent or structurally invalid → states unchanged
  *     (legacy behavior preserved where no quota-pool metadata applies; the
  *     canonical upstream decides whether to fail closed before calling).
@@ -154,16 +153,8 @@ function applyQuotaPoolAdmission(state, quotaState, name) {
   const blocked = admission.admission;
   if (admission.admitted === true) return { state };
 
-  // Fail-closed degradation from the REAL pool evaluation only.
-  if (
-    blocked === "DENY_CONSERVE_UNKNOWN_MISSING" ||
-    blocked === "DENY_CONSERVE_UNKNOWN_STALE" ||
-    blocked === "DENY_CONSERVE_UNKNOWN_STATE" ||
-    blocked === "DENY_RESERVE_INCOMPARABLE"
-  ) {
-    return { state: "CONSERVE", reason: `QUOTA_POOL_${blocked.replace("DENY_", "")}` };
-  }
-  // POOL_EXHAUSTED / RESERVE_FLOOR_BLOCK / RESERVE_HEADROOM_INSUFFICIENT → hard stop
+  // Use the same admission result as the quota selectors; legacy willingness
+  // to spend a CONSERVE provider cannot override a canonical pool denial.
   return { state: "UNAVAILABLE", reason: `QUOTA_POOL_${blocked.replace("DENY_", "")}` };
 }
 

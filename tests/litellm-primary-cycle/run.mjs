@@ -12,6 +12,7 @@ import {
   PREPARED_SCHEMA,
   FINAL_SCHEMA,
 } from "../../tools/run-litellm-primary-cycle.mjs";
+import { ingestGlmQuota } from "../../tools/rt25-quota-ingest-glm-v1.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../..");
@@ -299,8 +300,21 @@ const CASES = [
     },
   },
   {
-    name: "prepare-cli-glm-pass",
-    run() {
+    name: "prepare-cli-glm-pass-with-controlled-quota-evidence",
+    async run() {
+      // Keep this request-shape regression independent of the runtime lane.
+      // Exact no-quota-flag WF61 commands are covered by the canonical CLI suite.
+      const nowMs = Date.now();
+      const ingest = await ingestGlmQuota({
+        mode: "manual",
+        nowMs,
+        snapshot: {
+          source: "dashboard_snapshot",
+          observed_at: new Date(nowMs).toISOString(),
+          windows: [{ window_type: "rolling", remaining: { value: 60, unit: "percent" } }],
+        },
+      });
+      if (!ingest.ok || !ingest.contribution) return "controlled quota ingest failed";
       const { proc, result } = runCli([
         "prepare",
         "--consumer-b64",
@@ -309,8 +323,11 @@ const CASES = [
         b64Json(routingGlm),
         "--profile",
         PROFILE,
+        "--quota-state-options-b64",
+        b64Json({ contributions: [ingest.contribution], nowMs }),
       ]);
       if (proc.status !== 0 || !result?.ok) return JSON.stringify(result);
+      if (result.quota_state_consumed !== true) return "canonical quota evidence not consumed";
       return null;
     },
   },

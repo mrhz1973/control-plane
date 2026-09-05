@@ -417,6 +417,12 @@ export async function evaluateExecutionRoute(request, options = {}) {
     ]);
   }
 
+  const reasonAccum = [
+    REASON_CODES.TECHNICAL_REQUIREMENTS_MATCH,
+    REASON_CODES.AVAILABLE_COMPATIBLE_ROUTE,
+    REASON_CODES.RESERVE_PROTECTED,
+  ];
+
   // 5.5 V4_RT25 quota-pool admission (canonical): every surviving candidate
   // bound to a COMMERCIAL pool must pass the REAL freshness/reserve admission
   // (rt25-reserve-admission over the normalized joined state). No-pool/local
@@ -473,12 +479,6 @@ export async function evaluateExecutionRoute(request, options = {}) {
     }
     quotaDecision = { admissionCandidates: candidates };
   }
-
-  const reasonAccum = [
-    REASON_CODES.TECHNICAL_REQUIREMENTS_MATCH,
-    REASON_CODES.AVAILABLE_COMPATIBLE_ROUTE,
-    REASON_CODES.RESERVE_PROTECTED,
-  ];
 
   // 6 cost
   const cost = filterByLowestCost(pairs, statusDoc);

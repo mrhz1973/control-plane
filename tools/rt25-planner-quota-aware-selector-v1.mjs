@@ -90,6 +90,12 @@ export function selectQuotaAwarePlannerRoute(joined, candidates, options = {}) {
         reason_codes: [admission.admission, ...(admission.reason_codes || [])],
         pool_evaluation: admission.provenance?.pool_evaluation ?? null,
       });
+      // Pool evidence audit: rejected-for-admission routes still touched their
+      // pool — the denial evaluation is exactly what downstream consumers must
+      // be able to audit (fail-closed CONSERVE_UNKNOWN_* included).
+      if (admission.pool_id && !base.pool_evaluations[admission.pool_id]) {
+        base.pool_evaluations[admission.pool_id] = joined.pools[admission.pool_id] || null;
+      }
       continue;
     }
 
@@ -124,7 +130,9 @@ export function selectQuotaAwarePlannerRoute(joined, candidates, options = {}) {
   base.status = "ROUTE_SELECTED";
   base.reason_codes = ["QUOTA_AWARE_SELECTION", `SELECTED_${String(winner.admission).toUpperCase()}`];
 
-  // pool_evaluations: one entry per pool actually touched (shared pools appear once)
+  // pool_evaluations: one entry per pool actually touched by ANY candidate's
+  // admission outcome (shared pools appear once; denied pools carry the exact
+  // fail-closed evaluation that blocked them, selected-or-not).
   for (const rec of base.admitted_candidates) {
     if (rec.quota_pool_id && !base.pool_evaluations[rec.quota_pool_id]) {
       base.pool_evaluations[rec.quota_pool_id] = joined.pools[rec.quota_pool_id] || null;

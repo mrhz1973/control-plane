@@ -253,9 +253,18 @@ export async function prepareCycle({ consumerInput, routingInput, gatewayProfile
   // canonical composition), the REAL quota-pool joined state is composed from
   // the real registry/baseline/ingest lane and handed to the canonical planner
   // evaluator. Fail-closed: requested-but-failed composition BLOCKS prepare
-  // (never silently degrades to UNKNOWN). Absent options → legacy behavior.
+  // (never silently degrades to UNKNOWN). Absent (undefined) → legacy law;
+  // PRESENT but not a plain object → fail closed (cannot bypass with
+  // null/false/string/array — no silent legacy downgrade of an explicit ask).
   let quotaStateComposer = { requested: false, quotaState: null, source: null };
-  if (quotaStateOptions && typeof quotaStateOptions === "object") {
+  if (quotaStateOptions !== undefined) {
+    if (quotaStateOptions === null || typeof quotaStateOptions !== "object" || Array.isArray(quotaStateOptions)) {
+      return failPrepare("QUOTA_STATE_COMPOSITION_FAILED", "quotaStateOptions must be a plain object when provided (fail-closed)", {
+        task_id: consumerInput.task_id,
+        consumer_b64: consumerB64,
+        quota_state_reason_codes: ["QUOTA_STATE_OPTIONS_INVALID"],
+      });
+    }
     const canonical = await composeCanonicalQuotaState(quotaStateOptions);
     if (canonical.ok !== true || !canonical.joined) {
       return failPrepare("QUOTA_STATE_COMPOSITION_FAILED", "canonical quota-state composition failed (fail-closed)", {
@@ -537,9 +546,11 @@ async function main() {
       emit(failPrepare("PROFILE_INVALID", String(err.message || err)), 1);
     }
 
-    // V4_RT25 canonical quota-state composition options (optional JSON).
-    let quotaStateOptions;
-    if (flags["quota-state-options-b64"]) {
+    // Existing WF61 commands have no quota flag: compose from the standard
+    // runtime ingest lane by default. Missing/stale evidence stays fail-closed.
+    // Imported prepareCycle callers retain the explicit legacy opt-in boundary.
+    let quotaStateOptions = {};
+    if (Object.hasOwn(flags, "quota-state-options-b64")) {
       const decoded = decodeB64Json("quota_state_options", flags["quota-state-options-b64"]);
       if (!decoded.ok) {
         emit(
@@ -556,7 +567,7 @@ async function main() {
       consumerInput: consumerDecoded.value,
       routingInput: routingDecoded.value,
       gatewayProfile,
-      ...(quotaStateOptions ? { quotaStateOptions } : {}),
+      quotaStateOptions,
     });
     emit(result, result.ok ? 0 : 1);
   }

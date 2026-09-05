@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * V4_RT25_CANONICAL_ENTRYPOINT_INTEGRATION_CORRECTION — focused tests A..L.
+ * V4_RT25_CANONICAL_ENTRYPOINT_INTEGRATION_CORRECTION — focused tests A..N.
  *
  * Proves the CANONICAL runtime entrypoints (not a manual RT25 harness) reach
  * the quota-aware implementation:
@@ -17,6 +17,8 @@
  *   J. Windows endpoint receives validated provenance (real handler)
  *   K. D-0025 remains enabled=false (static proof)
  *   L. no unauthorized model generation occurs (adapter counters)
+ *   M. mixed local/commercial candidates execute quota-pool narrowing
+ *   N. denied commercial pools cannot be selected by legacy CONSERVE policy
  *
  * Canonical invocation law: every leg drives
  *   ingest (real) → rt25-canonical-quota-state (real producer)
@@ -31,6 +33,7 @@ import { resolve, dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { ingestCodexQuotaSnapshot } from "../../tools/rt25-quota-ingest-codex-v1.mjs";
+import { ingestGlmQuota } from "../../tools/rt25-quota-ingest-glm-v1.mjs";
 import { composeCanonicalQuotaState, DEFAULT_INGEST_DIR } from "../../tools/rt25-canonical-quota-state-v1.mjs";
 import { evaluatePlannerSelection } from "../../tools/evaluate-planner-selection.mjs";
 import { prepareCycle } from "../../tools/run-litellm-primary-cycle.mjs";
@@ -242,33 +245,30 @@ const qwenReadyContribution = {
 }
 
 // ===========================================================================
-// C — stale/missing commercial pool => fail closed / conserve unknown
+// C — stale/missing commercial pool => fail closed at the planner boundary
 // ===========================================================================
 {
-  // stale: snapshot observed > STATUS_MAX_AGE_MS before NOW
-  const staleIngest = ingestCodexQuotaSnapshot(codexSnapshot(90, "2026-09-05T13:00:00.000Z"), { nowMs: NOW });
+  // Produce valid ingest evidence, then age it past STATUS_MAX_AGE_MS.
+  const observedAt = NOW - 600_000;
+  const staleIngest = ingestCodexQuotaSnapshot(codexSnapshot(90, new Date(observedAt).toISOString()), { nowMs: observedAt });
   const canonical = await composeCanonicalQuotaState({ contributions: [staleIngest.contribution], nowMs: NOW });
   // stale contribution is REJECTED by the composer → pool joins as stale evidence
   check(
     "C1-stale-pool-conserves-unknown",
-    canonical.joined.pools.chatgpt_codex_subscription?.evaluation === "CONSERVE_UNKNOWN_STALE" ||
-      canonical.joined.pools.chatgpt_codex_subscription?.evaluation === "CONSERVE_UNKNOWN_MISSING",
+    canonical.joined.pools.chatgpt_codex_subscription?.evaluation === "CONSERVE_UNKNOWN_STALE",
     JSON.stringify(canonical.joined.pools?.chatgpt_codex_subscription),
   );
   const sel = await evaluatePlannerSelection(routingInput, { quotaState: canonical.joined });
   check(
     "C2-planner-fails-closed-on-stale",
-    sel.planner_states?.codex === "CONSERVE" &&
-      (sel.reason_codes.includes("PREFERRED_CONSERVE_USED_GATE_ONLY") ||
-        sel.policy_result === "PROCEED" ||
-        sel.policy_result === "GATE"),
+    sel.planner_states?.codex === "UNAVAILABLE" &&
+      sel.policy_result === "GATE" && sel.selected === null,
     JSON.stringify({ st: sel.planner_states, pr: sel.policy_result, rc: sel.reason_codes }),
   );
-  // the gate_only policy keeps codex selected but CONSERVE semantics survive:
+  // The pool's diagnostic retains STALE; route admission is denied.
   check(
     "C3-conserve-refinement-recorded",
-    sel.quota_pool_refinements?.codex === "QUOTA_POOL_CONSERVE_UNKNOWN_STALE" ||
-      sel.quota_pool_refinements?.codex === "QUOTA_POOL_CONSERVE_UNKNOWN_MISSING",
+    sel.quota_pool_refinements?.codex === "QUOTA_POOL_CONSERVE_UNKNOWN_STALE",
     JSON.stringify(sel.quota_pool_refinements),
   );
   // missing: empty ingest lane
@@ -720,6 +720,191 @@ const qwenReadyContribution = {
     DEFAULT_INGEST_DIR.replace(/\\/g, "/").endsWith("configs/runtime/quota-ingest"),
     DEFAULT_INGEST_DIR,
   );
+}
+
+// ===========================================================================
+// M — exact stage-5.5 mixed-route narrowing (commercial denied, local survives)
+// ===========================================================================
+{
+  const mixedStatus = routerStatus();
+  mixedStatus.resources.composer.available = false;
+  mixedStatus.resources.glm.available = true;
+  mixedStatus.resources.glm.cost_mode = "included";
+
+  // Equalize only the legacy cost inputs to observe both structurally eligible,
+  // available, reserve-admitted routes reaching arbitration without quota state.
+  // The actual mixed regressions below retain the local lane's free cost.
+  const equalCostStatus = structuredClone(mixedStatus);
+  equalCostStatus.resources.opencode.cost_mode = "included";
+  equalCostStatus.resources.qwen_local.cost_mode = "included";
+  let legacySurvivors = [];
+  const legacy = await evaluateExecutionRoute(routeRequest(), {
+    registry,
+    status: equalCostStatus,
+    semanticArbiter: async ({ survivors }) => {
+      legacySurvivors = survivors;
+      return { selection: "cursor+glm", confidence: "high" };
+    },
+  });
+  check(
+    "M0-both-mixed-candidates-survive-pre-quota-stages",
+    legacy.status === "ROUTED" && legacy.execution_route?.route_id === "cursor+glm" &&
+      legacySurvivors.length === 2 && legacySurvivors.includes("cursor+glm") &&
+      legacySurvivors.includes("opencode+qwen_local"),
+    JSON.stringify({ route: legacy.execution_route?.route_id, survivors: legacySurvivors }),
+  );
+
+  for (const scenario of [
+    { name: "missing", expected: "CONSERVE_UNKNOWN_MISSING" },
+    { name: "stale", expected: "CONSERVE_UNKNOWN_STALE", percent: 80, ingestAt: NOW - 600_000 },
+    { name: "reserve", expected: "RESERVE_FLOOR_BLOCK", percent: 8, ingestAt: NOW - 120_000 },
+  ]) {
+    const contributions = [qwenReadyContribution];
+    if (scenario.percent !== undefined) {
+      // Pure manual ingest of controlled evidence; no monitor/provider call.
+      // For stale, create a valid ingest at its observation time, then let the
+      // real composer reject that aged contribution at the selection boundary.
+      const ingest = await ingestGlmQuota({
+        mode: "manual",
+        snapshot: codexSnapshot(scenario.percent, new Date(scenario.ingestAt).toISOString()),
+        nowMs: scenario.ingestAt,
+      });
+      contributions.push(ingest.contribution);
+    }
+    const canonical = await composeCanonicalQuotaState({
+      contributions,
+      nowMs: NOW,
+      ...(scenario.name === "reserve" ? {
+        reservePolicy: { glm_coding_plan: { floor_percent: 20, policy_ref: "mixed-route-test-reserve" } },
+      } : {}),
+    });
+    check(
+      `M-${scenario.name}-commercial-pool-condition`,
+      canonical.ok === true && canonical.joined.pools.glm_coding_plan?.evaluation === scenario.expected,
+      JSON.stringify(canonical.joined?.pools.glm_coding_plan),
+    );
+    const adequacy = evaluateQwenAdequacyFallback(canonical.joined, {
+      required_capabilities: ["code_generation"],
+      min_quality_tier: 2,
+    });
+    check(
+      `M-${scenario.name}-local-available-unmetered-adequate`,
+      canonical.joined.resources.qwen_local?.resource_available === true &&
+        canonical.joined.resources.qwen_local?.quota_pool_id === null && adequacy.adequate === true,
+      JSON.stringify(adequacy.reason_codes),
+    );
+
+    let out;
+    let routeError = null;
+    try {
+      out = await evaluateExecutionRoute(routeRequest(), { registry, status: mixedStatus, quotaState: canonical.joined });
+    } catch (err) {
+      routeError = err;
+    }
+    check(
+      `M-${scenario.name}-mixed-narrowing-no-exception-local-selected`,
+      routeError === null && out?.status === "ROUTED" &&
+        out.execution_route?.route_id === "opencode+qwen_local" && out.arbiter_call_count === 0,
+      routeError ? String(routeError) : JSON.stringify(out?.execution_route),
+    );
+    check(
+      `M-${scenario.name}-quota-narrowing-branch-recorded`,
+      out?.reason_codes.includes("QUOTA_POOL_NARROWED") === true &&
+        out.execution_route?.reason_codes.includes("QUOTA_POOL_NARROWED") === true,
+      JSON.stringify(out?.reason_codes),
+    );
+    const decision = out?.quota_decision;
+    check(
+      `M-${scenario.name}-router-envelope-matches-final-route-and-rejection`,
+      decision?.ok === true && decision.selected?.route_id === out.execution_route?.route_id &&
+        decision.selected?.model === out.execution_route?.model && decision.selected?.quota_pool_id === null &&
+        decision.selected?.admission === "ADMIT_NO_POOL" && decision.admitted_candidates.length === 1 &&
+        decision.admitted_candidates[0].route_id === "opencode+qwen_local" &&
+        decision.rejected_candidates.length === 1 && decision.rejected_candidates[0].route_id === "cursor+glm" &&
+        decision.rejected_candidates[0].reason_codes.includes(scenario.expected),
+      JSON.stringify({ selected: decision?.selected?.route_id, rejected: decision?.rejected_candidates }),
+    );
+  }
+}
+
+// ===========================================================================
+// N — no legacy fallback policy may turn denied quota evidence into a route
+// ===========================================================================
+{
+  const rawRemoteStates = {
+    healthy: { available: true, quota_state: "healthy" },
+    conserve: { available: true, quota_state: "conserve" },
+    unavailable: { available: false, quota_state: "healthy" },
+    unknown: { available: "unknown", quota_state: "unknown" },
+  };
+  const observedAt = NOW - 600_000;
+  const agedSnapshot = codexSnapshot(80, new Date(observedAt).toISOString());
+  const staleCodex = ingestCodexQuotaSnapshot(agedSnapshot, { nowMs: observedAt });
+  const staleGlm = await ingestGlmQuota({ mode: "manual", snapshot: agedSnapshot, nowMs: observedAt });
+
+  for (const scenario of [
+    { name: "missing", expected: "CONSERVE_UNKNOWN_MISSING", contributions: [] },
+    { name: "stale", expected: "CONSERVE_UNKNOWN_STALE", contributions: [staleCodex.contribution, staleGlm.contribution] },
+  ]) {
+    const canonical = await composeCanonicalQuotaState({
+      contributions: [qwenReadyContribution, ...scenario.contributions],
+      nowMs: NOW,
+    });
+    check(
+      `N-${scenario.name}-both-commercial-pools-denied`,
+      canonical.ok === true &&
+        canonical.joined.pools.chatgpt_codex_subscription?.evaluation === scenario.expected &&
+        canonical.joined.pools.glm_coding_plan?.evaluation === scenario.expected,
+      JSON.stringify(canonical.joined?.pools),
+    );
+    for (const preferred of ["codex", "glm"]) {
+      const other = preferred === "codex" ? "glm" : "codex";
+      for (const fallbackPolicy of ["normal", "equivalent_or_gate", "gate_only"]) {
+        for (const [rawName, rawState] of Object.entries(rawRemoteStates)) {
+          const selection = await evaluatePlannerSelection({
+            ...routingInput,
+            preferred,
+            fallback: [other],
+            fallback_policy: fallbackPolicy,
+            provider_state: { qwen: { available: false, resource_pressure: "low" }, codex: rawState, glm: rawState },
+          }, { quotaState: canonical.joined });
+          check(
+            `N-${scenario.name}-${preferred}-${fallbackPolicy}-raw-${rawName}-blocked`,
+            selection.policy_result === "GATE" && selection.selected === null && selection.fallback_used === false &&
+              selection.planner_states?.codex === "UNAVAILABLE" && selection.planner_states?.glm === "UNAVAILABLE" &&
+              selection.quota_pool_state_consumed === true &&
+              selection.quota_pool_refinements?.codex === `QUOTA_POOL_${scenario.expected}` &&
+              selection.quota_pool_refinements?.glm === `QUOTA_POOL_${scenario.expected}`,
+            JSON.stringify({ policy: selection.policy_result, selected: selection.selected, states: selection.planner_states }),
+          );
+        }
+      }
+
+      const adequacy = evaluateQwenAdequacyFallback(canonical.joined, {
+        required_capabilities: ["planning"],
+        min_quality_tier: 2,
+      });
+      const localFallback = await evaluatePlannerSelection({
+        ...routingInput,
+        preferred,
+        fallback: [other, "qwen"],
+        fallback_policy: "normal",
+        provider_state: {
+          qwen: { available: true, resource_pressure: "low" },
+          codex: rawRemoteStates.healthy,
+          glm: rawRemoteStates.healthy,
+        },
+      }, { quotaState: canonical.joined });
+      check(
+        `N-${scenario.name}-${preferred}-normal-adequate-local-fallback`,
+        adequacy.adequate === true && canonical.joined.resources.qwen_local?.resource_available === true &&
+          localFallback.policy_result === "PROCEED" && localFallback.selected === "qwen" &&
+          localFallback.fallback_used === true && localFallback.planner_states?.codex === "UNAVAILABLE" &&
+          localFallback.planner_states?.glm === "UNAVAILABLE" && localFallback.planner_states?.qwen === "HEALTHY",
+        JSON.stringify({ adequate: adequacy.adequate, selected: localFallback.selected, states: localFallback.planner_states }),
+      );
+    }
+  }
 }
 
 const failed = results.filter((r) => !r.pass);

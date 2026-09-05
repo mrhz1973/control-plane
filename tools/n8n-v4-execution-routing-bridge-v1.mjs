@@ -324,6 +324,10 @@ export async function runN8nExecutionRoutingBridge(inputs, options = {}) {
       model: route.model,
       classification: "ADAPTER_REGISTRY_INVALID",
       reason_codes: ["ADAPTER_REGISTRY_INVALID", ...registryValid.reason_codes],
+      // V4_RT25: adapter resolution failing downstream never discards the
+      // canonical router-produced quota provenance (metadata survives).
+      quota_decision_consumed: quotaProvenanceSource.consumed,
+      quota_decision_provenance: quotaProvenanceSource.provenance,
     });
   }
 
@@ -342,6 +346,10 @@ export async function runN8nExecutionRoutingBridge(inputs, options = {}) {
       model: route.model,
       classification: "ADAPTER_NOT_REGISTERED",
       reason_codes: ["ADAPTER_NOT_REGISTERED", `ROUTE:${route.route_id}`],
+      // V4_RT25: same law as ADAPTER_REGISTRY_INVALID — the canonical
+      // router-produced quota provenance is metadata, never discarded.
+      quota_decision_consumed: quotaProvenanceSource.consumed,
+      quota_decision_provenance: quotaProvenanceSource.provenance,
     });
   }
 
@@ -419,11 +427,16 @@ if (isMain) {
     process.exit(0);
   }
 
-  runN8nExecutionRoutingBridge({
-    cycle_result: cycleRes.value,
-    route_request: routeReq.value,
-    status: statusRes.value,
-  })
+  // Existing WF40 three-input commands always compose canonical quota state
+  // from the standard runtime ingest lane. Imported callers remain opt-in.
+  runN8nExecutionRoutingBridge(
+    {
+      cycle_result: cycleRes.value,
+      route_request: routeReq.value,
+      status: statusRes.value,
+    },
+    { quotaStateOptions: {} },
+  )
     .then((r) => {
       process.stdout.write(`${JSON.stringify(r)}\n`);
     })
