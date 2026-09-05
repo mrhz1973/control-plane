@@ -1,43 +1,77 @@
 ﻿# LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_QUOTA_SOURCE_DISCOVERY_NON_INFERENCE_V1` (issue #40, parent track #32)
-**Classification:** `PASS — DISCOVERY ONLY; CODEX=MANUAL_DASHBOARD_ONLY; GLM=MACHINE_STATUS_SOURCE_CONFIRMED (CREDENTIAL PRECONDITION ABSENT); ZERO INFERENCE; RUNTIME UNCHANGED`
-**Timestamp (local):** 2026-09-05 ~16:5x
-**Base HEAD:** `4b49c37154934c319da991abf302d0718abab9e1` (= origin/main; ff-only sync from `4186660` after verified ancestry — the #39 closure pointer commit)
+**BLOCK-ID:** `V4_RUNTIME_25_TASK_QUOTA_AWARE_CAMPAIGN_V1` (issue #41, parent #32)
+**Classification:** `PASS — 25/25 RUNTIME TASKS COMPLETED (T01 inherited PASS + T02..T25 executed); QUOTA-AWARE CHAIN WIRED END-TO-END BEHIND CLOSED GATE; 1 DEFERRED (GLM live credential); D-0025 UNCHANGED (CLOSED)`
+**Timestamp (local):** 2026-09-05 (afternoon/evening session)
+**Base HEAD:** `4c8fdc21de44d6c38b2b09a67483ad40a8a942d6` (canonical campaign start; Task 01 already PASS, issue #40 already CLOSED)
+**CLOSURE HEAD:** final `cursor-pass: V4_RUNTIME_25_TASK_QUOTA_AWARE_CAMPAIGN_V1` commit carrying this report
 **CLOSURE:** STANDARD_RUNTIME_BUNDLE
 
-## Discovery verdicts (exactly one per pool)
+## What was wired (REAL runtime chain, no parallel offline lab)
 
-| Pool | Verdict | Core evidence |
-|---|---|---|
-| `chatgpt_codex_subscription` | **MANUAL_DASHBOARD_ONLY** | Codex CLI 0.133.0 full subcommand census: no usage/status/quota headless command; `codex doctor --json` (redacted machine-readable, non-generative per help) = install/config/auth diagnostics only, zero quota fields; `/status`+`/usage` are interactive-TUI-only per official reference and `/usage` couples view with rate-limit reset redemption (excluded by law); `login status` = auth-only (`Logged in using ChatGPT`); local DBs (`threads.tokens_used`) = historical session tokens, never remaining/reset |
-| `glm_coding_plan` | **MACHINE_STATUS_SOURCE_CONFIRMED** | Official Z.AI usage-query plugin + documented `GET /api/monitor/usage/quota/limit` JSON (limits[]: window, usage, remaining, nextResetTime, plan level); bounded live no-auth probe: api.z.ai → HTTP 200, open.bigmodel.cn → HTTP 200 (2 GETs, no body capture); credential ABSENT in process/User/Machine scopes → collector implementable only after operator key gate + separately governed authorization task |
+```
+RESOURCE_STATUS
+  → rt25-quota-ingest-codex / rt25-quota-ingest-glm (real composer contributions, fail-closed)
+  → runtime composer (compose-v4-resource-status-control-plane-v1, untouched consumer)
+  → rt25-quota-state-join (MODEL/ROLE → ACCESS SURFACE → QUOTA_POOL → STATUS)
+  → rt25-quota-freshness-enforcement + rt25-reserve-admission + rt25-economics-metadata
+  → planner selector (T08) / execution TASK-DELTA selector (T09)
+  → codex subscription eligibility (T10) / GLM 5.3-vs-Flash shared pool (T11)
+  → qwen adequacy fallback (T12) / quality guard (T13) / urgency-defer guard (T14)
+  → reasoning-speed metadata (T15) / decision audit planner+execution (T16/T17, JSONL SHA256)
+  → reviewer selector with independence preference (T18) / retry selector with fresh recompute
+    + scarce-pool protection (T19)
+  → Execution Packet route/quota provenance (T20, authorization-neutral)
+  → n8n runtime bridge consumption (T21, quota_decision → result provenance, invalid = fail-closed)
+  → Windows execution endpoint validation (T22, provenance scope-checked BEFORE authorization)
+  → runtime status/observability visibility (T23, read-only, degraded components explicit)
+  → CLOSED-GATE E2E PROOF (T24, 23/23) with D-0025 still CLOSED
+```
+
+## Proof highlights (T24, all on real modules, zero real generation)
+
+- quota metadata propagates end-to-end (composer → join → selector → provenance → bridge → endpoint result)
+- stale AND missing quota fail closed at the selector; provenance explicitly absent (`NO_ROUTE_SELECTED`)
+- reserve floor blocks pool and route at the boundary
+- shared pool (`glm_coding_plan` via 5.3 + Flash) single-admission, never double-counted
+- quality guard passes adequate high-risk selection and vetoes tier-downgraded selection
+- production admission remains BLOCKED without ACTIVE authorization: endpoint → `AUTHORIZATION_REJECTED`, adapter/occupancy calls = 0
+- authorized offline leg (mocked runner): real ledger → real registry ACTIVE→SPENT → occupancy → single bounded execution; provenance rides the result
+- D-0025 gate state unchanged (`enabled=false`)
 
 ## Method compliance
 
-Zero model inference (no Codex prompt, no GLM call) · zero OpenAI API/BYOK
-(`OPENAI_API_KEY` absent; nothing introduced) · zero billing/account mutation (GET-only;
-`/usage` reset path untouched) · zero secrets read or persisted (env presence checks =
-names only; DB schema census = table/column names only) · Codex/GLM classified
-independently · every collector source evidenced via help/official docs/live probe —
-nothing guessed · runtime/n8n/router/registry/production untouched ·
-CURRENT_FRONTIER untouched (no collector implemented, nothing live-canonical).
+Zero OpenAI API/BYOK (subscription-only structural eligibility) · zero inference for quota
+discovery (all values from operator snapshots/monitor contracts; visibility module read-only) ·
+zero secret persistence (audit writer secret-scan fail-closed) · zero billing/reset/top-up ·
+no reset/rebase/force-push/stash/clean · per-task: tracked-clean → fetch → HEAD==origin/main →
+implement → focused tests → `git diff --check` → selective stage → `cursor-pass:` commit → push →
+remote verify · every commit remote-verified (HEAD == origin/main at each task close).
 
-## Automatic freshness-governed collection implementable now?
+## Deferred evidence (1)
 
-- **Codex: NO** — no machine source exists today; manual dashboard snapshot via the
-  #39 phase-1 translator remains the only path and fails closed when stale. Future
-  options (NOT authorized here): a future Codex CLI usage subcommand, or a separately
-  governed TUI/backend integration.
-- **GLM: after operator gate** — endpoint + payload shape machine-confirmed, but the
-  account API key is absent everywhere checked; provisioning the key and authorizing a
-  source-specific collector are separate governed decisions (fail-closed today).
+- **GLM live quota credential absent** — monitor endpoint machine-confirmed (#40) but key not
+  provisioned. GLM ingest emits explicit UNKNOWN/fail-closed; join/selector/visibility degrade
+  explicitly. No invented values; no secret requested/persisted. Continue-where-structural law applied.
+
+## CURRENT_FRONTIER update (T25)
+
+New row `QUOTA_AWARE_RUNTIME` — states proven only: quota-aware selection chain
+**RUNTIME_WIRED_BEHIND_CLOSED_GATE**; closed-gate E2E **PROVEN (T24 23/23)**;
+GLM live collector **BLOCKED_EVIDENCE** (credential); no LIVE claim (no production
+route activation; D-0025 CLOSED; no ACTIVE authorization).
 
 ## Files
 
 | File | Change |
 |---|---|
-| `reports/architecture/v4_quota_source_discovery_non_inference_v1.md` | new — full evidence report |
+| `tools/rt25-*.mjs` (22 runtime modules T02..T23) | new — quota-aware chain segments |
+| `tools/n8n-v4-execution-routing-bridge-v1.mjs` | modified — optional `quota_decision` consumption, fail-closed |
+| `tools/serve-v4-windows-local-execution-endpoint-v1.mjs` | modified — provenance validation/propagation |
+| `docs/contracts/v4-windows-local-execution-endpoint-v1.request.schema.json` | modified — optional `route_quota_provenance` request block |
+| `tests/rt25-t02..t24` (23 focused suites) | new — per-task runtime proofs |
+| `reports/architecture/v4_rt25_quota_aware_runtime_wiring_closure_v1.md` | new — T25 readiness closure ledger |
+| `docs/runtime/CURRENT_FRONTIER.md` | updated — `QUOTA_AWARE_RUNTIME` row (proven states only) |
 | `docs/runtime/LAST_CURSOR_REPORT.md` | updated (this file) |
 
 EXECUTOR_END_HEAD = the `cursor-pass:` commit carrying this report.
