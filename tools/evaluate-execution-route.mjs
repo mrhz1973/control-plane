@@ -85,7 +85,7 @@ function noRoute(requestId, reasonCodes, arbitration = null, arbiterCallCount = 
   };
 }
 
-function routed(requestId, route, arbitration, reasonCodes, arbiterCallCount) {
+function routed(requestId, route, arbitration, reasonCodes, arbiterCallCount, quotaDecision = null) {
   return {
     schema_version: RESULT_SCHEMA,
     request_id: requestId,
@@ -94,7 +94,32 @@ function routed(requestId, route, arbitration, reasonCodes, arbiterCallCount) {
     arbitration,
     reason_codes: [...new Set(reasonCodes)],
     arbiter_call_count: arbiterCallCount,
+    // V4_RT25_CANONICAL_ENTRYPOINT_INTEGRATION: quota-aware decision envelope
+    // produced INSIDE the canonical router (reuses selectQuotaAwareExecutionRoute
+    // — one law with the planner/reviewer/retry boundaries). Null when no
+    // canonical quota-pool state was supplied (legacy behavior preserved).
+    ...(quotaDecision ? { quota_decision: quotaDecision } : {}),
   };
+}
+
+/** RT25 execution decision envelope builder import (lazy-free top-level). */
+import { selectQuotaAwareExecutionRoute } from "./rt25-execution-quota-aware-selector-v1.mjs";
+import { isValidQuotaState } from "./rt25-canonical-quota-state-v1.mjs";
+
+/**
+ * Build the FINAL RT25 envelope mirroring the router's own final route: the
+ * same admission law re-run over the same joined state with the router's
+ * winning pair at rank 1, so envelope.selected ALWAYS equals the router's
+ * execution_route (never a parallel ranking).
+ */
+function finalizeQuotaDecision(quotaState, admissionCandidates, finalPair, req) {
+  const finalCandidates = admissionCandidates.map((c) =>
+    c.route_id === finalPair.route_id ? { ...c, select_rank: 1 } : { ...c, select_rank: 2 },
+  );
+  return selectQuotaAwareExecutionRoute(quotaState, finalCandidates, {
+    request_id: req.request_id,
+    execution_kind: "implementation",
+  });
 }
 
 export function validateRouteRequest(input) {
@@ -351,6 +376,12 @@ export async function evaluateExecutionRoute(request, options = {}) {
     return noRoute(req.request_id, [REASON_CODES.INVALID_INPUT]);
   }
 
+  // V4_RT25_CANONICAL_ENTRYPOINT_INTEGRATION: the canonical router consumes
+  // the normalized quota-pool state (freshness/reserve/economics) when the
+  // caller (the n8n bridge / the canonical producer) supplies it. Absent or
+  // structurally invalid → legacy v1 law unchanged (no quota-pool metadata).
+  const quotaState = isValidQuotaState(options.quotaState) ? options.quotaState : null;
+
   // 1 + 3 technical + compatibility derivation
   const derived = deriveCandidatePairs(registry, req.technical_requirements);
   if (derived.stageFail === REASON_CODES.NO_TECHNICAL_ROUTE) {
@@ -384,6 +415,63 @@ export async function evaluateExecutionRoute(request, options = {}) {
       REASON_CODES.TECHNICAL_REQUIREMENTS_MATCH,
       REASON_CODES.RESERVE_BLOCKED,
     ]);
+  }
+
+  // 5.5 V4_RT25 quota-pool admission (canonical): every surviving candidate
+  // bound to a COMMERCIAL pool must pass the REAL freshness/reserve admission
+  // (rt25-reserve-admission over the normalized joined state). No-pool/local
+  // lanes pass through (ADMIT_NO_POOL). When quota state is absent this stage
+  // is skipped (legacy law). The FINAL envelope is emitted after the router's
+  // own selection law so the envelope's selected route ALWAYS mirrors the
+  // router's final execution_route (never a parallel ranking).
+  let quotaDecision = null;
+  if (quotaState) {
+    const candidates = pairs.map((p, index) => ({
+      route_id: p.route_id,
+      resource_id: p.model,
+      model: p.model,
+      access_surface:
+        registry.models && registry.models[p.model]?.default_access_surface
+          ? registry.models[p.model].default_access_surface
+          : registry.resources?.[p.model]?.default_access_surface ?? null,
+      select_rank: index + 1,
+    }));
+    const admissionDecision = selectQuotaAwareExecutionRoute(quotaState, candidates, {
+      request_id: req.request_id,
+      execution_kind: "implementation",
+    });
+    const admittedRouteIds = new Set(
+      (admissionDecision.admitted_candidates || []).map((c) => c.route_id),
+    );
+    const before = pairs.length;
+    pairs = pairs.filter((p) => admittedRouteIds.has(p.route_id));
+    if (pairs.length === 0) {
+      const poolReasons = (admissionDecision.rejected_candidates || [])
+        .flatMap((r) => r.reason_codes)
+        .filter((c) =>
+          String(c).startsWith("CONSERVE_") ||
+          String(c) === "POOL_EXHAUSTED" ||
+          String(c) === "RESERVE_FLOOR_BLOCK" ||
+          String(c) === "RESERVE_INCOMPARABLE_UNIT" ||
+          String(c) === "RESERVE_HEADROOM_INSUFFICIENT" ||
+          String(c) === "QUOTA_POOL_UNKNOWN",
+        );
+      return {
+        ...noRoute(
+          req.request_id,
+          [
+            REASON_CODES.TECHNICAL_REQUIREMENTS_MATCH,
+            "QUOTA_POOL_BLOCKED",
+            ...(poolReasons.length ? [...new Set(poolReasons)] : ["ALL_CANDIDATES_REJECTED"]),
+          ],
+        ),
+        quota_decision: admissionDecision,
+      };
+    }
+    if (pairs.length < before) {
+      reasonAccum.push("QUOTA_POOL_NARROWED");
+    }
+    quotaDecision = { admissionCandidates: candidates };
   }
 
   const reasonAccum = [
@@ -423,6 +511,9 @@ export async function evaluateExecutionRoute(request, options = {}) {
       { required: false, used: false, arbiter: null },
       reasonAccum,
       0,
+      quotaDecision
+        ? finalizeQuotaDecision(quotaState, quotaDecision.admissionCandidates, p, req)
+        : null,
     );
   }
 
@@ -497,6 +588,9 @@ export async function evaluateExecutionRoute(request, options = {}) {
     { required: true, used: true, arbiter: "qwen_local" },
     finalReasons,
     1,
+    quotaDecision
+      ? finalizeQuotaDecision(quotaState, quotaDecision.admissionCandidates, chosen, req)
+      : null,
   );
 }
 

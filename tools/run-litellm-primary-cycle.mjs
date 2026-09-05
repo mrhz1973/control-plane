@@ -17,6 +17,7 @@ import {
   buildPacketCensus,
   completePrimaryRemotePacketSourceFields,
 } from "./complete-primary-remote-packet-source-fields.mjs";
+import { composeCanonicalQuotaState } from "./rt25-canonical-quota-state-v1.mjs";
 
 export const PREPARED_SCHEMA = "litellm-primary-cycle-prepared-v1";
 export const FINAL_SCHEMA = "litellm-primary-cycle-final-v1";
@@ -237,7 +238,7 @@ function extractPacketFromResponse(response) {
   return { ok: true, packet: parsed.value };
 }
 
-export async function prepareCycle({ consumerInput, routingInput, gatewayProfile }) {
+export async function prepareCycle({ consumerInput, routingInput, gatewayProfile, quotaStateOptions }) {
   const consumerB64 = Buffer.from(JSON.stringify(consumerInput), "utf8").toString("base64");
   const policy = enforceD0025Policy(consumerInput, routingInput);
   if (!policy.ok) {
@@ -247,7 +248,28 @@ export async function prepareCycle({ consumerInput, routingInput, gatewayProfile
     });
   }
 
-  const selection = await evaluatePlannerSelection(routingInput);
+  // V4_RT25_CANONICAL_ENTRYPOINT_INTEGRATION — canonical upstream composition
+  // point: when the caller supplies quotaStateOptions (or asks for the default
+  // canonical composition), the REAL quota-pool joined state is composed from
+  // the real registry/baseline/ingest lane and handed to the canonical planner
+  // evaluator. Fail-closed: requested-but-failed composition BLOCKS prepare
+  // (never silently degrades to UNKNOWN). Absent options → legacy behavior.
+  let quotaStateComposer = { requested: false, quotaState: null, source: null };
+  if (quotaStateOptions && typeof quotaStateOptions === "object") {
+    const canonical = await composeCanonicalQuotaState(quotaStateOptions);
+    if (canonical.ok !== true || !canonical.joined) {
+      return failPrepare("QUOTA_STATE_COMPOSITION_FAILED", "canonical quota-state composition failed (fail-closed)", {
+        task_id: consumerInput.task_id,
+        consumer_b64: consumerB64,
+        quota_state_reason_codes: canonical.reason_codes,
+      });
+    }
+    quotaStateComposer = { requested: true, quotaState: canonical.joined, source: canonical };
+  }
+
+  const selection = await evaluatePlannerSelection(routingInput, {
+    ...(quotaStateComposer.quotaState ? { quotaState: quotaStateComposer.quotaState } : {}),
+  });
   if (selection.policy_result !== "PROCEED") {
     return failPrepare("PLANNER_SELECTION_NOT_PROCEED", "planner selection did not PROCEED", {
       task_id: consumerInput.task_id,
@@ -311,6 +333,14 @@ export async function prepareCycle({ consumerInput, routingInput, gatewayProfile
     selected_planner: selection.selected,
     request_envelope: envelope,
     consumer_b64: consumerB64,
+    // V4_RT25 canonical quota provenance (authorization-neutral metadata).
+    ...(quotaStateComposer.requested
+      ? {
+          quota_state_consumed: true,
+          quota_pool_reason_codes: selection.quota_pool_reason_codes || [],
+          quota_pool_refinements: selection.quota_pool_refinements || {},
+        }
+      : { quota_state_consumed: false }),
   };
 }
 
@@ -507,10 +537,26 @@ async function main() {
       emit(failPrepare("PROFILE_INVALID", String(err.message || err)), 1);
     }
 
+    // V4_RT25 canonical quota-state composition options (optional JSON).
+    let quotaStateOptions;
+    if (flags["quota-state-options-b64"]) {
+      const decoded = decodeB64Json("quota_state_options", flags["quota-state-options-b64"]);
+      if (!decoded.ok) {
+        emit(
+          failPrepare(decoded.classification, decoded.reason, {
+            task_id: consumerDecoded.value.task_id ?? null,
+          }),
+          1,
+        );
+      }
+      quotaStateOptions = decoded.value;
+    }
+
     const result = await prepareCycle({
       consumerInput: consumerDecoded.value,
       routingInput: routingDecoded.value,
       gatewayProfile,
+      ...(quotaStateOptions ? { quotaStateOptions } : {}),
     });
     emit(result, result.ok ? 0 : 1);
   }

@@ -15,6 +15,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { resolveAjvModules, ROOT } from "./validate-execution-packet-v1.mjs";
+import { admitRouteWithReserve } from "./rt25-reserve-admission-v1.mjs";
+import { isValidQuotaState } from "./rt25-canonical-quota-state-v1.mjs";
 
 export const ROUTING_INPUT_SCHEMA_PATH = resolve(
   ROOT,
@@ -126,10 +128,51 @@ async function loadRoutingValidate() {
 }
 
 /**
+ * V4_RT25_CANONICAL_ENTRYPOINT_INTEGRATION — quota-pool-aware refinement.
+ *
+ * Applies the REAL RT25 reserve/freshness admission law to the canonical
+ * planner states when the upstream canonical producer supplied the normalized
+ * quota-pool joined state (rt25-canonical-quota-state-v1 → prepareCycle).
+ *
+ * Law (planner boundary, D-0022-W contract order preserved):
+ *   - HEALTHY stays HEALTHY only if the bound pool (if any) admits the route
+ *     (fresh + within reserve). Otherwise the state degrades fail-closed:
+ *     pool stale/missing/unknown → CONSERVE (conserve unknown, never invent);
+ *     pool exhausted / at-below-reserve → UNAVAILABLE.
+ *   - CONSERVE / UNAVAILABLE / UNKNOWN and no-pool resources are returned
+ *     unchanged (legacy law already encodes their policy).
+ *   - `quota_state` absent or structurally invalid → states unchanged
+ *     (legacy behavior preserved where no quota-pool metadata applies; the
+ *     canonical upstream decides whether to fail closed before calling).
+ */
+function applyQuotaPoolAdmission(state, quotaState, name) {
+  if (!quotaState || !quotaState.resources) return { state };
+  const binding = quotaState.resources[name];
+  if (!binding || binding.quota_pool_id === null) return { state }; // no commercial pool: legacy law
+
+  const admission = admitRouteWithReserve(quotaState, name);
+  const blocked = admission.admission;
+  if (admission.admitted === true) return { state };
+
+  // Fail-closed degradation from the REAL pool evaluation only.
+  if (
+    blocked === "DENY_CONSERVE_UNKNOWN_MISSING" ||
+    blocked === "DENY_CONSERVE_UNKNOWN_STALE" ||
+    blocked === "DENY_CONSERVE_UNKNOWN_STATE" ||
+    blocked === "DENY_RESERVE_INCOMPARABLE"
+  ) {
+    return { state: "CONSERVE", reason: `QUOTA_POOL_${blocked.replace("DENY_", "")}` };
+  }
+  // POOL_EXHAUSTED / RESERVE_FLOOR_BLOCK / RESERVE_HEADROOM_INSUFFICIENT → hard stop
+  return { state: "UNAVAILABLE", reason: `QUOTA_POOL_${blocked.replace("DENY_", "")}` };
+}
+
+/**
  * Evaluate planner-routing-input-v1 object.
  * Does not write stdout or exit.
+ * options.quotaState — optional canonical rt25 quota-pool joined state.
  */
-export async function evaluatePlannerSelection(input) {
+export async function evaluatePlannerSelection(input, options = {}) {
   const taskId =
     input && typeof input === "object" && typeof input.task_id === "string"
       ? input.task_id
@@ -191,14 +234,37 @@ export async function evaluatePlannerSelection(input) {
     });
   }
 
-  const states = {
+  const rawStates = {
     qwen: plannerState("qwen", input.provider_state),
     glm: plannerState("glm", input.provider_state),
     codex: plannerState("codex", input.provider_state),
   };
+  // V4_RT25_CANONICAL_ENTRYPOINT_INTEGRATION: refine planner states with the
+  // REAL quota-pool admission law when the canonical upstream supplied the
+  // joined quota state. Absent/invalid state → legacy semantics unchanged.
+  const quotaState = isValidQuotaState(options.quotaState) ? options.quotaState : null;
+  const quotaRefinements = {};
+  const states = {};
+  for (const [name, raw] of Object.entries(rawStates)) {
+    const refined = quotaState ? applyQuotaPoolAdmission(raw, quotaState, name) : { state: raw };
+    states[name] = refined.state;
+    if (refined.reason) quotaRefinements[name] = refined.reason;
+  }
   const prefState = states[input.preferred];
   const fallbackList = Array.isArray(input.fallback) ? input.fallback : [];
   const policy = input.fallback_policy;
+  // Quota-pool provenance: expose the refinements + state source in every
+  // result that carries planner_states (authorization-neutral metadata).
+  const plannerStatesMeta = () => ({
+    planner_states: states,
+    ...(quotaState
+      ? {
+          quota_pool_state_consumed: true,
+          quota_pool_refinements: quotaRefinements,
+          quota_pool_reason_codes: Object.values(quotaRefinements),
+        }
+      : { quota_pool_state_consumed: false }),
+  });
 
   // B. Preferred HEALTHY
   if (prefState === "HEALTHY") {
@@ -212,7 +278,7 @@ export async function evaluatePlannerSelection(input) {
       complexity: input.complexity_hint,
       policy_result: "PROCEED",
       reason_codes: [],
-      planner_states: states,
+      ...plannerStatesMeta(),
     });
   }
 
@@ -229,7 +295,7 @@ export async function evaluatePlannerSelection(input) {
         complexity: input.complexity_hint,
         policy_result: "PROCEED",
         reason_codes: ["PREFERRED_CONSERVE_USED_GATE_ONLY"],
-        planner_states: states,
+        ...plannerStatesMeta(),
       });
     }
     if (policy === "equivalent_or_gate") {
@@ -243,7 +309,7 @@ export async function evaluatePlannerSelection(input) {
         complexity: input.complexity_hint,
         policy_result: "PROCEED",
         reason_codes: ["PREFERRED_CONSERVE_USED_NO_EQUIVALENCE_FALLBACK"],
-        planner_states: states,
+        ...plannerStatesMeta(),
       });
     }
     if (policy === "normal") {
@@ -259,7 +325,7 @@ export async function evaluatePlannerSelection(input) {
             complexity: input.complexity_hint,
             policy_result: "PROCEED",
             reason_codes: ["PREFERRED_QUOTA_CONSERVE"],
-            planner_states: states,
+            ...plannerStatesMeta(),
           });
         }
       }
@@ -273,7 +339,7 @@ export async function evaluatePlannerSelection(input) {
         complexity: input.complexity_hint,
         policy_result: "PROCEED",
         reason_codes: ["PREFERRED_CONSERVE_NO_HEALTHY_FALLBACK"],
-        planner_states: states,
+        ...plannerStatesMeta(),
       });
     }
   }
@@ -300,7 +366,7 @@ export async function evaluatePlannerSelection(input) {
             ? "HIGH_RISK_PREFERRED_UNAVAILABLE"
             : "HIGH_RISK_PREFERRED_UNKNOWN",
         ],
-        planner_states: states,
+        ...plannerStatesMeta(),
       });
     }
 
@@ -319,7 +385,7 @@ export async function evaluatePlannerSelection(input) {
             ? "PREFERRED_UNAVAILABLE_GATE_ONLY"
             : "PREFERRED_UNKNOWN_GATE_ONLY",
         ],
-        planner_states: states,
+        ...plannerStatesMeta(),
       });
     }
 
@@ -334,7 +400,7 @@ export async function evaluatePlannerSelection(input) {
         complexity: input.complexity_hint,
         policy_result: "GATE",
         reason_codes: ["EQUIVALENCE_ATTESTATION_UNAVAILABLE"],
-        planner_states: states,
+        ...plannerStatesMeta(),
       });
     }
 
@@ -368,7 +434,7 @@ export async function evaluatePlannerSelection(input) {
           complexity: input.complexity_hint,
           policy_result: "PROCEED",
           reason_codes: [preferredReason],
-          planner_states: states,
+          ...plannerStatesMeta(),
         });
       }
       return baseResult({
@@ -381,7 +447,7 @@ export async function evaluatePlannerSelection(input) {
         complexity: input.complexity_hint,
         policy_result: "GATE",
         reason_codes: ["NO_USABLE_PLANNER"],
-        planner_states: states,
+        ...plannerStatesMeta(),
       });
     }
   }
@@ -397,7 +463,7 @@ export async function evaluatePlannerSelection(input) {
     complexity: input.complexity_hint,
     policy_result: "GATE",
     reason_codes: ["NO_USABLE_PLANNER"],
-    planner_states: states,
+    ...plannerStatesMeta(),
   });
 }
 
@@ -408,7 +474,7 @@ async function main() {
       baseResult({
         reason_codes: ["USAGE_ERROR"],
         reason:
-          "Usage: node tools/evaluate-planner-selection.mjs <routing-input.json>",
+          "Usage: node tools/evaluate-planner-selection.mjs <routing-input.json> [quota-state.json]",
       }),
       1,
     );
@@ -438,7 +504,27 @@ async function main() {
     );
   }
 
-  const result = await evaluatePlannerSelection(input);
+  // V4_RT25 canonical quota-pool state (optional): joined state JSON produced
+  // by tools/rt25-canonical-quota-state-v1.mjs (real composer + real join).
+  let options = {};
+  const quotaStatePath = process.argv[3];
+  if (quotaStatePath) {
+    const absQ = resolve(process.cwd(), quotaStatePath);
+    if (existsSync(absQ)) {
+      try {
+        const parsed = JSON.parse(readFileSync(absQ, "utf8").replace(/^\uFEFF/, ""));
+        // accept either the raw joined state or the canonical producer result
+        options.quotaState =
+          parsed.schema_version === "v4-rt25-canonical-quota-state-v1" ? parsed.joined : parsed;
+      } catch {
+        options = { quotaStateInvalid: true };
+      }
+    } else {
+      options = { quotaStateInvalid: true };
+    }
+  }
+
+  const result = await evaluatePlannerSelection(input, options);
   emit(
     {
       ...result,

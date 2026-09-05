@@ -14,6 +14,7 @@ import {
   createDefaultExecutionAdapterRegistry,
   validateExecutionAdapterRegistry,
 } from "./v4-execution-adapter-registry-v1.mjs";
+import { composeCanonicalQuotaState } from "./rt25-canonical-quota-state-v1.mjs";
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const RESULT_SCHEMA = "n8n-v4-execution-routing-bridge-result-v1";
@@ -238,12 +239,54 @@ export async function runN8nExecutionRoutingBridge(inputs, options = {}) {
     });
   }
 
-  // EXECUTION_ROUTER (reused, unchanged). Offline injectable arbiter only.
+  // V4_RT25_CANONICAL_ENTRYPOINT_INTEGRATION: canonical quota-state producer.
+  // When quota composition is requested (options.quotaStateOptions set, or the
+  // explicit default lane), the REAL canonical quota-pool state is composed
+  // (real registry/baseline/ingest lane → real composer → real join) and handed
+  // to the canonical EXECUTION_ROUTER, which emits its own quota_decision
+  // envelope; that envelope is consumed below as the bridge provenance — the
+  // decision reaches the bridge from the REAL upstream selector, never built
+  // by hand. Composition failure → fail closed (QUOTA_STATE_COMPOSITION_FAILED).
+  let quotaStateForRouter = null;
+  let canonicalQuotaComposition = null;
+  if (options.quotaStateOptions !== undefined) {
+    canonicalQuotaComposition = await composeCanonicalQuotaState(
+      options.quotaStateOptions || {},
+    );
+    if (canonicalQuotaComposition.ok !== true || !canonicalQuotaComposition.joined) {
+      return base({
+        task_id: taskId,
+        packet_id: packetId,
+        policy_decision: "PROCEED",
+        route_request_id: inputs.route_request.request_id,
+        classification: "QUOTA_STATE_COMPOSITION_FAILED",
+        reason_codes: ["QUOTA_STATE_COMPOSITION_FAILED", ...(canonicalQuotaComposition.reason_codes || [])],
+      });
+    }
+    quotaStateForRouter = canonicalQuotaComposition.joined;
+  }
+
+  // EXECUTION_ROUTER (reused, unchanged law + canonical quota awareness).
+  // Offline injectable arbiter only.
   const routeResult = await evaluateExecutionRoute(inputs.route_request, {
     registry,
     status,
+    ...(quotaStateForRouter ? { quotaState: quotaStateForRouter } : {}),
     ...(options.semanticArbiter ? { semanticArbiter: options.semanticArbiter } : {}),
   });
+
+  // When the canonical router produced its own quota_decision, consume it as
+  // the bridge quota provenance (replacing the absent manual input). An
+  // explicitly-supplied inputs.quota_decision still wins only if structurally
+  // valid; the router-produced envelope is the canonical producer.
+  const routerQuotaDecision =
+    routeResult && routeResult.quota_decision && routeResult.quota_decision.schema_version === "v4-rt25-execution-quota-aware-decision-v1"
+      ? routeResult.quota_decision
+      : null;
+  let quotaProvenanceSource = quotaConsumption;
+  if (routerQuotaDecision && !quotaConsumption.consumed) {
+    quotaProvenanceSource = consumeQuotaDecision(routerQuotaDecision);
+  }
 
   const routeRequestId = inputs.route_request.request_id;
   if (routeResult.status !== "ROUTED") {
@@ -256,6 +299,10 @@ export async function runN8nExecutionRoutingBridge(inputs, options = {}) {
       execution_route_result: routeResult,
       classification: "NO_ROUTE",
       reason_codes: ["NO_ROUTE", ...routeResult.reason_codes],
+      // V4_RT25: even a blocked route carries its quota provenance when the
+      // canonical router produced one (metadata only; authorization-neutral).
+      quota_decision_consumed: quotaProvenanceSource.consumed,
+      quota_decision_provenance: quotaProvenanceSource.provenance,
     });
   }
 
@@ -313,13 +360,14 @@ export async function runN8nExecutionRoutingBridge(inputs, options = {}) {
     adapter_registered: true,
     adapter_id: entry.adapter_id,
     dispatch_required: Boolean(entry.dispatch_required),
-    quota_decision_consumed: quotaConsumption.consumed,
-    quota_decision_provenance: quotaConsumption.provenance,
+    quota_decision_consumed: quotaProvenanceSource.consumed,
+    quota_decision_provenance: quotaProvenanceSource.provenance,
     reason_codes: [
       "ROUTING_READY_FOR_DISPATCH",
       ...routeResult.reason_codes,
       `ADAPTER:${entry.adapter_id}`,
-      ...(quotaConsumption.consumed ? ["QUOTA_DECISION_CONSUMED"] : []),
+      ...(quotaProvenanceSource.consumed ? ["QUOTA_DECISION_CONSUMED"] : []),
+      ...(routerQuotaDecision ? ["QUOTA_DECISION_PRODUCED_BY_CANONICAL_ROUTER"] : []),
     ],
   });
 }

@@ -1,5 +1,89 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_RT25_CANONICAL_ENTRYPOINT_INTEGRATION_CORRECTION_V1` (issue #41 reopened post-AGG, parent #32)
+**Classification:** `PASS — CANONICAL PLANNER + CANONICAL EXECUTION ROUTER CONSUME THE QUOTA-POOL STATE THROUGH THE REAL CANONICAL CALL PATH; ROUTER-PRODUCED DECISION PROPAGATES TO THE n8n BRIDGE AUTOMATICALLY; CANONICAL CLOSED-GATE E2E 12/12; LAWS A..L 34/34; CONSUMER REGRESSIONS 158/158; D-0025 UNCHANGED (CLOSED)`
+**Timestamp (local):** 2026-09-05 (evening session, post-AGG correction)
+**BASE_HEAD:** `0ec7826c8f4e6134e00afe29d9cd71d96da1de73` (canonical corrective base; commits 04f0e493 + 0ec7826 historical hygiene, untouched)
+**CLOSURE HEAD:** final `cursor-pass: V4_RT25_CANONICAL_ENTRYPOINT_INTEGRATION_CORRECTION_V1` commit carrying this report
+**CLOSURE:** STANDARD_RUNTIME_BUNDLE
+**HISTORICAL EVIDENCE (preserved, not rewritten):** the previous campaign report
+`V4_RUNTIME_25_TASK_QUOTA_AWARE_CAMPAIGN_V1` 25/25 PASS stands as module-level
+evidence; its RUNTIME_WIRED claim was corrected by this slice — the canonical
+entrypoints were the missing consumer link, now wired (see
+`reports/architecture/v4_rt25_canonical_entrypoint_integration_correction_v1.md`).
+
+## Corrected truth
+
+The post-AGG verification was right: RT25 modules existed but the CANONICAL
+entrypoints (`tools/evaluate-planner-selection.mjs`,
+`tools/evaluate-execution-route.mjs`) did not consume them, and the bridge had
+no canonical upstream producer for `quota_decision`. This correction wires the
+real canonical call path:
+
+```
+canonical producer rt25-canonical-quota-state-v1
+  (real registry-v2 + real fail-closed baseline + real ingest-lane contributions
+   → real composer → real join: freshness/reserve/economics)
+  ├─→ evaluatePlannerSelection(options.quotaState)          [canonical planner entrypoint]
+  │     reached via prepareCycle(quotaStateOptions)          [single canonical upstream point]
+  │     fail-closed: QUOTA_STATE_COMPOSITION_FAILED
+  ├─→ evaluateExecutionRoute(options.quotaState)             [canonical execution-router entrypoint]
+  │     stage-5.5 commercial-pool admission (same T08/T09 law)
+  │     router EMITS the RT25 envelope mirroring its final route
+  └─→ n8n bridge options.quotaStateOptions → router-produced envelope consumed
+        AUTOMATICALLY (QUOTA_DECISION_PRODUCED_BY_CANONICAL_ROUTER)
+        → Windows endpoint validates provenance (scope-checked, fail-closed)
+```
+
+Reviewer/retry: canonical runtime boundaries DO NOT EXIST — dependency reported
+exactly (no fake production path); producer exposes ready bindings for a future
+governed boundary.
+
+## Proofs
+
+- `tests/rt25-canonical-entrypoint-wiring` — **34/34** (laws A..L from the
+  canonical entrypoints; legacy paths preserved envelope-free)
+- `tests/rt25-canonical-closed-gate-e2e` — **12/12** (real ingest lane →
+  canonical prepare → planner CLI → canonical router → bridge auto-consumption
+  → real endpoint handler; authorized offline leg EXECUTED_OK; unauthorized leg
+  AUTHORIZATION_REJECTED with 0 generation attempts; ledger single spend;
+  D-0025 `enabled=false`)
+- consumer regressions all green: planner 17/17, execution-router 12/12,
+  bridge 23/23, T21 4/4, T22 11/11, T24 23/23 (historical E2E still green),
+  litellm-primary-cycle 18/18, t02/t04/t08/t09 12+8+10+5, adapter-router 15/15
+
+## Files (this correction)
+
+| File | Change |
+|---|---|
+| `tools/rt25-canonical-quota-state-v1.mjs` | new — canonical quota-state producer (+ reviewer/retry bindings) |
+| `tools/evaluate-planner-selection.mjs` | modified — quota-pool-aware state refinement (legacy preserved; CLI arg 2) |
+| `tools/run-litellm-primary-cycle.mjs` | modified — canonical upstream composition `quotaStateOptions` (fail-closed) |
+| `tools/evaluate-execution-route.mjs` | modified — stage-5.5 pool admission + RT25 envelope emission |
+| `tools/n8n-v4-execution-routing-bridge-v1.mjs` | modified — canonical composition + automatic router-envelope consumption |
+| `tests/rt25-canonical-entrypoint-wiring/` | new — laws A..L (34 checks) |
+| `tests/rt25-canonical-closed-gate-e2e/` | new — canonical closed-gate E2E (12 checks) |
+| `reports/architecture/v4_rt25_canonical_entrypoint_integration_correction_v1.md` | new — correction report |
+| `docs/runtime/CURRENT_FRONTIER.md` | corrected — QUOTA_AWARE_RUNTIME row (canonical wiring proven) |
+| `docs/runtime/LAST_CURSOR_REPORT.md` | updated (this file; previous report preserved as historical evidence above) |
+
+## Hard boundaries
+
+D-0025 CLOSED throughout (static proof) · no production route activation · no
+OpenAI API/BYOK/API billing · Codex subscription surfaces only · no secret
+persistence · no billing/reset/top-up · no invented quota values (empty/stale
+ingest lanes fail closed) · no inference for quota discovery · no n8n live
+deployment · no unauthorized model execution.
+
+## Deferred / missing
+
+- GLM live quota credential absent → GLM pool CONSERVE_UNKNOWN_MISSING (fail-closed).
+- Reviewer/retry canonical boundary missing (exact dependency reported in §3.5 of the correction report).
+
+---
+
+# HISTORICAL — V4_RUNTIME_25_TASK_QUOTA_AWARE_CAMPAIGN_V1 (preserved verbatim)
+
 **BLOCK-ID:** `V4_RUNTIME_25_TASK_QUOTA_AWARE_CAMPAIGN_V1` (issue #41, parent #32)
 **Classification:** `PASS — 25/25 RUNTIME TASKS COMPLETED (T01 inherited PASS + T02..T25 executed); QUOTA-AWARE CHAIN WIRED END-TO-END BEHIND CLOSED GATE; 1 DEFERRED (GLM live credential); D-0025 UNCHANGED (CLOSED)`
 **Timestamp (local):** 2026-09-05 (afternoon/evening session)
