@@ -198,7 +198,7 @@ export async function performTick(body, deps = {}) {
   const entries = scan(QUEUE_DIR).map((e) => {
     if (e.read_failed || !e.markdown) return { ok: false, source: e.source };
     try {
-      const parsed = parseBacklog(e);
+      const parsed = parseBacklog(e.markdown);
       return { ...parsed, markdown: e.markdown, source: e.source, backlog_path: e.backlog_path };
     } catch {
       return { ok: false, source: e.source };
