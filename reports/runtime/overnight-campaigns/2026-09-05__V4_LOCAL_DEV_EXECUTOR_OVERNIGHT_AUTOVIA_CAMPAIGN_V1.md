@@ -342,3 +342,77 @@ failure: every LOCAL_DEV capability in scope is implemented and live-proven
 loop, idle policy). Remaining work requires either new operator-supplied
 READY backlog items or a policy decision to enable synthetic self-authored
 backlog; neither is auto-eligible without the operator.
+
+## CONTINUATION SEGMENT 4 — V4_LOCAL_DEV_EXECUTOR_IDLE_BACKFILL_SYNTHETIC_ITEM_INJECTION (2026-09-05)
+
+Dispatch base: 6b34ec6 (= segment-3 close). Model: GLM 5.3 FLASH BYOK.
+
+### Pass 11 (43da4f2) — synthetic idle-backfill injector IMPLEMENTATION
+
+- `tools/local-dev-idle-backfill-v1.mjs`: composition primitive; pinned LAW
+  single-source (`decideBackfill`/`DEFAULT_POLICY` exported; policy suite P8
+  deep-equal vs PINNED_DEFAULTS). Double-scan preemption, disk-evidence
+  authoring (create/append classes), deterministic collision-safe IDs
+  (`shortSha(segment|seq|head)`), file+receipt collision guards, self-verify
+  through the REAL selector gates. NO second executor; NO bypass.
+- New suite `tests/local-dev-idle-backfill-injection-v1/run.mjs`: all 20
+  mandated scenarios + extras. Dispatcher `source_ref` fixed to real queue
+  path. All 11 LOCAL_DEV suites green at commit (162 tests).
+
+### Pass 12 (73d124c executor) — LIVE synthetic proof seq1 CREATE
+
+CLEAN_DRAINED ? BACKFILL_SYNTHETIC seq=1 ? `SYNTHETIC_D-9101-341BD424.md`
+(backlog-item-v1 schema-identical) ? normal selector ADMISSIBLE ? normal
+claim (receipts.json) ? normal bridge (task_kind=CREATE) ? normal executor ?
+OpenCode ? qwen38-opus-q3-cline-24k ? CREATED
+`docs/runtime/AUTOVIA_SYNTHETIC_HEARTBEAT.md` exact marker ? test ? executor
+commit 73d124c ? push ? REMOTE_VERIFIED. 5 turns / 106s / 40 untracked
+protected. Markers: SYNTHETIC_ITEM_CREATED=YES · REAL_READY_PREEMPTED=NO ·
+NORMAL_SELECTOR/CLAIM/BRIDGE/EXECUTOR_USED=YES · PRODUCTION_CHANGED=NO.
+(2 mechanical bookkeeping STOPs before PASS: tracked-dirty receipts ?
+bookkeeping commit + untracked .run.json rebase; delegated class.)
+
+### Pass 13 (4b7cff0 executor) — AUTO-VIA seq2 MODIFY
+
+Queue re-drained ? injector derived deterministic NEXT sequence (distinct
+class `append_marker_line`, ID `D-9102-3FCE48B0`) ? normal pipeline ? executor
+appended exactly one line, prior content UNCHANGED ? 5 turns / 136s ?
+4b7cff0 REMOTE_VERIFIED. Both V1 authoring classes live-proven end-to-end.
+
+### Delegated auto-repair (f85eb40) — counter false-positive
+
+`countSyntheticFilesInQueue` miscounted proof files quoting marker lines
+(loose substring). Fixed to require the exact provenance comment
+(`| segment=<seg> |`); regression `T-extra2` (suite now 22/22). Mechanical
+bookkeeping defect, no policy widening.
+
+### Pass 14 (02e5def executor) — AUTO-VIA seq3 terminal checkpoint marker
+
+seq3 = segment-terminal checkpoint marker (allowed class: "append a bounded
+synthetic AUTO-VIA proof marker"). 5 turns / 219s ? 02e5def REMOTE_VERIFIED.
+
+### TERMINAL — cap enforced live (59a9a63)
+
+Post-seq3 evaluation: `decision=IDLE reason=IDLE_ALL_CLAIMED_SYNTHETIC_LIMIT`
+seq_candidate=4, created=NO — the 3-per-segment cap is now LIVE-PROVEN at the
+terminal boundary. Segment synthetics = 3/3.
+
+## FINAL CAMPAIGN REPORT (v4 — end of continuation segment 4)
+
+OVERNIGHT CAMPAIGN COMPLETE — PASSES=14 — PASS=14 — FINAL_HEAD=<closure commit of this segment-4 checkpoint> — TERMINAL_REASON=SEGMENT_4_SYNTHETIC_CAP_REACHED_CLEAN_IDLE (3/3 synthetic items executed through the normal pipeline; no real READY backlog exists; no further policy-valid synthetic candidate below cap) — NEXT=GPT_WEB_N8N_AUTHORING_REQUIRED
+
+Cumulative REAL_LOCAL_DEV_EXECUTIONS (campaign total) = 8
+(db6b275 CREATE · 9eccd65 MODIFY · cfc1cf5 CREATE · 73d124c SYNTHETIC CREATE ·
+4b7cffc SYNTHETIC MODIFY · 02e5def SYNTHETIC MODIFY terminal marker; plus 2
+historic STOPs). All executions: PRODUCTION_CHANGED=NO · D-0025=false · n8n
+untouched.
+
+NEXT derivation (canonical): every LOCAL_DEV capability is now implemented and
+live-proven — backlog bridge, claim/idempotency, selector, dispatcher loop,
+idle/backfill policy, AND runtime-capable synthetic self-backfill through the
+normal pipeline. The only remaining evolution is connecting the now-proven
+autonomous dispatcher to an always-on scheduler / GitHub watcher / n8n
+workflow. Per the dispatch's IMPORTANT N8N GATE, that is a REAL GPT-WEB /
+operator gate: Cursor MUST NOT author/change live n8n topology.
+
+GATE: GPT_WEB_N8N_AUTHORING_REQUIRED
