@@ -1,5 +1,101 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_WF90_HTTP409_NORMALIZATION_FIX_V1` (micro-task delta, base `616ce9f`)
+**Classification:** `PASS — WF90 NORMALIZER RECOVERS A SCHEMA-VALID local-dev-dispatch-tick-result-v1 EMBEDDED IN AN n8n/Axios ERROR ENVELOPE (error.message "<status> - <json>") AND NORMALIZES IT LIKE A 2xx RESPONSE; MALFORMED PAYLOADS STAY FAIL-CLOSED SERVICE_ERROR; HTTP STATUS ALONE NEVER INFERS HUMAN_GATE_REQUIRED; FOCUSED TESTS 11/11; LIVE_APPLY_PERFORMED=NO; LIVE_APPLY_GATE_REQUIRED=YES; END STATE REPO_FIX_READY_FOR_LIVE_APPLY`
+**Timestamp (local):** 2026-09-05 (late evening)
+**BASE_HEAD:** `616ce9f015c2c7a3da1ef6419879427ebce667e2` (synchronized ff-only from `b80e02c`)
+**CLOSURE HEAD:** final `cursor-pass: V4_WF90_HTTP409_NORMALIZATION_FIX_V1` commit carrying this report
+**CLOSURE:** STANDARD_RUNTIME_BUNDLE
+
+## Proven original failure shape (live WF90, workflow 90 "CP V4 LOCAL DEV ALWAYS-ON DISPATCHER - ACTIVE")
+
+The dispatcher (Windows service `tools/serve-local-dev-autonomous-dispatcher-v1.mjs`)
+answers a fail-closed repo-hygiene rejection with HTTP 409 + a valid
+`local-dev-dispatch-tick-result-v1` body:
+
+```
+HTTP 409
+{"schema_version":"local-dev-dispatch-tick-result-v1","ok":false,
+ "classification":"HUMAN_GATE_REQUIRED","execution_performed":false,
+ "task_ref":null,"human_gate_required":true,
+ "gate_summary":"tracked dirty: 7 file(s)",
+ "reason_codes":["TRACKED_DIRTY_CONFLICT"]}
+```
+
+The WF90 HTTP Request node uses `onError: continueRegularOutput`, so n8n emits
+an AxiosError envelope to the normalizer node instead of the body:
+
+```
+{"error":{"name":"AxiosError","code":"ERR_BAD_REQUEST","status":409,
+ "message":"409 - \"{...dispatcher JSON...}\""}}
+```
+
+The previous normalizer only looked at `raw.body ?? raw`, missed the payload
+embedded in `error.message`, and produced the incorrect
+`classification=SERVICE_ERROR, reason_codes=[], gate_summary=null` (Telegram
+then reported task NONE / gate none).
+
+## Exact fix (one coherent edit, canonical deploy artifact)
+
+`workflows/patches/v4-local-dev-always-on-dispatcher.gpt-web.json` — node
+"Code - Normalize LOCAL_DEV tick result" (`jsCode`) only:
+
+- extracted the existing validity test into `isTickResult(v)` (same
+  schema/classification/`execution_performed` law as before — no policy
+  change);
+- NEW bounded recovery: only when `body` is not already a valid tick result
+  AND `raw.error.message` is a string, split on the first `" - "`,
+  `JSON.parse` once (a second parse ONLY if the decoded value is still a
+  string), and accept it ONLY if the decoded object satisfies `isTickResult`
+  (the dispatcher body remains the authority; HTTP status 409 alone NEVER
+  infers HUMAN_GATE_REQUIRED);
+- all legacy paths preserved (direct JSON / `raw.body` object / `raw.body`
+  JSON string); any extraction/parsing failure keeps the existing fail-closed
+  `SERVICE_ERROR` behavior.
+
+## Focused tests
+
+`tests/wf90-axios-409-normalizer` — **11/11 PASS** (offline; evaluates the
+deployed `jsCode` verbatim with a mock `$input`; no n8n, no network, no
+workflow apply, no Telegram):
+
+- legacy: direct JSON / `raw.body` object / `raw.body` string still normalize;
+- regression fixture: AxiosError status=409 embedding the exact dispatcher
+  `HUMAN_GATE_REQUIRED` result → `response_valid=true`,
+  `classification=HUMAN_GATE_REQUIRED`, `human_gate_required=true`,
+  `gate_summary="tracked dirty: 7 file(s)"`,
+  `reason_codes=["TRACKED_DIRTY_CONFLICT"]`, notify required;
+- double-encoded JSON-string payload also recovered;
+- 409 envelope carrying a healthy IDLE_CLEAN body → IDLE_CLEAN (status never
+  infers the gate); schema-invalid embedded object → SERVICE_ERROR;
+- malformed JSON / bare string / missing separator / missing `error.message`
+  all stay fail-closed SERVICE_ERROR;
+- artifact invariants asserted: tick HTTP node keeps
+  `onError: continueRegularOutput` + `alwaysOutputData: true`.
+
+## Boundary / apply status
+
+- LIVE_APPLY_PERFORMED=NO; LIVE_APPLY_GATE_REQUIRED=YES (apply is a separate
+  operator pass: live n8n workflow update/deploy of the patched artifact).
+- Hard wall respected: no active workflow edit, no activate/deactivate, no n8n
+  restart, no WF90 trigger, no Telegram send, no Tailscale/service changes,
+  D-0025 CLOSED, no model/provider execution, no credentials/secrets.
+- `node --check` clean on the changed test suite; workflow artifact
+  JSON-validates; `git diff --check` clean.
+
+## Files (this slice)
+
+| File | Change |
+|---|---|
+| `workflows/patches/v4-local-dev-always-on-dispatcher.gpt-web.json` | normalizer node `jsCode` — bounded Axios error-envelope recovery |
+| `tests/wf90-axios-409-normalizer/run.mjs` | new — focused 11-check suite (legacy + 409 regression + fail-closed) |
+| `docs/runtime/LAST_CURSOR_REPORT.md` | this section (previous reports preserved below) |
+| `docs/runtime/CURRENT_FRONTIER.md` | N8N LOCAL DEV ALWAYS-ON row: WF90_NORMALIZER_FIX=READY_FOR_LIVE_APPLY |
+
+---
+
+# HISTORICAL — V4_CANONICAL_REVIEWER_RUNTIME_BOUNDARY_V1 (preserved verbatim)
+
 **BLOCK-ID:** `V4_CANONICAL_REVIEWER_RUNTIME_BOUNDARY_V1` (issue #43, parent #41/#32; micro-task delta, base `8789b23`)
 **Classification:** `STOP — NO REAL CANONICAL REVIEWER INSERTION POINT EXISTS IN THE RUNTIME; WIRING WOULD REQUIRE INVENTING NEW ORCHESTRATION (FORBIDDEN BY THE TASK'S CRITICAL RULE); EXACT MISSING DEPENDENCY PERSISTED BELOW`
 **Timestamp (local):** 2026-09-05 (late evening, immediately after the CLI/mixed-route fix)
