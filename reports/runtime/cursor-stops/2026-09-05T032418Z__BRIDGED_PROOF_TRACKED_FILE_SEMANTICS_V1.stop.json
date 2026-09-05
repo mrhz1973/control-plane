@@ -1,0 +1,61 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_LOCAL_DEV_EXECUTOR_BRIDGED_PROOF_TRACKED_FILE_SEMANTICS_V1",
+  "stopped_component": "V4_LOCAL_DEV_EXECUTOR_CLINE24K_BRIDGED_LIVE_PROOF_V1 (EXACTLY ONCE retry)",
+  "recorded_at_utc": "2026-09-05T03:24:18Z",
+  "base_head": "bdcce7bf0d5901820bbf4d8d6da674e8ffe8b980",
+  "executor_result_summary": {
+    "task_ref": "LOCAL_DEV_B_D-9001-T",
+    "status": "STOP",
+    "classification": "STOP:OPENCODE_RUN_FAILED",
+    "profile_id": "qwen38-opus-q3-cline-24k",
+    "turns_used": 8,
+    "max_agent_turns": 8,
+    "timebox_used_s": 419,
+    "timebox_seconds": 600,
+    "router_was_running": true,
+    "launch_performed": false,
+    "task_created_new": [],
+    "preexisting_untracked_protected_count": 33,
+    "workspace_after_run": {
+      "tracked_dirty": false,
+      "preexisting_untracked_untouched": true,
+      "target_file_created": false
+    }
+  },
+  "diagnosis": {
+    "type": "AGENT_CONVERGENCE_FAILURE_NOT_INFRASTRUCTURE",
+    "evidence": [
+      "turn 2: read tool error 'File not found: docs/runtime/CAMPAIGN_NOTES.md' (target file did not exist yet; agent did not recover by creating it)",
+      "turn 3+: bash attempt 'Test-Path docs/runtime' denied by OpenCode permission rule (executor guard had no control over this; OpenCode-side permission config blocks bash)",
+      "guard accounting: 14 generation requests seen, 8 forwarded (turn ceiling), 6 blocked after ceiling",
+      "exit code 1 with no test phase reached; 419s of 600s used (not timebox-bound)"
+    ],
+    "root_cause_class": "OPENCODE_PERMISSION_CONFIG_BLOCKS_NEW_FILE_CREATION_FLOW",
+    "note": "The 24k model responded with normal latency; router healthy; executor logic (including new NEW_FILE_PERSISTENCE_SEMANTICS) worked as proven by offline suites. Failure is inside the OpenCode agent layer (tool permissions + non-recovery from missing-file read), not the executor, bridge, guard, or router."
+  },
+  "auto_repair_record": [
+    {
+      "AUTO_REPAIR_SELECTED": "extract bare envelope from bridge wrapper (CLI shape mismatch)",
+      "RATIONALE": "runner CLI consumes naked envelope JSON; wrapper is CLI-only mismatch; deterministic, reversible",
+      "INVARIANTS_PRESERVED": ["envelope byte-identical", "no strategy change", "no bounds change"]
+    }
+  ],
+  "retry_policy": "NO SECOND RETRY (operator: 'retry EXACTLY ONCE ... No second retry')",
+  "campaign_decision": "SUBSTANTIVE_STOP_NOT_COVERED_BY_DELEGATED_AUTO_REPAIR -> TERMINATE CAMPAIGN",
+  "production_changed": false,
+  "artifacts": {
+    "envelope_bridge_result": "reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__envelope-retry.json",
+    "envelope_bare": "reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__envelope-retry.bare.json",
+    "executor_result": "reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__result-retry.json",
+    "pre_run_untracked_snapshot": "reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__pre-run-untracked-snapshot.txt"
+  },
+  "implementation_delivered_in_this_task": [
+    "NEW_FILE_PERSISTENCE_SEMANTICS implemented in tools/local-dev-executor-v1.mjs (pre-run untracked snapshot, PREEXISTING_UNTRACKED vs TASK_CREATED_UNTRACKED classification, selective staging, fail-closed reasons)",
+    "15 deterministic offline regressions in tests/local-dev-executor-new-file-persistence-v1/run.mjs (operator list 1-8 + fail-closed extras + 2 integrations)",
+    "existing executor suites green: local-dev-executor-v1 21/21, live-runner 42/42, workstation-session-bridge 14/14, backlog-bridge 18/18",
+    "DELEGATED_AUTO_VIA_REPAIR_POLICY_V1 persisted (docs/foundation/DELEGATED_AUTO_VIA_REPAIR_POLICY_V1.md)",
+    "EXECUTOR_END_HEAD vs CAMPAIGN_FINAL_HEAD bookkeeping terminology fixed in campaign checkpoint",
+    "cursor-pass commit bdcce7bf0d5901820bbf4d8d6da674e8ffe8b980 pushed and remote-verified"
+  ]
+}

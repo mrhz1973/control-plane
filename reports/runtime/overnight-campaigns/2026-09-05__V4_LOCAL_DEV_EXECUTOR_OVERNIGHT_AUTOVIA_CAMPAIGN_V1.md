@@ -104,6 +104,41 @@ session isolation adopted per campaign authorization)
 
 ---
 
+## CHECKPOINT 5 — CAMPAIGN RESUMED THEN RE-TERMINATED (STOP)
+
+- seq: 5
+- task_ref: V4_LOCAL_DEV_EXECUTOR_BRIDGED_PROOF_TRACKED_FILE_SEMANTICS_V1
+  (resumed campaign per EXPLICIT operator authorization in that dispatch;
+  ~5h budget restarted from dispatch)
+- starting_head: 688c0879de591e46e525868b41d39a999b34f806
+- implementation_pass_head: bdcce7bf0d5901820bbf4d8d6da674e8ffe8b980
+  (cursor-pass: NEW_FILE_PERSISTENCE_SEMANTICS + 15 offline regressions +
+  delegated auto-repair policy + EXECUTOR_END_HEAD/CAMPAIGN_FINAL_HEAD
+  bookkeeping fix; remote-verified)
+- EXECUTOR_END_HEAD (bridged live proof retry) = bdcce7bf0d5901820bbf4d8d6da674e8ffe8b980
+  (executor STOP:OPENCODE_RUN_FAILED; no executor commit)
+- real executor run: EXACTLY 1 (bridge-derived envelope LOCAL_DEV_B_D-9001-T;
+  qwen38-opus-q3-cline-24k; router reused+pre-warmed; turns_used=8/8;
+  timebox 419/600)
+- outcome: STOP — agent-layer convergence failure: read of not-yet-existing
+  target file never recovered by creation; bash denied by OpenCode-side
+  permission rule; guard 14 seen / 8 forwarded / 6 blocked. Executor, bridge,
+  guard, router, and NEW persistence logic all behaved per contract (proven
+  by offline suites).
+- safety proof: tracked workspace clean post-run; 33/33 pre-existing
+  untracked untouched/unstaged (pre-run snapshot diff = only this pass's own
+  artifacts); target file NOT created.
+- auto-repair used (recorded): bare-envelope extraction from bridge wrapper
+  (CLI shape mismatch; deterministic, reversible).
+- campaign decision: SUBSTANTIVE STOP not covered by delegated auto-repair
+  (OpenCode permission config / agent shaping = strategic boundary) →
+  **CAMPAIGN TERMINATED (second terminal stop; no second live retry)**
+- canonical STOP artifact:
+  reports/runtime/cursor-stops/2026-09-05T032418Z__BRIDGED_PROOF_TRACKED_FILE_SEMANTICS_V1.stop.json
+- production changed: NO · D-0025 enabled: false
+
+---
+
 ## FINAL CAMPAIGN REPORT
 
 CAMPAIGN = V4_LOCAL_DEV_EXECUTOR_OVERNIGHT_AUTOVIA_CAMPAIGN_V1
@@ -130,3 +165,21 @@ NEXT = V4_LOCAL_DEV_EXECUTOR_BRIDGED_PROOF_TRACKED_FILE_SEMANTICS_V1
 - CAMPAIGN_FINAL_HEAD: HEAD of the repo holding the campaign checkpoint at
   the moment campaign closure was persisted (includes the closure commit).
 - Historical Git facts above are unchanged; only labels were corrected.
+
+---
+
+## FINAL CAMPAIGN REPORT (v2 — after resumption authorized in
+V4_LOCAL_DEV_EXECUTOR_BRIDGED_PROOF_TRACKED_FILE_SEMANTICS_V1)
+
+OVERNIGHT CAMPAIGN COMPLETE — PASSES=6 — PASS=4 — FINAL_HEAD=<closure commit of this checkpoint update> — TERMINAL_REASON=BRIDGED_LIVE_PROOF_RETRY_AGENT_CONVERGENCE_STOP (OPENCODE_PERMISSION_AND_NEW_FILE_CONVERGENCE) — NEXT=V4_LOCAL_DEV_EXECUTOR_OPENCODE_PERMISSION_AND_NEW_FILE_CONVERGENCE_REMEDIATION_V1 (operator-gated)
+
+Passes (cumulative):
+1. PASS design `08c9b7c` · 2. PASS implement `42a678a` · 3. PASS dry-run
+`86c06c6` · 4. STOP first bridged live proof (BACKLOG_BRIDGE_NEW_FILE_SEMANTICS)
+· 5. PASS new-file persistence semantics `bdcce7b` · 6. STOP exactly-one
+bridged live proof retry (OPENCODE_RUN_FAILED, agent convergence; infra OK;
+pre-existing untracked 33/33 protected).
+
+REAL_LOCAL_DEV_EXECUTIONS_ADDED (this campaign, total) = 2 (both
+STOP-classified, real Qwen, bounded). PRODUCTION_CHANGED = NO.
+D0025_ENABLED = false.
