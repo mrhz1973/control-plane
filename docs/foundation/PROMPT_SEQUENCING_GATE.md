@@ -1,10 +1,13 @@
 # Prompt Sequencing Gate
 
 **Status:** CANONICAL OPERATOR RULE
+**Inherits:** `docs/foundation/MICRO_TASK_DELTA_OPERATING_LAW.md` (default unit = `MICRO_TASK_DELTA`; broad regression = checkpoint-only)
 
 ## Rule
 
 Do not provide a new Cursor TASK DELTA / implementation prompt while the previous Cursor prompt is still awaiting its operator-returned `agg` result.
+
+Normal next prompts are `MICRO_TASK_DELTA` by default. `CHECKPOINT_DELTA` is used only when an explicit checkpoint (broad regression / BugBot / cross-component review / pre-live promotion) is required.
 
 The required sequence is:
 
@@ -28,9 +31,12 @@ A new Cursor prompt is forbidden until all of the following are true:
 
 1. the operator has sent `agg` for the previous Cursor prompt;
 2. GPT Web has refreshed canonical repository state from `origin/main`;
-3. GPT Web has read `CURRENT_FRONTIER.md` plus only the bounded evidence required by the just-finished pass;
+3. GPT Web has read only the bounded evidence required by the just-finished pass
+   (prefer latest task/checkpoint handoff; do **not** re-read full `CURRENT_FRONTIER.md`
+   / long historical reports unless materially required — see `MICRO_TASK_DELTA_OPERATING_LAW.md`);
 4. GPT Web has summarized the outcome of the previous prompt to the operator;
-5. the next bounded action is then derived from the refreshed canonical state.
+5. the next bounded action is then derived from the refreshed canonical state
+   (default: next `MICRO_TASK_DELTA`).
 
 This gate applies even when:
 

@@ -1,15 +1,16 @@
 # CURSOR PROMPT TEMPLATE — control-plane
 
-**Repository:** `mrhz1973/control-plane`  
-**Documento:** `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`  
-**Versione:** 3.5 — 2026-09-01
-**Stato:** CANONICAL  
+**Repository:** `mrhz1973/control-plane`
+**Documento:** `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`
+**Versione:** 3.6 — 2026-09-06
+**Stato:** CANONICAL
 **Ruolo:** contratto operativo master per gli Execution Packet destinati a Cursor nel modello multi-planner. Non è un cambiamento runtime.
 
-**Target operating model:** `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`  
-**User-facing handoff:** `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`  
-**Sequencing / PASS-STOP persistence:** `docs/foundation/PROMPT_SEQUENCING_GATE.md`  
+**Target operating model:** `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`
+**User-facing handoff:** `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`
+**Sequencing / PASS-STOP persistence:** `docs/foundation/PROMPT_SEQUENCING_GATE.md`
 **Wiki-LLM lean:** `docs/foundation/WIKI_LLM_LEAN_METHOD.md`
+**Micro-task / token-efficiency law:** `docs/foundation/MICRO_TASK_DELTA_OPERATING_LAW.md` (authoritative; inherited)
 
 ---
 
@@ -37,10 +38,13 @@ orchestratore
 
 GitHub è la memoria persistente. La chat Cursor non è una fonte canonica di stato.
 
+Default unit of work: **`MICRO_TASK_DELTA`** — see `MICRO_TASK_DELTA_OPERATING_LAW.md`. Broad regression is checkpoint-only.
+
 ---
 
-## 1. Prompt-size / TASK DELTA
+## 1. Prompt-size / TASK DELTA / MICRO_TASK_DELTA
 
+- Il default è `MICRO_TASK_DELTA` (un solo delta tecnicamente coerente).
 - Il prompt Cursor porta solo il delta necessario al pass corrente.
 - Il metodo stabile resta nel repository e non va ricopiato a ogni giro.
 - Il prompt user-facing segue `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`.
@@ -55,6 +59,7 @@ MODALITÀ CURSOR: <AGENT | PLAN>
 - Repository state, checkpoint ed evidence si leggono dal repo vivo, non dalla chat del planner.
 - SHA/build/blob/candidate compaiono solo se verificati; mai inventarli.
 - Disponibilità modello/quota si usa solo da fonte verificata.
+- Legge completa (bound=2, test focused, checkpoint-only regression, no time-filling, megaprompt exception, automation parity): `MICRO_TASK_DELTA_OPERATING_LAW.md`.
 
 ---
 
@@ -106,17 +111,26 @@ Questi due valori costituiscono l'anchor immutabile per rilevare il risultato de
 - l'anchor si chiude solo dopo outcome ingestion;
 - dettaglio canonico: `PROMPT_SEQUENCING_GATE.md`.
 
-### 2.2 One-pass default
+### 2.2 Corrective-loop default (MICRO_TASK_DELTA)
 
-Default:
+Default for a normal `MICRO_TASK_DELTA` (authoritative detail:
+`MICRO_TASK_DELTA_OPERATING_LAW.md`):
 
 ```yaml
 loop:
-  enabled: false
-  max_rounds: 1
+  enabled: true
+  max_rounds: 2   # max 2 implementation/test corrective loops
+  stop_when:
+    - first_uncorrectable_blocker
+    - corrective_bound_exhausted
 ```
 
-Un bounded corrective loop interno è ammesso solo se il TASK DELTA lo autorizza esplicitamente con scope, bound e stop conditions. La semplice possibilità che un test fallisca non abilita un loop.
+- After 2 corrective implementation/test loops: **STOP** with the exact blocker.
+- A higher bound requires explicit task-level justification or human authorization.
+- Exploratory / unbounded fix loops remain forbidden.
+- Broad regression remains checkpoint-only (`CHECKPOINT_DELTA`), not micro-task default.
+- Historical one-pass standing authorization still forbids *implicit* unbounded loops;
+  the micro-task law supplies the explicit default bound of 2.
 
 ---
 

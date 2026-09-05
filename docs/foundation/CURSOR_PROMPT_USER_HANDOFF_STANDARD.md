@@ -1,17 +1,20 @@
 # CURSOR PROMPT USER HANDOFF STANDARD — control-plane
 
-**Repository:** `mrhz1973/control-plane`  
-**Documento:** `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`  
-**Versione:** 3.0 — 2026-08-31  
-**Stato:** CANONICAL  
-**Ruolo:** standard permanente per come GPT Web/orchestratore costruisce e presenta i prompt destinati a Cursor.  
-**Relazione:** complementare a `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`, `docs/foundation/PROMPT_SEQUENCING_GATE.md`, `docs/contracts/execution-packet-v1.md`, `docs/contracts/planner-routing-policy-v1.md` e `docs/runtime/CURRENT_FRONTIER.md`.
+**Repository:** `mrhz1973/control-plane`
+**Documento:** `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`
+**Versione:** 3.1 — 2026-09-06
+**Stato:** CANONICAL
+**Ruolo:** standard permanente per come GPT Web/orchestratore costruisce e presenta i prompt destinati a Cursor.
+**Relazione:** complementare a `docs/foundation/CURSOR_PROMPT_TEMPLATE.md`, `docs/foundation/PROMPT_SEQUENCING_GATE.md`, `docs/foundation/MICRO_TASK_DELTA_OPERATING_LAW.md`, `docs/contracts/execution-packet-v1.md`, `docs/contracts/planner-routing-policy-v1.md` e `docs/runtime/CURRENT_FRONTIER.md`.
 
 ---
 
-## 0. Principio fondamentale — TASK DELTA, non secondo manuale
+## 0. Principio fondamentale — MICRO_TASK_DELTA, non secondo manuale
 
-Ogni prompt operativo destinato a Cursor deve essere un **TASK DELTA**.
+Ogni prompt operativo destinato a Cursor è per default un **`MICRO_TASK_DELTA`**
+(legge autoritativa: `docs/foundation/MICRO_TASK_DELTA_OPERATING_LAW.md`).
+
+I prompt di checkpoint possono identificarsi come **`CHECKPOINT_DELTA`**.
 
 Il prompt deve contenere solo **cosa Cursor deve fare nel pass corrente**. Il metodo stabile del progetto resta nel repository e **non va ricopiato ogni volta**.
 
@@ -22,7 +25,8 @@ Quindi il prompt non deve riscrivere sistematicamente:
 - OPSEC/secret policy già canonica;
 - checkpoint/closure/reporting boilerplate già canonico;
 - regole di `finito`, connector, bundle, evidence o gate già persistite;
-- spiegazioni generali del progetto.
+- spiegazioni generali del progetto;
+- la legge MICRO_TASK_DELTA già canonica (bound=2, test focused, checkpoint-only).
 
 Quando una regola è già canonica, usare formule concise come:
 
@@ -130,19 +134,20 @@ Il blocco operativo deve essere unico, cliccabile/copabile e racchiuso concettua
 I campi vanno presentati in questo ordine logico:
 
 1. **BLOCK-ID / TASK** — identificatore canonico del lavoro.
-2. **CATEGORY** — `ROUTINE` oppure `DELICATO`.
-3. **CLOSURE** — per esempio `NONE`, `STANDARD_RUNTIME_BUNDLE` o altro closure canonico realmente applicabile.
-4. **Stato di partenza verificabile** — build LIVE, SHA/blob/candidate solo quando realmente noti da GitHub. **Mai inventarli.**
-5. **OBIETTIVO** — risultato concreto e bounded del pass.
-6. **PRECHECK** — solo delta/precondizioni specifiche; il resto richiama il metodo canonico.
-7. **SCOPE** — funzioni/UI/path/runtime che il pass può toccare.
-8. **PRESERVARE** — comportamento esistente che non deve cambiare.
-9. **OUT OF SCOPE** — ciò che non deve essere implementato incidentalmente.
-10. **ACCEPTANCE** — test osservabili e numerati; descrivono il comportamento, non semplicemente “funziona”.
-11. **STOP** — mismatch base, working tree incompatibile, gate fallito, candidate/blob differente, QA/test fallito o altro blocker reale → STOP, non improvvisare.
-12. **OVERRIDE DEL PASS** — solo eccezioni/istruzioni aggiuntive non già nel metodo canonico; se non esistono, `NONE`.
-13. **EVIDENCE / GIT** — soltanto ciò che il gate corrente richiede; richiamare il metodo canonico per il boilerplate.
-14. **OUTPUT** — una riga finale precisa che consenta all'orchestratore di usare `agg`.
+2. **TASK_KIND** — `MICRO_TASK_DELTA` (default) oppure `CHECKPOINT_DELTA`.
+3. **CATEGORY** — `ROUTINE` oppure `DELICATO`.
+4. **CLOSURE** — per esempio `NONE`, `STANDARD_RUNTIME_BUNDLE` o altro closure canonico realmente applicabile.
+5. **Stato di partenza verificabile** — build LIVE, SHA/blob/candidate solo quando realmente noti da GitHub. **Mai inventarli.**
+6. **OBIETTIVO** — risultato concreto e bounded del pass.
+7. **PRECHECK** — solo delta/precondizioni specifiche; il resto richiama il metodo canonico.
+8. **SCOPE** — funzioni/UI/path/runtime che il pass può toccare.
+9. **PRESERVARE** — comportamento esistente che non deve cambiare.
+10. **OUT OF SCOPE** — ciò che non deve essere implementato incidentalmente.
+11. **ACCEPTANCE** — test osservabili e numerati; descrivono il comportamento, non semplicemente “funziona”.
+12. **STOP** — mismatch base, working tree incompatibile, gate fallito, candidate/blob differente, QA/test fallito o altro blocker reale → STOP, non improvvisare.
+13. **OVERRIDE DEL PASS** — solo eccezioni/istruzioni aggiuntive non già nel metodo canonico; se non esistono, `NONE`.
+14. **EVIDENCE / GIT** — soltanto ciò che il gate corrente richiede; richiamare il metodo canonico per il boilerplate.
+15. **OUTPUT** — una riga finale precisa che consenta all'orchestratore di usare `agg`.
 
 ---
 
@@ -160,6 +165,7 @@ Poi, separatamente, il singolo blocco copiabile:
 === INIZIO PROMPT CURSOR ===
 
 BLOCK-ID: <ID>
+TASK_KIND: MICRO_TASK_DELTA
 CATEGORY: <ROUTINE | DELICATO>
 CLOSURE: <NONE | STANDARD_RUNTIME_BUNDLE | ...>
 
@@ -216,36 +222,35 @@ STOP — <finding preciso>
 
 ---
 
-## 4. One-pass default — regola canonica
+## 4. Bounded pass — default MICRO_TASK_DELTA (max 2 corrective loops)
 
-Salvo override esplicito del TASK DELTA, un pass bounded segue questo flusso una sola volta:
+Salvo override esplicito del TASK DELTA o `CHECKPOINT_DELTA`, un pass `MICRO_TASK_DELTA` segue:
 
 ```text
 implement
-→ target test una volta
-→ regressioni richieste una volta
-→ review una volta soltanto se BUGBOT:SÌ
+→ focused tests
+→ (optional) up to 2 corrective implementation/test loops
 → evidence
-→ commit/push
+→ selective commit/push/remote verify
 ```
 
-Al primo blocker o failure:
+BugBot / broad regression: **solo** se il task è un checkpoint esplicito o `BUGBOT: SÌ` è richiesto dal task corrente (default micro-task: no BugBot, no broad regression).
+
+Al primo blocker non correggibile entro il bound, oppure dopo 2 loop correttivi esauriti:
 
 ```text
 STOP — <causa precisa>
 ```
 
-Nello stesso pass **non** eseguire automaticamente:
+Nello stesso micro-task **non** sono ammessi loop esplorativi illimitati né regressioni broad.
 
-```text
-fix → test → fix → test
-```
+Un failure già diagnosticato che richiede un *nuovo* delta distinto genera un nuovo `MICRO_TASK_DELTA` dopo il normale `agg` + riepilogo.
 
-Un failure già diagnosticato genera un nuovo piccolo corrective pass dopo il normale `agg` + riepilogo, non un loop interno implicito.
+Bound autoritativo: `max_corrective_loops = 2` in `MICRO_TASK_DELTA_OPERATING_LAW.md`.
+Un bound più alto richiede giustificazione task-level o autorizzazione umana esplicita.
+Campagna/megaprompt: solo con `HUMAN_AUTHORIZED_CAMPAIGN_EXCEPTION`.
 
-Eccezione: il TASK DELTA corrente può autorizzare **esplicitamente** un bounded corrective loop, con scope, condizioni di stop e bound numerico o equivalente. In assenza di questa autorizzazione esplicita, il default resta one-pass.
-
-Questa regola prevale sui vecchi esempi generici di loop quando il task corrente non autorizza esplicitamente il loop.
+Questa regola prevale sui vecchi esempi generici di one-pass assoluto / loop illimitato quando il task corrente è un `MICRO_TASK_DELTA` normale.
 
 ---
 
@@ -267,6 +272,8 @@ Gli header `MODELLO CURSOR`, `BUGBOT` e `MODALITÀ CURSOR` restano comunque tutt
 
 - Non trasformare il prompt in un secondo manuale operativo.
 - Non ricopiare regole canoniche già nel repository.
+- Default = `MICRO_TASK_DELTA`; megaprompt/campagna solo con `HUMAN_AUTHORIZED_CAMPAIGN_EXCEPTION` (vedi `MICRO_TASK_DELTA_OPERATING_LAW.md`).
+- Preferire un solo blocco TASK DELTA chiaro e copiabile.
 - Non inventare SHA, blob, build LIVE, candidate, disponibilità modello o stato di partenza.
 - Non aggiungere sezioni generiche che non cambiano il comportamento del pass.
 - Non spezzare il prompt in più blocchi che l’operatore deve ricomporre.

@@ -1,11 +1,11 @@
 # MULTI-PLANNER CURSOR LOOP — Operating Model
 
-**Repository:** `mrhz1973/control-plane`  
-**Documento:** `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`  
-**Stato:** `ACCEPTED_TARGET_DESIGN — PLANNING/DOCS ONLY`  
-**Decisione operatore:** 2026-08-25 — proposta accettata direttamente dall'operatore  
-**Runtime autorizzato da questo documento:** **NO**  
-**PM-34 / L5 / permanent schedule:** **INVARIATI E NON AUTORIZZATI**  
+**Repository:** `mrhz1973/control-plane`
+**Documento:** `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`
+**Stato:** `ACCEPTED_TARGET_DESIGN — PLANNING/DOCS ONLY`
+**Decisione operatore:** 2026-08-25 — proposta accettata direttamente dall'operatore
+**Runtime autorizzato da questo documento:** **NO**
+**PM-34 / L5 / permanent schedule:** **INVARIATI E NON AUTORIZZATI**
 
 ---
 
@@ -31,6 +31,12 @@ Lo stato runtime autorevole resta `docs/runtime/CURRENT_FRONTIER.md`.
 ## 1. Principio guida
 
 Il sistema non deve concentrare tutto il lavoro in un solo abbonamento/modello.
+
+**Default operating unit:** `MICRO_TASK_DELTA` (authoritative:
+`docs/foundation/MICRO_TASK_DELTA_OPERATING_LAW.md`). Broad regression and
+BugBot/cross-component review occur only at an explicit `CHECKPOINT_DELTA`.
+Long single-session megaprompt campaigns are exceptional and require
+`HUMAN_AUTHORIZED_CAMPAIGN_EXCEPTION`.
 
 Deve invece usare in modo coordinato i panieri già disponibili:
 

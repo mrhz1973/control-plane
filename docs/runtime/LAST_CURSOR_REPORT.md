@@ -1,5 +1,49 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_TOKEN_EFFICIENCY_MICRO_TASK_POLICY_PERSISTENCE_V1` (micro-task delta, issue #42, base `d5f2925`)
+**Classification:** `PASS — MICRO_TASK_DELTA operating law persisted as canonical method; consumers inherit; focused policy lint 11/11; AUTOMATION_PARITY persisted (no live automation change); HUMAN_AUTHORIZED_CAMPAIGN_EXCEPTION remains possible; wrapper order unchanged; D-0025 untouched`
+**Timestamp (local):** 2026-09-06 (~01:30, UTC+2)
+**BASE_HEAD:** `d5f29250387836848609bf1070340f747995e467`
+**CLOSURE HEAD:** final `cursor-pass: V4_TOKEN_EFFICIENCY_MICRO_TASK_POLICY_PERSISTENCE_V1` commit carrying this report
+**CLOSURE:** POLICY_DOCS_ONLY
+
+## Authoritative policy location
+
+`docs/foundation/MICRO_TASK_DELTA_OPERATING_LAW.md` (v1.0) — single authoritative law for:
+
+- DEFAULT TASK UNIT = `MICRO_TASK_DELTA`
+- `max_corrective_loops = 2`
+- focused tests only (no broad regression per micro-task)
+- checkpoint-only broad regression / BugBot
+- context minimization / no time-filling
+- `HUMAN_AUTHORIZED_CAMPAIGN_EXCEPTION` for megaprompt campaigns
+- model economics (no silent downgrade)
+- git selective stage + push + remote verify
+- `AUTOMATION_PARITY` (method law; no live n8n/dispatcher mutation in this pass)
+
+## Consumer references updated
+
+- `docs/foundation/CURSOR_PROMPT_TEMPLATE.md` (v3.6) — inherits law; loop default `max_rounds: 2`
+- `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` (v3.1) — `TASK_KIND: MICRO_TASK_DELTA`; section 4 bound=2; wrapper order preserved
+- `docs/foundation/PROMPT_SEQUENCING_GATE.md` — inherits; context-minimization on frontier re-reads
+- `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md` — default unit pointer
+
+## Focused test result
+
+`tests/micro-task-delta-policy/run.mjs` — **11/11 PASS**
+
+## Exception confirmation
+
+Explicit human-authorized campaign remains possible via marker `HUMAN_AUTHORIZED_CAMPAIGN_EXCEPTION` in the authoritative law (and handoff anti-megaprompt section).
+
+## Automation parity
+
+`AUTOMATION_PARITY` persisted in the law document. **No live automation change performed.**
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_CANONICAL_QUOTA_RUNTIME_FINAL_CLOSURE_CHECKPOINT_V1` (checkpoint delta, issue #46 / parent #41, base `12d4e2e`)
 **Classification:** `PASS — QUOTA_AWARE_RUNTIME=CANONICAL_RUNTIME_WIRED_BEHIND_CLOSED_GATE — all four roles (planner/execution/reviewer/retry) proven through REAL canonical runtime boundaries; closed-gate E2E extended to 19/19 traversing quota→planner→router→bridge→endpoint→attachReviewStage→runGovernedRetryExecution; REVIEWER_EXECUTION_AUTHORIZED=NO; RETRY_EXECUTION_AUTHORIZED=NO; D0025_ENABLED=false; GLM UNKNOWN/BLOCKED_EVIDENCE; NO production LIVE; BUGBOT_REVIEW=CLEAN`
 **Timestamp (local):** 2026-09-06 (~01:20, UTC+2)
