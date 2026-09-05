@@ -1,53 +1,51 @@
 ﻿# LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_CLINE64K_BACKEND_RUNTIME_STATE_INSPECTION_V1`
-**Classification:** `CLINE64K_BACKEND_RUNTIME_STATE_INSPECTION — B: BACKEND_CPU_OFFLOAD_OR_PLACEMENT_BOUNDARY`
+**BLOCK-ID:** `V4_CLINE24K_DEV_PROFILE_PLACEMENT_REMEDIATION_V1`
+**Classification:** `CLINE24K_DEV_PROFILE_PLACEMENT_REMEDIATION_PASS`
 **Timestamp (local):** 2026-09-05
 
 ## Summary
 
-Read-only inspection of the live backend runtime for
-`qwen38-opus-q3-cline-64k` (NO generation, NO OpenCode, NO executor, NO
-service ops). Topology: router `:8080` (python, pid 46976) → preset HOST
-llama-server `:18080` (pid 46376, `--models-max 1`, `/props` role=router,
-model_path=none) → exactly ONE model instance llama-server `:29795` (pid
-24616, born 02:57:20 = RETRY11 start). NO DCFR sidecars listening (18200/
-18210/18220 all absent). The 9 router-exposed IDs are selectable definitions,
-NOT resident models — single-model residency PROVEN, multi-instance
-contention (classification A) EXCLUDED.
+Implemented operator decision **B** (reduce dedicated DEV context). Created
+workstation-only DEV profile **`qwen38-opus-q3-cline-24k`** (ctx 24576, same
+OPUS Q3 Q3_K_M GGUF, n-gpu-layers 50, KV q4_0/q4_0, parallel 1, threads 20,
+flash-attn on, jinja on, reasoning off) — a distinct
+`workstation_dev_executor_profile` member instead of reusing the
+Control-Plane-eligible Agent24K identity, preserving DEV/production
+architectural isolation. **Cline64K fully preserved** (INI stanza
+byte-identical, runtime entry untouched, still exposed post-reload, still
+explicitly selectable).
 
-Config vs live (preset INI ↔ pid 24616 command line): EXACT MATCH — ctx
-65536, n-gpu-layers 50, cache k/v q4_0/q4_0, parallel 1, threads 20,
-flash-attn on, jinja on, reasoning off; `/props` n_ctx 65536, total_slots 1,
-alias + model path identical. State mismatch (classification E) EXCLUDED.
+Repo deltas: `qwen-local-runtime.json` additive 24K manual-profile entry
+only; `local-dev-executor-v1.mjs` `DEFAULT_DEV_PROFILE_ID` 64k→24k; new
+deterministic regression (24K default + isolation + 64K preserved). Tests:
+21/21 + 42/42 + 14/14 PASS; `git diff --check` PASS; three
+qwen-local suites' failures verified IDENTICAL at base HEAD via temp
+worktree (pre-existing production drift, not this delta).
 
-Memory placement is the PROVEN boundary: llama-server pid 24616
-**WorkingSet 13 329 MB / Private 14 188 MB against a 12 GB RTX 3060** with
-VRAM ~97 % resident (~11.9/12 GiB) including the desktop suite; host RAM
-31.9 GB total with only **6.6 GB free**; GPU power 66 W (not
-compute-saturated — transfer/offload-bound). Classification
-**B: BACKEND_CPU_OFFLOAD_OR_PLACEMENT_BOUNDARY**. Secondary: 64K KV
-oversubscription contribution; desktop GPU consumers (~1-1.5 GB class).
+Local INI: timestamped backup + SHA-256 before/after recorded (backup NOT
+committed). Canonical router reload via
+`Start-Qwen-MultiModel-16K.ps1` (launched exactly once; only the canonical
+router tree stopped; residue 0; no reconstructed backend commands).
+Post-reload: 10 IDs, cline-24k exposed exactly once, cline-64k preserved, no
+duplicates, no orphan instance.
 
-`<think>` classification: **A: REASONING_OFF_CONFIGURED_BUT_TEMPLATE_STILL_EMITS_THINK**
-— flag off, backend default `reasoning_format=none`, yet the actual routed
-request path (`/slots` id_task 85) shows per-request `reasoning_format:
-deepseek` / `peg-native` chat format with `generation_prompt` opening an
-empty `<think></think>` block; the distill think emission survives at the
-OpenAI-compat request layer.
+Single smoke (ONLY generation this pass): `CLINE24K_OK` prompt, 32-token
+cap → **16 059 ms wall INCLUDING cold model load**, 22+32 tokens,
+~0.50 s/token vs the 64K baseline's 3-4 s/token. `<think>` preamble consumed
+the token cap (exact_match false) — known caveat, unchanged classification.
+Live instance verified: alias/ctx 24576/layers 50/KV q4_0 all active; exactly
+ONE model instance resident. Placement materially improved: private
+**11 681 MB < 12 GB VRAM** (64K was 14 188 MB oversubscribed); VRAM post
+10.9 GiB.
 
-RETRY9 comparison: PROVEN that pid 24616 did not exist during RETRY9 (born at
-RETRY11 start); RETRY9-era placement was never captured — HYPOTHESIS (better
-placement then) NOT PROVEN. No causal claim beyond evidence.
-
-QWEN_GENERATIONS_THIS_PASS=0 · OpenCode 0 · LOCAL_DEV_EXECUTOR 0 · service
-ops 0 · production unchanged · real dev executions complete remains 0 ·
-tracked tree clean · 32 untracked preserved.
+QWEN_GENERATIONS_THIS_PASS=1 · OpenCode 0 · LOCAL_DEV_EXECUTOR 0 ·
+production unchanged (WF40/D0025/role mappings/eligible set untouched) ·
+real dev executions complete remains 0.
 
 ## NEXT
 
-`V4_CLINE64K_PLACEMENT_REMEDIATION_DECISION_V1` — operator decision pass on
-the PROVEN placement boundary: (a) reduce desktop VRAM consumers pre-run;
-(b) reduce DEV ctx-size (trades capability); (c) accept longer timeboxes;
-(d) switch DEV executor profile. Requires explicit operator choice; no
-silent change.
+`V4_LOCAL_DEV_EXECUTOR_QWEN_FIRST_COMPLETE_LIVE_PROOF_CLINE24K_V1` — first
+complete LOCAL_DEV_EXECUTOR live proof on the 24K DEV default with the
+already-proven 10-turn / 600-second envelope unless new evidence requires
+otherwise.

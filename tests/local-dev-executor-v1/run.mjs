@@ -179,6 +179,30 @@ await test("cline-64k resolves as DEV profile from workstation_manual_profiles",
   assert.equal(r.profile.control_plane_eligible, false);
 });
 
+await test("cline-24k DEV profile defined and distinct from 64k (option-B remediation)", async () => {
+  const { DEFAULT_DEV_PROFILE_ID } = await import("../../tools/local-dev-executor-v1.mjs");
+  const runtime = loadQwenLocalRuntime();
+  assert.equal(DEFAULT_DEV_PROFILE_ID, "qwen38-opus-q3-cline-24k");
+  const r = resolveDevProfile(runtime, "qwen38-opus-q3-cline-24k");
+  assert.equal(r.ok, true);
+  assert.equal(r.profile.category, DEV_PROFILE_CATEGORY);
+  assert.equal(r.model_id, "qwen38-opus-q3-cline-24k");
+  assert.equal(r.profile.context_tokens, 24576);
+  assert.equal(r.profile.control_plane_eligible, false);
+  assert.equal(r.profile.auto_route, false);
+  assert.equal(r.profile.startup_default, false);
+  assert.equal(r.profile.wf40, false);
+  assert.equal(r.profile.scope_v3, false);
+  assert.equal(r.profile.blender, false);
+  // 64K remains resolvable (explicit selection preserved; not removed).
+  const r64 = resolveDevProfile(runtime, "qwen38-opus-q3-cline-64k");
+  assert.equal(r64.ok, true);
+  assert.equal(r64.profile.context_tokens, 65536);
+  // Neither DEV profile leaks into the production eligible set.
+  assert.ok(!runtime.profiles["qwen38-opus-q3-cline-24k"]);
+  assert.ok(!runtime.profiles["qwen38-opus-q3-cline-64k"]);
+});
+
 // ---------- 7. command/path enforcement ----------
 await test("command allowlist blocks forbidden destructive command", () => {
   const r = validateEnvelope(validEnvelope({ allowed_commands: ["git reset --hard origin/main", "node x.mjs"], test_command: null }));

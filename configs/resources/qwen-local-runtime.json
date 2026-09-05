@@ -130,6 +130,20 @@
       "blender": false,
       "live_verification": "STAGED_NOT_LIVE_VERIFIED",
       "category": "workstation_dev_executor_profile"
+    },
+    "qwen38-opus-q3-cline-24k": {
+      "purpose": "CLINE_GENERAL_DEVELOPMENT",
+      "context_tokens": 24576,
+      "model_path": "D:/AI/qwen38-blender-lab/models/qwen38-opus/Qwen3.8-27B-Opus-Distill-v2-Q3_K_M.gguf",
+      "backend_lane": "normal_llama_cpp",
+      "control_plane_eligible": false,
+      "auto_route": false,
+      "startup_default": false,
+      "wf40": false,
+      "scope_v3": false,
+      "blender": false,
+      "live_verification": "STAGED_NOT_LIVE_VERIFIED",
+      "category": "workstation_dev_executor_profile"
     }
   },
   "role_to_profile_id": {
