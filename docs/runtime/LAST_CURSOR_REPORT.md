@@ -1,5 +1,73 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_GOVERNED_RETRY_EXECUTION_CALLER_INTEGRATION_V1` (micro-task delta, issue #45, base `5c8f2e6`)
+**Classification:** `PASS — SMALLEST GOVERNED RETRY-EXECUTION CALLER/STAGE CREATED: tools/run-governed-retry-execution-v1.mjs sits between a repairable implementation STOP and retry-execution authorization; invokes the REAL runRetryStage (fresh quota state every attempt); PASS / non-repairable STOP never enter; max_attempts enforced from explicit retry_policy bound (hard cap 3, never invent unbounded); when a route is selected and no authorized execution surface exists → caller_status=RETRY_ROUTE_SELECTED_AWAITING_EXECUTION_AUTHORIZATION with execution_performed=false (NEVER infer/execute); D-0025 CLOSED re-verified; ordinary test-command re-runs NOT converted into model-route retries; NO fake LIVE wiring into local-dev executor/dispatcher (exact final activation dependency persisted); FOCUSED TESTS 10/10 + retry-stage-boundary 14/14; WF40/WF61/n8n UNTOUCHED`
+**Timestamp (local):** 2026-09-06 (01:0x, UTC+2)
+**BASE_HEAD:** `5c8f2e6704339c3e33758188cc753aaca8e9aa66`
+**CLOSURE HEAD:** final `cursor-pass: V4_GOVERNED_RETRY_EXECUTION_CALLER_INTEGRATION_V1` commit carrying this report
+**CLOSURE:** MINIMAL_RUNTIME_BUNDLE (1 new tool + 1 focused suite)
+
+## Chosen caller architecture (issue #45 path-b)
+
+No safe existing post-failure *route-selection* call site exists: the only real retry loop in local-dev (`makeRunTests`) re-runs a test COMMAND and must NOT become an LLM/model-route retry. Therefore the smallest real caller is a dedicated governed retry-execution stage/runner:
+
+```text
+implementation STOP (local-dev-execution-result-v1)
+  + retry_policy { max_attempts }   // governed bound metadata ONLY
+  -> classifyRepairability
+       PASS                      -> PASS_NO_RETRY
+       non-repairable STOP       -> NOT_REPAIRABLE
+       missing/invalid bound     -> NOT_REPAIRABLE
+       attempt > max_attempts    -> MAX_ATTEMPTS_EXCEEDED
+  -> runRetryStage (REAL; fresh canonical quota state EVERY attempt)
+  -> if RETRY_ROUTE_SELECTED && !authorized:
+       RETRY_ROUTE_SELECTED_AWAITING_EXECUTION_AUTHORIZATION
+       execution_performed=false
+  -> if blocked/vetoed:
+       RETRY_SELECTION_BLOCKED (fail-closed, no execution)
+```
+
+Repairable classifications (closed allowlist): `STOP:TEST_FAILED`, `STOP:OPENCODE_RUN_FAILED`, `STOP:OPENCODE_TASK_ERROR`. Everything else (preflight/bounds/git/path/envelope) is non-repairable.
+
+## Exact canonical call path
+
+`tools/run-governed-retry-execution-v1.mjs` → `runGovernedRetryExecution(stopResult, { attempt, retryPolicy, … })` → `runRetryStage` → `buildRetryBoundaryState` → `selectQuotaAwareRetryRoute` → T13/T14 guards → bounded `v4-governed-retry-execution-result-v1`.
+
+CLI: `node tools/run-governed-retry-execution-v1.mjs --input-file <stop.json> [--attempt N] [--max-attempts N] [--previous-route-id id] [--previous-pool-id id] [--previous-model id] [--output-file path]`
+
+## Real caller wired: YES (this stage IS the caller)
+
+The stage is the runtime caller between repairable STOP and execution authorization. It is NOT auto-attached to the local-dev executor `main()` or the always-on dispatcher — that would convert ordinary STOPs / test re-runs into model-route retries without an explicit `retry_policy`. Exact final activation dependency (persisted, not faked):
+
+> A future governed activation may call `runGovernedRetryExecution` from a post-STOP hook ONLY when the envelope/result carries an explicit `retry_policy.max_attempts` (or equivalent governed bound). Until then, the stage is invoked via its canonical library/CLI. No authorized retry-execution adapter exists; selected routes remain `AWAITING_EXECUTION_AUTHORIZATION`.
+
+## Focused test results
+
+- NEW `tests/governed-retry-execution-caller/run.mjs`: **10/10 PASS**
+  - A PASS never retries
+  - B non-repairable STOP never retries (+ missing policy bound)
+  - C repairable STOP invokes REAL `runRetryStage`
+  - D attempt N and N+1 each recompute fresh quota state (`joined_at` differs)
+  - E blocked/stale commercial route → `RETRY_SELECTION_BLOCKED`
+  - F selected + unauthorized → `RETRY_ROUTE_SELECTED_AWAITING_EXECUTION_AUTHORIZATION`, `execution_performed=false` (incl. probe claiming authorized still fail-closed)
+  - G max attempts enforced (+ hard-cap rejects unbounded policy)
+  - H D-0025 `enabled=false` + authorization probe closed
+- EXISTING `tests/retry-stage-boundary/run.mjs`: **14/14 PASS**
+- `node --check` / `git diff --check`: OK. Corrective loops used: 0 of 2.
+
+## Hard walls honored
+
+D-0025 `enabled=false` re-verified. No n8n live apply, no workflow activation, no service restart, no Telegram, no Tailscale, no provider/model calls, no OpenAI API/BYOK, no credentials. Pre-existing untracked files preserved; selective stage only.
+
+## Persistence record
+
+- `GOVERNED_RETRY_EXECUTION_CALLER = WIRED_BEHIND_CLOSED_GATE` (stage/caller live; execution disabled awaiting authorization; not LIVE)
+- Files: `tools/run-governed-retry-execution-v1.mjs` (NEW), `tests/governed-retry-execution-caller/run.mjs` (NEW)
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_CANONICAL_RETRY_REPAIR_RUNTIME_BOUNDARY_V1` (micro-task delta, issue #44, base `6749f06`)
 **Classification:** `PASS — ONE REAL CANONICAL RETRY/REPAIR-SELECTION BOUNDARY CREATED: tools/run-retry-stage-v1.mjs (runRetryStage / buildRetryCandidates / canonical CLI) recomputes FRESH canonical quota state at EVERY retry invocation via buildRetryBoundaryState (real registry-v2 + fail-closed baseline + real ingest lane → real composer → real join — never the state captured at initial implementation time), invokes the REAL selectQuotaAwareRetryRoute (T19: fresh internal join + scarce-pool exclusion + RETRY_BLOCKED no-silent-reuse), applies guardQualityDowngrade (T13, status-normalized for the retry envelope) and guardUrgencyDeferral (T14, only with caller-supplied urgency context), emits bounded v4-retry-stage-result-v1 with execution_performed=false (SELECTION ONLY); DEDICATED CANONICAL CLI PROVEN (task path 5-b: no runtime retry-route loop exists today — the only real retry loop, bounded test cycles, selects no route — so NO caller was faked; exact caller dependency persisted); FOCUSED TESTS 14/14 + T19 selector suite 5/5; D-0025 CLOSED UNCHANGED; WF40/WF61/n8n/local-dev runner UNTOUCHED`
 **Timestamp (local):** 2026-09-06 (00:5x, UTC+2)
