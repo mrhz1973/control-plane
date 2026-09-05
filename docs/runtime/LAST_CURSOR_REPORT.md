@@ -1,5 +1,83 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_CANONICAL_REVIEWER_RUNTIME_BOUNDARY_V1` (issue #43, parent #41/#32; micro-task delta, base `8789b23`)
+**Classification:** `STOP — NO REAL CANONICAL REVIEWER INSERTION POINT EXISTS IN THE RUNTIME; WIRING WOULD REQUIRE INVENTING NEW ORCHESTRATION (FORBIDDEN BY THE TASK'S CRITICAL RULE); EXACT MISSING DEPENDENCY PERSISTED BELOW`
+**Timestamp (local):** 2026-09-05 (late evening, immediately after the CLI/mixed-route fix)
+**BASE_HEAD:** `8789b23ba772dae6f2502fd7bab8f4a3b04c1c75`
+**CLOSURE HEAD:** final `cursor-stop: V4_CANONICAL_REVIEWER_RUNTIME_BOUNDARY_V1` commit carrying this report
+**CLOSURE:** STANDARD_RUNTIME_BUNDLE (stop-evidence only; no runtime code changed)
+
+## Verified absence (code-reference proof, base `8789b23`)
+
+The reusable pieces exist and are quota-aware: `rt25-reviewer-quota-aware-selector-v1.mjs`
+(T18: admission law + independence preference, proven by
+`tests/rt25-t18-reviewer-selector` 5/5) and the canonical producer binding
+`rt25-canonical-quota-state-v1.buildReviewerBoundaryState`. What does NOT
+exist is the runtime stage that would invoke them. Verified by exhaustive
+code-reference search (`git grep` on tracked files):
+
+1. `selectQuotaAwareReviewerRoute` — ZERO runtime callers (definition + its
+   own test suite only).
+2. `buildReviewerBoundaryState` — defined, never invoked.
+3. Execution Packet `review` section (`bugbot`/`max_review_rounds`/
+   `autofix_cloud`) — validated STRUCTURALLY by the schema, but
+   `evaluate-execution-packet-policy.mjs` never reads it: no policy decision,
+   no behavioral trigger, no review round orchestration anywhere.
+4. `qwen-local-adapter-v1.mjs` exposes the `reviewer` ROLE (prompt template
+   only); the only role-driven runtime wiring is `routing_arbiter` inside
+   `evaluate-execution-route.mjs` (`isArbiterReady`). No runtime caller uses
+   role `reviewer`.
+5. WF61 primary cycle (`prepare`/`finalize`), WF40 routing bridge, adapter
+   router bridge, local-dev executor, Windows endpoint: NO pre- or
+   post-execution review stage exists.
+6. Registry v2 declares `reviewer` role metadata for
+   `codex_subscription_models` and `qwen_local` — static metadata with no
+   runtime consumer boundary.
+
+## Exact missing dependency (required before this micro-task can GO)
+
+A REAL review stage in the canonical runtime chain — any ONE of, created by a
+separately governed architecture pass (not by this micro-task):
+
+- (a) a review step in the WF40 execution path (n8n workflow + bridge
+  contract change) invoked after implementation and before/around packet
+  completion; or
+- (b) a post-finalize review stage in the WF61 primary cycle (packet contract
+  `review` section made behavioral: policy gate consumes
+  `bugbot`/`max_review_rounds` and triggers reviewer selection); or
+- (c) a dedicated reviewer runner tool with its own governed contract.
+
+Until one exists, `selectQuotaAwareReviewerRoute` +
+`buildReviewerBoundaryState` remain ready-but-unwired (same status as
+documented in the RT25 correction report §reviewer/retry). Wiring them into
+any current boundary would INVENT orchestration, violating the critical rule
+and the no-fake-production-path law.
+
+## Proofs (no runtime change; absence evidence only)
+
+- focused searches persisted above (`git grep`, 6 absence classes);
+- `tests/rt25-t18-reviewer-selector` — **5/5** (selector law itself still
+  green on the unwired boundary);
+- D-0025 `enabled=false` (static, untouched); no n8n/production activation;
+  no model calls of any kind (micro-task law: no synthetic generation).
+
+## Files (this stop)
+
+| File | Change |
+|---|---|
+| `docs/runtime/LAST_CURSOR_REPORT.md` | new stop section on top (previous report preserved below) |
+| `docs/runtime/CURRENT_FRONTIER.md` | QUOTA_AWARE_RUNTIME row: #43 absence verification note |
+
+## Hard boundaries
+
+D-0025 CLOSED (untouched) · no production/n8n activation · no OpenAI
+API/BYOK · no invented orchestration · no synthetic model calls · no secret
+persistence.
+
+---
+
+# HISTORICAL — V4_RT25_CANONICAL_CLI_AND_MIXED_ROUTE_FIX_V1 (preserved verbatim)
+
 **BLOCK-ID:** `V4_RT25_CANONICAL_CLI_AND_MIXED_ROUTE_FIX_V1` (issue #41, parent #32; continuation of the canonical-entrypoint correction, base `5322b31`)
 **Classification:** `PASS — EXISTING CLI INVOCATION SHAPES AUTOMATICALLY COMPOSE THE CANONICAL QUOTA STATE (WF61 PREPARE WITHOUT QUOTA FLAG; WF40 BRIDGE WITH CYCLE/ROUTE/STATUS ONLY); MIXED-ROUTE QUOTA NARROWING WITHOUT TEMPORAL-DEAD-ZONE (COMMERCIAL REJECTED, VALID QWEN LOCAL SURVIVES, QUOTA_POOL_NARROWED RECORDED); EXACT CLI PROOFS 31/31; LAWS A..N 104/104; CANONICAL E2E 12/12; FULL REGRESSION 38 SUITES GREEN; D-0025 UNCHANGED (CLOSED); BUGBOT_REVIEW=FINDINGS_FIXED`
 **Timestamp (local):** 2026-09-05 (late evening session)
