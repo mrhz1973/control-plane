@@ -116,6 +116,7 @@ export function joinQuotaPoolState(composerResult, registry, options = {}) {
       resources[resourceId] = {
         quota_pool_id: null,
         pool_semantics: RESOURCE_NO_POOL_SEMANTICS[resourceId] || "no_pool_binding",
+        resource_available: rStatus.available === true,
       };
       continue;
     }
