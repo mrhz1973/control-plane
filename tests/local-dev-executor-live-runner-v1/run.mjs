@@ -839,6 +839,76 @@ await test("shared no-shell resolver is the single source used by runner and pro
   assert.equal(t.resolved_from, "npm-package-real-binary");
 });
 
+// ---------- 16. TEST-HARNESS HANDLE-SHAPE (RETRY9 root cause regression) ----------
+await test("makeRunTests with HANDLE-shaped spawn records exit_code 0 and stops after one cycle", async () => {
+  const { makeRunTests } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  let cycles = 0;
+  const handleShapedSpawn = async () => {
+    cycles += 1;
+    return { // REAL defaultSpawn shape: handle, NOT the resolved result
+      pid: 777,
+      promise: Promise.resolve({ status: 0, stdout: "", stderr: "", pid: 777 }),
+      getOutput: () => ({ stdout: "", stderr: "" }),
+      terminate: async () => ({ termination_confirmed: true }),
+    };
+  };
+  const runs = await makeRunTests({ spawnProc: handleShapedSpawn })({ testCommand: "git diff --check", maxTestCycles: 3, repoPath: "/r" });
+  assert.equal(cycles, 1, "must stop after one cycle when status 0");
+  assert.equal(runs.length, 1);
+  assert.equal(runs[0].exit_code, 0, "exit_code must be the RESOLVED status, not undefined (RETRY9 defect)");
+  assert.equal(runs[0].command, "git diff --check");
+  assert.equal(runs[0].cycle, 1);
+});
+
+await test("makeRunTests HANDLE-shaped failure then success respects max cycles", async () => {
+  const { makeRunTests } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  let call = 0;
+  const handleShapedSpawn = async () => {
+    call += 1;
+    const status = call >= 2 ? 0 : 1;
+    return {
+      pid: 1000 + call,
+      promise: Promise.resolve({ status, stdout: "", stderr: "", pid: 1000 + call }),
+      getOutput: () => ({ stdout: "", stderr: "" }),
+      terminate: async () => ({ termination_confirmed: true }),
+    };
+  };
+  const runs = await makeRunTests({ spawnProc: handleShapedSpawn })({ testCommand: "x", maxTestCycles: 3, repoPath: "/r" });
+  assert.equal(runs.length, 2, "fail(1) then success(0) -> exactly 2 cycles");
+  assert.equal(runs[0].exit_code, 1);
+  assert.equal(runs[1].exit_code, 0);
+  // bounded: persistent failure stops at max cycles
+  let failingCalls = 0;
+  const alwaysFailing = async () => {
+    failingCalls += 1;
+    return {
+      pid: 2000 + failingCalls,
+      promise: Promise.resolve({ status: 1, stdout: "", stderr: "" }),
+      getOutput: () => ({ stdout: "", stderr: "" }),
+      terminate: async () => ({ termination_confirmed: true }),
+    };
+  };
+  const bounded = await makeRunTests({ spawnProc: alwaysFailing })({ testCommand: "x", maxTestCycles: 2, repoPath: "/r" });
+  assert.equal(bounded.length, 2, "bounded at max_test_cycles");
+  assert.ok(bounded.every((r) => r.exit_code === 1 && r.exit_code !== undefined));
+});
+
+await test("makeRunTests legacy promise/result-shaped injected fake remains supported", async () => {
+  const { makeRunTests } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  const runs = await makeRunTests({ spawnProc: async () => ({ status: 0, stdout: "", stderr: "" }) })({ testCommand: "x", maxTestCycles: 3, repoPath: "/r" });
+  assert.equal(runs.length, 1);
+  assert.equal(runs[0].exit_code, 0, "legacy injected result shape still works");
+});
+
+await test("makeRunTests with the REAL defaultSpawn records a real exit_code (harmless command)", async () => {
+  const { makeRunTests } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  // real defaultSpawn (the exact production path): handle shape internally
+  const runs = await makeRunTests()({ testCommand: "node -e 0", maxTestCycles: 2, repoPath: process.cwd() });
+  assert.equal(runs.length, 1);
+  assert.equal(runs[0].exit_code, 0, "real defaultSpawn handle path must record resolved status 0");
+  assert.notEqual(runs[0].exit_code, undefined);
+});
+
 // ---------- summary ----------
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 // Explicit exit: the CLI schema-acceptance probe spawns a shell (.cmd) child

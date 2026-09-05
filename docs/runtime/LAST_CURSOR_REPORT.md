@@ -1,33 +1,33 @@
 ﻿# LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_RETRY8_DIRTY_MARKER_RECONCILIATION_V1`
-**Classification:** `RETRY8_DIRTY_MARKER_RECONCILED`
+**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_TEST_HARNESS_HANDLE_SHAPE_FIX_V1`
+**Classification:** `LOCAL_DEV_EXECUTOR_TEST_HARNESS_HANDLE_SHAPE_FIX_PASS`
 **Timestamp (local):** 2026-09-05
 
 ## Summary
 
-RETRY8 remains STOP (`STOP:BOUNDS_TIMEBOX_EXPIRED` at 302s; see
-`reports/runtime/cursor-stops/2026-09-04T235415Z__V4_LOCAL_DEV_EXECUTOR_QWEN_BOUNDED_LIVE_PROOF_RETRY8_TURN_CALIBRATION.stop.json`).
-The single in-scope dirty change was verified as EXACTLY the declared RETRY8
-evidence — pure 4-line append of `## First completed bounded live proof after
-turn calibration` / `LOCAL_DEV_EXECUTOR_FIRST_LIVE_PROOF_RETRY8 = QWEN_EXECUTED`
-(marker present exactly once; RETRY7 marker still present exactly once; no
-pre-existing content altered; `git diff --check` PASS) — and is persisted by
-this pass in the target report file.
+Proven RETRY9 root cause fixed: `makeRunTests()` read `status` off the
+`defaultSpawn()` HANDLE (post-`9b65a67` shape) instead of the resolved
+process result, producing `exit_code: undefined` → `STOP:TEST_FAILED`
+regardless of the real command outcome. `makeRunTests()` now normalizes both
+shapes via the existing `asSpawnHandle` path, awaits `handle.promise`, and
+records the resolved `status` as `exit_code`; bounded-cycle semantics and the
+HANDLE/termination contracts are unchanged.
 
-No new Qwen/OpenCode run. REAL_QWEN_GENERATIONS for this reconciliation
-pass = 0. RETRY8 evidence confirms: 6 upstream generations,
-4 guard blocks post-ceiling, 300 s timebox reached, and `task` SUBAGENT
-DELEGATION by the agent (inflating upstream requests per logical step).
-`CURRENT_FRONTIER.md` intentionally unchanged (no LIVE STATE change).
-All pre-existing untracked files preserved (32).
+RETRY9 remains STOP only because of this now-fixed evidence/test wiring
+defect: the Qwen/OpenCode path itself was successful within bounds
+(SUBAGENT_USED=NO, 7 upstream generations, clean exit, test phase reached,
+real `git diff --check` exit 0).
+
+Regression evidence: 4 new deterministic offline tests (handle-shape
+success/one-cycle, fail→success/bounded, legacy fake compat, REAL
+`defaultSpawn` path). Suites: **42/42**, **20/20**, **14/14**;
+`git diff --check` PASS.
+
+QWEN_RUNS_THIS_PASS=0. OPENCODE_RUNS_THIS_PASS=0. Production unchanged.
+The RETRY9 dirty marker (exact 4-line append) remains uncommitted and
+requires canonical reconciliation. All pre-existing untracked preserved (32).
 
 ## NEXT
 
-NEXT owner = GPT_WEB. The technical next step requires a CALIBRATION/SHAPING
-DECISION, not a blind bound bump:
-
-- raise both bounds moderately together (e.g. `max_agent_turns≈10` AND
-  `timebox_seconds≈600`, within V1 hard caps), and/or
-- shape the next task_delta to explicitly forbid subagent (`task`)
-  delegation so each logical step costs one upstream request.
+`V4_LOCAL_DEV_EXECUTOR_RETRY9_DIRTY_MARKER_RECONCILIATION_V1`

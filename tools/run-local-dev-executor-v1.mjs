@@ -335,16 +335,24 @@ export function makeRunOpenCodeTask(deps = {}) {
   };
 }
 
-/** Bounded test cycles: re-run only while failing and cycles remain. */
+/** Bounded test cycles: re-run only while failing and cycles remain.
+ * Handle-shape fix (V4_LOCAL_DEV_EXECUTOR_TEST_HARNESS_HANDLE_SHAPE_FIX_V1):
+ * defaultSpawn returns a HANDLE {pid, promise, getOutput, terminate}; injected
+ * legacy fakes may still return a resolved result object. Both shapes are
+ * normalized through the same asSpawnHandle path used by the OpenCode task,
+ * then the resolved process result's `status` is recorded as `exit_code`.
+ * Never read `status` off the handle itself (that field does not exist there
+ * — the RETRY9 STOP:TEST_FAILED root cause). */
 export function makeRunTests(deps = {}) {
   const spawnProc = deps.spawnProc || defaultSpawn;
   return async ({ testCommand, maxTestCycles, repoPath }) => {
     if (!testCommand) return [];
     const runs = [];
     for (let cycle = 1; cycle <= maxTestCycles; cycle += 1) {
-      const r = await spawnProc(testCommand, [], { cwd: repoPath, shell: true });
-      runs.push({ command: testCommand, exit_code: r.status, cycle });
-      if (r.status === 0) break;
+      const handle = asSpawnHandle(await spawnProc(testCommand, [], { cwd: repoPath, shell: true }));
+      const result = await handle.promise;
+      runs.push({ command: testCommand, exit_code: result.status, cycle });
+      if (result.status === 0) break;
     }
     return runs;
   };

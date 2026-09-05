@@ -6,11 +6,11 @@
 |---|---|
 | **FOUNDATION** | v3.5 — LiteLLM primary remote gateway — CANONICAL |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
-| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 9-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · workstation-only Cline 64K profile **LIVE-VERIFIED / PASS** · LOCAL_DEV_EXECUTOR **V1 IMPLEMENTED + WIRED + SAFETY-ENFORCED + DEV BRIDGE + WIN SHIM SPAWN FIX + FAILURE EVIDENCE + PERMISSION SCHEMA FIX + HARD PROCESS TIMEOUT + TIMEOUT ARBITRATION + NO-SHELL PROBE + PREGEN BOUNDARY DIAGNOSTIC** · no ACTIVE authorization |
-| **BLOCCO ATTIVO** | `V4_LOCAL_DEV_EXECUTOR_TIMEOUT_ARBITRATION_AND_OPENCODE_PREGEN_BOUNDARY_DIAGNOSTIC_V1` — **PASS** · timeout-triggered kill can no longer reclassify as OPENCODE_RUN_FAILED · RETRY5 reconciled via local logs: alive at +60 s, stalled post-`init` pre-session · boundary `OPENCODE_PRE_PROVIDER_INIT_STALL` · DEV runner now mirrors ratified production invocation shape (stdin-ignore + OPENCODE_DISABLE_* suite) · 38/38 + regressions |
+| **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 9-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · workstation-only Cline 64K profile **LIVE-VERIFIED / PASS** · LOCAL_DEV_EXECUTOR **V1 + SAFETY + DEV BRIDGE + WIN SHIM FIX + TIMEOUT ARBITRATION + NO-SHELL PROBE + PREGEN BOUNDARY CLEARED + TEST-HARNESS HANDLE-SHAPE FIX** (live proofs RETRY6-9: Qwen path reached; full PASS pending RETRY10) · no ACTIVE authorization |
+| **BLOCCO ATTIVO** | `V4_LOCAL_DEV_EXECUTOR_TEST_HARNESS_HANDLE_SHAPE_FIX_V1` — **PASS** · `makeRunTests` ora normalizza handle/promise shape e registra l'exit code risolto (difetto RETRY9 eliminato) · 42/42 + 20/20 + 14/14 · RETRY9 resta STOP solo per il difetto harness ora corretto |
 | **STATO BLOCCO** | OPUS Agent 24K qualified for FAST_AGENT/FAST_INTERACTIVE/FAST_AGENT_SHORT_TURN · scope-v3 digest `934123f0…f2548f7` · DCFR short-turn remains **UNQUALIFIED** and FAST_THROUGHPUT/LONG_TASK QUALIFIED · `<think>` caveat documented; exact-output compliance not claimed · scope-v2 historical |
 | **GATE CORRENTE** | **CLOSED** · D-0025 `enabled=false` |
-| **NEXT** | `V4_LOCAL_DEV_EXECUTOR_QWEN_FIRST_BOUNDED_LIVE_PROOF_RETRY6_DIAGNOSTIC` — bounded live proof (timebox ≤ 90 s) with corrected arbitration: expected PASS path or `STOP:BOUNDS_TIMEBOX_EXPIRED` carrying true sanitized child excerpts. RETRY5 already executed — NOT NEXT, NOT re-run |
+| **NEXT** | `V4_LOCAL_DEV_EXECUTOR_RETRY9_DIRTY_MARKER_RECONCILIATION_V1` — riconciliazione meccanica del marker RETRY9 (append esatto ancora uncommitted); poi RETRY10 atteso primo PASS end-to-end (edit → test → git persistence). Nessuna prima esecuzione dev completa ancora rivendicata |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · `activeVersionId=a609ad90-7eb4-4495-9ec5-c4413165cea1` |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |
 | **REMOTE RUNTIME GATE** | D-0025 gate `enabled=false` · **CLOSED** |
@@ -32,7 +32,7 @@
 | **EXECUTION ADAPTER ROUTER** | `tools/v4-execution-adapter-router-v1.mjs` · exact route `opencode+qwen_local` |
 | **OPENCODE EXECUTION ADAPTER** | `tools/opencode-execution-adapter-v1.mjs` · bound to active scope-v3 · `profile_id=qwen38-opus-q3-agent-24k` · `<think>` caveat documented |
 | **PRODUCTION DATABASE** | n8n 2.33.3 on PostgreSQL 16.15 · health 200 · sequence resync PASS |
-| **LOCAL DEV EXECUTOR** | `docs/contracts/local-dev-executor-v1.md` · **V1 IMPLEMENTED + WIRED + SAFETY-ENFORCED + DEV SESSION BRIDGE** · `tools/local-dev-executor-v1.mjs` + `tools/run-local-dev-executor-v1.mjs` + `tools/local-dev-generation-guard-v1.mjs` · hard timebox + path enforcement + V1 deny-first permission overlay · `ensureWorkstationDevQwenReady` DEV bridge (workstation_manual_profiles only, no production doc/role-map validation) · tests **20/20** + **23/23** + bridge **14/14 PASS** · `workstation_dev_executor_profile` on `qwen38-opus-q3-cline-64k` · provider-neutral `executor-pass:`/`executor-stop:` evidence · real dev executions: 0 |
+| **LOCAL DEV EXECUTOR** | `docs/contracts/local-dev-executor-v1.md` · **V1 IMPLEMENTED + WIRED + SAFETY-ENFORCED + DEV SESSION BRIDGE** · `tools/local-dev-executor-v1.mjs` + `tools/run-local-dev-executor-v1.mjs` + `tools/local-dev-generation-guard-v1.mjs` · hard timebox + path enforcement + V1 deny-first permission overlay · `ensureWorkstationDevQwenReady` DEV bridge (workstation_manual_profiles only, no production doc/role-map validation) · tests **20/20** + **42/42** + bridge **14/14 PASS** · `workstation_dev_executor_profile` on `qwen38-opus-q3-cline-64k` · provider-neutral `executor-pass:`/`executor-stop:` evidence · real dev executions: 0 complete (RETRY6-9: Qwen path proven, edit proven, test phase reached; first full PASS pending RETRY10 after handle-shape fix + RETRY9 marker reconciliation) |
 
 ## Installed execution path
 
@@ -97,6 +97,7 @@ launch commands.
 - LOCAL_DEV_EXECUTOR OpenCode V1 permission schema fix: `reports/architecture/v4_local_dev_executor_opencode_permission_schema_fix_v1.md`
 - LOCAL_DEV_EXECUTOR hard timeout/process control: `reports/architecture/v4_local_dev_executor_hard_timeout_process_control_and_preflight_diagnostics_v1.md`
 - LOCAL_DEV_EXECUTOR timeout arbitration + OpenCode pregen boundary diagnostic: `reports/architecture/v4_local_dev_executor_timeout_arbitration_and_opencode_pregeneration_boundary_diagnostic_v1.md`
+- LOCAL_DEV_EXECUTOR test-harness handle-shape fix: `reports/architecture/v4_local_dev_executor_test_harness_handle_shape_fix_v1.md`
 - AGG role correction PASS report: `reports/architecture/v4_qwen_agg_runtime_role_correction_dcfr_short_turn.md`
 - Role-qualification overlay: `configs/resources/qwen-role-qualification.json`
 - Integration PASS report: `reports/architecture/v4_qwen_local_6_profile_router_control_plane_integration.md`
