@@ -15,9 +15,16 @@
  *      and consumes the ROUTER-PRODUCED envelope automatically
  *   5. Windows endpoint (real handler) validates the provenance built from the
  *      router-produced envelope under the qwen authorization scope
+ *   6. CANONICAL review-stage runner (attachReviewStage — same post-implementation
+ *      caller used by tools/run-local-dev-executor-v1.mjs main()) — NOT the T18
+ *      selector invoked directly
+ *   7. CANONICAL governed retry-execution stage on a repairable STOP fixture —
+ *      runGovernedRetryExecution → REAL runRetryStage (NOT T19 invoked directly)
  *
  * Also proves the CLI planner path: evaluate-planner-selection.mjs <input>
  * <quota-state.json> produced by the canonical producer module.
+ *
+ * Closure checkpoint: V4_CANONICAL_QUOTA_RUNTIME_FINAL_CLOSURE_CHECKPOINT_V1 (#46).
  */
 import { readFileSync, writeFileSync, mkdtempSync, mkdirSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
@@ -45,6 +52,10 @@ import {
   recordDurableSpend as realRecordLedger,
   LEDGER_SCHEMA_VERSION,
 } from "../../tools/v4-runtime-authorization-durable-spend-ledger-v1.mjs";
+import { attachReviewStage, REVIEW_STAGE_RESULT_SCHEMA } from "../../tools/run-review-stage-v1.mjs";
+import { runGovernedRetryExecution, GOVERNED_RETRY_EXECUTION_SCHEMA } from "../../tools/run-governed-retry-execution-v1.mjs";
+import { RETRY_STAGE_RESULT_SCHEMA } from "../../tools/run-retry-stage-v1.mjs";
+import { REVIEWER_DECISION_SCHEMA } from "../../tools/rt25-reviewer-quota-aware-selector-v1.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../..");
@@ -382,6 +393,139 @@ check(
     ledger.spends.length === 1 && ledger.spends[0].authorization_id === "AUTH-CANONICAL-E2E",
     JSON.stringify(ledger.spends.map((s) => s.authorization_id)),
   );
+}
+
+// ===========================================================================
+// STAGE 7 — CANONICAL review-stage via REAL post-implementation caller
+// (attachReviewStage — identical helper used by local-dev executor main()).
+// Does NOT call selectQuotaAwareReviewerRoute directly.
+// ===========================================================================
+{
+  const runnerSrc = readFileSync(resolve(ROOT, "tools/run-local-dev-executor-v1.mjs"), "utf8");
+  check(
+    "S13-local-dev-runner-wires-attachReviewStage",
+    /import\s+\{\s*attachReviewStage\s*\}/.test(runnerSrc) &&
+      /await\s+attachReviewStage\s*\(/.test(runnerSrc),
+    "caller wiring missing in run-local-dev-executor-v1.mjs",
+  );
+
+  const implPass = {
+    schema_version: "local-dev-execution-result-v1",
+    task_ref: "RT25-CANONICAL-E2E-REVIEW",
+    status: "PASS",
+    classification: "PASS",
+    actor: "local-dev-executor-v1",
+    profile_id: "qwen38-opus-q3-opencode-24k",
+    reason_codes: ["PASS"],
+  };
+  const review = await attachReviewStage(implPass, {
+    implementerModel: "qwen38-opus-q3-opencode-24k",
+    quotaStateOptions: laneQuotaStateOptions,
+  });
+  check(
+    "S14-review-stage-via-real-attachReviewStage",
+    review?.schema_version === REVIEW_STAGE_RESULT_SCHEMA &&
+      implPass.review_stage === review &&
+      review.execution_performed === false &&
+      review.quota_provenance?.joined_at === new Date(NOW).toISOString() &&
+      review.decision?.schema_version === REVIEWER_DECISION_SCHEMA &&
+      (review.reviewer_selection_status === "REVIEWER_SELECTED" ||
+        review.reviewer_selection_status === "NO_ROUTE_SELECTED" ||
+        review.reviewer_selection_status === "VETOED_QUALITY_DOWNGRADE"),
+    JSON.stringify({
+      s: review?.reviewer_selection_status,
+      ep: review?.execution_performed,
+      ds: review?.decision?.schema_version,
+      j: review?.quota_provenance?.joined_at,
+    }),
+  );
+  check(
+    "S15-review-execution-not-authorized",
+    review.execution_performed === false &&
+      review.reason_codes &&
+      !/openai_api|byok/i.test(JSON.stringify(review)),
+    JSON.stringify({ ep: review.execution_performed, rc: review.reason_codes?.slice?.(0, 6) }),
+  );
+}
+
+// ===========================================================================
+// STAGE 8 — CANONICAL governed retry-execution on a repairable STOP fixture.
+// Invokes REAL runRetryStage via runGovernedRetryExecution (NOT T19 directly).
+// ===========================================================================
+{
+  const stopFixture = {
+    schema_version: "local-dev-execution-result-v1",
+    task_ref: "RT25-CANONICAL-E2E-RETRY",
+    status: "STOP",
+    classification: "STOP:TEST_FAILED",
+    actor: "local-dev-executor-v1",
+    profile_id: "qwen38-opus-q3-opencode-24k",
+    reason_codes: ["TEST_FAILED"],
+  };
+  const retry1 = await runGovernedRetryExecution(stopFixture, {
+    attempt: 1,
+    retryPolicy: { max_attempts: 2 },
+    previousRouteId: "retry-glm-5.3",
+    previousPoolId: "glm_coding_plan",
+    quotaStateOptions: laneQuotaStateOptions,
+  });
+  check(
+    "S16-governed-retry-invokes-real-runRetryStage",
+    retry1.schema_version === GOVERNED_RETRY_EXECUTION_SCHEMA &&
+      retry1.repairable === true &&
+      retry1.retry_stage?.schema_version === RETRY_STAGE_RESULT_SCHEMA &&
+      retry1.execution_performed === false &&
+      (retry1.caller_status === "RETRY_ROUTE_SELECTED_AWAITING_EXECUTION_AUTHORIZATION" ||
+        retry1.caller_status === "RETRY_SELECTION_BLOCKED"),
+    JSON.stringify({ s: retry1.caller_status, rs: retry1.retry_stage?.retry_selection_status, ep: retry1.execution_performed }),
+  );
+
+  const retry2 = await runGovernedRetryExecution(stopFixture, {
+    attempt: 2,
+    retryPolicy: { max_attempts: 2 },
+    previousRouteId: retry1.selected_retry_route?.route_id,
+    quotaStateOptions: { ...laneQuotaStateOptions, nowMs: NOW + 60_000 },
+  });
+  check(
+    "S17-retry-attempt-fresh-quota-recompose",
+    retry2.retry_stage?.quota_provenance?.joined_at === new Date(NOW + 60_000).toISOString() &&
+      retry1.retry_stage?.quota_provenance?.joined_at === new Date(NOW).toISOString() &&
+      retry1.retry_stage?.quota_provenance?.joined_at !== retry2.retry_stage?.quota_provenance?.joined_at,
+    JSON.stringify({
+      j1: retry1.retry_stage?.quota_provenance?.joined_at,
+      j2: retry2.retry_stage?.quota_provenance?.joined_at,
+    }),
+  );
+
+  // Non-repairable STOP must never enter selection.
+  const nonRepair = await runGovernedRetryExecution(
+    { ...stopFixture, classification: "STOP:BOUNDS_TIMEBOX_EXPIRED" },
+    { attempt: 1, retryPolicy: { max_attempts: 2 }, quotaStateOptions: laneQuotaStateOptions },
+  );
+  check(
+    "S18-non-repairable-stop-never-retries",
+    nonRepair.caller_status === "NOT_REPAIRABLE" &&
+      nonRepair.retry_stage === null &&
+      nonRepair.execution_performed === false,
+    JSON.stringify({ s: nonRepair.caller_status, rc: nonRepair.reason_codes }),
+  );
+
+  // Selected-but-unauthorized invariant (when a route is selected).
+  if (retry1.caller_status === "RETRY_ROUTE_SELECTED_AWAITING_EXECUTION_AUTHORIZATION") {
+    check(
+      "S19-selected-retry-awaits-execution-authorization",
+      retry1.selected_retry_route !== null &&
+        retry1.authorization?.authorized === false &&
+        retry1.reason_codes.includes("AWAITING_EXECUTION_AUTHORIZATION"),
+      JSON.stringify({ auth: retry1.authorization, route: retry1.selected_retry_route?.model }),
+    );
+  } else {
+    check(
+      "S19-selected-retry-awaits-execution-authorization",
+      retry1.caller_status === "RETRY_SELECTION_BLOCKED" && retry1.execution_performed === false,
+      JSON.stringify({ s: retry1.caller_status, note: "lane may block commercial; fail-closed still holds" }),
+    );
+  }
 }
 
 const failed = results.filter((r2) => !r2.pass);

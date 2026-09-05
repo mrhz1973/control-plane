@@ -1,5 +1,36 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_CANONICAL_QUOTA_RUNTIME_FINAL_CLOSURE_CHECKPOINT_V1` (checkpoint delta, issue #46 / parent #41, base `12d4e2e`)
+**Classification:** `PASS — QUOTA_AWARE_RUNTIME=CANONICAL_RUNTIME_WIRED_BEHIND_CLOSED_GATE — all four roles (planner/execution/reviewer/retry) proven through REAL canonical runtime boundaries; closed-gate E2E extended to 19/19 traversing quota→planner→router→bridge→endpoint→attachReviewStage→runGovernedRetryExecution; REVIEWER_EXECUTION_AUTHORIZED=NO; RETRY_EXECUTION_AUTHORIZED=NO; D0025_ENABLED=false; GLM UNKNOWN/BLOCKED_EVIDENCE; NO production LIVE; BUGBOT_REVIEW=CLEAN`
+**Timestamp (local):** 2026-09-06 (~01:20, UTC+2)
+**BASE_HEAD:** `12d4e2ec9a79f10224241c4f7130f63b414a8544`
+**CLOSURE HEAD:** final `cursor-pass: V4_CANONICAL_QUOTA_RUNTIME_FINAL_CLOSURE_CHECKPOINT_V1` commit carrying this report
+**CLOSURE:** CHECKPOINT (E2E extend + frontier/report reconcile; no new architecture)
+
+## Four-role canonical proof
+
+| Role | Real boundary | Result |
+|---|---|---|
+| Planner | `prepareCycle` / planner CLI | quota composed/consumed; fail-closed on missing/stale commercial |
+| Execution | `evaluateExecutionRoute` → bridge → Windows endpoint | router emits RT25 envelope; D-0025 CLOSED |
+| Reviewer | `attachReviewStage` (local-dev main) → `runReviewStage` → T18 | fresh review-time quota; `execution_performed=false` |
+| Retry | `runGovernedRetryExecution` → `runRetryStage` → T19 | repairable STOP + bound only; awaiting-auth; fresh every attempt |
+
+## Checkpoint suites (once)
+
+- entrypoint **104/104** · closed-gate E2E **19/19** · review-stage **15/15** · governed-retry **10/10** · retry-stage **14/14**
+- `node --check` / `git diff --check` OK · D-0025 `enabled=false`
+
+## Persistence
+
+- `docs/runtime/CURRENT_FRONTIER.md` — `QUOTA_AWARE_RUNTIME=CANONICAL_RUNTIME_WIRED_BEHIND_CLOSED_GATE`
+- `reports/architecture/v4_canonical_quota_runtime_final_closure_checkpoint_v1.md` — readiness matrix
+- #41 may be closed for selection wiring behind the closed gate (not LIVE)
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_GOVERNED_RETRY_EXECUTION_CALLER_INTEGRATION_V1` (micro-task delta, issue #45, base `5c8f2e6`)
 **Classification:** `PASS — SMALLEST GOVERNED RETRY-EXECUTION CALLER/STAGE CREATED: tools/run-governed-retry-execution-v1.mjs sits between a repairable implementation STOP and retry-execution authorization; invokes the REAL runRetryStage (fresh quota state every attempt); PASS / non-repairable STOP never enter; max_attempts enforced from explicit retry_policy bound (hard cap 3, never invent unbounded); when a route is selected and no authorized execution surface exists → caller_status=RETRY_ROUTE_SELECTED_AWAITING_EXECUTION_AUTHORIZATION with execution_performed=false (NEVER infer/execute); D-0025 CLOSED re-verified; ordinary test-command re-runs NOT converted into model-route retries; NO fake LIVE wiring into local-dev executor/dispatcher (exact final activation dependency persisted); FOCUSED TESTS 10/10 + retry-stage-boundary 14/14; WF40/WF61/n8n UNTOUCHED`
 **Timestamp (local):** 2026-09-06 (01:0x, UTC+2)
