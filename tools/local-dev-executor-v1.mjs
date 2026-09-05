@@ -22,7 +22,7 @@ import { startLocalDevGenerationGuard } from "./local-dev-generation-guard-v1.mj
 export const ENVELOPE_SCHEMA = "local-dev-task-envelope-v1";
 export const RESULT_SCHEMA = "local-dev-execution-result-v1";
 export const DEV_PROFILE_CATEGORY = "workstation_dev_executor_profile";
-export const DEFAULT_DEV_PROFILE_ID = "qwen38-opus-q3-cline-24k";
+export const DEFAULT_DEV_PROFILE_ID = "qwen38-opus-q3-opencode-24k";
 export const QWEN_LOCAL_PROVIDER_ID = "qwen_local";
 export const CANONICAL_QWEN_ENDPOINT = "http://127.0.0.1:8080";
 

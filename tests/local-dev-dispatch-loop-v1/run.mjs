@@ -83,7 +83,12 @@ await test("L4 loop NEVER executes: result contains no execution fields", async 
   const entries = files.map((f) => ({ ...parseBacklogFile(readFileSync(join(FIXTURES, f), "utf8")), source: f, markdown: readFileSync(join(FIXTURES, f), "utf8") }));
   const r = runDispatchLoop(entries, [], { repo: "mrhz1973/control-plane", commit: HEAD, head: HEAD, nowIso: NOW, maxClaims: 1 });
   const json = JSON.stringify(r);
-  assert.ok(!json.includes("opencode"));
+  // Execution-config guard: the loop result must carry no OpenCode runner
+  // configuration or execution wiring. The migrated DEV profile_id
+  // (qwen38-opus-q3-opencode-*) legitimately contains the substring "opencode"
+  // and is allowed; it is a selector identity, not an execution field.
+  const withoutProfileIds = json.replace(/qwen38-opus-q3-opencode-(24|64)k/g, "");
+  assert.ok(!withoutProfileIds.includes("opencode"));
   assert.ok(!json.includes("OPENCODE_CONFIG"));
   assert.ok(!json.includes("run_local_dev"));
 });

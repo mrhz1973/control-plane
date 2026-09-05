@@ -1,57 +1,61 @@
 ﻿# LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_IDLE_BACKFILL_SYNTHETIC_ITEM_INJECTION` (closure — PASS) + **SEGMENT 4 FINAL**
-**Classification:** `CAMPAIGN SEGMENT 4 CLOSED — SYNTHETIC BACKFILL LIVE-PROVEN, CAP 3/3 ENFORCED, CLEAN IDLE, NEXT=GPT_WEB_N8N_AUTHORING_REQUIRED`
-**Timestamp (local):** 2026-09-05 ~09:05
+**BLOCK-ID:** `V4_QWEN_DEV_PROFILE_OPENCODE_NOMENCLATURE_MIGRATION_V1` (GitHub issue #33)
+**Classification:** `PASS — ACTIVE DEV PROFILE NOMENCLATURE MIGRATED CLINE→OPENCODE; RUNTIME PARITY VERIFIED; HISTORICAL PROVENANCE AND N8N ALWAYS-ON PRESERVED; CLINE UNINSTALL CENSUS RECORDED`
+**Timestamp (local):** 2026-09-05 ~14:5x
+**Base HEAD:** `ad3e5cb4020573542a74743d648f3470559187e9` (preverified = origin/main, tracked clean)
+**CLOSURE:** STANDARD_RUNTIME_BUNDLE
 
-## Segment 4 outcome
+## Outcome
 
-- **Implementation (43da4f2)**: `tools/local-dev-idle-backfill-v1.mjs` —
-  runtime-capable synthetic idle-backfill injector. Composition primitive
-  only; pinned LAW is single-sourced from the tool (policy suite P8 pins
-  deep-equality vs PINNED_DEFAULTS). Double-scan real-work preemption,
-  disk-evidence authoring (create/append classes only), deterministic
-  collision-safe IDs, file+receipt collision guards, self-verification via
-  the REAL selector gates. No second executor; no privileged route.
-- **Suite**: `tests/local-dev-idle-backfill-injection-v1/run.mjs` 22/22
-  (all 20 mandated scenarios + 2 guards). Dispatcher `source_ref` fixed to
-  the real queue path. All 12 LOCAL_DEV suites green at close (184 tests).
-- **LIVE synthetic proof seq1 — CREATE (executor 73d124c)**: CLEAN_DRAINED →
-  BACKFILL_SYNTHETIC → schema-identical backlog-item-v1 → normal selector →
-  normal claim → normal bridge → normal executor → OpenCode →
-  qwen38-opus-q3-cline-24k → created `docs/runtime/AUTOVIA_SYNTHETIC_HEARTBEAT.md`
-  (exact marker) → test → executor commit → push → REMOTE_VERIFIED.
-  5 turns / 106s / 40 untracked protected.
-  SYNTHETIC_ITEM_CREATED=YES · REAL_READY_PREEMPTED=NO ·
-  NORMAL_SELECTOR/CLAIM/BRIDGE/EXECUTOR_USED=YES · PRODUCTION_CHANGED=NO.
-- **AUTO-VIA seq2 — MODIFY (executor 4b7cff0)**: deterministic distinct next
-  sequence (append_marker_line, ID D-9102-3FCE48B0); prior content unchanged;
-  5 turns / 136s. Both V1 authoring classes live-proven end-to-end.
-- **AUTO-VIA seq3 — terminal checkpoint marker (executor 02e5def)**: allowed
-  class ("append a bounded synthetic AUTO-VIA proof marker"); 5 turns / 219s.
-- **Delegated auto-repair (f85eb40)**: counter false-positive — proof files
-  quoting marker lines were miscounted as synthetic items; now requires the
-  exact provenance comment. Regression T-extra2. No policy widening.
-- **Terminal cap enforcement (59a9a63)**: post-seq3 evaluation returned
-  `IDLE_ALL_CLAIMED_SYNTHETIC_LIMIT` (seq_candidate=4, created=NO) — cap 3/3
-  LIVE-proven at the terminal boundary.
+Active DEV profile identities migrated atomically, no runtime behavior change:
 
-## Terminal classification
+- `qwen38-opus-q3-cline-24k` → `qwen38-opus-q3-opencode-24k` (ctx 24576)
+- `qwen38-opus-q3-cline-64k` → `qwen38-opus-q3-opencode-64k` (ctx 65536)
+- Same GGUF (`Qwen3.8-27B-Opus-Distill-v2-Q3_K_M.gguf`), quantization, backend,
+  GPU layers (50), cache (q4_0/q4_0), spec-type none, reasoning off — verified by
+  preset semantic diff (only section names/alias/tags lines changed) and config
+  field-for-field comparison (only keys + `purpose` → `OPENCODE_GENERAL_DEVELOPMENT`).
 
-CLEAN IDLE at synthetic cap: no real READY backlog exists; no policy-valid
-synthetic candidate remains below cap (3/3 executed through the normal
-pipeline). Every LOCAL_DEV capability in scope is implemented and
-live-proven: backlog bridge, claim/idempotency, selector, dispatcher loop,
-idle/backfill policy, synthetic self-backfill via the normal pipeline.
+## Key evidence
 
-**NEXT (canonical) = `GPT_WEB_N8N_AUTHORING_REQUIRED`** — the only remaining
-evolution is connecting the proven autonomous dispatcher to an always-on
-scheduler / GitHub watcher / n8n workflow. Per the dispatch N8N GATE that is
-a REAL GPT-WEB/operator gate; Cursor must not author or change live n8n
-topology.
+- **Preset (external to Git)**: backup hash-verified; pre-SHA256
+  `685015BF…3DD16` = persisted baseline; post-SHA256 `088A5655…F39FC`.
+- **Router**: ONE bounded maintenance reload (`GET /models?reload=1` → 200) while
+  always-on idle; `/v1/models` after: both OpenCode IDs present, both legacy IDs
+  absent, other 8 profiles byte-identical (six production + blender + agent-24k).
+- **Smokes (non-edit, one per new profile, exact selection)**: via the proven
+  path (generation guard → provider overlay → resolved opencode.exe 1.18.25,
+  stdin ignored). 24K exit 0 / 52.7s / 2 generations; 64K exit 0 / 104.6s /
+  2 generations; opencode log confirms `llm.model=qwen38-opus-q3-opencode-{24k,64k}`;
+  zero edits (tracked diff = migration edits only).
+- **Tests**: 6 target suites 121/121 + 3 adjacent consumer suites 25/25
+  (dispatcher-service 10, dispatch-loop 5 — L4 execution-config guard updated to
+  mask the migrated profile ID which legitimately contains the substring
+  "opencode", backfill-policy 10). `node --check` OK; runtime JSON valid.
+- **n8n always-on**: wf90 active=t before/after; dispatcher IDLE_CLEAN at
+  precheck and after; no always-on component touched.
+- **Census**: 50 tracked files with legacy IDs → ACTIVE (config/tool/6 suites +
+  fixture) and CURRENT_DOC migrated; `reports/**` = HISTORICAL_PROVENANCE
+  allowlist (untouched). System census: OpenCode config clean, no Cline
+  configs/extensions/processes/tasks → **CLINE_UNINSTALL_ELIGIBLE=YES**
+  (uninstall itself deferred to a separate task per scope).
+- Full report: `reports/architecture/v4_qwen_dev_profiles_opencode_nomenclature_migration_v1.md`
 
-EXECUTOR_END_HEAD (final) = `02e5defcabfe843d01f33c4f3e84ab3f8094eefe`
-Campaign cumulative: PASSES=14 — PASS=14 — REAL_LOCAL_DEV_EXECUTIONS=8
-(2 historic STOP + 6 PASS). PRODUCTION_CHANGED=NO. D-0025=false. n8n
-untouched. Proof: `reports/runtime/dev-queue/synthetic-seg4/SYNTHETIC_BACKFILL_LIVE_PROOF.md`.
-CAMPAIGN_FINAL_HEAD = the closure commit carrying this report update.
+## Preserved (verified)
+
+GGUF/ctx/quantization/backend; `workstation_dev_executor_profile` category;
+auto_route=false; wf40=false; scope_v3=false; control_plane_eligible=false;
+six production profiles + role mapping deep-equal to base HEAD; startup default
+production profile unchanged; WF40/WF61/D-0025 untouched; n8n always-on
+untouched; DEV queue + receipts untouched; historical reports untouched.
+
+## Non-blocking note
+
+The always-on dispatcher service process still holds the pre-migration
+`DEFAULT_DEV_PROFILE_ID` constant in memory; per-tick profile resolution reads
+the migrated config from disk and queued items pin explicit profile IDs, so
+behavior is already correct. A routine service restart at the next maintenance
+point refreshes the in-memory constant.
+
+EXECUTOR_END_HEAD = the `cursor-pass:` commit carrying this report.

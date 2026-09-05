@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /**
  * Deterministic offline wiring tests for run-local-dev-executor-v1.
  * No Qwen. No OpenCode. No service start/stop. No real git repos mutated.
@@ -49,7 +49,7 @@ const ENVELOPE = {
   target_repo_path: "/repos/target",
   target_remote: "https://example.invalid/target.git",
   dispatch_base_head: "a".repeat(40),
-  profile_id: "qwen38-opus-q3-cline-64k",
+  profile_id: "qwen38-opus-q3-opencode-64k",
   task_delta: "Bounded change: docs only. implement then test then correct corrective loop declared, test cycles: 2",
   allowed_paths: ["docs/**", "README.md"],
   allowed_commands: ["node --test tests/run.mjs"],
@@ -131,15 +131,15 @@ await test("DEV profile preserved through ensureQwenReady call and result", asyn
   });
   upstream.close();
   assert.equal(r.classification, "PASS", JSON.stringify(r));
-  assert.equal(seenProfile, "qwen38-opus-q3-cline-64k");
-  assert.equal(r.profile_id, "qwen38-opus-q3-cline-64k");
+  assert.equal(seenProfile, "qwen38-opus-q3-opencode-64k");
+  assert.equal(r.profile_id, "qwen38-opus-q3-opencode-64k");
   assert.equal(r.status, "PASS");
   assert.equal(r.final_head, "c".repeat(40));
 });
 
 await test("makeEnsureQwenReady maps READY -> router_was_running=true", async () => {
   const ensure = makeEnsureQwenReady(async () => ({ ready: true, status: "READY", base_url: "http://127.0.0.1:8080", launch_performed: false }));
-  const s = await ensure({ profile: "qwen38-opus-q3-cline-64k" });
+  const s = await ensure({ profile: "qwen38-opus-q3-opencode-64k" });
   assert.equal(s.router_was_running, true);
   const ensure2 = makeEnsureQwenReady(async () => ({ ready: true, status: "LAUNCH_STARTED_AND_READY", base_url: "http://127.0.0.1:8080", launch_performed: true }));
   const s2 = await ensure2({ profile: "x" });
@@ -185,7 +185,7 @@ await test("concrete guard URL reaches OpenCode collaborator (loopback, not 8080
     assert.ok(captured.guardBaseUrl.startsWith("http://127.0.0.1:"), captured.guardBaseUrl);
     assert.notEqual(captured.guardBaseUrl, DIRECT_QWEN_ENDPOINT);
     assert.notEqual(captured.guardBaseUrl.endsWith(":8080"), true);
-    assert.equal(captured.modelSelector, "qwen_local/qwen38-opus-q3-cline-64k");
+    assert.equal(captured.modelSelector, "qwen_local/qwen38-opus-q3-opencode-64k");
     assert.equal(captured.hasOverlay, true);
     assert.equal(captured.capabilities.subcommand, "run");
   } finally {
@@ -211,8 +211,8 @@ await test("makeRunOpenCodeTask probes opencode and builds argv with guard URL c
   });
   const out = await run({
     guardBaseUrl: "http://127.0.0.1:54321",
-    modelId: "qwen38-opus-q3-cline-64k",
-    modelSelector: "qwen_local/qwen38-opus-q3-cline-64k",
+    modelId: "qwen38-opus-q3-opencode-64k",
+    modelSelector: "qwen_local/qwen38-opus-q3-opencode-64k",
     providerOverlay: { provider: {} },
     capabilities: { subcommand: "run", directory_flag: "--dir", model_flag: "-m", format_flag: "--format", format_json_value: "json", auto_flag: "--auto" },
     envelope: ENVELOPE,
@@ -223,7 +223,7 @@ await test("makeRunOpenCodeTask probes opencode and builds argv with guard URL c
   assert.equal(spawnCall.exe, "opencode-test");
   assert.equal(spawnCall.argv[0], "run");
   assert.ok(spawnCall.argv.includes("--dir"));
-  assert.ok(spawnCall.argv.includes("qwen_local/qwen38-opus-q3-cline-64k"));
+  assert.ok(spawnCall.argv.includes("qwen_local/qwen38-opus-q3-opencode-64k"));
   assert.ok(spawnCall.opts.env.OPENCODE_CONFIG.endsWith("fake-opencode.json"));
   const overlayCall = madeConfigs.find((c) => c.overlay);
   assert.ok(overlayCall.overlay.provider);
@@ -589,8 +589,8 @@ await test("real spawn of .cmd-resolved target: no EINVAL, argv literal, config/
   };
   const out = await run({
     guardBaseUrl: "http://127.0.0.1:54321",
-    modelId: "qwen38-opus-q3-cline-64k",
-    modelSelector: "qwen_local/qwen38-opus-q3-cline-64k",
+    modelId: "qwen38-opus-q3-opencode-64k",
+    modelSelector: "qwen_local/qwen38-opus-q3-opencode-64k",
     providerOverlay: { provider: {} },
     capabilities: { subcommand: "run", directory_flag: "--dir", model_flag: "-m", format_flag: "--format", format_json_value: "json", auto_flag: "--auto" },
     envelope: tricky,

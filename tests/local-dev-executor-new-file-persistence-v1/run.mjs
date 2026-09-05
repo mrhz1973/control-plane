@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Deterministic offline tests for LOCAL_DEV_EXECUTOR option-B new-file
  * persistence semantics (V4_LOCAL_DEV_EXECUTOR_BRIDGED_PROOF_TRACKED_FILE_SEMANTICS_V1).
  *
@@ -38,7 +38,7 @@ function env(overrides = {}) {
     target_repo_path: "/repos/target",
     target_remote: "https://example.invalid/target.git",
     dispatch_base_head: HEAD,
-    profile_id: "qwen38-opus-q3-cline-64k",
+    profile_id: "qwen38-opus-q3-opencode-64k",
     task_delta: "one-shot change",
     allowed_paths: ["docs/**"],
     allowed_commands: ["git status --short"],

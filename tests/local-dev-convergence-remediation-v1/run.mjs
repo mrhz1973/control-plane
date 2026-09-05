@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Deterministic offline tests for the LOCAL_DEV convergence remediation V1
  * (V4_LOCAL_DEV_EXECUTOR_OPENCODE_PERMISSION_AND_NEW_FILE_CONVERGENCE_REMEDIATION_V1).
  *
@@ -39,8 +39,8 @@ function env(overrides = {}) {
     target_repo_path: "/repos/target",
     target_remote: "https://example.invalid/target.git",
     dispatch_base_head: HEAD,
-    profile_id: "qwen38-opus-q3-cline-24k",
-    task_delta: "Objective: Update existing notes.\nExecution mode: MODIFY — operate on the existing target using the permitted file edit tool.",
+    profile_id: "qwen38-opus-q3-opencode-24k",
+    task_delta: "Objective: Update existing notes.\nExecution mode: MODIFY â€” operate on the existing target using the permitted file edit tool.",
     task_kind: "MODIFY",
     allowed_paths: ["docs/**"],
     allowed_commands: ["git status --short", "git diff --check"],
@@ -120,7 +120,7 @@ await test("R5 bash allows exactly envelope allowed_commands", () => {
   assert.deepEqual(Object.keys(overlay.bash).filter((k) => overlay.bash[k] === "allow").sort(), ["git diff --check", "git status --short"]);
 });
 
-// 6. new-file allowed path receives the exact edit permission (edit covers create in installed 1.18.25 — no separate write key)
+// 6. new-file allowed path receives the exact edit permission (edit covers create in installed 1.18.25 â€” no separate write key)
 await test("R6 allowed_paths map to edit allow; no invented write/create keys", () => {
   const overlay = buildPermissionOverlay({
     allowedCommands: [], allowedPaths: ["docs/runtime/CAMPAIGN_NOTES.md", "reports/**"], networkPolicy: "localhost_only",

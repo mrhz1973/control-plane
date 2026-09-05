@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /**
  * Deterministic offline tests for the workstation DEV session bridge.
  * No Qwen. No OpenCode. No service start/stop. No network (readiness via
@@ -64,22 +64,22 @@ await test("workstation DEV profile resolves successfully via bridge", async () 
   const check = readyCheck(true);
   const r = await ensureWorkstationDevQwenReady({
     ...BRIDGE_OPTS, checkReadiness: check,
-    profile: "qwen38-opus-q3-cline-64k",
+    profile: "qwen38-opus-q3-opencode-64k",
   });
   assert.equal(r.ready, true);
   assert.equal(r.status, "READY");
-  assert.equal(r.profile, "qwen38-opus-q3-cline-64k");
-  assert.equal(r.model_id, "qwen38-opus-q3-cline-64k");
+  assert.equal(r.profile, "qwen38-opus-q3-opencode-64k");
+  assert.equal(r.model_id, "qwen38-opus-q3-opencode-64k");
   assert.equal(r.launch_performed, false);
   assert.equal(r.reason_code, "READY");
   assert.ok(r.base_url.startsWith("http://127.0.0.1"));
 });
 
 await test("resolveWorkstationDevProfile returns profile + model id", () => {
-  const r = resolveWorkstationDevProfile(REAL_RUNTIME, "qwen38-opus-q3-cline-64k");
+  const r = resolveWorkstationDevProfile(REAL_RUNTIME, "qwen38-opus-q3-opencode-64k");
   assert.equal(r.ok, true);
   assert.equal(r.profile.category, "workstation_dev_executor_profile");
-  assert.equal(r.model_id, "qwen38-opus-q3-cline-64k");
+  assert.equal(r.model_id, "qwen38-opus-q3-opencode-64k");
 });
 
 // ---------- 2. production profile rejected by DEV bridge ----------
@@ -129,7 +129,7 @@ await test("existing healthy router -> reuse, launch_performed=false, no launche
     ...BRIDGE_OPTS,
     checkReadiness: readyCheck(true),
     launchLauncher: async () => { launchCount += 1; },
-    profile: "qwen38-opus-q3-cline-64k",
+    profile: "qwen38-opus-q3-opencode-64k",
   });
   assert.equal(r.status, "READY");
   assert.equal(r.launch_performed, false);
@@ -152,7 +152,7 @@ await test("absent router -> launcher called exactly once, then LAUNCH_STARTED_A
     ...BRIDGE_OPTS,
     checkReadiness: check,
     launchLauncher: async () => { launchCount += 1; return { pid: 123 }; },
-    profile: "qwen38-opus-q3-cline-64k",
+    profile: "qwen38-opus-q3-opencode-64k",
   });
   assert.equal(r.status, "LAUNCH_STARTED_AND_READY");
   assert.equal(r.ready, true);
@@ -170,7 +170,7 @@ await test("readiness timeout -> fail closed", async () => {
     ...BRIDGE_OPTS,
     checkReadiness: readyCheck(false),
     launchLauncher: async () => { launchCount += 1; },
-    profile: "qwen38-opus-q3-cline-64k",
+    profile: "qwen38-opus-q3-opencode-64k",
   });
   assert.equal(r.ready, false);
   assert.equal(r.status, "API_UNREACHABLE"); // last classification surfaces
@@ -185,7 +185,7 @@ await test("launcher failure -> fail closed, LAUNCH_FAILED", async () => {
     ...BRIDGE_OPTS,
     checkReadiness: readyCheck(false),
     launchLauncher: async () => { throw new Error("spawn failed"); },
-    profile: "qwen38-opus-q3-cline-64k",
+    profile: "qwen38-opus-q3-opencode-64k",
   });
   assert.equal(r.ready, false);
   assert.equal(r.status, "LAUNCH_FAILED");
@@ -205,7 +205,7 @@ await test("current production role-map drift does NOT block DEV session resolut
     ...BRIDGE_OPTS,
     loadRuntime: () => drifted,
     checkReadiness: check,
-    profile: "qwen38-opus-q3-cline-64k",
+    profile: "qwen38-opus-q3-opencode-64k",
   });
   assert.equal(r.ready, true, JSON.stringify(r));
   assert.equal(r.status, "READY");
@@ -246,7 +246,7 @@ await test("makeEnsureQwenReady default uses the DEV bridge", async () => {
   const check = readyCheck(true);
   const ensure = makeEnsureQwenReady(async (opts) =>
     ensureWorkstationDevQwenReady({ ...BRIDGE_OPTS, checkReadiness: check, ...opts }));
-  const s = await ensure({ profile: "qwen38-opus-q3-cline-64k" });
+  const s = await ensure({ profile: "qwen38-opus-q3-opencode-64k" });
   assert.equal(s.ready, true);
   assert.equal(s.router_was_running, true);
 });

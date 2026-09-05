@@ -1,5 +1,5 @@
-/**
- * Deterministic offline tests for the backlog → local-dev-envelope bridge v1.
+﻿/**
+ * Deterministic offline tests for the backlog â†’ local-dev-envelope bridge v1.
  * No Qwen. No OpenCode. No network. No git mutation.
  *
  * Run: node tests/local-dev-backlog-envelope-bridge-v1/run.mjs
@@ -89,7 +89,7 @@ await test("loop_allowed=true maps to clamped test cycles and declared-loop sent
   assert.equal(r.envelope.max_test_cycles, 2, "hint 3 clamps to hard cap 2");
   assert.equal(r.envelope.timebox_seconds, 900, "hint 99999 clamps to 900");
   assert.equal(r.envelope.max_agent_turns, 2);
-  assert.equal(r.envelope.profile_id, "qwen38-opus-q3-cline-64k", "explicit DEV profile honored");
+  assert.equal(r.envelope.profile_id, "qwen38-opus-q3-opencode-64k", "explicit DEV profile honored");
   assert.ok(/corrective loop declared, test cycles: 2\./.test(r.envelope.task_delta));
   const v = validateEnvelope(r.envelope);
   assert.equal(v.ok, true, JSON.stringify(v.reason_codes));

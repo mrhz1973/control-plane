@@ -51,7 +51,7 @@ function validEnvelope(overrides = {}) {
     target_repo_path: "/repos/target",
     target_remote: "https://example.invalid/target.git",
     dispatch_base_head: "a".repeat(40),
-    profile_id: "qwen38-opus-q3-cline-64k",
+    profile_id: "qwen38-opus-q3-opencode-64k",
     task_delta: "Bounded change: update README section only. implement then test then correct corrective loop declared, test cycles: 2",
     allowed_paths: ["docs/**", "README.md"],
     allowed_commands: ["node --test tests/run.mjs", "git add", "git commit", "git push"],
@@ -170,23 +170,23 @@ await test("production profile rejected in DEV domain", () => {
   assert.equal(r.classification, "PROFILE_NOT_DEV_CATEGORY");
 });
 
-await test("cline-64k resolves as DEV profile from workstation_manual_profiles", () => {
+await test("opencode-64k resolves as DEV profile from workstation_manual_profiles", () => {
   const runtime = loadQwenLocalRuntime();
-  const r = resolveDevProfile(runtime, "qwen38-opus-q3-cline-64k");
+  const r = resolveDevProfile(runtime, "qwen38-opus-q3-opencode-64k");
   assert.equal(r.ok, true);
   assert.equal(r.profile.category, DEV_PROFILE_CATEGORY);
-  assert.equal(r.model_id, "qwen38-opus-q3-cline-64k");
+  assert.equal(r.model_id, "qwen38-opus-q3-opencode-64k");
   assert.equal(r.profile.control_plane_eligible, false);
 });
 
-await test("cline-24k DEV profile defined and distinct from 64k (option-B remediation)", async () => {
+await test("opencode-24k DEV profile defined and distinct from 64k (option-B remediation)", async () => {
   const { DEFAULT_DEV_PROFILE_ID } = await import("../../tools/local-dev-executor-v1.mjs");
   const runtime = loadQwenLocalRuntime();
-  assert.equal(DEFAULT_DEV_PROFILE_ID, "qwen38-opus-q3-cline-24k");
-  const r = resolveDevProfile(runtime, "qwen38-opus-q3-cline-24k");
+  assert.equal(DEFAULT_DEV_PROFILE_ID, "qwen38-opus-q3-opencode-24k");
+  const r = resolveDevProfile(runtime, "qwen38-opus-q3-opencode-24k");
   assert.equal(r.ok, true);
   assert.equal(r.profile.category, DEV_PROFILE_CATEGORY);
-  assert.equal(r.model_id, "qwen38-opus-q3-cline-24k");
+  assert.equal(r.model_id, "qwen38-opus-q3-opencode-24k");
   assert.equal(r.profile.context_tokens, 24576);
   assert.equal(r.profile.control_plane_eligible, false);
   assert.equal(r.profile.auto_route, false);
@@ -195,12 +195,12 @@ await test("cline-24k DEV profile defined and distinct from 64k (option-B remedi
   assert.equal(r.profile.scope_v3, false);
   assert.equal(r.profile.blender, false);
   // 64K remains resolvable (explicit selection preserved; not removed).
-  const r64 = resolveDevProfile(runtime, "qwen38-opus-q3-cline-64k");
+  const r64 = resolveDevProfile(runtime, "qwen38-opus-q3-opencode-64k");
   assert.equal(r64.ok, true);
   assert.equal(r64.profile.context_tokens, 65536);
   // Neither DEV profile leaks into the production eligible set.
-  assert.ok(!runtime.profiles["qwen38-opus-q3-cline-24k"]);
-  assert.ok(!runtime.profiles["qwen38-opus-q3-cline-64k"]);
+  assert.ok(!runtime.profiles["qwen38-opus-q3-opencode-24k"]);
+  assert.ok(!runtime.profiles["qwen38-opus-q3-opencode-64k"]);
 });
 
 // ---------- 7. command/path enforcement ----------
@@ -356,7 +356,7 @@ await test("injected happy path produces PASS evidence envelope", async () => {
     guardStart: async () => guard,
     runOpenCodeTask: async ({ guardBaseUrl, modelSelector }) => {
       assert.ok(guardBaseUrl.startsWith("http://127.0.0.1:"));
-      assert.equal(modelSelector, "qwen_local/qwen38-opus-q3-cline-64k");
+      assert.equal(modelSelector, "qwen_local/qwen38-opus-q3-opencode-64k");
       const r = await fetch(`${guardBaseUrl}/v1/chat/completions`, { method: "POST", body: "{}" });
       assert.equal(r.status, 200);
       return { ok: true };
@@ -372,7 +372,7 @@ await test("injected happy path produces PASS evidence envelope", async () => {
 
   assert.equal(result.status, "PASS");
   assert.equal(result.classification, "PASS");
-  assert.equal(result.profile_id, "qwen38-opus-q3-cline-64k");
+  assert.equal(result.profile_id, "qwen38-opus-q3-opencode-64k");
   assert.equal(result.router_was_running, true);
   assert.equal(result.turns_used, 1);
   assert.equal(uallCalls, 3, "preflight + snapshot + classification sequence");
@@ -419,14 +419,19 @@ await test("production eligible set unchanged vs base HEAD (additive DEV fields 
   assert.deepEqual(runtime.role_to_profile_id, base.role_to_profile_id);
   assert.equal(runtime.startup_profile_id, base.startup_profile_id);
   assert.equal(runtime.next_wf40_executor_profile_id, base.next_wf40_executor_profile_id);
-  // Exactly six production profiles; cline-64k never among them.
+  // Exactly six production profiles; opencode-64k never among them.
   assert.equal(Object.keys(runtime.profiles).length, PROFILE_IDS.length);
   for (const id of PROFILE_IDS) assert.ok(runtime.profiles[id]);
-  assert.ok(!runtime.profiles["qwen38-opus-q3-cline-64k"]);
-  // DEV profile additive-only: same manual entry plus category field.
-  const manualNow = runtime.workstation_manual_profiles["qwen38-opus-q3-cline-64k"];
-  const manualBase = base.workstation_manual_profiles["qwen38-opus-q3-cline-64k"];
-  for (const [k, v] of Object.entries(manualBase)) assert.equal(manualNow[k], v);
+  assert.ok(!runtime.profiles["qwen38-opus-q3-opencode-64k"]);
+  // DEV profile additive-only vs base HEAD: same manual entry (modulo the
+  // authorized nomenclature migration id/purpose) plus category field.
+  const manualNow = runtime.workstation_manual_profiles["qwen38-opus-q3-opencode-64k"] ?? {};
+  const manualBase = base.workstation_manual_profiles["qwen38-opus-q3-cline-64k"] ?? {};
+  for (const [k, v] of Object.entries(manualBase)) {
+    if (k === "purpose") continue; // CLINE_ -> OPENCODE_ authorized by migration V1
+    assert.equal(manualNow[k], v);
+  }
+  assert.equal(manualNow.purpose, "OPENCODE_GENERAL_DEVELOPMENT");
   assert.equal(manualNow.category, DEV_PROFILE_CATEGORY);
   // NOTE: pre-existing production drift (module ROLE_TO_PROFILE_ID.FAST_AGENT
   // vs config role_to_profile_id.FAST_AGENT) is out of DEV scope and left

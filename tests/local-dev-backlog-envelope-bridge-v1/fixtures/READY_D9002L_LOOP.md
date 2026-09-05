@@ -1,4 +1,4 @@
-# Backlog fixture — loop allowed with hints (bridge test)
+﻿# Backlog fixture â€” loop allowed with hints (bridge test)
 
 ```yaml
 schema: backlog-item-v1
@@ -37,7 +37,7 @@ context_refs: []
 state: READY_FOR_PLANNING
 
 local_dev:
-  dev_profile: qwen38-opus-q3-cline-64k
+  dev_profile: qwen38-opus-q3-opencode-64k
   test_commands:
     - git diff --check
   timebox_hint: 99999
