@@ -48,7 +48,12 @@ export const TICK_PATH = "/v1/tick";
 export const REPO = "mrhz1973/control-plane";
 export const CANONICAL_REPO_PATH = KNOWN_LOCAL_REPOS[REPO];
 export const QUEUE_DIR = "reports/runtime/dev-queue/always-on";
-export const RECEIPTS_PATH = "reports/runtime/dev-queue/receipts.json";
+// Claim receipts for the always-on queue live INSIDE the queue dir (untracked
+// runtime state). The shared tracked ledger reports/runtime/dev-queue/receipts.json
+// must NOT be written by the service: a claim written there dirties a tracked
+// file BEFORE the executor preflight runs, so every live claim would deterministically
+// STOP with PREFLIGHT_TRACKED_DIRTY_OUT_OF_SCOPE (observed live 2026-09-05).
+export const RECEIPTS_PATH = "reports/runtime/dev-queue/always-on/receipts.json";
 export const MAX_BODY_BYTES = 64 * 1024;
 export const CLASSIFICATIONS = Object.freeze([
   "WORK_EXECUTED_PASS",
@@ -329,7 +334,14 @@ export async function handleTickRequest(req, res, deps = {}) {
   try {
     const result = await performTick(body, deps.tickDeps || {});
     if (deps.releaseLock) deps.releaseLock();
-    send(result.classification === "WORK_EXECUTED_STOP" || result.classification === "HUMAN_GATE_REQUIRED" || result.classification === "SERVICE_ERROR" ? 500 : 200, result);
+    // WORK_EXECUTED_STOP is a well-formed bounded contract result (executor
+    // stopped safely) — transport 200; the n8n normalizer keys off
+    // classification, not status code. 500 stays reserved for SERVICE_ERROR
+    // (malformed/failed service responses) and HUMAN_GATE_REQUIRED stays 409.
+    const status = result.classification === "SERVICE_ERROR" ? 500
+      : result.classification === "HUMAN_GATE_REQUIRED" ? 409
+      : 200;
+    send(status, result);
   } catch (err) {
     if (deps.releaseLock) deps.releaseLock();
     send(500, wrapTickResult({ ok: false, request_id: body.request_id, classification: "SERVICE_ERROR", reason_codes: ["TICK_UNHANDLED", String(err?.message || err).slice(0, 80)] }));
