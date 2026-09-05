@@ -1,0 +1,31 @@
+{
+  "schema_version": "local-dev-queue-selection-v1",
+  "selected": {
+    "task_ref": "LOCAL_DEV_B_D-9001-T",
+    "id": "D-9001-T",
+    "risk_hint": "low",
+    "created_at": "2026-09-05T04:40:00Z",
+    "source_file": "READY_D9001T.md"
+  },
+  "eligible_count": 3,
+  "excluded": [
+    {
+      "source": "BLOCKED_D9005B.md",
+      "reason": "INADMISSIBLE_STATE_OR_SCOPE"
+    },
+    {
+      "source": "GATED_D9003H.md",
+      "reason": "INADMISSIBLE_STATE_OR_SCOPE"
+    },
+    {
+      "source": "HIGHRISK_D9004R.md",
+      "reason": "INADMISSIBLE_STATE_OR_SCOPE"
+    },
+    {
+      "source": "UNKNOWNDEV_D9006U.md",
+      "reason": "INADMISSIBLE_STATE_OR_SCOPE"
+    }
+  ],
+  "decided_at": "2026-09-05T06:00:00.000Z",
+  "reason_code": "SELECTED"
+}

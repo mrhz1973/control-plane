@@ -239,3 +239,34 @@ Budget: ~5h from that dispatch. Delegated auto-repair policy V2 active.
 CAMPAIGN RESUMED (new continuation segment, budget ~5h from
 OPENCODE_PERMISSION_AND_NEW_FILE_CONVERGENCE_REMEDIATION_V1 dispatch).
 Every NEXT is derived only from newly persisted canonical state.
+
+## CHECKPOINT 8 — SEGMENT 3 PASSES 2–3: SELECTOR TOOL + FIRST LIVE DISPATCH (PASS)
+
+- seq: 8 (segment 3, passes 2–3)
+- pass 2 (cursor-pass `170f88a` + `003a928`):
+  V4_LOCAL_DEV_EXECUTOR_QUEUE_CLAIM_SELECTION_V1 — selection law pinned by
+  10 deterministic tests
+  (tests/local-dev-queue-claim-selection-v1) + selector tool
+  `tools/select-local-dev-queue-item-v1.mjs` with CLI suite 6/6
+  (tests/local-dev-queue-selector-tool-v1). Admissibility mirrors the
+  BRIDGE gate set exactly (incl. strict local_dev extension-field check).
+- pass 2 additions (cursor-pass `5f56d80`): restored D-9002-L fixture to its
+  committed form, added READY D-9007-Q dispatch-stub fixture, CLI assertions
+  updated. Bridge suite 18/18, selector 6/6, selection-law 10/10 green.
+- pass 3 (executor-pass `9eccd65`): FIRST LIVE SELECTED-ITEM DISPATCH —
+  - selector (real queue dir) → SELECTED LOCAL_DEV_B_D-9001-T;
+  - bridge claimed it against receipts.json (single-writer duplicate guard
+    now proven with a real ledger file);
+  - executor ran the claimed envelope on qwen38-opus-q3-cline-24k
+    (router reused): **PASS** in 4 turns / 171 s of 600;
+  - result: PASS, changed_files=[docs/runtime/CAMPAIGN_NOTES.md]
+    (tracked in-scope MODIFY path live), preexisting_untracked_protected=38,
+    tracked tree clean post-run, LOCAL == REMOTE (9eccd65 pushed).
+- EXECUTOR_END_HEAD (pass 8) = 9eccd65715f90303fda957919dd1c9b3758a045d
+- chain now proven live end-to-end BOTH ways: CREATE-new-file (checkpoint 7)
+  and MODIFY-tracked-file via full SELECT→CLAIM→DISPATCH flow (checkpoint 8).
+- REAL_LOCAL_DEV_EXECUTIONS_ADDED (campaign total) = 4 (2 STOP + 2 PASS)
+- production changed: NO · D-0025 enabled: false
+- artifacts: reports/runtime/dev-queue/selection-seg3.json,
+  LOCAL_DEV_B_D-9001-T__envelope-dispatch1.json (+ bare run file),
+  LOCAL_DEV_B_D-9001-T__result-dispatch1.json, receipts.json (1 claim)

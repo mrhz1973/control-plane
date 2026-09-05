@@ -1,0 +1,8 @@
+[
+  {
+    "task_ref": "LOCAL_DEV_B_D-9001-T",
+    "source_ref": "github:mrhz1973/control-plane@5f56d80ffa7945e12be78d2747b3bbdbdd8847cc:tests/local-dev-backlog-envelope-bridge-v1/fixtures/READY_D9001T.md",
+    "claimed_at": "2026-09-05T04:12:12.404Z",
+    "bridge_version": "local-dev-backlog-bridge-v1"
+  }
+]

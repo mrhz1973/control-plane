@@ -1,0 +1,33 @@
+{
+  "bridge": "local-dev-backlog-bridge-v1",
+  "ok": true,
+  "envelope": {
+    "schema_version": "local-dev-task-envelope-v1",
+    "task_ref": "LOCAL_DEV_B_D-9001-T",
+    "target_repo_path": "C:\\Users\\mrhz\\Documents\\AI\\GitHub\\control-plane",
+    "target_remote": "https://github.com/mrhz1973/control-plane.git",
+    "dispatch_base_head": "5f56d80ffa7945e12be78d2747b3bbdbdd8847cc",
+    "profile_id": "qwen38-opus-q3-cline-24k",
+    "task_delta": "Objective: Append the declared marker block to docs/runtime/CAMPAIGN_NOTES.md without altering existing content.\nExecution mode: CREATE — the target file MAY NOT EXIST yet; its absence is EXPECTED, not a blocker.\nCreate the file directly with the permitted file edit tool; do NOT read the target before initial creation; do NOT use shell commands to test file or directory existence.\nAfter creation, verify through the permitted file tooling only.\nAcceptance criteria:\n1. Marker line present exactly once at end of file\nForbidden (do not touch): tools/**\nPerform the change directly in the main agent; no subagents, no delegation; the executor owns tests and git persistence.",
+    "task_kind": "CREATE",
+    "allowed_paths": [
+      "docs/runtime/CAMPAIGN_NOTES.md"
+    ],
+    "allowed_commands": [
+      "git status --short",
+      "git diff --check"
+    ],
+    "test_command": "git diff --check",
+    "network_policy": "localhost_only",
+    "timebox_seconds": 600,
+    "max_agent_turns": 8,
+    "max_test_cycles": 0,
+    "git_persistence_required": true
+  },
+  "receipt": {
+    "task_ref": "LOCAL_DEV_B_D-9001-T",
+    "source_ref": "github:mrhz1973/control-plane@5f56d80ffa7945e12be78d2747b3bbdbdd8847cc:tests/local-dev-backlog-envelope-bridge-v1/fixtures/READY_D9001T.md",
+    "claimed_at": "2026-09-05T04:12:12.404Z",
+    "bridge_version": "local-dev-backlog-bridge-v1"
+  }
+}

@@ -1,38 +1,26 @@
 ﻿# LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_OPENCODE_PERMISSION_AND_NEW_FILE_CONVERGENCE_REMEDIATION_V1` (closure — PASS)
-**Classification:** `REMEDIATION PASS — BRIDGED NEW-FILE LIVE PROOF PASS — CAMPAIGN SEGMENT 3 RESUMED`
-**Timestamp (local):** 2026-09-05 ~06:10
+**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_QUEUE_CLAIM_SELECTION_V1` (closure — PASS)
+**Classification:** `SELECTOR TOOL PASS — FIRST LIVE SELECTED-ITEM DISPATCH PASS`
+**Timestamp (local):** 2026-09-05 ~06:45
 
 ## Summary
 
-Phase-1 inspection proved the installed OpenCode 1.18.25 `edit` permission
-already covers file creation → LEVEL 2/3 not required. LEVEL 1 (generic
-CREATE shaping + hardened task message) plus a `debug config` acceptance
-gate were implemented, tested, pushed (`d17eb04`). One delegated repair
-cycle (config-gate integration, `1159d8d`) and one bookkeeping cycle
-(`526bd81`) later, the bridged NEW-FILE live proof ran END-TO-END and PASSED:
-executor commit `db6b275` creates exactly `docs/runtime/CAMPAIGN_NOTES.md`
-(single marker line), push + remote verified. First live exercise of the
-TASK_CREATED_UNTRACKED selective-staging path.
+Selection law pinned (10/10 tests) + selector tool
+`tools/select-local-dev-queue-item-v1.mjs` (CLI suite 6/6) whose
+admissibility mirrors the bridge gate set exactly. Then the first live
+selected-item dispatch ran end-to-end: selector chose LOCAL_DEV_B_D-9001-T
+from the real queue, the bridge claimed it against a real receipts.json
+ledger (duplicate guard proven), and the executor executed it on
+qwen38-opus-q3-cline-24k — **PASS** in 4 turns / 171 s / 600 (executor
+commit `9eccd65`, MODIFY of tracked in-scope file, push + remote verified,
+38 pre-existing untracked protected).
 
-## Evidence
-
-- reports/architecture/v4_opencode_capability_config_inspection_v1.md
-- reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__proof2-attempt-ledger.md
-- reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__proof2-pass-evidence.md
-- suites: 21/21, 42/42, 14/14, 18/18, 15/15, 11/11 (all green, none weakened)
-- executor fail-closed refusals during the task (2× PREFLIGHT_TRACKED_DIRTY,
-  1× UNEXPECTED_FILE_CHANGES) were CORRECT verdicts vs Cursor-side
-  bookkeeping mistakes — retained as enforcement evidence.
-
-## Campaign
-
-SEGMENT 3 RESUMED (operator delegation; ~5h budget). Repair bookkeeping:
-config-gate family 1/2 cycles used.
+Both persistence paths are now proven LIVE: CREATE-new-file (checkpoint 7)
+and SELECT→CLAIM→DISPATCH MODIFY-tracked (checkpoint 8).
 
 ## NEXT (AUTO-VIA derived)
 
-`V4_LOCAL_DEV_EXECUTOR_QUEUE_CLAIM_SELECTION_V1` — deterministic dev-queue
-selection (state/claim/idempotency ordering; single-writer receipts), offline
-testable, strictly LOCAL_DEV.
+`V4_LOCAL_DEV_EXECUTOR_DISPATCHER_LOOP_V1` — unattended dispatcher primitive
+(select → claim → dispatch → persist receipts as one repeatable bounded
+command), offline tests + one bounded live proof. Strictly LOCAL_DEV.
