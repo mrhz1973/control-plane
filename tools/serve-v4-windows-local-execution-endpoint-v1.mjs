@@ -99,9 +99,52 @@ export function wrapResult(partial) {
     execution_id: partial.execution_id ?? null,
     replayed: partial.replayed === true,
     execution_performed: performed,
+    // V4_RT25_T22: quota-aware route/quota provenance propagated as metadata.
+    route_quota_provenance: partial.route_quota_provenance ?? null,
     adapter_result: adapter,
     reason_codes: partial.reason_codes || [],
   };
+}
+
+/**
+ * V4_RT25_T22 — structural validation of the OPTIONAL route_quota_provenance
+ * request block (endpoint-side propagation/validation law). Absent → ok
+ * (endpoint unchanged). Present → must be shape-valid AND quota_pool_id must
+ * be consistent with the authorization scope: the ratified scope is
+ * qwen_local (local unmetered, no pool) — any provenance claiming a quota
+ * pool or a different selected model on this authorization is REJECTED
+ * (mismatch → fail closed before authorization consumption).
+ */
+export function validateRouteQuotaProvenanceForEndpoint(provenance, runtimeAuthorization) {
+  if (provenance === undefined || provenance === null) {
+    return { ok: true, present: false };
+  }
+  if (typeof provenance !== "object" || Array.isArray(provenance)) {
+    return { ok: false, reason_codes: ["ROUTE_QUOTA_PROVENANCE_INVALID"] };
+  }
+  if (provenance.schema_version !== "v4-rt25-route-quota-provenance-v1" || typeof provenance.present !== "boolean") {
+    return { ok: false, reason_codes: ["ROUTE_QUOTA_PROVENANCE_INVALID"] };
+  }
+  if (provenance.present === true) {
+    if (typeof provenance.selected_route !== "string" || typeof provenance.model !== "string") {
+      return { ok: false, reason_codes: ["ROUTE_QUOTA_PROVENANCE_INVALID"] };
+    }
+    const scopeModel = runtimeAuthorization?.scope?.model ?? null;
+    if (scopeModel && provenance.model !== scopeModel) {
+      return {
+        ok: false,
+        reason_codes: ["ROUTE_QUOTA_PROVENANCE_MODEL_MISMATCH", `SCOPE:${scopeModel}`, `PROVENANCE:${provenance.model}`],
+      };
+    }
+    const poolId = provenance.quota_pool_id;
+    if (poolId !== null && poolId !== undefined && poolId !== "") {
+      return {
+        ok: false,
+        reason_codes: ["ROUTE_QUOTA_PROVENANCE_POOL_FORBIDDEN_FOR_SCOPE", `SCOPE:${scopeModel ?? "unknown"}`],
+      };
+    }
+  }
+  return { ok: true, present: provenance.present === true, provenance };
 }
 
 export function requestFingerprint(body) {
@@ -453,6 +496,26 @@ export async function handleExecutionRequest(body, options = {}) {
     };
   }
 
+  // V4_RT25_T22: optional route/quota provenance — validate BEFORE any
+  // authorization consumption. Invalid/mismatched provenance fails closed
+  // without touching ledger, registry or adapter.
+  const provenanceCheck = validateRouteQuotaProvenanceForEndpoint(
+    body.route_quota_provenance,
+    body.runtime_authorization,
+  );
+  if (!provenanceCheck.ok) {
+    return {
+      status: 200,
+      body: wrapResult({
+        ok: false,
+        classification: "ROUTE_QUOTA_PROVENANCE_REJECTED",
+        execution_id: executionId,
+        route_quota_provenance: body.route_quota_provenance ?? null,
+        reason_codes: provenanceCheck.reason_codes,
+      }),
+    };
+  }
+
   const registryPath = options.authorizationRegistryPath || null;
   const ledgerPath = options.authorizationSpendLedgerPath || null;
   const inspectLedger = options.inspectDurableSpend || inspectDurableSpend;
@@ -615,6 +678,7 @@ export async function handleExecutionRequest(body, options = {}) {
       classification: adapter_result?.classification || "ADAPTER_RESULT_INVALID",
       execution_id: executionId,
       replayed: false,
+      route_quota_provenance: provenanceCheck.present ? body.route_quota_provenance : null,
       adapter_result,
       reason_codes: ["ENDPOINT_ADAPTER_DELEGATED", ...(adapter_result?.reason_codes || [])],
     });

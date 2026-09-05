@@ -102,6 +102,46 @@
           }
         }
       }
+    },
+    "route_quota_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "present",
+        "selected_route",
+        "model",
+        "quota_pool_id"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "v4-rt25-route-quota-provenance-v1"
+        },
+        "present": {
+          "type": "boolean"
+        },
+        "decision_ref": {
+          "type": ["string", "null"]
+        },
+        "selected_route": {
+          "type": ["string", "null"]
+        },
+        "model": {
+          "type": ["string", "null"]
+        },
+        "access_surface": {
+          "type": ["string", "null"]
+        },
+        "quota_pool_id": {
+          "type": ["string", "null"]
+        },
+        "pool_evidence": {
+          "type": ["object", "null"]
+        },
+        "authorization_note": {
+          "type": ["string", "null"]
+        }
+      }
     }
   }
 }
