@@ -1,0 +1,28 @@
+{
+  "schema_version": "local-dev-idle-backfill-v1",
+  "decided_at": "2026-09-05T06:52:11.543Z",
+  "base_head": "5c9ba6940e48ab46f7152f6d939d1b932d17f2a4",
+  "segment": "seg4",
+  "seq_candidate": 2,
+  "scan1": {
+    "unclaimed_admissible": 0,
+    "claimed": 1
+  },
+  "decision": "BACKFILL_SYNTHETIC",
+  "reason_code": "BACKFILL_SYNTHETIC",
+  "candidate": {
+    "id": "D-9102-3FCE48B0",
+    "file": "SYNTHETIC_D-9102-3FCE48B0.md",
+    "allowed_path": "docs/runtime/AUTOVIA_SYNTHETIC_HEARTBEAT.md",
+    "objective_class": "append_marker_line",
+    "marker": "AUTOVIA_SYNTHETIC seq=2 segment=seg4 head=5c9ba6940e48 at=2026-09-05T06:52:11.543Z",
+    "evidence_refs": [
+      "docs/runtime/CURRENT_FRONTIER.md",
+      "reports/runtime/overnight-campaigns/2026-09-05__V4_LOCAL_DEV_EXECUTOR_OVERNIGHT_AUTOVIA_CAMPAIGN_V1.md"
+    ]
+  },
+  "synthetic_item_created": "YES",
+  "selector_verification": "ADMISSIBLE_VIA_NORMAL_SELECTOR",
+  "real_ready_preempted": "NO",
+  "policy_version": "local-dev-idle-backfill-policy-v1"
+}
