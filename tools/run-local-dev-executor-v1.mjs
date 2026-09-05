@@ -25,6 +25,7 @@ import { executeLocalDevTask, pathAllowed, DEV_PROFILE_CATEGORY, sanitizeOpenCod
 import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
 import { probeOpenCodeLocal } from "./probe-opencode-local-v1.mjs";
 import { startLocalDevGenerationGuard } from "./local-dev-generation-guard-v1.mjs";
+import { attachReviewStage } from "./run-review-stage-v1.mjs";
 
 export const DIRECT_QWEN_ENDPOINT = "http://127.0.0.1:8080";
 
@@ -472,6 +473,11 @@ async function main() {
   if (releaseFlag) {
     result.router_release = await releaseRouterIfStarted(result);
   }
+  // V4_CANONICAL_REVIEW_STAGE_ARCHITECTURE_AND_BOUNDARY_V1 — post-implementation
+  // canonical review-stage boundary, APPEND-ONLY (helper owns all vocabulary):
+  // PASS/STOP semantics, exit code and every pre-existing field are UNCHANGED;
+  // the stage performs SELECTION ONLY (no reviewer inference/execution).
+  await attachReviewStage(result, { implementerModel: result.profile_id ?? undefined });
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   process.exit(result.status === "PASS" ? 0 : 1);
 }

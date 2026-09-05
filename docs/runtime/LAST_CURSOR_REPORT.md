@@ -1,5 +1,79 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_CANONICAL_REVIEW_STAGE_ARCHITECTURE_AND_BOUNDARY_V1` (micro-task delta, base `0788717`)
+**Classification:** `PASS — ONE REAL CANONICAL REVIEW-STAGE BOUNDARY CREATED AND WIRED BEHIND CLOSED GATE: tools/run-review-stage-v1.mjs (runReviewStage / attachReviewStage / buildReviewerCandidates) composes FRESH canonical quota state at review time via buildReviewerBoundaryState (real registry-v2 + fail-closed baseline + real ingest lane → real composer → real join), derives reviewer candidates ONLY from registry reviewer-role metadata (codex chatgpt-subscription surfaces + qwen_local; openai_api_route structurally forbidden; glm has NO reviewer role in the registry), invokes the REAL selectQuotaAwareReviewerRoute (T18 independence law preserved), applies guardQualityDowngrade (T13 no-silent-downgrade), emits bounded v4-review-stage-result-v1 with execution_performed=false (SELECTION ONLY, no reviewer inference/execution); REAL EXISTING CALLER WIRED: local-dev live runner main() (tools/run-local-dev-executor-v1.mjs) attaches review_stage APPEND-ONLY post-implementation — PASS/STOP semantics and exit code unchanged, DEV-runner isolation law intact (42/42); FOCUSED TESTS 15/15 + T18 reviewer selector 5/5; D-0025 CLOSED UNCHANGED; WF40/WF61/n8n UNTOUCHED`
+**Timestamp (local):** 2026-09-06 (early hours, UTC+2)
+**BASE_HEAD:** `078871786648f19708f57fc6c433a62d1dd597e4`
+**CLOSURE HEAD:** final `cursor-pass: V4_CANONICAL_REVIEW_STAGE_ARCHITECTURE_AND_BOUNDARY_V1` commit carrying this report
+**CLOSURE:** MINIMAL_RUNTIME_BUNDLE (1 new tool + 1 caller wiring + 1 focused suite)
+
+## Chosen review-stage architecture
+
+Dedicated canonical review-stage runner/tool (preferred shape honored):
+
+```text
+implementation result (local-dev-execution-result-v1)
+  -> runReviewStage (tools/run-review-stage-v1.mjs — THE boundary)
+  -> buildReviewerBoundaryState (rt25-canonical-quota-state-v1: real registry-v2
+     + fail-closed baseline + real ingest-lane contributions -> real composer
+     -> real join — recomputed AT REVIEW TIME, never cached)
+  -> buildReviewerCandidates (registry-v2 reviewer-role metadata ONLY)
+  -> selectQuotaAwareReviewerRoute (REAL T18 selector + independence law)
+  -> guardQualityDowngrade (REAL T13 guard on the reviewer decision envelope)
+  -> bounded v4-review-stage-result-v1
+```
+
+WF61/WF40 were NOT touched (planner-cycle and routing/orchestration stay clean of review semantics, per the critical distinction).
+
+## Exact canonical call path
+
+`tools/run-local-dev-executor-v1.mjs` main() → `attachReviewStage(result)` → `runReviewStage()` → `buildReviewerBoundaryState()` → `composeCanonicalQuotaState()` → `selectQuotaAwareReviewerRoute()` → `guardQualityDowngrade()` → `result.review_stage` (append-only). CLI surface: `node tools/run-review-stage-v1.mjs --input-file <result.json> [--implementer-model <id>] [--output-file <path>]`.
+
+## Real caller wired: YES
+
+The local-dev execution completion path is the canonical post-implementation boundary: the live runner main() now attaches the review stage after `executeLocalDevTask` + router release. The wiring is APPEND-ONLY: `status`, `classification`, `reason_codes`, exit code and every pre-existing field are byte-identical; the DEV-runner isolation law (no production-authorization vocabulary in the runner source) is preserved by keeping all review-stage vocabulary inside `run-review-stage-v1.mjs` (helper `attachReviewStage`). The always-on dispatcher service path is UNTOUCHED (its bounded tick schema must not change); the runner is the single canonical caller.
+
+## Result shape (bounded, machine-readable)
+
+`v4-review-stage-result-v1`: `review_required`, `reviewer_selection_status` (`REVIEWER_SELECTED` | `NO_ROUTE_SELECTED` | `VETOED_QUALITY_DOWNGRADE` | `NO_CANDIDATES` | `QUOTA_STATE_COMPOSITION_FAILED` | `INPUT_INVALID` | …), `selected_reviewer` (`{route_id, resource_id, model, access_surface, quota_pool_id, admission, select_rank}` when admitted), `reason_codes`, `quota_provenance` (`{schema_version, joined_at, pools, source_paths, composition_reason_codes}`), `implementer_model`, `implementer_reference`, `execution_performed=false` (LAWFUL CONSTANT — no authorized reviewer execution surface exists), full `decision` + `quality_guard` audit envelopes.
+
+## Key laws proved (focused suite `tests/review-stage-boundary` 15/15)
+
+- **A** fresh canonical state composed at review time (joined_at == review now; real source paths; composer reason codes) + implementer known (`implementer_model`/`implementer_reference`).
+- **B** REAL selector invoked (decision envelope `v4-rt25-reviewer-quota-aware-decision-v1`, decision_role=reviewer) + parity with raw selector + candidates derived ONLY from registry reviewer roles (glm absent — registry truth), forbidden surfaces excluded.
+- **C** independence preference preserved (implementer `qwen-local` + both admitted → codex selected, same-model demoted with explicit code) and same-model-only explicit (C2).
+- **D** commercial stale/missing quota → NO_ROUTE_SELECTED fail-closed with pool denial evidence (`CONSERVE_UNKNOWN_STALE`).
+- **E** adequate local reviewer (composer Qwen gate passed) survives when commercial evidence is blocked; unobserved local lane is rejected `LOCAL_RESOURCE_UNOBSERVED_UNAVAILABLE` (T12 availability law applied to no-pool candidates — never ADMIT_NO_POOL through an unobserved resource).
+- **F** NO inference/execution: `execution_performed=false` always.
+- **G** malformed input (`null`/array/unknown schema/invalid status) → `INPUT_INVALID` fail-closed; composition failure → `QUOTA_STATE_COMPOSITION_FAILED` fail-closed.
+- **H** exact caller proof: runner CLI attaches `review_stage` to the implementation result; STOP exit semantics unchanged (exit 1).
+
+Runtime model-identity convention: registry class ids mapped to the canonical runtime ids already used by the guards (`codex_subscription_models`→`codex-ide`, `qwen_local`→`qwen-local` — same convention as `ROUTE_QUALITY_INVENTORY`/`QWEN_INVENTORY`).
+
+## Test results
+
+- NEW `tests/review-stage-boundary/run.mjs`: **15/15 PASS** (2 corrective loops used: no-pool availability law + registry-truth expectations).
+- EXISTING `tests/rt25-t18-reviewer-selector/run.mjs`: **5/5 PASS** (unchanged).
+- Touched-caller regressions (not required, run for safety): `tests/local-dev-executor-live-runner-v1` **42/42 PASS** (incl. production-isolation law), `tests/local-dev-executor-v1` **21/21 PASS**.
+- `node --check` on all changed .mjs: OK. `git diff --check`: OK.
+
+## Hard walls honored
+
+D-0025 `enabled=false` re-verified from repo gate file. No n8n live apply, no workflow activation/deactivation, no service restart, no Telegram, no Tailscale change, no provider/model calls, no credentials. All pre-existing untracked files preserved; no clean/stash/reset/rebase/force-push; selective stage only.
+
+## Remaining dependency (classified, NOT blocking the boundary)
+
+Reviewer EXECUTION surface (a separately authorized reviewer inference surface) does not exist by design — this task wires selection only (`execution_performed=false` lawful constant). Consumption of `review_stage` by downstream policy (e.g. packet review fields) remains future governed work.
+
+## Persistence record
+
+- `REVIEW_STAGE_BOUNDARY = WIRED_BEHIND_CLOSED_GATE` (boundary live in code + real caller wired; no production authorization, D-0025 closed)
+- Files: `tools/run-review-stage-v1.mjs` (NEW), `tools/run-local-dev-executor-v1.mjs` (caller wiring, append-only), `tests/review-stage-boundary/run.mjs` (NEW)
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_WF90_HTTP409_NORMALIZATION_LIVE_APPLY_V1` (micro-task delta, base `579fa67`)
 **Classification:** `PASS — WF90 NORMALIZER FIX LIVE-APPLIED TO WORKFLOW 90 (90ldaa5a-4000-8000-000000000090 "90 - CP V4 LOCAL DEV ALWAYS-ON DISPATCHER - ACTIVE"); LIVE_MUTATION = ONLY the "Code - Normalize LOCAL_DEV tick result" jsCode replaced with the canonical value from 579fa67212b37449a7761ff47ec9f652bdb8f381 (payload proven single-field diff vs live export; jsCode sha256 prefix 9f4184e9802ea4a0, 2029 chars, byte-equal canonical); WORKFLOW REMAINS ACTIVE (activeVersionId=versionId=febca537-9218-4fb4-8280-847b5e961f6b, published 2026-09-05T22:16:39Z, triggerCount=1, schedule 5-min unchanged); POST-APPLY VERIFICATION 17/17 PASS (id/name/settings/7 node IDs/topology/HTTP node/Tailscale URL/Telegram credential binding all unchanged); NATURAL TICK EVIDENCE: scheduled exec 308056 at 2026-09-05T22:20:41Z ran end-to-end with the new normalizer -> IDLE_CLEAN, response_valid=true, success, no Telegram send; D-0025 enabled=false UNCHANGED; WF40/WF61 UNTOUCHED; NO synthetic work, NO manual enqueue, NO service restart, NO Telegram test message`
 **Timestamp (local):** 2026-09-06 (00:0x, UTC+2)
