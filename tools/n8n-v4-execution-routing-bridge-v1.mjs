@@ -46,7 +46,51 @@ function base(p) {
     dispatch_required: Boolean(p.dispatch_required),
     dispatch_prepared: false,
     execution_performed: false,
+    // V4_RT25_T21: normalized quota-aware decision consumption (optional input).
+    quota_decision_consumed: Boolean(p.quota_decision_consumed),
+    quota_decision_provenance: p.quota_decision_provenance ?? null,
     reason_codes: p.reason_codes || [],
+  };
+}
+
+/**
+ * V4_RT25_T21 — consume an optional quota-aware decision envelope (any RT25
+ * selector output). Absent → null provenance (bridge unchanged). Present but
+ * structurally invalid → { invalid: true } so the bridge fails closed rather
+ * than silently ignoring operator-supplied decision metadata.
+ */
+function consumeQuotaDecision(quotaDecision) {
+  if (quotaDecision === undefined || quotaDecision === null) {
+    return { consumed: false, provenance: null, invalid: false };
+  }
+  if (typeof quotaDecision !== "object" || Array.isArray(quotaDecision) || typeof quotaDecision.schema_version !== "string") {
+    return { consumed: false, provenance: null, invalid: true };
+  }
+  const isRt25Envelope = /^v4-rt25-(planner|execution|reviewer|retry)-quota-aware-decision-v1$/.test(quotaDecision.schema_version);
+  if (!isRt25Envelope || typeof quotaDecision.status !== "string") {
+    return { consumed: false, provenance: null, invalid: true };
+  }
+  const sel = quotaDecision.status === "ROUTE_SELECTED" || quotaDecision.status === "RETRY_ROUTE_SELECTED"
+    ? quotaDecision.selected ?? null
+    : null;
+  const poolSummaries = {};
+  for (const [poolId, ev] of Object.entries(quotaDecision.pool_evaluations || {})) {
+    poolSummaries[poolId] = { evaluation: ev?.evaluation ?? null, freshness: ev?.freshness ?? null };
+  }
+  return {
+    consumed: true,
+    invalid: false,
+    provenance: {
+      decision_schema: quotaDecision.schema_version,
+      decision_id: quotaDecision.decision_id ?? null,
+      decision_role: quotaDecision.decision_role ?? null,
+      status: quotaDecision.status,
+      selected_route: sel?.route_id ?? null,
+      selected_model: sel?.model ?? null,
+      selected_quota_pool_id: sel?.quota_pool_id ?? null,
+      pool_evaluations: poolSummaries,
+      authorization_note: "routing metadata only; no authorization gate changed",
+    },
   };
 }
 
@@ -106,6 +150,17 @@ export async function runN8nExecutionRoutingBridge(inputs, options = {}) {
     cycle?.packet && typeof cycle.packet === "object" && typeof cycle.packet.packet_id === "string"
       ? cycle.packet.packet_id
       : null;
+
+  // V4_RT25_T21: optional quota-aware decision metadata; invalid → fail closed.
+  const quotaConsumption = consumeQuotaDecision(inputs?.quota_decision);
+  if (quotaConsumption.invalid) {
+    return base({
+      task_id: taskId,
+      packet_id: packetId,
+      classification: "QUOTA_DECISION_INVALID",
+      reason_codes: ["QUOTA_DECISION_INVALID"],
+    });
+  }
 
   if (!cycleCheck.ok) {
     return base({ task_id: taskId, packet_id: packetId, classification: "CYCLE_RESULT_INVALID", reason_codes: cycleCheck.reason_codes });
@@ -258,10 +313,13 @@ export async function runN8nExecutionRoutingBridge(inputs, options = {}) {
     adapter_registered: true,
     adapter_id: entry.adapter_id,
     dispatch_required: Boolean(entry.dispatch_required),
+    quota_decision_consumed: quotaConsumption.consumed,
+    quota_decision_provenance: quotaConsumption.provenance,
     reason_codes: [
       "ROUTING_READY_FOR_DISPATCH",
       ...routeResult.reason_codes,
       `ADAPTER:${entry.adapter_id}`,
+      ...(quotaConsumption.consumed ? ["QUOTA_DECISION_CONSUMED"] : []),
     ],
   });
 }
