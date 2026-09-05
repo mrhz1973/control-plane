@@ -181,7 +181,7 @@ await test("S9 response normalization: bounded shape, no secrets field anywhere"
   for (const c of CLASSIFICATIONS) assert.ok(typeof c === "string");
 });
 
-await test("S10 verifyRepoState is non-destructive contract (only read/fetch commands)", async () => {
+await test("S10 verifyRepoState allows only fetch + ff-only merge (no destructive git)", async () => {
   const calls = [];
   const result = await verifyRepoState({
     repoPath: process.cwd(),
@@ -190,14 +190,18 @@ await test("S10 verifyRepoState is non-destructive contract (only read/fetch com
       if (args[0] === "rev-parse" && args[1] === "--is-inside-work-tree") return { status: 0, stdout: "true" };
       if (args[0] === "rev-parse" && args[1] === "--abbrev-ref") return { status: 0, stdout: "main" };
       if (args[0] === "fetch") return { status: 0, stdout: "" };
-      if (args[0] === "rev-parse") return { status: 0, stdout: "e".repeat(40) };
       if (args[0] === "status") return { status: 0, stdout: "" };
+      if (args[0] === "rev-parse") return { status: 0, stdout: "e".repeat(40) };
       return { status: 1, stdout: "" };
     },
   });
   assert.equal(result.ok, true);
+  assert.equal(result.sync_performed, false);
   for (const c of calls) {
-    assert.ok(!/\b(reset|stash|clean|checkout|rebase|merge|--hard|--force)\b/.test(c), `destructive command attempted: ${c}`);
+    assert.ok(!/\b(reset|stash|clean|checkout|rebase|--hard|--force)\b/.test(c), `destructive command attempted: ${c}`);
+    if (/\bmerge\b/.test(c)) {
+      assert.ok(/^merge --ff-only origin\/main$/.test(c), `non-ff merge attempted: ${c}`);
+    }
   }
 });
 

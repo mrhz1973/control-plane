@@ -1,5 +1,40 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_DISPATCHER_SAFE_FAST_FORWARD_SYNC_V1` (micro-task delta, issue #49, base `0850b21`)
+**Classification:** `PASS — verifyRepoState now safe-FF syncs clean behind main (`git merge --ff-only origin/main`) before queue claim; dirty/ahead/diverged/ff-fail remain HUMAN_GATE; untracked preserved; focused 9/9 + dispatcher 10/10 + admission 11/11; NO live restart this pass`
+**Timestamp (local):** 2026-09-06 (~01:50, UTC+2)
+**BASE_HEAD:** `0850b215fb1206067691efb0e728ae3b6bb0de61`
+**CLOSURE HEAD:** final `cursor-pass: V4_DISPATCHER_SAFE_FAST_FORWARD_SYNC_V1` commit carrying this report
+**CLOSURE:** CODE_WIRED_BEHIND_LIVE_PROCESS
+
+## Delta
+
+`tools/serve-local-dev-autonomous-dispatcher-v1.mjs` `verifyRepoState` only:
+
+1. `git fetch origin main`
+2. require branch `main`
+3. TRACKED clean (`status --porcelain=v1 --untracked-files=no`) **before** any sync
+4. HEAD==origin/main → continue (`sync_performed=false`)
+5. HEAD strict ancestor of origin/main → exactly one `git merge --ff-only origin/main` → require equality
+6. local ahead / diverged / merge-base fail / ff fail → `HUMAN_GATE_REQUIRED`
+7. never reset/stash/clean/rebase/force-pull
+
+Sync remains before scan/claim/admission/executor.
+
+## Exact live-activation dependency (NOT performed)
+
+> Restart/reload Scheduled Task `ControlPlane-V4-LocalDevDispatcher` so the live node process loads this `verifyRepoState`. Until restart, the live PID continues the pre-FF binary from #48. No n8n mutation required.
+
+## Focused tests
+
+- `tests/dispatcher-safe-ff-sync/run.mjs` — **9/9 PASS**
+- `tests/local-dev-dispatcher-service-v1/run.mjs` — **10/10 PASS**
+- `tests/micro-task-admission-parity/run.mjs` — **11/11 PASS** (admission unchanged)
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_AUTOMATED_MICRO_TASK_ADMISSION_LIVE_APPLY_V1` (micro-task delta, issue #48, base `562265b`)
 **Classification:** `PASS — LIVE_APPLIED: ControlPlane-V4-LocalDevDispatcher restarted; admission-aware dispatcher loaded (PID 55972); 127.0.0.1:18793 listening; GET /v1/tick → 405 POST_ONLY; D-0025 enabled=false; no n8n/WF/Tailscale/Telegram mutation; no fabricated queue task`
 **Timestamp (local):** 2026-09-06 (~01:42, UTC+2)

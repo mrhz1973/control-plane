@@ -26,9 +26,13 @@
  * In-process single-flight lock: a concurrent tick returns BUSY and never
  * queues.
  *
- * Repository hygiene (fail-closed, non-destructive): canonical checkout,
- * branch main, HEAD == origin/main after fetch, no conflicting tracked
- * dirty state. Any mismatch → HUMAN_GATE_REQUIRED (never reset/stash/clean).
+ * Repository hygiene (fail-closed): canonical checkout, branch main,
+ * `git fetch origin main`, TRACKED-clean before any sync, then either
+ * HEAD==origin/main or exactly one `git merge --ff-only origin/main` when
+ * HEAD is a strict ancestor. Ahead/diverged/dirty/ff-failure →
+ * HUMAN_GATE_REQUIRED (never reset/stash/clean/rebase/force-pull).
+ * Pre-existing untracked files are preserved (dirty check uses
+ * --untracked-files=no). Sync runs before queue claim/admission/executor.
  *
  * IDLE ticks NEVER manufacture synthetic work (authoring law: only real
  * READY backlog executes here; synthetic capability preserved elsewhere).
@@ -76,7 +80,12 @@ function gitExec(repoPath, args) {
   });
 }
 
-/** Fail-closed repo hygiene: canonical checkout + main + synced + clean-enough. */
+/** Fail-closed repo hygiene: canonical checkout + main + synced + clean-enough.
+ * When local main is a strict ancestor of origin/main and the TRACKED
+ * worktree is clean, performs exactly one `git merge --ff-only origin/main`
+ * (V4_DISPATCHER_SAFE_FAST_FORWARD_SYNC_V1). Never reset/stash/clean/rebase.
+ * Untracked files are ignored by the dirty check and never touched.
+ */
 export async function verifyRepoState(deps = {}) {
   const run = deps.gitExec || gitExec;
   const repoPath = deps.repoPath || CANONICAL_REPO_PATH;
@@ -95,23 +104,81 @@ export async function verifyRepoState(deps = {}) {
   if (fetch.status !== 0) {
     return { ok: false, reason_codes: ["FETCH_FAILED"], human_gate_required: true };
   }
-  const local = await run(repoPath, ["rev-parse", "HEAD"]);
-  const remote = await run(repoPath, ["rev-parse", "origin/main"]);
-  if (local.status !== 0 || remote.status !== 0) {
-    return { ok: false, reason_codes: ["REV_PARSE_FAILED"], human_gate_required: true };
-  }
-  if (local.stdout.trim() !== remote.stdout.trim()) {
-    return { ok: false, reason_codes: ["HEAD_ORIGIN_MISMATCH"], human_gate_required: true };
-  }
+
+  // TRACKED dirty must block BEFORE any sync mutation (untracked preserved).
   const dirty = await run(repoPath, ["status", "--porcelain=v1", "--untracked-files=no"]);
   if (dirty.status !== 0) {
     return { ok: false, reason_codes: ["STATUS_FAILED"], human_gate_required: true };
   }
   const dirtyLines = dirty.stdout.split("\n").filter((l) => l.trim());
   if (dirtyLines.length) {
-    return { ok: false, reason_codes: ["TRACKED_DIRTY_CONFLICT"], human_gate_required: true, gate_summary: `tracked dirty: ${dirtyLines.length} file(s)` };
+    return {
+      ok: false,
+      reason_codes: ["TRACKED_DIRTY_CONFLICT"],
+      human_gate_required: true,
+      gate_summary: `tracked dirty: ${dirtyLines.length} file(s)`,
+    };
   }
-  return { ok: true, reason_codes: [], head: local.stdout.trim(), human_gate_required: false };
+
+  const local = await run(repoPath, ["rev-parse", "HEAD"]);
+  const remote = await run(repoPath, ["rev-parse", "origin/main"]);
+  if (local.status !== 0 || remote.status !== 0) {
+    return { ok: false, reason_codes: ["REV_PARSE_FAILED"], human_gate_required: true };
+  }
+  let headSha = local.stdout.trim();
+  const originSha = remote.stdout.trim();
+  if (!/^[0-9a-f]{40}$/i.test(headSha) || !/^[0-9a-f]{40}$/i.test(originSha)) {
+    return { ok: false, reason_codes: ["REV_PARSE_FAILED"], human_gate_required: true };
+  }
+
+  // Already synced — no mutation.
+  if (headSha === originSha) {
+    return {
+      ok: true,
+      reason_codes: [],
+      head: headSha,
+      human_gate_required: false,
+      sync_performed: false,
+    };
+  }
+
+  // Ancestry: behind / ahead / diverged (fail closed on merge-base failure).
+  const mb = await run(repoPath, ["merge-base", "HEAD", "origin/main"]);
+  if (mb.status !== 0 || !/^[0-9a-f]{40}$/i.test(mb.stdout.trim())) {
+    return { ok: false, reason_codes: ["MERGE_BASE_FAILED"], human_gate_required: true };
+  }
+  const baseSha = mb.stdout.trim();
+  if (baseSha === originSha && headSha !== originSha) {
+    return { ok: false, reason_codes: ["LOCAL_AHEAD_OF_ORIGIN"], human_gate_required: true };
+  }
+  if (baseSha !== headSha && baseSha !== originSha) {
+    return { ok: false, reason_codes: ["HEAD_ORIGIN_DIVERGED"], human_gate_required: true };
+  }
+  if (baseSha !== headSha) {
+    // Not a strict ancestor relationship we recognize.
+    return { ok: false, reason_codes: ["HEAD_ORIGIN_MISMATCH"], human_gate_required: true };
+  }
+
+  // Strict ancestor: HEAD is behind origin/main → exactly one ff-only merge.
+  const ff = await run(repoPath, ["merge", "--ff-only", "origin/main"]);
+  if (ff.status !== 0) {
+    return { ok: false, reason_codes: ["FAST_FORWARD_FAILED"], human_gate_required: true };
+  }
+  const after = await run(repoPath, ["rev-parse", "HEAD"]);
+  if (after.status !== 0) {
+    return { ok: false, reason_codes: ["REV_PARSE_FAILED"], human_gate_required: true };
+  }
+  headSha = after.stdout.trim();
+  if (headSha !== originSha) {
+    return { ok: false, reason_codes: ["FAST_FORWARD_DID_NOT_SYNC"], human_gate_required: true };
+  }
+  return {
+    ok: true,
+    reason_codes: ["FAST_FORWARD_SYNCED"],
+    head: headSha,
+    human_gate_required: false,
+    sync_performed: true,
+  };
 }
 
 export function validateTickRequest(body) {
