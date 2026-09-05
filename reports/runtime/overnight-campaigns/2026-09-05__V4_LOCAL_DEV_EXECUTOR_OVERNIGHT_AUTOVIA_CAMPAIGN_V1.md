@@ -33,7 +33,7 @@ session isolation adopted per campaign authorization)
 - seq: 2
 - task_ref: V4_LOCAL_DEV_EXECUTOR_BACKLOG_ENVELOPE_BRIDGE_IMPLEMENT_V1
 - starting_head: 08c9b7ce802d56c5f3f1f68161fb729278f3a548
-- ending_head: (pending commit)
+- ending_head: 42a678ab2aed694b850225ce13ff6b7a97636ce6
 - result: PASS
 - tests summary: tests/local-dev-backlog-envelope-bridge-v1 18/18 PASS
   (offline, deterministic); fix loop 1/3 used — both defects were TEST-side
@@ -49,15 +49,74 @@ session isolation adopted per campaign authorization)
   required declared-loop sentence; hints clamped under hard caps (900/16);
   receipts sidecar idempotency proven (source_ref AND task_ref collisions
   refused)
-- elapsed: ~55 min
-- result addendum (dry-run executed inside this pass window before commit):
-  CLI shape proven on standalone fixture commit efdef1aa (out-of-band, main
-  untouched): preview artifact persisted, duplicate replay refused at CLI
-  (CLAIM_ALREADY_EXISTS, exit 1); first duplicate attempt INVALID (PS
-  pipeline unroll), corrected re-run is the valid evidence
-- report: reports/architecture/v4_local_dev_executor_backlog_envelope_bridge_dry_run_v1.md
-  + artifact reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__envelope-preview.json
-- next derived: V4_LOCAL_DEV_EXECUTOR_CLINE24K_BRIDGED_LIVE_PROOF_V1
-  (exactly ONE executor run whose envelope comes from the bridge CLI on the
-  D-9001-T fixture; bounded per derived envelope 600s/8turns)
+- elapsed: ~30 min
+- next derived: V4_LOCAL_DEV_EXECUTOR_BACKLOG_ENVELOPE_BRIDGE_DRY_RUN_V1
 - AUTO_VIA_ELIGIBLE: YES
+
+## CHECKPOINT 3
+
+- seq: 3
+- task_ref: V4_LOCAL_DEV_EXECUTOR_BACKLOG_ENVELOPE_BRIDGE_DRY_RUN_V1
+- starting_head: 42a678ab2aed694b850225ce13ff6b7a97636ce6
+- ending_head: 86c06c63e671f5bb786b62d2f2ecd1a668616e5b
+- result: PASS
+- tests summary: CLI dry-run on standalone fixture commit efdef1aa
+  (out-of-band, main untouched); preview artifact persisted in-repo;
+  duplicate replay refused at CLI (CLAIM_ALREADY_EXISTS exit 1, no output);
+  first duplicate attempt INVALID (PowerShell pipeline unrolling produced
+  empty receipts array) — corrected re-run is the valid evidence; unit
+  suite still 18/18
+- files changed: reports/architecture/v4_local_dev_executor_backlog_envelope_bridge_dry_run_v1.md,
+  reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__envelope-preview.json,
+  checkpoint, LAST_CURSOR_REPORT
+- key determinations: env quirk (session PS profile wraps git commit* —
+  commit-tree must call git.exe directly); bridge proven at pure-function,
+  CLI and idempotency layers
+- elapsed: ~40 min
+- next derived: V4_LOCAL_DEV_EXECUTOR_CLINE24K_BRIDGED_LIVE_PROOF_V1
+- AUTO_VIA_ELIGIBLE: YES
+
+## CHECKPOINT 4 — CAMPAIGN TERMINAL (STOP)
+
+- seq: 4
+- task_ref: V4_LOCAL_DEV_EXECUTOR_CLINE24K_BRIDGED_LIVE_PROOF_V1
+- starting_head: 86c06c63e671f5bb786b62d2f2ecd1a668616e5b
+- ending_head: 86c06c63e671f5bb786b62d2f2ecd1a668616e5b (executor STOP; no executor commit)
+- result: **STOP:GIT_PERSISTENCE_FAILED / NOTHING_STAGEABLE_IN_SCOPE** —
+  canonical STOP artifact:
+  reports/runtime/cursor-stops/2026-09-05T025100Z__LOCAL_DEV_B_D-9001-T.stop.json
+- real executor run: EXACTLY 1 (bridge-derived envelope; qwen38-opus-q3-cline-24k;
+  router reused; turns_used=6 real Qwen generations; timebox 174/600 —
+  NOT timebox/guard-related)
+- root cause class: BACKLOG_BRIDGE_NEW_FILE_SEMANTICS — the bridge mapped a
+  CREATE-new-file objective; executor persistence is tracked-file selective
+  staging only (untracked never staged: contract-protected behavior guarding
+  pre-existing untracked files). Executor acted exactly per contract; the
+  derived task shape exceeded proven persistence semantics. The new file was
+  NOT left behind (workspace returned clean).
+- campaign decision: FIRST SUBSTANTIVE STOP → CAMPAIGN TERMINATED per
+  NO-SAME-PASS-BLIND-FIX rule (the identified repair — restrict bridge
+  objectives to tracked files or extend persistence for in-scope new files
+  with test cover — is a NEW authorized task, not a same-pass fix)
+- production changed: NO · D-0025 enabled: false
+- elapsed: ~55 min
+
+---
+
+## FINAL CAMPAIGN REPORT
+
+CAMPAIGN = V4_LOCAL_DEV_EXECUTOR_OVERNIGHT_AUTOVIA_CAMPAIGN_V1
+START_HEAD = 300d03fa06647c2da72f91b06ceb66074369faca
+FINAL_HEAD = 86c06c63e671f5bb786b62d2f2ecd1a668616e5b
+LOGICAL_PASSES_ATTEMPTED = 4
+LOGICAL_PASSES_PASS = 3
+TERMINAL_TASK = V4_LOCAL_DEV_EXECUTOR_CLINE24K_BRIDGED_LIVE_PROOF_V1
+TERMINAL_REASON = BRIDGED_LIVE_PROOF_SUBSTANTIVE_STOP (BACKLOG_BRIDGE_NEW_FILE_SEMANTICS)
+REAL_LOCAL_DEV_EXECUTIONS_ADDED = 1 (STOP-classified, real Qwen 6 turns, bounded)
+PRODUCTION_CHANGED = NO
+D0025_ENABLED = false
+NEXT = V4_LOCAL_DEV_EXECUTOR_BRIDGED_PROOF_TRACKED_FILE_SEMANTICS_V1
+       (operator-gated follow-up: either constrain bridge objective mapping
+       to existing tracked files, or explicitly extend executor persistence
+       to in-scope NEW files with deterministic tests; then retry the
+       bridged live proof EXACTLY ONCE)

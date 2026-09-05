@@ -1,0 +1,30 @@
+{
+  "schema_version": "local-dev-execution-result-v1",
+  "task_ref": "LOCAL_DEV_B_D-9001-T",
+  "status": "STOP",
+  "classification": "STOP:GIT_PERSISTENCE_FAILED",
+  "actor": "local-dev-executor-v1",
+  "profile_id": "qwen38-opus-q3-cline-24k",
+  "base_head": "86c06c63e671f5bb786b62d2f2ecd1a668616e5b",
+  "final_head": null,
+  "tests": [],
+  "changed_files": [],
+  "router_was_running": true,
+  "launch_performed": false,
+  "turns_used": 6,
+  "timebox_used_s": 174,
+  "reason_codes": [
+    "GIT_PERSISTENCE_FAILED",
+    "NOTHING_STAGEABLE_IN_SCOPE"
+  ],
+  "campaign": "V4_LOCAL_DEV_EXECUTOR_OVERNIGHT_AUTOVIA_CAMPAIGN_V1",
+  "campaign_note": "STOP occurred inside campaign pass 4 (V4_LOCAL_DEV_EXECUTOR_CLINE24K_BRIDGED_LIVE_PROOF_V1). Envelope was bridge-derived (tools/bridge-backlog-to-local-dev-envelope-v1.mjs on fixture artifact at efdef1aa). Root cause class: BACKLOG_BRIDGE_NEW_FILE_SEMANTICS — bridge mapped a CREATE-file objective, but executor persistence is tracked-file selective-staging only (untracked never staged, by contract and by design protecting pre-existing untracked files). Executor behaved exactly per contract; the derived task shape was outside proven persistence semantics. Campaign terminated per first-substantive-STOP rule; no same-pass fix.",
+  "opencode_evidence": {
+    "log_run": "see opencode.log run of 2026-09-05T02:47-02:50Z window",
+    "provider": "qwen_local/qwen38-opus-q3-cline-24k streams only",
+    "turns_used": 6,
+    "timebox_used_s": 174,
+    "no_timebox_exhaustion": true,
+    "no_guard_blocks_observed": true
+  }
+}
