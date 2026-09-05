@@ -1,24 +1,41 @@
 ﻿# LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_RETRY9_DIRTY_MARKER_RECONCILIATION_V1`
-**Classification:** `RETRY9_DIRTY_MARKER_RECONCILED`
+**BLOCK-ID:** `V4_CLINE64K_ROUTER_LATENCY_DETERMINISM_DIAGNOSTIC_V1`
+**Classification:** `CLINE64K_ROUTER_LATENCY_DIAGNOSTIC — C: ROUTER_BASELINE_SLOW_BOTH`
 **Timestamp (local):** 2026-09-05
 
 ## Summary
 
-RETRY9 remains historical `STOP:TEST_FAILED`, caused solely by the test-harness
-handle-shape defect now fixed by
-`V4_LOCAL_DEV_EXECUTOR_TEST_HARNESS_HANDLE_SHAPE_FIX_V1`. The single tracked
-dirty change left by the RETRY9 agent was verified as EXACTLY the canonical
-evidence — pure 4-line append of `## First full bounded live proof after
-no-subagent calibration` / `LOCAL_DEV_EXECUTOR_FIRST_LIVE_PROOF_RETRY9 =
-QWEN_EXECUTED` (RETRY7/8/9 markers each present exactly once; no pre-existing
-content altered; `git diff --check` PASS) — and is persisted by this pass.
+Localized the unexplained RETRY9-vs-RETRY11/12 latency gap. Exactly TWO tiny
+direct generations through the canonical router endpoint
+(`POST /v1/chat/completions`, model `qwen38-opus-q3-cline-64k`, 21 prompt
+tokens, 32-token cap): **98 003 ms** and **122 383 ms** (~3-4 s/token), both
+HTTP 200, no warm-up improvement (request 2 slower). Classification
+**C: ROUTER_BASELINE_SLOW_BOTH** — the very-slow regime exists at the
+router/model baseline itself, NOT only at OpenCode workload level; the
+RETRY11/12 ~300 s/agent-turn is consistent with ~100-150 output tokens at this
+baseline. The residual unexplained gap is versus RETRY9 (~30 s/generation),
+i.e. per-token throughput was several times faster under RETRY9-era
+conditions. Both replies began with `<think>` reasoning (documented caveat;
+profile-level reasoning not suppressed).
 
-No new Qwen/OpenCode run. QWEN_RUNS_THIS_PASS=0. OPENCODE_RUNS_THIS_PASS=0.
-Tracked tree clean after persistence. All pre-existing untracked preserved
-(32). Production unchanged.
+RETRY10-12 reconciled as historical diagnostics: cold-start environmental
+(RETRY10); confounded timing (RETRY11, operator load); controlled
+reproduction (RETRY12). No unsuitability classification, no timebox raise, no
+profile switch, no config change.
+
+GPU baseline (RTX 3060 12 GB): 75 % util / 70 % post, VRAM ~11.95/12 GiB
+(~97 % resident), 61-62 °C, 66 W, P2, llama-server pid 24616 — before and
+after, unchanged; router left running.
+
+REAL_QWEN_GENERATIONS_THIS_PASS=2 · OpenCode runs=0 · LOCAL_DEV_EXECUTOR
+runs=0 · production unchanged · real dev executions complete remains 0 ·
+tracked tree clean · 32 untracked preserved.
 
 ## NEXT
 
-`V4_LOCAL_DEV_EXECUTOR_QWEN_FIRST_COMPLETE_LIVE_PROOF_RETRY10_V1`
+`V4_CLINE64K_BACKEND_RUNTIME_STATE_INSPECTION_V1` — read-only inspection of
+the live llama-server backend state for the 64K instance (layer/offload state,
+concurrently loaded sibling instances, KV-cache placement) to explain the
+per-token throughput gap vs RETRY9-era conditions BEFORE any executor timebox
+or profile decision.
