@@ -1,5 +1,47 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_AUTOMATED_MICRO_TASK_ADMISSION_LIVE_APPLY_V1` (micro-task delta, issue #48, base `562265b`)
+**Classification:** `PASS — LIVE_APPLIED: ControlPlane-V4-LocalDevDispatcher restarted; admission-aware dispatcher loaded (PID 55972); 127.0.0.1:18793 listening; GET /v1/tick → 405 POST_ONLY; D-0025 enabled=false; no n8n/WF/Tailscale/Telegram mutation; no fabricated queue task`
+**Timestamp (local):** 2026-09-06 (~01:42, UTC+2)
+**BASE_HEAD:** `562265bf0155839cdb701050926f1e5b7b91bdf5`
+**CLOSURE HEAD:** final `cursor-pass: V4_AUTOMATED_MICRO_TASK_ADMISSION_LIVE_APPLY_V1` commit carrying this report
+**CLOSURE:** LIVE_APPLY (Scheduled Task restart only)
+
+## Precheck
+
+- branch `main`; HEAD == origin/main == `562265b`
+- tracked worktree clean (pre-existing untracked preserved)
+- Scheduled Task identity: `ControlPlane-V4-LocalDevDispatcher` →
+  `node.exe …\tools\serve-local-dev-autonomous-dispatcher-v1.mjs`
+- pre-restart listener PID `52292` (same identity)
+
+## Live mutation performed
+
+1. Stopped old listener PID `52292` (identity-checked cmdline)
+2. `Start-ScheduledTask -TaskName ControlPlane-V4-LocalDevDispatcher`
+3. New listener PID `55972` started `2026-09-06 01:41:39` (task LastRun `01:41:38`, LastTaskResult `0`)
+
+## Post-apply proof
+
+| # | Check | Result |
+|---|---|---|
+| 1 | Scheduled Task / process up | Ready; LastTaskResult=0; node PID 55972 |
+| 2 | `127.0.0.1:18793` listening | YES |
+| 3 | GET `/v1/tick` | HTTP 405 + `reason_codes:["POST_ONLY"]` |
+| 4 | Admission-aware code loaded | cmdline → canonical mjs; on-disk source contains `admitMicroTaskDelta` (2 hits) + admission comment (2 hits); helper file present; process start after restart |
+| 5 | No fabricated task | YES |
+| 6 | Natural tick | receipts mtime unchanged since 2026-09-05 (no new claim this window); observe-only |
+| 7 | D-0025 | `enabled=false` |
+| 8 | No n8n workflow mutation | `workflows/` dirty=0 |
+
+## Forbidden walls honored
+
+No WF90/n8n edits, no Tailscale, no Telegram, no queue fabrication, no model calls, no WF40/WF61, no D-0025 change, no credentials, no destructive git.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_AUTOMATED_MICRO_TASK_ADMISSION_PARITY_V1` (micro-task delta, issue #47, base `a179a40`)
 **Classification:** `PASS — deterministic MICRO_TASK_DELTA admission helper wired into real local-dev dispatcher performTick BEFORE executor; rejected admission never executes (HUMAN_GATE_REQUIRED + execution_performed=false); legacy safe defaults; focused 11/11 + dispatcher service 10/10; NO live apply/restart; D-0025 unchanged`
 **Timestamp (local):** 2026-09-06 (~01:40, UTC+2)
