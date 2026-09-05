@@ -183,3 +183,59 @@ pre-existing untracked 33/33 protected).
 REAL_LOCAL_DEV_EXECUTIONS_ADDED (this campaign, total) = 2 (both
 STOP-classified, real Qwen, bounded). PRODUCTION_CHANGED = NO.
 D0025_ENABLED = false.
+
+---
+
+# CONTINUATION SEGMENT 3 (resumed per operator delegation in
+# V4_LOCAL_DEV_EXECUTOR_OPENCODE_PERMISSION_AND_NEW_FILE_CONVERGENCE_REMEDIATION_V1)
+
+Budget: ~5h from that dispatch. Delegated auto-repair policy V2 active.
+
+## CHECKPOINT 7 — REMEDIATION + BRIDGED NEW-FILE LIVE PROOF (PASS)
+
+- seq: 7 (segment 3, pass 1)
+- task_ref: V4_LOCAL_DEV_EXECUTOR_OPENCODE_PERMISSION_AND_NEW_FILE_CONVERGENCE_REMEDIATION_V1
+- starting_head: db6b275 pre-image = 6a2a6ea54a372898c10301e5d75e92b37c5c9b98
+- passes in this segment:
+  - PASS (cursor-pass `d17eb04`): Phase-1 read-only OpenCode 1.18.25
+    capability/config inspection (evidence:
+    reports/architecture/v4_opencode_capability_config_inspection_v1.md —
+    `edit` permission already covers create; LEVEL 2/3 NOT required);
+    LEVEL-1 generic CREATE task shaping (`inferTaskKind` + create-flow
+    instructions in buildTaskDelta, fixture-agnostic); agent message
+    hardening in buildTaskMessage; `debug config` acceptance gate on the
+    exact generated config (OPENCODE_CONFIG_REJECTED fail-closed); 11
+    deterministic regressions (tests/local-dev-convergence-remediation-v1);
+    all suites green: 21/21, 42/42, 14/14, 18/18, 15/15.
+  - PASS (executor-pass `1159d8d`): delegated repair cycle 1/2 (family:
+    config-gate integration) — gate now runs the SAME resolved spawn binary;
+    ENOENT degrades to SKIP; OPENCODE_CONFIG_REJECTED diagnostics plumbed.
+  - PASS (executor-pass `526bd81`): bookkeeping cycle 1b (envelope HEAD
+    rebase + refreshed snapshot; executor refusals of dirty tracked tree
+    were CORRECT).
+  - PASS (executor-pass `db6b275`): **BRIDGED NEW-FILE LIVE PROOF = PASS**
+- EXECUTOR_END_HEAD (pass 7) = db6b275b46da3929b6cd1d91574980032c3730ee
+  (LOCAL == REMOTE on origin/main)
+- proof substance: backlog fixture D-9001-T → bridge (CREATE shaping) →
+  envelope → LOCAL_DEV_EXECUTOR → OpenCode (config-gated) → guard →
+  qwen38-opus-q3-cline-24k → ONE new in-scope file created
+  (docs/runtime/CAMPAIGN_NOTES.md, single marker line) → executor selective
+  staging of ONLY the task-created new file (first live exercise of the
+  TASK_CREATED_UNTRACKED path) → executor commit → push → remote verified.
+- safety: tracked tree clean; pre-existing untracked preserved (snapshot 32 →
+  36, delta = Cursor's own proof bookkeeping artifacts only); the executor's
+  three fail-closed refusals during the task (PREFLIGHT_TRACKED_DIRTY ×2,
+  UNEXPECTED_FILE_CHANGES ×1) retained as enforcement evidence — all were
+  correct verdicts against Cursor-side bookkeeping, not executor defects.
+- repair bookkeeping: family config-gate = 1 of 2 cycles used; run-artifact
+  hygiene = bookkeeping only. Full records:
+  reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__proof2-attempt-ledger.md and
+  LOCAL_DEV_B_D-9001-T__proof2-pass-evidence.md
+- production changed: NO · D-0025 enabled: false
+- REAL_LOCAL_DEV_EXECUTIONS_ADDED (campaign total) = 3 (2 STOP + 1 PASS)
+
+## SEGMENT 3 STATUS
+
+CAMPAIGN RESUMED (new continuation segment, budget ~5h from
+OPENCODE_PERMISSION_AND_NEW_FILE_CONVERGENCE_REMEDIATION_V1 dispatch).
+Every NEXT is derived only from newly persisted canonical state.
