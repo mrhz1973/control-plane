@@ -1,49 +1,65 @@
 ﻿# LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_CLINE_EXTENSION_UNINSTALL_AFTER_OPENCODE_MIGRATION_V1` (GitHub issue #36)
-**Classification:** `PASS — CLINE_EXTENSION_STATUS=ALREADY_ABSENT; OPENCODE AND CODEX PRESERVED; NO MANUAL DELETION; RUNTIME/N8N UNTOUCHED`
-**Timestamp (local):** 2026-09-05 ~15:0x
-**Base HEAD:** `bcf62faed82716df39e8df7cf775ae2cc59552b6` (preverified = origin/main; local was 1 behind → ff-only pull applied)
+**BLOCK-ID:** `V4_RESOURCE_REGISTRY_V2_MODEL_SURFACE_QUOTA_POOL_V1` (GitHub issue #37, first slice of #32)
+**Classification:** `PASS — REGISTRY V2 CANONICAL (MODEL/ACCESS-SURFACE/QUOTA-POOL SEPARATED); V1 RESOURCES PROJECTION PRESERVED; CODEX + GLM SHARED POOLS REPRESENTED; NO OPENAI API/BYOK ROUTE; RUNTIME/N8N UNCHANGED`
+**Timestamp (local):** 2026-09-05 ~15:4x
+**Base HEAD:** `e07aa2661a55282055f27eb6c684564d66ae3078` (preverified = origin/main, main, tracked clean)
 **CLOSURE:** STANDARD_RUNTIME_BUNDLE
 
 ## Outcome
 
-Cline extension census and bounded uninstall pass completed. Result is **ALREADY_ABSENT**:
+Canonical `configs/resources/registry.json` migrated to `resource-registry-v2`:
 
-- **Cursor**: `cursor --list-extensions` = 4 extensions (`anthropic.claude-code@2.1.261`,
-  `anysphere.remote-ssh@1.1.14`, `anysphere.remote-wsl@1.0.13`, `openai.chatgpt@26.721.30844`)
-  — no Cline; `extensions.json` registry has no Cline entry; the on-disk orphan folder
-  `saoudrizwan.claude-dev-4.1.17-universal` (exact identifier confirmed from its own
-  `package.json`: `saoudrizwan.claude-dev @ 4.1.17`, displayName Cline) is already marked
-  `true` in Cursor's own `.obsolete` → retired by Cursor, pending internal GC, not installed.
-- **VS Code**: `code --list-extensions` = `ritwickdey.liveserver@5.7.10` only — no Cline.
-- Negative proof via supported CLI: `cursor --uninstall-extension saoudrizwan.claude-dev`
-  → "Extension 'saoudrizwan.claude-dev' is not installed." (no mutation).
-- No identifier guessing; single Cline-like package across surfaces → no ambiguity, no STOP.
-- No manual folder deletion (explicit OUT OF SCOPE); `.obsolete` byte-identical; no
-  settings.json edits; nothing reinstalled.
+- New sections: `models` (glm-5.3, glm-5.3-flash, codex_subscription_models, qwen_local,
+  composer), `access_surfaces` (codex_ide_cursor_extension, codex_external_planner,
+  openai_api_route **forbidden/representational**, glm_coding_plan_client,
+  cursor_native_model_route, cursor_byok_route, opencode_local_harness),
+  `quota_pools` (chatgpt_codex_subscription, glm_coding_plan), `registry_metadata`.
+- **Shared pools**: both Codex surfaces → one `chatgpt_codex_subscription`
+  (subscription-only; NO OpenAI API key/BYOK/API billing); `glm-5.3` + `glm-5.3-flash`
+  → one `glm_coding_plan`. No quota duplication/double-count fields.
+- **Cursor = harness only**: no Cursor pool exists; native route allowance explicitly
+  `unverified` with `quota_pool_id: null` (nothing invented).
+- **Qwen/OpenCode local**: `quota_pool_id: null`, `commercial_quota:
+  none_local_unmetered` — no commercial token pool modeled; Qwen runtime untouched.
+- **No dynamic values**: pools carry `dynamic_values: forbidden_in_registry`; the
+  85%/88% dashboard observations were NOT persisted; pool sources allowlisted
+  (`dashboard_snapshot` / future normalized collector).
+- **Dynamic model selection**: Codex observed models (Sol/Terra/Luna/Astra) NOT frozen;
+  all `model_selection_policy.frozen_list: false` (schema `const`), reasoning/speed
+  as per-invocation route metadata.
 
-## Preservation (verified)
+## Compatibility (v1 projection preserved)
 
-- **OpenCode available (non-generative)**: `opencode --version` → `1.18.25`, exit 0; zero
-  generation calls.
-- **Codex preserved**: `openai.chatgpt@26.721.30844` still installed (CLI + registry +
-  on-disk package intact); auth untouched.
-- **Other extensions**: claude-code 2.1.261, remote-ssh 1.1.14, remote-wsl 1.0.13,
-  liveserver 5.7.10 — before/after identical; nothing else uninstalled.
-- **Qwen runtime untouched (read-only)**: local router `GET /v1/models` → same 10 profiles
-  incl. `qwen38-opus-q3-opencode-24k/64k`; no reload, no generation; `qwen-models.ini`,
-  GGUF, configs untouched.
-- **n8n wf90 / dispatcher 18793 / Tailscale / WF40/WF61/D-0025 / production**: zero changes.
-- **Historical provenance**: no `reports/**` modifications.
+`resources` = verbatim `resource-registry-v1` object (deep-equal to base HEAD,
+test-proven). Compat edits (one scope each, behavior-preserving):
+`validate-resource-registry-v1.mjs` projects v2→v1 (fail-closed on truncated v2);
+`evaluate-execution-route.mjs` + `n8n-v4-execution-routing-bridge-v1.mjs` accept
+v1|v2. Census: 6 direct consumers — all compatible. Projection removal deferred to a
+later governed pass.
 
-## Prior task recap (issue #33, superseded details)
+## Tests
 
-DEV profile nomenclature migrated CLINE→OPENCODE (`qwen38-opus-q3-opencode-24k/64k`), runtime
-parity verified, smokes PASS, census `CLINE_UNINSTALL_ELIGIBLE=YES` with uninstall deferred to
-this task. Full detail:
-`reports/architecture/v4_qwen_dev_profiles_opencode_nomenclature_migration_v1.md`.
-Full detail of this pass:
-`reports/architecture/v4_cline_extension_uninstall_after_opencode_migration_v1.md`.
+- New focused suite `tests/registry-v2/run.mjs`: **56/56 PASS** — structure, projection
+  deep-equal, shared-pool proofs, subscription-only boundary, no-dynamic-values regex,
+  referential integrity, Ajv v2-schema positive+negative, validator shim, router parity
+  v2-vs-v1 (identical ROUTED + identical fail-closed).
+- 8 consumer suites re-run: **135/135 PASS** (registry-validator 7, execution-router 12,
+  status-composer 34, qwen overlay 14, qwen-local-adapter 9, adapter-registry 19,
+  routing-bridge 23, planner-selection-evaluator 17). `node --check` OK.
+
+## Untouched (verified)
+
+workflows/n8n · WF40/WF61/D-0025 · dispatcher 18793 · Tailscale · Qwen profiles/router/
+runtime (`qwen-models.ini`, GGUF, 10 profile IDs) · provider credentials · billing ·
+`status.fail-closed.json` · all other contracts/docs · historical reports. Zero
+provider/generation calls. CURRENT_FRONTIER updated with `RESOURCE_REGISTRY` row
+(registry v2 canonical + consumers proven; live quota collectors explicitly NOT yet
+implemented — next #32 slice).
+
+Full report:
+`reports/architecture/v4_resource_registry_v2_model_surface_quota_pool_v1.md`
+Contract: `docs/contracts/resource-registry-v2.md` +
+`docs/contracts/resource-registry-v2.schema.json`.
 
 EXECUTOR_END_HEAD = the `cursor-pass:` commit carrying this report.

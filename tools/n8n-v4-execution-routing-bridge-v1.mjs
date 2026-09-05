@@ -20,6 +20,9 @@ export const RESULT_SCHEMA = "n8n-v4-execution-routing-bridge-result-v1";
 export const CYCLE_SCHEMA = "n8n-litellm-primary-cycle-result-v1";
 export const ROUTE_REQUEST_SCHEMA = "execution-route-request-v1";
 export const REGISTRY_SCHEMA = "resource-registry-v1";
+// Registry v2 keeps a verbatim v1 `resources` projection; both schema versions
+// are accepted for the identical projection shape (registry-v2 migration).
+export const REGISTRY_SCHEMAS_V1_V2 = ["resource-registry-v1", "resource-registry-v2"];
 export const STATUS_SCHEMA = "resource-status-v1";
 export const POLICY_DECISIONS = ["PROCEED", "GATE", "BLOCKED"];
 export const DEFAULT_REGISTRY_PATH = resolve(ROOT, "configs/resources/registry.json");
@@ -169,7 +172,7 @@ export async function runN8nExecutionRoutingBridge(inputs, options = {}) {
       });
     }
   }
-  if (registry?.schema_version !== REGISTRY_SCHEMA) {
+  if (!REGISTRY_SCHEMAS_V1_V2.includes(registry?.schema_version)) {
     return base({
       task_id: taskId,
       packet_id: packetId,

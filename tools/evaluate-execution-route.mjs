@@ -344,7 +344,7 @@ export async function evaluateExecutionRoute(request, options = {}) {
     options.status ||
     readJson(options.statusPath || DEFAULT_STATUS_PATH);
 
-  if (registry?.schema_version !== "resource-registry-v1") {
+  if (registry?.schema_version !== "resource-registry-v1" && registry?.schema_version !== "resource-registry-v2") {
     return noRoute(req.request_id, [REASON_CODES.INVALID_INPUT]);
   }
   if (statusDoc?.schema_version !== "resource-status-v1") {

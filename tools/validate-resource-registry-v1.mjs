@@ -132,10 +132,50 @@ async function loadValidate() {
 }
 
 /**
+ * Registry v2 keeps a verbatim v1 `resources` projection. To stay backward
+ * compatible, project v2 -> v1 (drop v2-only sections, restore the v1
+ * schema_version) before validating against the v1 schema. The `resources`
+ * object itself is validated as-is, byte-identical semantics preserved.
+ */
+export function projectRegistryV2ToV1(doc) {
+  if (
+    doc &&
+    typeof doc === "object" &&
+    doc.schema_version === "resource-registry-v2" &&
+    doc.resources &&
+    typeof doc.resources === "object"
+  ) {
+    return { schema_version: "resource-registry-v1", resources: doc.resources };
+  }
+  return doc;
+}
+
+/**
  * Validate an in-memory resource-registry object against the canonical schema
- * plus compatible_resources semantic rules.
+ * plus compatible_resources semantic rules. Accepts resource-registry-v1 and
+ * resource-registry-v2 (via verbatim `resources` projection).
  */
 export async function validateResourceRegistryObject(doc) {
+  // v2 shape must be structurally plausible before projection; a v2 doc without
+  // the mandatory v2 sections is rejected fail-closed rather than misread as v1.
+  if (
+    doc &&
+    typeof doc === "object" &&
+    doc.schema_version === "resource-registry-v2"
+  ) {
+    const v2Sections = ["models", "access_surfaces", "quota_pools"];
+    for (const section of v2Sections) {
+      if (!doc[section] || typeof doc[section] !== "object") {
+        return {
+          ok: false,
+          classification: "INVALID_SCHEMA_VERSION",
+          reason: `resource-registry-v2 document missing required section "${section}"`,
+          schema_path: SCHEMA_PATH,
+        };
+      }
+    }
+    doc = projectRegistryV2ToV1(doc);
+  }
   let validate;
   try {
     validate = await loadValidate();

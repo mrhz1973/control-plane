@@ -1,5 +1,213 @@
 {
-  "schema_version": "resource-registry-v1",
+  "schema_version": "resource-registry-v2",
+  "registry_metadata": {
+    "version": 2,
+    "date": "2026-09-05",
+    "purpose": "Static resource registry separating MODEL/ROLE -> ACCESS_SURFACE -> QUOTA_POOL (issue #32/#37). Static capabilities and relationships only; no dynamic quota values.",
+    "compatibility": {
+      "resources_projection": "resources is the canonical resource-registry-v1 object preserved verbatim for v1 consumers until they are migrated. v1 consumers must not read models/access_surfaces/quota_pools.",
+      "projection_source": "configs/resources/registry.json @ e07aa2661a55282055f27eb6c684564d66ae3078 (resource-registry-v1)",
+      "removal_policy": "The resources projection is removed only by a later separately governed pass after all v1 consumers are migrated."
+    },
+    "dynamic_data_policy": "No dynamic quota/usage/reset values are permitted in this static registry. Quota state belongs to resource-status observations (source: dashboard_snapshot / provider_api / internal_ledger / local_probe / manual) under docs/contracts/resource-status-v1.schema.json."
+  },
+  "models": {
+    "glm-5.3": {
+      "model_type": "remote_api_model",
+      "provider": "z.ai",
+      "roles": ["planner", "implementation_model"],
+      "capabilities": ["planning", "code_generation"],
+      "default_access_surface": "glm_coding_plan_client",
+      "status": "qualified"
+    },
+    "glm-5.3-flash": {
+      "model_type": "remote_api_model",
+      "provider": "z.ai",
+      "roles": ["planner", "implementation_model"],
+      "capabilities": ["planning", "code_generation"],
+      "default_access_surface": "glm_coding_plan_client",
+      "status": "qualified"
+    },
+    "codex_subscription_models": {
+      "model_type": "provider_managed_selection",
+      "provider": "openai",
+      "roles": ["planner", "reviewer"],
+      "capabilities": ["planning", "review", "code_generation"],
+      "default_access_surface": "codex_external_planner",
+      "model_selection_policy": {
+        "selection": "dynamic",
+        "frozen_list": false,
+        "note": "Codex model identities (e.g. Sol/Terra/Luna/Astra observed 2026-09-05) are provider-managed and must be resolved at selection time from current client/runtime evidence; this registry deliberately does NOT freeze them as a permanent list.",
+        "reasoning_requirement": ["low", "medium", "high", "provider_default"],
+        "speed_preference": ["fast", "balanced", "quality"]
+      },
+      "status": "qualified_for_external_planner; ide_surface_runtime_qualification_pending"
+    },
+    "qwen_local": {
+      "model_type": "local_model",
+      "provider": "local_llama_cpp",
+      "roles": ["planner", "routing_arbiter", "reviewer", "classifier", "implementation_model"],
+      "capabilities": ["planning", "classification", "routing_arbitration", "code_generation", "review"],
+      "default_access_surface": "opencode_local_harness",
+      "model_selection_policy": {
+        "selection": "dynamic",
+        "frozen_list": false,
+        "note": "Concrete Qwen profile IDs remain owned by the Qwen local runtime (configs/resources/qwen-local-runtime.json + qwen-models.ini); this registry does not duplicate them."
+      },
+      "status": "qualified"
+    },
+    "composer": {
+      "model_type": "hosted_model",
+      "provider": "anysphere",
+      "roles": ["implementation_model"],
+      "capabilities": ["code_generation"],
+      "default_access_surface": "cursor_native_model_route",
+      "status": "qualified"
+    }
+  },
+  "access_surfaces": {
+    "codex_ide_cursor_extension": {
+      "surface_type": "ide_extension",
+      "host_harness": "cursor",
+      "auth": {
+        "allowed": ["chatgpt_subscription"],
+        "forbidden": ["openai_api_key", "byok_openai", "api_billing"]
+      },
+      "quota_pool_id": "chatgpt_codex_subscription",
+      "model_selection_policy": {
+        "selection": "dynamic",
+        "frozen_list": false,
+        "note": "Model identities offered by the Codex IDE extension are refreshable; resolve from current extension/runtime evidence, never frozen here."
+      },
+      "qualification": {
+        "runtime_qualified": false,
+        "note": "Capability/permission/usage evidence required before any auto-routing (issue #32 A.2). Static registry representation only in this pass."
+      },
+      "status": "represented_not_yet_runtime_qualified"
+    },
+    "codex_external_planner": {
+      "surface_type": "external_cli_worker",
+      "host_harness": "none",
+      "auth": {
+        "allowed": ["chatgpt_subscription"],
+        "forbidden": ["openai_api_key", "byok_openai", "api_billing"]
+      },
+      "quota_pool_id": "chatgpt_codex_subscription",
+      "model_selection_policy": {
+        "selection": "dynamic",
+        "frozen_list": false,
+        "note": "Selected model + selected reasoning/quality effort are per-invocation route metadata (issue #32 A.1/G), not registry constants."
+      },
+      "qualification": {
+        "runtime_qualified": true,
+        "note": "Codex CLI/OAuth no-op PASS and controlled repo-read PASS already evidenced; see MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md."
+      },
+      "status": "represented_not_yet_pool_aware"
+    },
+    "openai_api_route": {
+      "surface_type": "none",
+      "representational_only": true,
+      "host_harness": null,
+      "auth": {
+        "allowed": [],
+        "forbidden": ["openai_api_key", "byok_openai", "api_billing"]
+      },
+      "quota_pool_id": null,
+      "note": "Explicitly NOT an available route. No OpenAI API-key / BYOK / API-billing access surface is authorized in this control plane; this entry exists only so fail-closed checks and tests can assert its absence. No surface of this name may be created without a separately governed authorization pass.",
+      "status": "forbidden"
+    },
+    "glm_coding_plan_client": {
+      "surface_type": "supported_plan_client",
+      "host_harness": "cursor",
+      "auth": {
+        "allowed": ["glm_coding_plan"],
+        "forbidden": ["api_billing_unverified"]
+      },
+      "quota_pool_id": "glm_coding_plan",
+      "model_selection_policy": {
+        "selection": "explicit",
+        "frozen_list": false,
+        "note": "glm-5.3 and glm-5.3-flash are distinct selectable model identities; both consume the same pool."
+      },
+      "qualification": {
+        "runtime_qualified": true,
+        "note": "GLM planner/implementation already live via Cursor BYOK per MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md."
+      },
+      "status": "active"
+    },
+    "cursor_native_model_route": {
+      "surface_type": "hosted_route",
+      "host_harness": "cursor",
+      "auth": {
+        "allowed": ["cursor_account"],
+        "forbidden": []
+      },
+      "quota_pool_id": null,
+      "allowance_ownership": {
+        "state": "unverified",
+        "note": "Composer/native Cursor allowance ownership is NOT verified for the installed plan; no pool identity or numbers are invented (issue #32 C / #37). A pool may be attached later only from fresh verified account evidence."
+      },
+      "model_selection_policy": {
+        "selection": "dynamic",
+        "frozen_list": false,
+        "note": "Cursor model inventory is refreshable/versioned; historical model lists must not be frozen here."
+      },
+      "status": "active_allowance_unverified"
+    },
+    "cursor_byok_route": {
+      "surface_type": "byok_route",
+      "host_harness": "cursor",
+      "auth": {
+        "allowed": ["glm_coding_plan"],
+        "forbidden": ["openai_api_key", "byok_openai_for_codex"]
+      },
+      "quota_pool_id": "glm_coding_plan",
+      "note": "BYOK consumption belongs to the external provider pool (glm_coding_plan), never to Cursor included quota unless verified otherwise.",
+      "status": "active"
+    },
+    "opencode_local_harness": {
+      "surface_type": "local_harness",
+      "host_harness": "opencode",
+      "auth": {
+        "allowed": ["local_runtime"],
+        "forbidden": ["commercial_quota"]
+      },
+      "quota_pool_id": null,
+      "commercial_quota": "none_local_unmetered",
+      "note": "OpenCode is the current local DEV harness for Qwen local models. Local compute is unmetered local semantics; no commercial token pool is modeled.",
+      "status": "active"
+    }
+  },
+  "quota_pools": {
+    "chatgpt_codex_subscription": {
+      "pool_type": "subscription_included",
+      "provider": "openai",
+      "plan": "chatgpt_plus_codex",
+      "shared_by_surfaces": ["codex_ide_cursor_extension", "codex_external_planner"],
+      "billing_boundary": {
+        "includes": ["chatgpt_codex_subscription_allowance"],
+        "excludes": ["openai_api_credits", "openai_api_key_billing", "byok_openai"]
+      },
+      "quota_source_allowed": ["dashboard_snapshot", "normalized_collector_future"],
+      "dynamic_values": "forbidden_in_registry",
+      "status": "active_pool_no_live_collector"
+    },
+    "glm_coding_plan": {
+      "pool_type": "subscription_included",
+      "provider": "z.ai",
+      "plan": "glm_coding_plan",
+      "shared_by_models": ["glm-5.3", "glm-5.3-flash"],
+      "shared_by_surfaces": ["glm_coding_plan_client", "cursor_byok_route"],
+      "billing_boundary": {
+        "includes": ["glm_coding_plan_allowance"],
+        "excludes": ["pay_as_you_go_api_credits"]
+      },
+      "quota_source_allowed": ["dashboard_snapshot", "normalized_collector_future"],
+      "dynamic_values": "forbidden_in_registry",
+      "note": "glm-5.3 and glm-5.3-flash draw from ONE shared allowance; their quotas must never be double-counted as independent model quotas. Per-surface attribution may be tracked later by collectors, not by duplicating pool quota.",
+      "status": "active_pool_no_live_collector"
+    }
+  },
   "resources": {
     "cursor": {
       "resource_type": "harness",
