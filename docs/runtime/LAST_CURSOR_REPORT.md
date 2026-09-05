@@ -1,39 +1,28 @@
 ﻿# LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_BACKLOG_ENVELOPE_BRIDGE_IMPLEMENT_V1`
-**Classification:** `BACKLOG_ENVELOPE_BRIDGE_IMPLEMENT — PASS`
-**Timestamp (local):** 2026-09-05 (overnight campaign pass 2)
+**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_BACKLOG_ENVELOPE_BRIDGE_DRY_RUN_V1`
+**Classification:** `BACKLOG_ENVELOPE_BRIDGE_DRY_RUN — PASS`
+**Timestamp (local):** 2026-09-05 (overnight campaign pass 3)
 
 ## Summary
 
-Implemented the deterministic backlog→local-dev-envelope bridge exactly per
-the persisted design: new `tools/bridge-backlog-to-local-dev-envelope-v1.mjs`
-(pure function `buildLocalDevEnvelopeFromBacklog` + `buildTaskDelta` +
-dry-run CLI, zero new dependencies, no network modules). Reused unchanged:
-`extractYamlFence`/`parseBoundedBacklogYaml` (D-0025-W builder exports) and
-`validateEnvelope`/`DEFAULT_DEV_PROFILE_ID`/`ENVELOPE_SCHEMA` (executor law).
-Fail-closed gate order: fence/schema/identity → state
-(READY_FOR_PLANNING only) → human gate → high risk → empty scope → strict
-`local_dev` extension fields (unknown key → stop) → known repo → id format
-→ idempotency (receipts by source_ref AND task_ref) → `validateEnvelope`
-verbatim. Deterministic mappings: loop_allowed→clamped test cycles (1..2)
-with the mechanically required declared-loop sentence; timebox/turns hints
-clamped under hard caps; allowed_paths verbatim; profile = explicit DEV
-profile or 24K default; `git_persistence_required=true`.
-
-New deterministic offline suite
-`tests/local-dev-backlog-envelope-bridge-v1/run.mjs`: **18/18 PASS** (happy
-path + validator cross-check, loop/hint clamping, verbatim paths, all five
-stop gates, fence count, YAML multi-doc, id format, duplicate claims,
-offline-by-construction). Fix loop 1/3 used; both defects were test-side
-(assertion inverted vs fixture; multi-doc probe needed a leading `---` to
-trigger the reused parser's multi-doc gate). Tool unchanged since first
-draft. No execution activated; no real backlog consumed (fixtures only).
-Campaign pass 2; checkpoint appended.
+CLI shape of the backlog→envelope bridge proven at real-commit semantics
+without touching main: standalone fixture commit `efdef1aa` created
+out-of-band via `git.exe commit-tree` (session-profile git wrapper breaks
+commit-tree — recorded); live HEAD captured as dispatch anchor; bridge CLI
+produced the complete envelope+receipt preview at
+`reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__envelope-preview.json`
+(profile 24K, verbatim allowed_paths, persistence required). Duplicate
+replay at CLI shape refused (exit 1, CLAIM_ALREADY_EXISTS, no output file).
+First duplicate attempt was invalid (PowerShell pipeline unrolling produced
+an empty receipts array) — corrected re-run is the valid evidence. Unit
+suite 18/18 green; no execution activated; no real backlog consumed.
+Campaign pass 3; checkpoint updated.
 
 ## NEXT
 
-`V4_LOCAL_DEV_EXECUTOR_BACKLOG_ENVELOPE_BRIDGE_DRY_RUN_V1` — CLI-shape smoke
-at a real commit producing persisted envelope+receipt preview artifacts (no
-execution), closing the gap between the tested pure function and the
-persisted CLI form.
+`V4_LOCAL_DEV_EXECUTOR_CLINE24K_BRIDGED_LIVE_PROOF_V1` — exactly ONE real
+LOCAL_DEV_EXECUTOR run whose envelope is produced by the bridge CLI from
+the D-9001-T fixture (append marker to docs/runtime/CAMPAIGN_NOTES.md),
+bounded by the derived envelope itself (600 s / 8 turns / 1 test cycle).
+AUTO-VIA eligible.

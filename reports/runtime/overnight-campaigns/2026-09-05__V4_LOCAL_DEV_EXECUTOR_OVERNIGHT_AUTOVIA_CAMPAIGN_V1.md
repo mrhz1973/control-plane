@@ -49,8 +49,15 @@ session isolation adopted per campaign authorization)
   required declared-loop sentence; hints clamped under hard caps (900/16);
   receipts sidecar idempotency proven (source_ref AND task_ref collisions
   refused)
-- elapsed: ~45 min
-- next derived: V4_LOCAL_DEV_EXECUTOR_BACKLOG_ENVELOPE_BRIDGE_DRY_RUN_V1
-  (CLI-shape smoke at a real commit producing envelope+receipt preview
-  artifacts, no execution) — unit tests cover the pure function only
+- elapsed: ~55 min
+- result addendum (dry-run executed inside this pass window before commit):
+  CLI shape proven on standalone fixture commit efdef1aa (out-of-band, main
+  untouched): preview artifact persisted, duplicate replay refused at CLI
+  (CLAIM_ALREADY_EXISTS, exit 1); first duplicate attempt INVALID (PS
+  pipeline unroll), corrected re-run is the valid evidence
+- report: reports/architecture/v4_local_dev_executor_backlog_envelope_bridge_dry_run_v1.md
+  + artifact reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__envelope-preview.json
+- next derived: V4_LOCAL_DEV_EXECUTOR_CLINE24K_BRIDGED_LIVE_PROOF_V1
+  (exactly ONE executor run whose envelope comes from the bridge CLI on the
+  D-9001-T fixture; bounded per derived envelope 600s/8turns)
 - AUTO_VIA_ELIGIBLE: YES
