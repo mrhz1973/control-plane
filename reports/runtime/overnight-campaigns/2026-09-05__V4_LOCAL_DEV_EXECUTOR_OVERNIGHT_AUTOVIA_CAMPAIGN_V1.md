@@ -81,7 +81,8 @@ session isolation adopted per campaign authorization)
 - seq: 4
 - task_ref: V4_LOCAL_DEV_EXECUTOR_CLINE24K_BRIDGED_LIVE_PROOF_V1
 - starting_head: 86c06c63e671f5bb786b62d2f2ecd1a668616e5b
-- ending_head: 86c06c63e671f5bb786b62d2f2ecd1a668616e5b (executor STOP; no executor commit)
+- EXECUTOR_END_HEAD: 86c06c63e671f5bb786b62d2f2ecd1a668616e5b (executor STOP; no executor commit)
+- ending_head: 86c06c63e671f5bb786b62d2f2ecd1a668616e5b (campaign closure itself persisted later at 688c087…)
 - result: **STOP:GIT_PERSISTENCE_FAILED / NOTHING_STAGEABLE_IN_SCOPE** —
   canonical STOP artifact:
   reports/runtime/cursor-stops/2026-09-05T025100Z__LOCAL_DEV_B_D-9001-T.stop.json
@@ -107,7 +108,8 @@ session isolation adopted per campaign authorization)
 
 CAMPAIGN = V4_LOCAL_DEV_EXECUTOR_OVERNIGHT_AUTOVIA_CAMPAIGN_V1
 START_HEAD = 300d03fa06647c2da72f91b06ceb66074369faca
-FINAL_HEAD = 86c06c63e671f5bb786b62d2f2ecd1a668616e5b
+EXECUTOR_END_HEAD (terminal pass 4) = 86c06c63e671f5bb786b62d2f2ecd1a668616e5b
+CAMPAIGN_FINAL_HEAD (closure persisted at closure commit) = 688c0879de591e46e525868b41d39a999b34f806
 LOGICAL_PASSES_ATTEMPTED = 4
 LOGICAL_PASSES_PASS = 3
 TERMINAL_TASK = V4_LOCAL_DEV_EXECUTOR_CLINE24K_BRIDGED_LIVE_PROOF_V1
@@ -120,3 +122,11 @@ NEXT = V4_LOCAL_DEV_EXECUTOR_BRIDGED_PROOF_TRACKED_FILE_SEMANTICS_V1
        to existing tracked files, or explicitly extend executor persistence
        to in-scope NEW files with deterministic tests; then retry the
        bridged live proof EXACTLY ONCE)
+
+## TERMINOLOGY (bookkeeping fix, operator-mandated 2026-09-05)
+
+- EXECUTOR_END_HEAD: HEAD of the TARGET repo when the executor run concluded
+  (executor PASS commit or STOP state). Per-pass field.
+- CAMPAIGN_FINAL_HEAD: HEAD of the repo holding the campaign checkpoint at
+  the moment campaign closure was persisted (includes the closure commit).
+- Historical Git facts above are unchanged; only labels were corrected.

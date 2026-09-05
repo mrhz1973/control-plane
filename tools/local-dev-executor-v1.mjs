@@ -179,6 +179,96 @@ export function pathAllowed(allowedPaths, path, matchFn) {
   return allowedPaths.some((pattern) => match(pattern, path));
 }
 
+/** Normalize a repo path for deterministic comparison (Windows-safe:
+ * backslashes -> forward slashes, no leading ./, no trailing slash).
+ * Case is PRESERVED; case-only differences are treated as ambiguity. */
+export function normalizeRepoPath(p) {
+  return String(p).replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/+$/, "");
+}
+
+/**
+ * Pre-run snapshot of untracked paths (provenance baseline for new-file
+ * persistence). Returns { ambiguous:false, paths:[...] } | { ambiguous:true }.
+ * Caller must fail closed on null (status failure) or ambiguous:true.
+ */
+export async function snapshotUntrackedPaths(repoPath, git = defaultGit) {
+  const status = await git(repoPath, ["status", "--porcelain=v1", "-uall"]);
+  if (status.status !== 0) return null;
+  const paths = status.stdout.split(/\r?\n/).filter(Boolean)
+    .map((l) => parseStatusLine(l))
+    .filter(({ code }) => code === "??")
+    .map(({ path }) => normalizeRepoPath(path));
+  const seen = new Map();
+  for (const p of paths) {
+    const k = p.toLowerCase();
+    if (seen.has(k) && seen.get(k) !== p) return { ambiguous: true, paths: [] };
+    seen.set(k, p);
+  }
+  return { ambiguous: false, paths };
+}
+
+/**
+ * Classify post-execution working-tree changes against the pre-run untracked
+ * snapshot (option-B new-file persistence semantics, operator-authorized):
+ *
+ *   PREEXISTING_UNTRACKED  -> absolutely protected: never staged, never
+ *                             modified/deleted by persistence; if one goes
+ *                             missing or becomes tracked -> STOP.
+ *   TASK_CREATED_UNTRACKED -> stageable ONLY if inside allowed_paths.
+ *
+ * Fail closed on: status failure, unknown provenance, case-ambiguous paths,
+ * out-of-scope new files, out-of-scope tracked changes (belt & braces with
+ * assertPathsInScope).
+ */
+export async function classifyPostExecutionChanges(envelope, preUntracked, git = defaultGit, matchFn = null) {
+  if (!preUntracked || preUntracked.ambiguous) {
+    return { ok: false, classification: "STOP:GIT_PERSISTENCE_FAILED", reason_codes: ["GIT_PERSISTENCE_FAILED", "PREEXISTING_UNTRACKED_PROVENANCE_UNKNOWN"] };
+  }
+  const status = await git(envelope.target_repo_path, ["status", "--porcelain=v1", "-uall"]);
+  if (status.status !== 0) {
+    return { ok: false, classification: "STOP:GIT_PERSISTENCE_FAILED", reason_codes: ["GIT_PERSISTENCE_FAILED", "STATUS_FAILED"] };
+  }
+  const preSet = new Set(preUntracked.paths);
+  const preCase = new Set(preUntracked.paths.map((p) => p.toLowerCase()));
+  const trackedModified = [];
+  const untrackedNow = [];
+  for (const line of status.stdout.split(/\r?\n/).filter(Boolean)) {
+    const { code, path } = parseStatusLine(line);
+    const p = normalizeRepoPath(path);
+    if (code === "??") untrackedNow.push(p);
+    else trackedModified.push(p);
+  }
+  const taskCreatedNew = [];
+  let preexistingProtected = 0;
+  for (const p of untrackedNow) {
+    if (preSet.has(p)) { preexistingProtected += 1; continue; }
+    if (preCase.has(p.toLowerCase())) {
+      return { ok: false, classification: "STOP:PATH_NORMALIZATION_AMBIGUOUS", reason_codes: ["PATH_NORMALIZATION_AMBIGUOUS", `PATH:${p}`] };
+    }
+    if (!pathAllowed(envelope.allowed_paths, p, matchFn)) {
+      return { ok: false, classification: "STOP:UNEXPECTED_FILE_CHANGES", reason_codes: ["UNEXPECTED_FILE_CHANGES", `PATH:${p}`] };
+    }
+    taskCreatedNew.push(p);
+  }
+  for (const p of preUntracked.paths) {
+    if (!untrackedNow.includes(p)) {
+      return { ok: false, classification: "STOP:PREEXISTING_UNTRACKED_MODIFIED", reason_codes: ["PREEXISTING_UNTRACKED_MODIFIED", `PATH:${p}`] };
+    }
+  }
+  const outOfScopeTracked = trackedModified.filter((p) => !pathAllowed(envelope.allowed_paths, p, matchFn));
+  if (outOfScopeTracked.length) {
+    return { ok: false, classification: "STOP:UNEXPECTED_FILE_CHANGES", reason_codes: ["UNEXPECTED_FILE_CHANGES", ...outOfScopeTracked.map((p) => `PATH:${p}`)] };
+  }
+  const stageable = [...trackedModified, ...taskCreatedNew].sort();
+  return {
+    ok: true,
+    stageable,
+    tracked_modified: [...trackedModified].sort(),
+    task_created_new: [...taskCreatedNew].sort(),
+    preexisting_untracked_protected: preexistingProtected,
+  };
+}
+
 /** Preflight: repo identity + cleanliness semantics. */
 export async function preflight(envelope, options = {}) {
   const git = options.git || defaultGit;
@@ -250,6 +340,8 @@ function baseResult(partial) {
     final_head: partial.final_head ?? null,
     tests: partial.tests ?? [],
     changed_files: partial.changed_files ?? [],
+    task_created_new: partial.task_created_new ?? [],
+    preexisting_untracked_protected: partial.preexisting_untracked_protected ?? null,
     router_was_running: partial.router_was_running ?? null,
     launch_performed: Boolean(partial.launch_performed),
     turns_used: Number(partial.turns_used) || 0,
@@ -291,6 +383,20 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
   const pre = await preflight(envelope, options);
   if (!pre.ok) {
     return baseResult({ task_ref: envelope.task_ref, profile_id: envelope.profile_id, classification: `STOP:${pre.classification}`, reason_codes: pre.reason_codes });
+  }
+
+  // Pre-run untracked provenance snapshot (option-B new-file persistence):
+  // everything untracked NOW is PREEXISTING_UNTRACKED and stays absolutely
+  // protected for the whole task.
+  const preUntracked = await snapshotUntrackedPaths(envelope.target_repo_path, options.git || defaultGit);
+  if (preUntracked === null || preUntracked.ambiguous) {
+    return baseResult({
+      task_ref: envelope.task_ref,
+      profile_id: envelope.profile_id,
+      base_head: pre.base_head,
+      classification: "STOP:GIT_PERSISTENCE_FAILED",
+      reason_codes: ["GIT_PERSISTENCE_FAILED", preUntracked?.ambiguous ? "PREEXISTING_UNTRACKED_PROVENANCE_AMBIGUOUS" : "STATUS_FAILED"],
+    });
   }
 
   // Live phase requires the core collaborators injected; otherwise offline stop.
@@ -460,10 +566,21 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
     });
   }
 
-  // Changed files + Git persistence.
-  const changed = await options.getChangedFiles?.(envelope) ??
-    (await defaultGit(envelope.target_repo_path, ["status", "--porcelain=v1", "--untracked-files=no"]))
-      .stdout.split(/\r?\n/).filter(Boolean).map((l) => parseStatusLine(l).path);
+  // Changed files + Git persistence (option-B semantics: tracked in-scope
+  // modifications + task-created NEW in-scope untracked files are stageable;
+  // pre-existing untracked files are absolutely protected). The deterministic
+  // classification is the SINGLE authority for the staging set.
+  const classification = await classifyPostExecutionChanges(envelope, preUntracked, gitForPaths, matchForPaths);
+  if (!classification.ok) {
+    return finish({
+      classification: classification.classification,
+      reason_codes: classification.reason_codes,
+      turns_used: turns,
+      router_was_running: session.router_was_running ?? null,
+      launch_performed: Boolean(session.launch_performed),
+    });
+  }
+  const changed = classification.stageable;
 
   if (envelope.git_persistence_required) {
     const persistence = await persistGit({
@@ -488,6 +605,8 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
       reason_codes: ["PASS"],
       tests: testRuns,
       changed_files: changed,
+      task_created_new: classification.task_created_new,
+      preexisting_untracked_protected: classification.preexisting_untracked_protected,
       final_head: persistence.final_head ?? null,
       turns_used: turns,
       router_was_running: session.router_was_running ?? null,
@@ -501,6 +620,8 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
     reason_codes: ["PASS"],
     tests: testRuns,
     changed_files: changed,
+    task_created_new: classification.task_created_new,
+    preexisting_untracked_protected: classification.preexisting_untracked_protected,
     turns_used: turns,
     router_was_running: session.router_was_running ?? null,
     launch_performed: Boolean(session.launch_performed),

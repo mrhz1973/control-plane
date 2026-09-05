@@ -185,8 +185,23 @@ Canonical principle of `qwen-local-session-manager-v1` reused verbatim:
 
 - No `reset --hard`, no `clean`, no destructive or history-rewriting command,
   ever.
-- Pre-existing untracked files: never staged, never deleted.
+- Pre-existing untracked files: never staged, never deleted (provenance
+  snapshot at pre-run; violations stop the run).
 - Selective staging: only files inside `allowed_paths` changed by this task.
+  Two stageable classes exist (option-B semantics, operator-authorized
+  2026-09-05):
+  1. tracked in-scope files modified by this task;
+  2. TASK_CREATED_UNTRACKED files: paths that did NOT exist in the pre-run
+     untracked snapshot, appeared during this run, and are inside
+     `allowed_paths`.
+  PREEXISTING_UNTRACKED files (present in the pre-run snapshot) remain
+  absolutely protected: never staged, never modified/deleted/renamed by
+  persistence logic, never included in the executor commit. A pre-existing
+  untracked file that goes missing or changes case-identity during the run
+  → `STOP:PREEXISTING_UNTRACKED_MODIFIED`. A new untracked file outside
+  `allowed_paths` → `STOP:UNEXPECTED_FILE_CHANGES`. Case-only path
+  collisions → `STOP:PATH_NORMALIZATION_AMBIGUOUS`. Undeterminable
+  provenance → fail closed before staging.
 - Commit + push to the target repo remote only when
   `git_persistence_required=true`; push target is exclusively
   `target_repo_path`'s `target_remote`.

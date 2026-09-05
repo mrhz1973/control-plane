@@ -337,11 +337,17 @@ await test("injected happy path produces PASS evidence envelope", async () => {
     maxAgentTurns: 2,
   });
 
+  let uallCalls = 0; // 1st = preflight, 2nd = pre-run snapshot, 3rd = post-run classification
   const git = fakeGit({
     "rev-parse HEAD": { status: 0, stdout: env.dispatch_base_head + "\n" },
     "remote get-url origin": { status: 0, stdout: env.target_remote + "\n" },
-    "status --porcelain=v1 -uall": { status: 0, stdout: "" },
-    "status --porcelain=v1 --untracked-files=no": { status: 0, stdout: "" },
+    "status --porcelain=v1 -uall": () => {
+      uallCalls += 1;
+      return uallCalls >= 3
+        ? { status: 0, stdout: " M docs/notes.md\n" } // task mutated a tracked in-scope file
+        : { status: 0, stdout: "" };
+    },
+    "status --porcelain=v1 --untracked-files=no": { status: 0, stdout: " M docs/notes.md\n" },
   });
 
   const result = await executeLocalDevTask(env, {
@@ -360,7 +366,6 @@ await test("injected happy path produces PASS evidence envelope", async () => {
       assert.equal(maxTestCycles, 2);
       return [{ command: testCommand, exit_code: 0, cycle: 1 }];
     },
-    getChangedFiles: async () => ["docs/notes.md"],
     persistGit: null, // git_persistence_required=false
   });
   upstream.close();
@@ -370,7 +375,10 @@ await test("injected happy path produces PASS evidence envelope", async () => {
   assert.equal(result.profile_id, "qwen38-opus-q3-cline-64k");
   assert.equal(result.router_was_running, true);
   assert.equal(result.turns_used, 1);
+  assert.equal(uallCalls, 3, "preflight + snapshot + classification sequence");
   assert.deepEqual(result.changed_files, ["docs/notes.md"]);
+  assert.deepEqual(result.task_created_new, []);
+  assert.equal(result.preexisting_untracked_protected, 0);
   assert.equal(result.tests[0].exit_code, 0);
 });
 
@@ -394,7 +402,6 @@ await test("test failure produces STOP:TEST_FAILED", async () => {
     guardStart: async () => guard,
     runOpenCodeTask: async () => ({ ok: true }),
     runTests: async ({ testCommand }) => [{ command: testCommand, exit_code: 1, cycle: 1 }],
-    getChangedFiles: async () => [],
   });
   upstream.close();
   assert.equal(result.classification, "STOP:TEST_FAILED");
