@@ -488,7 +488,7 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
         ? ["TASK_CHILD_TERMINATION_UNCONFIRMED"]
         : [])],
       timeout_diagnostics: code === "BOUNDS_TIMEBOX_EXPIRED" ? err.timeout_diagnostics : undefined,
-      failure_diagnostics: code === "OPENCODE_RUN_FAILED"
+      failure_diagnostics: code === "OPENCODE_RUN_FAILED" || code === "OPENCODE_CONFIG_REJECTED"
         ? buildOpenCodeFailureDiagnostics(err)
         : undefined,
       guard_accounting: {

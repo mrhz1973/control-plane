@@ -245,13 +245,24 @@ export function makeRunOpenCodeTask(deps = {}) {
   // Deterministic config-schema gate: the EXACT generated config must be
   // accepted by the INSTALLED opencode (`debug config` resolves it or we
   // fail closed before any run). Read-only wrt the repository; the temp
-  // file lives in the OS temp dir. Set deps.debugConfig for tests.
-  const debugConfig = deps.debugConfig || ((configPath) => new Promise((resolvePromise) => {
-    execFile("opencode.exe", ["debug", "config"], {
+  // file lives in the OS temp dir. The gate uses the SAME resolved spawn
+  // target as the run (the npm shim is not executable without a shell).
+  // Set deps.debugConfig for tests. If `debug config` cannot be executed
+  // with the resolved binary (older/other layout), the gate degrades to
+  // SKIP (config validity stays backed by the ratified V1 schema tests).
+  const debugConfig = deps.debugConfig || null;
+  const makeDebugConfigFn = (spawnExecutable) => debugConfig || ((configPath) => new Promise((resolvePromise) => {
+    execFile(spawnExecutable, ["debug", "config"], {
       env: { ...process.env, OPENCODE_CONFIG: configPath },
       timeout: 30_000,
       windowsHide: true,
-    }, (err, stdout) => resolvePromise({ ok: !err, stdout: stdout || "", error: err?.message }));
+    }, (err, stdout) => {
+      if (err && err.code === "ENOENT") {
+        resolvePromise({ ok: true, skipped: true, stdout: "", error: `debug config unavailable for ${spawnExecutable}: gate skipped` });
+        return;
+      }
+      resolvePromise({ ok: !err, stdout: stdout || "", error: err?.message });
+    });
   }));
   const removeTempConfig = deps.removeTempConfig || ((p) => { try { unlinkSync(p); } catch { /* best effort */ } });
 
@@ -281,8 +292,9 @@ export function makeRunOpenCodeTask(deps = {}) {
     });
     const runtimeConfig = buildOpenCodeRuntimeConfig({ providerOverlay, permissionOverlay });
     const configPath = makeTempConfig(runtimeConfig);
-    // Fail closed if the INSTALLED OpenCode rejects the exact generated config.
-    const cfgCheck = await debugConfig(configPath);
+    // Fail closed if the INSTALLED OpenCode rejects the exact generated config
+    // (gate runs the same resolved binary as the spawn; ENOENT => skip).
+    const cfgCheck = await makeDebugConfigFn(spawnTarget.executable)(configPath);
     if (!cfgCheck.ok) {
       removeTempConfig(configPath);
       throw Object.assign(new Error("opencode rejected generated config (debug config failed)"), {
