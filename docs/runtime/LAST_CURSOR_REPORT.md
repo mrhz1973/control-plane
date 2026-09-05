@@ -1,27 +1,31 @@
 ﻿# LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_DISPATCHER_LOOP_V1` (closure — PASS)
-**Classification:** `DISPATCHER PRIMITIVE PASS — LIVE LOOP PROOF PASS (CREATE)`
-**Timestamp (local):** 2026-09-05 ~07:20
+**BLOCK-ID:** `V4_LOCAL_DEV_EXECUTOR_IDLE_QUEUE_BACKFILL_POLICY_V1` (closure — PASS) + **SEGMENT 3 FINAL**
+**Classification:** `CAMPAIGN SEGMENT 3 CLOSED — QUEUE DRAINED, ALL IN-SCOPE CAPABILITIES LIVE-PROVEN`
+**Timestamp (local):** 2026-09-05 ~07:35
 
-## Summary
+## Segment 3 final state
 
-Dispatcher primitive shipped (`tools/dispatch-local-dev-queue-loop-v1.mjs`,
-suite 5/5, dry-run by construction). The live loop proof then ran the FULL
-unattended cycle end-to-end: the dispatcher claimed LOCAL_DEV_B_D-9007-Q from
-the real queue against the real receipts ledger, emitted the CREATE envelope,
-and the executor executed it on qwen38-opus-q3-cline-24k — **PASS** in
-4 turns / 108 s / 600, creating `docs/runtime/QUEUE_DISPATCH_NOTES.md` with
-exactly the required marker line (executor commit `cfc1cf5`, push + remote
-verified, 35 pre-existing untracked protected, tracked tree clean).
+- Passes this segment: 6 (remediation+NEW-FILE live proof, selector design+tool,
+  first SELECT→CLAIM→DISPATCH MODIFY live proof, dispatcher primitive, LIVE
+  LOOP CREATE proof, idle/backfill policy law). All PASS; no unresolved STOP.
+- Campaign cumulative: PASSES=10 — PASS=8 — STOP=2 (both historical, both
+  remediated with proven fixes and subsequent PASS proofs).
+- REAL_LOCAL_DEV_EXECUTIONS (campaign total) = 5 (2 STOP + 3 PASS):
+  `db6b275` CREATE-new-file · `9eccd65` SELECT→CLAIM MODIFY · `cfc1cf5`
+  loop-emitted CREATE.
+- Suites green at close: executor 21/21 · live-runner 42/42 · session-bridge
+  14/14 · backlog-bridge 18/18 · new-file-persistence 15/15 ·
+  convergence-remediation 11/11 · selection-law 10/10 · selector-CLI 6/6 ·
+  dispatch-loop 5/5 · idle-backfill-policy 10/10.
+- PRODUCTION_CHANGED = NO. D-0025 enabled = false. n8n untouched.
 
-The complete chain select→claim→emit→execute→persist→remote-verify is now
-proven LIVE for both MODIFY (checkpoint 8) and CREATE (checkpoint 9).
+## Terminal classification
 
-## NEXT (derived from persisted state)
+CLEAN DRAINED: no auto-eligible work remains in the queue. Resuming AUTO-VIA
+requires either operator-injected READY backlog items or an operator decision
+enabling policy-gated synthetic self-authored items
+(`V4_LOCAL_DEV_EXECUTOR_IDLE_BACKFILL_SYNTHETIC_ITEM_INJECTION`).
 
-The fixture queue is drained (0 unclaimed READY items). Proposed NEXT:
-`V4_LOCAL_DEV_EXECUTOR_IDLE_QUEUE_BACKFILL_POLICY_V1` — deterministic
-idle/backfill policy (NO real user backlog consumption until a policy
-explicitly proves items auto-eligible); otherwise the segment awaits new
-operator-injected READY items.
+EXECUTOR_END_HEAD (final) = `cfc1cf5980d5a99b3774b6a7a0390e2d31d5f6c6`
+CAMPAIGN_FINAL_HEAD = the closure commit carrying this checkpoint update.

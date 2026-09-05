@@ -298,3 +298,47 @@ Every NEXT is derived only from newly persisted canonical state.
   verify, for BOTH MODIFY (checkpoint 8) and CREATE (this checkpoint).
 - REAL_LOCAL_DEV_EXECUTIONS_ADDED (campaign total) = 5 (2 STOP + 3 PASS)
 - production changed: NO · D-0025 enabled: false
+
+## CHECKPOINT 10 — SEGMENT 3 PASS 6: IDLE/BACKFILL POLICY (PASS) + SEGMENT CLOSE
+
+- seq: 10 (segment 3, pass 6)
+- pass 6 (cursor-pass `267e4d2`): V4_LOCAL_DEV_EXECUTOR_IDLE_QUEUE_BACKFILL_POLICY_V1 —
+  deterministic idle/backfill law pinned by 10 tests
+  (tests/local-dev-idle-backfill-policy-v1):
+  - WORK_AVAILABLE beats everything (never backfills over real work);
+  - BACKFILL_SYNTHETIC only via policy-enabled, docs/runtime/-scoped,
+    traversal-guarded, cap-limited (3/segment) synthetic candidates going
+    through the SAME selector/bridge gates;
+  - IDLE_CLEAN / IDLE_ALL_CLAIMED otherwise; real user backlog is NEVER
+    consumed until a policy explicitly proves items auto-eligible.
+- EXECUTOR_END_HEAD (pass 10) = 267e4d2cd72c9ac2cc75cba3d9c52ba7afd52297
+  (cursor pass; no executor run this pass — law-only, deterministic)
+- production changed: NO · D-0025 enabled: false
+
+## FINAL CAMPAIGN REPORT (v3 — end of continuation segment 3)
+
+OVERNIGHT CAMPAIGN COMPLETE — PASSES=10 — PASS=8 — FINAL_HEAD=<closure commit of this checkpoint update> — TERMINAL_REASON=SEGMENT_3_QUEUE_DRAINED_IDLE_POLICY_PINNED (no auto-eligible work remains; n8n/production boundaries untouched) — NEXT=V4_LOCAL_DEV_EXECUTOR_IDLE_BACKFILL_SYNTHETIC_ITEM_INJECTION (operator-injected or policy-gated synthetic READY item to resume AUTO-VIA)
+
+Cumulative pass list:
+1. PASS bridge design `08c9b7c` · 2. PASS bridge implement `42a678a` ·
+3. PASS bridge dry-run `86c06c6` · 4. STOP first bridged proof
+(BACKLOG_BRIDGE_NEW_FILE_SEMANTICS) · 5. PASS new-file persistence `bdcce7b` ·
+6. STOP proof retry (agent convergence) · 7. PASS remediation + NEW-FILE
+LIVE PROOF `db6b275` (repair cycles d17eb04/1159d8d/526bd81) ·
+8. PASS selector + first SELECT→CLAIM→DISPATCH MODIFY proof `9eccd65`
+(170f88a/003a928/5f56d80/aea40e0) · 9. PASS dispatcher primitive + LIVE LOOP
+CREATE proof `cfc1cf5` (34e9476/748934e/1f97e9b) · 10. PASS idle/backfill
+policy law `267e4d2`.
+
+REAL_LOCAL_DEV_EXECUTIONS_ADDED (campaign total) = 5 (2 STOP + 3 PASS:
+db6b275 CREATE-new-file · 9eccd65 SELECT→CLAIM MODIFY · cfc1cf5 loop CREATE).
+PRODUCTION_CHANGED = NO. D0025_ENABLED = false.
+EXECUTOR_END_HEAD (final) = cfc1cf5980d5a99b3774b6a7a0390e2d31d5f6c6
+CAMPAIGN_FINAL_HEAD = closure commit of this checkpoint (below).
+
+TERMINAL CLASSIFICATION: the campaign ends in a CLEAN DRAINED state, not a
+failure: every LOCAL_DEV capability in scope is implemented and live-proven
+(bridge, claims, executor persistence CREATE+MODIFY, config gate, dispatcher
+loop, idle policy). Remaining work requires either new operator-supplied
+READY backlog items or a policy decision to enable synthetic self-authored
+backlog; neither is auto-eligible without the operator.
