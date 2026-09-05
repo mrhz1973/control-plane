@@ -1,5 +1,71 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_CANONICAL_RETRY_REPAIR_RUNTIME_BOUNDARY_V1` (micro-task delta, issue #44, base `6749f06`)
+**Classification:** `PASS — ONE REAL CANONICAL RETRY/REPAIR-SELECTION BOUNDARY CREATED: tools/run-retry-stage-v1.mjs (runRetryStage / buildRetryCandidates / canonical CLI) recomputes FRESH canonical quota state at EVERY retry invocation via buildRetryBoundaryState (real registry-v2 + fail-closed baseline + real ingest lane → real composer → real join — never the state captured at initial implementation time), invokes the REAL selectQuotaAwareRetryRoute (T19: fresh internal join + scarce-pool exclusion + RETRY_BLOCKED no-silent-reuse), applies guardQualityDowngrade (T13, status-normalized for the retry envelope) and guardUrgencyDeferral (T14, only with caller-supplied urgency context), emits bounded v4-retry-stage-result-v1 with execution_performed=false (SELECTION ONLY); DEDICATED CANONICAL CLI PROVEN (task path 5-b: no runtime retry-route loop exists today — the only real retry loop, bounded test cycles, selects no route — so NO caller was faked; exact caller dependency persisted); FOCUSED TESTS 14/14 + T19 selector suite 5/5; D-0025 CLOSED UNCHANGED; WF40/WF61/n8n/local-dev runner UNTOUCHED`
+**Timestamp (local):** 2026-09-06 (00:5x, UTC+2)
+**BASE_HEAD:** `6749f06a5ecb7cff88b74ed37041ab9cd54f2c03`
+**CLOSURE HEAD:** final `cursor-pass: V4_CANONICAL_RETRY_REPAIR_RUNTIME_BOUNDARY_V1` commit carrying this report
+**CLOSURE:** MINIMAL_RUNTIME_BUNDLE (1 new tool + 1 focused suite)
+
+## Chosen retry boundary + exact canonical call path
+
+```text
+failed/STOP implementation result (local-dev-execution-result-v1)
+  -> runRetryStage (tools/run-retry-stage-v1.mjs — THE boundary)
+  -> buildRetryBoundaryState (rt25-canonical-quota-state-v1 — FRESH canonical
+     quota state recomputed at EVERY invocation; real ingest lane re-read)
+  -> buildRetryCandidates (registry-v2 metadata ONLY: models carrying
+     implementation_model or reviewer roles; OpenAI API/BYOK structurally
+     forbidden; registry MODEL CLASS -> RESOURCE binding: glm-5.3/glm-5.3-flash
+     -> glm, codex_subscription_models -> codex, composer -> composer,
+     qwen_local -> qwen_local)
+  -> selectQuotaAwareRetryRoute (REAL T19 selector: its own fresh internal
+     join + scarce-pool protection + RETRY_ROUTE_SELECTED / RETRY_BLOCKED)
+  -> guardQualityDowngrade (REAL T13; retry status normalized to
+     ROUTE_SELECTED for the guard call only — audit envelope verbatim)
+  -> guardUrgencyDeferral (REAL T14; only when caller supplies urgency)
+  -> bounded v4-retry-stage-result-v1
+```
+
+Result fields: `retry_required`, `retry_selection_status` (`RETRY_ROUTE_SELECTED` | `RETRY_BLOCKED` | `VETOED_QUALITY_DOWNGRADE` | `NO_CANDIDATES` | `QUOTA_STATE_COMPOSITION_FAILED` | `SELECTOR_INVOCATION_FAILED` | `SELECTOR_ENVELOPE_INVALID` | `REGISTRY_UNREADABLE` | `INPUT_INVALID`), `retry_attempt_index`, `selected_retry_route` (`{route_id, resource_id, model, access_surface, quota_pool_id, admission, select_rank}` when admitted), `reason_codes`, `quota_provenance` (fresh `joined_at` + pools + source paths), `previous_route_reference`, `previous_model_reference`, `execution_performed=false` (LAWFUL CONSTANT), full `decision`/`quality_guard`/`urgency_guard` audit envelopes.
+
+## Fresh-state proof (test A/A2 + C)
+
+Two successive invocations with different `nowMs` produced `quota_provenance.joined_at` equal to each invocation's own decision time (composition recomputed both times, `CANONICAL_QUOTA_STATE_COMPOSED`). Test C proves adapted selection: with fresh glm+codex evidence attempt N selects `glm-5.3`; with glm EXHAUSTED at N+1 the same boundary redirects to `codex-ide`, recording `POOL_EXHAUSTED` for glm with `previous_pool_id` audit-visible.
+
+## Real caller: NO runtime caller wired — dedicated canonical CLI proven (exact dependency persisted)
+
+Per REQUIRED BEHAVIOR 5 path (b): the only real retry loop in the runtime is the bounded test-cycle re-runner (`makeRunTests`, local-dev executor) — it re-runs a test COMMAND and performs NO route selection, so attaching route-selection there would be a fake integration; no other post-failure route-selection caller exists. The boundary therefore ships with its canonical CLI, proven directly (test I/I2):
+
+```text
+node tools/run-retry-stage-v1.mjs --input-file <implementation-result.json>
+  [--attempt N] [--previous-route-id id] [--previous-pool-id id]
+  [--previous-model id] [--output-file path]
+exit 0 = RETRY_ROUTE_SELECTED; exit 1 = blocked/vetoed (selection semantics only)
+```
+
+EXACT REMAINING CALLER DEPENDENCY: a governed retry EXECUTION stage that (1) detects a repairable STOP, (2) invokes `runRetryStage` for route selection, and (3) holds an authorized retry execution path. None exists today; none was invented.
+
+## Focused test results
+
+- NEW `tests/retry-stage-boundary/run.mjs`: **14/14 PASS** — A fresh recompute per invocation, B real T19 selector + parity, C evidence-change adapts selection, D/D2 stale/missing commercial fail-closed, E local survives commercial blocked (composer Qwen gate), F high-risk veto (no silent downgrade), G/G2 malformed/composition-failure fail-closed (incl. PASS result → `RETRY_NOT_REQUIRED_ON_PASS`), H `execution_performed=false`, I/I2 canonical CLI proof.
+- EXISTING `tests/rt25-t19-retry-selector/run.mjs`: **5/5 PASS** (unchanged).
+- `node --check` on changed .mjs: OK. `git diff --check`: OK.
+- Corrective loops used: 1 of 2 (registry model-class→resource binding + T13 status normalization).
+
+## Hard walls honored
+
+D-0025 `enabled=false` re-verified from repo gate file. No n8n live apply, no workflow activation/deactivation, no service restart, no Telegram, no Tailscale change, no provider/model calls, no OpenAI API/BYOK, no credentials. All pre-existing untracked files preserved; no clean/stash/reset/rebase/force-push; selective stage only.
+
+## Persistence record
+
+- `RETRY_REPAIR_BOUNDARY = WIRED_BEHIND_CLOSED_GATE` (boundary + canonical CLI live in code, proven by direct invocation; no runtime caller yet — exact dependency above; D-0025 closed, not LIVE)
+- Files: `tools/run-retry-stage-v1.mjs` (NEW), `tests/retry-stage-boundary/run.mjs` (NEW)
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_CANONICAL_REVIEW_STAGE_ARCHITECTURE_AND_BOUNDARY_V1` (micro-task delta, base `0788717`)
 **Classification:** `PASS — ONE REAL CANONICAL REVIEW-STAGE BOUNDARY CREATED AND WIRED BEHIND CLOSED GATE: tools/run-review-stage-v1.mjs (runReviewStage / attachReviewStage / buildReviewerCandidates) composes FRESH canonical quota state at review time via buildReviewerBoundaryState (real registry-v2 + fail-closed baseline + real ingest lane → real composer → real join), derives reviewer candidates ONLY from registry reviewer-role metadata (codex chatgpt-subscription surfaces + qwen_local; openai_api_route structurally forbidden; glm has NO reviewer role in the registry), invokes the REAL selectQuotaAwareReviewerRoute (T18 independence law preserved), applies guardQualityDowngrade (T13 no-silent-downgrade), emits bounded v4-review-stage-result-v1 with execution_performed=false (SELECTION ONLY, no reviewer inference/execution); REAL EXISTING CALLER WIRED: local-dev live runner main() (tools/run-local-dev-executor-v1.mjs) attaches review_stage APPEND-ONLY post-implementation — PASS/STOP semantics and exit code unchanged, DEV-runner isolation law intact (42/42); FOCUSED TESTS 15/15 + T18 reviewer selector 5/5; D-0025 CLOSED UNCHANGED; WF40/WF61/n8n UNTOUCHED`
 **Timestamp (local):** 2026-09-06 (early hours, UTC+2)
