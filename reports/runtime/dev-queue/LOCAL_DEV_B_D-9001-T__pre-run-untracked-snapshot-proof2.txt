@@ -1,8 +1,5 @@
 ﻿?? .cursor/debug-ca736b.log
 ?? all_files.txt
-?? reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__envelope-proof2.bare.json
-?? reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__envelope-proof2.json
-?? reports/runtime/dev-queue/LOCAL_DEV_B_D-9001-T__pre-run-untracked-snapshot-proof2.txt
 ?? search_results.txt
 ?? tools/arm-gate-wf61-retry3.sh
 ?? tools/arm-gate-wf61-retry5.sh
