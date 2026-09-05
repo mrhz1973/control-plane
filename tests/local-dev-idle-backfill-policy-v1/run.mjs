@@ -21,6 +21,19 @@
  * Run: node tests/local-dev-idle-backfill-policy-v1/run.mjs
  */
 import assert from "node:assert/strict";
+// Single source of truth: the LAW is now exported by the runtime tool
+// (tools/local-dev-idle-backfill-v1.mjs). This pinned suite verifies the
+// EXACT semantics the injector enforces, unchanged from the original 10/10.
+import { decideBackfill, DEFAULT_POLICY } from "../../tools/local-dev-idle-backfill-v1.mjs";
+
+// Pinned policy mirror retained for the P8 frozen-defaults assertion:
+const PINNED_DEFAULTS = Object.freeze({
+  schema_version: "local-dev-idle-backfill-policy-v1",
+  synthetic_backfill_enabled: true,
+  synthetic_allowed_scope_prefix: "docs/runtime/",
+  max_synthetics_per_segment: 3,
+  never_touch: ["tools/**", "configs/**", "scripts/**", ".github/**"],
+});
 
 let passed = 0;
 const failures = [];
@@ -33,37 +46,6 @@ async function test(name, fn) {
     failures.push(name);
     process.stdout.write(`FAIL ${name}: ${err?.message || err}\n`);
   }
-}
-
-const DEFAULT_POLICY = Object.freeze({
-  schema_version: "local-dev-idle-backfill-policy-v1",
-  synthetic_backfill_enabled: true,
-  synthetic_allowed_scope_prefix: "docs/runtime/",
-  max_synthetics_per_segment: 3,
-  never_touch: ["tools/**", "configs/**", "scripts/**", ".github/**"],
-});
-
-function decideBackfill({ unclaimedAdmissible, claimedCount, syntheticsCreatedThisSegment, syntheticCandidate }, policy = DEFAULT_POLICY) {
-  if (unclaimedAdmissible > 0) return { decision: "WORK_AVAILABLE", reason_code: "WORK_AVAILABLE" };
-  const rawPath = syntheticCandidate && typeof syntheticCandidate.allowed_path === "string" ? syntheticCandidate.allowed_path : "";
-  // Canonicalize BEFORE any prefix/never-touch test: traversal must never pass.
-  const normalizedPath = rawPath.replace(/\\/g, "/").split("/").reduce((acc, seg) => {
-    if (seg === "..") acc.pop();
-    else if (seg !== "." && seg !== "") acc.push(seg);
-    return acc;
-  }, []).join("/");
-  const syntheticOk =
-    policy.synthetic_backfill_enabled &&
-    rawPath &&
-    !rawPath.includes("..") &&
-    normalizedPath.startsWith(policy.synthetic_allowed_scope_prefix) &&
-    !policy.never_touch.some((p) => normalizedPath.startsWith(p.replace("/**", "/"))) &&
-    (syntheticsCreatedThisSegment ?? 0) < policy.max_synthetics_per_segment;
-  if (syntheticOk) return { decision: "BACKFILL_SYNTHETIC", reason_code: "BACKFILL_SYNTHETIC", synthetic: { ...syntheticCandidate, allowed_path: normalizedPath } };
-  if (claimedCount > 0 || (syntheticsCreatedThisSegment ?? 0) > 0) {
-    return { decision: "IDLE", reason_code: policy.synthetic_backfill_enabled ? "IDLE_ALL_CLAIMED_SYNTHETIC_LIMIT" : "IDLE_ALL_CLAIMED" };
-  }
-  return { decision: "IDLE", reason_code: "IDLE_CLEAN" };
 }
 
 await test("P1 WORK_AVAILABLE when unclaimed admissible item exists (never backfills over real work)", () => {
@@ -110,6 +92,8 @@ await test("P8 policy is frozen-safe: defaults deny production prefixes", () => 
   assert.ok(DEFAULT_POLICY.never_touch.includes("configs/**"));
   assert.ok(DEFAULT_POLICY.never_touch.includes(".github/**"));
   assert.equal(DEFAULT_POLICY.synthetic_allowed_scope_prefix, "docs/runtime/");
+  // Tool-exported defaults must EQUAL the pinned law exactly:
+  assert.deepEqual({ ...DEFAULT_POLICY }, { ...PINNED_DEFAULTS });
 });
 
 await test("P9 cap arithmetic: exactly at cap-1 still backfills", () => {

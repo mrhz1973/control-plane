@@ -41,7 +41,7 @@ function loadReceipts(path) {
  * Pure core: given queue markdown entries + receipts, claim up to maxClaims
  * items and produce envelopes. Deterministic; injectable now for clock.
  */
-export function runDispatchLoop(entries, receipts, { repo, commit, head, nowIso, maxClaims = 1 }) {
+export function runDispatchLoop(entries, receipts, { repo, commit, head, nowIso, maxClaims = 1, queueDir }) {
   const ledger = [...receipts];
   const claims = [];
   const skipped = [];
@@ -60,11 +60,12 @@ export function runDispatchLoop(entries, receipts, { repo, commit, head, nowIso,
     }
     const file = decision.selected.source_file;
     const entry = remaining.find((e) => e.source === file);
+    const backlogPath = entry.backlog_path || (queueDir ? `${queueDir}/${file}` : `tests/local-dev-backlog-envelope-bridge-v1/fixtures/${file}`);
     const bridge = buildLocalDevEnvelopeFromBacklog({
       markdown: entry.markdown,
       repo,
       commit,
-      path: `tests/local-dev-backlog-envelope-bridge-v1/fixtures/${file}`,
+      path: backlogPath,
       dispatchBaseHead: head,
       now: nowIso,
       existingReceipts: ledger,
@@ -112,12 +113,12 @@ async function main() {
   const files = readdirSync(queueDir).filter((f) => f.endsWith(".md")).sort();
   const entries = files.map((f) => {
     const markdown = readFileSync(join(queueDir, f), "utf8").replace(/^\uFEFF/, "");
-    return { ...parseBacklogFile(markdown), source: f, markdown };
+    return { ...parseBacklogFile(markdown), source: f, markdown, backlog_path: `${opt["--queue"]}/${f}` };
   });
   const receipts = loadReceipts(resolve(opt["--receipts"]));
   const nowIso = opt["--now"] ? new Date(opt["--now"]).toISOString() : new Date().toISOString();
   const maxClaims = Math.max(1, Number(opt["--max-claims"] || 1));
-  const result = runDispatchLoop(entries, receipts, { repo, commit: head, head, nowIso, maxClaims });
+  const result = runDispatchLoop(entries, receipts, { repo, commit: head, head, nowIso, maxClaims, queueDir: opt["--queue"] });
   // Persist the post-loop ledger (claims included), not the pre-run copy.
   const updatedReceipts = receipts.concat(result.claims.map((c) => c.receipt));
 
