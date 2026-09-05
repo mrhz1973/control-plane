@@ -22,5 +22,11 @@
     "source_ref": "github:mrhz1973/control-plane@5c9ba6940e48ab46f7152f6d939d1b932d17f2a4:reports/runtime/dev-queue/synthetic-seg4/SYNTHETIC_D-9102-3FCE48B0.md",
     "claimed_at": "2026-09-05T06:53:00.000Z",
     "bridge_version": "local-dev-backlog-bridge-v1"
+  },
+  {
+    "task_ref": "LOCAL_DEV_B_D-9103-DCA73598",
+    "source_ref": "github:mrhz1973/control-plane@f85eb400e9f7c166d054303ec58f99ebd6dee0be:reports/runtime/dev-queue/synthetic-seg4/SYNTHETIC_D-9103-DCA73598.md",
+    "claimed_at": "2026-09-05T06:59:00.000Z",
+    "bridge_version": "local-dev-backlog-bridge-v1"
   }
 ]
