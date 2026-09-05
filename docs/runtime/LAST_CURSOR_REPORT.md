@@ -1,5 +1,36 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_DISPATCHER_SAFE_FAST_FORWARD_SYNC_LIVE_APPLY_V1` (micro-task delta, issue #50, base `ac3df9a`)
+**Classification:** `STOP — PRECHECK_BASE_HEAD_DRIFT: required HEAD == origin/main == BASE_HEAD ac3df9ae32b8b18ba3cb1d8dbf20539e38728550; observed HEAD == origin/main == 2623aad75dda3cc15efb59588161c3380a955eab (frontier residual commit after #49). No Scheduled Task restart performed. No n8n/WF/Tailscale/Telegram mutation.`
+**Timestamp (local):** 2026-09-06 (~01:53, UTC+2)
+**BASE_HEAD (task):** `ac3df9ae32b8b18ba3cb1d8dbf20539e38728550`
+**OBSERVED HEAD / origin/main:** `2623aad75dda3cc15efb59588161c3380a955eab`
+**CLOSURE:** STOP — no live mutation
+
+## Precheck result
+
+| Check | Result |
+|---|---|
+| branch main | PASS |
+| tracked worktree clean | PASS |
+| HEAD == origin/main | PASS (`2623aad`) |
+| HEAD == BASE_HEAD (`ac3df9a`) | **FAIL** |
+| origin/main == BASE_HEAD | **FAIL** |
+
+Exact blocker: remote/local main advanced by the #49 CURRENT_FRONTIER residual commit `2623aad` after the code PASS `ac3df9a`. Live apply was not authorized against a drifted BASE_HEAD.
+
+## Mutation performed
+
+**NONE.** Scheduled Task `ControlPlane-V4-LocalDevDispatcher` was not restarted. Endpoint not mutated.
+
+## Next (operator)
+
+Re-issue live-apply with `BASE_HEAD=2623aad75dda3cc15efb59588161c3380a955eab` (or reset authorization to current origin/main), then restart only `ControlPlane-V4-LocalDevDispatcher`.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_DISPATCHER_SAFE_FAST_FORWARD_SYNC_V1` (micro-task delta, issue #49, base `0850b21`)
 **Classification:** `PASS — verifyRepoState now safe-FF syncs clean behind main (`git merge --ff-only origin/main`) before queue claim; dirty/ahead/diverged/ff-fail remain HUMAN_GATE; untracked preserved; focused 9/9 + dispatcher 10/10 + admission 11/11; NO live restart this pass`
 **Timestamp (local):** 2026-09-06 (~01:50, UTC+2)
