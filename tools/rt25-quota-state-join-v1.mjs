@@ -153,6 +153,7 @@ export function joinQuotaPoolState(composerResult, registry, options = {}) {
         state: cls.state,
         freshness: cls.freshness,
         remaining_percent: cls.remaining_percent,
+        reset_at: rStatus.reset_at ?? null,
         evaluation: neverObserved
           ? "CONSERVE_UNKNOWN_MISSING"
           : !cls.observed
