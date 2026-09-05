@@ -10,5 +10,11 @@
     "source_ref": "github:mrhz1973/control-plane@34e9476cc713b6e55bb3d7eff6e612a07c57c2bb:tests/local-dev-backlog-envelope-bridge-v1/fixtures/READY_D9007Q.md",
     "claimed_at": "2026-09-05T07:10:00.000Z",
     "bridge_version": "local-dev-backlog-bridge-v1"
+  },
+  {
+    "task_ref": "LOCAL_DEV_B_D-9101-341BD424",
+    "source_ref": "github:mrhz1973/control-plane@43da4f28eb3e439aaa8011f9ed8471f46f0ee81e:reports/runtime/dev-queue/synthetic-seg4/SYNTHETIC_D-9101-341BD424.md",
+    "claimed_at": "2026-09-05T06:47:00.000Z",
+    "bridge_version": "local-dev-backlog-bridge-v1"
   }
 ]
