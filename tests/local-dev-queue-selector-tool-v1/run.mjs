@@ -82,15 +82,18 @@ await test("CLI end-to-end: queue dir + receipts file -> decision JSON (--now pi
     assert.equal(r1.code, 0, r1.err);
     const decision = JSON.parse(readFileSync(outPath, "utf8"));
     assert.equal(decision.schema_version, "local-dev-queue-selection-v1");
+    // risk law: both D-9007-Q and D-9001-T are low; FIFO by created_at → D-9001-T (04:40Z) wins
     assert.equal(decision.selected.task_ref, "LOCAL_DEV_B_D-9001-T");
+    assert.equal(decision.selected.risk_hint, "low");
     assert.equal(decision.decided_at, "2026-09-05T06:00:00.000Z");
 
     writeFileSync(receiptsPath, JSON.stringify([{ task_ref: "LOCAL_DEV_B_D-9001-T" }, { task_ref: "LOCAL_DEV_B_D-9002-L" }]), "utf8");
     const r2 = await run(["--queue", FIXTURES, "--receipts", receiptsPath, "--out", join(tmp, "s2.json"), "--now", "2026-09-05T06:00:00Z"]);
     assert.equal(r2.code, 0);
     const d2 = JSON.parse(readFileSync(join(tmp, "s2.json"), "utf8"));
-    assert.equal(d2.selected, null);
-    assert.equal(d2.reason_code, "NONE_ELIGIBLE_ALL_EXCLUDED");
+    // D-9001-T claimed, D-9002-L medium inadmissible-by-claim only if claimed: it is claimed too;
+    // D-9007-Q (low, unclaimed) must be selected.
+    assert.equal(d2.selected.task_ref, "LOCAL_DEV_B_D-9007-Q");
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
