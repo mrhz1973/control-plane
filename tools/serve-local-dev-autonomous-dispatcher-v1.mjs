@@ -10,11 +10,14 @@
  *
  * One tick = MAX ONE real execution through the PROVEN pipeline:
  *   scan → select (selector law) → claim (bridge receipts) → emit envelope
- *   → execute envelope (LOCAL_DEV_EXECUTOR authority) → bounded response.
+ *   → MICRO_TASK_DELTA admission (admit-micro-task-delta-v1) → execute
+ *   envelope (LOCAL_DEV_EXECUTOR authority) → bounded response.
  *
  * Composition only: reuses tools/dispatch-local-dev-queue-loop-v1.mjs
- * (selector/claim authority) and tools/run-local-dev-executor-v1.mjs
- * (execution authority) UNCHANGED. No second executor. No safety-law merge.
+ * (selector/claim authority), tools/admit-micro-task-delta-v1.mjs
+ * (MICRO_TASK operating-law admission), and tools/run-local-dev-executor-v1.mjs
+ * (execution authority). No second executor. No safety-law merge.
+ * Rejected admission never reaches the executor (execution_performed=false).
  *
  * The caller can NEVER influence: repo path, commands, profile, allowed
  * paths, task choice, synthetic policy, or production routing. Those are
@@ -39,6 +42,7 @@ import { runDispatchLoop } from "./dispatch-local-dev-queue-loop-v1.mjs";
 import { KNOWN_LOCAL_REPOS } from "./bridge-backlog-to-local-dev-envelope-v1.mjs";
 import { executeLocalDevTask } from "./local-dev-executor-v1.mjs";
 import { composeRunners } from "./run-local-dev-executor-v1.mjs";
+import { admitMicroTaskDelta, extractMicroTaskAdmissionInput } from "./admit-micro-task-delta-v1.mjs";
 
 export const RESULT_SCHEMA = "local-dev-dispatch-tick-result-v1";
 export const REQUEST_SCHEMA = "local-dev-dispatch-tick-v1";
@@ -244,6 +248,30 @@ export async function performTick(body, deps = {}) {
       request_id: requestId,
       classification: "SERVICE_ERROR",
       reason_codes: ["PERSIST_FAILED", String(err?.code || err?.message || "unknown").slice(0, 80)],
+    });
+  }
+
+  // 3b. MICRO_TASK_DELTA admission — AFTER claim, BEFORE executor.
+  // Rejected admission never reaches runExecutor (execution_performed=false).
+  // Classification HUMAN_GATE_REQUIRED stays within the WF90 ALLOWED set
+  // (no live schema expansion in this pass).
+  const admitFn = deps.admitMicroTaskDelta || admitMicroTaskDelta;
+  const admissionInput = deps.admissionInput
+    || extractMicroTaskAdmissionInput(claim);
+  const admission = admitFn(admissionInput);
+  if (!admission || admission.admitted !== true) {
+    return wrapTickResult({
+      ok: false,
+      request_id: requestId,
+      classification: "HUMAN_GATE_REQUIRED",
+      execution_performed: false,
+      task_ref: claim.task_ref,
+      human_gate_required: true,
+      gate_summary: (admission?.reason_codes || ["MICRO_TASK_ADMISSION_REJECTED"]).join(","),
+      reason_codes: [
+        "MICRO_TASK_ADMISSION_REJECTED",
+        ...(Array.isArray(admission?.reason_codes) ? admission.reason_codes : ["ADMISSION_HELPER_INVALID"]),
+      ].slice(0, 16),
     });
   }
 

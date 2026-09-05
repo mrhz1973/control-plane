@@ -1,5 +1,35 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_AUTOMATED_MICRO_TASK_ADMISSION_PARITY_V1` (micro-task delta, issue #47, base `a179a40`)
+**Classification:** `PASS — deterministic MICRO_TASK_DELTA admission helper wired into real local-dev dispatcher performTick BEFORE executor; rejected admission never executes (HUMAN_GATE_REQUIRED + execution_performed=false); legacy safe defaults; focused 11/11 + dispatcher service 10/10; NO live apply/restart; D-0025 unchanged`
+**Timestamp (local):** 2026-09-06 (~01:40, UTC+2)
+**BASE_HEAD:** `a179a40752d858be6f83df96780f107ff13b80e1`
+**CLOSURE HEAD:** final `cursor-pass: V4_AUTOMATED_MICRO_TASK_ADMISSION_PARITY_V1` commit carrying this report
+**CLOSURE:** CODE_WIRED_BEHIND_LIVE_PROCESS (no service restart / no n8n mutation)
+
+## What was wired
+
+- NEW `tools/admit-micro-task-delta-v1.mjs` — pure admission helper inheriting `MICRO_TASK_DELTA_OPERATING_LAW.md`
+- `tools/serve-local-dev-autonomous-dispatcher-v1.mjs` `performTick`: claim → **admit** → executor
+- Rejected → `HUMAN_GATE_REQUIRED` (WF90 ALLOWED set preserved; no live schema expansion), `execution_performed=false`
+
+## Exact live-activation dependency (NOT performed this pass)
+
+> The Windows Scheduled Task `ControlPlane-V4-LocalDevDispatcher` (service on `127.0.0.1:18793`) must be **restarted** (or equivalently reloaded) to load the new `performTick` admission call-site from disk. Until restart, the live process continues the pre-admission binary. No n8n workflow mutation is required for this code path (admission is server-side in the dispatcher). Do **not** restart in this slice.
+
+## Focused tests
+
+- `tests/micro-task-admission-parity/run.mjs` — **11/11 PASS** (proofs 1–8)
+- `tests/local-dev-dispatcher-service-v1/run.mjs` — **10/10 PASS**
+
+## Hard walls
+
+No n8n mutation, no service restart, no model calls, D-0025 unchanged, selective stage only, untracked preserved.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_TOKEN_EFFICIENCY_MICRO_TASK_POLICY_PERSISTENCE_V1` (micro-task delta, issue #42, base `d5f2925`)
 **Classification:** `PASS — MICRO_TASK_DELTA operating law persisted as canonical method; consumers inherit; focused policy lint 11/11; AUTOMATION_PARITY persisted (no live automation change); HUMAN_AUTHORIZED_CAMPAIGN_EXCEPTION remains possible; wrapper order unchanged; D-0025 untouched`
 **Timestamp (local):** 2026-09-06 (~01:30, UTC+2)
