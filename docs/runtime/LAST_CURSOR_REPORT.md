@@ -1,5 +1,48 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_INJECTED_PERSISTENCE_FIX_AND_FINAL_AUTONOMOUS_CHAIN_V1` (issues #56+#55+#51+#52+#53, one session, BASE `915612a`)
+**Classification:** `STOP — TASK2 D-9301-G executor deterministic STOP:GIT_PERSISTENCE_FAILED (NOTHING_STAGEABLE_IN_SCOPE). TASK1 (#56 persistence-isolation fix) PASSED fully (commit 68ce67b pushed/verified; dispatcher live-reloaded; 405 POST_ONLY verified). D-9301-G was claimed exactly once on a natural WF90 tick (07:00:40Z), admission PASS, Qwen/OpenCode executed exactly once (session ses_f8a7af441ffessQirtHUhgJG0m, 09:00:44->09:04:11 local), focused suite green — but OpenCode made ZERO file edits because the S13 regression demanded by the queue objective ALREADY EXISTED in the allowed file (authored by the controller in TASK1 commit 68ce67b as the required focused regression). With an empty stageable set the executor law fails closed: makePersistGit returns NOTHING_STAGEABLE_IN_SCOPE -> STOP:GIT_PERSISTENCE_FAILED; no executor-pass commit is possible and the receipt blocks re-claim. Root cause: controller-side sequencing conflict between TASK1's mandated regression and TASK2's queue objective (both target the same S13 behavior). TASK3 (#52 chain, #53 checkpoint) not started.`
+**Timestamp (local):** 2026-09-06 (~09:30, UTC+2)
+**BASE_HEAD:** `915612ad6babd66e0ba08bab18422e90dc5393d9`
+**FIX HEAD (TASK1):** `68ce67ba57e715cddff990ba00d29d2242a802b7` (`cursor-pass: V4_INJECTED_DISPATCHER_ENVELOPE_PERSISTENCE_ISOLATION_V1`)
+**QUEUE HEAD (TASK2):** `cf2224205d971c2c90a105d8821c4a073b051c40` (`cursor-pass: V4_AUTONOMOUS_MICRO_TASK_REAL_E2E_PROOF_G_QUEUE_V1`)
+**CLOSURE HEAD:** final `cursor-stop: V4_INJECTED_PERSISTENCE_FIX_AND_FINAL_AUTONOMOUS_CHAIN_V1` commit carrying this report
+**CLOSURE:** STOP — campaign halt after TASK2
+
+## TASK1 (#56) — PASS (complete)
+
+1. Precheck green: branch main; HEAD == origin/main == BASE_HEAD `915612a`; tracked worktree clean; 53 pre-existing untracked preserved.
+2. Production fix (tools/serve-local-dev-autonomous-dispatcher-v1.mjs): ONE explicit boolean `realRuntimePersistence = !deps.runDispatchLoop && !deps.scanQueue && !deps.runExecutor` now guards BOTH the canonical claim-envelope write AND the receipts write. Real no-injected-deps behavior unchanged (persists both); injected tests persist neither. No weakened executor detection; no artifact redirection; no deletions; no task-id special-casing; no queue-semantics change.
+3. Focused regression S13 added to tests/local-dev-dispatcher-service-v1/run.mjs (fresh fake id LOCAL_DEV_B_D-13): proves queue dir + receipts byte-identical across an injected performTick, classification semantics unchanged (WORK_EXECUTED_PASS, head/commit forwarded, task_ref preserved, exactly one executor call), and NO fake LOCAL_DEV_B_D-13__dispatch-envelope.json persisted. The test itself creates/deletes no canonical artifact.
+4. Suites: dispatcher-service 13/13, safe-ff-sync 9/9, admission-parity 11/11, `git diff --check` clean. Selective staging of only the 2 allowed files; commit `68ce67b` pushed; remote verified (ls-remote == 68ce67ba...).
+5. Live reload: old dispatcher PID 27676 identity-verified (command line == serve-local-dev-autonomous-dispatcher-v1.mjs) and stopped; existing Scheduled Task `ControlPlane-V4-LocalDevDispatcher` started unchanged (config verified read-only: LogonTrigger + always-on node service). New PID 51048 listening on 127.0.0.1:18793; `GET /v1/tick` -> `405` with body classification SERVICE_ERROR / reason_codes [POST_ONLY]. No POST sent. D-0025 untouched.
+
+## TASK2 (#55/#51, D-9301-G) — STOP (deterministic executor fail-close)
+
+Sequence (all evidence local, sanitized):
+
+1. Qwen REUSED (no launch): `/v1/models` HTTP 200 with `qwen38-opus-q3-opencode-24k`.
+2. `READY_D9301G.md` authored (id D-9301-G, objective: add S13 distinct from S11/S12 via injected performTick, fresh fake id, prove no canonical envelope persisted); queue commit `cf22242` pushed/verified.
+3. Natural WF90 tick @ 07:00:40Z claimed `LOCAL_DEV_B_D-9301-G` exactly once (receipt append 09:00:41 local; real envelope LOCAL_DEV_B_D-9301-G__dispatch-envelope.json persisted by the REAL runtime — correct post-fix behavior); admission PASS; OpenCode spawned 09:00:44 (temp config lde-oc-config-3JN7CI).
+4. OpenCode session `ses_f8a7af441ffessQirtHUhgJG0m` (model qwen38-opus-q3-opencode-24k, dir control-plane, title "Adding S13 regression to dispatcher-service-v1"): read ONLY the allowed file, verified S13 (lines 268-310) already satisfies every acceptance criterion, ran `node tests/local-dev-dispatcher-service-v1/run.mjs` (13/13 PASS) and `git status --short; git diff --check`, concluded with ZERO file edits; session ended 09:04:11.
+5. Executor post-run classification: worktree clean -> stageable set empty -> `makePersistGit` returned `NOTHING_STAGEABLE_IN_SCOPE` -> executor classification `STOP:GIT_PERSISTENCE_FAILED`. No `executor-pass: LOCAL_DEV_B_D-9301-G` commit exists on origin/main (verified: origin == cf22242, nothing ahead). Receipt recorded => no re-claim in later windows (no duplicate execution).
+
+Root cause: TASK1's focused-test mandate and TASK2's queue objective both specify the SAME S13 regression on the SAME file. The controller added S13 first (as TASK1 required), so the autonomous executor correctly found the work already done and — per its own persistence law (empty stageable set fails closed) — STOPped. This is a controller sequencing bug, not an executor/Qwen/dispatcher defect: the fix proven in 68ce67b worked exactly as designed (no fake envelope artifact was created during the executor's suite run; queue dir gained no new out-of-scope files).
+
+Required future fix (single authorized task, out of scope here): author D-9301-H (or similar) with an objective that CANNOT be pre-satisfied by TASK1's regression (e.g. distinct S14 proving a different behavior), or amend the executor law to allow no-op PASS when acceptance criteria are verifiably already satisfied.
+
+## TASK3 (#52 + #53) — NOT STARTED (campaign law: any STOP terminates immediately)
+
+## Hard walls honored
+
+No git clean/stash/reset/rebase/force-push; all pre-existing untracked files preserved (incl. LOCAL_DEV_B_D-11/12 historical fake envelopes, D-9301-G real envelope + receipt kept as runtime evidence); no manual POST /v1/tick; no n8n/WF/Tailscale/Telegram mutation; no OpenAI API/BYOK; no remote providers; Qwen reused (never duplicated); D-0025 remains disabled.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_CRASH_RECOVERY_PLUS_REMAINING_3_TASK_CAMPAIGN_V1` (issues #55+#51+#52+#53, one session, BASE `1a1e492`)
 **Classification:** `STOP — TASK1 D-9301-F real executor STOP:UNEXPECTED_FILE_CHANGES (deterministic harness artifact). F executed exactly once (claim 06:10:40Z, admission PASS, S12 regression produced, suite 12/12 green) but performTick's test-injected claim persisted a fake envelope artifact (LOCAL_DEV_B_D-12__dispatch-envelope.json) into the real always-on queue dir, which the executor correctly rejected as out-of-scope. No executor-pass for F. Proven F residue restored to HEAD as crash-recovery evidence (backup: %TEMP%\control-plane-D9301F-crash-residue.patch). TASK2/TASK3 not started.`
 **Timestamp (local):** 2026-09-06 (~08:45, UTC+2)
