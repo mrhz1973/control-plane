@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_REPLACEMENT_8GB_VPS_HERMES_BROWSER_RUNTIME_DEPLOYMENT_V1` / #67 (parent #60)
+**Classification:** `PASS — REPLACEMENT_8GB_VPS_HERMES_BROWSER_RUNTIME_DEPLOYMENT · Hermes 0.21.0 + fresh Chromium CDP/Xvfb/x11vnc/noVNC loopback-only · no ChatGPT login · core replica isolated · OLD LIVE unchanged · NO CUTOVER`
+**Timestamp (UTC):** 2026-09-06T22:25:30Z
+**BASE_HEAD:** `8bccd69c7c38bf87d96cb3400bcd15c86c6e9fa5`
+**FINAL HEAD:** this `cursor-pass: V4_REPLACEMENT_8GB_VPS_HERMES_BROWSER_RUNTIME_DEPLOYMENT_V1` commit
+**Report:** `reports/architecture/v4_replacement_8gb_vps_hermes_browser_runtime_deployment_v1.md`
+
+Hermes Agent v0.21.0 installed as `hermes-test` on NEW `31.70.139.73` (pinned commit `3ac671db`). Fresh empty Chromium profile (no OLD auth transfer); sandbox enabled via `chrome-devel-sandbox` 4755; no `--no-sandbox`. systemd: Xvfb `:99`, Chromium CDP `127.0.0.1:9222`, x11vnc `127.0.0.1:5900`, noVNC `127.0.0.1:6080`. Chromium restart proof PASS; n8n capable=0 max_id=311171 unchanged; Tailscale NeedsLogin. Next: HUMAN fresh ChatGPT login via private SSH tunnel, then sentinel/auth/resource qualification; Tailscale/DNS/cutover GATE.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_REPLACEMENT_8GB_VPS_ISOLATED_CORE_REPLICA_V1` / #67 (parent #60)
 **Classification:** `PASS — REPLACEMENT_8GB_VPS_ISOLATED_CORE_REPLICA · fresh OLD dump → NEW PG16.15/n8n2.33.3/LiteLLM1.98.0 · unpublish:all before start · loopback-only · OLD LIVE unchanged · NO CUTOVER`
 **Timestamp (UTC):** 2026-09-06T22:10:04Z
