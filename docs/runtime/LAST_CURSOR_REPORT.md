@@ -1,5 +1,33 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_FULL_INJECTED_ISOLATION_AND_CD_CHAIN_FINAL_CLOSURE_V1` / TASK1+#52 C/D
+**Classification:** `PASS — #58 isolation LIVE + #52 C/D two-task unattended chain LIVE_PROVEN (natural WF90; safe-FF C→D).`
+**Timestamp (local):** 2026-09-06 (~15:20, UTC+2)
+**BASE_HEAD:** `9a244d3b2ceaeedfa47f15ca7fdd54a5cbaf4b16`
+**#58 FIX:** `44fc23b3f54c453c21ea66117997ce1c9556f480` (`cursor-pass: V4_PARTIAL_INJECTED_TICKDEPS_REAL_RUNTIME_ISOLATION_V1`)
+**CD QUEUE:** `f818543a38aaf824c2c55f9d07718a6209135a0b`
+**C EXECUTOR:** `7621894870494bc1eff6835daa5a660793b91faa` (`executor-pass: LOCAL_DEV_B_D-9302-C`)
+**D EXECUTOR:** `963a40e39efdfc9730cea92e343f823602682e7d` (`executor-pass: LOCAL_DEV_B_D-9302-D`)
+**CLOSURE:** continue TASK3 checkpoint
+
+## #58 PASS
+
+Exported `shouldPersistRuntimeArtifacts(deps)` — TRUE only when NONE of verifyRepo/scanQueue/runDispatchLoop/runExecutor/nowIso are injected; gates BOTH envelope+receipts writes. S4 fully injects scan/dispatch/executor (zero claims; executor throws if called). S13 extended with pure gate matrix. Suites 15/15+9/9+11/11. Dispatcher live-reloaded PID 46700; GET /v1/tick → 405 POST_ONLY. D-0025 false.
+
+## #52 C/D PASS
+
+Controller authored queue ONLY (`READY_D9302C.md` 13:06:00Z / `READY_D9302D.md` 13:06:01Z); S16/S17 ABSENT pre-queue. Qwen reused.
+
+1. C claimed once @ 13:10:40Z (base `f818543`); OpenCode once; `executor-pass C` `7621894` adds S16 only; suite green.
+2. Later natural tick: D claimed once @ 13:15:40Z with `dispatch_base_head=7621894` (C executor) — dispatcher self-FF; no controller sync C→D.
+3. `executor-pass D` `963a40e` adds S17 only; D descends from C; suite 17/17. No fake test envelopes. Historical A/B + S15 residue preserved untouched.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_FRESH_H_AND_TWO_TASK_CHAIN_FINAL_CLOSURE_V1` (issues #57+#55+#51+#52+#53, one session, BASE `5e93fbf`)
 **Classification:** `STOP — TASK2 D-9302-A real executor STOP after S15 authored; S4 incomplete tickDeps injection spuriously claimed D-9302-B during A's suite run. TASK1 D-9301-H PASS. TASK3 not started.`
 **Timestamp (local):** 2026-09-06 (~14:45, UTC+2)
