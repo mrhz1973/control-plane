@@ -1,44 +1,42 @@
 # LAST CURSOR REPORT
 
-**BLOCK-ID:** `V4_AUTONOMOUS_MICRO_TASK_REAL_E2E_PROOF_A_V1` (micro-task delta, issue #51 SESSION 1/3 RETRY1 after operator-authorized Qwen start, base queue `c072a8e`)
-**Classification:** `STOP — NATURAL_TICK_SELECTED_BUT_EXECUTOR_STOP:OPENCODE_RUN_FAILED` (root cause: generation-guard `max_agent_turns (8) exceeded` after OpenCode spent turns reading out-of-scope `tools/**`; no target edit persisted; no `executor-pass`/`executor-stop` commit). **3-SESSION CAMPAIGN STOPPED** (do not run #52/#53).
-**Timestamp (local):** 2026-09-06 (~03:00, UTC+2)
-**BASE_HEAD / QUEUE_HEAD:** `c072a8e0044b7371a825b9bd18480c19f023f8f6` (`cursor-pass: V4_AUTONOMOUS_MICRO_TASK_REAL_E2E_PROOF_A_QUEUE_RETRY1_V1`)
-**CLOSURE HEAD:** final `cursor-stop: V4_AUTONOMOUS_MICRO_TASK_REAL_E2E_PROOF_A_V1` commit carrying this report
-**CLOSURE:** STOP — campaign halt after RETRY1
+**BLOCK-ID:** `V4_CRASH_RECOVERY_PLUS_REMAINING_3_TASK_CAMPAIGN_V1` (issues #55+#51+#52+#53, one session, BASE `1a1e492`)
+**Classification:** `STOP — TASK1 D-9301-F real executor STOP:UNEXPECTED_FILE_CHANGES (deterministic harness artifact). F executed exactly once (claim 06:10:40Z, admission PASS, S12 regression produced, suite 12/12 green) but performTick's test-injected claim persisted a fake envelope artifact (LOCAL_DEV_B_D-12__dispatch-envelope.json) into the real always-on queue dir, which the executor correctly rejected as out-of-scope. No executor-pass for F. Proven F residue restored to HEAD as crash-recovery evidence (backup: %TEMP%\control-plane-D9301F-crash-residue.patch). TASK2/TASK3 not started.`
+**Timestamp (local):** 2026-09-06 (~08:45, UTC+2)
+**BASE_HEAD:** `1a1e492914c80eb81a7efdf27745976a3dde1b4e`
+**CLOSURE HEAD:** final `cursor-stop: V4_CRASH_RECOVERY_PLUS_REMAINING_3_TASK_CAMPAIGN_V1` commit carrying this report
+**CLOSURE:** STOP — campaign halt after TASK1
 
-## Qwen pre-campaign start (operator-authorized)
+## What succeeded
 
-1. `:8080` was down → launched existing `Start-Qwen-MultiModel-16K.ps1` (no arg reconstruct; no duplicate when already up).
-2. Post-start: HTTP 200 `/v1/models`; required profile `qwen38-opus-q3-opencode-24k` exposed; dispatcher PID `6588` still listening on `18793`.
-3. Qwen left running for natural ticks (still READY after RETRY1 STOP).
-
-## What succeeded on RETRY1
-
-1. Queue item `READY_D9301B.md` / id `D-9301-B` authored (A already receipted); offline parse/admit/bridge OK; selective commit/push `c072a8e`.
-2. Natural WF90 exec `308364` @ `2026-09-06T00:40:41Z` → `2026-09-06T00:46:21Z` (~340s) — not manually POSTed.
-3. Claim receipt: `LOCAL_DEV_B_D-9301-B` @ `2026-09-06T00:40:40.448Z` (source_ref @ `c072a8e`).
-4. Envelope emitted (`profile_id=qwen38-opus-q3-opencode-24k`, timebox 600s, max_agent_turns 8); admission admitted; `execution_performed=true`.
-5. OpenCode session `ses_f8bd6dda8ffeC04fxkXGtDa6cF` / run `31f7cc61` started against local Qwen via DEV guard.
-6. Later WF90 `308375`/`308386`/`308397` completed in ~1–2s (IDLE/BUSY path; no second execution of D-9301-B).
+1. TASK1 preflight: HEAD == origin/main == `1a1e492`; tracked clean; Qwen REUSED (`/v1/models` 200, profile present; fresh model worker; generation probe OK).
+2. D-9301-E state classified E4 with evidence: receipt claimed 02:15:40Z; no executor-pass anywhere; OpenCode process gone; tree clean, so no E residue existed to preserve (session died on `model failed to load` before editing).
+3. Successor `READY_D9301F.md` authored; selector/bridge/admission all PASS; queue commit `eb61f78` pushed (`cursor-pass: V4_AUTONOMOUS_MICRO_TASK_REAL_E2E_PROOF_F_QUEUE_V1`).
+4. Natural WF90 exec `309090` @ 06:10:41Z claimed `LOCAL_DEV_B_D-9301-F` exactly once (envelope base `eb61f78`, profile `qwen38-opus-q3-opencode-24k`, timebox 900s, turns 10); admission PASS; OpenCode session `ses_f8aa8be7dffeOGw6ID5I2BWIwl` / run `8c57b17d` executed against local Qwen.
+5. F produced the required S12 regression (advanced-HEAD reaches dispatch-loop options; task_ref preserved end-to-end; exactly one executor invocation) — verified green locally: 12/12 PASS, `git diff --check` clean.
+6. No duplicate execution; no manual tick; later ticks `309101`-`309145` IDLE_CLEAN.
 
 ## Exact blocker
 
-Tick result classification: `WORK_EXECUTED_STOP`
-Executor classification: `STOP:OPENCODE_RUN_FAILED`
-reason_codes: `OPENCODE_RUN_FAILED`
+Tick result (WF90 `309090`): `WORK_EXECUTED_STOP` / `STOP:UNEXPECTED_FILE_CHANGES`
+reason_codes: `UNEXPECTED_FILE_CHANGES`, `PATH:reports/runtime/dev-queue/always-on/LOCAL_DEV_B_D-12__dispatch-envelope.json`
 
-OpenCode log evidence (`%USERPROFILE%\.local\share\opencode\log\opencode.log`):
-- steps 0–7: read/touch `tests/local-dev-dispatcher-service-v1/run.mjs`, then repeatedly read/touch **forbidden** `tools/serve-local-dev-autonomous-dispatcher-v1.mjs` and `tools/admit-micro-task-delta-v1.mjs`
-- at step>=7 / `2026-09-06T00:45:16.841Z`: repeated `AI_APICallError: guard: max_agent_turns (8) exceeded`
-- no in-scope edit persisted; `tests/local-dev-dispatcher-service-v1/run.mjs` unchanged vs HEAD
-- no `executor-pass: LOCAL_DEV_B_D-9301-B` / `executor-stop: LOCAL_DEV_B_D-9301-B` on `origin/main` (OpenCode-fail path returns before git persistence)
+Root cause (deterministic, recurs for any new test with a new fake claim id):
+`performTick` persists the claim envelope unconditionally (the injected-deps guard only covers the receipts write), so every executor run of the focused suite that adds a new performTick-based test writes a NEW fake envelope file into the real queue dir; the executor's post-run classification then fail-closes on that out-of-scope new file.
+Evidence trail: S11 created `LOCAL_DEV_B_D-11__dispatch-envelope.json` @ 02:17:18Z (E's suite run); S12 created `LOCAL_DEV_B_D-12__dispatch-envelope.json` @ ~06:22Z (F's suite run).
+
+Required future fix (single authorized task, out of scope here): in `tools/serve-local-dev-autonomous-dispatcher-v1.mjs`, skip the envelope write under injected deps (same guard as receipts), or make tests use an injectable queue out-dir. No production change was made in this campaign.
+
+## Recovery actions taken (E4/F law)
+
+1. Backup: `%TEMP%\control-plane-D9301F-crash-residue.patch` (exact tracked partial diff, proven F provenance via opencode log edit/touch events on the allowed path only).
+2. Proven F residue (S12 append to `tests/local-dev-dispatcher-service-v1/run.mjs`) restored to HEAD in this commit as crash-recovery evidence — NOT labeled executor-pass; suite 12/12 green at commit time.
+3. No reset/stash/clean/rebase/force-push; all pre-existing untracked preserved (incl. historical fake envelope artifacts D-1/D-9/D-11/D-12 as runtime evidence).
 
 ## Campaign decision
 
-**STOP THE 3-SESSION CAMPAIGN** after #51 RETRY1 STOP.
-Do **not** author #52 chain or #53 checkpoint without new operator authorization.
-Hard walls honored: no manual `/v1/tick`, no n8n/WF mutation, no D-0025 change, no remote providers, no Qwen launcher modification, no duplicate Qwen start.
+**STOP THE CAMPAIGN** after TASK1 (F real STOP). TASK2 (#52 chain) and TASK3 (#53 checkpoint) not started — running them would deterministically re-trip the same executor fail-close.
+Hard walls honored: no manual `/v1/tick`, no n8n/WF/Tailscale/Telegram mutation, no remote providers, no OpenAI API/BYOK, D-0025 disabled, no duplicate Qwen launch.
 
 ---
 
