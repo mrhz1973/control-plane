@@ -196,9 +196,11 @@ export { resolveOpenCodeSpawnTarget };
 export function buildTaskMessage(envelope) {
   const lines = [
     `LOCAL_DEV task ${envelope.task_ref}`,
-    `TASK DELTA: ${envelope.task_delta}`,
     `Allowed paths: ${envelope.allowed_paths.join(", ")}`,
     `Allowed commands: ${envelope.allowed_commands.join("; ")}`,
+    "READ SCOPE == allowed_paths. READ AND MODIFY ONLY allowed_paths.",
+    "Do not read, grep, search or inspect any other repository paths, including tools/**, docs/** or configs/**, unless explicitly listed in allowed_paths. No repository exploration.",
+    "Implementation source inspection is not required when acceptance can be satisfied from the allowed target file itself.",
   ];
   const kind = envelope.task_kind === "CREATE" ||
     /Execution mode: CREATE\b/.test(String(envelope.task_delta || ""))
@@ -210,12 +212,13 @@ export function buildTaskMessage(envelope) {
   }
   lines.push(
     "Tool policy: use only the permitted file edit tool for file changes and only the allowed commands above; no shell existence probes; no subagents; no delegation.",
-    "Stop exploring as soon as every acceptance criterion is satisfied; do not spend turns on further verification.",
+    "Make the smallest required edit. Run only the allowed focused test. Stop immediately once acceptance is green; do not spend turns on further verification.",
   );
   if (envelope.test_command) lines.push(`Test command: ${envelope.test_command}`);
   lines.push(
     `Bounds: timebox ${envelope.timebox_seconds}s, max turns ${envelope.max_agent_turns}, max test cycles ${envelope.max_test_cycles}.`,
     `Stop at the first uncorrectable blocker. No destructive git commands.`,
+    `TASK DELTA: ${envelope.task_delta}`,
   );
   const text = lines.join("\n");
   return text.length > 4000 ? text.slice(0, 4000) : text;

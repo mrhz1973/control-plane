@@ -308,6 +308,25 @@ await test("buildTaskMessage is bounded and structural", () => {
   assert.ok(msg.length <= 4000);
 });
 
+await test("buildTaskMessage preserves read scope and convergence instructions even when task text is truncated", () => {
+  const target = "tests/local-dev-dispatcher-service-v1/run.mjs";
+  for (const task_delta of ["Add one focused regression.", "x".repeat(5000)]) {
+    const msg = buildTaskMessage({ ...ENVELOPE, task_delta, allowed_paths: [target] });
+    assert.ok(msg.length <= 4000);
+    assert.ok(msg.includes(`Allowed paths: ${target}`));
+    assert.match(msg, /READ SCOPE == allowed_paths\. READ AND MODIFY ONLY allowed_paths\./);
+    assert.match(msg, /Do not read, grep, search or inspect any other repository paths/);
+    assert.match(msg, /including tools\/\*\*, docs\/\*\* or configs\/\*\*, unless explicitly listed in allowed_paths/);
+    assert.match(msg, /No repository exploration\./);
+    assert.match(msg, /Implementation source inspection is not required when acceptance can be satisfied from the allowed target file itself/);
+    assert.match(msg, /no subagents; no delegation/);
+    assert.match(msg, /Make the smallest required edit\. Run only the allowed focused test\./);
+    assert.match(msg, /Stop immediately once acceptance is green/);
+    assert.ok(msg.includes(`Test command: ${ENVELOPE.test_command}`));
+    assert.ok(msg.includes(`max turns ${ENVELOPE.max_agent_turns}`));
+  }
+});
+
 await test("releaseRouterIfStarted: not owned -> no release", async () => {
   const out = await releaseRouterIfStarted({ launch_performed: false }, { runPowerShell: async () => { throw new Error("must not run"); } });
   assert.deepEqual(out, { released: false, reason: "not_owned" });
