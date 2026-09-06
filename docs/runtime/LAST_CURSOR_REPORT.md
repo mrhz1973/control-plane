@@ -1,5 +1,52 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_FRESH_H_AND_TWO_TASK_CHAIN_FINAL_CLOSURE_V1` (issues #57+#55+#51+#52+#53, one session, BASE `5e93fbf`)
+**Classification:** `STOP — TASK2 D-9302-A real executor STOP after S15 authored; S4 incomplete tickDeps injection spuriously claimed D-9302-B during A's suite run. TASK1 D-9301-H PASS. TASK3 not started.`
+**Timestamp (local):** 2026-09-06 (~14:45, UTC+2)
+**BASE_HEAD:** `5e93fbf686776f4f5fc80fd123b17e266f48e162`
+**TASK1 QUEUE:** `485af75` · **TASK1 EXECUTOR:** `1fc0189` (`executor-pass: LOCAL_DEV_B_D-9301-H`) · **TASK1 CONTROLLER:** `b98c9ab` (`cursor-pass: V4_D9301H_AUTONOMOUS_REAL_E2E_PROOF_V1`)
+**TASK2 QUEUE:** `061c2be` (`cursor-pass: V4_AUTONOMOUS_MICRO_TASK_TWO_TASK_CHAIN_QUEUE_V1`)
+**CLOSURE HEAD:** final `cursor-stop: V4_FRESH_H_AND_TWO_TASK_CHAIN_FINAL_CLOSURE_V1` commit carrying this report + S15 crash-recovery residue
+**CLOSURE:** STOP — campaign halt after TASK2
+
+## TASK1 (#57/#55/#51 D-9301-H) — PASS
+
+Controller authored queue ONLY (`READY_D9301H.md`); S14 was ABSENT pre-queue and written ONLY by executor. Natural claim once; admission PASS; OpenCode once; remote `executor-pass: LOCAL_DEV_B_D-9301-H` (`1fc0189`) modifies only the allowed test file; suite 14/14; no fake injected envelope; real H envelope/receipt preserved. Controller proof `b98c9ab` pushed.
+
+## TASK2 (#52 D-9302-A/B) — STOP
+
+### What succeeded partially
+
+1. Precheck: S14 present; S15 and S16 ABSENT; controller did not add either.
+2. Queue-only authoring: `READY_D9302A.md` created_at `12:26:00Z`, `READY_D9302B.md` created_at `12:26:01Z` (exactly +1s); commit `061c2be` pushed; Qwen reused.
+3. Natural WF90 claimed `LOCAL_DEV_B_D-9302-A` exactly once @ `2026-09-06T12:25:41.012Z` (envelope base `061c2be`); admission PASS; OpenCode session `ses_f89516a95ffe9o0TAJ7ao9Xgdx` authored correct S15 via edit tool; suite reported 15/15 PASS inside the session.
+
+### Exact blocker
+
+No remote `executor-pass: LOCAL_DEV_B_D-9302-A` (origin still `061c2be`). A's worktree left with uncommitted S15 (+13 lines).
+
+Root cause (deterministic, harness): during A's allowed test command `node tests/local-dev-dispatcher-service-v1/run.mjs`, test **S4** calls `handleTickRequest` with `tickDeps: { verifyRepo: slowVerify }` ONLY. When `slowVerify` resolves with `{ ok: true, head: "a".repeat(40) }`, `performTick` continues with REAL `scanQueue` + REAL `runDispatchLoop` + REAL persistence (`realRuntimePersistence` is true because `runDispatchLoop`/`scanQueue`/`runExecutor` were not injected). That spuriously claimed the next live READY item `LOCAL_DEV_B_D-9302-B` at `12:28:27.237Z` with `dispatch_base_head=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` and wrote the real B envelope + receipt. OpenCode session patch after the suite run explicitly lists those two canonical files as changed. A's subsequent git-persistence then fail-closes (unexpected out-of-scope new file / dirty chain state) — no executor-pass A. B was consumed as a harness artifact claim (not a valid natural successor tick); no S16 authored; no executor-pass B.
+
+Required future fix (out of scope here): S4 must inject scanQueue + runDispatchLoop + runExecutor (or force verifyRepo to never reach claim), AND/OR widen `realRuntimePersistence` to treat any injected `verifyRepo`/`tickDeps` as non-persistent. Do not re-queue A/B without that fix.
+
+### Recovery actions
+
+1. Backup: `%TEMP%\control-plane-D9302A-crash-residue.patch` (proven A S15 provenance via OpenCode session edit).
+2. S15 residue restored to HEAD in this stop commit as crash-recovery evidence — NOT labeled executor-pass.
+3. All pre-existing untracked preserved (incl. real A/B envelopes + receipts as runtime evidence of the spurious B claim). No clean/stash/reset/rebase/force-push.
+
+## TASK3 (#53) — NOT STARTED
+
+## Hard walls honored
+
+No manual `/v1/tick`; no n8n/WF/Tailscale/Telegram mutation; no OpenAI API/BYOK; Qwen reused; D-0025 disabled; controller did not implement S14/S15/S16 (S14 by H executor; S15 by A executor then crash-residue; S16 never written).
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_FRESH_H_AND_TWO_TASK_CHAIN_FINAL_CLOSURE_V1` / TASK1 (#57+#55+#51 D-9301-H)
 **Classification:** `PASS — D-9301-H natural autonomous real E2E proof LIVE. Executor authored S14 exclusively; controller authored queue only.`
 **Timestamp (local):** 2026-09-06 (~14:25, UTC+2)

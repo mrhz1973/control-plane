@@ -333,5 +333,18 @@ await test("S14 executor STOP normalization preserves bounded failure evidence w
   assert.ok(!serialized.includes("S14_SECRET_STDERR"));
 });
 
+await test("S15 null executor result normalizes fail-closed without throwing", () => {
+  const result = classificationFromExecutorResult(null, "S15_REQ");
+  assert.equal(result.classification, "WORK_EXECUTED_STOP");
+  assert.equal(result.execution_performed, true);
+  assert.equal(result.ok, false);
+  assert.equal(result.request_id, "S15_REQ");
+  assert.equal(result.task_ref, null);
+  assert.equal(result.executor_classification, null);
+  assert.equal(result.human_gate_required, false);
+  assert.ok(Array.isArray(result.reason_codes));
+  assert.equal(result.reason_codes.length, 0);
+});
+
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 if (failures.length) process.exit(1);
