@@ -5,7 +5,7 @@
 | Campo | Valore |
 |---|---|
 | **FOUNDATION** | v3.5 — LiteLLM primary remote gateway — CANONICAL |
-| **MICRO_TASK_DELTA LAW** | `docs/foundation/MICRO_TASK_DELTA_OPERATING_LAW.md` — **CANONICAL** (#42) · **ADMISSION+SAFE-FF LIVE** (#48/#50) · **REAL E2E #51 STOP** — queue `ce416c9` + natural WF90 `308298` claimed `LOCAL_DEV_B_D-9301-A` once then `WORK_EXECUTED_STOP:QWEN_SESSION_NOT_READY` (`API_UNREACHABLE` :8080); later ticks `IDLE_CLEAN`; no `executor-pass`; **3-session campaign STOPPED** |
+| **MICRO_TASK_DELTA LAW** | `docs/foundation/MICRO_TASK_DELTA_OPERATING_LAW.md` — **CANONICAL** (#42) · **ADMISSION+SAFE-FF LIVE** (#48/#50) · **REAL E2E #51 RETRY1 STOP** — Qwen READY (operator-authorized launcher); queue `c072a8e` + natural WF90 `308364` claimed `LOCAL_DEV_B_D-9301-B` then `WORK_EXECUTED_STOP:OPENCODE_RUN_FAILED` (guard: max_agent_turns (8) exceeded after out-of-scope tools/** reads); no executor-pass; later ticks idle; **3-session campaign STOPPED** |
 | **WORKSTREAM ATTIVO** | `V4_ADDITIVE_EXECUTION_RUNTIME` |
 | **ACTIVE WORK** | WF40 V4 lanes **APPLIED LIVE (83 nodes)** · Windows execution endpoint **PERSISTED** · production PostgreSQL 16.15 **LIVE** · six-profile Qwen **Control Plane eligibility set PASS on 9-profile router superset** · AGG runtime role correction **PASS** (FAST_AGENT unqualified) · workstation-only OpenCode 64K profile **LIVE-VERIFIED / PASS** · workstation-only OpenCode 24K DEV profile **LIVE-VERIFIED / PASS (placement remediation)** · **LOCAL_DEV_EXECUTOR FIRST COMPLETE REAL QWEN EXECUTION = PASS** · no ACTIVE authorization |
 | **BLOCCO ATTIVO** | `V4_LOCAL_DEV_N8N_ALWAYS_ON_LIVE_FAST_TRACK_V1` — **LIVE / PASS (2026-09-05)** · GPT_WEB authoring override esercitato · see **N8N LOCAL DEV ALWAYS-ON** row |

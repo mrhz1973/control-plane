@@ -1,4 +1,50 @@
-﻿# LAST CURSOR REPORT
+# LAST CURSOR REPORT
+
+**BLOCK-ID:** `V4_AUTONOMOUS_MICRO_TASK_REAL_E2E_PROOF_A_V1` (micro-task delta, issue #51 SESSION 1/3 RETRY1 after operator-authorized Qwen start, base queue `c072a8e`)
+**Classification:** `STOP — NATURAL_TICK_SELECTED_BUT_EXECUTOR_STOP:OPENCODE_RUN_FAILED` (root cause: generation-guard `max_agent_turns (8) exceeded` after OpenCode spent turns reading out-of-scope `tools/**`; no target edit persisted; no `executor-pass`/`executor-stop` commit). **3-SESSION CAMPAIGN STOPPED** (do not run #52/#53).
+**Timestamp (local):** 2026-09-06 (~03:00, UTC+2)
+**BASE_HEAD / QUEUE_HEAD:** `c072a8e0044b7371a825b9bd18480c19f023f8f6` (`cursor-pass: V4_AUTONOMOUS_MICRO_TASK_REAL_E2E_PROOF_A_QUEUE_RETRY1_V1`)
+**CLOSURE HEAD:** final `cursor-stop: V4_AUTONOMOUS_MICRO_TASK_REAL_E2E_PROOF_A_V1` commit carrying this report
+**CLOSURE:** STOP — campaign halt after RETRY1
+
+## Qwen pre-campaign start (operator-authorized)
+
+1. `:8080` was down → launched existing `Start-Qwen-MultiModel-16K.ps1` (no arg reconstruct; no duplicate when already up).
+2. Post-start: HTTP 200 `/v1/models`; required profile `qwen38-opus-q3-opencode-24k` exposed; dispatcher PID `6588` still listening on `18793`.
+3. Qwen left running for natural ticks (still READY after RETRY1 STOP).
+
+## What succeeded on RETRY1
+
+1. Queue item `READY_D9301B.md` / id `D-9301-B` authored (A already receipted); offline parse/admit/bridge OK; selective commit/push `c072a8e`.
+2. Natural WF90 exec `308364` @ `2026-09-06T00:40:41Z` → `2026-09-06T00:46:21Z` (~340s) — not manually POSTed.
+3. Claim receipt: `LOCAL_DEV_B_D-9301-B` @ `2026-09-06T00:40:40.448Z` (source_ref @ `c072a8e`).
+4. Envelope emitted (`profile_id=qwen38-opus-q3-opencode-24k`, timebox 600s, max_agent_turns 8); admission admitted; `execution_performed=true`.
+5. OpenCode session `ses_f8bd6dda8ffeC04fxkXGtDa6cF` / run `31f7cc61` started against local Qwen via DEV guard.
+6. Later WF90 `308375`/`308386`/`308397` completed in ~1–2s (IDLE/BUSY path; no second execution of D-9301-B).
+
+## Exact blocker
+
+Tick result classification: `WORK_EXECUTED_STOP`
+Executor classification: `STOP:OPENCODE_RUN_FAILED`
+reason_codes: `OPENCODE_RUN_FAILED`
+
+OpenCode log evidence (`%USERPROFILE%\.local\share\opencode\log\opencode.log`):
+- steps 0–7: read/touch `tests/local-dev-dispatcher-service-v1/run.mjs`, then repeatedly read/touch **forbidden** `tools/serve-local-dev-autonomous-dispatcher-v1.mjs` and `tools/admit-micro-task-delta-v1.mjs`
+- at step>=7 / `2026-09-06T00:45:16.841Z`: repeated `AI_APICallError: guard: max_agent_turns (8) exceeded`
+- no in-scope edit persisted; `tests/local-dev-dispatcher-service-v1/run.mjs` unchanged vs HEAD
+- no `executor-pass: LOCAL_DEV_B_D-9301-B` / `executor-stop: LOCAL_DEV_B_D-9301-B` on `origin/main` (OpenCode-fail path returns before git persistence)
+
+## Campaign decision
+
+**STOP THE 3-SESSION CAMPAIGN** after #51 RETRY1 STOP.
+Do **not** author #52 chain or #53 checkpoint without new operator authorization.
+Hard walls honored: no manual `/v1/tick`, no n8n/WF mutation, no D-0025 change, no remote providers, no Qwen launcher modification, no duplicate Qwen start.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
 
 **BLOCK-ID:** `V4_AUTONOMOUS_MICRO_TASK_REAL_E2E_PROOF_A_V1` (micro-task delta, issue #51 SESSION 1/3, base `06ae515`)
 **Classification:** `STOP — NATURAL_TICK_SELECTED_BUT_EXECUTOR_STOP:QWEN_SESSION_NOT_READY (API_UNREACHABLE on :8080). Queue authored+pushed; WF90 natural tick claimed LOCAL_DEV_B_D-9301-A once; admission accepted (execution_performed=true); no executor-pass commit; subsequent ticks IDLE_CLEAN (no second execution). 3-SESSION CAMPAIGN STOPPED.`
