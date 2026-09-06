@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_NEW_VPS_N8N233_DISABLE_BEFORE_START_AND_LOCALHOST_REPLICA_RETRY_V1` / #64 (parent #60, predecessor #63 STOP)
+**Classification:** `PASS — NEW localhost replica isolated via n8n 2.33.3 unpublish:workflow --all · zero restored activations · OLD LIVE unchanged · NO CUTOVER`
+**Timestamp (UTC):** 2026-09-06T20:44:02Z
+**BASE_HEAD:** `24f44024ba8c91ae6d1de4e62841b801bc30c7a0`
+**FINAL HEAD:** this `cursor-pass: V4_NEW_VPS_N8N233_DISABLE_BEFORE_START_AND_LOCALHOST_REPLICA_RETRY_V1` commit
+**Report:** `reports/architecture/v4_new_vps_n8n233_disable_before_start_and_localhost_replica_retry_v1.md`
+
+n8n 2.33.3 `getAllActiveIds()` uses `activeVersionId IS NOT NULL AND isArchived=false`, which is why #63 `active=false` still activated published workflows. Official CLI `unpublish:workflow --all` was applied on NEW **before** n8n start after rebuilding PostgreSQL from dump sha256 `188248b6…91ccc46` (executions=10256, no dual-fire residue). Pre-start execution-capable=0. Loopback n8n health 200; this-start logs: `0 published workflows`, no `Start Active Workflows` / `Activated workflow`; 90s execution count unchanged. Encryption prefix `ff09ea79eebe` len 32; credentials 3/3 decrypt (types only). LiteLLM unpublished on `root_default`, no inference. OLD IDs/StartedAt/health 200 unchanged. Tailscale NEW still Logged out. Next: remaining #60 Tailscale/hostname/DNS/cutover stay GATE.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_NEW_VPS_INVENTORY_PROVISION_BASELINE_V1` / #62 (parent #60)
 **Classification:** `PASS — OLD inventory grounded · NEW baseline provisioned · NO CUTOVER · Tailscale join on NEW = GATE`
 **Timestamp (UTC):** 2026-09-06T19:48:20Z
