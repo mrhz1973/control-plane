@@ -300,13 +300,17 @@ export async function performTick(body, deps = {}) {
   const claim = loop.claims[0];
 
   // 3. Persist claim receipts + envelope (same layout as the proven loop).
+  // Real runtime (no injected deps) persists BOTH the claim envelope and the
+  // receipts; injected-deps tests must persist NEITHER canonical artifact
+  // (V4_INJECTED_DISPATCHER_ENVELOPE_PERSISTENCE_ISOLATION_V1). One explicit
+  // boolean governs both writes so the two can never diverge again.
+  const realRuntimePersistence = !deps.runDispatchLoop && !deps.scanQueue && !deps.runExecutor;
   try {
-    const outDir = resolve(CANONICAL_REPO_PATH, QUEUE_DIR);
-    if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
-    const safe = claim.task_ref.replace(/[^A-Za-z0-9_-]/g, "_");
-    writeFileSync(join(outDir, `${safe}__dispatch-envelope.json`), JSON.stringify(claim.envelope, null, 2), "utf8");
-    // In tests (deps injected) the canonical receipts file must NOT be touched.
-    if (!deps.runDispatchLoop && !deps.scanQueue && !deps.runExecutor) {
+    if (realRuntimePersistence) {
+      const outDir = resolve(CANONICAL_REPO_PATH, QUEUE_DIR);
+      if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
+      const safe = claim.task_ref.replace(/[^A-Za-z0-9_-]/g, "_");
+      writeFileSync(join(outDir, `${safe}__dispatch-envelope.json`), JSON.stringify(claim.envelope, null, 2), "utf8");
       writeFileSync(resolve(CANONICAL_REPO_PATH, RECEIPTS_PATH), JSON.stringify(receipts.concat(loop.claims.map((c) => c.receipt)), null, 2), "utf8");
     }
   } catch (err) {

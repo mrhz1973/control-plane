@@ -7,6 +7,8 @@
  * Run: node tests/local-dev-dispatcher-service-v1/run.mjs
  */
 import assert from "node:assert/strict";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   RESULT_SCHEMA,
   REQUEST_SCHEMA,
@@ -22,6 +24,11 @@ import {
 
 let passed = 0;
 const failures = [];
+
+/** Canonical repo root as seen by this checkout (test file lives at tests/<suite>/). */
+function CANONICAL_REPO_PATH_TEST() {
+  return resolve(process.cwd());
+}
 async function test(name, fn) {
   try {
     await fn();
@@ -256,6 +263,50 @@ await test("S12 advanced-HEAD repo verification reaches dispatch-loop options; t
   assert.equal(result.task_ref, taskRef);
   assert.equal(execRefs.length, 1);
   assert.equal(execRefs[0], taskRef);
+});
+
+await test("S13 injected performTick persistence isolation: no canonical queue artifacts, semantics unchanged; real mode persistence-enabled", async () => {
+  // Snapshot the canonical queue dir + receipts BEFORE (no artifact may be
+  // created/deleted by this regression itself).
+  const queueDir = resolve(CANONICAL_REPO_PATH_TEST(), "reports/runtime/dev-queue/always-on");
+  const before = existsSync(queueDir) ? readdirSync(queueDir).sort().join(",") : "";
+  const receiptsBefore = existsSync(resolve(CANONICAL_REPO_PATH_TEST(), "reports/runtime/dev-queue/always-on/receipts.json"))
+    ? readFileSync(resolve(CANONICAL_REPO_PATH_TEST(), "reports/runtime/dev-queue/always-on/receipts.json"), "utf8")
+    : null;
+
+  const advancedHead = "b".repeat(40);
+  const taskRef = "LOCAL_DEV_B_D-13"; // fresh fake id, never used by S11/S12
+  let optionsSeen = null;
+  const execRefs = [];
+  const result = await performTick(
+    { schema_version: REQUEST_SCHEMA, request_id: "r13", source: "n8n" },
+    {
+      verifyRepo: async () => ({ ok: true, head: advancedHead, reason_codes: [] }),
+      scanQueue: () => [{ ok: true, item: { id: "D-13", state: "READY_FOR_PLANNING" }, markdown: "m13", source: "13.md", backlog_path: "q/13.md" }],
+      runDispatchLoop: (_e, _r, options) => {
+        optionsSeen = options;
+        return { ok: true, claims: [{ task_ref: taskRef, source_file: "13.md", envelope: { task_ref: taskRef, head: advancedHead, commit: advancedHead }, receipt: { task_ref: taskRef } }], skipped: [] };
+      },
+      runExecutor: async (envelope) => { execRefs.push(envelope.task_ref); return { status: "PASS", classification: "PASS", task_ref: envelope.task_ref, reason_codes: ["PASS"] }; },
+    },
+  );
+  // Classification semantics unchanged (same contract as S11/S12).
+  assert.equal(result.classification, "WORK_EXECUTED_PASS");
+  assert.equal(result.execution_performed, true);
+  assert.equal(optionsSeen.head, advancedHead);
+  assert.equal(optionsSeen.commit, advancedHead);
+  assert.equal(result.task_ref, taskRef);
+  assert.equal(execRefs.length, 1);
+  assert.equal(execRefs[0], taskRef);
+
+  // Injected-deps mode persists NEITHER the fake envelope NOR receipts.
+  const after = existsSync(queueDir) ? readdirSync(queueDir).sort().join(",") : "";
+  assert.equal(after, before, "canonical queue dir unchanged by injected performTick");
+  assert.ok(!after.split(",").includes("LOCAL_DEV_B_D-13__dispatch-envelope.json"), "no fake D-13 envelope persisted");
+  const receiptsAfter = existsSync(resolve(CANONICAL_REPO_PATH_TEST(), "reports/runtime/dev-queue/always-on/receipts.json"))
+    ? readFileSync(resolve(CANONICAL_REPO_PATH_TEST(), "reports/runtime/dev-queue/always-on/receipts.json"), "utf8")
+    : null;
+  assert.equal(receiptsAfter, receiptsBefore, "canonical receipts unchanged by injected performTick");
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
