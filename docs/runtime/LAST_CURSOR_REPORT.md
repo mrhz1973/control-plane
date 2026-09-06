@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_REPLACEMENT_8GB_VPS_ISOLATED_CORE_REPLICA_V1` / #67 (parent #60)
+**Classification:** `PASS — REPLACEMENT_8GB_VPS_ISOLATED_CORE_REPLICA · fresh OLD dump → NEW PG16.15/n8n2.33.3/LiteLLM1.98.0 · unpublish:all before start · loopback-only · OLD LIVE unchanged · NO CUTOVER`
+**Timestamp (UTC):** 2026-09-06T22:10:04Z
+**BASE_HEAD:** `477c37665e6c56a541015f9637bf17ed388e2abd`
+**FINAL HEAD:** this `cursor-pass: V4_REPLACEMENT_8GB_VPS_ISOLATED_CORE_REPLICA_V1` commit
+**Report:** `reports/architecture/v4_replacement_8gb_vps_isolated_core_replica_v1.md`
+
+Fresh OLD dump sha256 `606687a7…17f33953` (executions=10223/max=311171) restored on replacement NEW `31.70.139.73`. Official `n8n unpublish:workflow --all` before first server start → execution-capable=0. Loopback n8n health 200; this-start logs zero activation; 90s executions unchanged; credentials 3/3 decrypt (types only); LiteLLM unpublished (`4000/tcp:null`) liveliness 200 no inference. Tailscale NEW Logged out. OLD IDs/StartedAt/health 200 unchanged. Next: Hermes/browser on NEW; Tailscale/DNS/cutover remain GATE.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_REPLACEMENT_8GB_VPS_BASELINE_PROVISIONING_V1` / #67 (parent #60)
 **Classification:** `PASS — replacement NEW 8GB baseline provisioned · Docker/Node22/Tailscale(NeedsLogin)/4GiB swap · zero app containers · OLD LIVE unchanged · NO CUTOVER`
 **Timestamp (UTC):** 2026-09-06T21:50:37Z
