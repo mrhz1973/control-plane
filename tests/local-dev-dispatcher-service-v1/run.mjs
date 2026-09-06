@@ -20,6 +20,7 @@ import {
   performTick,
   handleTickRequest,
   verifyRepoState,
+  shouldPersistRuntimeArtifacts,
 } from "../../tools/serve-local-dev-autonomous-dispatcher-v1.mjs";
 
 let passed = 0;
@@ -91,10 +92,21 @@ await test("S4 single-flight: second tick while executing -> BUSY, never queued"
   const tryAcquire = () => { if (locked) { busySeen = true; return false; } locked = true; return true; };
   const release = () => { locked = false; };
   // First request acquires, then while "executing" (verifyRepo pending), second arrives.
+  // Fully inject scan/dispatch/executor so S4 cannot touch the live canonical queue
+  // (V4_PARTIAL_INJECTED_TICKDEPS_REAL_RUNTIME_ISOLATION_V1).
   let releaseRepo = null;
+  let scanCalls = 0;
+  let dispatchCalls = 0;
+  let executorCalls = 0;
   const slowVerify = () => new Promise((r) => { releaseRepo = () => r({ ok: true, head: "a".repeat(40), reason_codes: [] }); });
+  const tickDeps = {
+    verifyRepo: slowVerify,
+    scanQueue: () => { scanCalls += 1; return []; },
+    runDispatchLoop: () => { dispatchCalls += 1; return { ok: true, claims: [], skipped: [], stop_reason: "QUEUE_DRAINED" }; },
+    runExecutor: async () => { executorCalls += 1; throw new Error("MUST NOT EXECUTE DURING S4 SINGLE-FLIGHT"); },
+  };
   const firstRes = mockRes();
-  const first = handleTickRequest(mockReq("POST", TICK_PATH, JSON.stringify({ schema_version: REQUEST_SCHEMA, request_id: "r1", source: "n8n" })), firstRes, { tryAcquireLock: tryAcquire, releaseLock: release, tickDeps: { verifyRepo: slowVerify } });
+  const first = handleTickRequest(mockReq("POST", TICK_PATH, JSON.stringify({ schema_version: REQUEST_SCHEMA, request_id: "r1", source: "n8n" })), firstRes, { tryAcquireLock: tryAcquire, releaseLock: release, tickDeps });
   await new Promise((r) => setTimeout(r, 20));
   const secondRes = mockRes();
   await handleTickRequest(mockReq("POST", TICK_PATH, JSON.stringify({ schema_version: REQUEST_SCHEMA, request_id: "r2", source: "n8n" })), secondRes, { tryAcquireLock: tryAcquire, releaseLock: release });
@@ -104,6 +116,11 @@ await test("S4 single-flight: second tick while executing -> BUSY, never queued"
   releaseRepo();
   await first;
   assert.equal(locked, false, "lock released after tick");
+  assert.equal(JSON.parse(firstRes.body).classification, "IDLE_CLEAN");
+  assert.equal(executorCalls, 0, "executor never called");
+  assert.ok(scanCalls >= 1, "injected scanQueue used (not live queue)");
+  assert.ok(dispatchCalls >= 1, "injected runDispatchLoop used (zero claims)");
+  assert.equal(shouldPersistRuntimeArtifacts(tickDeps), false, "S4 tickDeps must disable canonical persistence");
 });
 
 await test("S5 IDLE_CLEAN: no eligible READY -> no execution, ok=true", async () => {
@@ -266,6 +283,14 @@ await test("S12 advanced-HEAD repo verification reaches dispatch-loop options; t
 });
 
 await test("S13 injected performTick persistence isolation: no canonical queue artifacts, semantics unchanged; real mode persistence-enabled", async () => {
+  // Pure persistence-gate helper: empty deps enabled; EACH injectable dep disables.
+  assert.equal(shouldPersistRuntimeArtifacts({}), true);
+  assert.equal(shouldPersistRuntimeArtifacts({ verifyRepo: async () => ({}) }), false);
+  assert.equal(shouldPersistRuntimeArtifacts({ scanQueue: () => [] }), false);
+  assert.equal(shouldPersistRuntimeArtifacts({ runDispatchLoop: () => ({}) }), false);
+  assert.equal(shouldPersistRuntimeArtifacts({ runExecutor: async () => ({}) }), false);
+  assert.equal(shouldPersistRuntimeArtifacts({ nowIso: () => "t" }), false);
+
   // Snapshot the canonical queue dir + receipts BEFORE (no artifact may be
   // created/deleted by this regression itself).
   const queueDir = resolve(CANONICAL_REPO_PATH_TEST(), "reports/runtime/dev-queue/always-on");
@@ -278,17 +303,19 @@ await test("S13 injected performTick persistence isolation: no canonical queue a
   const taskRef = "LOCAL_DEV_B_D-13"; // fresh fake id, never used by S11/S12
   let optionsSeen = null;
   const execRefs = [];
+  const injected = {
+    verifyRepo: async () => ({ ok: true, head: advancedHead, reason_codes: [] }),
+    scanQueue: () => [{ ok: true, item: { id: "D-13", state: "READY_FOR_PLANNING" }, markdown: "m13", source: "13.md", backlog_path: "q/13.md" }],
+    runDispatchLoop: (_e, _r, options) => {
+      optionsSeen = options;
+      return { ok: true, claims: [{ task_ref: taskRef, source_file: "13.md", envelope: { task_ref: taskRef, head: advancedHead, commit: advancedHead }, receipt: { task_ref: taskRef } }], skipped: [] };
+    },
+    runExecutor: async (envelope) => { execRefs.push(envelope.task_ref); return { status: "PASS", classification: "PASS", task_ref: envelope.task_ref, reason_codes: ["PASS"] }; },
+  };
+  assert.equal(shouldPersistRuntimeArtifacts(injected), false);
   const result = await performTick(
     { schema_version: REQUEST_SCHEMA, request_id: "r13", source: "n8n" },
-    {
-      verifyRepo: async () => ({ ok: true, head: advancedHead, reason_codes: [] }),
-      scanQueue: () => [{ ok: true, item: { id: "D-13", state: "READY_FOR_PLANNING" }, markdown: "m13", source: "13.md", backlog_path: "q/13.md" }],
-      runDispatchLoop: (_e, _r, options) => {
-        optionsSeen = options;
-        return { ok: true, claims: [{ task_ref: taskRef, source_file: "13.md", envelope: { task_ref: taskRef, head: advancedHead, commit: advancedHead }, receipt: { task_ref: taskRef } }], skipped: [] };
-      },
-      runExecutor: async (envelope) => { execRefs.push(envelope.task_ref); return { status: "PASS", classification: "PASS", task_ref: envelope.task_ref, reason_codes: ["PASS"] }; },
-    },
+    injected,
   );
   // Classification semantics unchanged (same contract as S11/S12).
   assert.equal(result.classification, "WORK_EXECUTED_PASS");

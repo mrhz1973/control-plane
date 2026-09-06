@@ -232,6 +232,21 @@ export function classificationFromExecutorResult(executorResult, request_id) {
 }
 
 /**
+ * TRUE only when NONE of the supported performTick dependencies were injected.
+ * Any supplied injectable dep disables BOTH claim-envelope and receipts writes
+ * (V4_PARTIAL_INJECTED_TICKDEPS_REAL_RUNTIME_ISOLATION_V1 — closes S4 verifyRepo-only leakage).
+ */
+export function shouldPersistRuntimeArtifacts(deps = {}) {
+  return !(
+    deps.verifyRepo ||
+    deps.scanQueue ||
+    deps.runDispatchLoop ||
+    deps.runExecutor ||
+    deps.nowIso
+  );
+}
+
+/**
  * One bounded tick. deps are injectable for offline tests:
  * verifyRepo, scanQueue, runDispatchLoop, runExecutor, nowIso.
  * scanQueue returns [{ ok, item, markdown, source, backlog_path }].
@@ -300,11 +315,9 @@ export async function performTick(body, deps = {}) {
   const claim = loop.claims[0];
 
   // 3. Persist claim receipts + envelope (same layout as the proven loop).
-  // Real runtime (no injected deps) persists BOTH the claim envelope and the
-  // receipts; injected-deps tests must persist NEITHER canonical artifact
-  // (V4_INJECTED_DISPATCHER_ENVELOPE_PERSISTENCE_ISOLATION_V1). One explicit
-  // boolean governs both writes so the two can never diverge again.
-  const realRuntimePersistence = !deps.runDispatchLoop && !deps.scanQueue && !deps.runExecutor;
+  // Real runtime (zero injected deps) persists BOTH; ANY injected performTick
+  // dependency persists NEITHER (shouldPersistRuntimeArtifacts).
+  const realRuntimePersistence = shouldPersistRuntimeArtifacts(deps);
   try {
     if (realRuntimePersistence) {
       const outDir = resolve(CANONICAL_REPO_PATH, QUEUE_DIR);
