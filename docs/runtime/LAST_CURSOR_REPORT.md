@@ -1,5 +1,42 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_DISPATCHER_SAFE_FAST_FORWARD_SYNC_LIVE_APPLY_V1` (micro-task delta, issue #50 RETRY 1, base `e7b4793`)
+**Classification:** `PASS — LIVE_APPLIED: ControlPlane-V4-LocalDevDispatcher restarted; safe-FF dispatcher loaded (PID 6588); 127.0.0.1:18793 listening; GET /v1/tick → 405 POST_ONLY; on-disk source contains merge --ff-only origin/main; D-0025 enabled=false; no n8n/WF/Tailscale/Telegram/queue fabrication`
+**Timestamp (local):** 2026-09-06 (~02:00, UTC+2)
+**BASE_HEAD:** `e7b4793d41813a4f78a8d7d6f86fe6bf954e1b51`
+**PROVEN_CODE_COMMIT:** `ac3df9ae32b8b18ba3cb1d8dbf20539e38728550` (ancestor of HEAD; no drift on dispatcher/admission/ff-test paths)
+**CLOSURE HEAD:** final `cursor-pass: V4_DISPATCHER_SAFE_FAST_FORWARD_SYNC_LIVE_APPLY_V1` commit carrying this report
+**CLOSURE:** LIVE_APPLY (Scheduled Task restart only)
+
+## Precheck
+
+- branch main; HEAD == origin/main == `e7b4793`; tracked clean
+- `ac3df9a` is ancestor of HEAD; zero diff on dispatcher / ff-sync test / admit helper since proven
+- Task identity: node → `tools/serve-local-dev-autonomous-dispatcher-v1.mjs`
+- pre-restart listener PID `55972` (same identity)
+
+## Live mutation
+
+1. Stopped PID `55972` (identity-checked)
+2. `Start-ScheduledTask ControlPlane-V4-LocalDevDispatcher`
+3. New PID `6588` start `2026-09-06 02:00:09` (task LastRun `02:00:08`, LastTaskResult `0`)
+
+## Post-apply proof
+
+| # | Check | Result |
+|---|---|---|
+| 1–2 | restarted / new PID after restart | PID 6588 ≠ 55972; start 02:00:09 |
+| 3 | listening | 127.0.0.1:18793 LISTENING 6588 |
+| 4 | GET `/v1/tick` | 405 + `POST_ONLY` |
+| 5 | safe-FF source loaded | cmdline → canonical mjs; `merge "--ff-only" "origin/main"` present; `FAST_FORWARD_SYNCED` present |
+| 6–7 | no fabricated task; natural observe | receipts mtime unchanged since 2026-09-05 |
+| 8 | D-0025 | `enabled=false` |
+| 9 | no n8n mutation | workflows dirty=0 |
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_DISPATCHER_SAFE_FAST_FORWARD_SYNC_LIVE_APPLY_V1` (micro-task delta, issue #50, base `ac3df9a`)
 **Classification:** `STOP — PRECHECK_BASE_HEAD_DRIFT: required HEAD == origin/main == BASE_HEAD ac3df9ae32b8b18ba3cb1d8dbf20539e38728550; observed HEAD == origin/main == 2623aad75dda3cc15efb59588161c3380a955eab (frontier residual commit after #49). No Scheduled Task restart performed. No n8n/WF/Tailscale/Telegram mutation.`
 **Timestamp (local):** 2026-09-06 (~01:53, UTC+2)
