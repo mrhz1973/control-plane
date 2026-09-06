@@ -1,5 +1,41 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_FULL_INJECTED_ISOLATION_AND_CD_CHAIN_FINAL_CLOSURE_V1` / #53 FINAL CHECKPOINT
+**Classification:** `PASS — AUTOMATED_MICRO_TASK_CHAIN=LIVE_PROVEN · LOCAL_DEV_ONLY=YES · PRODUCTION_MODEL_EXECUTION_AUTHORIZED=NO · D0025_ENABLED=false`
+**Timestamp (local):** 2026-09-06 (~15:25, UTC+2)
+**BASE_HEAD:** `9a244d3b2ceaeedfa47f15ca7fdd54a5cbaf4b16`
+**FINAL HEAD:** this `cursor-pass: V4_AUTOMATED_MICRO_TASK_UNATTENDED_CHAIN_CHECKPOINT_V1` commit
+**BUGBOT_REVIEW:** CLEAN (Bugbot found no bugs; natural-language review of #58 isolation + S4/S13/S16/S17 surface)
+
+## Proven live chain
+
+| Stage | Evidence |
+|---|---|
+| #58 isolation | `44fc23b` `shouldPersistRuntimeArtifacts`; S4 fully injected; dispatcher reload 405 POST_ONLY |
+| D-9301-H | `1fc0189` natural `executor-pass`; S14 by executor only |
+| #52 C | `7621894` natural `executor-pass`; S16 only; claim once @ 13:10:40Z |
+| #52 D | `963a40e` later natural `executor-pass`; S17 only; claim once @ 13:15:40Z; `dispatch_base_head=7621894` (self-FF); no controller sync C→D |
+| CD proof | `6f617b4` |
+
+## Checkpoint suites (once)
+
+dispatcher-service 17/17 · executor-live-runner 43/43 · safe-ff-sync 9/9 · admission-parity 11/11 · queue-selector 6/6 · dispatch-loop 5/5 · `git diff --check` clean.
+
+## Truth flags
+
+- AUTOMATED_MICRO_TASK_CHAIN=LIVE_PROVEN
+- LOCAL_DEV_ONLY=YES
+- PRODUCTION_MODEL_EXECUTION_AUTHORIZED=NO
+- D0025_ENABLED=false
+
+Hard walls: no manual tick; no n8n/WF/Tailscale/Telegram mutation; no OpenAI/BYOK; Qwen local only; historical A/B envelopes+receipts+S15 residue preserved; zero test-to-live leakage after #58.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_FULL_INJECTED_ISOLATION_AND_CD_CHAIN_FINAL_CLOSURE_V1` / TASK1+#52 C/D
 **Classification:** `PASS — #58 isolation LIVE + #52 C/D two-task unattended chain LIVE_PROVEN (natural WF90; safe-FF C→D).`
 **Timestamp (local):** 2026-09-06 (~15:20, UTC+2)
