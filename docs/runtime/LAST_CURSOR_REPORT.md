@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_REPLACEMENT_8GB_FULL_SERVICE_PARITY_CENSUS_V1` / #68 (parent #67 / #60)
+**Classification:** `PASS — READ-ONLY full OLD↔NEW service parity census · OLD_DECOMMISSION_ELIGIBLE=NO · no mutation/copy/cutover`
+**Timestamp (UTC):** 2026-09-06T23:41:00Z
+**BASE_HEAD:** `bc288f64a033418d748cefb430beb287b080c38b`
+**FINAL HEAD:** this `cursor-pass: V4_REPLACEMENT_8GB_FULL_SERVICE_PARITY_CENSUS_V1` commit
+**Report:** `reports/architecture/v4_replacement_8gb_full_service_parity_census_v1.md`
+
+34 components: MIGRATED_VALIDATED=9 · PRESENT_NOT_VALIDATED=5 · MISSING=17 · OBSOLETE_NEEDS_HUMAN_DECISION=3. Core n8n/Postgres/LiteLLM + Hermes non-auth browser stack are the migrated slice; entire GOI/Tailscale/nginx/GIS/Nav/D-Flight stack + `n8n-compose.service` boot unit remain MISSING on NEW `31.70.139.73`. MagicDNS hostname collision (`ubuntu`) blocks Tailscale join. Next: execute #68 migrate backlog from MISSING dependency order (no cutover yet).
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_REPLACEMENT_8GB_VPS_HERMES_BROWSER_RUNTIME_DEPLOYMENT_V1` / #67 (parent #60)
 **Classification:** `PASS — REPLACEMENT_8GB_VPS_HERMES_BROWSER_RUNTIME_DEPLOYMENT · Hermes 0.21.0 + fresh Chromium CDP/Xvfb/x11vnc/noVNC loopback-only · no ChatGPT login · core replica isolated · OLD LIVE unchanged · NO CUTOVER`
 **Timestamp (UTC):** 2026-09-06T22:25:30Z
