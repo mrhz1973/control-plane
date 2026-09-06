@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_REPLACEMENT_8GB_VPS_BASELINE_PROVISIONING_V1` / #67 (parent #60)
+**Classification:** `PASS — replacement NEW 8GB baseline provisioned · Docker/Node22/Tailscale(NeedsLogin)/4GiB swap · zero app containers · OLD LIVE unchanged · NO CUTOVER`
+**Timestamp (UTC):** 2026-09-06T21:50:37Z
+**BASE_HEAD:** `fe1db27c29df94c62e34a5a7399573041a97d21e`
+**FINAL HEAD:** this `cursor-pass: V4_REPLACEMENT_8GB_VPS_BASELINE_PROVISIONING_V1` commit
+**Report:** `reports/architecture/v4_replacement_8gb_vps_baseline_provisioning_v1.md`
+
+Replacement NEW `ionos-n8n-new` = `31.70.139.73` (6 vCPU / 7.7 GiB / 232G root). Prior 16GB target `31.70.139.51` cancelled/out of scope. Baseline: Docker 29.8.0 + Compose v5.5.1, Node v22.23.2, Python 3.12.3+venv, Tailscale 1.102.3 NeedsLogin (no up), `/swapfile` 4GiB active+fstab, users `cpinbox` 1000 + `hermes-test` 1001, zero containers, no app ports. Kernel reboot-required flag present (`linux-image-6.8.0-139`) but **reboot not executed**. OLD `217.160.71.145` health 200 IDs/StartedAt unchanged. Next: isolated core replica on this 8GB NEW.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_NEW_VPS_N8N233_DISABLE_BEFORE_START_AND_LOCALHOST_REPLICA_RETRY_V1` / #64 (parent #60, predecessor #63 STOP)
 **Classification:** `PASS — NEW localhost replica isolated via n8n 2.33.3 unpublish:workflow --all · zero restored activations · OLD LIVE unchanged · NO CUTOVER`
 **Timestamp (UTC):** 2026-09-06T20:44:02Z
