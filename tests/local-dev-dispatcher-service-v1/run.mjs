@@ -384,5 +384,18 @@ await test("S16 request validation reports unsupported field name deterministica
   assert.deepEqual(v.reason_codes, ["REQUEST_FIELD_UNSUPPORTED", "forbidden_s16_field"]);
 });
 
+await test("S17 wrapTickResult truncates reason_codes to sixteen preserving order", () => {
+  const reason_codes = ["R00","R01","R02","R03","R04","R05","R06","R07","R08","R09","R10","R11","R12","R13","R14","R15","R16","R17","R18","R19"];
+  const result = wrapTickResult({
+    ok: false,
+    request_id: "S17_REQ",
+    classification: "SERVICE_ERROR",
+    reason_codes,
+  });
+  assert.equal(result.reason_codes.length, 16);
+  assert.deepEqual(result.reason_codes, ["R00","R01","R02","R03","R04","R05","R06","R07","R08","R09","R10","R11","R12","R13","R14","R15"]);
+  assert.equal(reason_codes.length, 20);
+});
+
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 if (failures.length) process.exit(1);
