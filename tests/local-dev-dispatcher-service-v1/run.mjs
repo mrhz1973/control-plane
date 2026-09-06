@@ -309,5 +309,29 @@ await test("S13 injected performTick persistence isolation: no canonical queue a
   assert.equal(receiptsAfter, receiptsBefore, "canonical receipts unchanged by injected performTick");
 });
 
+await test("S14 executor STOP normalization preserves bounded failure evidence without leaking stdout/stderr", async () => {
+  const result = classificationFromExecutorResult(
+    {
+      status: "STOP",
+      classification: "STOP:S14_SENTINEL",
+      task_ref: "LOCAL_DEV_B_S14_SENTINEL",
+      reason_codes: ["S14_REASON_A", "S14_REASON_B"],
+      stdout: "S14_SECRET_STDOUT",
+      stderr: "S14_SECRET_STDERR",
+    },
+    "req",
+  );
+  assert.equal(result.classification, "WORK_EXECUTED_STOP");
+  assert.equal(result.execution_performed, true);
+  assert.equal(result.ok, false);
+  assert.equal(result.task_ref, "LOCAL_DEV_B_S14_SENTINEL");
+  assert.equal(result.executor_classification, "STOP:S14_SENTINEL");
+  assert.ok(result.reason_codes.includes("S14_REASON_A"));
+  assert.ok(result.reason_codes.includes("S14_REASON_B"));
+  const serialized = JSON.stringify(result);
+  assert.ok(!serialized.includes("S14_SECRET_STDOUT"));
+  assert.ok(!serialized.includes("S14_SECRET_STDERR"));
+});
+
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 if (failures.length) process.exit(1);
