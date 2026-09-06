@@ -1,5 +1,40 @@
 ﻿# LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_AUTONOMOUS_MICRO_TASK_REAL_E2E_PROOF_A_V1` (micro-task delta, issue #51 SESSION 1/3, base `06ae515`)
+**Classification:** `STOP — NATURAL_TICK_SELECTED_BUT_EXECUTOR_STOP:QWEN_SESSION_NOT_READY (API_UNREACHABLE on :8080). Queue authored+pushed; WF90 natural tick claimed LOCAL_DEV_B_D-9301-A once; admission accepted (execution_performed=true); no executor-pass commit; subsequent ticks IDLE_CLEAN (no second execution). 3-SESSION CAMPAIGN STOPPED.`
+**Timestamp (local):** 2026-09-06 (~02:25, UTC+2)
+**BASE_HEAD:** `06ae515359f8eea043a624ab5522ba9f186212fa`
+**QUEUE_HEAD:** `ce416c9e7a1da3baa836ce3c879596bd6c8c635c` (`cursor-pass: V4_AUTONOMOUS_MICRO_TASK_REAL_E2E_PROOF_A_QUEUE_V1`)
+**CLOSURE HEAD:** final `cursor-stop: V4_AUTONOMOUS_MICRO_TASK_REAL_E2E_PROOF_A_V1` commit carrying this report
+**CLOSURE:** STOP — campaign halt
+
+## What succeeded
+
+1. Queue item `READY_D9301A.md` authored (offline bridge+admissible OK), selective commit/push, tracked clean.
+2. Natural WF90 exec `308298` @ `2026-09-06T00:10:41Z` (schedule ~5 min) — not manually POSTed.
+3. Claim receipt: `LOCAL_DEV_B_D-9301-A` @ `2026-09-06T00:10:40.468Z` (source_ref @ `ce416c9`).
+4. Envelope emitted; admission would/did admit (legacy MICRO_TASK defaults; `execution_performed=true` in tick result).
+5. Later WF90 `308309` / `308320` → `IDLE_CLEAN` (no second claim/execution).
+
+## Exact blocker
+
+Tick result classification: `WORK_EXECUTED_STOP`  
+Executor classification: `STOP:QWEN_SESSION_NOT_READY`  
+Evidence also shows `API_UNREACHABLE`.  
+Post-hoc probe: `http://127.0.0.1:8080/v1/models` connection failed.
+
+No `executor-pass: LOCAL_DEV_B_D-9301-A` on `origin/main`. Target test file unchanged by executor.
+
+## Campaign decision
+
+**STOP THE 3-SESSION CAMPAIGN** (issue #51 acceptance: any STOP ⇒ do not run Session 2/3).
+
+Hard walls honored: no manual `/v1/tick`, no n8n/WF mutation, no D-0025 change, no remote providers, no fabricated second task.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_DISPATCHER_SAFE_FAST_FORWARD_SYNC_LIVE_APPLY_V1` (micro-task delta, issue #50 RETRY 1, base `e7b4793`)
 **Classification:** `PASS — LIVE_APPLIED: ControlPlane-V4-LocalDevDispatcher restarted; safe-FF dispatcher loaded (PID 6588); 127.0.0.1:18793 listening; GET /v1/tick → 405 POST_ONLY; on-disk source contains merge --ff-only origin/main; D-0025 enabled=false; no n8n/WF/Tailscale/Telegram/queue fabrication`
 **Timestamp (local):** 2026-09-06 (~02:00, UTC+2)
