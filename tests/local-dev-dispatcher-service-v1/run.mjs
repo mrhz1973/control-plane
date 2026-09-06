@@ -205,5 +205,31 @@ await test("S10 verifyRepoState allows only fetch + ff-only merge (no destructiv
   }
 });
 
+await test("S11 safe-FF advanced HEAD forwarded as head/commit into dispatch-loop options; one admitted executor call continues", async () => {
+  const advancedHead = "f".repeat(40);
+  const verifyCalls = [];
+  const dispatchCalls = [];
+  const executed = [];
+  const result = await performTick(
+    { schema_version: REQUEST_SCHEMA, request_id: "r11", source: "n8n" },
+    {
+      verifyRepo: async () => { verifyCalls.push("verify"); return { ok: true, head: advancedHead, reason_codes: [] }; },
+      scanQueue: () => [{ ok: true, item: { id: "D-11", state: "READY_FOR_PLANNING" }, markdown: "m11", source: "11.md", backlog_path: "q/11.md" }],
+      runDispatchLoop: (_entries, _receipts, options) => { dispatchCalls.push(options); return { ok: true, claims: [{ task_ref: "LOCAL_DEV_B_D-11", source_file: "11.md", envelope: { task_ref: "LOCAL_DEV_B_D-11", head: advancedHead, commit: advancedHead }, receipt: { task_ref: "LOCAL_DEV_B_D-11" } }], skipped: [], stop_reason: "MAX_CLAIMS_REACHED" }; },
+      runExecutor: async (envelope) => { executed.push(envelope); return { status: "PASS", classification: "PASS", task_ref: envelope.task_ref, reason_codes: ["PASS"] }; },
+    },
+  );
+  assert.equal(result.classification, "WORK_EXECUTED_PASS");
+  assert.equal(result.execution_performed, true);
+  assert.equal(verifyCalls.length, 1);
+  assert.equal(dispatchCalls.length, 1);
+  const seen = dispatchCalls[0];
+  assert.ok(seen, "dispatch-loop received options");
+  assert.equal(seen.head, advancedHead);
+  assert.equal(seen.commit, advancedHead);
+  assert.equal(executed.length, 1, "exactly one admitted executor call continues");
+  assert.equal(executed[0].task_ref, "LOCAL_DEV_B_D-11");
+});
+
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 if (failures.length) process.exit(1);
