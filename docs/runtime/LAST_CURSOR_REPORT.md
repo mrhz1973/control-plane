@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_NEW_VPS_INVENTORY_PROVISION_BASELINE_V1` / #62 (parent #60)
+**Classification:** `PASS — OLD inventory grounded · NEW baseline provisioned · NO CUTOVER · Tailscale join on NEW = GATE`
+**Timestamp (UTC):** 2026-09-06T19:48:20Z
+**BASE_HEAD:** `4023a6152af4ad26e6b58a0c2de674ba08443803`
+**FINAL HEAD:** this `cursor-pass: V4_NEW_VPS_INVENTORY_PROVISION_BASELINE_V1` commit
+**Report:** `reports/architecture/v4_new_vps_inventory_provision_baseline_v1.md`
+
+OLD `ionos-n8n` remains LIVE (n8n 2.33.3 health 200, PostgreSQL 16.15 healthy, LiteLLM up; container IDs/StartedAt unchanged). NEW `ionos-n8n-new` has Docker 29.1.3 + Compose v5.5.1, Node 22.23.2, nginx default-only, Tailscale **Logged out**, images pulled, **zero** production containers. Hard walls not crossed. Next: `V4_NEW_VPS_SECRET_SAFE_LOCALHOST_STACK_REPLICA_V1`.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_FULL_INJECTED_ISOLATION_AND_CD_CHAIN_FINAL_CLOSURE_V1` / #53 FINAL CHECKPOINT
 **Classification:** `PASS — AUTOMATED_MICRO_TASK_CHAIN=LIVE_PROVEN · LOCAL_DEV_ONLY=YES · PRODUCTION_MODEL_EXECUTION_AUTHORIZED=NO · D0025_ENABLED=false`
 **Timestamp (local):** 2026-09-06 (~15:25, UTC+2)
