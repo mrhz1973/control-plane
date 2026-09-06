@@ -373,5 +373,16 @@ await test("S15 null executor result normalizes fail-closed without throwing", (
   assert.equal(result.reason_codes.length, 0);
 });
 
+await test("S16 request validation reports unsupported field name deterministically", () => {
+  const v = validateTickRequest({
+    schema_version: REQUEST_SCHEMA,
+    request_id: "S16_REQ",
+    source: "n8n",
+    forbidden_s16_field: true
+  });
+  assert.equal(v.ok, false);
+  assert.deepEqual(v.reason_codes, ["REQUEST_FIELD_UNSUPPORTED", "forbidden_s16_field"]);
+});
+
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 if (failures.length) process.exit(1);
