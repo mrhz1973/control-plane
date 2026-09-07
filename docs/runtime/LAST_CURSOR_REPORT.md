@@ -1,5 +1,17 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_POST_CUTOVER_SOAK_V1` / #68
+**Classification:** `PASS — POST_CUTOVER_SOAK=PASS · NEW_ROLE=LIVE · OLD_ROLE=ROLLBACK_STANDBY_FROZEN · DUAL_WRITER_RISK=NO`
+**Timestamp (UTC):** 2026-09-07T13:03:00Z
+**BASE_HEAD:** `884a4bc40e64c8a6dab25d7c8462277cfcb1fb98`
+**Report:** `reports/architecture/v4_vps_post_cutover_soak_v1.md`
+
+Bounded 12m58s read-only soak PASS: 29 natural executions during the window (13 WF40, 13 WF42, 3 WF90), all terminal/success after natural drain; execution IDs monotonic and above frozen OLD max `312840`; publication map stable 4/4; final NEW `10173` executions/max `313145`; PostgreSQL sequence safe; NEW n8n/GOI/Hermes/LiteLLM/Tailscale/private exposure healthy. OLD monitored in parallel with n8n stopped, port 5678 absent, executions/max `10176/312840` unchanged. Operator GIS/Tailscale remediation ingested as external evidence; second-device test deferred/non-blocking. D-Flight `816` features accepted from current canonical NEW refresh metadata, while frozen OLD remains at historical `841`.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_VPS_POST_CUTOVER_GIS_CLIENT_PATH_DIAGNOSTIC_V1` / #68
 **Classification:** `PASS — GIS_CLIENT_PATH_DIAGNOSTIC=PASS · ROOT_CAUSE=TAILSCALE_ACL_OR_POLICY_BLOCK`
 **Timestamp (UTC):** 2026-09-07

@@ -184,6 +184,19 @@ HOST_FIREWALL_8000=NO_EXPLICIT_RULE
 NEW_TO_WORKSTATION_TAILSCALE_PING=PASS
 OLD_CHANGED=NO
 SECRET_VALUES_EXPOSED=0
+POST_CUTOVER_SOAK=PASS
+NEW_PUBLICATION_MAP_STABLE=PASS
+NATURAL_EXECUTION_PROGRESS=PASS
+WF40_SOAK=PASS
+GOI_POST_CUTOVER_REGRESSION=PASS
+HERMES_PRIVATE_HEALTH=PASS
+LITELLM_PRIVATE_HEALTH=PASS
+TAILSCALE_PRIVATE_TOPOLOGY=PASS
+GIS_NEW_REAL_CLIENT_TEST=PASS
+TAILSCALE_GOI_NEW_MEMBER_GRANT=PASS
+TAILSCALE_POLICY_ROOT_CAUSE_REMEDIATED=YES
+SECOND_DEVICE_TEST=DEFERRED_NON_BLOCKING
+NEW_RESOURCE_HEADROOM=PASS
 VPS_PARALLEL_VALIDATION=PASS
 F03_ACCOUNTING_RECONCILIATION=PASS
 F04_OLD_PUBLIC_80_REQUIREDNESS=NON_REQUIRED_OBSOLETE_DEFAULT
@@ -251,6 +264,7 @@ Evidence anchors:
 - #68
 - `reports/architecture/v4_vps_production_cutover_old_to_new_v1.md`
 - `reports/architecture/v4_vps_post_cutover_gis_client_path_diagnostic_v1.md`
+- `reports/architecture/v4_vps_post_cutover_soak_v1.md`
 - `reports/architecture/v4_vps_active_nginx_tls_renewal_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_cold_start_boot_persistence_v1.md`
 - `reports/architecture/v4_vps_schema_engine_new_functional_qualification_v1.md`
