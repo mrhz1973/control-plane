@@ -1,8 +1,12 @@
 # Project VPS registry
 
-Current projection after prep-copy PASS. Detailed prep evidence remains in #68 and `reports/architecture/v4_replacement_8gb_full_service_parity_prep_copy_v1.md`.
+Current projection after prep-copy PASS and bounded project handoff ingestion. Detailed prep evidence remains in #68 and `reports/architecture/v4_replacement_8gb_full_service_parity_prep_copy_v1.md`.
 
-GOI specialist handoff was ingested on 2026-09-07 at `reports/architecture/vps_goi_project_handoff_2026-09-07.md`. The handoff confirms the major GOI payloads are staged but does **not** promote them beyond `PRESENT_NOT_VALIDATED`; environment-specific Tailscale/MagicDNS/TLS/bind validation remains pending.
+Ingested specialist/project handoffs:
+- GOI: `reports/architecture/vps_goi_project_handoff_2026-09-07.md`
+- dev-method: `reports/architecture/vps_dev_method_handoff_2026-09-07.md`
+- schema-engine: `reports/architecture/vps_schema_engine_handoff_2026-09-07.md`
+- OpenClaw: `reports/architecture/vps_openclaw_handoff_2026-09-07.md`
 
 | Project / component | OLD footprint | NEW state | Shared dependencies | Migration status | Evidence / next |
 |---|---|---|---|---|---|
@@ -17,13 +21,24 @@ GOI specialist handoff was ingested on 2026-09-07 at `reports/architecture/vps_g
 | GOI D-Flight | `/opt/goi-dflight-helper`, config, LoadCredential | copied secret-safe; unit disabled | Tailscale / component activation | PRESENT_NOT_VALIDATED | GOI handoff ingested; verify CSRF PEM/LKG state and replace OLD bind/origin identity before activation |
 | GOI TLS renewal | OLD MagicDNS cert + renew timer | OLD material archived; timer disabled | NEW MagicDNS/TLS identity | PRESENT_NOT_VALIDATED | GOI handoff ingested; issue NEW identity cert and qualify renewal only after hostname/MagicDNS are final |
 | nginx GOI vhost | OLD active on TS IP | nginx installed inactive; vhost staged only | Tailscale/TLS | PRESENT_NOT_VALIDATED | GOI handoff ingested; render/rebind with NEW TS IP + NEW MagicDNS before enablement |
-| dev-method | handoff runtime tree | copied/manifests match | none known shared | PRESENT_NOT_VALIDATED | specialist confirmation |
-| schema-engine | handoff runtime tree | copied/manifests match | none known shared | PRESENT_NOT_VALIDATED | specialist confirmation |
-| OpenClaw app/node | `/opt/openclaw-app`, `/opt/openclaw-node`, no listener/unit | trees copied; not activated | decision only | PRESENT_NOT_VALIDATED | activate-or-archive decision |
+| dev-method | tree-only method/reference handoff | OLD tree copied with matching manifest; no runtime/listener/boot role | none | MIGRATED_VALIDATED | `vps_dev_method_handoff_2026-09-07.md`; no Tailscale join dependency |
+| schema-engine | isolated Ajv/ajv-formats dependency under handoff-runtime, consumed by n8n validator | tree copied/manifests match; NEW live resolver smoke not re-proven | n8n bind + control-plane validator only | PRESENT_NOT_VALIDATED | `vps_schema_engine_handoff_2026-09-07.md`; no Tailscale join dependency |
+| OpenClaw app/node | `/opt/openclaw-app`, `/opt/openclaw-node`, no listener/unit in latest census | trees copied; not activated | future fallback transport only if separately authorized | PRESENT_NOT_VALIDATED | `vps_openclaw_handoff_2026-09-07.md`; disposition recommendation `KEEP_STAGED_PENDING`; no current join blocker |
 | `n8n-compose.service` | enabled OLD boot persistence | installed/enabled for isolated NEW stack | n8n core | MIGRATED_VALIDATED | #68 |
 | service users `graphhopper/goi-ors/goi-dflight` | OLD service accounts | NEW nologin accounts created name-based | shared Linux identity | MIGRATED_VALIDATED | #68; UID/GID collision state must still be read-only checked before further identity changes |
-| Tailscale node identity | OLD `ubuntu.tailc01234.ts.net`, `100.114.7.53` | package present, NeedsLogin | all TS-bound GOI services | MISSING | unique NEW hostname + join; GOI bind/ACL requirements now ingested |
+| Tailscale node identity | OLD `ubuntu.tailc01234.ts.net`, `100.114.7.53` | package present, NeedsLogin | all TS-bound GOI services | MISSING | all known pre-join project network requirements ingested; join with unique NEW hostname next |
 | historical OLD Docker volumes | OLD-only leftovers | not copied | none unless proven needed | OBSOLETE_NEEDS_HUMAN_DECISION | decide before decommission |
+
+## Pre-join reconciliation result
+
+All currently known project families with VPS footprints have now supplied or received a bounded handoff sufficient to classify **pre-join shared-network dependencies**:
+
+- GOI has real Tailscale/MagicDNS/nginx/TLS dependencies and its OLD-IP/domain references are recorded for post-join reconciliation.
+- dev-method has no runtime/network role and is migrated/validated as a reference tree.
+- schema-engine is a local n8n/control-plane dependency only; it remains unvalidated on NEW but does not depend on Tailscale/nginx/TLS/DNS.
+- OpenClaw remains staged as preserved fallback/existing broker; current OLD/NEW staged footprint has no listener/unit, so no pre-join collision exists. Any future activation is a separate gate.
+
+Therefore no unresolved specialist-project requirement prevents assigning a **unique NEW Tailscale identity**. This does not authorize GOI activation, TLS issuance, DNS/public routing, n8n publication or cutover.
 
 ## GOI handoff constraints now ingested
 
