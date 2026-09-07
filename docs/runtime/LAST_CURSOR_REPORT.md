@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_GOI_F01_F02_READONLY_EVIDENCE_V1` / #68
+**Classification:** `PASS — F01_F02_EVIDENCE_ACQUISITION=PASS · F01=STAGED_NOT_INCLUDED · F02=ACTIVE_OLD_ENDPOINT_FOUND · no remediation · RUNTIME_MUTATIONS=0`
+**Timestamp (UTC):** 2026-09-07T06:23:01Z
+**BASE_HEAD:** `c947896daa1c07ee998a13982a9d02f185c0fa1e`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_GOI_F01_F02_READONLY_EVIDENCE_V1` commit
+**Report:** `reports/architecture/v4_vps_goi_f01_f02_readonly_evidence_v1.md`
+
+NEW nginx `nginx.conf` includes empty `sites-enabled`/`conf.d`; `goi-ors-gateway` is staged in `sites-available` only; `nginx -t` validates the empty include set. GIS is static `http.server`; served HTML still points GraphHopper at `http://100.114.7.53:8989` and ORS at `https://ubuntu.tailc01234.ts.net`. GraphHopper left running. Next: separate F01/F02 remediation deltas.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_CROSS_PROJECT_CONSUMER_MINI_AUDIT_V1` / #68
 **Classification:** `PASS — VPS_CONSUMER_REGISTRY_COVERAGE=PASS · read-only OLD↔NEW · documentary bind/path rows only · no runtime mutation`
 **Timestamp (UTC):** 2026-09-07T02:34:00Z
