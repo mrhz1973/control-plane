@@ -1,12 +1,13 @@
 # CURRENT VPS STATE
 
-Updated after `V4_VPS_POST_CUTOVER_EVIDENCE_RECONCILIATION_A01_F03_V1` on 2026-09-07.
+Updated after independent Codex `V4_VPS_CODEX_A01_F03_REVIEW_CLOSURE_V1` on 2026-09-07.
 
-The independent Codex A01/A02 gaps are reconciled by surviving execution metadata and a mechanical F03 recount. The historical Codex report remains the audit finding; current closure evidence is `reports/architecture/v4_vps_post_cutover_evidence_reconciliation_a01_f03_v1.md`.
+Independent Codex review closes A01 and A02/F03 by superseding evidence: exact 29+2+6 soak reconciliation and original census 32/2. Current review: `reports/architecture/v4_vps_codex_a01_f03_review_closure_v1.md`; underlying evidence: `reports/architecture/v4_vps_post_cutover_evidence_reconciliation_a01_f03_v1.md`. The historical BLOCKED_EVIDENCE report remains unchanged; this is bounded closure, not a new full audit or rollback-exit authorization.
 
 ```text
 VPS_STATE
-CODEX_FINAL_POST_CUTOVER_AUDIT=BLOCKED_EVIDENCE_HISTORICAL_SUPERSEDED_BY_RECONCILIATION
+CODEX_A01_F03_REVIEW_CLOSURE=PASS
+PREVIOUS_CODEX_BLOCKER_STATUS=CLOSED_A01_F03_BY_SUPERSEDING_EVIDENCE
 EVIDENCE_RECONCILIATION=PASS
 SOAK_EVIDENCE=RECONCILED_EXACT_29_PLUS_8
 REGISTRY_CONSISTENCY=REGISTRY_20_1_PASS_CENSUS_32_2_PASS
@@ -279,6 +280,7 @@ Independent audit evidence reconciliation is complete: 29 IDs started in-window,
 
 Evidence anchors:
 - #68
+- `reports/architecture/v4_vps_codex_a01_f03_review_closure_v1.md`
 - `reports/architecture/v4_vps_codex_final_post_cutover_evidence_audit_v1.md`
 - `reports/architecture/v4_vps_post_cutover_evidence_reconciliation_a01_f03_v1.md`
 - `reports/architecture/v4_vps_production_cutover_old_to_new_v1.md`

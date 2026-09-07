@@ -1,6 +1,19 @@
 # LAST CURSOR REPORT
 
-## Post-cutover evidence reconciliation — latest
+## Independent Codex A01/F03 review closure — latest
+
+**TASK_REF:** `V4_VPS_CODEX_A01_F03_REVIEW_CLOSURE_V1` / #68
+**Reviewer:** Codex, independent repo-only review; not a Cursor execution or a live VPS test.
+**Classification:** `CODEX_A01_F03_REVIEW_CLOSURE=PASS`
+**Date (UTC):** 2026-09-07
+**BASE_HEAD:** `dd6c2d4f53d416d2227ffdc940a9397d3b76c3b5`
+**Report:** `reports/architecture/v4_vps_codex_a01_f03_review_closure_v1.md`
+
+The previous BLOCKED_EVIDENCE is closed for A01 and A02/F03 by superseding evidence. Independently recomputed: 37 unique IDs = 29 in-window + 2 drain + 6 later natural ticks; unexplained 0; boundary WF90 313135 success at 13:02:57Z. Original census dispositions remain unchanged and count 32/2; separate registry counts 20/1 over 21. Current-state correction PASS. Pruning attribution of the historical 308 rows remains PLAUSIBLE_NOT_PROVEN, an accepted nonblocking caveat. This bounded closure is not a new full audit. Cutover PASS, NEW LIVE, OLD frozen rollback standby, retention OPEN/no auto-expiry, decommission ineligible/unauthorized. Runtime mutations/SSH calls/secret values exposed: 0.
+
+---
+
+## Post-cutover evidence reconciliation — underlying evidence
 
 **TASK_REF:** `V4_VPS_POST_CUTOVER_EVIDENCE_RECONCILIATION_A01_F03_V1` / #68
 **Classification:** `PASS — EVIDENCE_RECONCILIATION=PASS · SOAK_DELTA_RECONCILIATION=PASS · F03_RECOUNT=PASS_32_2`
@@ -12,7 +25,7 @@ All 37 surviving IDs `313109–313145` were reconciled from non-secret PostgreSQ
 
 ---
 
-## Independent Codex repo-only audit — latest evidence pointer
+## Historical independent Codex audit — A01/F03 blocker closed by review above
 
 **TASK_REF:** `V4_VPS_CODEX_FINAL_POST_CUTOVER_EVIDENCE_AUDIT_V1` / #68
 **Reviewer:** Codex, independent second-level repository audit; not a Cursor execution or a VPS test.
