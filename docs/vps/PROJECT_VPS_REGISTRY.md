@@ -1,6 +1,6 @@
 # Project VPS registry
 
-Current projection after schema-engine functional qualification PASS. GraphHopper/ORS/nginx/D-Flight/GIS/Nav remain active not enabled. Schema-engine row promoted; F03 aggregate rollup frozen.
+Current projection after GOI cold-start boot persistence PASS. GOI stack active/enabled; TLS renewal row pending; schema-engine MIGRATED_VALIDATED; F03 rollup frozen.
 
 | Project / component | OLD footprint | NEW state | Shared dependencies | Migration status | Evidence / next |
 |---|---|---|---|---|---|
@@ -8,13 +8,13 @@ Current projection after schema-engine functional qualification PASS. GraphHoppe
 | Control Plane core — n8n | loopback `127.0.0.1:5678`, production OLD | isolated replica, health 200, capable/published 0/0 | cutover / workflow publication | MIGRATED_VALIDATED | activation later |
 | Control Plane core — LiteLLM | unpublished Docker service | running unpublished | secret-safe auth binds | MIGRATED_VALIDATED | #68 |
 | Hermes/browser | Hermes 0.21 + Chromium/CDP/Xvfb/x11vnc/noVNC; OLD process-level, NEW `hermes-*.service` | qualified; auth persistence, recall, short soak, post-soak PASS | loopback-only browser ports | MIGRATED_VALIDATED | #67 |
-| GOI GraphHopper | OLD live TS app + loopback admin | runtime active not enabled; app `100.99.54.93:8989`, admin `127.0.0.1:8990`; canonical hiking `/route` 200 | Tailscale IP | PRESENT_NOT_VALIDATED | functional PASS; restart-persistence pending |
-| GOI ORS gateway | OLD live loopback `127.0.0.1:8020`; tree `/opt/goi-ors-gateway` | runtime active not enabled; loopback `127.0.0.1:8020`; CORS GIS origin `http://100.99.54.93:8000`; status 200 ready/PRESENT | nginx/TLS/Tailscale | PRESENT_NOT_VALIDATED | functional+CORS PASS; restart-persistence pending; not `MIGRATED_VALIDATED` |
-| GOI GIS / cursor-coordinate-converter | OLD TS `:8000`; WD `/root/local-files/handoff-runtime/cursor-coordinate-converter` | runtime active not enabled; bind `100.99.54.93:8000`; F02 HTML served; browser Origin PASS vs GH/ORS/D-Flight | Tailscale IP, local-files, GraphHopper/ORS/D-Flight | PRESENT_NOT_VALIDATED | functional PASS; boot persistence pending; not `MIGRATED_VALIDATED` |
-| GOI Navionics / Planet-Clone | OLD TS `:5000`; WD `/root/local-files/handoff-runtime/Planet-Clone` | runtime active not enabled; bind `100.99.54.93:5000`; GET `/status` 200 `tokens_ok=true` | Tailscale IP, local-files | PRESENT_NOT_VALIDATED | functional PASS; boot persistence pending; not `MIGRATED_VALIDATED` |
-| GOI D-Flight | OLD TS `:8010`; `/opt/goi-dflight-helper` + `/var/lib/goi-dflight` | runtime active not enabled; bind `100.99.54.93:8010`; GET `/status` READY LKG 841 features; NEW Origin CORS PASS | Tailscale, GIS client | PRESENT_NOT_VALIDATED | functional PASS; boot persistence pending; not `MIGRATED_VALIDATED` |
+| GOI GraphHopper | OLD live TS app + loopback admin | runtime active enabled; app `100.99.54.93:8989`, admin `127.0.0.1:8990`; canonical hiking `/route` 200; cold-start PASS | Tailscale IP | MIGRATED_VALIDATED | F03 rollup frozen |
+| GOI ORS gateway | OLD live loopback `127.0.0.1:8020`; tree `/opt/goi-ors-gateway` | runtime active enabled; loopback `127.0.0.1:8020`; CORS GIS origin `http://100.99.54.93:8000`; status 200 ready/PRESENT; cold-start PASS | nginx/TLS/Tailscale | MIGRATED_VALIDATED | F03 rollup frozen |
+| GOI GIS / cursor-coordinate-converter | OLD TS `:8000`; WD `/root/local-files/handoff-runtime/cursor-coordinate-converter` | runtime active enabled; bind `100.99.54.93:8000`; F02 HTML served; browser Origin PASS vs GH/ORS/D-Flight; cold-start PASS | Tailscale IP, local-files, GraphHopper/ORS/D-Flight | MIGRATED_VALIDATED | F03 rollup frozen |
+| GOI Navionics / Planet-Clone | OLD TS `:5000`; WD `/root/local-files/handoff-runtime/Planet-Clone` | runtime active enabled; bind `100.99.54.93:5000`; GET `/status` 200 `tokens_ok=true`; cold-start PASS | Tailscale IP, local-files | MIGRATED_VALIDATED | F03 rollup frozen |
+| GOI D-Flight | OLD TS `:8010`; `/opt/goi-dflight-helper` + `/var/lib/goi-dflight` | runtime active enabled; bind `100.99.54.93:8010`; GET `/status` READY LKG 841 features; NEW Origin CORS PASS; cold-start PASS | Tailscale, GIS client | MIGRATED_VALIDATED | F03 rollup frozen |
 | GOI TLS renewal | OLD timer live; cert files `/etc/goi-ors/tls`; oneshot observed failed on OLD | NEW cert SAN qualified; helper handles inactive nginx; NEW timer inactive | NEW MagicDNS/TLS identity | PRESENT_NOT_VALIDATED | active-nginx renewal/persistence proof later; OLD health checked in parallel validation |
-| nginx GOI vhost | OLD live TS `:443` + public default `:80` | runtime active not enabled; bind `100.99.54.93:443` ssl only; HTTPS `/ors/status` 200 ready/PRESENT; no public `:80`/`:443` | Tailscale/TLS/ORS | PRESENT_NOT_VALIDATED | functional PASS; boot persistence pending; not `MIGRATED_VALIDATED` |
+| nginx GOI vhost | OLD live TS `:443` + public default `:80` | runtime active enabled; bind `100.99.54.93:443` ssl only; HTTPS `/ors/status` 200 ready/PRESENT; no public `:80`/`:443`; cold-start PASS | Tailscale/TLS/ORS | MIGRATED_VALIDATED | F03 rollup frozen |
 | Control Plane checkout bind | `/root/local-files/handoff-runtime/control-plane` mounted read-only into n8n; LiteLLM config from this tree | present on NEW; same bind shape | n8n, LiteLLM, local-files | MIGRATED_VALIDATED | keep unpublished |
 | `/srv/cp-verifier-inbox` | n8n bind; owner `cpinbox` | present on NEW; same bind | n8n | MIGRATED_VALIDATED | empty inbox; no extra daemon |
 | `/root/local-files` | n8n `/files` bind; contains handoff-runtime | present on NEW | n8n, LiteLLM, GOI GIS/Nav | MIGRATED_VALIDATED | umbrella persistent application root |
@@ -65,6 +65,12 @@ GOI_ORS_BOOT_PERSISTENCE=PENDING
 GOI_ORS_CORS_REMEDIATION=PASS
 GOI_ORS_GIS_ORIGIN=NEW_IDENTITY
 GOI_ORS_READY_FOR_NGINX_PRIVATE_CHAIN=YES
+GOI_SYSTEMD_ENABLEMENT=PASS
+GOI_COLD_START=PASS
+GOI_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START
+HOST_REBOOT_EXECUTED=NO
+GOI_LISTENER_TOPOLOGY_AFTER_COLD_START=PASS
+GOI_FUNCTIONAL_REGRESSION=PASS
 SCHEMA_ENGINE_FUNCTIONAL_QUALIFICATION=PASS
 SCHEMA_ENGINE_MIGRATION_STATUS=MIGRATED_VALIDATED
 ROLLUP_COUNTS_STATUS=UNRECONCILED_F03_DO_NOT_USE_FOR_FINAL_ACCEPTANCE
@@ -72,6 +78,7 @@ CUTOVER=NOT_AUTHORIZED
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_goi_cold_start_boot_persistence_v1.md`
 - `reports/architecture/v4_vps_schema_engine_new_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_nav_private_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_gis_private_functional_qualification_v1.md`
@@ -87,6 +94,6 @@ Canonical evidence:
 - `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`
 - `reports/architecture/v4_vps_new_tls_recovery_v1.md`
 
-GOI rows remain `PRESENT_NOT_VALIDATED` until persistence proofs complete. Schema-engine row is `MIGRATED_VALIDATED`; frozen F03 rollup is unchanged.
+GOI rows GraphHopper/ORS/GIS/Nav/D-Flight/nginx-vhost are `MIGRATED_VALIDATED` (functional + enabled + cold-start proof; canonical acceptance B). TLS renewal row remains `PRESENT_NOT_VALIDATED` until active-nginx renewal proof. Frozen F03 rollup unchanged.
 
-Current next: GOI boot/restart persistence + active-nginx TLS renewal → parallel validation → human cutover.
+Current next: active-nginx TLS renewal → parallel validation → human cutover.

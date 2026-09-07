@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_GOI_COLD_START_BOOT_PERSISTENCE_V1` / #68
+**Classification:** `PASS — GOI_COLD_START_PERSISTENCE_QUALIFICATION=PASS · GOI_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START · HOST_REBOOT_EXECUTED=NO`
+**Timestamp (UTC):** 2026-09-07T08:46:30Z
+**BASE_HEAD:** `5d0c98f46df1e50ee4d935d0a2ab5fc10c69e8e6`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_GOI_COLD_START_BOOT_PERSISTENCE_V1` commit
+**Report:** `reports/architecture/v4_vps_goi_cold_start_boot_persistence_v1.md`
+
+Enabled the seven GOI units (no --now), cold-stopped and cold-started the stack without host reboot. All canonical smokes PASS; topology NEW-private only. Renewal timer still disabled. Six GOI rows promoted; F03 rollup frozen.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_SCHEMA_ENGINE_NEW_FUNCTIONAL_QUALIFICATION_V1` / #68
 **Classification:** `PASS — SCHEMA_ENGINE_FUNCTIONAL_QUALIFICATION=PASS · SCHEMA_ENGINE_MIGRATION_STATUS=MIGRATED_VALIDATED`
 **Timestamp (UTC):** 2026-09-07T08:34:50Z
