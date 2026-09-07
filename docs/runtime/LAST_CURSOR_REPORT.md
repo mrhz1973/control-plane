@@ -1,5 +1,30 @@
 # LAST CURSOR REPORT
 
+## WF90 post-cutover Telegram SERVICE_ERROR storm remediation — latest
+
+**TASK_REF:** `V4_WF90_POST_CUTOVER_TELEGRAM_SERVICE_ERROR_STORM_REMEDIATION_V1` / #72
+**Classification:** `PASS — WF90_POST_CUTOVER_TELEGRAM_STORM_FIXED · ROOT_CAUSE=NEW_N8N_TO_TAILSCALE_ROUTE_FAILURE · TWO_NATURAL_TICKS=PASS · SPURIOUS_TELEGRAM=0 · NEW_LIVE=HEALTHY · OLD_CHANGED=NO`
+**Date (UTC):** 2026-09-07
+**BASE_HEAD:** `3486f028ee6a347339956e4e892c0a4d6ecf669d`
+**Report:** `reports/architecture/v4_wf90_post_cutover_telegram_service_error_storm_remediation_v1.md`
+
+LIVE WF90 was already the canonical published version: normalizer SHA-256
+`9f4184e9802ea4a08779977eb4c02bfbc27b330e16b4c19ea07c7be75e2c39ec`.
+Real execution `313883` proved the failure was an Axios
+`ETIMEDOUT 100.110.35.23:443` envelope, correctly fail-closed to
+`SERVICE_ERROR`; NEW lacked the private source grant that OLD already had.
+Added only `100.99.54.93/32` → `100.110.35.23/32` TCP/443 in Tailscale.
+Container-path HTTP then returned a valid tick schema. Focused normalizer
+tests passed 11/11, preserving HUMAN_GATE_REQUIRED, WORK_EXECUTED_STOP, and
+real SERVICE_ERROR notification semantics. Natural WF90 executions `313916`
+and `313927` were consecutive success/IDLE_CLEAN ticks with
+`response_valid=true`, `notify_required=false`, and zero Telegram node runs.
+NEW health/publication remained stable; WF40/WF61/D-0025 unchanged; OLD n8n
+remained frozen at executions/max `10176/312840`; no public/Funnel/secret
+exposure.
+
+---
+
 ## Independent Codex A01/F03 review closure — latest
 
 **TASK_REF:** `V4_VPS_CODEX_A01_F03_REVIEW_CLOSURE_V1` / #68
