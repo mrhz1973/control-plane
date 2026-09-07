@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after `V4_VPS_GOI_ORS_CORS_NEW_GIS_REMEDIATION_V1` on 2026-09-07.
+Updated after `V4_VPS_GOI_NGINX_PRIVATE_CHAIN_FUNCTIONAL_QUALIFICATION_V1` on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -42,7 +42,7 @@ GOI_POST_RENDER_PREACTIVATION_VERIFY=PASS_WITH_SCOPE_LIMITATION
 GOI_PARITY_FILES_AND_STATE=STAGED_VALIDATED
 GOI_NEW_IDENTITY_CONFIG=PARTIALLY_RENDERED_VALIDATED
 GOI_ACTIVE_OLD_IDENTITY_REFS=NONE_IN_EFFECTIVE_GIS_HTML
-GOI_SERVICES=GRAPHHOPPER_AND_ORS_RUNTIME_ACTIVE_NOT_ENABLED
+GOI_SERVICES=GRAPHHOPPER_ORS_NGINX_RUNTIME_ACTIVE_NOT_ENABLED
 GOI_GRAPHHOPPER_FUNCTIONAL_QUALIFICATION=PASS
 GOI_GRAPHHOPPER_BOOT_PERSISTENCE=PENDING
 GOI_ORS_FUNCTIONAL_QUALIFICATION=PASS
@@ -60,8 +60,14 @@ VPS_CONSUMER_REGISTRY_COVERAGE=PASS
 CODEX_VPS_EVIDENCE_AUDIT=F01_F02_CONFIGURATION_GAPS_CLOSED
 F01_NGINX_VHOST=EFFECTIVELY_INCLUDED_SYNTAX_VALID
 F01_NGINX_INCLUDE_REMEDIATION=PASS
-NGINX_RUNTIME=INACTIVE
-NGINX_FUNCTIONAL_QUALIFICATION=PENDING
+NGINX_RUNTIME=ACTIVE_NOT_ENABLED
+NGINX_FUNCTIONAL_QUALIFICATION=PASS
+NGINX_BIND=100.99.54.93:443
+NGINX_PUBLIC_EXPOSURE=NONE
+GOI_HTTPS_ORS_CHAIN=PASS
+GOI_HTTPS_TLS_HOSTNAME_VERIFY=PASS
+GOI_HTTPS_CORS_NEW_GIS=PASS
+GOI_NGINX_BOOT_PERSISTENCE=PENDING
 F02_GIS_ENDPOINTS=NEW_IDENTITY_RETARGETED
 F02_GIS_ENDPOINT_REMEDIATION=PASS
 F02_GRAPHHOPPER_DESTINATION=http://100.99.54.93:8989
@@ -87,7 +93,7 @@ VPS_CHAT_CLOSE_CONDITION=MIGRATION_COMPLETE_AND_HANDOFF_RECORDED
 SHARED_INFRA_GATES=GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=CURSOR_REMAINING_GOI_RUNTIME_SLICES_AFTER_ORS
+NEXT=CURSOR_REMAINING_GOI_RUNTIME_SLICES_AFTER_NGINX
 ```
 
 ## Current proven state
@@ -104,7 +110,7 @@ NEW currently has:
 - GraphHopper functional qualification PASS on `100.99.54.93:8989`, admin `127.0.0.1:8990`, still not enabled at boot;
 - ORS loopback functional qualification PASS on `127.0.0.1:8020`, CORS GIS origin retargeted to `http://100.99.54.93:8000`, still not enabled at boot;
 - GIS, Nav, D-Flight inactive;
-- nginx inactive/disabled with GOI vhost included via `sites-enabled` symlink; syntax valid; no `:443` listener;
+- nginx private-chain functional qualification PASS on `100.99.54.93:443` only (HTTPS→ORS, hostname-verified TLS); not enabled at boot; no public `:80`/`:443`;
 - F02 GIS HTML retargeted to NEW GraphHopper/ORS/D-Flight identities; GIS still inactive.
 
 ## F01/F02 evidence correction
@@ -139,7 +145,7 @@ The historical rollup `15/14/0/1` is preserved but is not currently reproducible
 
 ## Remaining blockers before human cutover
 
-1. Qualify remaining GOI runtime slices on NEW: GIS, Nav, D-Flight, nginx (ORS loopback and F01/F02 already PASS; no promotion to `MIGRATED_VALIDATED`).
+1. Qualify remaining GOI runtime slices on NEW: GIS, Nav, D-Flight (nginx private-chain, ORS loopback/CORS, and F01/F02 already PASS; no promotion to `MIGRATED_VALIDATED`).
 2. Validate schema-engine resolver/smoke on NEW.
 3. Prove intended restart/boot persistence and active-nginx TLS renewal behavior.
 4. Parallel OLD↔NEW validation, including F03 count denominator, OLD public `:80` requiredness and OLD TLS renewal/rollback health.
@@ -149,6 +155,7 @@ Production n8n publication/cutover and OLD decommission remain separately gated.
 
 Evidence anchors:
 - #68
+- `reports/architecture/v4_vps_goi_nginx_private_chain_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_ors_cors_new_gis_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_ors_loopback_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_f02_gis_endpoint_remediation_v1.md`

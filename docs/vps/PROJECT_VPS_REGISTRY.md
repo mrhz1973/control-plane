@@ -1,6 +1,6 @@
 # Project VPS registry
 
-Current projection after ORS CORS NEW GIS origin remediation PASS. nginx include remains PASS and inactive. GraphHopper functional PASS (boot persistence pending). GIS not functionally qualified.
+Current projection after nginx private-chain functional qualification PASS. GraphHopper/ORS/nginx active not enabled. GIS not functionally qualified.
 
 | Project / component | OLD footprint | NEW state | Shared dependencies | Migration status | Evidence / next |
 |---|---|---|---|---|---|
@@ -14,7 +14,7 @@ Current projection after ORS CORS NEW GIS origin remediation PASS. nginx include
 | GOI Navionics / Planet-Clone | OLD TS `:5000`; WD `/root/local-files/handoff-runtime/Planet-Clone` | copied; dynamic TS bind + parity override loaded; disabled/inactive | Tailscale IP, local-files | PRESENT_NOT_VALIDATED | qualify on NEW TS IP after prerequisite remediation |
 | GOI D-Flight | OLD TS `:8010`; `/opt/goi-dflight-helper` + `/var/lib/goi-dflight` | service config/state verified for NEW TS bind/origin; unit disabled/inactive; GIS client still has adjacent OLD D-Flight override | Tailscale, GIS client | PRESENT_NOT_VALIDATED | client retarget + controlled runtime/private reachability qualification |
 | GOI TLS renewal | OLD timer live; cert files `/etc/goi-ors/tls`; oneshot observed failed on OLD | NEW cert SAN qualified; helper handles inactive nginx; NEW timer inactive | NEW MagicDNS/TLS identity | PRESENT_NOT_VALIDATED | active-nginx renewal/persistence proof later; OLD health checked in parallel validation |
-| nginx GOI vhost | OLD live TS `:443` + public default `:80` | `sites-enabled/goi-ors-gateway` symlink → `sites-available/goi-ors-gateway`; `nginx -t` PASS with vhost in effective graph; nginx disabled/inactive; no `:443` listener | Tailscale/TLS/ORS | PRESENT_NOT_VALIDATED | F01 include PASS; functional/activation pending; not `MIGRATED_VALIDATED` |
+| nginx GOI vhost | OLD live TS `:443` + public default `:80` | runtime active not enabled; bind `100.99.54.93:443` ssl only; HTTPS `/ors/status` 200 ready/PRESENT; no public `:80`/`:443` | Tailscale/TLS/ORS | PRESENT_NOT_VALIDATED | functional PASS; boot persistence pending; not `MIGRATED_VALIDATED` |
 | Control Plane checkout bind | `/root/local-files/handoff-runtime/control-plane` mounted read-only into n8n; LiteLLM config from this tree | present on NEW; same bind shape | n8n, LiteLLM, local-files | MIGRATED_VALIDATED | keep unpublished |
 | `/srv/cp-verifier-inbox` | n8n bind; owner `cpinbox` | present on NEW; same bind | n8n | MIGRATED_VALIDATED | empty inbox; no extra daemon |
 | `/root/local-files` | n8n `/files` bind; contains handoff-runtime | present on NEW | n8n, LiteLLM, GOI GIS/Nav | MIGRATED_VALIDATED | umbrella persistent application root |
@@ -35,8 +35,12 @@ GOI_GRAPHHOPPER_BOOT_PERSISTENCE=PENDING
 VPS_CONSUMER_REGISTRY_COVERAGE=PASS
 F01_NGINX_VHOST=EFFECTIVELY_INCLUDED_SYNTAX_VALID
 F01_NGINX_INCLUDE_REMEDIATION=PASS
-NGINX_RUNTIME=INACTIVE
-NGINX_FUNCTIONAL_QUALIFICATION=PENDING
+NGINX_RUNTIME=ACTIVE_NOT_ENABLED
+NGINX_FUNCTIONAL_QUALIFICATION=PASS
+NGINX_BIND=100.99.54.93:443
+NGINX_PUBLIC_EXPOSURE=NONE
+GOI_HTTPS_ORS_CHAIN=PASS
+GOI_NGINX_BOOT_PERSISTENCE=PENDING
 F02_GIS_ENDPOINTS=NEW_IDENTITY_RETARGETED
 F02_GIS_ENDPOINT_REMEDIATION=PASS
 F01_F02_CONFIGURATION_GAPS=CLOSED
@@ -52,6 +56,7 @@ CUTOVER=NOT_AUTHORIZED
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_goi_nginx_private_chain_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_ors_cors_new_gis_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_ors_loopback_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_f02_gis_endpoint_remediation_v1.md`
@@ -63,4 +68,4 @@ Canonical evidence:
 
 Registry rows remain `PRESENT_NOT_VALIDATED` until component-specific functional validation and required persistence proofs complete.
 
-Current next: remaining GOI private qualification (nginx/GIS/Nav/D-Flight) → schema-engine → persistence/parallel validation → human cutover.
+Current next: remaining GOI private qualification (GIS/Nav/D-Flight) → schema-engine → persistence/parallel validation → human cutover.

@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_GOI_NGINX_PRIVATE_CHAIN_FUNCTIONAL_QUALIFICATION_V1` / #68
+**Classification:** `PASS — GOI_NGINX_FUNCTIONAL_QUALIFICATION=PASS · NGINX_RUNTIME=ACTIVE_NOT_ENABLED · NGINX_BIND=100.99.54.93:443 · GOI_HTTPS_ORS_CHAIN=PASS`
+**Timestamp (UTC):** 2026-09-07T07:40:16Z
+**BASE_HEAD:** `71bc3a3c4943cc6d003053d6cc04640f50b41e69`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_GOI_NGINX_PRIVATE_CHAIN_FUNCTIONAL_QUALIFICATION_V1` commit
+**Report:** `reports/architecture/v4_vps_goi_nginx_private_chain_functional_qualification_v1.md`
+
+Started nginx without enable. Listener only `100.99.54.93:443`. HTTPS `/ors/status` 200 ready/PRESENT with hostname-verified TLS. NEW GIS Origin CORS PASS; OLD Origin 403. No public `:443`/`:80`. GIS/Nav/D-Flight not started.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_GOI_ORS_CORS_NEW_GIS_REMEDIATION_V1` / #68
 **Classification:** `PASS — GOI_ORS_CORS_REMEDIATION=PASS · GOI_ORS_GIS_ORIGIN=NEW_IDENTITY · GOI_ORS_READY_FOR_NGINX_PRIVATE_CHAIN=YES`
 **Timestamp (UTC):** 2026-09-07T07:33:24Z
