@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after `V4_REPLACEMENT_8GB_FULL_SERVICE_PARITY_PREP_COPY_V1` PASS and Hermes short qualification PASS.
+Updated after `V4_REPLACEMENT_8GB_FULL_SERVICE_PARITY_PREP_COPY_V1` PASS, Hermes short qualification PASS, and GOI specialist VPS handoff ingestion on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -17,7 +17,8 @@ PRESENT_NOT_VALIDATED=14
 MISSING=1
 PROJECT_DECISIONS_PENDING=1
 
-SHARED_INFRA_GATES=TAILSCALE_UNIQUE_HOSTNAME_JOIN,MAGICDNS_TLS,GOI_ACTIVATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
+GOI_HANDOFF=INGESTED_AS_IS_INCOMPLETE
+SHARED_INFRA_GATES=TAILSCALE_UNIQUE_HOSTNAME_JOIN,MAGICDNS_TLS,GOI_IDENTITY_CONFIG_RECONCILIATION,GOI_ACTIVATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
 NEXT=TAILSCALE_UNIQUE_HOSTNAME_JOIN_ON_NEW
@@ -25,7 +26,7 @@ NEXT=TAILSCALE_UNIQUE_HOSTNAME_JOIN_ON_NEW
 
 ## Current proven state
 
-OLD remains live production and unchanged by the prep-copy pass.
+OLD remains live production and unchanged by the prep-copy pass and GOI handoff ingestion.
 
 NEW currently has:
 - PostgreSQL 16.15 healthy, unpublished
@@ -40,17 +41,32 @@ NEW currently has:
 - dev-method/schema-engine copied
 - `n8n-compose.service` present and validated for the isolated NEW stack
 
+## GOI handoff ingestion
+
+The specialist GOI handoff is now canonicalized at `reports/architecture/vps_goi_project_handoff_2026-09-07.md`.
+
+It confirms:
+- GOI tailnet ports intended on NEW: `443,5000,8000,8010,8989`;
+- GOI loopback-only ports: `8020,8990`;
+- OLD Tailscale IP/MagicDNS identity is embedded in documented GOI readiness/config/client dependencies and must not be activated unchanged on NEW;
+- `goi-wait-tailscale-ip`, D-Flight config, GraphHopper effective bind, GOI nginx rendering and GIS GraphHopper/ORS endpoint transition require reconciliation after NEW identity exists;
+- several small project-local files/drop-ins/cache states remain `UNKNOWN` pending read-only NEW verification, not classified `MISSING`.
+
+The handoff has `AS_IS_COMPLETE=NO`, `NEW_VALIDATED=NO`, `RESTART_PERSISTENCE=NOT_TESTED`; therefore GOI rows remain `PRESENT_NOT_VALIDATED`.
+
 ## Remaining hard blockers
 
 1. Tailscale join on NEW with a unique hostname; current OS hostname `ubuntu` collides with OLD MagicDNS identity.
-2. NEW MagicDNS/TLS identity and certificate issuance.
-3. Enable and qualify GOI services against the NEW Tailscale IP.
-4. Parallel OLD↔NEW validation.
-5. Human cutover gate.
-6. OpenClaw activate-or-archive decision.
-7. Production n8n publication on NEW only in the later explicit cutover phase.
+2. Record NEW Tailscale IPv4/MagicDNS and issue the NEW TLS identity/certificate.
+3. Reconcile GOI OLD-IP/domain-dependent readiness/config/client endpoints plus ACL/routes against the NEW identity.
+4. Enable and qualify GOI services against the NEW Tailscale IP; prove restart persistence.
+5. Parallel OLD↔NEW validation.
+6. Human cutover gate.
+7. OpenClaw activate-or-archive decision.
+8. Production n8n publication on NEW only in the later explicit cutover phase.
 
 Evidence anchors:
 - #68
 - `reports/architecture/v4_replacement_8gb_full_service_parity_prep_copy_v1.md`
+- `reports/architecture/vps_goi_project_handoff_2026-09-07.md`
 - #67 Hermes qualification comments
