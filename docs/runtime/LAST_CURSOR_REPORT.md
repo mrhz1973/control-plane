@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_GOI_F02_GIS_ENDPOINT_REMEDIATION_V1` / #68
+**Classification:** `PASS — F02_GIS_ENDPOINT_REMEDIATION=PASS · F02_GIS_ENDPOINTS=NEW_IDENTITY_RETARGETED · F01_F02_CONFIGURATION_GAPS=CLOSED · no service starts`
+**Timestamp (UTC):** 2026-09-07T07:07:04Z
+**BASE_HEAD:** `c06babcf3625f337f16dca3a1ee0c8a14fb6639a`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_GOI_F02_GIS_ENDPOINT_REMEDIATION_V1` commit
+**Report:** `reports/architecture/v4_vps_goi_f02_gis_endpoint_remediation_v1.md`
+
+Retargeted served GIS HTML: GraphHopper `http://100.99.54.93:8989`, ORS `https://ionos-n8n-new.tailc01234.ts.net`, D-Flight `http://100.99.54.93:8010`. OLD IP/MagicDNS count 0. Local GH `127.0.0.1:8989` unchanged. GIS left inactive. Next: remaining GOI runtime slices; do not start them here.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_GOI_F01_NGINX_INCLUDE_REMEDIATION_V1` / #68
 **Classification:** `PASS — F01_NGINX_INCLUDE_REMEDIATION=PASS · F01_NGINX_VHOST=EFFECTIVELY_INCLUDED_SYNTAX_VALID · nginx inactive · F02 unchanged`
 **Timestamp (UTC):** 2026-09-07T06:58:36Z

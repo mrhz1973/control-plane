@@ -15,7 +15,7 @@ NEW Tailscale identity, TLS issuance qualification, GraphHopper functional quali
 | GOI nginx vhost | Control Plane with GOI input | OLD `100.114.7.53:443`, OLD MagicDNS | NEW `sites-enabled` symlink includes staged vhost; `nginx -t` PASS; nginx inactive; listen `100.99.54.93:443` | F01 include PASS; do not start nginx until later authorized activation |
 | GOI nginx readiness | Control Plane with GOI input | active on OLD | readiness drop-in/helper targets NEW TS IP | preserve; no nginx start in F01 remediation |
 | GOI GraphHopper bind | GOI / Control Plane activation gate | OLD app TS bind + loopback admin | runtime active not enabled: `100.99.54.93:8989`, admin `127.0.0.1:8990`; functional smoke PASS | restart-persistence pending |
-| GOI GIS bind / downstream endpoints | GOI | OLD TS `:8000`; clients target OLD GraphHopper/ORS/D-Flight | dynamic NEW TS bind unit is disabled/inactive, but effective served HTML still contains OLD GraphHopper `100.114.7.53:8989`, OLD ORS MagicDNS and adjacent OLD D-Flight override | **F02 endpoint remediation required before GIS activation** |
+| GOI GIS bind / downstream endpoints | GOI | OLD TS `:8000`; clients previously targeted OLD GraphHopper/ORS/D-Flight | unit still disabled/inactive; served HTML now NEW GH `http://100.99.54.93:8989`, ORS `https://ionos-n8n-new.tailc01234.ts.net`, D-Flight `http://100.99.54.93:8010` | F02 retarget PASS; do not start GIS until later authorized activation |
 | GOI Nav proxy | GOI | OLD TS `:5000` from Planet-Clone | dynamic NEW TS bind + parity override loaded, disabled/inactive | controlled activation after prerequisite remediation |
 | GOI ORS | GOI / Control Plane activation gate | OLD loopback runtime | parity artifacts + `LoadCredential` wiring verified; unit disabled/inactive | controlled loopback qualification; nginx serving later |
 | GOI D-Flight | GOI / Control Plane activation gate | OLD TS `:8010` + persistent state | service config/state points NEW; unit inactive; GIS client still has OLD D-Flight override | client retarget before GIS activation; service qualification separately |
@@ -45,11 +45,14 @@ F01_NGINX_VHOST=EFFECTIVELY_INCLUDED_SYNTAX_VALID
 F01_NGINX_INCLUDE_REMEDIATION=PASS
 NGINX_RUNTIME=INACTIVE
 NGINX_FUNCTIONAL_QUALIFICATION=PENDING
-F02_GIS_ENDPOINTS=ACTIVE_OLD_ENDPOINT_FOUND
+F02_GIS_ENDPOINTS=NEW_IDENTITY_RETARGETED
+F02_GIS_ENDPOINT_REMEDIATION=PASS
+F01_F02_CONFIGURATION_GAPS=CLOSED
 CUTOVER=NOT_AUTHORIZED
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_goi_f02_gis_endpoint_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_f01_nginx_include_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_f01_f02_readonly_evidence_v1.md`
 - `reports/architecture/v4_vps_codex_independent_evidence_audit_v1.md`
@@ -58,4 +61,4 @@ Canonical evidence:
 
 ## Current shared-infrastructure next
 
-F02 effective GIS OLD endpoint remediation → remaining GOI private qualification → restart-persistence/parallel OLD↔NEW validation → human cutover.
+Remaining GOI private runtime qualification → restart-persistence/parallel OLD↔NEW validation → human cutover.

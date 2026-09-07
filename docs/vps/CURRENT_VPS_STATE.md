@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after `V4_VPS_GOI_F01_NGINX_INCLUDE_REMEDIATION_V1` on 2026-09-07.
+Updated after `V4_VPS_GOI_F02_GIS_ENDPOINT_REMEDIATION_V1` on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -41,7 +41,7 @@ GOI_NEW_PARITY_COPY_CONFIG_RENDER=PASS
 GOI_POST_RENDER_PREACTIVATION_VERIFY=PASS_WITH_SCOPE_LIMITATION
 GOI_PARITY_FILES_AND_STATE=STAGED_VALIDATED
 GOI_NEW_IDENTITY_CONFIG=PARTIALLY_RENDERED_VALIDATED
-GOI_ACTIVE_OLD_IDENTITY_REFS=FOUND_IN_EFFECTIVE_GIS_HTML
+GOI_ACTIVE_OLD_IDENTITY_REFS=NONE_IN_EFFECTIVE_GIS_HTML
 GOI_SERVICES=GRAPHHOPPER_RUNTIME_ACTIVE_NOT_ENABLED
 GOI_GRAPHHOPPER_FUNCTIONAL_QUALIFICATION=PASS
 GOI_GRAPHHOPPER_BOOT_PERSISTENCE=PENDING
@@ -50,12 +50,18 @@ NEW_TLS_HELPER_INACTIVE_NGINX_SEMANTICS=PASS
 NEW_TLS_IDENTITY=QUALIFIED
 NEW_TAILSCALE_TLS_ISSUANCE_QUALIFICATION=PASS
 VPS_CONSUMER_REGISTRY_COVERAGE=PASS
-CODEX_VPS_EVIDENCE_AUDIT=BLOCKED_CONFIGURATION_GAPS
+CODEX_VPS_EVIDENCE_AUDIT=F01_F02_CONFIGURATION_GAPS_CLOSED
 F01_NGINX_VHOST=EFFECTIVELY_INCLUDED_SYNTAX_VALID
 F01_NGINX_INCLUDE_REMEDIATION=PASS
 NGINX_RUNTIME=INACTIVE
 NGINX_FUNCTIONAL_QUALIFICATION=PENDING
-F02_GIS_ENDPOINTS=ACTIVE_OLD_ENDPOINT_FOUND
+F02_GIS_ENDPOINTS=NEW_IDENTITY_RETARGETED
+F02_GIS_ENDPOINT_REMEDIATION=PASS
+F02_GRAPHHOPPER_DESTINATION=http://100.99.54.93:8989
+F02_ORS_DESTINATION=https://ionos-n8n-new.tailc01234.ts.net
+F02_DFLIGHT_DESTINATION=http://100.99.54.93:8010
+F01_F02_CONFIGURATION_GAPS=CLOSED
+REMAINING_GOI_ACTIVATION_CLEARANCE=READY_FOR_NEXT_BOUNDED_SLICE
 DEV_METHOD_HANDOFF=INGESTED_MIGRATED_VALIDATED
 SCHEMA_ENGINE_HANDOFF=INGESTED_PRESENT_NOT_VALIDATED_NON_NETWORK
 OPENCLAW_HANDOFF=INGESTED_KEEP_STAGED_PENDING
@@ -71,10 +77,10 @@ SCHEMA_ENGINE_EXECUTION=FOLDED_INTO_VPS_CURSOR_WORKSTREAM
 VPS_HANDOFF_TARGET_AFTER_COMPLETION=OPENCLAW42
 VPS_CHAT_CLOSE_CONDITION=MIGRATION_COMPLETE_AND_HANDOFF_RECORDED
 
-SHARED_INFRA_GATES=F02_GIS_ENDPOINT_REMEDIATION,GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
+SHARED_INFRA_GATES=GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=CURSOR_F02_GIS_ENDPOINT_REMEDIATION
+NEXT=CURSOR_REMAINING_GOI_RUNTIME_SLICES
 ```
 
 ## Current proven state
@@ -90,8 +96,8 @@ NEW currently has:
 - NEW TLS identity qualified;
 - GraphHopper functional qualification PASS on `100.99.54.93:8989`, admin `127.0.0.1:8990`, still not enabled at boot;
 - ORS, GIS, Nav, D-Flight inactive;
-- nginx inactive/disabled with GOI vhost now included via `sites-enabled` symlink; syntax valid; no `:443` listener;
-- F02 GIS HTML still targets OLD GraphHopper/ORS endpoints.
+- nginx inactive/disabled with GOI vhost included via `sites-enabled` symlink; syntax valid; no `:443` listener;
+- F02 GIS HTML retargeted to NEW GraphHopper/ORS/D-Flight identities; GIS still inactive.
 
 ## F01/F02 evidence correction
 
@@ -125,19 +131,18 @@ The historical rollup `15/14/0/1` is preserved but is not currently reproducible
 
 ## Remaining blockers before human cutover
 
-1. Remediate F01 nginx inclusion without starting nginx, then re-prove effective config syntax.
-2. Remediate all effective OLD identity endpoints in the served GIS application before GIS activation.
-3. Qualify remaining GOI runtime slices on NEW: ORS, GIS, Nav, D-Flight, nginx.
-4. Validate schema-engine resolver/smoke on NEW.
-5. Prove intended restart/boot persistence and active-nginx TLS renewal behavior.
-6. Parallel OLD↔NEW validation, including F03 count denominator, OLD public `:80` requiredness and OLD TLS renewal/rollback health.
-7. Human cutover gate.
+1. Qualify remaining GOI runtime slices on NEW: ORS, GIS, Nav, D-Flight, nginx (F01 include and F02 GIS HTML retarget already PASS; no promotion to `MIGRATED_VALIDATED`).
+2. Validate schema-engine resolver/smoke on NEW.
+3. Prove intended restart/boot persistence and active-nginx TLS renewal behavior.
+4. Parallel OLD↔NEW validation, including F03 count denominator, OLD public `:80` requiredness and OLD TLS renewal/rollback health.
+5. Human cutover gate.
 
 Production n8n publication/cutover and OLD decommission remain separately gated.
 
 Evidence anchors:
 - #68
-- `reports/architecture/v4_vps_goi_f01_f02_readonly_evidence_v1.md`
+- `reports/architecture/v4_vps_goi_f02_gis_endpoint_remediation_v1.md`
+- `reports/architecture/v4_vps_goi_f01_nginx_include_remediation_v1.md`
 - `reports/architecture/v4_vps_codex_independent_evidence_audit_v1.md`
 - `reports/architecture/v4_vps_cross_project_consumer_mini_audit_v1.md`
 - `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`

@@ -1,6 +1,6 @@
 # Project VPS registry
 
-Current projection after F01 nginx include remediation PASS. nginx remains inactive. F02 GIS OLD endpoints remain. GraphHopper functional PASS (boot persistence pending).
+Current projection after F02 GIS HTML NEW-identity retarget PASS. nginx include remains PASS and inactive. GraphHopper functional PASS (boot persistence pending). GIS not functionally qualified.
 
 | Project / component | OLD footprint | NEW state | Shared dependencies | Migration status | Evidence / next |
 |---|---|---|---|---|---|
@@ -10,7 +10,7 @@ Current projection after F01 nginx include remediation PASS. nginx remains inact
 | Hermes/browser | Hermes 0.21 + Chromium/CDP/Xvfb/x11vnc/noVNC; OLD process-level, NEW `hermes-*.service` | qualified; auth persistence, recall, short soak, post-soak PASS | loopback-only browser ports | MIGRATED_VALIDATED | #67 |
 | GOI GraphHopper | OLD live TS app + loopback admin | runtime active not enabled; app `100.99.54.93:8989`, admin `127.0.0.1:8990`; canonical hiking `/route` 200 | Tailscale IP | PRESENT_NOT_VALIDATED | functional PASS; restart-persistence pending |
 | GOI ORS gateway | OLD live loopback `127.0.0.1:8020`; tree `/opt/goi-ors-gateway` | parity artifacts staged; `LoadCredential` wiring verified; unit disabled/inactive | nginx/TLS/Tailscale | PRESENT_NOT_VALIDATED | controlled loopback qualification after F01/F02 remediation sequence |
-| GOI GIS / cursor-coordinate-converter | OLD TS `:8000`; WD `/root/local-files/handoff-runtime/cursor-coordinate-converter` | unit disabled/inactive; effective served HTML still targets OLD GraphHopper `100.114.7.53:8989`, OLD ORS MagicDNS, and adjacent OLD D-Flight override | Tailscale IP, local-files, GraphHopper/ORS/D-Flight | PRESENT_NOT_VALIDATED | **F02 remediation required before activation** |
+| GOI GIS / cursor-coordinate-converter | OLD TS `:8000`; WD `/root/local-files/handoff-runtime/cursor-coordinate-converter` | unit disabled/inactive; served HTML retargeted to NEW GH `100.99.54.93:8989`, NEW ORS MagicDNS, NEW D-Flight `100.99.54.93:8010` | Tailscale IP, local-files, GraphHopper/ORS/D-Flight | PRESENT_NOT_VALIDATED | F02 retarget PASS; functional qualification pending; not `MIGRATED_VALIDATED` |
 | GOI Navionics / Planet-Clone | OLD TS `:5000`; WD `/root/local-files/handoff-runtime/Planet-Clone` | copied; dynamic TS bind + parity override loaded; disabled/inactive | Tailscale IP, local-files | PRESENT_NOT_VALIDATED | qualify on NEW TS IP after prerequisite remediation |
 | GOI D-Flight | OLD TS `:8010`; `/opt/goi-dflight-helper` + `/var/lib/goi-dflight` | service config/state verified for NEW TS bind/origin; unit disabled/inactive; GIS client still has adjacent OLD D-Flight override | Tailscale, GIS client | PRESENT_NOT_VALIDATED | client retarget + controlled runtime/private reachability qualification |
 | GOI TLS renewal | OLD timer live; cert files `/etc/goi-ors/tls`; oneshot observed failed on OLD | NEW cert SAN qualified; helper handles inactive nginx; NEW timer inactive | NEW MagicDNS/TLS identity | PRESENT_NOT_VALIDATED | active-nginx renewal/persistence proof later; OLD health checked in parallel validation |
@@ -37,12 +37,15 @@ F01_NGINX_VHOST=EFFECTIVELY_INCLUDED_SYNTAX_VALID
 F01_NGINX_INCLUDE_REMEDIATION=PASS
 NGINX_RUNTIME=INACTIVE
 NGINX_FUNCTIONAL_QUALIFICATION=PENDING
-F02_GIS_ENDPOINTS=ACTIVE_OLD_ENDPOINT_FOUND
+F02_GIS_ENDPOINTS=NEW_IDENTITY_RETARGETED
+F02_GIS_ENDPOINT_REMEDIATION=PASS
+F01_F02_CONFIGURATION_GAPS=CLOSED
 ROLLUP_COUNTS_STATUS=UNRECONCILED_F03_DO_NOT_USE_FOR_FINAL_ACCEPTANCE
 CUTOVER=NOT_AUTHORIZED
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_goi_f02_gis_endpoint_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_f01_nginx_include_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_f01_f02_readonly_evidence_v1.md`
 - `reports/architecture/v4_vps_codex_independent_evidence_audit_v1.md`
