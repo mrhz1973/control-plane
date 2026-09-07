@@ -51,10 +51,13 @@ OPENCLAW_HANDOFF=INGESTED_KEEP_STAGED_PENDING
 CROSS_PROJECT_PREJOIN_RECONCILIATION=CLEARED
 TAILSCALE_UNIQUE_IDENTITY_JOIN=PASS
 TAILSCALE_DNSNAME_ROUTES_SERVE_VERIFY=PASS
-SHARED_INFRA_GATES=NEW_MAGICDNS_TLS_RECOVERY_VERIFY,GOI_ACTIVATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
+CONTROL_PLANE_EXECUTION_MODEL=SINGLE_CHAT_SINGLE_CURSOR
+SCHEMA_ENGINE_EXECUTION=FOLDED_INTO_MAIN_CURSOR_WORKSTREAM
+OPENCLAW42_NOTIFICATION=OPERATOR_RELAY_ONLY
+SHARED_INFRA_GATES=NEW_MAGICDNS_TLS_RECOVERY_VERIFY,GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=CURSOR_TLS_RECOVERY_VERIFY_THEN_GOI_QUALIFICATION
+NEXT=CURSOR_TLS_RECOVERY_VERIFY_THEN_GOI_AND_SCHEMA_ENGINE_QUALIFICATION
 ```
 
 ## Current proven state
@@ -103,12 +106,23 @@ Interpretation:
 
 Required recovery is first read-only verification of the installed cert/key. If the NEW certificate is correct, adapt the NEW-only renewal helper so inactive nginx is a successful no-reload case and active nginx is reloaded only after `nginx -t` passes. Then re-run qualification without activating GOI/nginx accidentally.
 
+## Execution model restored to single Control Plane chat
+
+The temporary idea of a separate schema-engine chat/worker was abandoned before any live schema-engine smoke or GitHub promotion occurred. There is no second operational worker to consume or reconcile.
+
+From this point:
+- this chat is the only VPS Control Plane orchestrator;
+- one Cursor executor carries the remaining VPS execution sequentially;
+- schema-engine validation is folded into the same Cursor workstream after TLS/GOI reach a safe checkpoint;
+- OpenClaw 42 is informational only: the operator may relay progress there, but it does not execute or own VPS migration state;
+- OpenClaw itself remains staged/inactive and its activate-or-archive decision is still a later explicit gate.
+
 ## Remaining hard blockers
 
 1. Cursor recovery/verification of NEW TLS material and NEW-only renewal-helper inactive-nginx semantics.
 2. Complete NEW TLS qualification: SAN/dates, permissions, cert-key match, nginx syntax, helper exit=0 while nginx remains inactive.
 3. Controlled GOI service activation/qualification on NEW private Tailscale identity; prove private reachability and restart persistence.
-4. Consume concurrent schema-engine validation from its separate worker; do not duplicate that work.
+4. Validate schema-engine resolver/smoke on NEW in the same Cursor workstream; promote only on real PASS evidence.
 5. Parallel OLD↔NEW validation.
 6. Human cutover gate.
 7. Production n8n publication on NEW only in explicit cutover phase.
