@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_CROSS_PROJECT_CONSUMER_MINI_AUDIT_V1` / #68
+**Classification:** `PASS — VPS_CONSUMER_REGISTRY_COVERAGE=PASS · read-only OLD↔NEW · documentary bind/path rows only · no runtime mutation`
+**Timestamp (UTC):** 2026-09-07T02:34:00Z
+**BASE_HEAD:** `86a99ba42ef4972589a72455729ab84097ad7a17`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_CROSS_PROJECT_CONSUMER_MINI_AUDIT_V1` commit
+**Report:** `reports/architecture/v4_vps_cross_project_consumer_mini_audit_v1.md`
+
+Read-only audit: every necessary OLD consumer maps to PROJECT/SHARED registry rows. Documentary gaps closed for `/root/local-files`, `/srv/cp-verifier-inbox`, control-plane checkout bind, GIS/Nav working directories, TLS path `/etc/goi-ors/tls`. No OWNERSHIP_UNCLEAR live workload. GraphHopper on NEW left running. Next unchanged: remaining GOI slices.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_GOI_GRAPHHOPPER_ACTIVATION_V1` / #68
 **Classification:** `PASS — GOI_GRAPHHOPPER_FUNCTIONAL_QUALIFICATION=PASS · boot persistence pending · nginx/ORS/GIS/Nav/D-Flight inactive · no cutover`
 **Timestamp (UTC):** 2026-09-07T02:25:39Z

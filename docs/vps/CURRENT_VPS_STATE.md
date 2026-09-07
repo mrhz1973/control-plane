@@ -52,6 +52,7 @@ DEV_METHOD_HANDOFF=INGESTED_MIGRATED_VALIDATED
 SCHEMA_ENGINE_HANDOFF=INGESTED_PRESENT_NOT_VALIDATED_NON_NETWORK
 OPENCLAW_HANDOFF=INGESTED_KEEP_STAGED_PENDING
 CROSS_PROJECT_PREJOIN_RECONCILIATION=CLEARED
+VPS_CONSUMER_REGISTRY_COVERAGE=PASS
 TAILSCALE_UNIQUE_IDENTITY_JOIN=PASS
 TAILSCALE_DNSNAME_ROUTES_SERVE_VERIFY=PASS
 
@@ -93,7 +94,8 @@ NEW currently has:
 - GraphHopper listeners: TS app `100.99.54.93:8989`, admin `127.0.0.1:8990`;
 - canonical hiking `/route` smoke HTTP 200 with positive distance;
 - GraphHopper not promoted to `MIGRATED_VALIDATED` (restart-persistence pending);
-- renewal helper explicitly targets NEW MagicDNS.
+- renewal helper explicitly targets NEW MagicDNS;
+- cross-project consumer mini-audit: every necessary OLD consumer is represented in the registries (documentary bind/path rows added; no runtime change).
 
 ## NEW TLS qualification
 
@@ -134,6 +136,7 @@ This VPS migration chat is complete only after the migration reaches its authori
 
 Evidence anchors:
 - #68
+- `reports/architecture/v4_vps_cross_project_consumer_mini_audit_v1.md`
 - `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`
 - `reports/architecture/v4_vps_new_tls_recovery_v1.md`
 - `reports/architecture/vps_goi_post_render_preactivation_verify_2026-09-07.md`
