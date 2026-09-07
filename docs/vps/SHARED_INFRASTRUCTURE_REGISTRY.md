@@ -2,14 +2,14 @@
 
 This file records authoritative ownership/state for VPS resources that specialist projects must not configure independently.
 
-NEW Tailscale identity and the full GOI private stack are proven functional, enabled, cold-start persistent, and TLS renewal with nginx active is proven with weekly timer. Parallel OLD↔NEW validation is PASS; F03 is reconciled, F04 is closed, and F05 current OLD HTTPS/rollback health is PASS despite degraded OLD renewal. No public cutover.
+NEW Tailscale identity and the full GOI private stack are LIVE and proven functional, enabled, cold-start persistent, and TLS renewal with nginx active is proven with weekly timer. Authorized cutover is PASS; OLD is frozen rollback standby with open retention and no decommission authorization.
 
 | Shared resource | Owner | OLD current state | NEW current state | Mutation rule / gate |
 |---|---|---|---|---|
-| Public host identity | Control Plane | `217.160.71.145` LIVE | `31.70.139.73` PREP | no public cutover before human gate |
+| Public host identity | Control Plane | `217.160.71.145` rollback standby | `31.70.139.73` LIVE/private | no public exposure; rollback retention open |
 | Tailscale node identity | Control Plane | `ubuntu`, `100.114.7.53`, `ubuntu.tailc01234.ts.net` | `ionos-n8n-new`, `100.99.54.93`, `ionos-n8n-new.tailc01234.ts.net`; OS hostname `ubuntu` | unique identity, private reachability, routes/Serve/Funnel NONE, persistence PASS |
 | MagicDNS | Control Plane | OLD live | exact NEW MagicDNS verified | NEW identity qualified for TLS; never reuse OLD while OLD live |
-| DNS/public routing | Control Plane | OLD remains production | NEW not cut over | explicit human cutover only |
+| DNS/public routing | Control Plane | OLD public identity retained for rollback | no routing mutation required; NEW private/live workflow runtime | no further routing action; human rollback-exit gate |
 | Tailscale ACL/routes | Control Plane with project input | OLD private GOI topology live | NEW no advertised routes, no exit-node, Serve or Funnel | no mutation unless separately required |
 | nginx global service | Control Plane | active/enabled OLD | installed, active enabled NEW; bind Tailscale `:443` only; cold-start PASS | no public cutover |
 | GOI nginx vhost | Control Plane with GOI input | OLD `100.114.7.53:443`, OLD MagicDNS | runtime active enabled; `100.99.54.93:443`; HTTPS ORS chain PASS; cold-start PASS | no public bind |
@@ -23,15 +23,15 @@ NEW Tailscale identity and the full GOI private stack are proven functional, ena
 | TLS renewal | Control Plane with GOI input | OLD timer live; latest oneshot persistently failed `203/EXEC` because helper is absent; current HTTPS healthy through `2026-11-15` | NEW active-nginx renewal PASS: reload proven, weekly timer enabled (`OnCalendar=weekly` + randomized 1h), SAN NEW only | F05 PASS for current HTTPS/rollback practicality; no OLD repair in this task |
 | Public ports `80/443` | Control Plane | OLD nginx owns public `:80` default static site and TS `:443` | NEW no public `:80`/`:443`; nginx TS `:443` only | F04 `NON_REQUIRED_OBSOLETE_DEFAULT`; no NEW `:80` replication; no public-route cutover |
 | GOI TS-bound ports | Control Plane allocates; GOI validates | OLD `443,5000,8000,8010,8989`; loopback `8020,8990` | NEW GraphHopper `8989` + admin `8990`; ORS loopback `8020`; nginx TS `443`; D-Flight TS `8010`; GIS TS `8000`; Nav TS `5000` — all enabled+cold-start PASS | never expose `8020/8990` beyond loopback |
-| n8n loopback `5678` | Control Plane | OLD production | NEW isolated replica | publication/cutover separately authorized |
+| n8n loopback `5678` | Control Plane | OLD writer stopped/frozen; DB/publication retained | NEW live, exact 4-workflow publication map, loopback only | rollback retention; no dual writer |
 | n8n filesystem binds | Control Plane | `/root/local-files`, `/srv/cp-verifier-inbox`, control-plane checkout bind | same bind names present on NEW | do not drop binds; no secret values in git |
 | schema-engine local dependency | Control Plane | `/root/local-files/handoff-runtime/schema-engine` | `MIGRATED_VALIDATED`; Ajv isolated tree via `/files` bind; env at validator invocation | no network dependency; no compose env persistence |
 | dev-method reference tree | dev-method / Control Plane | `/root/local-files/handoff-runtime/dev-method` | copied/validated | no shared network dependency |
 | OpenClaw preserved fallback | Control Plane | preserved fallback | copied/staged inactive, no listener | `KEEP_STAGED_PENDING` role qualified; future activation separately gated |
 | Hermes private ports | Control Plane/Hermes | loopback | loopback qualified | remain private |
 | Docker common runtime | Control Plane | live | live | shared namespace centralized |
-| Cutover | Control Plane + human operator | OLD live | NOT AUTHORIZED | explicit human gate |
-| Rollback retention | Control Plane + human operator | OLD retained | not entered | after successful cutover only |
+| Cutover | Control Plane + human operator | OLD writer frozen | PASS; NEW LIVE | no reverse/secondary cutover without human gate |
+| Rollback retention | Control Plane + human operator | OLD intact/frozen standby | entered, no automatic expiry | separate human rollback-exit authorization |
 | Decommission | Human final authorization via Control Plane | forbidden now | n/a | only after checklist fully green |
 
 ## Current proof
@@ -81,7 +81,12 @@ ROLLUP_COUNTS_STATUS=RECONCILED_F03
 SCHEMA_ENGINE_FUNCTIONAL_QUALIFICATION=PASS
 SCHEMA_ENGINE_MIGRATION_STATUS=MIGRATED_VALIDATED
 F01_F02_CONFIGURATION_GAPS=CLOSED
-CUTOVER=NOT_AUTHORIZED
+CUTOVER=PASS
+NEW_ROLE=LIVE
+OLD_ROLE=ROLLBACK_STANDBY_FROZEN
+ROLLBACK_RETENTION=ENTERED
+ROLLBACK_RETENTION_AUTO_EXPIRY=NONE
+OLD_DECOMMISSION_ELIGIBLE=NO
 ```
 
 Canonical evidence:
@@ -100,4 +105,4 @@ Canonical evidence:
 
 ## Current shared-infrastructure next
 
-HUMAN CUTOVER GATE: final OLD write freeze, proven DB/state sync, fresh publication map, authorized NEW publication/routing, and rollback retention. Cutover and decommission remain unauthorized.
+Rollback-retention monitoring and separate human rollback-exit/decommission authorization. No automatic expiry, OLD repair, shutdown, or deletion.

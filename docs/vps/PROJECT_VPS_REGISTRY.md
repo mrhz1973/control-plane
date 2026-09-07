@@ -1,27 +1,27 @@
 # Project VPS registry
 
-Current projection after parallel OLD↔NEW validation PASS. NEW core restart persistence, GOI stack, TLS renewal, F03 census, F04 `:80` disposition, and F05 current OLD HTTPS/rollback health are qualified. Cutover remains human-gated.
+Current projection after authorized production cutover PASS. NEW is LIVE with the exact frozen four-workflow publication map; OLD n8n is stopped and OLD PostgreSQL/GOI/LiteLLM remain intact as rollback standby. Rollback retention is open with no automatic expiry; decommission remains unauthorized.
 
 | Project / component | OLD footprint | NEW state | Shared dependencies | Migration status | Evidence / next |
 |---|---|---|---|---|---|
 | Control Plane core — PostgreSQL | Docker PostgreSQL 16.15 | healthy, unpublished | Docker/common boot | MIGRATED_VALIDATED | #68 prep-copy report |
-| Control Plane core — n8n | loopback `127.0.0.1:5678`, production OLD | isolated replica, health 200, capable/published 0/0 | cutover / workflow publication | MIGRATED_VALIDATED | activation later |
+| Control Plane core — n8n | stopped writer; PostgreSQL/publication retained for rollback | live loopback `127.0.0.1:5678`, health 200, exact 4-workflow map, capable/published 4/4 | rollback retention / future exit gate | MIGRATED_VALIDATED | cutover PASS; OLD retained |
 | Control Plane core — LiteLLM | unpublished Docker service | running unpublished | secret-safe auth binds | MIGRATED_VALIDATED | #68 |
 | Hermes/browser | Hermes 0.21 + Chromium/CDP/Xvfb/x11vnc/noVNC; OLD process-level, NEW `hermes-*.service` | qualified; auth persistence, recall, short soak, post-soak PASS | loopback-only browser ports | MIGRATED_VALIDATED | #67 |
-| GOI GraphHopper | OLD live TS app + loopback admin | runtime active enabled; app `100.99.54.93:8989`, admin `127.0.0.1:8990`; canonical hiking `/route` 200; cold-start PASS | Tailscale IP | MIGRATED_VALIDATED | F03 rollup frozen |
-| GOI ORS gateway | OLD live loopback `127.0.0.1:8020`; tree `/opt/goi-ors-gateway` | runtime active enabled; loopback `127.0.0.1:8020`; CORS GIS origin `http://100.99.54.93:8000`; status 200 ready/PRESENT; cold-start PASS | nginx/TLS/Tailscale | MIGRATED_VALIDATED | F03 rollup frozen |
-| GOI GIS / cursor-coordinate-converter | OLD TS `:8000`; WD `/root/local-files/handoff-runtime/cursor-coordinate-converter` | runtime active enabled; bind `100.99.54.93:8000`; F02 HTML served; browser Origin PASS vs GH/ORS/D-Flight; cold-start PASS | Tailscale IP, local-files, GraphHopper/ORS/D-Flight | MIGRATED_VALIDATED | F03 rollup frozen |
-| GOI Navionics / Planet-Clone | OLD TS `:5000`; WD `/root/local-files/handoff-runtime/Planet-Clone` | runtime active enabled; bind `100.99.54.93:5000`; GET `/status` 200 `tokens_ok=true`; cold-start PASS | Tailscale IP, local-files | MIGRATED_VALIDATED | F03 rollup frozen |
-| GOI D-Flight | OLD TS `:8010`; `/opt/goi-dflight-helper` + `/var/lib/goi-dflight` | runtime active enabled; bind `100.99.54.93:8010`; GET `/status` READY LKG 841 features; NEW Origin CORS PASS; cold-start PASS | Tailscale, GIS client | MIGRATED_VALIDATED | F03 rollup frozen |
-| GOI TLS renewal | OLD timer live; cert files `/etc/goi-ors/tls`; oneshot observed failed on OLD | active-nginx renewal PASS: unit run with nginx live, reload proven, weekly timer enabled, live cert = installed leaf, SAN NEW only | NEW MagicDNS/TLS identity | MIGRATED_VALIDATED | F03 rollup frozen; OLD health checked in F05/parallel validation |
-| nginx GOI vhost | OLD live TS `:443` + public default `:80` | runtime active enabled; bind `100.99.54.93:443` ssl only; HTTPS `/ors/status` 200 ready/PRESENT; no public `:80`/`:443`; cold-start PASS | Tailscale/TLS/ORS | MIGRATED_VALIDATED | F03 rollup frozen |
+| GOI GraphHopper | OLD live TS app + loopback admin | runtime active enabled; app `100.99.54.93:8989`, admin `127.0.0.1:8990`; canonical hiking `/route` 200; cold-start PASS | Tailscale IP | MIGRATED_VALIDATED | F03 reconciled |
+| GOI ORS gateway | OLD live loopback `127.0.0.1:8020`; tree `/opt/goi-ors-gateway` | runtime active enabled; loopback `127.0.0.1:8020`; CORS GIS origin `http://100.99.54.93:8000`; status 200 ready/PRESENT; cold-start PASS | nginx/TLS/Tailscale | MIGRATED_VALIDATED | F03 reconciled |
+| GOI GIS / cursor-coordinate-converter | OLD TS `:8000`; WD `/root/local-files/handoff-runtime/cursor-coordinate-converter` | runtime active enabled; bind `100.99.54.93:8000`; F02 HTML served; browser Origin PASS vs GH/ORS/D-Flight; cold-start PASS | Tailscale IP, local-files, GraphHopper/ORS/D-Flight | MIGRATED_VALIDATED | F03 reconciled |
+| GOI Navionics / Planet-Clone | OLD TS `:5000`; WD `/root/local-files/handoff-runtime/Planet-Clone` | runtime active enabled; bind `100.99.54.93:5000`; GET `/status` 200 `tokens_ok=true`; cold-start PASS | Tailscale IP, local-files | MIGRATED_VALIDATED | F03 reconciled |
+| GOI D-Flight | OLD TS `:8010`; `/opt/goi-dflight-helper` + `/var/lib/goi-dflight` | runtime active enabled; bind `100.99.54.93:8010`; GET `/status` READY LKG 841 features; NEW Origin CORS PASS; cold-start PASS | Tailscale, GIS client | MIGRATED_VALIDATED | F03 reconciled |
+| GOI TLS renewal | OLD timer live; cert files `/etc/goi-ors/tls`; oneshot observed failed on OLD | active-nginx renewal PASS: unit run with nginx live, reload proven, weekly timer enabled, live cert = installed leaf, SAN NEW only | NEW MagicDNS/TLS identity | MIGRATED_VALIDATED | F03 reconciled; OLD retained for rollback |
+| nginx GOI vhost | OLD live TS `:443` + public default `:80` | runtime active enabled; bind `100.99.54.93:443` ssl only; HTTPS `/ors/status` 200 ready/PRESENT; no public `:80`/`:443`; cold-start PASS | Tailscale/TLS/ORS | MIGRATED_VALIDATED | F03 reconciled |
 | Control Plane checkout bind | `/root/local-files/handoff-runtime/control-plane` mounted read-only into n8n; LiteLLM config from this tree | present on NEW; same bind shape | n8n, LiteLLM, local-files | MIGRATED_VALIDATED | keep unpublished |
 | `/srv/cp-verifier-inbox` | n8n bind; owner `cpinbox` | present on NEW; same bind | n8n | MIGRATED_VALIDATED | empty inbox; no extra daemon |
 | `/root/local-files` | n8n `/files` bind; contains handoff-runtime | present on NEW | n8n, LiteLLM, GOI GIS/Nav | MIGRATED_VALIDATED | umbrella persistent application root |
 | dev-method | tree `/root/local-files/handoff-runtime/dev-method` | copied/validated | local-files | MIGRATED_VALIDATED | reference-only |
-| schema-engine | tree `/root/local-files/handoff-runtime/schema-engine` | isolated Ajv 8.20.0 + ajv-formats 3.0.1; validator valid PASS / invalid FAIL_CLOSED; bind `/files` persistent | n8n/control-plane only | MIGRATED_VALIDATED | non-network; F03 rollup frozen |
+| schema-engine | tree `/root/local-files/handoff-runtime/schema-engine` | isolated Ajv 8.20.0 + ajv-formats 3.0.1; validator valid PASS / invalid FAIL_CLOSED; bind `/files` persistent | n8n/control-plane only | MIGRATED_VALIDATED | non-network; F03 reconciled |
 | OpenClaw app/node | preserved fallback trees | copied/staged, inactive, no listener | future fallback transport only | MIGRATED_VALIDATED | `KEEP_STAGED_PENDING` role satisfied; do not activate |
-| `n8n-compose.service` | enabled OLD boot persistence | installed/enabled for isolated NEW stack | n8n core | MIGRATED_VALIDATED | reboot-level persistence not yet used as full-parity acceptance |
+| `n8n-compose.service` | OLD n8n stopped by cutover; PostgreSQL retained | enabled/active; restarted through canonical boundary after restore | n8n core | MIGRATED_VALIDATED | cutover PASS; rollback retention open |
 | GOI service users | OLD live service accounts | NEW nologin accounts present | shared Linux identity | MIGRATED_VALIDATED | no further identity mutation required |
 | Tailscale node identity | OLD `ubuntu` / `100.114.7.53` | unique `ionos-n8n-new` / `100.99.54.93`; exact NEW MagicDNS, private reachability, no routes/exit-node/Serve/Funnel | all TS-bound GOI services | MIGRATED_VALIDATED | parallel validation PASS |
 | historical OLD Docker volumes | OLD leftovers `root_n8n_postgres_data`, `_retry006`, `_seqresync_prod`; OLD `_quarantine` under local-files | not copied; no current container/compose consumer | none | OBSOLETE_CONFIRMED_NOT_REQUIRED | retain until decommission gate; no deletion in this task |
@@ -86,7 +86,11 @@ F03_PRESENT_NOT_VALIDATED=0
 F03_MISSING=0
 F03_OBSOLETE_CONFIRMED_NOT_REQUIRED=3
 ROLLUP_COUNTS_STATUS=RECONCILED_F03
-CUTOVER=NOT_AUTHORIZED
+CUTOVER=PASS
+NEW_ROLE=LIVE
+OLD_ROLE=ROLLBACK_STANDBY_FROZEN
+ROLLBACK_RETENTION=ENTERED
+ROLLBACK_RETENTION_AUTO_EXPIRY=NONE
 ```
 
 Canonical evidence:

@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_PRODUCTION_CUTOVER_OLD_TO_NEW_V1` / #68
+**Classification:** `PASS — CUTOVER=PASS · NEW_ROLE=LIVE · OLD_ROLE=ROLLBACK_STANDBY_FROZEN`
+**Timestamp (UTC):** 2026-09-07T10:49:00Z
+**BASE_HEAD:** `3d34b67bd5f7dd8b07ec9bba89931356754d44ca`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_PRODUCTION_CUTOVER_OLD_TO_NEW_V1` commit
+**Report:** `reports/architecture/v4_vps_production_cutover_old_to_new_v1.md`
+
+Authorized OLD→NEW cutover completed: OLD writer frozen, final PostgreSQL snapshot/restore and sequence safety PASS, exact four-workflow publication map restored on NEW, two natural WF40 ticks PASS, NEW production/private health PASS. OLD PostgreSQL/GOI/HTTPS retained intact as rollback standby; retention has no automatic expiry; decommission unauthorized.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_PARALLEL_OLD_NEW_VALIDATION_F03_F04_F05_V1` / #68
 **Classification:** `PASS — VPS_PARALLEL_VALIDATION=PASS · HUMAN_CUTOVER_GATE=READY_NOT_AUTHORIZED`
 **Timestamp (UTC):** 2026-09-07T09:25:00Z

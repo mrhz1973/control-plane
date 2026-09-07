@@ -13,11 +13,31 @@ F03_ACCOUNTING_RECONCILIATION=PASS
 F04_OLD_PUBLIC_80_REQUIREDNESS=NON_REQUIRED_OBSOLETE_DEFAULT
 F05_OLD_TLS_CURRENT_HTTPS_HEALTH=PASS
 F05_OLD_ROLLBACK_TLS_PRACTICABLE=YES
-HUMAN_CUTOVER_GATE=READY_NOT_AUTHORIZED
+HUMAN_CUTOVER_GATE=AUTHORIZED_AND_EXECUTED
 OLD_DECOMMISSION_ELIGIBLE=NO
 ```
 
-The OLD renewal helper remains degraded (`203/EXEC` absent helper); current OLD HTTPS is healthy through `2026-11-15T23:56:47Z`. The checklist boxes below remain the canonical gate and are not marked complete by this checkpoint. Cutover, rollback retention, and decommission authorization remain pending.
+The OLD renewal helper remains degraded (`203/EXEC` absent helper); current OLD HTTPS is healthy through `2026-11-15T23:56:47Z`.
+
+## Production cutover checkpoint — 2026-09-07
+
+```text
+HUMAN_CUTOVER_AUTHORIZED=YES
+OLD_WRITE_FREEZE=PASS
+FINAL_DB_SYNC=PASS
+NEW_PRODUCTION_PUBLICATION_MAP_MATCH=PASS
+POST_CUTOVER_HEALTH=PASS
+PRODUCTION_TRAFFIC_ON_NEW=PASS
+CUTOVER=PASS
+NEW_ROLE=LIVE
+OLD_ROLE=ROLLBACK_STANDBY_FROZEN
+ROLLBACK_RETENTION=ENTERED
+ROLLBACK_RETENTION_AUTO_EXPIRY=NONE
+OLD_DECOMMISSION_ELIGIBLE=NO
+OLD_DECOMMISSION_AUTHORIZED=NO
+```
+
+The checklist boxes below remain the canonical gate. Rollback retention is open and its exit criteria are intentionally not complete; decommission boxes are not marked complete.
 
 ## Component accounting
 

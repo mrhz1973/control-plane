@@ -6,14 +6,14 @@ Updated after `V4_VPS_PARALLEL_OLD_NEW_VALIDATION_F03_F04_F05_V1` on 2026-09-07.
 VPS_STATE
 OLD_HOST=ionos-n8n
 OLD_IP=217.160.71.145
-OLD_ROLE=LIVE
+OLD_ROLE=ROLLBACK_STANDBY_FROZEN
 OLD_TAILSCALE_IP=100.114.7.53
 OLD_TAILSCALE_NAME=ubuntu
 OLD_MAGICDNS=ubuntu.tailc01234.ts.net
 
 NEW_HOST=ionos-n8n-new
 NEW_IP=31.70.139.73
-NEW_ROLE=PREP
+NEW_ROLE=LIVE
 NEW_OS_HOSTNAME=ubuntu
 NEW_TAILSCALE_HOSTNAME=ionos-n8n-new
 NEW_TAILSCALE_IP=100.99.54.93
@@ -143,7 +143,7 @@ SCHEMA_ENGINE_INVALID_FIXTURE=FAIL_CLOSED_MISSING_REQUIRED_FIELD
 SCHEMA_ENGINE_NETWORK_RUNTIME=NONE
 SCHEMA_ENGINE_RESTART_PERSISTENCE=STRUCTURALLY_PROVEN_BY_SHARED_BIND
 SCHEMA_ENGINE_MIGRATION_STATUS=MIGRATED_VALIDATED
-SCHEMA_ENGINE_F03_ROW_PROMOTED_ROLLUP_FROZEN=YES
+SCHEMA_ENGINE_F03_ROW_PROMOTED_ROLLUP_RECONCILED=YES
 OPENCLAW_HANDOFF=INGESTED_KEEP_STAGED_PENDING
 CROSS_PROJECT_PREJOIN_RECONCILIATION=CLEARED
 TAILSCALE_UNIQUE_IDENTITY_JOIN=PASS
@@ -158,7 +158,23 @@ VPS_HANDOFF_TARGET_AFTER_COMPLETION=OPENCLAW42
 VPS_CHAT_CLOSE_CONDITION=MIGRATION_COMPLETE_AND_HANDOFF_RECORDED
 
 SHARED_INFRA_GATES=GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
-CUTOVER=NOT_AUTHORIZED
+HUMAN_CUTOVER_AUTHORIZED=YES
+OLD_DECOMMISSION_AUTHORIZED=NO
+OLD_WRITE_FREEZE=PASS
+FINAL_OLD_POSTGRES_SNAPSHOT=PASS
+FINAL_DB_SYNC=PASS
+POSTGRES_SEQUENCE_STATE=PASS
+FINAL_SYNC_EQUIVALENCE=PASS
+NEW_POST_RESTORE_ISOLATION=PASS
+NEW_PRODUCTION_PUBLICATION_MAP_MATCH=PASS
+CUTOVER_ROUTING_ACTION=NONE_REQUIRED
+POST_CUTOVER_HEALTH=PASS
+PRODUCTION_TRAFFIC_ON_NEW=PASS
+OLD_ROLE=ROLLBACK_STANDBY_FROZEN
+ROLLBACK_RETENTION=ENTERED
+ROLLBACK_RETENTION_AUTO_EXPIRY=NONE
+CUTOVER=PASS
+NEW_ROLE=LIVE
 OLD_DECOMMISSION_ELIGIBLE=NO
 VPS_PARALLEL_VALIDATION=PASS
 F03_ACCOUNTING_RECONCILIATION=PASS
@@ -167,18 +183,18 @@ F05_OLD_TLS_CURRENT_HTTPS_HEALTH=PASS
 F05_OLD_TLS_RENEWAL_HEALTH=PERSISTENT_DEGRADED_HELPER_MISSING_203_EXEC
 F05_OLD_ROLLBACK_TLS_PRACTICABLE=YES
 NEW_CORE_RESTART_PERSISTENCE=PASS
-HUMAN_CUTOVER_GATE=READY_NOT_AUTHORIZED
-OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=HUMAN_CUTOVER_GATE
+HUMAN_CUTOVER_GATE=AUTHORIZED_AND_EXECUTED
+ROLLBACK_TLS_VALID_UNTIL=2026-11-15T23:56:47Z
+NEXT=ROLLBACK_RETENTION_AND_HUMAN_ROLLBACK_EXIT_OR_DECOMMISSION_GATE
 ```
 
 ## Current proven state
 
-OLD remains live production and unchanged.
+OLD is frozen intact as rollback standby; its PostgreSQL, GOI, LiteLLM, TLS and publication state remain available, while OLD n8n is stopped.
 
 NEW currently has:
-- PostgreSQL 16.15 healthy and unpublished;
-- n8n 2.33.3 loopback-only, health 200, execution-capable/published `0/0`;
+- PostgreSQL 16.15 healthy and unpublished to the host;
+- n8n 2.33.3 loopback-only, health 200, exact frozen publication map with 4 workflows and execution-capable count 4;
 - LiteLLM 1.98.0 running unpublished;
 - Hermes/browser stack qualified and private;
 - unique Tailscale identity `ionos-n8n-new` / `100.99.54.93` / `ionos-n8n-new.tailc01234.ts.net` with no routes, exit-node, Serve or Funnel;
@@ -190,7 +206,8 @@ NEW currently has:
 - Nav private functional qualification PASS on `100.99.54.93:5000`, enabled with cold-start persistence PASS;
 - nginx private-chain functional qualification PASS on `100.99.54.93:443` only (HTTPS→ORS, hostname-verified TLS), enabled with cold-start persistence PASS; no public `:80`/`:443`;
 - F02 GIS HTML retargeted to NEW GraphHopper/ORS/D-Flight identities; GIS now serving that artifact privately;
-- schema-engine isolated Ajv tree functionally qualified and `MIGRATED_VALIDATED`; F03 census reconciliation PASS (`31/0/0 + 3 obsolete-confirmed`).
+- schema-engine isolated Ajv tree functionally qualified and `MIGRATED_VALIDATED`; F03 census reconciliation PASS (`31/0/0 + 3 obsolete-confirmed`);
+- production cutover PASS; NEW is live and OLD is rollback standby frozen; rollback retention has no automatic expiry.
 
 ## F01/F02 evidence supersession
 
@@ -203,7 +220,7 @@ The later functional qualification evidence supersedes the pre-remediation findi
 - OLD SAN absent;
 - cert/key match and modes PASS;
 - renewal helper inactive-nginx semantics PASS;
-- active-nginx renewal/persistence remains pending.
+- active-nginx renewal and timer persistence PASS.
 
 ## Counts caveat — F03
 
@@ -216,15 +233,15 @@ F03 is now reconciled against the original 34-component census: `31 MIGRATED_VAL
 - **Cursor** is the single executor for remaining VPS work.
 - The OpenClaw application/runtime on the VPS remains staged/inactive with `KEEP_STAGED_PENDING` unless separately authorized.
 
-## Remaining blockers before human cutover
+## Remaining gates after cutover
 
-1. Human cutover decision: final OLD write freeze, fresh PostgreSQL/n8n state sync, current publication map, authorized NEW publication/routing, and rollback window selection.
-2. OLD renewal remains degraded (`203/EXEC` helper missing) although current hostname-verified HTTPS is healthy through `2026-11-15T23:56:47Z`; no OLD repair was performed in this read-only checkpoint.
-
-Production n8n publication/cutover and OLD decommission remain separately gated.
+1. Keep OLD intact through the open rollback retention; no automatic expiry is authorized.
+2. A separate human rollback-exit/decommission authorization is required. OLD decommission remains ineligible.
+3. OLD renewal remains degraded (`203/EXEC` helper missing) although current hostname-verified HTTPS is healthy through `2026-11-15T23:56:47Z`; no OLD repair was performed by cutover.
 
 Evidence anchors:
 - #68
+- `reports/architecture/v4_vps_production_cutover_old_to_new_v1.md`
 - `reports/architecture/v4_vps_active_nginx_tls_renewal_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_cold_start_boot_persistence_v1.md`
 - `reports/architecture/v4_vps_schema_engine_new_functional_qualification_v1.md`
