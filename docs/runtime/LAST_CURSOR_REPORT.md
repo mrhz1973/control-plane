@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_GOI_NAV_PRIVATE_FUNCTIONAL_QUALIFICATION_V1` / #68
+**Classification:** `PASS — GOI_NAV_FUNCTIONAL_QUALIFICATION=PASS · NAV_RUNTIME=ACTIVE_NOT_ENABLED · NAV_BIND=100.99.54.93:5000`
+**Timestamp (UTC):** 2026-09-07T08:21:50Z
+**BASE_HEAD:** `10ba8b499ff7096be508cb6b22751996b742e781`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_GOI_NAV_PRIVATE_FUNCTIONAL_QUALIFICATION_V1` commit
+**Report:** `reports/architecture/v4_vps_goi_nav_private_functional_qualification_v1.md`
+
+Started `goi-nav-proxy` without enable. Listener `100.99.54.93:5000` only. Canonical GET `/status` 200 `tokens_ok=true`. No invented tile smoke. Schema-engine not started.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_GOI_GIS_PRIVATE_FUNCTIONAL_QUALIFICATION_V1` / #68
 **Classification:** `PASS — GOI_GIS_FUNCTIONAL_QUALIFICATION=PASS · GIS_RUNTIME=ACTIVE_NOT_ENABLED · GIS_BIND=100.99.54.93:8000`
 **Timestamp (UTC):** 2026-09-07T08:08:41Z
