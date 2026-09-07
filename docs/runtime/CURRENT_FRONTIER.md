@@ -13,8 +13,8 @@
 | **STATO BLOCCO** | OPUS Agent 24K qualified for FAST_AGENT/FAST_INTERACTIVE/FAST_AGENT_SHORT_TURN · scope-v3 digest `934123f0…f2548f7` · DCFR short-turn remains **UNQUALIFIED** and FAST_THROUGHPUT/LONG_TASK QUALIFIED · `<think>` caveat documented; exact-output compliance not claimed · scope-v2 historical |
 | **GATE CORRENTE** | **CUTOVER PASS / ROLLBACK RETENTION OPEN** · D-0025 `enabled=false` · NEW LIVE (`31.70.139.73`, `100.99.54.93`, `ionos-n8n-new.tailc01234.ts.net`) · OLD frozen rollback standby · decommission unauthorized |
 | **VPS MIGRATION** | #68 production cutover PASS · NEW n8n live with exact 4-workflow publication map · GOI/TLS/private topology PASS · OLD PostgreSQL/GOI retained intact |
-| **VPS INDEPENDENT EVIDENCE AUDIT** | production cutover PASS · report `reports/architecture/v4_vps_production_cutover_old_to_new_v1.md` |
-| **NEXT** | rollback-retention monitoring and separate human rollback-exit/decommission authorization; OpenClaw remains `KEEP_STAGED_PENDING` |
+| **VPS INDEPENDENT EVIDENCE AUDIT** | production cutover PASS · post-cutover GIS client-path diagnostic PASS · root cause classified `TAILSCALE_ACL_OR_POLICY_BLOCK` without ACL mutation · reports `reports/architecture/v4_vps_production_cutover_old_to_new_v1.md`, `reports/architecture/v4_vps_post_cutover_gis_client_path_diagnostic_v1.md` |
+| **NEXT** | rollback-retention monitoring and separate human rollback-exit/decommission authorization; investigate Tailscale ACL/policy separately if workstation GIS access is required; OpenClaw remains `KEEP_STAGED_PENDING` |
 | **CAMPAIGN** | `V4_LOCAL_DEV_EXECUTOR_OVERNIGHT_AUTOVIA_CAMPAIGN_V1` — **SEGMENT 5 LIVE (always-on)** · cumulativo: PASSES=15 · REAL_LOCAL_DEV_EXECUTIONS=9 (8 storici + `dc12351` scheduled always-on CREATE — prima esecuzione DEV triggerata da scheduler n8n via transport privato) · PRODUCTION_CHANGED=NO · D-0025=false · WF40 intatto (83 nodes) |
 | **WF40 LIVE** | active · id `9ZMj2ACTKyDVhCue` · **83 nodes** · `activeVersionId=a609ad90-7eb4-4495-9ec5-c4413165cea1` |
 | **WF61 LIVE** | **inactive** · id `d0025-6100-4001-8001-000000000061` · D-0025 complete/preserved |

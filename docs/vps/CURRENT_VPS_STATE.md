@@ -176,6 +176,14 @@ ROLLBACK_RETENTION_AUTO_EXPIRY=NONE
 CUTOVER=PASS
 NEW_ROLE=LIVE
 OLD_DECOMMISSION_ELIGIBLE=NO
+GIS_CLIENT_PATH_DIAGNOSTIC=PASS
+GIS_CLIENT_PATH_ROOT_CAUSE=TAILSCALE_ACL_OR_POLICY_BLOCK
+GIS_LISTENER_STATE=100.99.54.93:8000_EXACT
+GIS_LOCAL_HTTP=200
+HOST_FIREWALL_8000=NO_EXPLICIT_RULE
+NEW_TO_WORKSTATION_TAILSCALE_PING=PASS
+OLD_CHANGED=NO
+SECRET_VALUES_EXPOSED=0
 VPS_PARALLEL_VALIDATION=PASS
 F03_ACCOUNTING_RECONCILIATION=PASS
 F04_OLD_PUBLIC_80_REQUIREDNESS=NON_REQUIRED_OBSOLETE_DEFAULT
@@ -242,6 +250,7 @@ F03 is now reconciled against the original 34-component census: `31 MIGRATED_VAL
 Evidence anchors:
 - #68
 - `reports/architecture/v4_vps_production_cutover_old_to_new_v1.md`
+- `reports/architecture/v4_vps_post_cutover_gis_client_path_diagnostic_v1.md`
 - `reports/architecture/v4_vps_active_nginx_tls_renewal_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_cold_start_boot_persistence_v1.md`
 - `reports/architecture/v4_vps_schema_engine_new_functional_qualification_v1.md`

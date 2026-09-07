@@ -1,5 +1,17 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_POST_CUTOVER_GIS_CLIENT_PATH_DIAGNOSTIC_V1` / #68
+**Classification:** `PASS — GIS_CLIENT_PATH_DIAGNOSTIC=PASS · ROOT_CAUSE=TAILSCALE_ACL_OR_POLICY_BLOCK`
+**Timestamp (UTC):** 2026-09-07
+**BASE_HEAD:** `6f6a5d64ae331517ffd8ddae4d31713f55d61f42`
+**Report:** `reports/architecture/v4_vps_post_cutover_gis_client_path_diagnostic_v1.md`
+
+Read-only NEW diagnosis: GIS service active/enabled with exact listener `100.99.54.93:8000`, local HTTP 200, reverse NEW→workstation Tailscale ping PASS, UFW inactive, no host `8000` DROP/REJECT, and Tailscale-managed `tailscale0` input accepted. Remaining likely layer classified as Tailscale ACL/policy; no ACL/firewall/Tailscale mutation. Cutover preserved: `CUTOVER=PASS`, `NEW_ROLE=LIVE`, `OLD_ROLE=ROLLBACK_STANDBY_FROZEN`, `OLD_CHANGED=NO`, `SECRET_VALUES_EXPOSED=0`.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
 **BLOCK-ID:** `V4_VPS_PRODUCTION_CUTOVER_OLD_TO_NEW_V1` / #68
 **Classification:** `PASS — CUTOVER=PASS · NEW_ROLE=LIVE · OLD_ROLE=ROLLBACK_STANDBY_FROZEN`
 **Timestamp (UTC):** 2026-09-07T10:49:00Z
