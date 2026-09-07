@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after successful NEW Tailscale join, post-join identity/static-state verification, live NEW GOI read-only reconciliation, and live OLD GOI parity probe on 2026-09-07.
+Updated after successful NEW Tailscale join, post-join identity/static-state verification, live NEW GOI read-only reconciliation, live OLD GOI parity probe, and OLD final non-secret GOI inspect on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -34,22 +34,25 @@ PROJECT_DECISIONS_PENDING=1
 GOI_HANDOFF=INGESTED_AS_IS_INCOMPLETE
 GOI_NEW_READONLY_RECONCILIATION=PASS_WITH_BLOCKERS
 GOI_OLD_PARITY_PROBE=PASS
+GOI_OLD_FINAL_NONSECRET_INSPECT=PASS_WITH_ACTIONABLE_DELTA
 GOI_NEW_CONFIRMED_ABSENT_PATHS=5
 GOI_COPY_REQUIRED_SECRET_SAFE=ORS_API_KEY
 GOI_COPY_REQUIRED=ORS_CREDENTIAL_DROPIN,NGINX_TAILSCALE_READY_DROPIN
 GOI_COPY_REQUIRED_STATE_SAFE=DFLIGHT_LKG_STATE
 GOI_VERIFY_NEW_PARITY=DFLIGHT_CREDENTIALS,DFLIGHT_CSRF_PEM
-GOI_INSPECT_BEFORE_COPY=NAV_PROXY_OVERRIDE
+GOI_NAV_OVERRIDE=COPY_REQUIRED_NON_IDENTITY
+GOI_TLS_RENEW_HELPER=RECONSTRUCT_NEW_SPECIFIC
+GOI_GRAPHHOPPER_RENDER_PREFLIGHT=RECONSTRUCT_NEW_SPECIFIC
 DEV_METHOD_HANDOFF=INGESTED_MIGRATED_VALIDATED
 SCHEMA_ENGINE_HANDOFF=INGESTED_PRESENT_NOT_VALIDATED_NON_NETWORK
 OPENCLAW_HANDOFF=INGESTED_KEEP_STAGED_PENDING
 CROSS_PROJECT_PREJOIN_RECONCILIATION=CLEARED
 TAILSCALE_UNIQUE_IDENTITY_JOIN=PASS
 TAILSCALE_DNSNAME_ROUTES_SERVE_VERIFY=PASS
-SHARED_INFRA_GATES=GOI_FINAL_READONLY_PARITY,GOI_NEW_CONFIG_DELTA,NEW_MAGICDNS_TLS,GOI_ACTIVATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
+SHARED_INFRA_GATES=GOI_NEW_FINAL_PARITY_VERIFY,GOI_NEW_CONFIG_DELTA,NEW_MAGICDNS_TLS,GOI_ACTIVATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=GOI_FINAL_READONLY_PARITY
+NEXT=GOI_NEW_FINAL_PARITY_VERIFY
 ```
 
 ## Current proven state
@@ -123,9 +126,6 @@ All five NEW-absent paths are present on OLD live. Classification:
   - OLD: mode 640 owner `root:goi-dflight`, size 451
   - NEW: mode 640 owner `root:root`, size 451
 
-### INSPECT_NONSECRET_THEN_COPY_OR_RECONSTRUCT
-- `/etc/systemd/system/goi-nav-proxy.service.d/override.conf`
-
 ### RECONSTRUCT_NEW_SPECIFIC
 - D-Flight bind/origin
 - `goi-wait-tailscale-ip` expected IP
@@ -135,12 +135,23 @@ All five NEW-absent paths are present on OLD live. Classification:
 
 OLD live listeners and units match the expected GOI production topology and remain untouched.
 
+## OLD final non-secret GOI inspect
+
+Canonical evidence: `reports/architecture/vps_goi_old_final_nonsecret_inspect_2026-09-07.md`.
+
+Newly resolved facts:
+
+- Nav proxy override exists on OLD and contains neither OLD nor NEW Tailscale/MagicDNS identity. It is classified `COPY_REQUIRED_NON_IDENTITY` subject to exact non-secret content transfer/inspection.
+- TLS renewal helper derives `DOMAIN="$(hostname -f)"`. This is unsafe unchanged on NEW because NEW OS hostname remains `ubuntu` while the intended certificate identity is `ionos-n8n-new.tailc01234.ts.net`. It is classified `RECONSTRUCT_NEW_SPECIFIC`; no OS-hostname mutation is authorized.
+- GraphHopper template is identity-generic (`__TAILSCALE_IPV4__`) but `/opt/goi-graphhopper/bin/render-config.sh` and `/opt/goi-graphhopper/bin/preflight.sh` explicitly fail closed unless the Tailscale IP is OLD `100.114.7.53`. Both require bounded NEW-specific adaptation to `100.99.54.93` before activation.
+- OLD staging/history contains many OLD-IP references but those are historical artifacts, not the active NEW render source; no historical rewrite is required for migration safety.
+
 ## Remaining hard blockers
 
-1. Final bounded read-only parity: inspect the OLD Nav proxy override non-secret content; verify NEW D-Flight credential metadata/hashes and CSRF PEM hash; inspect helper/render semantics needed for NEW-specific config.
+1. Complete NEW final read-only parity verification for D-Flight credential hashes, CSRF PEM hash/ownership, target parent directories, GraphHopper active NEW sources, and inactive-state safety.
 2. Perform bounded NEW-only parity copy/config render while keeping all GOI/nginx units disabled/inactive.
 3. Validate file ownership/permissions, systemd config, nginx config, and generated GraphHopper/D-Flight config before any activation.
-4. Issue and qualify NEW TLS identity/renewal for `ionos-n8n-new.tailc01234.ts.net`.
+4. Issue and qualify NEW TLS identity/renewal for `ionos-n8n-new.tailc01234.ts.net` using a NEW-specific helper strategy; do not rely on current OS hostname `ubuntu`.
 5. Enable and qualify GOI services against the NEW Tailscale identity; prove component reachability and restart persistence.
 6. Validate schema-engine resolver on NEW and remaining `PRESENT_NOT_VALIDATED` rows.
 7. Parallel OLD↔NEW validation.
@@ -154,6 +165,7 @@ Evidence anchors:
 - `reports/architecture/vps_goi_project_handoff_2026-09-07.md`
 - `reports/architecture/vps_goi_new_readonly_identity_reconciliation_2026-09-07.md`
 - `reports/architecture/vps_goi_old_parity_probe_2026-09-07.md`
+- `reports/architecture/vps_goi_old_final_nonsecret_inspect_2026-09-07.md`
 - `reports/architecture/vps_dev_method_handoff_2026-09-07.md`
 - `reports/architecture/vps_schema_engine_handoff_2026-09-07.md`
 - `reports/architecture/vps_openclaw_handoff_2026-09-07.md`
