@@ -1,11 +1,11 @@
 # V4 NEW TLS recovery and qualification
 
-**TASK_REF:** `V4_VPS_NEW_TLS_RECOVERY_V1`  
-**Issue:** #68  
-**Classification:** `PASS`  
-**Timestamp (UTC):** `2026-09-07T02:11:06Z`  
-**BASE_HEAD:** `e7ae7d8469de1390ae0deddb5eaad02179b88fd9`  
-**Host:** NEW `31.70.139.73` / Tailscale `100.99.54.93`  
+**TASK_REF:** `V4_VPS_NEW_TLS_RECOVERY_V1`
+**Issue:** #68
+**Classification:** `PASS`
+**Timestamp (UTC):** `2026-09-07T02:11:06Z`
+**BASE_HEAD:** `e7ae7d8469de1390ae0deddb5eaad02179b88fd9`
+**Host:** NEW `31.70.139.73` / Tailscale `100.99.54.93`
 **MagicDNS:** `ionos-n8n-new.tailc01234.ts.net`
 
 No private-key value or secret is recorded.
