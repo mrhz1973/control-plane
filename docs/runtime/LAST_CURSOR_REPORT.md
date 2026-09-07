@@ -1,5 +1,17 @@
 # LAST CURSOR REPORT
 
+## Post-cutover evidence reconciliation — latest
+
+**TASK_REF:** `V4_VPS_POST_CUTOVER_EVIDENCE_RECONCILIATION_A01_F03_V1` / #68
+**Classification:** `PASS — EVIDENCE_RECONCILIATION=PASS · SOAK_DELTA_RECONCILIATION=PASS · F03_RECOUNT=PASS_32_2`
+**Date (UTC):** 2026-09-07
+**BASE_HEAD:** `33cc2ce44f30c5f19542f704dd5f35ae40188607`
+**Report:** `reports/architecture/v4_vps_post_cutover_evidence_reconciliation_a01_f03_v1.md`
+
+All 37 surviving IDs `313109–313145` were reconciled from non-secret PostgreSQL metadata: 29 started in the soak window (13 WF40, 13 WF42, 3 WF90), two started during natural drain, and six were later natural schedule ticks included by the final snapshot; unexplained=0. Boundary WF90 was `313135`, started in-window and completed success at the exact drain endpoint. Historical reduction of 308 rows is arithmetically exact; n8n defaults and current DB soft-delete shape support pruning, but no historical log proves the exact batch, so `PRUNING_RECONCILIATION=PLAUSIBLE_NOT_PROVEN`. Mechanical C01–C34 recount corrects current F03 to `32 migrated / 2 obsolete`; registry remains `20/1` over 21. Runtime mutations and secret exposure: 0. Cutover PASS, NEW LIVE, OLD frozen rollback standby, retention OPEN, decommission unauthorized.
+
+---
+
 ## Independent Codex repo-only audit — latest evidence pointer
 
 **TASK_REF:** `V4_VPS_CODEX_FINAL_POST_CUTOVER_EVIDENCE_AUDIT_V1` / #68

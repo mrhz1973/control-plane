@@ -12,7 +12,7 @@ Current projection after authorized production cutover PASS. NEW is LIVE with th
 | GOI ORS gateway | OLD live loopback `127.0.0.1:8020`; tree `/opt/goi-ors-gateway` | runtime active enabled; loopback `127.0.0.1:8020`; CORS GIS origin `http://100.99.54.93:8000`; status 200 ready/PRESENT; cold-start PASS | nginx/TLS/Tailscale | MIGRATED_VALIDATED | F03 reconciled |
 | GOI GIS / cursor-coordinate-converter | OLD TS `:8000`; WD `/root/local-files/handoff-runtime/cursor-coordinate-converter` | runtime active enabled; bind `100.99.54.93:8000`; F02 HTML served; browser Origin PASS vs GH/ORS/D-Flight; cold-start PASS | Tailscale IP, local-files, GraphHopper/ORS/D-Flight | MIGRATED_VALIDATED | F03 reconciled |
 | GOI Navionics / Planet-Clone | OLD TS `:5000`; WD `/root/local-files/handoff-runtime/Planet-Clone` | runtime active enabled; bind `100.99.54.93:5000`; GET `/status` 200 `tokens_ok=true`; cold-start PASS | Tailscale IP, local-files | MIGRATED_VALIDATED | F03 reconciled |
-| GOI D-Flight | OLD TS `:8010`; `/opt/goi-dflight-helper` + `/var/lib/goi-dflight` | runtime active enabled; bind `100.99.54.93:8010`; GET `/status` READY LKG 841 features; NEW Origin CORS PASS; cold-start PASS | Tailscale, GIS client | MIGRATED_VALIDATED | F03 reconciled |
+| GOI D-Flight | OLD TS `:8010`; `/opt/goi-dflight-helper` + `/var/lib/goi-dflight` | runtime active enabled; bind `100.99.54.93:8010`; GET `/status` READY, current canonical refresh 816 features; NEW Origin CORS PASS; cold-start PASS | Tailscale, GIS client | MIGRATED_VALIDATED | F03 reconciled |
 | GOI TLS renewal | OLD timer live; cert files `/etc/goi-ors/tls`; oneshot observed failed on OLD | active-nginx renewal PASS: unit run with nginx live, reload proven, weekly timer enabled, live cert = installed leaf, SAN NEW only | NEW MagicDNS/TLS identity | MIGRATED_VALIDATED | F03 reconciled; OLD retained for rollback |
 | nginx GOI vhost | OLD live TS `:443` + public default `:80` | runtime active enabled; bind `100.99.54.93:443` ssl only; HTTPS `/ors/status` 200 ready/PRESENT; no public `:80`/`:443`; cold-start PASS | Tailscale/TLS/ORS | MIGRATED_VALIDATED | F03 reconciled |
 | Control Plane checkout bind | `/root/local-files/handoff-runtime/control-plane` mounted read-only into n8n; LiteLLM config from this tree | present on NEW; same bind shape | n8n, LiteLLM, local-files | MIGRATED_VALIDATED | keep unpublished |
@@ -31,7 +31,7 @@ Current projection after authorized production cutover PASS. NEW is LIVE with th
 ```text
 NEW_TAILSCALE_TLS_ISSUANCE_QUALIFICATION=PASS
 VPS_PARALLEL_VALIDATION=PASS
-F03_ACCOUNTING_RECONCILIATION=PASS
+F03_ACCOUNTING_RECONCILIATION=PASS_32_2_AFTER_CODEX_RECOUNT
 F04_OLD_PUBLIC_80_REQUIREDNESS=NON_REQUIRED_OBSOLETE_DEFAULT
 F05_OLD_TLS_CURRENT_HTTPS_HEALTH=PASS
 F05_OLD_TLS_RENEWAL_HEALTH=PERSISTENT_DEGRADED_HELPER_MISSING_203_EXEC
@@ -81,11 +81,11 @@ GOI_FUNCTIONAL_REGRESSION=PASS
 SCHEMA_ENGINE_FUNCTIONAL_QUALIFICATION=PASS
 SCHEMA_ENGINE_MIGRATION_STATUS=MIGRATED_VALIDATED
 F03_CENSUS_DENOMINATOR=34
-F03_MIGRATED_VALIDATED=31
+F03_MIGRATED_VALIDATED=32
 F03_PRESENT_NOT_VALIDATED=0
 F03_MISSING=0
-F03_OBSOLETE_CONFIRMED_NOT_REQUIRED=3
-ROLLUP_COUNTS_STATUS=RECONCILED_F03
+F03_OBSOLETE_CONFIRMED_NOT_REQUIRED=2
+ROLLUP_COUNTS_STATUS=RECONCILED_AFTER_CODEX_RECOUNT_32_2
 CUTOVER=PASS
 NEW_ROLE=LIVE
 OLD_ROLE=ROLLBACK_STANDBY_FROZEN
@@ -94,6 +94,7 @@ ROLLBACK_RETENTION_AUTO_EXPIRY=NONE
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_post_cutover_evidence_reconciliation_a01_f03_v1.md`
 - `reports/architecture/v4_vps_parallel_old_new_validation_f03_f04_f05_v1.md`
 - `reports/architecture/v4_vps_active_nginx_tls_renewal_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_cold_start_boot_persistence_v1.md`
