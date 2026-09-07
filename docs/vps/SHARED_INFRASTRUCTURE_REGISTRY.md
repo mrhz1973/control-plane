@@ -25,7 +25,7 @@ NEW Tailscale identity, TLS issuance, and GOI private functional stack (GraphHop
 | GOI TS-bound ports | Control Plane allocates; GOI validates | OLD `443,5000,8000,8010,8989`; loopback `8020,8990` | NEW GraphHopper `8989` + admin `8990`; ORS loopback `8020`; nginx TS `443`; D-Flight TS `8010`; GIS TS `8000`; Nav TS `5000` | never expose `8020/8990` beyond loopback |
 | n8n loopback `5678` | Control Plane | OLD production | NEW isolated replica | publication/cutover separately authorized |
 | n8n filesystem binds | Control Plane | `/root/local-files`, `/srv/cp-verifier-inbox`, control-plane checkout bind | same bind names present on NEW | do not drop binds; no secret values in git |
-| schema-engine local dependency | Control Plane | `/root/local-files/handoff-runtime/schema-engine` | copied, resolver smoke pending | no network dependency |
+| schema-engine local dependency | Control Plane | `/root/local-files/handoff-runtime/schema-engine` | `MIGRATED_VALIDATED`; Ajv isolated tree via `/files` bind; env at validator invocation | no network dependency; no compose env persistence |
 | dev-method reference tree | dev-method / Control Plane | `/root/local-files/handoff-runtime/dev-method` | copied/validated | no shared network dependency |
 | OpenClaw preserved fallback | Control Plane | preserved fallback | copied/staged inactive | future activation separately gated |
 | Hermes private ports | Control Plane/Hermes | loopback | loopback qualified | remain private |
@@ -59,11 +59,14 @@ GOI_NAV_FUNCTIONAL_QUALIFICATION=PASS
 NAV_RUNTIME=ACTIVE_NOT_ENABLED
 NAV_BIND=100.99.54.93:5000
 NAV_BOOT_PERSISTENCE=PENDING
+SCHEMA_ENGINE_FUNCTIONAL_QUALIFICATION=PASS
+SCHEMA_ENGINE_MIGRATION_STATUS=MIGRATED_VALIDATED
 F01_F02_CONFIGURATION_GAPS=CLOSED
 CUTOVER=NOT_AUTHORIZED
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_schema_engine_new_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_nav_private_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_gis_private_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_nginx_private_chain_functional_qualification_v1.md`
@@ -76,4 +79,4 @@ Canonical evidence:
 
 ## Current shared-infrastructure next
 
-Schema-engine qualification → restart-persistence/parallel OLD↔NEW validation → human cutover.
+GOI boot/restart persistence + active-nginx TLS renewal → parallel OLD↔NEW validation → human cutover.

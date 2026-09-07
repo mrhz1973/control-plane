@@ -1,6 +1,6 @@
 # Project VPS registry
 
-Current projection after Nav private functional qualification PASS. GraphHopper/ORS/nginx/D-Flight/GIS/Nav active not enabled.
+Current projection after schema-engine functional qualification PASS. GraphHopper/ORS/nginx/D-Flight/GIS/Nav remain active not enabled. Schema-engine row promoted; F03 aggregate rollup frozen.
 
 | Project / component | OLD footprint | NEW state | Shared dependencies | Migration status | Evidence / next |
 |---|---|---|---|---|---|
@@ -19,7 +19,7 @@ Current projection after Nav private functional qualification PASS. GraphHopper/
 | `/srv/cp-verifier-inbox` | n8n bind; owner `cpinbox` | present on NEW; same bind | n8n | MIGRATED_VALIDATED | empty inbox; no extra daemon |
 | `/root/local-files` | n8n `/files` bind; contains handoff-runtime | present on NEW | n8n, LiteLLM, GOI GIS/Nav | MIGRATED_VALIDATED | umbrella persistent application root |
 | dev-method | tree `/root/local-files/handoff-runtime/dev-method` | copied/validated | local-files | MIGRATED_VALIDATED | reference-only |
-| schema-engine | tree `/root/local-files/handoff-runtime/schema-engine` | copied/manifests match; resolver smoke pending | n8n/control-plane only | PRESENT_NOT_VALIDATED | resolver smoke on NEW |
+| schema-engine | tree `/root/local-files/handoff-runtime/schema-engine` | isolated Ajv 8.20.0 + ajv-formats 3.0.1; validator valid PASS / invalid FAIL_CLOSED; bind `/files` persistent | n8n/control-plane only | MIGRATED_VALIDATED | non-network; F03 rollup frozen |
 | OpenClaw app/node | preserved fallback trees | copied/staged, inactive | future fallback transport only | PRESENT_NOT_VALIDATED | `KEEP_STAGED_PENDING`; final disposition later |
 | `n8n-compose.service` | enabled OLD boot persistence | installed/enabled for isolated NEW stack | n8n core | MIGRATED_VALIDATED | reboot-level persistence not yet used as full-parity acceptance |
 | GOI service users | OLD live service accounts | NEW nologin accounts present | shared Linux identity | MIGRATED_VALIDATED | no further identity mutation required |
@@ -65,11 +65,14 @@ GOI_ORS_BOOT_PERSISTENCE=PENDING
 GOI_ORS_CORS_REMEDIATION=PASS
 GOI_ORS_GIS_ORIGIN=NEW_IDENTITY
 GOI_ORS_READY_FOR_NGINX_PRIVATE_CHAIN=YES
+SCHEMA_ENGINE_FUNCTIONAL_QUALIFICATION=PASS
+SCHEMA_ENGINE_MIGRATION_STATUS=MIGRATED_VALIDATED
 ROLLUP_COUNTS_STATUS=UNRECONCILED_F03_DO_NOT_USE_FOR_FINAL_ACCEPTANCE
 CUTOVER=NOT_AUTHORIZED
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_schema_engine_new_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_nav_private_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_gis_private_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_dflight_private_functional_qualification_retry1_v1.md`
@@ -84,6 +87,6 @@ Canonical evidence:
 - `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`
 - `reports/architecture/v4_vps_new_tls_recovery_v1.md`
 
-Registry rows remain `PRESENT_NOT_VALIDATED` until component-specific functional validation and required persistence proofs complete.
+GOI rows remain `PRESENT_NOT_VALIDATED` until persistence proofs complete. Schema-engine row is `MIGRATED_VALIDATED`; frozen F03 rollup is unchanged.
 
-Current next: schema-engine qualification → persistence/parallel validation → human cutover.
+Current next: GOI boot/restart persistence + active-nginx TLS renewal → parallel validation → human cutover.

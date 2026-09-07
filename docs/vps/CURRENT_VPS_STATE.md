@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after `V4_VPS_GOI_NAV_PRIVATE_FUNCTIONAL_QUALIFICATION_V1` on 2026-09-07.
+Updated after `V4_VPS_SCHEMA_ENGINE_NEW_FUNCTIONAL_QUALIFICATION_V1` on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -104,7 +104,19 @@ NAV_BOOT_PERSISTENCE=PENDING
 F01_F02_CONFIGURATION_GAPS=CLOSED
 REMAINING_GOI_ACTIVATION_CLEARANCE=READY_FOR_NEXT_BOUNDED_SLICE
 DEV_METHOD_HANDOFF=INGESTED_MIGRATED_VALIDATED
-SCHEMA_ENGINE_HANDOFF=INGESTED_PRESENT_NOT_VALIDATED_NON_NETWORK
+SCHEMA_ENGINE_HANDOFF=INGESTED_MIGRATED_VALIDATED
+SCHEMA_ENGINE_FUNCTIONAL_QUALIFICATION=PASS
+SCHEMA_ENGINE_HOST_TREE=PASS
+SCHEMA_ENGINE_CONTAINER_BIND=PASS
+SCHEMA_ENGINE_RESOLVER=PASS
+SCHEMA_ENGINE_AJV_VERSION=8.20.0
+SCHEMA_ENGINE_AJV_FORMATS_VERSION=3.0.1
+SCHEMA_ENGINE_VALID_FIXTURE=PASS
+SCHEMA_ENGINE_INVALID_FIXTURE=FAIL_CLOSED_MISSING_REQUIRED_FIELD
+SCHEMA_ENGINE_NETWORK_RUNTIME=NONE
+SCHEMA_ENGINE_RESTART_PERSISTENCE=STRUCTURALLY_PROVEN_BY_SHARED_BIND
+SCHEMA_ENGINE_MIGRATION_STATUS=MIGRATED_VALIDATED
+SCHEMA_ENGINE_F03_ROW_PROMOTED_ROLLUP_FROZEN=YES
 OPENCLAW_HANDOFF=INGESTED_KEEP_STAGED_PENDING
 CROSS_PROJECT_PREJOIN_RECONCILIATION=CLEARED
 TAILSCALE_UNIQUE_IDENTITY_JOIN=PASS
@@ -121,7 +133,7 @@ VPS_CHAT_CLOSE_CONDITION=MIGRATION_COMPLETE_AND_HANDOFF_RECORDED
 SHARED_INFRA_GATES=GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=CURSOR_SCHEMA_ENGINE_AFTER_GOI_RUNTIME
+NEXT=CURSOR_GOI_BOOT_PERSISTENCE_AFTER_SCHEMA_ENGINE
 ```
 
 ## Current proven state
@@ -141,7 +153,8 @@ NEW currently has:
 - GIS private functional qualification PASS on `100.99.54.93:8000`, still not enabled at boot;
 - Nav private functional qualification PASS on `100.99.54.93:5000`, still not enabled at boot;
 - nginx private-chain functional qualification PASS on `100.99.54.93:443` only (HTTPS→ORS, hostname-verified TLS); not enabled at boot; no public `:80`/`:443`;
-- F02 GIS HTML retargeted to NEW GraphHopper/ORS/D-Flight identities; GIS now serving that artifact privately.
+- F02 GIS HTML retargeted to NEW GraphHopper/ORS/D-Flight identities; GIS now serving that artifact privately;
+- schema-engine isolated Ajv tree functionally qualified and `MIGRATED_VALIDATED` (F03 aggregate rollup still frozen).
 
 ## F01/F02 evidence correction
 
@@ -164,7 +177,7 @@ The earlier aggregate claim `GOI_ACTIVE_OLD_IDENTITY_REFS=NONE` must not be used
 
 ## Counts caveat — F03
 
-The historical rollup `15/14/0/1` is preserved but is not currently reproducible directly from the aggregate PROJECT registry rows. It must be reconciled by a dedicated denominator/mapping pass before full-parity sign-off; do not silently replace it with row counts and do not use it alone for cutover acceptance.
+The historical rollup `15/14/0/1` is preserved but is not currently reproducible directly from the aggregate PROJECT registry rows. It must be reconciled by a dedicated denominator/mapping pass before full-parity sign-off; do not silently replace it with row counts and do not use it alone for cutover acceptance. The schema-engine **row** is now `MIGRATED_VALIDATED`; that promotion does **not** update the frozen F03 rollup.
 
 ## Project orchestration model
 
@@ -175,15 +188,15 @@ The historical rollup `15/14/0/1` is preserved but is not currently reproducible
 
 ## Remaining blockers before human cutover
 
-1. Validate schema-engine resolver/smoke on NEW (all GOI private functional slices PASS; none promoted to `MIGRATED_VALIDATED`; boot persistence pending).
-2. Prove intended restart/boot persistence and active-nginx TLS renewal behavior.
-3. Parallel OLD↔NEW validation, including F03 count denominator, OLD public `:80` requiredness and OLD TLS renewal/rollback health.
-4. Human cutover gate.
+1. Prove intended GOI restart/boot persistence and active-nginx TLS renewal behavior.
+2. Parallel OLD↔NEW validation, including F03 count denominator, OLD public `:80` requiredness and OLD TLS renewal/rollback health.
+3. Human cutover gate.
 
 Production n8n publication/cutover and OLD decommission remain separately gated.
 
 Evidence anchors:
 - #68
+- `reports/architecture/v4_vps_schema_engine_new_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_nav_private_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_gis_private_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_dflight_private_functional_qualification_retry1_v1.md`

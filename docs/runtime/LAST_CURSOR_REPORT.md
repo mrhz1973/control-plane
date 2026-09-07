@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_SCHEMA_ENGINE_NEW_FUNCTIONAL_QUALIFICATION_V1` / #68
+**Classification:** `PASS — SCHEMA_ENGINE_FUNCTIONAL_QUALIFICATION=PASS · SCHEMA_ENGINE_MIGRATION_STATUS=MIGRATED_VALIDATED`
+**Timestamp (UTC):** 2026-09-07T08:34:50Z
+**BASE_HEAD:** `7bbe1c07eca7400b4fb09ca6367a1da7740e2d9f`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_SCHEMA_ENGINE_NEW_FUNCTIONAL_QUALIFICATION_V1` commit
+**Report:** `reports/architecture/v4_vps_schema_engine_new_functional_qualification_v1.md`
+
+Read-only NEW resolver/validator proof. Ajv 8.20.0 + ajv-formats 3.0.1 from isolated tree. Valid fixture PASS; invalid fail-closed MISSING_REQUIRED_FIELD. F03 rollup frozen. GOI persistence not started.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_GOI_NAV_PRIVATE_FUNCTIONAL_QUALIFICATION_V1` / #68
 **Classification:** `PASS — GOI_NAV_FUNCTIONAL_QUALIFICATION=PASS · NAV_RUNTIME=ACTIVE_NOT_ENABLED · NAV_BIND=100.99.54.93:5000`
 **Timestamp (UTC):** 2026-09-07T08:21:50Z
