@@ -1,6 +1,6 @@
 # Project VPS registry
 
-Current projection after active-nginx TLS renewal PASS. GOI stack active/enabled with cold-start persistence; TLS renewal row promoted; schema-engine MIGRATED_VALIDATED; F03 rollup frozen.
+Current projection after parallel OLD↔NEW validation PASS. NEW core restart persistence, GOI stack, TLS renewal, F03 census, F04 `:80` disposition, and F05 current OLD HTTPS/rollback health are qualified. Cutover remains human-gated.
 
 | Project / component | OLD footprint | NEW state | Shared dependencies | Migration status | Evidence / next |
 |---|---|---|---|---|---|
@@ -20,48 +20,55 @@ Current projection after active-nginx TLS renewal PASS. GOI stack active/enabled
 | `/root/local-files` | n8n `/files` bind; contains handoff-runtime | present on NEW | n8n, LiteLLM, GOI GIS/Nav | MIGRATED_VALIDATED | umbrella persistent application root |
 | dev-method | tree `/root/local-files/handoff-runtime/dev-method` | copied/validated | local-files | MIGRATED_VALIDATED | reference-only |
 | schema-engine | tree `/root/local-files/handoff-runtime/schema-engine` | isolated Ajv 8.20.0 + ajv-formats 3.0.1; validator valid PASS / invalid FAIL_CLOSED; bind `/files` persistent | n8n/control-plane only | MIGRATED_VALIDATED | non-network; F03 rollup frozen |
-| OpenClaw app/node | preserved fallback trees | copied/staged, inactive | future fallback transport only | PRESENT_NOT_VALIDATED | `KEEP_STAGED_PENDING`; final disposition later |
+| OpenClaw app/node | preserved fallback trees | copied/staged, inactive, no listener | future fallback transport only | MIGRATED_VALIDATED | `KEEP_STAGED_PENDING` role satisfied; do not activate |
 | `n8n-compose.service` | enabled OLD boot persistence | installed/enabled for isolated NEW stack | n8n core | MIGRATED_VALIDATED | reboot-level persistence not yet used as full-parity acceptance |
 | GOI service users | OLD live service accounts | NEW nologin accounts present | shared Linux identity | MIGRATED_VALIDATED | no further identity mutation required |
-| Tailscale node identity | OLD `ubuntu` / `100.114.7.53` | unique `ionos-n8n-new` / `100.99.54.93`; exact NEW MagicDNS proven; no routes/exit-node/Serve/Funnel | all TS-bound GOI services | PRESENT_NOT_VALIDATED | identity/static PASS; component reachability/restart persistence pending |
-| historical OLD Docker volumes | OLD leftovers `root_n8n_postgres_data`, `_retry006`, `_seqresync_prod`; OLD `_quarantine` under local-files | not copied | none unless proven needed | OBSOLETE_NEEDS_HUMAN_DECISION | decide before decommission |
+| Tailscale node identity | OLD `ubuntu` / `100.114.7.53` | unique `ionos-n8n-new` / `100.99.54.93`; exact NEW MagicDNS, private reachability, no routes/exit-node/Serve/Funnel | all TS-bound GOI services | MIGRATED_VALIDATED | parallel validation PASS |
+| historical OLD Docker volumes | OLD leftovers `root_n8n_postgres_data`, `_retry006`, `_seqresync_prod`; OLD `_quarantine` under local-files | not copied; no current container/compose consumer | none | OBSOLETE_CONFIRMED_NOT_REQUIRED | retain until decommission gate; no deletion in this task |
 
 ## Latest proof
 
 ```text
 NEW_TAILSCALE_TLS_ISSUANCE_QUALIFICATION=PASS
+VPS_PARALLEL_VALIDATION=PASS
+F03_ACCOUNTING_RECONCILIATION=PASS
+F04_OLD_PUBLIC_80_REQUIREDNESS=NON_REQUIRED_OBSOLETE_DEFAULT
+F05_OLD_TLS_CURRENT_HTTPS_HEALTH=PASS
+F05_OLD_TLS_RENEWAL_HEALTH=PERSISTENT_DEGRADED_HELPER_MISSING_203_EXEC
+F05_OLD_ROLLBACK_TLS_PRACTICABLE=YES
+NEW_CORE_RESTART_PERSISTENCE=PASS
 GOI_GRAPHHOPPER_FUNCTIONAL_QUALIFICATION=PASS
-GOI_GRAPHHOPPER_BOOT_PERSISTENCE=PENDING
+GOI_GRAPHHOPPER_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START
 VPS_CONSUMER_REGISTRY_COVERAGE=PASS
 F01_NGINX_VHOST=EFFECTIVELY_INCLUDED_SYNTAX_VALID
 F01_NGINX_INCLUDE_REMEDIATION=PASS
-NGINX_RUNTIME=ACTIVE_NOT_ENABLED
+NGINX_RUNTIME=ACTIVE_ENABLED
 NGINX_FUNCTIONAL_QUALIFICATION=PASS
 NGINX_BIND=100.99.54.93:443
 NGINX_PUBLIC_EXPOSURE=NONE
 GOI_HTTPS_ORS_CHAIN=PASS
-GOI_NGINX_BOOT_PERSISTENCE=PENDING
+GOI_NGINX_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START
 GOI_DFLIGHT_PERMISSION_REMEDIATION=PASS
 DFLIGHT_CONFIG_ACCESS=GOI_DFLIGHT_USER_READABLE
 DFLIGHT_FUNCTIONAL_QUALIFICATION=PASS
-DFLIGHT_RUNTIME=ACTIVE_NOT_ENABLED
+DFLIGHT_RUNTIME=ACTIVE_ENABLED
 DFLIGHT_BIND=100.99.54.93:8010
-DFLIGHT_BOOT_PERSISTENCE=PENDING
+DFLIGHT_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START
 F02_GIS_ENDPOINTS=NEW_IDENTITY_RETARGETED
 F02_GIS_ENDPOINT_REMEDIATION=PASS
 GOI_GIS_FUNCTIONAL_QUALIFICATION=PASS
-GIS_RUNTIME=ACTIVE_NOT_ENABLED
+GIS_RUNTIME=ACTIVE_ENABLED
 GIS_BIND=100.99.54.93:8000
-GIS_BOOT_PERSISTENCE=PENDING
+GIS_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START
 GOI_NAV_FUNCTIONAL_QUALIFICATION=PASS
-NAV_RUNTIME=ACTIVE_NOT_ENABLED
+NAV_RUNTIME=ACTIVE_ENABLED
 NAV_BIND=100.99.54.93:5000
-NAV_BOOT_PERSISTENCE=PENDING
+NAV_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START
 F01_F02_CONFIGURATION_GAPS=CLOSED
 GOI_ORS_FUNCTIONAL_QUALIFICATION=PASS
-GOI_ORS_RUNTIME=ACTIVE_NOT_ENABLED
+GOI_ORS_RUNTIME=ACTIVE_ENABLED
 GOI_ORS_BIND=127.0.0.1:8020
-GOI_ORS_BOOT_PERSISTENCE=PENDING
+GOI_ORS_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START
 GOI_ORS_CORS_REMEDIATION=PASS
 GOI_ORS_GIS_ORIGIN=NEW_IDENTITY
 GOI_ORS_READY_FOR_NGINX_PRIVATE_CHAIN=YES
@@ -73,11 +80,17 @@ GOI_LISTENER_TOPOLOGY_AFTER_COLD_START=PASS
 GOI_FUNCTIONAL_REGRESSION=PASS
 SCHEMA_ENGINE_FUNCTIONAL_QUALIFICATION=PASS
 SCHEMA_ENGINE_MIGRATION_STATUS=MIGRATED_VALIDATED
-ROLLUP_COUNTS_STATUS=UNRECONCILED_F03_DO_NOT_USE_FOR_FINAL_ACCEPTANCE
+F03_CENSUS_DENOMINATOR=34
+F03_MIGRATED_VALIDATED=31
+F03_PRESENT_NOT_VALIDATED=0
+F03_MISSING=0
+F03_OBSOLETE_CONFIRMED_NOT_REQUIRED=3
+ROLLUP_COUNTS_STATUS=RECONCILED_F03
 CUTOVER=NOT_AUTHORIZED
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_parallel_old_new_validation_f03_f04_f05_v1.md`
 - `reports/architecture/v4_vps_active_nginx_tls_renewal_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_cold_start_boot_persistence_v1.md`
 - `reports/architecture/v4_vps_schema_engine_new_functional_qualification_v1.md`
@@ -95,6 +108,6 @@ Canonical evidence:
 - `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`
 - `reports/architecture/v4_vps_new_tls_recovery_v1.md`
 
-GOI rows GraphHopper/ORS/GIS/Nav/D-Flight/nginx-vhost/TLS-renewal are `MIGRATED_VALIDATED` (functional + enabled + cold-start proof; TLS renewal active-nginx proof). Frozen F03 rollup unchanged.
+F03 census is reconciled; GOI rows and Tailscale identity are `MIGRATED_VALIDATED`. OpenClaw remains intentionally staged under its qualified `KEEP_STAGED_PENDING` role. Historical volumes are classified obsolete-confirmed but retained.
 
-Current next: parallel OLD↔NEW validation (F03/F04/F05) → human cutover.
+Current next: HUMAN CUTOVER GATE — final OLD write freeze, proven DB/state sync, fresh publication map, authorized NEW publication/routing, rollback retention.

@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_PARALLEL_OLD_NEW_VALIDATION_F03_F04_F05_V1` / #68
+**Classification:** `PASS — VPS_PARALLEL_VALIDATION=PASS · HUMAN_CUTOVER_GATE=READY_NOT_AUTHORIZED`
+**Timestamp (UTC):** 2026-09-07T09:25:00Z
+**BASE_HEAD:** `032fc1f954da0bb87a07fea1390d1289e19b14b3`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_PARALLEL_OLD_NEW_VALIDATION_F03_F04_F05_V1` commit
+**Report:** `reports/architecture/v4_vps_parallel_old_new_validation_f03_f04_f05_v1.md`
+
+NEW isolated core restart PASS through `n8n-compose.service`; OLD↔NEW service smokes PASS; normalized workflow/credential/settings parity PASS with expected OLD-live execution/publication drift; F03 census `31/0/0/3` over 34 reconciled; F04 OLD public `:80` classified non-required obsolete default; F05 current OLD HTTPS/rollback health PASS with renewal degraded (`203/EXEC` helper absent). No cutover or OLD mutation.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_ACTIVE_NGINX_TLS_RENEWAL_QUALIFICATION_V1` / #68
 **Classification:** `PASS — ACTIVE_NGINX_TLS_RENEWAL=PASS · TLS_RENEWAL_TIMER_ENABLEMENT=PASS · TLS_IDENTITY=NEW_MAGICDNS_ONLY`
 **Timestamp (UTC):** 2026-09-07T09:07:17Z

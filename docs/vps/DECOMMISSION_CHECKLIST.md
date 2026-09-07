@@ -2,6 +2,23 @@
 
 `OLD_DECOMMISSION_ELIGIBLE=YES` only when every item below is satisfied with evidence.
 
+## Parallel checkpoint annotation — 2026-09-07
+
+`V4_VPS_PARALLEL_OLD_NEW_VALIDATION_F03_F04_F05_V1` records:
+
+```text
+VPS_PARALLEL_VALIDATION=PASS
+NEW_CORE_RESTART_PERSISTENCE=PASS
+F03_ACCOUNTING_RECONCILIATION=PASS
+F04_OLD_PUBLIC_80_REQUIREDNESS=NON_REQUIRED_OBSOLETE_DEFAULT
+F05_OLD_TLS_CURRENT_HTTPS_HEALTH=PASS
+F05_OLD_ROLLBACK_TLS_PRACTICABLE=YES
+HUMAN_CUTOVER_GATE=READY_NOT_AUTHORIZED
+OLD_DECOMMISSION_ELIGIBLE=NO
+```
+
+The OLD renewal helper remains degraded (`203/EXEC` absent helper); current OLD HTTPS is healthy through `2026-11-15T23:56:47Z`. The checklist boxes below remain the canonical gate and are not marked complete by this checkpoint. Cutover, rollback retention, and decommission authorization remain pending.
+
 ## Component accounting
 
 - [ ] every OLD service/project runtime has a registry row

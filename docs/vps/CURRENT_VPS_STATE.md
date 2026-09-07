@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after `V4_VPS_ACTIVE_NGINX_TLS_RENEWAL_QUALIFICATION_V1` on 2026-09-07.
+Updated after `V4_VPS_PARALLEL_OLD_NEW_VALIDATION_F03_F04_F05_V1` on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -26,11 +26,20 @@ NEW_SERVE_CONFIG=NONE
 NEW_FUNNEL_CONFIG=NONE
 TAILSCALE_POST_JOIN_VERIFY=PASS
 
-MIGRATED_VALIDATED=15
-PRESENT_NOT_VALIDATED=14
+MIGRATED_VALIDATED=31
+PRESENT_NOT_VALIDATED=0
 MISSING=0
-PROJECT_DECISIONS_PENDING=1
-ROLLUP_COUNTS_STATUS=UNRECONCILED_F03_DO_NOT_USE_FOR_FINAL_ACCEPTANCE
+OBSOLETE_NEEDS_HUMAN_DECISION=0
+OBSOLETE_CONFIRMED_NOT_REQUIRED=3
+RESOLVED_SUPERSEDED=0
+F03_CENSUS_DENOMINATOR=34
+ROLLUP_COUNTS_STATUS=RECONCILED_F03
+REGISTRY_ROW_DENOMINATOR=21
+REGISTRY_ROW_MIGRATED_VALIDATED=20
+REGISTRY_ROW_PRESENT_NOT_VALIDATED=0
+REGISTRY_ROW_MISSING=0
+REGISTRY_ROW_OBSOLETE_NEEDS_HUMAN_DECISION=0
+REGISTRY_ROW_OBSOLETE_CONFIRMED_NOT_REQUIRED=1
 
 GOI_HANDOFF=INGESTED_AS_IS_INCOMPLETE
 GOI_NEW_READONLY_RECONCILIATION=PASS_WITH_BLOCKERS
@@ -53,7 +62,7 @@ GOI_PUBLIC_EXPOSURE=NONE
 GOI_GRAPHHOPPER_FUNCTIONAL_QUALIFICATION=PASS
 GOI_GRAPHHOPPER_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START
 GOI_ORS_FUNCTIONAL_QUALIFICATION=PASS
-GOI_ORS_RUNTIME=ACTIVE_NOT_ENABLED
+GOI_ORS_RUNTIME=ACTIVE_ENABLED
 GOI_ORS_BIND=127.0.0.1:8020
 GOI_ORS_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START
 GOI_ORS_CORS_REMEDIATION=PASS
@@ -78,7 +87,7 @@ VPS_CONSUMER_REGISTRY_COVERAGE=PASS
 CODEX_VPS_EVIDENCE_AUDIT=F01_F02_CONFIGURATION_GAPS_CLOSED
 F01_NGINX_VHOST=EFFECTIVELY_INCLUDED_SYNTAX_VALID
 F01_NGINX_INCLUDE_REMEDIATION=PASS
-NGINX_RUNTIME=ACTIVE_NOT_ENABLED
+NGINX_RUNTIME=ACTIVE_ENABLED
 NGINX_FUNCTIONAL_QUALIFICATION=PASS
 NGINX_BIND=100.99.54.93:443
 NGINX_PUBLIC_EXPOSURE=NONE
@@ -89,7 +98,7 @@ GOI_NGINX_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START
 GOI_DFLIGHT_PERMISSION_REMEDIATION=PASS
 DFLIGHT_CONFIG_ACCESS=GOI_DFLIGHT_USER_READABLE
 DFLIGHT_CSRF_ACCESS=GOI_DFLIGHT_USER_READABLE
-DFLIGHT_RUNTIME=ACTIVE_NOT_ENABLED
+DFLIGHT_RUNTIME=ACTIVE_ENABLED
 DFLIGHT_BIND=100.99.54.93:8010
 DFLIGHT_PUBLIC_EXPOSURE=NONE
 GOI_DFLIGHT_FUNCTIONAL_QUALIFICATION=PASS
@@ -103,7 +112,7 @@ F02_GRAPHHOPPER_DESTINATION=http://100.99.54.93:8989
 F02_ORS_DESTINATION=https://ionos-n8n-new.tailc01234.ts.net
 F02_DFLIGHT_DESTINATION=http://100.99.54.93:8010
 GOI_GIS_FUNCTIONAL_QUALIFICATION=PASS
-GIS_RUNTIME=ACTIVE_NOT_ENABLED
+GIS_RUNTIME=ACTIVE_ENABLED
 GIS_BIND=100.99.54.93:8000
 GIS_PUBLIC_EXPOSURE=NONE
 GIS_SERVED_ARTIFACT_MATCH=PASS
@@ -113,7 +122,7 @@ GIS_BROWSER_DFLIGHT_CHAIN=PASS
 GIS_BROWSER_GRAPHHOPPER_CHAIN=PASS
 GIS_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START
 GOI_NAV_FUNCTIONAL_QUALIFICATION=PASS
-NAV_RUNTIME=ACTIVE_NOT_ENABLED
+NAV_RUNTIME=ACTIVE_ENABLED
 NAV_BIND=100.99.54.93:5000
 NAV_PUBLIC_EXPOSURE=NONE
 NAV_APPLICATION_SMOKE=PASS
@@ -151,7 +160,16 @@ VPS_CHAT_CLOSE_CONDITION=MIGRATION_COMPLETE_AND_HANDOFF_RECORDED
 SHARED_INFRA_GATES=GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=CURSOR_PARALLEL_VALIDATION_F03_F04_F05
+VPS_PARALLEL_VALIDATION=PASS
+F03_ACCOUNTING_RECONCILIATION=PASS
+F04_OLD_PUBLIC_80_REQUIREDNESS=NON_REQUIRED_OBSOLETE_DEFAULT
+F05_OLD_TLS_CURRENT_HTTPS_HEALTH=PASS
+F05_OLD_TLS_RENEWAL_HEALTH=PERSISTENT_DEGRADED_HELPER_MISSING_203_EXEC
+F05_OLD_ROLLBACK_TLS_PRACTICABLE=YES
+NEW_CORE_RESTART_PERSISTENCE=PASS
+HUMAN_CUTOVER_GATE=READY_NOT_AUTHORIZED
+OLD_DECOMMISSION_ELIGIBLE=NO
+NEXT=HUMAN_CUTOVER_GATE
 ```
 
 ## Current proven state
@@ -172,17 +190,11 @@ NEW currently has:
 - Nav private functional qualification PASS on `100.99.54.93:5000`, enabled with cold-start persistence PASS;
 - nginx private-chain functional qualification PASS on `100.99.54.93:443` only (HTTPS→ORS, hostname-verified TLS), enabled with cold-start persistence PASS; no public `:80`/`:443`;
 - F02 GIS HTML retargeted to NEW GraphHopper/ORS/D-Flight identities; GIS now serving that artifact privately;
-- schema-engine isolated Ajv tree functionally qualified and `MIGRATED_VALIDATED` (F03 aggregate rollup still frozen).
+- schema-engine isolated Ajv tree functionally qualified and `MIGRATED_VALIDATED`; F03 census reconciliation PASS (`31/0/0 + 3 obsolete-confirmed`).
 
-## F01/F02 evidence correction
+## F01/F02 evidence supersession
 
-`V4_VPS_GOI_F01_F02_READONLY_EVIDENCE_V1` completed read-only and corrected two assumptions:
-
-1. **F01 nginx — `STAGED_NOT_INCLUDED`.** `/etc/nginx/nginx.conf` includes `conf.d/*.conf` and `sites-enabled/*`, both empty on NEW. `/etc/nginx/sites-available/goi-ors-gateway` contains the intended NEW Tailscale bind, NEW MagicDNS, NEW TLS paths and loopback ORS upstream, but is not in the effective nginx include graph. Prior `nginx -t PASS` therefore validated the empty include set, not the GOI vhost.
-
-2. **F02 GIS — `ACTIVE_OLD_ENDPOINT_FOUND`.** The effective GIS runtime is a static `python3 -m http.server` serving `coordinate_converter Claude.html`. That served HTML still contains effective OLD destinations, including GraphHopper `http://100.114.7.53:8989`, ORS `https://ubuntu.tailc01234.ts.net`, and an adjacent D-Flight override on OLD Tailscale identity. No NEW identity strings were present in the served HTML.
-
-The earlier aggregate claim `GOI_ACTIVE_OLD_IDENTITY_REFS=NONE` must not be used beyond the narrower config surfaces actually inspected before this evidence pass.
+The later functional qualification evidence supersedes the pre-remediation findings for current state: the NEW nginx GOI vhost is effective and the NEW GIS artifact is served with only NEW GraphHopper/ORS/D-Flight destinations. Historical F01/F02 reports remain immutable and retain their earlier snapshots.
 
 ## NEW TLS qualification
 
@@ -195,7 +207,7 @@ The earlier aggregate claim `GOI_ACTIVE_OLD_IDENTITY_REFS=NONE` must not be used
 
 ## Counts caveat — F03
 
-The historical rollup `15/14/0/1` is preserved but is not currently reproducible directly from the aggregate PROJECT registry rows. It must be reconciled by a dedicated denominator/mapping pass before full-parity sign-off; do not silently replace it with row counts and do not use it alone for cutover acceptance. The schema-engine **row** is now `MIGRATED_VALIDATED`; that promotion does **not** update the frozen F03 rollup.
+F03 is now reconciled against the original 34-component census: `31 MIGRATED_VALIDATED`, `0 PRESENT_NOT_VALIDATED`, `0 MISSING`, `3 OBSOLETE_CONFIRMED_NOT_REQUIRED`. The historical `15/14/0/1` remains provenance only. The current registry projection is separately `21 rows: 20 MIGRATED_VALIDATED, 0 PRESENT_NOT_VALIDATED, 0 MISSING, 1 OBSOLETE_CONFIRMED_NOT_REQUIRED`.
 
 ## Project orchestration model
 
@@ -206,8 +218,8 @@ The historical rollup `15/14/0/1` is preserved but is not currently reproducible
 
 ## Remaining blockers before human cutover
 
-1. Parallel OLD↔NEW validation: F03 count denominator/reconciliation, F04 OLD public `:80` requiredness, F05 OLD TLS renewal/rollback health, final parity acceptance.
-2. Human cutover gate.
+1. Human cutover decision: final OLD write freeze, fresh PostgreSQL/n8n state sync, current publication map, authorized NEW publication/routing, and rollback window selection.
+2. OLD renewal remains degraded (`203/EXEC` helper missing) although current hostname-verified HTTPS is healthy through `2026-11-15T23:56:47Z`; no OLD repair was performed in this read-only checkpoint.
 
 Production n8n publication/cutover and OLD decommission remain separately gated.
 
