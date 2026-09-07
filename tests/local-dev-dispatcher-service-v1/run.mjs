@@ -112,6 +112,7 @@ await test("S4 single-flight: second tick while executing -> BUSY, never queued"
     scanQueue: () => { scanCalls += 1; return []; },
     runDispatchLoop: () => { dispatchCalls += 1; return { ok: true, claims: [], skipped: [], stop_reason: "QUEUE_DRAINED" }; },
     runExecutor: async () => { executorCalls += 1; throw new Error("MUST NOT EXECUTE DURING S4 SINGLE-FLIGHT"); },
+    ensureDevQwenReady: async () => { throw new Error("MUST NOT PREFLIGHT DURING S4 IDLE"); },
   };
   const firstRes = mockRes();
   const first = handleTickRequest(mockReq("POST", TICK_PATH, JSON.stringify({ schema_version: REQUEST_SCHEMA, request_id: "r1", source: "n8n" })), firstRes, { tryAcquireLock: tryAcquire, releaseLock: release, tickDeps });
@@ -175,9 +176,9 @@ await test("S7 exactly ONE task per tick: two admissible items -> one claim, one
       verifyRepo: async () => ({ ok: true, head: "c".repeat(40), reason_codes: [] }),
       scanQueue: () => entries,
       runDispatchLoop: (seen) => {
-        // Proven primitive guarantees max 1 claim via maxClaims=1:
-        return { ok: true, claims: [{ task_ref: "LOCAL_DEV_B_D-1", source_file: "1.md", envelope: { task_ref: "LOCAL_DEV_B_D-1" }, receipt: { task_ref: "LOCAL_DEV_B_D-1" } }], skipped: [], stop_reason: "MAX_CLAIMS_REACHED" };
+        return { ok: true, claims: [{ task_ref: "LOCAL_DEV_B_D-1", source_file: "1.md", envelope: { task_ref: "LOCAL_DEV_B_D-1", profile_id: "qwen38-opus-q3-opencode-64k" }, receipt: { task_ref: "LOCAL_DEV_B_D-1" } }], skipped: [], stop_reason: "MAX_CLAIMS_REACHED" };
       },
+      ensureDevQwenReady: readyEnsureStub(),
       runExecutor: async (envelope) => { executed.push(envelope.task_ref); return { status: "PASS", classification: "PASS", task_ref: envelope.task_ref, reason_codes: ["PASS"] }; },
     },
   );
@@ -193,7 +194,8 @@ await test("S8 executor STOP -> WORK_EXECUTED_STOP, bounded fields only", async 
     {
       verifyRepo: async () => ({ ok: true, head: "d".repeat(40), reason_codes: [] }),
       scanQueue: () => [{ ok: true, item: { id: "D-9" }, markdown: "m", source: "9.md", backlog_path: "q/9.md" }],
-      runDispatchLoop: () => ({ ok: true, claims: [{ task_ref: "LOCAL_DEV_B_D-9", source_file: "9.md", envelope: { task_ref: "LOCAL_DEV_B_D-9" }, receipt: { task_ref: "LOCAL_DEV_B_D-9" } }], skipped: [] }),
+      runDispatchLoop: () => ({ ok: true, claims: [{ task_ref: "LOCAL_DEV_B_D-9", source_file: "9.md", envelope: { task_ref: "LOCAL_DEV_B_D-9", profile_id: "qwen38-opus-q3-opencode-64k" }, receipt: { task_ref: "LOCAL_DEV_B_D-9" } }], skipped: [] }),
+      ensureDevQwenReady: readyEnsureStub(),
       runExecutor: async () => ({ status: "STOP", classification: "STOP:TEST_FAILED", task_ref: "LOCAL_DEV_B_D-9", reason_codes: ["TEST_FAILED"] }),
     },
   );
@@ -247,7 +249,8 @@ await test("S11 safe-FF advanced HEAD forwarded as head/commit into dispatch-loo
     {
       verifyRepo: async () => { verifyCalls.push("verify"); return { ok: true, head: advancedHead, reason_codes: [] }; },
       scanQueue: () => [{ ok: true, item: { id: "D-11", state: "READY_FOR_PLANNING" }, markdown: "m11", source: "11.md", backlog_path: "q/11.md" }],
-      runDispatchLoop: (_entries, _receipts, options) => { dispatchCalls.push(options); return { ok: true, claims: [{ task_ref: "LOCAL_DEV_B_D-11", source_file: "11.md", envelope: { task_ref: "LOCAL_DEV_B_D-11", head: advancedHead, commit: advancedHead }, receipt: { task_ref: "LOCAL_DEV_B_D-11" } }], skipped: [], stop_reason: "MAX_CLAIMS_REACHED" }; },
+      runDispatchLoop: (_entries, _receipts, options) => { dispatchCalls.push(options); return { ok: true, claims: [{ task_ref: "LOCAL_DEV_B_D-11", source_file: "11.md", envelope: { task_ref: "LOCAL_DEV_B_D-11", profile_id: "qwen38-opus-q3-opencode-64k", head: advancedHead, commit: advancedHead }, receipt: { task_ref: "LOCAL_DEV_B_D-11" } }], skipped: [], stop_reason: "MAX_CLAIMS_REACHED" }; },
+      ensureDevQwenReady: readyEnsureStub(),
       runExecutor: async (envelope) => { executed.push(envelope); return { status: "PASS", classification: "PASS", task_ref: envelope.task_ref, reason_codes: ["PASS"] }; },
     },
   );
@@ -275,8 +278,9 @@ await test("S12 advanced-HEAD repo verification reaches dispatch-loop options; t
       scanQueue: () => [{ ok: true, item: { id: "D-12", state: "READY_FOR_PLANNING" }, markdown: "m12", source: "12.md", backlog_path: "q/12.md" }],
       runDispatchLoop: (_e, _r, options) => {
         optionsSeen = options;
-        return { ok: true, claims: [{ task_ref: taskRef, source_file: "12.md", envelope: { task_ref: taskRef, head: advancedHead, commit: advancedHead }, receipt: { task_ref: taskRef } }], skipped: [] };
+        return { ok: true, claims: [{ task_ref: taskRef, source_file: "12.md", envelope: { task_ref: taskRef, profile_id: "qwen38-opus-q3-opencode-64k", head: advancedHead, commit: advancedHead }, receipt: { task_ref: taskRef } }], skipped: [] };
       },
+      ensureDevQwenReady: readyEnsureStub(),
       runExecutor: async (envelope) => { execRefs.push(envelope.task_ref); return { status: "PASS", classification: "PASS", task_ref: envelope.task_ref, reason_codes: ["PASS"] }; },
     },
   );
@@ -298,6 +302,7 @@ await test("S13 injected performTick persistence isolation: no canonical queue a
   assert.equal(shouldPersistRuntimeArtifacts({ runDispatchLoop: () => ({}) }), false);
   assert.equal(shouldPersistRuntimeArtifacts({ runExecutor: async () => ({}) }), false);
   assert.equal(shouldPersistRuntimeArtifacts({ nowIso: () => "t" }), false);
+  assert.equal(shouldPersistRuntimeArtifacts({ ensureDevQwenReady: async () => ({}) }), false);
 
   // Snapshot the canonical queue dir + receipts BEFORE (no artifact may be
   // created/deleted by this regression itself).
@@ -316,8 +321,9 @@ await test("S13 injected performTick persistence isolation: no canonical queue a
     scanQueue: () => [{ ok: true, item: { id: "D-13", state: "READY_FOR_PLANNING" }, markdown: "m13", source: "13.md", backlog_path: "q/13.md" }],
     runDispatchLoop: (_e, _r, options) => {
       optionsSeen = options;
-      return { ok: true, claims: [{ task_ref: taskRef, source_file: "13.md", envelope: { task_ref: taskRef, head: advancedHead, commit: advancedHead }, receipt: { task_ref: taskRef } }], skipped: [] };
+      return { ok: true, claims: [{ task_ref: taskRef, source_file: "13.md", envelope: { task_ref: taskRef, profile_id: "qwen38-opus-q3-opencode-64k", head: advancedHead, commit: advancedHead }, receipt: { task_ref: taskRef } }], skipped: [] };
     },
+    ensureDevQwenReady: readyEnsureStub(),
     runExecutor: async (envelope) => { execRefs.push(envelope.task_ref); return { status: "PASS", classification: "PASS", task_ref: envelope.task_ref, reason_codes: ["PASS"] }; },
   };
   assert.equal(shouldPersistRuntimeArtifacts(injected), false);
@@ -485,13 +491,13 @@ function snapshotCanonicalReceipts() {
   return existsSync(CANONICAL_RECEIPTS) ? readFileSync(CANONICAL_RECEIPTS, "utf8") : null;
 }
 
-function claimForTick(taskRef, extraReceipt = {}) {
+function claimForTick(taskRef, extraReceipt = {}, profileId = "qwen38-opus-q3-opencode-64k") {
   return {
     ok: true,
     claims: [{
       task_ref: taskRef,
       source_file: "x.md",
-      envelope: { task_ref: taskRef },
+      envelope: { task_ref: taskRef, profile_id: profileId },
       receipt: {
         task_ref: taskRef,
         source_ref: `github:mrhz1973/control-plane@${BRIDGE_SHA}:x.md`,
@@ -501,6 +507,13 @@ function claimForTick(taskRef, extraReceipt = {}) {
       },
     }],
     skipped: [],
+  };
+}
+
+function readyEnsureStub(profileSeen) {
+  return async ({ profile }) => {
+    if (profileSeen) profileSeen.push(profile);
+    return { ready: true, status: "READY", reason_code: "READY", profile, launch_count: 0 };
   };
 }
 
@@ -584,6 +597,7 @@ await test("S19 dispatcher persists CLAIMED→admission STOP / EXECUTING-before-
         runDispatchLoop: () => claimForTick(taskRef),
         loadReceipts: () => historicalReceipts.map((r) => ({ ...r })),
         persistReceipts: (list) => { snapshots.push(list.map((r) => ({ ...r }))); },
+        ensureDevQwenReady: readyEnsureStub(),
         admitMicroTaskDelta: admit,
         runExecutor: async (envelope) => {
           executorEntered = true;
@@ -684,6 +698,7 @@ await test("S20 atomic receipts persist fail-closed; no replayable ambiguity aft
           throw err;
         }
       },
+      ensureDevQwenReady: readyEnsureStub(),
       admitMicroTaskDelta: () => ({ admitted: true }),
       runExecutor: async () => { executorCalls += 1; return { status: "PASS", classification: "PASS", task_ref: "LOCAL_DEV_B_D-9402-ATOM" }; },
     },
@@ -695,6 +710,75 @@ await test("S20 atomic receipts persist fail-closed; no replayable ambiguity aft
   assert.equal(snapshotCanonicalReceipts(), before);
 
   try { unlinkSync(blocker); } catch { /* ignore */ }
+});
+
+await test("S21 Qwen readiness preflight before claim: exact profile_id, fail unconsumed, success keeps lifecycle", async () => {
+  const before = snapshotCanonicalReceipts();
+  const profileId = "qwen38-opus-q3-opencode-64k";
+  const taskRef = "LOCAL_DEV_B_D-9402-PRE";
+
+  const profilesSeen = [];
+  let persistCalls = 0;
+  let admitCalls = 0;
+  let execCalls = 0;
+  const failResult = await performTick(
+    { schema_version: REQUEST_SCHEMA, request_id: "r-pre-fail", source: "n8n" },
+    {
+      verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+      scanQueue: () => [{ markdown: "m", source: "x.md", backlog_path: "q/x.md" }],
+      runDispatchLoop: () => claimForTick(taskRef, {}, profileId),
+      loadReceipts: () => [],
+      persistReceipts: () => { persistCalls += 1; },
+      ensureDevQwenReady: async ({ profile }) => {
+        profilesSeen.push(profile);
+        return { ready: false, status: "PROFILE_NOT_EXPOSED", reason_code: "PROFILE_NOT_EXPOSED", launch_count: 0 };
+      },
+      admitMicroTaskDelta: () => { admitCalls += 1; return { admitted: true }; },
+      runExecutor: async () => { execCalls += 1; return { status: "PASS", classification: "PASS", task_ref: taskRef }; },
+    },
+  );
+  assert.deepEqual(profilesSeen, [profileId]);
+  assert.equal(failResult.classification, "HUMAN_GATE_REQUIRED");
+  assert.equal(failResult.execution_performed, false);
+  assert.equal(failResult.task_ref, taskRef);
+  assert.ok(failResult.reason_codes.includes("QWEN_SESSION_NOT_READY"));
+  assert.ok(failResult.reason_codes.includes("PROFILE_NOT_EXPOSED"));
+  assert.equal(persistCalls, 0, "no receipt persistence on readiness failure");
+  assert.equal(admitCalls, 0, "admission never invoked on readiness failure");
+  assert.equal(execCalls, 0, "executor never invoked on readiness failure");
+  assert.equal(shouldPersistRuntimeArtifacts({ ensureDevQwenReady: async () => ({}) }), false);
+
+  const snaps = [];
+  let readinessBeforeClaimed = false;
+  const okResult = await performTick(
+    { schema_version: REQUEST_SCHEMA, request_id: "r-pre-ok", source: "n8n" },
+    {
+      verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+      scanQueue: () => [{ markdown: "m", source: "x.md", backlog_path: "q/x.md" }],
+      runDispatchLoop: () => claimForTick(taskRef, {}, profileId),
+      loadReceipts: () => [],
+      persistReceipts: (list) => {
+        if (snaps.length === 0) readinessBeforeClaimed = true;
+        snaps.push(list.map((r) => ({ ...r })));
+      },
+      ensureDevQwenReady: async ({ profile }) => {
+        assert.equal(profile, profileId);
+        assert.equal(snaps.length, 0, "readiness must run before CLAIMED persistence");
+        return { ready: true, status: "READY", reason_code: "READY", launch_count: 0 };
+      },
+      admitMicroTaskDelta: () => ({ admitted: true }),
+      runExecutor: async (envelope) => {
+        assert.equal(latestFor(taskRef, snaps).state, "EXECUTING");
+        return { status: "PASS", classification: "PASS", task_ref: envelope.task_ref, reason_codes: ["PASS"] };
+      },
+    },
+  );
+  assert.equal(okResult.classification, "WORK_EXECUTED_PASS");
+  assert.equal(readinessBeforeClaimed, true);
+  assert.equal(snaps[0].find((r) => r.task_ref === taskRef).state, "CLAIMED");
+  assert.equal(snaps[1].find((r) => r.task_ref === taskRef).state, "EXECUTING");
+  assert.equal(latestFor(taskRef, snaps).state, "PASS");
+  assert.equal(snapshotCanonicalReceipts(), before);
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);

@@ -51,6 +51,7 @@ import {
 import { executeLocalDevTask } from "./local-dev-executor-v1.mjs";
 import { composeRunners } from "./run-local-dev-executor-v1.mjs";
 import { admitMicroTaskDelta, extractMicroTaskAdmissionInput } from "./admit-micro-task-delta-v1.mjs";
+import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
 
 export const RESULT_SCHEMA = "local-dev-dispatch-tick-result-v1";
 export const REQUEST_SCHEMA = "local-dev-dispatch-tick-v1";
@@ -67,6 +68,8 @@ export const QUEUE_DIR = "reports/runtime/dev-queue/always-on";
 // STOP with PREFLIGHT_TRACKED_DIRTY_OUT_OF_SCOPE (observed live 2026-09-05).
 export const RECEIPTS_PATH = "reports/runtime/dev-queue/always-on/receipts.json";
 export const MAX_BODY_BYTES = 64 * 1024;
+/** Bounded DEV Qwen readiness preflight before claim persistence. */
+export const QWEN_PREFLIGHT_TIMEOUT_MS = 30_000;
 export const CLASSIFICATIONS = Object.freeze([
   "WORK_EXECUTED_PASS",
   "WORK_EXECUTED_STOP",
@@ -246,7 +249,8 @@ export function shouldPersistRuntimeArtifacts(deps = {}) {
     deps.scanQueue ||
     deps.runDispatchLoop ||
     deps.runExecutor ||
-    deps.nowIso
+    deps.nowIso ||
+    deps.ensureDevQwenReady
   );
 }
 
@@ -348,7 +352,46 @@ export async function performTick(body, deps = {}) {
   }
   const claim = loop.claims[0];
 
-  // 3. Persist claim receipts + envelope (same layout as the proven loop).
+  // 2b. Exact DEV profile readiness BEFORE any durable claim/envelope write.
+  // In-memory selection is not consumption; persistence is.
+  const ensureDevQwenReady = deps.ensureDevQwenReady || ensureWorkstationDevQwenReady;
+  const profileId = claim?.envelope?.profile_id;
+  let readiness;
+  try {
+    readiness = await ensureDevQwenReady({
+      profile: profileId,
+      readinessTimeoutMs: deps.qwenPreflightTimeoutMs ?? QWEN_PREFLIGHT_TIMEOUT_MS,
+    });
+  } catch (err) {
+    return wrapTickResult({
+      ok: false,
+      request_id: requestId,
+      classification: "HUMAN_GATE_REQUIRED",
+      execution_performed: false,
+      task_ref: claim.task_ref,
+      human_gate_required: true,
+      gate_summary: "QWEN_SESSION_NOT_READY",
+      reason_codes: [
+        "QWEN_SESSION_NOT_READY",
+        String(err?.code || err?.message || "ensure_threw").slice(0, 80),
+      ],
+    });
+  }
+  if (!readiness || readiness.ready !== true) {
+    const status = readiness?.reason_code || readiness?.status || "QWEN_SESSION_NOT_READY";
+    return wrapTickResult({
+      ok: false,
+      request_id: requestId,
+      classification: "HUMAN_GATE_REQUIRED",
+      execution_performed: false,
+      task_ref: claim.task_ref,
+      human_gate_required: true,
+      gate_summary: `QWEN_SESSION_NOT_READY:${status}`,
+      reason_codes: ["QWEN_SESSION_NOT_READY", String(status).slice(0, 80)],
+    });
+  }
+
+  // 3. Persist claim receipts + envelope ONLY after exact profile READY.
   // Real runtime (zero injected deps) persists BOTH; ANY injected performTick
   // dependency persists NEITHER (shouldPersistRuntimeArtifacts).
   const realRuntimePersistence = shouldPersistRuntimeArtifacts(deps);
