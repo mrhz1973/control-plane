@@ -2,7 +2,7 @@
 
 This file records authoritative ownership/state for VPS resources that specialist projects must not configure independently.
 
-NEW Tailscale identity, TLS issuance, GraphHopper, ORS loopback+CORS, and nginx private HTTPS→ORS chain are proven. F01 include and F02 GIS HTML retarget remain PASS. No public cutover.
+NEW Tailscale identity, TLS issuance, GraphHopper, ORS loopback+CORS, nginx private HTTPS→ORS, D-Flight, and GIS private static serve are proven. F01 include and F02 GIS HTML retarget remain PASS. No public cutover.
 
 | Shared resource | Owner | OLD current state | NEW current state | Mutation rule / gate |
 |---|---|---|---|---|
@@ -15,14 +15,14 @@ NEW Tailscale identity, TLS issuance, GraphHopper, ORS loopback+CORS, and nginx 
 | GOI nginx vhost | Control Plane with GOI input | OLD `100.114.7.53:443`, OLD MagicDNS | runtime active not enabled; `100.99.54.93:443`; HTTPS ORS chain PASS | boot persistence pending; no public bind |
 | GOI nginx readiness | Control Plane with GOI input | active on OLD | readiness drop-in/helper targets NEW TS IP | preserve; no nginx start in F01 remediation |
 | GOI GraphHopper bind | GOI / Control Plane activation gate | OLD app TS bind + loopback admin | runtime active not enabled: `100.99.54.93:8989`, admin `127.0.0.1:8990`; functional smoke PASS | restart-persistence pending |
-| GOI GIS bind / downstream endpoints | GOI | OLD TS `:8000`; clients previously targeted OLD GraphHopper/ORS/D-Flight | unit still disabled/inactive; served HTML now NEW GH `http://100.99.54.93:8989`, ORS `https://ionos-n8n-new.tailc01234.ts.net`, D-Flight `http://100.99.54.93:8010` | F02 retarget PASS; do not start GIS until later authorized activation |
+| GOI GIS bind / downstream endpoints | GOI | OLD TS `:8000`; clients previously targeted OLD GraphHopper/ORS/D-Flight | runtime active not enabled; `100.99.54.93:8000`; F02 HTML served; browser Origin PASS vs GH/ORS/D-Flight | boot persistence pending; no public bind |
 | GOI Nav proxy | GOI | OLD TS `:5000` from Planet-Clone | dynamic NEW TS bind + parity override loaded, disabled/inactive | controlled activation after prerequisite remediation |
 | GOI ORS | GOI / Control Plane activation gate | OLD loopback runtime | runtime active not enabled; `127.0.0.1:8020`; CORS GIS origin NEW `http://100.99.54.93:8000`; status smoke PASS | restart-persistence pending; nginx serving later |
-| GOI D-Flight | GOI / Control Plane activation gate | OLD TS `:8010` + persistent state | runtime active not enabled; `100.99.54.93:8010`; status/LKG/CORS NEW GIS PASS | boot persistence pending; GIS start later |
+| GOI D-Flight | GOI / Control Plane activation gate | OLD TS `:8010` + persistent state | runtime active not enabled; `100.99.54.93:8010`; status/LKG/CORS NEW GIS PASS | boot persistence pending |
 | TLS identity | Control Plane with GOI input | OLD cert files `/etc/goi-ors/tls`; OLD MagicDNS live | NEW cert SAN exactly `ionos-n8n-new.tailc01234.ts.net`; OLD SAN absent | qualified; no public cutover implied |
 | TLS renewal | Control Plane with GOI input | OLD timer live; oneshot observed failed | NEW helper inactive-nginx behavior PASS; timer inactive | active-nginx renewal + persistence later; OLD health checked before cutover |
 | Public ports `80/443` | Control Plane | OLD nginx owns public `:80` default and TS `:443` | NEW no public `:80`/`:443`; nginx TS `:443` only | no public-route cutover; OLD `:80` requiredness unresolved for final sign-off |
-| GOI TS-bound ports | Control Plane allocates; GOI validates | OLD `443,5000,8000,8010,8989`; loopback `8020,8990` | NEW GraphHopper `8989` + admin `8990`; ORS loopback `8020`; nginx TS `443`; D-Flight TS `8010`; GIS/Nav still closed | never expose `8020/8990` beyond loopback |
+| GOI TS-bound ports | Control Plane allocates; GOI validates | OLD `443,5000,8000,8010,8989`; loopback `8020,8990` | NEW GraphHopper `8989` + admin `8990`; ORS loopback `8020`; nginx TS `443`; D-Flight TS `8010`; GIS TS `8000`; Nav still closed | never expose `8020/8990` beyond loopback |
 | n8n loopback `5678` | Control Plane | OLD production | NEW isolated replica | publication/cutover separately authorized |
 | n8n filesystem binds | Control Plane | `/root/local-files`, `/srv/cp-verifier-inbox`, control-plane checkout bind | same bind names present on NEW | do not drop binds; no secret values in git |
 | schema-engine local dependency | Control Plane | `/root/local-files/handoff-runtime/schema-engine` | copied, resolver smoke pending | no network dependency |
@@ -51,11 +51,16 @@ GOI_HTTPS_ORS_CHAIN=PASS
 GOI_NGINX_BOOT_PERSISTENCE=PENDING
 F02_GIS_ENDPOINTS=NEW_IDENTITY_RETARGETED
 F02_GIS_ENDPOINT_REMEDIATION=PASS
+GOI_GIS_FUNCTIONAL_QUALIFICATION=PASS
+GIS_RUNTIME=ACTIVE_NOT_ENABLED
+GIS_BIND=100.99.54.93:8000
+GIS_BOOT_PERSISTENCE=PENDING
 F01_F02_CONFIGURATION_GAPS=CLOSED
 CUTOVER=NOT_AUTHORIZED
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_goi_gis_private_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_nginx_private_chain_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_f02_gis_endpoint_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_f01_nginx_include_remediation_v1.md`
@@ -66,4 +71,4 @@ Canonical evidence:
 
 ## Current shared-infrastructure next
 
-Remaining GOI private runtime qualification → restart-persistence/parallel OLD↔NEW validation → human cutover.
+Remaining GOI private runtime qualification (Nav) → restart-persistence/parallel OLD↔NEW validation → human cutover.

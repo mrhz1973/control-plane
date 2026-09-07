@@ -1,6 +1,6 @@
 # Project VPS registry
 
-Current projection after nginx private-chain functional qualification PASS. GraphHopper/ORS/nginx active not enabled. GIS not functionally qualified.
+Current projection after GIS private functional qualification PASS. GraphHopper/ORS/nginx/D-Flight/GIS active not enabled. Nav not started.
 
 | Project / component | OLD footprint | NEW state | Shared dependencies | Migration status | Evidence / next |
 |---|---|---|---|---|---|
@@ -10,7 +10,7 @@ Current projection after nginx private-chain functional qualification PASS. Grap
 | Hermes/browser | Hermes 0.21 + Chromium/CDP/Xvfb/x11vnc/noVNC; OLD process-level, NEW `hermes-*.service` | qualified; auth persistence, recall, short soak, post-soak PASS | loopback-only browser ports | MIGRATED_VALIDATED | #67 |
 | GOI GraphHopper | OLD live TS app + loopback admin | runtime active not enabled; app `100.99.54.93:8989`, admin `127.0.0.1:8990`; canonical hiking `/route` 200 | Tailscale IP | PRESENT_NOT_VALIDATED | functional PASS; restart-persistence pending |
 | GOI ORS gateway | OLD live loopback `127.0.0.1:8020`; tree `/opt/goi-ors-gateway` | runtime active not enabled; loopback `127.0.0.1:8020`; CORS GIS origin `http://100.99.54.93:8000`; status 200 ready/PRESENT | nginx/TLS/Tailscale | PRESENT_NOT_VALIDATED | functional+CORS PASS; restart-persistence pending; not `MIGRATED_VALIDATED` |
-| GOI GIS / cursor-coordinate-converter | OLD TS `:8000`; WD `/root/local-files/handoff-runtime/cursor-coordinate-converter` | unit disabled/inactive; served HTML retargeted to NEW GH `100.99.54.93:8989`, NEW ORS MagicDNS, NEW D-Flight `100.99.54.93:8010` | Tailscale IP, local-files, GraphHopper/ORS/D-Flight | PRESENT_NOT_VALIDATED | F02 retarget PASS; functional qualification pending; not `MIGRATED_VALIDATED` |
+| GOI GIS / cursor-coordinate-converter | OLD TS `:8000`; WD `/root/local-files/handoff-runtime/cursor-coordinate-converter` | runtime active not enabled; bind `100.99.54.93:8000`; F02 HTML served; browser Origin PASS vs GH/ORS/D-Flight | Tailscale IP, local-files, GraphHopper/ORS/D-Flight | PRESENT_NOT_VALIDATED | functional PASS; boot persistence pending; not `MIGRATED_VALIDATED` |
 | GOI Navionics / Planet-Clone | OLD TS `:5000`; WD `/root/local-files/handoff-runtime/Planet-Clone` | copied; dynamic TS bind + parity override loaded; disabled/inactive | Tailscale IP, local-files | PRESENT_NOT_VALIDATED | qualify on NEW TS IP after prerequisite remediation |
 | GOI D-Flight | OLD TS `:8010`; `/opt/goi-dflight-helper` + `/var/lib/goi-dflight` | runtime active not enabled; bind `100.99.54.93:8010`; GET `/status` READY LKG 841 features; NEW Origin CORS PASS | Tailscale, GIS client | PRESENT_NOT_VALIDATED | functional PASS; boot persistence pending; not `MIGRATED_VALIDATED` |
 | GOI TLS renewal | OLD timer live; cert files `/etc/goi-ors/tls`; oneshot observed failed on OLD | NEW cert SAN qualified; helper handles inactive nginx; NEW timer inactive | NEW MagicDNS/TLS identity | PRESENT_NOT_VALIDATED | active-nginx renewal/persistence proof later; OLD health checked in parallel validation |
@@ -49,6 +49,10 @@ DFLIGHT_BIND=100.99.54.93:8010
 DFLIGHT_BOOT_PERSISTENCE=PENDING
 F02_GIS_ENDPOINTS=NEW_IDENTITY_RETARGETED
 F02_GIS_ENDPOINT_REMEDIATION=PASS
+GOI_GIS_FUNCTIONAL_QUALIFICATION=PASS
+GIS_RUNTIME=ACTIVE_NOT_ENABLED
+GIS_BIND=100.99.54.93:8000
+GIS_BOOT_PERSISTENCE=PENDING
 F01_F02_CONFIGURATION_GAPS=CLOSED
 GOI_ORS_FUNCTIONAL_QUALIFICATION=PASS
 GOI_ORS_RUNTIME=ACTIVE_NOT_ENABLED
@@ -62,6 +66,7 @@ CUTOVER=NOT_AUTHORIZED
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_goi_gis_private_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_dflight_private_functional_qualification_retry1_v1.md`
 - `reports/architecture/v4_vps_goi_dflight_config_permission_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_nginx_private_chain_functional_qualification_v1.md`
@@ -76,4 +81,4 @@ Canonical evidence:
 
 Registry rows remain `PRESENT_NOT_VALIDATED` until component-specific functional validation and required persistence proofs complete.
 
-Current next: remaining GOI private qualification (GIS/Nav) → schema-engine → persistence/parallel validation → human cutover.
+Current next: remaining GOI private qualification (Nav) → schema-engine → persistence/parallel validation → human cutover.

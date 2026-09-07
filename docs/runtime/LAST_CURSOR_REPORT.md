@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_GOI_GIS_PRIVATE_FUNCTIONAL_QUALIFICATION_V1` / #68
+**Classification:** `PASS — GOI_GIS_FUNCTIONAL_QUALIFICATION=PASS · GIS_RUNTIME=ACTIVE_NOT_ENABLED · GIS_BIND=100.99.54.93:8000`
+**Timestamp (UTC):** 2026-09-07T08:08:41Z
+**BASE_HEAD:** `48a036c1d1944a0a93b2c7b60b1bc7cee85abdf2`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_GOI_GIS_PRIVATE_FUNCTIONAL_QUALIFICATION_V1` commit
+**Report:** `reports/architecture/v4_vps_goi_gis_private_functional_qualification_v1.md`
+
+Started `goi-gis-app` without enable. Listener `100.99.54.93:8000` only. Served HTML SHA matches F02. Browser Origin works for ORS/D-Flight/GraphHopper. Nav not started.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_GOI_DFLIGHT_PRIVATE_FUNCTIONAL_QUALIFICATION_RETRY1_V1` / #68
 **Classification:** `PASS — GOI_DFLIGHT_FUNCTIONAL_QUALIFICATION=PASS · DFLIGHT_RUNTIME=ACTIVE_NOT_ENABLED · DFLIGHT_BIND=100.99.54.93:8010`
 **Timestamp (UTC):** 2026-09-07T07:59:38Z
