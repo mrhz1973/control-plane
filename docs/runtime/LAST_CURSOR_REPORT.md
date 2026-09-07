@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_GOI_ORS_LOOPBACK_FUNCTIONAL_QUALIFICATION_V1` / #68
+**Classification:** `PASS — GOI_ORS_FUNCTIONAL_QUALIFICATION=PASS · GOI_ORS_RUNTIME=ACTIVE_NOT_ENABLED · GOI_ORS_BIND=127.0.0.1:8020 · GOI_ORS_BOOT_PERSISTENCE=PENDING`
+**Timestamp (UTC):** 2026-09-07T07:17:15Z
+**BASE_HEAD:** `aba6c0d9daeb685177173603d1d997569c68c51c`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_GOI_ORS_LOOPBACK_FUNCTIONAL_QUALIFICATION_V1` commit
+**Report:** `reports/architecture/v4_vps_goi_ors_loopback_functional_qualification_v1.md`
+
+Started `goi-ors-gateway` without enable. Loopback listener `127.0.0.1:8020` only. Canonical `GET /ors/status` 200 `ready`/`PRESENT`. No live directions POST invented. nginx/GIS/Nav/D-Flight inactive. GraphHopper PID unchanged. Next: nginx/private-chain slice separately; do not start nginx here.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_GOI_F02_GIS_ENDPOINT_REMEDIATION_V1` / #68
 **Classification:** `PASS — F02_GIS_ENDPOINT_REMEDIATION=PASS · F02_GIS_ENDPOINTS=NEW_IDENTITY_RETARGETED · F01_F02_CONFIGURATION_GAPS=CLOSED · no service starts`
 **Timestamp (UTC):** 2026-09-07T07:07:04Z

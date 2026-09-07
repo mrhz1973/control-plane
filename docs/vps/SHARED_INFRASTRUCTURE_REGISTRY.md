@@ -2,7 +2,7 @@
 
 This file records authoritative ownership/state for VPS resources that specialist projects must not configure independently.
 
-NEW Tailscale identity, TLS issuance qualification, GraphHopper functional qualification and cross-project consumer coverage are proven. Read-only F01/F02 evidence additionally proved two configuration gaps: the GOI nginx vhost is staged but not in the effective nginx include graph, and the effective GIS HTML still targets OLD GOI identities. No public cutover.
+NEW Tailscale identity, TLS issuance qualification, GraphHopper functional qualification, ORS loopback functional qualification and cross-project consumer coverage are proven. F01 nginx include and F02 GIS HTML NEW-identity retarget are PASS. No public cutover.
 
 | Shared resource | Owner | OLD current state | NEW current state | Mutation rule / gate |
 |---|---|---|---|---|
@@ -17,12 +17,12 @@ NEW Tailscale identity, TLS issuance qualification, GraphHopper functional quali
 | GOI GraphHopper bind | GOI / Control Plane activation gate | OLD app TS bind + loopback admin | runtime active not enabled: `100.99.54.93:8989`, admin `127.0.0.1:8990`; functional smoke PASS | restart-persistence pending |
 | GOI GIS bind / downstream endpoints | GOI | OLD TS `:8000`; clients previously targeted OLD GraphHopper/ORS/D-Flight | unit still disabled/inactive; served HTML now NEW GH `http://100.99.54.93:8989`, ORS `https://ionos-n8n-new.tailc01234.ts.net`, D-Flight `http://100.99.54.93:8010` | F02 retarget PASS; do not start GIS until later authorized activation |
 | GOI Nav proxy | GOI | OLD TS `:5000` from Planet-Clone | dynamic NEW TS bind + parity override loaded, disabled/inactive | controlled activation after prerequisite remediation |
-| GOI ORS | GOI / Control Plane activation gate | OLD loopback runtime | parity artifacts + `LoadCredential` wiring verified; unit disabled/inactive | controlled loopback qualification; nginx serving later |
+| GOI ORS | GOI / Control Plane activation gate | OLD loopback runtime | runtime active not enabled; `127.0.0.1:8020`; status smoke PASS | restart-persistence pending; nginx serving later |
 | GOI D-Flight | GOI / Control Plane activation gate | OLD TS `:8010` + persistent state | service config/state points NEW; unit inactive; GIS client still has OLD D-Flight override | client retarget before GIS activation; service qualification separately |
 | TLS identity | Control Plane with GOI input | OLD cert files `/etc/goi-ors/tls`; OLD MagicDNS live | NEW cert SAN exactly `ionos-n8n-new.tailc01234.ts.net`; OLD SAN absent | qualified; no public cutover implied |
 | TLS renewal | Control Plane with GOI input | OLD timer live; oneshot observed failed | NEW helper inactive-nginx behavior PASS; timer inactive | active-nginx renewal + persistence later; OLD health checked before cutover |
 | Public ports `80/443` | Control Plane | OLD nginx owns public `:80` default and TS `:443` | NEW no nginx listener; GraphHopper private only | no public-route cutover; OLD `:80` requiredness unresolved for final sign-off |
-| GOI TS-bound ports | Control Plane allocates; GOI validates | OLD `443,5000,8000,8010,8989`; loopback `8020,8990` | NEW GraphHopper `8989` + admin `8990`; others still closed | never expose `8020/8990` beyond loopback |
+| GOI TS-bound ports | Control Plane allocates; GOI validates | OLD `443,5000,8000,8010,8989`; loopback `8020,8990` | NEW GraphHopper `8989` + admin `8990`; ORS loopback `8020`; others still closed | never expose `8020/8990` beyond loopback |
 | n8n loopback `5678` | Control Plane | OLD production | NEW isolated replica | publication/cutover separately authorized |
 | n8n filesystem binds | Control Plane | `/root/local-files`, `/srv/cp-verifier-inbox`, control-plane checkout bind | same bind names present on NEW | do not drop binds; no secret values in git |
 | schema-engine local dependency | Control Plane | `/root/local-files/handoff-runtime/schema-engine` | copied, resolver smoke pending | no network dependency |

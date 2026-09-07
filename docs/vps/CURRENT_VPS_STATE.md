@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after `V4_VPS_GOI_F02_GIS_ENDPOINT_REMEDIATION_V1` on 2026-09-07.
+Updated after `V4_VPS_GOI_ORS_LOOPBACK_FUNCTIONAL_QUALIFICATION_V1` on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -42,9 +42,13 @@ GOI_POST_RENDER_PREACTIVATION_VERIFY=PASS_WITH_SCOPE_LIMITATION
 GOI_PARITY_FILES_AND_STATE=STAGED_VALIDATED
 GOI_NEW_IDENTITY_CONFIG=PARTIALLY_RENDERED_VALIDATED
 GOI_ACTIVE_OLD_IDENTITY_REFS=NONE_IN_EFFECTIVE_GIS_HTML
-GOI_SERVICES=GRAPHHOPPER_RUNTIME_ACTIVE_NOT_ENABLED
+GOI_SERVICES=GRAPHHOPPER_AND_ORS_RUNTIME_ACTIVE_NOT_ENABLED
 GOI_GRAPHHOPPER_FUNCTIONAL_QUALIFICATION=PASS
 GOI_GRAPHHOPPER_BOOT_PERSISTENCE=PENDING
+GOI_ORS_FUNCTIONAL_QUALIFICATION=PASS
+GOI_ORS_RUNTIME=ACTIVE_NOT_ENABLED
+GOI_ORS_BIND=127.0.0.1:8020
+GOI_ORS_BOOT_PERSISTENCE=PENDING
 NEW_TLS_ISSUANCE_ATTEMPT=RECOVERED_QUALIFIED
 NEW_TLS_HELPER_INACTIVE_NGINX_SEMANTICS=PASS
 NEW_TLS_IDENTITY=QUALIFIED
@@ -80,7 +84,7 @@ VPS_CHAT_CLOSE_CONDITION=MIGRATION_COMPLETE_AND_HANDOFF_RECORDED
 SHARED_INFRA_GATES=GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=CURSOR_REMAINING_GOI_RUNTIME_SLICES
+NEXT=CURSOR_REMAINING_GOI_RUNTIME_SLICES_AFTER_ORS
 ```
 
 ## Current proven state
@@ -95,7 +99,8 @@ NEW currently has:
 - unique Tailscale identity `ionos-n8n-new` / `100.99.54.93` / `ionos-n8n-new.tailc01234.ts.net` with no routes, exit-node, Serve or Funnel;
 - NEW TLS identity qualified;
 - GraphHopper functional qualification PASS on `100.99.54.93:8989`, admin `127.0.0.1:8990`, still not enabled at boot;
-- ORS, GIS, Nav, D-Flight inactive;
+- ORS loopback functional qualification PASS on `127.0.0.1:8020`, still not enabled at boot;
+- GIS, Nav, D-Flight inactive;
 - nginx inactive/disabled with GOI vhost included via `sites-enabled` symlink; syntax valid; no `:443` listener;
 - F02 GIS HTML retargeted to NEW GraphHopper/ORS/D-Flight identities; GIS still inactive.
 
@@ -131,7 +136,7 @@ The historical rollup `15/14/0/1` is preserved but is not currently reproducible
 
 ## Remaining blockers before human cutover
 
-1. Qualify remaining GOI runtime slices on NEW: ORS, GIS, Nav, D-Flight, nginx (F01 include and F02 GIS HTML retarget already PASS; no promotion to `MIGRATED_VALIDATED`).
+1. Qualify remaining GOI runtime slices on NEW: GIS, Nav, D-Flight, nginx (ORS loopback and F01/F02 already PASS; no promotion to `MIGRATED_VALIDATED`).
 2. Validate schema-engine resolver/smoke on NEW.
 3. Prove intended restart/boot persistence and active-nginx TLS renewal behavior.
 4. Parallel OLD↔NEW validation, including F03 count denominator, OLD public `:80` requiredness and OLD TLS renewal/rollback health.
@@ -141,6 +146,7 @@ Production n8n publication/cutover and OLD decommission remain separately gated.
 
 Evidence anchors:
 - #68
+- `reports/architecture/v4_vps_goi_ors_loopback_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_f02_gis_endpoint_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_f01_nginx_include_remediation_v1.md`
 - `reports/architecture/v4_vps_codex_independent_evidence_audit_v1.md`
