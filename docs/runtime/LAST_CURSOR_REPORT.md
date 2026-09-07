@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_REPLACEMENT_8GB_FULL_SERVICE_PARITY_PREP_COPY_V1` / #68 (parents #67/#60)
+**Classification:** `PASS — non-destructive OLD→NEW prep-copy · GOI/nginx staged DISABLED · Tailscale still NeedsLogin · OLD LIVE unchanged · OLD_DECOMMISSION_ELIGIBLE=NO`
+**Timestamp (UTC):** 2026-09-07T00:28:30Z
+**BASE_HEAD:** `adb32612f1c0bbe2a1192ba29ce8f226167f88c9`
+**FINAL HEAD:** this `cursor-pass: V4_REPLACEMENT_8GB_FULL_SERVICE_PARITY_PREP_COPY_V1` commit
+**Report:** `reports/architecture/v4_replacement_8gb_full_service_parity_prep_copy_v1.md`
+
+Copied GraphHopper(~2.8G)/ORS/D-Flight(+creds names-only)/GIS/Planet-Clone/dev-method/schema-engine/OpenClaw with matching manifests; GOI units+cert renew+nginx staged disabled/inactive; `n8n-compose` enabled (ExecStop=stop); control-plane @ `adb3261`. #67 Hermes web/auth/persistence/recall/GREEN reconciled into frontier. MISSING left: Tailscale unique hostname/join + live GOI/TLS activation. Next: Tailscale join → NEW cert → GOI qualify.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_REPLACEMENT_8GB_FULL_SERVICE_PARITY_CENSUS_V1` / #68 (parent #67 / #60)
 **Classification:** `PASS — READ-ONLY full OLD↔NEW service parity census · OLD_DECOMMISSION_ELIGIBLE=NO · no mutation/copy/cutover`
 **Timestamp (UTC):** 2026-09-06T23:41:00Z
