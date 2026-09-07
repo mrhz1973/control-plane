@@ -39,11 +39,15 @@
  */
 import http from "node:http";
 import { execFile } from "node:child_process";
-import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, unlinkSync } from "node:fs";
 import { resolve, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runDispatchLoop } from "./dispatch-local-dev-queue-loop-v1.mjs";
-import { KNOWN_LOCAL_REPOS } from "./bridge-backlog-to-local-dev-envelope-v1.mjs";
+import {
+  KNOWN_LOCAL_REPOS,
+  buildReceiptLifecycle,
+  transitionLatestReceipt,
+} from "./bridge-backlog-to-local-dev-envelope-v1.mjs";
 import { executeLocalDevTask } from "./local-dev-executor-v1.mjs";
 import { composeRunners } from "./run-local-dev-executor-v1.mjs";
 import { admitMicroTaskDelta, extractMicroTaskAdmissionInput } from "./admit-micro-task-delta-v1.mjs";
@@ -247,6 +251,34 @@ export function shouldPersistRuntimeArtifacts(deps = {}) {
 }
 
 /**
+ * Atomic same-directory receipts persist: write complete JSON to a unique
+ * temp file, then rename onto receipts.json. Best-effort temp cleanup on
+ * failure. Never truncates the canonical file in place.
+ */
+export function persistReceiptsAtomic(targetPath, receipts) {
+  if (typeof targetPath !== "string" || !targetPath) {
+    const err = new Error("RECEIPTS_PATH_INVALID");
+    err.code = "RECEIPTS_PATH_INVALID";
+    throw err;
+  }
+  if (!Array.isArray(receipts)) {
+    const err = new Error("RECEIPTS_NOT_ARRAY");
+    err.code = "RECEIPTS_NOT_ARRAY";
+    throw err;
+  }
+  const dir = dirname(targetPath);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  const tmp = join(dir, `.receipts-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.tmp`);
+  try {
+    writeFileSync(tmp, `${JSON.stringify(receipts, null, 2)}\n`, "utf8");
+    renameSync(tmp, targetPath);
+  } catch (err) {
+    try { unlinkSync(tmp); } catch { /* best-effort */ }
+    throw err;
+  }
+}
+
+/**
  * One bounded tick. deps are injectable for offline tests:
  * verifyRepo, scanQueue, runDispatchLoop, runExecutor, nowIso.
  * scanQueue returns [{ ok, item, markdown, source, backlog_path }].
@@ -269,6 +301,8 @@ export async function performTick(body, deps = {}) {
   const dispatchLoop = deps.runDispatchLoop || runDispatchLoop;
   const runExecutor = deps.runExecutor || (async (envelope) => executeLocalDevTask(envelope, composeRunners()));
   const nowIso = deps.nowIso ? deps.nowIso() : new Date().toISOString();
+  const receiptsPath = deps.receiptsPath || resolve(CANONICAL_REPO_PATH, RECEIPTS_PATH);
+  const loadReceipts = deps.loadReceipts || (() => loadReceiptsFile(receiptsPath));
 
   // 1. Repo hygiene (fail-closed, non-destructive).
   const repoState = await verifyRepo();
@@ -285,7 +319,7 @@ export async function performTick(body, deps = {}) {
   const head = repoState.head;
 
   // 2. Claim AT MOST ONE real READY item via the proven dispatcher primitive.
-  const receipts = loadReceiptsFile();
+  const receipts = loadReceipts();
   const entries = scan(QUEUE_DIR).map((e) => {
     if (e.read_failed || !e.markdown) return { ok: false, source: e.source };
     try {
@@ -318,21 +352,26 @@ export async function performTick(body, deps = {}) {
   // Real runtime (zero injected deps) persists BOTH; ANY injected performTick
   // dependency persists NEITHER (shouldPersistRuntimeArtifacts).
   const realRuntimePersistence = shouldPersistRuntimeArtifacts(deps);
+  const persistReceiptsFn = deps.persistReceipts
+    || (realRuntimePersistence ? (list) => persistReceiptsAtomic(receiptsPath, list) : null);
+  const persistFailed = (err) => wrapTickResult({
+    ok: false,
+    request_id: requestId,
+    classification: "SERVICE_ERROR",
+    task_ref: claim.task_ref,
+    reason_codes: ["PERSIST_FAILED", String(err?.code || err?.message || "unknown").slice(0, 80)],
+  });
+  let ledger = receipts.concat(loop.claims.map((c) => buildReceiptLifecycle(c.receipt || { task_ref: c.task_ref }, "CLAIMED")));
   try {
     if (realRuntimePersistence) {
       const outDir = resolve(CANONICAL_REPO_PATH, QUEUE_DIR);
       if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
       const safe = claim.task_ref.replace(/[^A-Za-z0-9_-]/g, "_");
       writeFileSync(join(outDir, `${safe}__dispatch-envelope.json`), JSON.stringify(claim.envelope, null, 2), "utf8");
-      writeFileSync(resolve(CANONICAL_REPO_PATH, RECEIPTS_PATH), JSON.stringify(receipts.concat(loop.claims.map((c) => c.receipt)), null, 2), "utf8");
     }
+    if (persistReceiptsFn) persistReceiptsFn(ledger);
   } catch (err) {
-    return wrapTickResult({
-      ok: false,
-      request_id: requestId,
-      classification: "SERVICE_ERROR",
-      reason_codes: ["PERSIST_FAILED", String(err?.code || err?.message || "unknown").slice(0, 80)],
-    });
+    return persistFailed(err);
   }
 
   // 3b. MICRO_TASK_DELTA admission — AFTER claim, BEFORE executor.
@@ -344,6 +383,15 @@ export async function performTick(body, deps = {}) {
     || extractMicroTaskAdmissionInput(claim);
   const admission = admitFn(admissionInput);
   if (!admission || admission.admitted !== true) {
+    try {
+      ledger = transitionLatestReceipt(ledger, claim.task_ref, "STOP", {
+        execution_started: false,
+        replayable: true,
+      });
+      if (persistReceiptsFn) persistReceiptsFn(ledger);
+    } catch (err) {
+      return persistFailed(err);
+    }
     return wrapTickResult({
       ok: false,
       request_id: requestId,
@@ -359,7 +407,13 @@ export async function performTick(body, deps = {}) {
     });
   }
 
-  // 4. Execute EXACTLY the emitted envelope via the proven executor.
+  // 4. Persist EXECUTING immediately BEFORE runExecutor, then execute.
+  try {
+    ledger = transitionLatestReceipt(ledger, claim.task_ref, "EXECUTING");
+    if (persistReceiptsFn) persistReceiptsFn(ledger);
+  } catch (err) {
+    return persistFailed(err);
+  }
   let executorResult;
   try {
     executorResult = await runExecutor(claim.envelope);
@@ -370,6 +424,18 @@ export async function performTick(body, deps = {}) {
       task_ref: claim.task_ref,
       reason_codes: [String(err?.code || err?.message || "executor_error").slice(0, 80)],
     };
+  }
+  const terminalPass = executorResult && executorResult.status === "PASS";
+  try {
+    ledger = transitionLatestReceipt(
+      ledger,
+      claim.task_ref,
+      terminalPass ? "PASS" : "STOP",
+      { execution_started: true, replayable: false },
+    );
+    if (persistReceiptsFn) persistReceiptsFn(ledger);
+  } catch (err) {
+    return persistFailed(err);
   }
   return classificationFromExecutorResult(executorResult, requestId);
 }

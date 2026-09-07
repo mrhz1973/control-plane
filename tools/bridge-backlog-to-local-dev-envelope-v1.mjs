@@ -37,6 +37,105 @@ export const BRIDGE_SCHEMA = "local-dev-backlog-bridge-v1";
 export const BRIDGE_VERSION = "local-dev-backlog-bridge-v1";
 export const RECEIPTS_DIR = "reports/runtime/dev-queue";
 
+/**
+ * Receipt lifecycle states. New receipts MUST carry an explicit `state` from
+ * this closed set. Legacy receipts (no `state`) are treated as blocking
+ * fail-closed (backwards-compatible, no widening of LOCAL_DEV authority).
+ */
+export const RECEIPT_STATES = Object.freeze({
+  CLAIMED: "CLAIMED",
+  EXECUTING: "EXECUTING",
+  PASS: "PASS",
+  STOP: "STOP",
+});
+
+const KNOWN_RECEIPT_STATES = new Set(["CLAIMED", "EXECUTING", "PASS", "STOP"]);
+
+/**
+ * Shared stale threshold for orphaned CLAIMED recovery. Deliberately greater
+ * than the maximum current executor timebox (900s). Selector and bridge MUST
+ * use this constant; do not pass staleThresholdMs=0 for normal duplicate checks.
+ */
+export const CLAIM_STALE_AFTER_MS = 30 * 60 * 1000;
+
+/**
+ * Centralized receipt blocking / replay semantics. Shared by the selector
+ * (duplicate selection) and the bridge (duplicate claim) so both agree.
+ *
+ *  - missing state (legacy)          -> blocks (fail-closed)
+ *  - unknown / invalid state         -> blocks (fail-closed)
+ *  - CLAIMED                         -> blocks unless conservatively stale AND
+ *                                      execution_started === false (proven
+ *                                      pre-execution) AND replayable === true
+ *                                      AND claimed_at is valid
+ *  - EXECUTING                       -> always blocks
+ *  - PASS                            -> always blocks (terminal)
+ *  - STOP                            -> blocks unless replayable === true AND
+ *                                      execution_started === false (proven
+ *                                      pre-execution stop)
+ *
+ * "conservatively stale" requires a parseable claimed_at and a
+ * positive `staleThresholdMs` (use CLAIM_STALE_AFTER_MS).
+ */
+export function isReceiptBlocking(receipt, now = new Date(), staleThresholdMs = CLAIM_STALE_AFTER_MS) {
+  if (!receipt || typeof receipt !== "object" || Array.isArray(receipt)) return true;
+  const state = receipt.state;
+  if (state === undefined || state === null) return true;
+  if (!KNOWN_RECEIPT_STATES.has(state)) return true;
+  if (state === "EXECUTING") return true;
+  if (state === "PASS") return true;
+  if (state === "STOP") {
+    return !(receipt.replayable === true && receipt.execution_started === false);
+  }
+  // state === "CLAIMED"
+  if (receipt.replayable !== true) return true;
+  if (receipt.execution_started !== false) return true;
+  if (typeof staleThresholdMs !== "number" || !Number.isFinite(staleThresholdMs) || staleThresholdMs <= 0) return true;
+  const ts = typeof receipt.claimed_at === "string" ? Date.parse(receipt.claimed_at) : NaN;
+  if (!Number.isFinite(ts)) return true;
+  const nowTs = now instanceof Date ? now.getTime() : (typeof now === "string" ? Date.parse(now) : NaN);
+  if (!Number.isFinite(nowTs)) return true;
+  return (nowTs - ts) < staleThresholdMs;
+}
+
+/**
+ * Build a lifecycle receipt. CLAIMED / EXECUTING / PASS apply closed flags;
+ * STOP flags come from `overrides` (pre-execution replayable vs terminal).
+ * Unknown `state` leaves state undefined (legacy, fail-closed blocking).
+ */
+export function buildReceiptLifecycle(base = {}, state = "CLAIMED", overrides = {}) {
+  if (!base || typeof base !== "object" || Array.isArray(base)) base = {};
+  if (!overrides || typeof overrides !== "object" || Array.isArray(overrides)) overrides = {};
+  const known = KNOWN_RECEIPT_STATES.has(state) ? state : undefined;
+  const receipt = { ...base };
+  if (known === "CLAIMED") {
+    receipt.execution_started = false;
+    receipt.replayable = true;
+  } else if (known === "EXECUTING" || known === "PASS") {
+    receipt.execution_started = true;
+    receipt.replayable = false;
+  }
+  Object.assign(receipt, overrides);
+  if (known !== undefined) receipt.state = known;
+  return receipt;
+}
+
+/** Update the latest matching receipt for `taskRef`; never delete history. */
+export function transitionLatestReceipt(receipts, taskRef, state, overrides = {}) {
+  const list = Array.isArray(receipts) ? receipts.map((r) => (r && typeof r === "object" ? { ...r } : r)) : [];
+  let last = -1;
+  for (let i = 0; i < list.length; i += 1) {
+    if (list[i] && list[i].task_ref === taskRef) last = i;
+  }
+  if (last < 0) {
+    const err = new Error("RECEIPT_TRANSITION_NO_MATCH");
+    err.code = "RECEIPT_TRANSITION_NO_MATCH";
+    throw err;
+  }
+  list[last] = buildReceiptLifecycle(list[last], state, overrides);
+  return list;
+}
+
 /** v1 supports exactly this canonical local clone. */
 export const KNOWN_LOCAL_REPOS = {
   "mrhz1973/control-plane": "C:\\Users\\mrhz\\Documents\\AI\\GitHub\\control-plane",
@@ -191,7 +290,9 @@ export function buildLocalDevEnvelopeFromBacklog(input = {}) {
   const taskRef = `LOCAL_DEV_B_${b.id}`;
   const receipts = Array.isArray(existingReceipts) ? existingReceipts : [];
   for (const r of receipts) {
-    if (r && (r.source_ref === sourceRef || r.task_ref === taskRef)) return fail("CLAIM_ALREADY_EXISTS");
+    if (!r || (r.source_ref !== sourceRef && r.task_ref !== taskRef)) continue;
+    if (!isReceiptBlocking(r, now, CLAIM_STALE_AFTER_MS)) continue;
+    return fail("CLAIM_ALREADY_EXISTS");
   }
 
   // 7. deterministic envelope (schema fields only; closed schema).
@@ -221,12 +322,12 @@ export function buildLocalDevEnvelopeFromBacklog(input = {}) {
   if (!v.ok) return { ok: false, reason_codes: ["ENVELOPE_INVALID", ...v.reason_codes] };
 
   const claimedAt = now instanceof Date ? now.toISOString() : now;
-  const receipt = {
+  const receipt = buildReceiptLifecycle({
     task_ref: taskRef,
     source_ref: sourceRef,
     claimed_at: claimedAt,
     bridge_version: BRIDGE_VERSION,
-  };
+  }, RECEIPT_STATES.CLAIMED);
   return { ok: true, envelope, receipt };
 }
 

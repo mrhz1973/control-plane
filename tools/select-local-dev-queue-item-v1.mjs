@@ -21,6 +21,7 @@ import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, resolve, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseBoundedBacklogYaml, extractYamlFence } from "./build-primary-remote-cycle-input-from-backlog.mjs";
+import { isReceiptBlocking, CLAIM_STALE_AFTER_MS } from "./bridge-backlog-to-local-dev-envelope-v1.mjs";
 
 export const SELECTION_SCHEMA = "local-dev-queue-selection-v1";
 const RISK_ORDER = { low: 0, medium: 1 };
@@ -61,14 +62,19 @@ export function isAdmissible(item) {
 }
 
 export function selectNextQueueItem(entries, receipts, nowIso) {
-  const claimed = new Set((receipts || []).map((r) => r?.task_ref).filter(Boolean));
+  const now = nowIso instanceof Date ? nowIso : new Date(nowIso);
   const eligible = [];
   const excluded = [];
   for (const entry of entries || []) {
     if (!entry.ok) { excluded.push({ source: entry.source, reason: entry.reason }); continue; }
     const item = entry.item;
     if (!isAdmissible(item)) { excluded.push({ source: entry.source, reason: "INADMISSIBLE_STATE_OR_SCOPE" }); continue; }
-    if (claimed.has(`LOCAL_DEV_B_${item.id}`)) { excluded.push({ source: entry.source, reason: "CLAIM_ALREADY_EXISTS" }); continue; }
+    const taskRef = `LOCAL_DEV_B_${item.id}`;
+    const matching = (receipts || []).filter((r) => r && r.task_ref === taskRef);
+    if (matching.some((r) => isReceiptBlocking(r, now, CLAIM_STALE_AFTER_MS))) {
+      excluded.push({ source: entry.source, reason: "CLAIM_ALREADY_EXISTS" });
+      continue;
+    }
     eligible.push({ entry, item });
   }
   eligible.sort((a, b) => {

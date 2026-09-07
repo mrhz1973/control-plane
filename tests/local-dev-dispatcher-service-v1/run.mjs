@@ -7,8 +7,9 @@
  * Run: node tests/local-dev-dispatcher-service-v1/run.mjs
  */
 import assert from "node:assert/strict";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdtempSync, unlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import {
   RESULT_SCHEMA,
   REQUEST_SCHEMA,
@@ -21,7 +22,14 @@ import {
   handleTickRequest,
   verifyRepoState,
   shouldPersistRuntimeArtifacts,
+  persistReceiptsAtomic,
 } from "../../tools/serve-local-dev-autonomous-dispatcher-v1.mjs";
+import {
+  CLAIM_STALE_AFTER_MS,
+  isReceiptBlocking,
+  buildLocalDevEnvelopeFromBacklog,
+} from "../../tools/bridge-backlog-to-local-dev-envelope-v1.mjs";
+import { selectNextQueueItem } from "../../tools/select-local-dev-queue-item-v1.mjs";
 
 let passed = 0;
 const failures = [];
@@ -395,6 +403,298 @@ await test("S17 wrapTickResult truncates reason_codes to sixteen preserving orde
   assert.equal(result.reason_codes.length, 16);
   assert.deepEqual(result.reason_codes, ["R00","R01","R02","R03","R04","R05","R06","R07","R08","R09","R10","R11","R12","R13","R14","R15"]);
   assert.equal(reason_codes.length, 20);
+});
+
+const LAW_NOW = "2026-09-08T01:00:00.000Z";
+const LAW_NOW_DATE = new Date(LAW_NOW);
+const STALE_CLAIMED_AT = new Date(LAW_NOW_DATE.getTime() - CLAIM_STALE_AFTER_MS - 60_000).toISOString();
+const FRESH_CLAIMED_AT = new Date(LAW_NOW_DATE.getTime() - 60_000).toISOString();
+const BRIDGE_SHA = "1".repeat(40);
+const CANONICAL_RECEIPTS = resolve(CANONICAL_REPO_PATH_TEST(), "reports/runtime/dev-queue/always-on/receipts.json");
+
+function admissibleEntry(id, source = `${id}.md`) {
+  return {
+    ok: true,
+    source,
+    item: {
+      id,
+      state: "READY_FOR_PLANNING",
+      human_gate_required_if: [],
+      risk_hint: "low",
+      execution: { target: "cursor" },
+      planner: { preferred: "qwen" },
+      created_at: "2026-09-01T00:00:00Z",
+    },
+  };
+}
+
+function selectorBlocks(id, receipts) {
+  const d = selectNextQueueItem([admissibleEntry(id)], receipts, LAW_NOW);
+  return d.selected === null && d.excluded.some((e) => e.reason === "CLAIM_ALREADY_EXISTS");
+}
+
+function selectorAllows(id, receipts) {
+  const d = selectNextQueueItem([admissibleEntry(id)], receipts, LAW_NOW);
+  return d.selected && d.selected.task_ref === `LOCAL_DEV_B_${id}`;
+}
+
+function backlogMarkdown(id) {
+  return [
+    "```yaml",
+    "schema: backlog-item-v1",
+    `id: ${id}`,
+    "title: Receipt lifecycle fixture",
+    "created_at: 2026-09-08T00:00:00Z",
+    "created_by: gpt-web",
+    "repository: mrhz1973/control-plane",
+    "branch_target: main",
+    "objective: Modify the local-dev dispatcher receipt lifecycle helper.",
+    "scope:",
+    "  allowed_areas:",
+    "    - tools/serve-local-dev-autonomous-dispatcher-v1.mjs",
+    "  forbidden_areas: []",
+    "risk_hint: low",
+    "planner:",
+    "  preferred: qwen",
+    "  fallback: []",
+    "  fallback_policy: gate_only",
+    "execution:",
+    "  target: cursor",
+    "  loop_allowed: false",
+    "acceptance:",
+    "  - durable receipts",
+    "human_gate_required_if: []",
+    "state: READY_FOR_PLANNING",
+    "```",
+  ].join("\n");
+}
+
+function bridgeClaim(id, existingReceipts) {
+  return buildLocalDevEnvelopeFromBacklog({
+    markdown: backlogMarkdown(id),
+    repo: "mrhz1973/control-plane",
+    commit: BRIDGE_SHA,
+    path: `reports/runtime/dev-queue/always-on/${id}.md`,
+    dispatchBaseHead: BRIDGE_SHA,
+    now: LAW_NOW_DATE,
+    existingReceipts,
+  });
+}
+
+function snapshotCanonicalReceipts() {
+  return existsSync(CANONICAL_RECEIPTS) ? readFileSync(CANONICAL_RECEIPTS, "utf8") : null;
+}
+
+function claimForTick(taskRef, extraReceipt = {}) {
+  return {
+    ok: true,
+    claims: [{
+      task_ref: taskRef,
+      source_file: "x.md",
+      envelope: { task_ref: taskRef },
+      receipt: {
+        task_ref: taskRef,
+        source_ref: `github:mrhz1973/control-plane@${BRIDGE_SHA}:x.md`,
+        claimed_at: LAW_NOW,
+        bridge_version: "local-dev-backlog-bridge-v1",
+        ...extraReceipt,
+      },
+    }],
+    skipped: [],
+  };
+}
+
+function latestFor(taskRef, snapshots) {
+  const last = snapshots[snapshots.length - 1] || [];
+  const matching = last.filter((r) => r && r.task_ref === taskRef);
+  return matching[matching.length - 1] || null;
+}
+
+await test("S18 receipt law: legacy/unknown/PASS/EXECUTING/fresh CLAIMED block; replayable STOP and stale CLAIMED replay", () => {
+  assert.equal(CLAIM_STALE_AFTER_MS, 30 * 60 * 1000);
+  const id = "D-9402-S18";
+  const taskRef = `LOCAL_DEV_B_${id}`;
+  const now = LAW_NOW_DATE;
+
+  const legacy = { task_ref: taskRef, source_ref: "s", claimed_at: STALE_CLAIMED_AT };
+  assert.equal(isReceiptBlocking(legacy, now, CLAIM_STALE_AFTER_MS), true);
+  assert.equal(selectorBlocks(id, [legacy]), true);
+  assert.equal(bridgeClaim(id, [legacy]).reason_codes.includes("CLAIM_ALREADY_EXISTS"), true);
+
+  const freshClaimed = {
+    task_ref: taskRef, state: "CLAIMED", execution_started: false, replayable: true, claimed_at: FRESH_CLAIMED_AT,
+  };
+  assert.equal(isReceiptBlocking(freshClaimed, now, CLAIM_STALE_AFTER_MS), true);
+  assert.equal(selectorBlocks(id, [freshClaimed]), true);
+  assert.equal(bridgeClaim(id, [freshClaimed]).reason_codes.includes("CLAIM_ALREADY_EXISTS"), true);
+
+  const staleClaimed = {
+    task_ref: taskRef, state: "CLAIMED", execution_started: false, replayable: true, claimed_at: STALE_CLAIMED_AT,
+  };
+  assert.equal(isReceiptBlocking(staleClaimed, now, CLAIM_STALE_AFTER_MS), false);
+  assert.equal(selectorAllows(id, [staleClaimed]), true);
+  const staleBridge = bridgeClaim(id, [staleClaimed]);
+  assert.equal(staleBridge.ok, true);
+  assert.equal(staleBridge.receipt.state, "CLAIMED");
+  assert.equal(staleBridge.receipt.execution_started, false);
+  assert.equal(staleBridge.receipt.replayable, true);
+
+  for (const execution_started of [true, "yes", undefined]) {
+    const blockedStale = {
+      task_ref: taskRef, state: "CLAIMED", execution_started, replayable: true, claimed_at: STALE_CLAIMED_AT,
+    };
+    assert.equal(isReceiptBlocking(blockedStale, now, CLAIM_STALE_AFTER_MS), true, `claimed exec=${execution_started}`);
+    assert.equal(selectorBlocks(id, [blockedStale]), true);
+  }
+
+  const executing = { task_ref: taskRef, state: "EXECUTING", execution_started: true, replayable: false, claimed_at: STALE_CLAIMED_AT };
+  const pass = { task_ref: taskRef, state: "PASS", execution_started: true, replayable: false, claimed_at: STALE_CLAIMED_AT };
+  const unknown = { task_ref: taskRef, state: "WEIRD", execution_started: false, replayable: true, claimed_at: STALE_CLAIMED_AT };
+  const stopTerminal = { task_ref: taskRef, state: "STOP", execution_started: true, replayable: false, claimed_at: STALE_CLAIMED_AT };
+  for (const r of [executing, pass, unknown, stopTerminal]) {
+    assert.equal(isReceiptBlocking(r, now, CLAIM_STALE_AFTER_MS), true, r.state);
+    assert.equal(selectorBlocks(id, [r]), true, r.state);
+    assert.equal(bridgeClaim(id, [r]).ok, false, r.state);
+  }
+
+  const stopReplay = { task_ref: taskRef, state: "STOP", execution_started: false, replayable: true, claimed_at: FRESH_CLAIMED_AT };
+  assert.equal(isReceiptBlocking(stopReplay, now, CLAIM_STALE_AFTER_MS), false);
+  assert.equal(selectorAllows(id, [stopReplay]), true);
+  assert.equal(bridgeClaim(id, [stopReplay]).ok, true);
+
+  const freshOk = bridgeClaim("D-9402-NEW", []);
+  assert.equal(freshOk.ok, true);
+  assert.equal(freshOk.receipt.state, "CLAIMED");
+  assert.equal(freshOk.receipt.execution_started, false);
+  assert.equal(freshOk.receipt.replayable, true);
+});
+
+await test("S19 dispatcher persists CLAIMED→admission STOP / EXECUTING-before-executor / terminal PASS|STOP|throw; history kept", async () => {
+  const before = snapshotCanonicalReceipts();
+  const historical = { task_ref: "LOCAL_DEV_B_UNRELATED", state: "PASS", execution_started: true, replayable: false, claimed_at: STALE_CLAIMED_AT };
+
+  async function tickWithPersist(taskRef, { admit, executor, historicalReceipts = [historical] }) {
+    const snapshots = [];
+    let executorEntered = false;
+    const result = await performTick(
+      { schema_version: REQUEST_SCHEMA, request_id: `r-${taskRef}`, source: "n8n" },
+      {
+        verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+        scanQueue: () => [{ markdown: "m", source: "x.md", backlog_path: "q/x.md" }],
+        runDispatchLoop: () => claimForTick(taskRef),
+        loadReceipts: () => historicalReceipts.map((r) => ({ ...r })),
+        persistReceipts: (list) => { snapshots.push(list.map((r) => ({ ...r }))); },
+        admitMicroTaskDelta: admit,
+        runExecutor: async (envelope) => {
+          executorEntered = true;
+          const current = latestFor(taskRef, snapshots);
+          assert.equal(current.state, "EXECUTING");
+          assert.equal(current.execution_started, true);
+          assert.equal(current.replayable, false);
+          return executor(envelope);
+        },
+      },
+    );
+    return { result, snapshots, executorEntered };
+  }
+
+  const admitReject = await tickWithPersist("LOCAL_DEV_B_D-9402-ADM", {
+    admit: () => ({ admitted: false, reason_codes: ["MICRO_TASK_KIND_UNSUPPORTED"] }),
+    executor: async () => { throw new Error("MUST NOT EXECUTE ON ADMISSION REJECT"); },
+  });
+  assert.equal(admitReject.result.classification, "HUMAN_GATE_REQUIRED");
+  assert.equal(admitReject.result.execution_performed, false);
+  assert.equal(admitReject.executorEntered, false);
+  const admitLatest = latestFor("LOCAL_DEV_B_D-9402-ADM", admitReject.snapshots);
+  assert.equal(admitLatest.state, "STOP");
+  assert.equal(admitLatest.execution_started, false);
+  assert.equal(admitLatest.replayable, true);
+  assert.ok(admitReject.snapshots[admitReject.snapshots.length - 1].some((r) => r.task_ref === "LOCAL_DEV_B_UNRELATED"));
+
+  const passRun = await tickWithPersist("LOCAL_DEV_B_D-9402-PASS", {
+    admit: () => ({ admitted: true }),
+    executor: async (envelope) => ({ status: "PASS", classification: "PASS", task_ref: envelope.task_ref, reason_codes: ["PASS"] }),
+  });
+  assert.equal(passRun.result.classification, "WORK_EXECUTED_PASS");
+  assert.equal(passRun.executorEntered, true);
+  assert.equal(passRun.snapshots[0].find((r) => r.task_ref === "LOCAL_DEV_B_D-9402-PASS").state, "CLAIMED");
+  assert.equal(passRun.snapshots[1].find((r) => r.task_ref === "LOCAL_DEV_B_D-9402-PASS").state, "EXECUTING");
+  const passLatest = latestFor("LOCAL_DEV_B_D-9402-PASS", passRun.snapshots);
+  assert.equal(passLatest.state, "PASS");
+  assert.equal(passLatest.execution_started, true);
+  assert.equal(passLatest.replayable, false);
+  assert.equal(passRun.snapshots[passRun.snapshots.length - 1].filter((r) => r.task_ref === "LOCAL_DEV_B_UNRELATED").length, 1);
+
+  const stopRun = await tickWithPersist("LOCAL_DEV_B_D-9402-STOP", {
+    admit: () => ({ admitted: true }),
+    executor: async () => ({ status: "STOP", classification: "STOP:TEST_FAILED", task_ref: "LOCAL_DEV_B_D-9402-STOP", reason_codes: ["TEST_FAILED"] }),
+  });
+  const stopLatest = latestFor("LOCAL_DEV_B_D-9402-STOP", stopRun.snapshots);
+  assert.equal(stopRun.result.classification, "WORK_EXECUTED_STOP");
+  assert.equal(stopLatest.state, "STOP");
+  assert.equal(stopLatest.execution_started, true);
+  assert.equal(stopLatest.replayable, false);
+
+  const throwRun = await tickWithPersist("LOCAL_DEV_B_D-9402-THROW", {
+    admit: () => ({ admitted: true }),
+    executor: async () => { throw new Error("boom-executor"); },
+  });
+  const throwLatest = latestFor("LOCAL_DEV_B_D-9402-THROW", throwRun.snapshots);
+  assert.equal(throwRun.result.classification, "WORK_EXECUTED_STOP");
+  assert.equal(throwLatest.state, "STOP");
+  assert.equal(throwLatest.execution_started, true);
+  assert.equal(throwLatest.replayable, false);
+
+  assert.equal(snapshotCanonicalReceipts(), before, "canonical receipts unchanged by injected persistReceipts");
+});
+
+await test("S20 atomic receipts persist fail-closed; no replayable ambiguity after blocking state", async () => {
+  const before = snapshotCanonicalReceipts();
+  const dir = mkdtempSync(join(tmpdir(), "local-dev-receipts-"));
+  const receiptsFile = join(dir, "receipts.json");
+  persistReceiptsAtomic(receiptsFile, [{ task_ref: "KEEP", state: "PASS", execution_started: true, replayable: false }]);
+  const parsed = JSON.parse(readFileSync(receiptsFile, "utf8"));
+  assert.equal(parsed[0].task_ref, "KEEP");
+
+  const blocker = join(dir, "not-a-dir");
+  writeFileSync(blocker, "x");
+  let threw = false;
+  try {
+    persistReceiptsAtomic(join(blocker, "receipts.json"), [{ task_ref: "X" }]);
+  } catch {
+    threw = true;
+  }
+  assert.equal(threw, true);
+  assert.equal(JSON.parse(readFileSync(receiptsFile, "utf8"))[0].task_ref, "KEEP");
+
+  const snaps = [];
+  let executorCalls = 0;
+  const failAfterClaimed = await performTick(
+    { schema_version: REQUEST_SCHEMA, request_id: "r-atomic", source: "n8n" },
+    {
+      verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+      scanQueue: () => [{ markdown: "m", source: "x.md", backlog_path: "q/x.md" }],
+      runDispatchLoop: () => claimForTick("LOCAL_DEV_B_D-9402-ATOM"),
+      loadReceipts: () => [],
+      persistReceipts: (list) => {
+        snaps.push(list.map((r) => ({ ...r })));
+        if (snaps.length >= 2) {
+          const err = new Error("ATOMIC_FAIL");
+          err.code = "ATOMIC_FAIL";
+          throw err;
+        }
+      },
+      admitMicroTaskDelta: () => ({ admitted: true }),
+      runExecutor: async () => { executorCalls += 1; return { status: "PASS", classification: "PASS", task_ref: "LOCAL_DEV_B_D-9402-ATOM" }; },
+    },
+  );
+  assert.equal(failAfterClaimed.classification, "SERVICE_ERROR");
+  assert.ok(failAfterClaimed.reason_codes.includes("PERSIST_FAILED"));
+  assert.equal(executorCalls, 0, "executor must not run if EXECUTING persist fails");
+  assert.equal(snaps[0].find((r) => r.task_ref === "LOCAL_DEV_B_D-9402-ATOM").state, "CLAIMED");
+  assert.equal(snapshotCanonicalReceipts(), before);
+
+  try { unlinkSync(blocker); } catch { /* ignore */ }
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
