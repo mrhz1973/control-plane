@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_NEW_TLS_RECOVERY_V1` / #68
+**Classification:** `PASS — NEW_TAILSCALE_TLS_ISSUANCE_QUALIFICATION=PASS · renewal helper inactive-nginx semantics corrected · GOI/nginx remain inactive · no cutover`
+**Timestamp (UTC):** 2026-09-07T02:11:06Z
+**BASE_HEAD:** `e7ae7d8469de1390ae0deddb5eaad02179b88fd9`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_NEW_TLS_RECOVERY_V1` commit
+**Report:** `reports/architecture/v4_vps_new_tls_recovery_v1.md`
+
+NEW certificate SAN is exactly `ionos-n8n-new.tailc01234.ts.net`; OLD SAN absent; cert/key match and permissions PASS. Corrected helper exits 0 when nginx is inactive and remains fail-closed for issuance/install/config-test/required-reload failures. nginx and all GOI services remained inactive; no GOI listeners; core replica unchanged. Next: controlled GOI activation/qualification, then schema-engine qualification.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_REPLACEMENT_8GB_FULL_SERVICE_PARITY_PREP_COPY_V1` / #68 (parents #67/#60)
 **Classification:** `PASS — non-destructive OLD→NEW prep-copy · GOI/nginx staged DISABLED · Tailscale still NeedsLogin · OLD LIVE unchanged · OLD_DECOMMISSION_ELIGIBLE=NO`
 **Timestamp (UTC):** 2026-09-07T00:28:30Z

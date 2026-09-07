@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after successful NEW Tailscale join, GOI OLD↔NEW parity reconciliation, NEW-only parity/config render PASS, GOI post-render pre-activation verification PASS, the first NEW TLS issuance attempt, and restoration of the original project orchestration model on 2026-09-07.
+Updated after successful NEW Tailscale join, GOI pre-activation staging, and complete NEW TLS recovery/qualification on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -42,9 +42,10 @@ GOI_PARITY_FILES_AND_STATE=STAGED_VALIDATED
 GOI_NEW_IDENTITY_CONFIG=RENDERED_VALIDATED
 GOI_ACTIVE_OLD_IDENTITY_REFS=NONE
 GOI_SERVICES=NOT_ACTIVATED
-NEW_TLS_ISSUANCE_ATTEMPT=PARTIAL_CERT_WRITTEN_QUALIFICATION_INTERRUPTED
-NEW_TLS_HELPER_BLOCKER=NGINX_RELOAD_WHILE_INACTIVE
-NEW_TLS_IDENTITY=VERIFY_REQUIRED_BEFORE_PROMOTION
+NEW_TLS_ISSUANCE_ATTEMPT=RECOVERED_QUALIFIED
+NEW_TLS_HELPER_INACTIVE_NGINX_SEMANTICS=PASS
+NEW_TLS_IDENTITY=QUALIFIED
+NEW_TAILSCALE_TLS_ISSUANCE_QUALIFICATION=PASS
 DEV_METHOD_HANDOFF=INGESTED_MIGRATED_VALIDATED
 SCHEMA_ENGINE_HANDOFF=INGESTED_PRESENT_NOT_VALIDATED_NON_NETWORK
 OPENCLAW_HANDOFF=INGESTED_KEEP_STAGED_PENDING
@@ -60,10 +61,10 @@ SCHEMA_ENGINE_EXECUTION=FOLDED_INTO_VPS_CURSOR_WORKSTREAM
 VPS_HANDOFF_TARGET_AFTER_COMPLETION=OPENCLAW42
 VPS_CHAT_CLOSE_CONDITION=MIGRATION_COMPLETE_AND_HANDOFF_RECORDED
 
-SHARED_INFRA_GATES=NEW_MAGICDNS_TLS_RECOVERY_VERIFY,GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
+SHARED_INFRA_GATES=GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=CURSOR_TLS_RECOVERY_VERIFY_THEN_GOI_AND_SCHEMA_ENGINE_QUALIFICATION
+NEXT=CURSOR_GOI_ACTIVATION_THEN_SCHEMA_ENGINE_QUALIFICATION
 ```
 
 ## Current proven state
@@ -88,27 +89,18 @@ NEW currently has:
 - all GOI/nginx units still disabled/inactive before controlled activation;
 - renewal helper explicitly targets NEW MagicDNS.
 
-## Latest TLS issuance attempt
+## NEW TLS qualification
 
-Operator ran the NEW TLS issuance helper on NEW. Observed:
+`V4_VPS_NEW_TLS_RECOVERY_V1` completed:
 
-```text
-SAFETY_ASSERTIONS=PASS
-TLS_BACKUP=/root/goi-tls-pre-new-20260907T015513Z
-RENEW_HELPER_TARGET=PASS
-Wrote public cert to temporary cert path
-Wrote private key to temporary key path
-nginx configuration syntax test successful
-nginx.service is not active, cannot reload
-```
-
-Interpretation:
-- Tailscale certificate/key generation succeeded;
-- helper execution proceeded through `nginx -t`;
-- helper then attempted to reload intentionally inactive nginx and returned non-zero;
-- the outer `set -e` shell terminated before certificate identity/SAN, permission and cert-key-match qualification completed;
-- because install occurs before the reload attempt, NEW certificate material is likely already installed and must be verified before any reissue;
-- this is a renewal-helper PREP-state semantics defect, not proof of certificate issuance failure.
+- installed certificate SAN is exactly `ionos-n8n-new.tailc01234.ts.net`;
+- OLD `ubuntu.tailc01234.ts.net` SAN is absent;
+- certificate/private-key match, ownership and modes passed;
+- renewal helper is fail-closed for issuance/install/config-test/required-reload failures;
+- helper skips reload and exits `0` when nginx is inactive;
+- `nginx -t` passed while nginx and all GOI services remained inactive;
+- no GOI listener was opened;
+- `NEW_TAILSCALE_TLS_ISSUANCE_QUALIFICATION=PASS`.
 
 ## Project orchestration model
 
@@ -123,14 +115,12 @@ The original project model is restored and must remain simple:
 
 ## Remaining hard blockers
 
-1. Cursor recovery/verification of NEW TLS material and renewal-helper inactive-nginx semantics.
-2. Complete NEW TLS qualification: SAN/dates, permissions, cert-key match, nginx syntax and helper exit=0 while nginx remains inactive.
-3. Controlled GOI service activation/qualification on NEW private Tailscale identity; prove private reachability and persistence.
-4. Validate schema-engine resolver/smoke on NEW in the same Cursor workstream; promote only on real PASS evidence.
-5. Parallel OLD↔NEW validation.
-6. Human cutover gate.
-7. Production n8n publication on NEW only in explicit cutover phase.
-8. OpenClaw application/runtime final activate-or-archive decision remains later; current safe disposition is staged/inactive.
+1. Controlled GOI service activation/qualification on NEW private Tailscale identity; prove private reachability and persistence.
+2. Validate schema-engine resolver/smoke on NEW in the same Cursor workstream; promote only on real PASS evidence.
+3. Parallel OLD↔NEW validation.
+4. Human cutover gate.
+5. Production n8n publication on NEW only in explicit cutover phase.
+6. OpenClaw application/runtime final activate-or-archive decision remains later; current safe disposition is staged/inactive.
 
 ## Completion rule for this chat
 
@@ -138,6 +128,7 @@ This VPS migration chat is complete only after the migration reaches its authori
 
 Evidence anchors:
 - #68
+- `reports/architecture/v4_vps_new_tls_recovery_v1.md`
 - `reports/architecture/vps_goi_post_render_preactivation_verify_2026-09-07.md`
 - `reports/architecture/v4_replacement_8gb_full_service_parity_prep_copy_v1.md`
 - `reports/architecture/vps_goi_project_handoff_2026-09-07.md`
