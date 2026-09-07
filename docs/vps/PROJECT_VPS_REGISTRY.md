@@ -1,6 +1,6 @@
 # Project VPS registry
 
-Current projection after prep-copy PASS, bounded project handoff ingestion, successful NEW Tailscale join/post-join verification, live GOI OLD↔NEW parity reconciliation, NEW-only GOI parity/config render PASS, post-render pre-activation verification PASS, and NEW TLS recovery/qualification PASS.
+Current projection after NEW GraphHopper functional qualification PASS (boot persistence pending). TLS issuance remains PASS. Other GOI/nginx units remain inactive.
 
 | Project / component | OLD footprint | NEW state | Shared dependencies | Migration status | Evidence / next |
 |---|---|---|---|---|---|
@@ -8,7 +8,7 @@ Current projection after prep-copy PASS, bounded project handoff ingestion, succ
 | Control Plane core — n8n | loopback `127.0.0.1:5678`, production OLD | isolated replica, health 200, capable/published 0/0 | cutover / workflow publication | MIGRATED_VALIDATED | activation later |
 | Control Plane core — LiteLLM | unpublished Docker service | running unpublished | secret-safe auth binds | MIGRATED_VALIDATED | #68 |
 | Hermes/browser | Hermes 0.21 + Chromium/CDP/Xvfb/x11vnc/noVNC | qualified; auth persistence, recall, short soak, post-soak PASS | loopback-only browser ports | MIGRATED_VALIDATED | #67 |
-| GOI GraphHopper | OLD live TS app + loopback admin | tree/JDK/cache copied; NEW-specific generated config rendered and verified: app `100.99.54.93:8989`, admin `127.0.0.1:8990`; unit disabled/inactive | Tailscale IP, activation | PRESENT_NOT_VALIDATED | controlled runtime qualification now authorized by TLS PASS |
+| GOI GraphHopper | OLD live TS app + loopback admin | runtime active not enabled; app `100.99.54.93:8989`, admin `127.0.0.1:8990`; canonical hiking `/route` 200 | Tailscale IP | PRESENT_NOT_VALIDATED | functional qualification PASS; restart-persistence pending; not `MIGRATED_VALIDATED` |
 | GOI ORS gateway | OLD live loopback runtime | parity artifacts staged; systemd `LoadCredential` wiring verified; unit disabled/inactive | nginx/TLS/Tailscale | PRESENT_NOT_VALIDATED | controlled loopback runtime qualification |
 | GOI GIS | OLD TS `:8000` | copied; dynamic TS bind unit; disabled/inactive | Tailscale IP | PRESENT_NOT_VALIDATED | qualify on NEW TS IP |
 | GOI Navionics / Planet-Clone | OLD TS `:5000` | copied; dynamic TS bind + parity override loaded; disabled/inactive | Tailscale IP | PRESENT_NOT_VALIDATED | qualify on NEW TS IP |
@@ -31,12 +31,14 @@ NEW_TLS_SAN=ionos-n8n-new.tailc01234.ts.net
 OLD_TLS_SAN_PRESENT=NO
 CERT_KEY_MATCH=PASS
 NGINX_SYNTAX=PASS
-GOI_SERVICES=NOT_ACTIVATED
+GOI_GRAPHHOPPER_FUNCTIONAL_QUALIFICATION=PASS
+GOI_GRAPHHOPPER_BOOT_PERSISTENCE=PENDING
+GOI_SERVICES=GRAPHHOPPER_RUNTIME_ACTIVE_NOT_ENABLED
 CUTOVER=NOT_AUTHORIZED
 ```
 
-Canonical evidence: `reports/architecture/v4_vps_new_tls_recovery_v1.md`.
+Canonical GraphHopper evidence: `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`. TLS evidence: `reports/architecture/v4_vps_new_tls_recovery_v1.md`.
 
 Registry rows remain `PRESENT_NOT_VALIDATED` until their component-specific functional and required persistence proofs complete.
 
-Current next: controlled GOI runtime qualification → schema-engine qualification → restart-persistence/parallel OLD↔NEW validation → human cutover.
+Current next: remaining GOI private slices → schema-engine qualification → restart-persistence/parallel OLD↔NEW validation → human cutover.

@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after successful NEW Tailscale join, GOI pre-activation staging, and complete NEW TLS recovery/qualification on 2026-09-07.
+Updated after NEW GraphHopper functional qualification (no boot enable) on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -41,7 +41,9 @@ GOI_POST_RENDER_PREACTIVATION_VERIFY=PASS
 GOI_PARITY_FILES_AND_STATE=STAGED_VALIDATED
 GOI_NEW_IDENTITY_CONFIG=RENDERED_VALIDATED
 GOI_ACTIVE_OLD_IDENTITY_REFS=NONE
-GOI_SERVICES=NOT_ACTIVATED
+GOI_SERVICES=GRAPHHOPPER_RUNTIME_ACTIVE_NOT_ENABLED
+GOI_GRAPHHOPPER_FUNCTIONAL_QUALIFICATION=PASS
+GOI_GRAPHHOPPER_BOOT_PERSISTENCE=PENDING
 NEW_TLS_ISSUANCE_ATTEMPT=RECOVERED_QUALIFIED
 NEW_TLS_HELPER_INACTIVE_NGINX_SEMANTICS=PASS
 NEW_TLS_IDENTITY=QUALIFIED
@@ -64,7 +66,7 @@ VPS_CHAT_CLOSE_CONDITION=MIGRATION_COMPLETE_AND_HANDOFF_RECORDED
 SHARED_INFRA_GATES=GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=CURSOR_GOI_ACTIVATION_THEN_SCHEMA_ENGINE_QUALIFICATION
+NEXT=CURSOR_REMAINING_GOI_SLICES_THEN_SCHEMA_ENGINE_QUALIFICATION
 ```
 
 ## Current proven state
@@ -86,7 +88,11 @@ NEW currently has:
 - D-Flight persistent state and ownership/modes validated;
 - readiness helper expects NEW Tailscale IP;
 - nginx vhost rendered to NEW TS IP/MagicDNS and `nginx -t` passes;
-- all GOI/nginx units still disabled/inactive before controlled activation;
+- nginx, ORS, GIS, Nav and D-Flight still disabled/inactive;
+- GraphHopper + tailscale-ready running disabled (not enabled at boot);
+- GraphHopper listeners: TS app `100.99.54.93:8989`, admin `127.0.0.1:8990`;
+- canonical hiking `/route` smoke HTTP 200 with positive distance;
+- GraphHopper not promoted to `MIGRATED_VALIDATED` (restart-persistence pending);
 - renewal helper explicitly targets NEW MagicDNS.
 
 ## NEW TLS qualification
@@ -115,7 +121,7 @@ The original project model is restored and must remain simple:
 
 ## Remaining hard blockers
 
-1. Controlled GOI service activation/qualification on NEW private Tailscale identity; prove private reachability and persistence.
+1. Remaining GOI service activation/qualification on NEW (ORS/GIS/Nav/D-Flight/nginx); GraphHopper functional PASS, restart-persistence still pending.
 2. Validate schema-engine resolver/smoke on NEW in the same Cursor workstream; promote only on real PASS evidence.
 3. Parallel OLD↔NEW validation.
 4. Human cutover gate.
@@ -128,6 +134,7 @@ This VPS migration chat is complete only after the migration reaches its authori
 
 Evidence anchors:
 - #68
+- `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`
 - `reports/architecture/v4_vps_new_tls_recovery_v1.md`
 - `reports/architecture/vps_goi_post_render_preactivation_verify_2026-09-07.md`
 - `reports/architecture/v4_replacement_8gb_full_service_parity_prep_copy_v1.md`

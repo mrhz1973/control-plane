@@ -2,7 +2,7 @@
 
 This file records authoritative ownership/state for VPS resources that specialist projects must not configure independently.
 
-NEW Tailscale identity, GOI pre-activation staging, and NEW TLS recovery/qualification have completed. No NEW GOI/nginx activation or public cutover has occurred.
+NEW Tailscale identity, TLS issuance qualification, and GraphHopper functional qualification have completed. GraphHopper is running privately and is not enabled at boot. nginx/ORS/GIS/Nav/D-Flight remain inactive. No public cutover.
 
 | Shared resource | Owner | OLD current state | NEW current state | Mutation rule / gate |
 |---|---|---|---|---|
@@ -14,7 +14,7 @@ NEW Tailscale identity, GOI pre-activation staging, and NEW TLS recovery/qualifi
 | nginx global service | Control Plane | active/enabled OLD | installed, disabled/inactive NEW; `nginx -t` PASS with qualified NEW cert | controlled activation only after runtime prerequisites |
 | GOI nginx vhost | Control Plane with GOI input | OLD `100.114.7.53:443`, OLD MagicDNS | rendered/verified NEW `100.99.54.93:443`, `ionos-n8n-new.tailc01234.ts.net`; NEW TLS qualified; nginx still off | controlled activation after ORS/runtime qualification |
 | GOI nginx readiness | Control Plane with GOI input | active on OLD | parity drop-in loaded; readiness helper verified against NEW TS IP; services off | controlled activation only |
-| GOI GraphHopper bind | GOI / Control Plane activation gate | OLD app TS bind + loopback admin | generated config verified: `100.99.54.93:8989`, admin `127.0.0.1:8990`; service off | controlled runtime qualification |
+| GOI GraphHopper bind | GOI / Control Plane activation gate | OLD app TS bind + loopback admin | runtime active not enabled: `100.99.54.93:8989`, admin `127.0.0.1:8990`; functional smoke PASS | restart-persistence still pending |
 | GOI GIS bind | GOI | OLD TS `:8000` | dynamic TS bind unit, disabled/inactive | controlled activation only |
 | GOI Nav proxy | GOI | OLD TS `:5000` | dynamic TS bind + parity override loaded, disabled/inactive | controlled activation only |
 | GOI ORS | GOI / Control Plane activation gate | OLD loopback runtime | parity artifacts + `LoadCredential` wiring verified; unit disabled/inactive | controlled loopback runtime qualification before nginx serving validation |
@@ -22,7 +22,7 @@ NEW Tailscale identity, GOI pre-activation staging, and NEW TLS recovery/qualifi
 | TLS identity | Control Plane with GOI input | OLD cert identity live | NEW cert SAN exactly `ionos-n8n-new.tailc01234.ts.net`; OLD SAN absent; cert/key match and modes PASS | qualified; no public cutover implied |
 | TLS renewal | Control Plane with GOI input | OLD timer live | helper targets NEW MagicDNS; inactive-nginx path exits 0 after `nginx -t`; fail-closed semantics preserved; timer still inactive | active-nginx renewal + persistence proof later |
 | Public ports `80/443` | Control Plane | OLD nginx owns | NEW has no GOI listener yet | no public-route cutover; GOI `443` remains Tailscale-bound only |
-| GOI TS-bound ports | Control Plane allocates; GOI validates | OLD `443,5000,8000,8010,8989`; loopback `8020,8990` | no GOI listeners yet | controlled component activation; never expose `8020/8990` beyond loopback |
+| GOI TS-bound ports | Control Plane allocates; GOI validates | OLD `443,5000,8000,8010,8989`; loopback `8020,8990` | NEW GraphHopper `8989` on TS IP + admin `8990` loopback; `443,5000,8000,8010,8020` still closed | never expose `8020/8990` beyond loopback |
 | n8n loopback `5678` | Control Plane | OLD production | NEW isolated replica | publication/cutover separately authorized |
 | schema-engine local dependency | Control Plane | local Ajv dependency | copied, resolver smoke pending | no network dependency |
 | dev-method reference tree | dev-method / Control Plane | tree-only | copied/validated | no shared network dependency |
@@ -41,12 +41,14 @@ NEW_TLS_SAN=ionos-n8n-new.tailc01234.ts.net
 OLD_TLS_SAN_PRESENT=NO
 CERT_KEY_MATCH=PASS
 NGINX_SYNTAX=PASS
-GOI_SERVICES=NOT_ACTIVATED
+GOI_GRAPHHOPPER_FUNCTIONAL_QUALIFICATION=PASS
+GOI_GRAPHHOPPER_BOOT_PERSISTENCE=PENDING
+GOI_SERVICES=GRAPHHOPPER_RUNTIME_ACTIVE_NOT_ENABLED
 CUTOVER=NOT_AUTHORIZED
 ```
 
-Canonical TLS evidence: `reports/architecture/v4_vps_new_tls_recovery_v1.md`.
+Canonical GraphHopper evidence: `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`. TLS evidence: `reports/architecture/v4_vps_new_tls_recovery_v1.md`.
 
 ## Current shared-infrastructure next
 
-Controlled GOI runtime qualification → private reachability/restart-persistence proof → parallel OLD↔NEW validation → human cutover.
+Remaining GOI private slices → restart-persistence/parallel OLD↔NEW validation → human cutover.

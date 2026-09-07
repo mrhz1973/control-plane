@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_GOI_GRAPHHOPPER_ACTIVATION_V1` / #68
+**Classification:** `PASS — GOI_GRAPHHOPPER_FUNCTIONAL_QUALIFICATION=PASS · boot persistence pending · nginx/ORS/GIS/Nav/D-Flight inactive · no cutover`
+**Timestamp (UTC):** 2026-09-07T02:25:39Z
+**BASE_HEAD:** `b1c4ba9df93c11f71ab6fb3ef8c3fabf26459d9d`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_GOI_GRAPHHOPPER_ACTIVATION_V1` commit
+**Report:** `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`
+
+Started `goi-tailscale-ready` and `goi-graphhopper` on NEW without enable. App bind `100.99.54.93:8989`, admin `127.0.0.1:8990`. Canonical `smoke-short-hiking` POST `/route` returned 200 with a positive path. GraphHopper not promoted to `MIGRATED_VALIDATED`. Next: remaining GOI private slices, then schema-engine.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_NEW_TLS_RECOVERY_V1` / #68
 **Classification:** `PASS — NEW_TAILSCALE_TLS_ISSUANCE_QUALIFICATION=PASS · renewal helper inactive-nginx semantics corrected · GOI/nginx remain inactive · no cutover`
 **Timestamp (UTC):** 2026-09-07T02:11:06Z
