@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after successful NEW Tailscale join, GOI OLD↔NEW parity reconciliation, and NEW-only parity/config render PASS on 2026-09-07.
+Updated after successful NEW Tailscale join, GOI OLD↔NEW parity reconciliation, NEW-only parity/config render PASS, and GOI post-render pre-activation verification PASS on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -37,6 +37,7 @@ GOI_OLD_PARITY_PROBE=PASS
 GOI_OLD_FINAL_NONSECRET_INSPECT=PASS_WITH_ACTIONABLE_DELTA
 GOI_NEW_FINAL_PARITY_VERIFY=PASS_WITH_ACTIONABLE_DELTA
 GOI_NEW_PARITY_COPY_CONFIG_RENDER=PASS
+GOI_POST_RENDER_PREACTIVATION_VERIFY=PASS
 GOI_PARITY_FILES_AND_STATE=STAGED_VALIDATED
 GOI_NEW_IDENTITY_CONFIG=RENDERED_VALIDATED
 GOI_ACTIVE_OLD_IDENTITY_REFS=NONE
@@ -48,10 +49,10 @@ OPENCLAW_HANDOFF=INGESTED_KEEP_STAGED_PENDING
 CROSS_PROJECT_PREJOIN_RECONCILIATION=CLEARED
 TAILSCALE_UNIQUE_IDENTITY_JOIN=PASS
 TAILSCALE_DNSNAME_ROUTES_SERVE_VERIFY=PASS
-SHARED_INFRA_GATES=GOI_POST_RENDER_PREACTIVATION_VERIFY,NEW_MAGICDNS_TLS,GOI_ACTIVATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
+SHARED_INFRA_GATES=NEW_MAGICDNS_TLS,GOI_ACTIVATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=GOI_POST_RENDER_PREACTIVATION_VERIFY
+NEXT=NEW_TAILSCALE_TLS_ISSUANCE_QUALIFICATION
 ```
 
 ## Current proven state
@@ -69,50 +70,55 @@ NEW currently has:
 - GOI NEW-specific identity configuration rendered to `100.99.54.93` / `ionos-n8n-new.tailc01234.ts.net`;
 - GraphHopper generated config rendered with app bind `100.99.54.93` and admin bind `127.0.0.1`;
 - checked active GOI config contains no OLD Tailscale IP or OLD MagicDNS reference;
+- ORS, Nav proxy and nginx systemd drop-ins are loaded as expected;
+- D-Flight persistent state and ownership/modes are validated;
+- readiness helper expects NEW Tailscale IP;
+- nginx vhost is rendered to NEW TS IP/MagicDNS and `nginx -t` passes;
 - all GOI/nginx units still disabled/inactive;
 - no GOI listener open;
-- nginx installed but not activated;
-- NEW TLS serving identity not yet issued/qualified;
+- staged TLS certificate is still the OLD identity and must be replaced by a NEW Tailscale certificate;
+- renewal helper explicitly targets NEW MagicDNS, while renew timer remains disabled/inactive;
 - OpenClaw staged/inactive;
 - schema-engine resolver smoke still pending.
 
-## Latest GOI NEW parity/config pass
+## Latest GOI post-render pre-activation pass
 
-Operator-run pass on NEW completed:
+Canonical evidence: `reports/architecture/vps_goi_post_render_preactivation_verify_2026-09-07.md`.
+
+Operator-run live verification on NEW completed:
 
 ```text
-SAFETY_ASSERTIONS=PASS
-OLD_TRANSFER=PASS
-SOURCE_VALIDATION=PASS
-PARITY_FILES_INSTALLED=PASS
-NEW_IDENTITY_RENDER=PASS
-DFLIGHT_TOML=PASS
-SYNTAX_AND_DAEMON_RELOAD=PASS
-SECRET_AND_STATE_PARITY=PASS
-GRAPHHOPPER_RENDER=PASS
-ACTIVE_OLD_IDENTITY_REFS=NONE
-GOI_NEW_PARITY_COPY_CONFIG_RENDER=PASS
-SERVICES_STARTED=NO
-OLD_CHANGED=NO
+TS_IP=100.99.54.93
+SYSTEMD_DROPINS=LOADED
+ORS_LOADCREDENTIAL=WIRED
+DFLIGHT_NEW_BIND_ORIGIN=PASS
+DFLIGHT_STATE_PERMISSIONS=PASS
+TAILSCALE_READINESS_NEW_IP=PASS
+GRAPHHOPPER_RENDERED_BIND=PASS
+NGINX_NEW_RENDER=PASS
+NGINX_SYNTAX=PASS
+CURRENT_STAGED_TLS_IDENTITY=OLD
+RENEW_HELPER_NEW_IDENTITY=PASS
+GOI_LISTENERS=NONE
+GOI_POST_RENDER_PREACTIVATION_VERIFY=PASS
+TLS_ISSUANCE_PERFORMED=NO
 ```
-
-A NEW local pre-change backup was created at `/root/goi-new-prep-backup-20260907T014506Z`.
 
 No GOI/nginx activation, DNS/public routing change, cutover, OLD shutdown, or OLD decommission action occurred.
 
 ## Remaining hard blockers
 
-1. Post-render pre-activation verification: systemd dependency/load wiring, nginx syntax/render, GraphHopper/D-Flight bind checks, readiness helper semantics, and inactive-state safety.
-2. Issue and qualify NEW Tailscale TLS identity for `ionos-n8n-new.tailc01234.ts.net` and validate renewal helper/timer behavior without public cutover.
-3. Controlled GOI service activation/qualification on NEW private Tailscale identity; prove private reachability and restart persistence.
-4. Validate schema-engine resolver on NEW and remaining `PRESENT_NOT_VALIDATED` rows.
-5. Parallel OLD↔NEW validation.
-6. Human cutover gate.
-7. Production n8n publication on NEW only in explicit cutover phase.
-8. OpenClaw final activate-or-archive decision remains later; current safe disposition is staged/inactive.
+1. Issue and qualify NEW Tailscale TLS identity for `ionos-n8n-new.tailc01234.ts.net`; confirm SAN, dates, permissions, nginx syntax and renewal helper semantics while GOI/nginx remain inactive.
+2. Controlled GOI service activation/qualification on NEW private Tailscale identity; prove private reachability and restart persistence.
+3. Validate schema-engine resolver on NEW and remaining `PRESENT_NOT_VALIDATED` rows.
+4. Parallel OLD↔NEW validation.
+5. Human cutover gate.
+6. Production n8n publication on NEW only in explicit cutover phase.
+7. OpenClaw final activate-or-archive decision remains later; current safe disposition is staged/inactive.
 
 Evidence anchors:
-- #68 comment recording GOI NEW parity/config PASS
+- #68
+- `reports/architecture/vps_goi_post_render_preactivation_verify_2026-09-07.md`
 - `reports/architecture/v4_replacement_8gb_full_service_parity_prep_copy_v1.md`
 - `reports/architecture/vps_goi_project_handoff_2026-09-07.md`
 - `reports/architecture/vps_goi_new_readonly_identity_reconciliation_2026-09-07.md`
