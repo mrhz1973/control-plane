@@ -12,7 +12,7 @@ NEW Tailscale identity, TLS issuance qualification, GraphHopper functional quali
 | DNS/public routing | Control Plane | OLD remains production | NEW not cut over | explicit human cutover only |
 | Tailscale ACL/routes | Control Plane with project input | OLD private GOI topology live | NEW no advertised routes, no exit-node, Serve or Funnel | no mutation unless separately required |
 | nginx global service | Control Plane | active/enabled OLD | installed, disabled/inactive NEW | remain inactive during F01 remediation; later controlled activation only |
-| GOI nginx vhost | Control Plane with GOI input | OLD `100.114.7.53:443`, OLD MagicDNS | intended NEW file exists in `sites-available`, but effective include graph has empty `sites-enabled`/`conf.d`; current `nginx -t` does not test GOI vhost | **F01 include remediation required before nginx activation** |
+| GOI nginx vhost | Control Plane with GOI input | OLD `100.114.7.53:443`, OLD MagicDNS | NEW `sites-enabled` symlink includes staged vhost; `nginx -t` PASS; nginx inactive; listen `100.99.54.93:443` | F01 include PASS; do not start nginx until later authorized activation |
 | GOI nginx readiness | Control Plane with GOI input | active on OLD | readiness drop-in/helper targets NEW TS IP | preserve; no nginx start in F01 remediation |
 | GOI GraphHopper bind | GOI / Control Plane activation gate | OLD app TS bind + loopback admin | runtime active not enabled: `100.99.54.93:8989`, admin `127.0.0.1:8990`; functional smoke PASS | restart-persistence pending |
 | GOI GIS bind / downstream endpoints | GOI | OLD TS `:8000`; clients target OLD GraphHopper/ORS/D-Flight | dynamic NEW TS bind unit is disabled/inactive, but effective served HTML still contains OLD GraphHopper `100.114.7.53:8989`, OLD ORS MagicDNS and adjacent OLD D-Flight override | **F02 endpoint remediation required before GIS activation** |
@@ -41,12 +41,16 @@ NEW_TAILSCALE_TLS_ISSUANCE_QUALIFICATION=PASS
 GOI_GRAPHHOPPER_FUNCTIONAL_QUALIFICATION=PASS
 GOI_GRAPHHOPPER_BOOT_PERSISTENCE=PENDING
 VPS_CONSUMER_REGISTRY_COVERAGE=PASS
-F01_NGINX_VHOST=STAGED_NOT_INCLUDED
+F01_NGINX_VHOST=EFFECTIVELY_INCLUDED_SYNTAX_VALID
+F01_NGINX_INCLUDE_REMEDIATION=PASS
+NGINX_RUNTIME=INACTIVE
+NGINX_FUNCTIONAL_QUALIFICATION=PENDING
 F02_GIS_ENDPOINTS=ACTIVE_OLD_ENDPOINT_FOUND
 CUTOVER=NOT_AUTHORIZED
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_goi_f01_nginx_include_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_f01_f02_readonly_evidence_v1.md`
 - `reports/architecture/v4_vps_codex_independent_evidence_audit_v1.md`
 - `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`
@@ -54,4 +58,4 @@ Canonical evidence:
 
 ## Current shared-infrastructure next
 
-F01 nginx include remediation → F02 effective GIS OLD endpoint remediation → remaining GOI private qualification → restart-persistence/parallel OLD↔NEW validation → human cutover.
+F02 effective GIS OLD endpoint remediation → remaining GOI private qualification → restart-persistence/parallel OLD↔NEW validation → human cutover.

@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_GOI_F01_NGINX_INCLUDE_REMEDIATION_V1` / #68
+**Classification:** `PASS — F01_NGINX_INCLUDE_REMEDIATION=PASS · F01_NGINX_VHOST=EFFECTIVELY_INCLUDED_SYNTAX_VALID · nginx inactive · F02 unchanged`
+**Timestamp (UTC):** 2026-09-07T06:58:36Z
+**BASE_HEAD:** `213f6b0bd4dec6ca46f61e95c0ffdd49cf6f4380`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_GOI_F01_NGINX_INCLUDE_REMEDIATION_V1` commit
+**Report:** `reports/architecture/v4_vps_goi_f01_nginx_include_remediation_v1.md`
+
+Created `sites-enabled/goi-ors-gateway` symlink to staged vhost. `nginx -t` PASS with GOI vhost in the effective include graph. nginx left disabled/inactive; no `:443` listener. F02 still `ACTIVE_OLD_ENDPOINT_FOUND`. Next: F02 GIS endpoint remediation only.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_GOI_F01_F02_READONLY_EVIDENCE_V1` / #68
 **Classification:** `PASS — F01_F02_EVIDENCE_ACQUISITION=PASS · F01=STAGED_NOT_INCLUDED · F02=ACTIVE_OLD_ENDPOINT_FOUND · no remediation · RUNTIME_MUTATIONS=0`
 **Timestamp (UTC):** 2026-09-07T06:23:01Z
