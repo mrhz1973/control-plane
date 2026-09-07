@@ -1,9 +1,14 @@
 # CURRENT VPS STATE
 
-Updated after `V4_VPS_PARALLEL_OLD_NEW_VALIDATION_F03_F04_F05_V1` on 2026-09-07.
+Updated after post-cutover soak and `V4_VPS_CODEX_FINAL_POST_CUTOVER_EVIDENCE_AUDIT_V1` on 2026-09-07.
+
+Independent Codex repo-only audit: `BLOCKED_EVIDENCE` for the exact soak cohort/count reconciliation; cutover and observed NEW LIVE / OLD writer-frozen state remain supported. Report: `reports/architecture/v4_vps_codex_final_post_cutover_evidence_audit_v1.md`. Historical pre-remediation/pre-activation flags below retain checkpoint provenance, not new runtime blockers. The carried F03 counts `31/3` are disputed: the current 34-row evidence table counts `32/2`; component classifications are not changed by this audit.
 
 ```text
 VPS_STATE
+CODEX_FINAL_POST_CUTOVER_AUDIT=BLOCKED_EVIDENCE
+SOAK_EVIDENCE=BLOCKED_EXACT_COHORT_AND_COUNT_RECONCILIATION
+REGISTRY_CONSISTENCY=REGISTRY_20_1_PASS_CENSUS_TABLE_32_2_VS_CLAIM_31_3
 OLD_HOST=ionos-n8n
 OLD_IP=217.160.71.145
 OLD_ROLE=ROLLBACK_STANDBY_FROZEN
@@ -33,7 +38,7 @@ OBSOLETE_NEEDS_HUMAN_DECISION=0
 OBSOLETE_CONFIRMED_NOT_REQUIRED=3
 RESOLVED_SUPERSEDED=0
 F03_CENSUS_DENOMINATOR=34
-ROLLUP_COUNTS_STATUS=RECONCILED_F03
+ROLLUP_COUNTS_STATUS=DISPUTED_BY_CODEX_TABLE_32_2_VS_ROLLUP_31_3
 REGISTRY_ROW_DENOMINATOR=21
 REGISTRY_ROW_MIGRATED_VALIDATED=20
 REGISTRY_ROW_PRESENT_NOT_VALIDATED=0
@@ -157,7 +162,7 @@ SCHEMA_ENGINE_EXECUTION=FOLDED_INTO_VPS_CURSOR_WORKSTREAM
 VPS_HANDOFF_TARGET_AFTER_COMPLETION=OPENCLAW42
 VPS_CHAT_CLOSE_CONDITION=MIGRATION_COMPLETE_AND_HANDOFF_RECORDED
 
-SHARED_INFRA_GATES=GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
+SHARED_INFRA_GATES=INDEPENDENT_SOAK_EVIDENCE,ROLLBACK_RETENTION,HUMAN_ROLLBACK_EXIT,OLD_DECOMMISSION_AUTHORIZATION
 HUMAN_CUTOVER_AUTHORIZED=YES
 OLD_DECOMMISSION_AUTHORIZED=NO
 OLD_WRITE_FREEZE=PASS
@@ -171,7 +176,7 @@ CUTOVER_ROUTING_ACTION=NONE_REQUIRED
 POST_CUTOVER_HEALTH=PASS
 PRODUCTION_TRAFFIC_ON_NEW=PASS
 OLD_ROLE=ROLLBACK_STANDBY_FROZEN
-ROLLBACK_RETENTION=ENTERED
+ROLLBACK_RETENTION=OPEN
 ROLLBACK_RETENTION_AUTO_EXPIRY=NONE
 CUTOVER=PASS
 NEW_ROLE=LIVE
@@ -182,7 +187,8 @@ GIS_LISTENER_STATE=100.99.54.93:8000_EXACT
 GIS_LOCAL_HTTP=200
 HOST_FIREWALL_8000=NO_EXPLICIT_RULE
 NEW_TO_WORKSTATION_TAILSCALE_PING=PASS
-OLD_CHANGED=NO
+OLD_CHANGED_BY_POST_CUTOVER_DIAGNOSTIC_OR_SOAK=NO
+OLD_N8N_STOPPED_BY_AUTHORIZED_CUTOVER=YES
 SECRET_VALUES_EXPOSED=0
 POST_CUTOVER_SOAK=PASS
 NEW_PUBLICATION_MAP_STABLE=PASS
@@ -198,7 +204,7 @@ TAILSCALE_POLICY_ROOT_CAUSE_REMEDIATED=YES
 SECOND_DEVICE_TEST=DEFERRED_NON_BLOCKING
 NEW_RESOURCE_HEADROOM=PASS
 VPS_PARALLEL_VALIDATION=PASS
-F03_ACCOUNTING_RECONCILIATION=PASS
+F03_ACCOUNTING_RECONCILIATION=DOCUMENTARY_DISCREPANCY_FOUND_BY_CODEX
 F04_OLD_PUBLIC_80_REQUIREDNESS=NON_REQUIRED_OBSOLETE_DEFAULT
 F05_OLD_TLS_CURRENT_HTTPS_HEALTH=PASS
 F05_OLD_TLS_RENEWAL_HEALTH=PERSISTENT_DEGRADED_HELPER_MISSING_203_EXEC
@@ -206,7 +212,7 @@ F05_OLD_ROLLBACK_TLS_PRACTICABLE=YES
 NEW_CORE_RESTART_PERSISTENCE=PASS
 HUMAN_CUTOVER_GATE=AUTHORIZED_AND_EXECUTED
 ROLLBACK_TLS_VALID_UNTIL=2026-11-15T23:56:47Z
-NEXT=ROLLBACK_RETENTION_AND_HUMAN_ROLLBACK_EXIT_OR_DECOMMISSION_GATE
+NEXT=RECONCILE_EXISTING_SOAK_COHORT_SNAPSHOTS_AND_RETENTION_EVIDENCE_THEN_REVIEW_AUDIT
 ```
 
 ## Current proven state
@@ -245,7 +251,7 @@ The later functional qualification evidence supersedes the pre-remediation findi
 
 ## Counts caveat — F03
 
-F03 is now reconciled against the original 34-component census: `31 MIGRATED_VALIDATED`, `0 PRESENT_NOT_VALIDATED`, `0 MISSING`, `3 OBSOLETE_CONFIRMED_NOT_REQUIRED`. The historical `15/14/0/1` remains provenance only. The current registry projection is separately `21 rows: 20 MIGRATED_VALIDATED, 0 PRESENT_NOT_VALIDATED, 0 MISSING, 1 OBSOLETE_CONFIRMED_NOT_REQUIRED`.
+The parallel-validation report declares `31 MIGRATED_VALIDATED / 3 OBSOLETE_CONFIRMED_NOT_REQUIRED` over 34, but independent Codex recount finds `32/2` in its C01–C34 table. That rollup is disputed pending documentary reconciliation; no component classification is changed here. The current registry projection is separately verified as `21 rows: 20 MIGRATED_VALIDATED, 0 PRESENT_NOT_VALIDATED, 0 MISSING, 1 OBSOLETE_CONFIRMED_NOT_REQUIRED`. Historical `15/14/0/1` remains provenance only.
 
 ## Project orchestration model
 
@@ -256,12 +262,15 @@ F03 is now reconciled against the original 34-component census: `31 MIGRATED_VAL
 
 ## Remaining gates after cutover
 
+Independent audit evidence gate: reconcile the original soak cohort of 29 with the +37 baseline-to-after-drain delta, timestamp/filter boundaries, WF90 drain identity and effective pruning evidence for the earlier count reduction. The prior Cursor soak PASS remains its reported outcome; the independent audit is not closed. No rollback or runtime retest is authorized by this documentation update.
+
 1. Keep OLD intact through the open rollback retention; no automatic expiry is authorized.
 2. A separate human rollback-exit/decommission authorization is required. OLD decommission remains ineligible.
 3. OLD renewal remains degraded (`203/EXEC` helper missing) although current hostname-verified HTTPS is healthy through `2026-11-15T23:56:47Z`; no OLD repair was performed by cutover.
 
 Evidence anchors:
 - #68
+- `reports/architecture/v4_vps_codex_final_post_cutover_evidence_audit_v1.md`
 - `reports/architecture/v4_vps_production_cutover_old_to_new_v1.md`
 - `reports/architecture/v4_vps_post_cutover_gis_client_path_diagnostic_v1.md`
 - `reports/architecture/v4_vps_post_cutover_soak_v1.md`

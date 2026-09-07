@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+## Independent Codex repo-only audit — latest evidence pointer
+
+**TASK_REF:** `V4_VPS_CODEX_FINAL_POST_CUTOVER_EVIDENCE_AUDIT_V1` / #68
+**Reviewer:** Codex, independent second-level repository audit; not a Cursor execution or a VPS test.
+**Classification:** `CODEX_FINAL_POST_CUTOVER_AUDIT=BLOCKED_EVIDENCE`
+**Date (UTC):** 2026-09-07
+**BASE_HEAD:** `983e3d69361c97dd4805079ab12a6ece8c7bc0ca`
+**Report:** `reports/architecture/v4_vps_codex_final_post_cutover_evidence_audit_v1.md`
+
+Cutover/final restore/exact four-pair publication map and observed OLD writer freeze are supported. The exact soak cohort needs reconciliation: 29 reported in-window executions versus +37 baseline-to-after-drain, plus unexplained pre-soak count reduction without effective pruning evidence. F03 table counts 32 migrated/2 obsolete, versus published 31/3; registry projection 20/1 over 21 is correct. D-Flight 816 is supported by successful fresh canonical refresh metadata. Operator GIS/Tailscale evidence is external and was not reproduced. NEW remains LIVE; OLD frozen rollback standby; retention OPEN/no automatic expiry; decommission ineligible/unauthorized. Runtime mutations/SSH calls/secret values exposed: 0.
+
+---
+
+## Previous Cursor execution — preserved outcome, independently reviewed above
+
 **BLOCK-ID:** `V4_VPS_POST_CUTOVER_SOAK_V1` / #68
 **Classification:** `PASS — POST_CUTOVER_SOAK=PASS · NEW_ROLE=LIVE · OLD_ROLE=ROLLBACK_STANDBY_FROZEN · DUAL_WRITER_RISK=NO`
 **Timestamp (UTC):** 2026-09-07T13:03:00Z
