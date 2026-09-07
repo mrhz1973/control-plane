@@ -1,0 +1,23 @@
+{
+  "schema_version": "cursor-stop-v1",
+  "task_ref": "V4_VPS_GOI_DFLIGHT_PRIVATE_FUNCTIONAL_QUALIFICATION_V1",
+  "stopped_component": "goi-dflight-helper.service",
+  "recorded_at_utc": "2026-09-07T07:49:48Z",
+  "base_head": "73dd5c0a2fa3836a1b0fd8a09c2f9588b4fb37c8",
+  "classification": "STOP",
+  "finding": "goi-dflight user cannot read /etc/goi-dflight/config.toml (PermissionError errno 13). Directory /etc/goi-dflight is 0750 root:root; config.toml is 0640 root:root. Unit User=goi-dflight. ProtectSystem=strict does not override DAC. CSRF pem is 0640 root:goi-dflight but is unreachable through the root-only directory. No config/credential/state mutation was performed.",
+  "rollback": {
+    "action": "systemctl stop goi-dflight-helper.service",
+    "dflight": "inactive/disabled",
+    "listener_8010": "absent",
+    "graphhopper_pid": "185266",
+    "ors_pid": "368923",
+    "nginx_pid": "373425",
+    "gis": "inactive",
+    "nav": "inactive"
+  },
+  "production_changed": false,
+  "old_changed": "NO",
+  "secret_values_exposed": 0,
+  "next": "Separate bounded D-Flight config-permission remediation; then retry this functional qualification. Do not start GIS/Nav in that pass unless separately authorized."
+}
