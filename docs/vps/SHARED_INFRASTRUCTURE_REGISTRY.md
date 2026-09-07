@@ -2,23 +2,24 @@
 
 This file records the authoritative owner and current state for VPS resources that must not be configured independently by specialist projects.
 
-Project pre-join handoffs were reconciled before Tailscale join. NEW Tailscale authentication/join succeeded on 2026-09-07 with a unique node identity.
+Project pre-join handoffs were reconciled before Tailscale join. NEW Tailscale authentication/join and post-join read-only identity/static-state verification succeeded on 2026-09-07 with a unique node identity.
 
 | Shared resource | Owner | OLD current state | NEW current state | Mutation rule / gate |
 |---|---|---|---|---|
 | Public host identity | Control Plane | `217.160.71.145` LIVE | `31.70.139.73` PREP | no public cutover before human gate |
-| Tailscale node identity | Control Plane | node `ubuntu`, TS IP `100.114.7.53`, MagicDNS `ubuntu.tailc01234.ts.net` | joined as unique node `ionos-n8n-new`, TS IP `100.99.54.93`; OS hostname still `ubuntu` | join PASS; verify DNSName/MagicDNS + ACL/routes + Serve/Funnel before promotion/GOI activation |
-| NEW Tailscale hostname | Control Plane | n/a | `ionos-n8n-new` | explicitly selected and proven by `tailscale status`; do not silently replace with OS hostname `ubuntu` |
-| MagicDNS | Control Plane | OLD name live | NEW DNSName not yet read-only captured | read `Self.DNSName`; no GOI/TLS render until exact NEW name is recorded |
+| Tailscale node identity | Control Plane | node `ubuntu`, TS IP `100.114.7.53`, MagicDNS `ubuntu.tailc01234.ts.net` | node `ionos-n8n-new`, TS IPv4 `100.99.54.93`, TS IPv6 `fd7a:115c:a1e0::6a3a:365f`, MagicDNS `ionos-n8n-new.tailc01234.ts.net`; OS hostname still `ubuntu` | join + exact DNSName/static config PASS; keep component row conservative until private reachability/restart persistence is proven |
+| NEW Tailscale hostname | Control Plane | n/a | `ionos-n8n-new` | explicitly selected and proven by `tailscale status`/Self.HostName; do not silently replace with OS hostname `ubuntu` |
+| MagicDNS | Control Plane | OLD `ubuntu.tailc01234.ts.net` live | exact NEW name `ionos-n8n-new.tailc01234.ts.net` verified | use this exact NEW identity for GOI/TLS rendering; never reuse OLD name while OLD is live |
 | DNS/public routing | Control Plane | OLD remains production | NEW not cut over | explicit human cutover only |
-| Tailscale ACL/routes | Control Plane with project input | OLD GOI clients use TS-bound `443,5000,8000,8010,8989` | NEW joined; effective advertised routes/ACL acceptance not yet captured | read-only inventory now; no route advertisement or ACL mutation without explicit need |
-| Tailscale Serve/Funnel | Control Plane | no serve config in last census | must read-only verify after join | must remain none unless separately authorized |
+| Tailscale ACL/routes | Control Plane with project input | OLD GOI clients use TS-bound `443,5000,8000,8010,8989` | `PrimaryRoutes=NONE`; no advertised primary routes observed | no route advertisement mutation unless explicitly required; component reachability validation still pending |
+| Tailscale exit-node role | Control Plane | not required by current migration state | `ExitNodeOption=False` | do not enable without a separate explicit requirement |
+| Tailscale Serve/Funnel | Control Plane | no serve config in last census | `No serve config` / `No serve config` verified after join | must remain none unless separately authorized |
 | nginx global service | Control Plane | active/enabled OLD | installed but inactive/disabled NEW | activation centralized; do not enable before GOI config/TLS pass |
-| GOI nginx vhost | Control Plane with GOI input | active on OLD TS IP | staged only, not enabled | render/rebind to NEW `100.99.54.93` + exact NEW MagicDNS after verification; upstream remains `127.0.0.1:8020` |
-| GOI Tailscale readiness | Control Plane with GOI input | OLD helper documented against `100.114.7.53` | helper copied/staged; NEW TS IP now `100.99.54.93` | verify/adapt helper and nginx readiness drop-in before enablement |
-| GOI endpoint transition | Control Plane with GOI input | GIS references OLD GraphHopper IP and OLD ORS MagicDNS | NEW TS IP known; NEW DNSName verification pending | reconcile endpoints after exact DNSName capture; no client cutover yet |
-| TLS identity | Control Plane with GOI input | OLD cert CN belongs to OLD MagicDNS | OLD material archived; no valid NEW serving cert | issue NEW cert only after exact NEW MagicDNS identity is verified |
-| TLS renewal | Control Plane with GOI input | OLD timer exists; renewal helper derives identity from host naming | copied but disabled/inactive | qualify after NEW hostname/MagicDNS/cert strategy is final; OS hostname remains `ubuntu` and must not accidentally drive OLD-style identity derivation |
+| GOI nginx vhost | Control Plane with GOI input | active on OLD TS IP | staged only, not enabled | render/rebind to NEW `100.99.54.93` + `ionos-n8n-new.tailc01234.ts.net`; upstream remains `127.0.0.1:8020` |
+| GOI Tailscale readiness | Control Plane with GOI input | OLD helper documented against `100.114.7.53` | helper copied/staged; NEW identity now exact | verify/adapt helper and nginx readiness drop-in before enablement |
+| GOI endpoint transition | Control Plane with GOI input | GIS references OLD GraphHopper IP and OLD ORS MagicDNS | NEW exact identity known: `100.99.54.93` / `ionos-n8n-new.tailc01234.ts.net` | reconcile endpoints read-only-first, then bounded config delta; no client cutover yet |
+| TLS identity | Control Plane with GOI input | OLD cert CN belongs to `ubuntu.tailc01234.ts.net` | OLD material archived; no valid NEW serving cert | NEW certificate must target `ionos-n8n-new.tailc01234.ts.net`; issuance remains a later shared-infra mutation |
+| TLS renewal | Control Plane with GOI input | OLD timer exists; renewal helper derives identity from host naming | copied but disabled/inactive | qualify after NEW-specific render; OS hostname remains `ubuntu`, so helper must not infer the wrong identity from OS hostname |
 | Public ports `80/443` | Control Plane | OLD nginx owns | NEW refuses / no listener from prep-copy evidence | no public activation before shared infra pass; GOI `443` must be Tailscale-bound only |
 | GOI TS-bound ports | Control Plane allocates; specialist validates component | OLD `443,5000,8000,8010,8989`; loopback `8020,8990` | no GOI TS listeners activated yet | enable only after config collision check and NEW identity reconciliation; never expose `8020/8990` to tailnet/public |
 | n8n loopback `5678` | Control Plane | OLD production | NEW isolated replica | NEW publication/cutover separately authorized; specialist projects must not mutate |
@@ -44,10 +45,18 @@ OLD_TS_IPV4=100.114.7.53
 OLD_MAGICDNS=ubuntu.tailc01234.ts.net
 NEW_TS_NODE=ionos-n8n-new
 NEW_TS_IPV4=100.99.54.93
+NEW_TS_IPV6=fd7a:115c:a1e0::6a3a:365f
+NEW_MAGICDNS=ionos-n8n-new.tailc01234.ts.net
+NEW_PRIMARY_ROUTES=NONE
+NEW_EXIT_NODE_OPTION=FALSE
+NEW_SERVE_CONFIG=NONE
+NEW_FUNNEL_CONFIG=NONE
 NEW_OS_HOSTNAME=ubuntu
 IDENTITY_COLLISION=NO
 ```
 
+The Tailscale admin UI screenshot additionally corroborates OLD and NEW simultaneously connected with the distinct IPv4 addresses above.
+
 ## Current shared-infrastructure next
 
-`VERIFY_NEW_TAILSCALE_DNSNAME_ROUTES_SERVE` → record exact NEW MagicDNS → reconcile GOI OLD-IP/domain-dependent config → NEW TLS issuance/renewal qualification → GOI shared activation ordering.
+`GOI_IDENTITY_CONFIG_RECONCILIATION_READ_ONLY` → bounded NEW-specific GOI config delta → NEW TLS issuance/renewal qualification → GOI shared activation ordering → private reachability/restart-persistence proof.
