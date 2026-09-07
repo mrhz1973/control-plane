@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_GOI_DFLIGHT_CONFIG_PERMISSION_REMEDIATION_V1` / #68
+**Classification:** `PASS — GOI_DFLIGHT_PERMISSION_REMEDIATION=PASS · DFLIGHT_CONFIG_ACCESS=GOI_DFLIGHT_USER_READABLE · DFLIGHT_RUNTIME=INACTIVE_DISABLED`
+**Timestamp (UTC):** 2026-09-07T07:54:31Z
+**BASE_HEAD:** `1851763f23c11645596b6425172c3eaf33ff18c3`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_GOI_DFLIGHT_CONFIG_PERMISSION_REMEDIATION_V1` commit
+**Report:** `reports/architecture/v4_vps_goi_dflight_config_permission_remediation_v1.md`
+
+Mirrored OLD DAC: `/etc/goi-dflight` and `config.toml` `root:goi-dflight` `750`/`640`. PEM already correct, not touched. Content hashes unchanged. D-Flight left inactive. Next: retry functional qualification separately.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_GOI_NGINX_PRIVATE_CHAIN_FUNCTIONAL_QUALIFICATION_V1` / #68
 **Classification:** `PASS — GOI_NGINX_FUNCTIONAL_QUALIFICATION=PASS · NGINX_RUNTIME=ACTIVE_NOT_ENABLED · NGINX_BIND=100.99.54.93:443 · GOI_HTTPS_ORS_CHAIN=PASS`
 **Timestamp (UTC):** 2026-09-07T07:40:16Z

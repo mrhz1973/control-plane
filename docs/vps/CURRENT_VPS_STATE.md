@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after `V4_VPS_GOI_NGINX_PRIVATE_CHAIN_FUNCTIONAL_QUALIFICATION_V1` on 2026-09-07.
+Updated after `V4_VPS_GOI_DFLIGHT_CONFIG_PERMISSION_REMEDIATION_V1` on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -68,6 +68,11 @@ GOI_HTTPS_ORS_CHAIN=PASS
 GOI_HTTPS_TLS_HOSTNAME_VERIFY=PASS
 GOI_HTTPS_CORS_NEW_GIS=PASS
 GOI_NGINX_BOOT_PERSISTENCE=PENDING
+GOI_DFLIGHT_PERMISSION_REMEDIATION=PASS
+DFLIGHT_CONFIG_ACCESS=GOI_DFLIGHT_USER_READABLE
+DFLIGHT_CSRF_ACCESS=GOI_DFLIGHT_USER_READABLE
+DFLIGHT_RUNTIME=INACTIVE_DISABLED
+DFLIGHT_FUNCTIONAL_QUALIFICATION=PENDING_RETRY
 F02_GIS_ENDPOINTS=NEW_IDENTITY_RETARGETED
 F02_GIS_ENDPOINT_REMEDIATION=PASS
 F02_GRAPHHOPPER_DESTINATION=http://100.99.54.93:8989
@@ -155,6 +160,7 @@ Production n8n publication/cutover and OLD decommission remain separately gated.
 
 Evidence anchors:
 - #68
+- `reports/architecture/v4_vps_goi_dflight_config_permission_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_nginx_private_chain_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_ors_cors_new_gis_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_ors_loopback_functional_qualification_v1.md`

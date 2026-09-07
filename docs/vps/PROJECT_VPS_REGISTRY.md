@@ -12,7 +12,7 @@ Current projection after nginx private-chain functional qualification PASS. Grap
 | GOI ORS gateway | OLD live loopback `127.0.0.1:8020`; tree `/opt/goi-ors-gateway` | runtime active not enabled; loopback `127.0.0.1:8020`; CORS GIS origin `http://100.99.54.93:8000`; status 200 ready/PRESENT | nginx/TLS/Tailscale | PRESENT_NOT_VALIDATED | functional+CORS PASS; restart-persistence pending; not `MIGRATED_VALIDATED` |
 | GOI GIS / cursor-coordinate-converter | OLD TS `:8000`; WD `/root/local-files/handoff-runtime/cursor-coordinate-converter` | unit disabled/inactive; served HTML retargeted to NEW GH `100.99.54.93:8989`, NEW ORS MagicDNS, NEW D-Flight `100.99.54.93:8010` | Tailscale IP, local-files, GraphHopper/ORS/D-Flight | PRESENT_NOT_VALIDATED | F02 retarget PASS; functional qualification pending; not `MIGRATED_VALIDATED` |
 | GOI Navionics / Planet-Clone | OLD TS `:5000`; WD `/root/local-files/handoff-runtime/Planet-Clone` | copied; dynamic TS bind + parity override loaded; disabled/inactive | Tailscale IP, local-files | PRESENT_NOT_VALIDATED | qualify on NEW TS IP after prerequisite remediation |
-| GOI D-Flight | OLD TS `:8010`; `/opt/goi-dflight-helper` + `/var/lib/goi-dflight` | service config/state verified for NEW TS bind/origin; unit disabled/inactive; GIS client still has adjacent OLD D-Flight override | Tailscale, GIS client | PRESENT_NOT_VALIDATED | client retarget + controlled runtime/private reachability qualification |
+| GOI D-Flight | OLD TS `:8010`; `/opt/goi-dflight-helper` + `/var/lib/goi-dflight` | bind/origin NEW; `/etc/goi-dflight`+`config.toml` now `root:goi-dflight` `750`/`640`; unit disabled/inactive; GIS HTML already NEW D-Flight `http://100.99.54.93:8010` | Tailscale, GIS client | PRESENT_NOT_VALIDATED | permission PASS; retry private functional qualification; not `MIGRATED_VALIDATED` |
 | GOI TLS renewal | OLD timer live; cert files `/etc/goi-ors/tls`; oneshot observed failed on OLD | NEW cert SAN qualified; helper handles inactive nginx; NEW timer inactive | NEW MagicDNS/TLS identity | PRESENT_NOT_VALIDATED | active-nginx renewal/persistence proof later; OLD health checked in parallel validation |
 | nginx GOI vhost | OLD live TS `:443` + public default `:80` | runtime active not enabled; bind `100.99.54.93:443` ssl only; HTTPS `/ors/status` 200 ready/PRESENT; no public `:80`/`:443` | Tailscale/TLS/ORS | PRESENT_NOT_VALIDATED | functional PASS; boot persistence pending; not `MIGRATED_VALIDATED` |
 | Control Plane checkout bind | `/root/local-files/handoff-runtime/control-plane` mounted read-only into n8n; LiteLLM config from this tree | present on NEW; same bind shape | n8n, LiteLLM, local-files | MIGRATED_VALIDATED | keep unpublished |
@@ -41,6 +41,9 @@ NGINX_BIND=100.99.54.93:443
 NGINX_PUBLIC_EXPOSURE=NONE
 GOI_HTTPS_ORS_CHAIN=PASS
 GOI_NGINX_BOOT_PERSISTENCE=PENDING
+GOI_DFLIGHT_PERMISSION_REMEDIATION=PASS
+DFLIGHT_CONFIG_ACCESS=GOI_DFLIGHT_USER_READABLE
+DFLIGHT_FUNCTIONAL_QUALIFICATION=PENDING_RETRY
 F02_GIS_ENDPOINTS=NEW_IDENTITY_RETARGETED
 F02_GIS_ENDPOINT_REMEDIATION=PASS
 F01_F02_CONFIGURATION_GAPS=CLOSED
@@ -56,6 +59,7 @@ CUTOVER=NOT_AUTHORIZED
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_goi_dflight_config_permission_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_nginx_private_chain_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_ors_cors_new_gis_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_ors_loopback_functional_qualification_v1.md`
