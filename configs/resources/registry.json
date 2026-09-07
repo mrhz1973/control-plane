@@ -63,6 +63,19 @@
       "capabilities": ["code_generation"],
       "default_access_surface": "cursor_native_model_route",
       "status": "qualified"
+    },
+    "chatgpt_web_models": {
+      "model_type": "provider_managed_selection",
+      "provider": "openai",
+      "roles": ["planner", "reviewer"],
+      "capabilities": ["planning", "review"],
+      "default_access_surface": "chatgpt_web_via_hermes",
+      "model_selection_policy": {
+        "selection": "dynamic",
+        "frozen_list": false,
+        "note": "Concrete ChatGPT Web model identities are provider-managed and per-session; they MUST NOT be frozen in this registry. Resolve from current browser session evidence at selection time."
+      },
+      "status": "browser_round_trip_qualified; canonical_TASK_DELTA_promotion_pending"
     }
   },
   "access_surfaces": {
@@ -176,6 +189,29 @@
       "commercial_quota": "none_local_unmetered",
       "note": "OpenCode is the current local DEV harness for Qwen local models. Local compute is unmetered local semantics; no commercial token pool is modeled.",
       "status": "active"
+    },
+    "chatgpt_web_via_hermes": {
+      "surface_type": "hosted_route",
+      "host_harness": "hermes",
+      "auth": {
+        "allowed": ["chatgpt_web_session"],
+        "forbidden": ["openai_api_key", "byok_openai", "api_billing"]
+      },
+      "quota_pool_id": null,
+      "allowance_ownership": {
+        "state": "unverified",
+        "note": "ChatGPT Web is a separate observed availability domain; MUST NOT be assumed unlimited, free, or quota-independent from Codex without fresh verified account evidence. No pool is attached in this static registry."
+      },
+      "model_selection_policy": {
+        "selection": "dynamic",
+        "frozen_list": false,
+        "note": "ChatGPT Web concrete model is provider-managed per session; resolve dynamically, never frozen here."
+      },
+      "qualification": {
+        "runtime_qualified": true,
+        "note": "Qualified scope: authenticated browser round-trip / sentinel capability already proven. Canonical TASK DELTA generation, fresh-chat rollover, and unattended 24/7 cognitive service remain UNQUALIFIED."
+      },
+      "status": "browser_round_trip_qualified; cognitive_promotion_pending"
     }
   },
   "quota_pools": {

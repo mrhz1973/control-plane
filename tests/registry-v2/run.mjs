@@ -459,6 +459,69 @@ check(
   JSON.stringify({ v2: routeBadV2.reason_codes, v1: routeBadV1.reason_codes }),
 );
 
+// ------------------------------------------------ 14. D-9401-B ChatGPT Web slice
+check(
+  "chatgpt-web-models-default-surface",
+  MODELS.chatgpt_web_models?.default_access_surface === "chatgpt_web_via_hermes",
+);
+check(
+  "chatgpt-web-surface-host-harness-hermes",
+  SURFACES.chatgpt_web_via_hermes?.host_harness === "hermes" &&
+    SURFACES.chatgpt_web_via_hermes?.surface_type === "hosted_route",
+);
+check(
+  "chatgpt-web-surface-quota-pool-null",
+  SURFACES.chatgpt_web_via_hermes?.quota_pool_id === null,
+);
+check(
+  "chatgpt-web-allowance-ownership-unverified",
+  SURFACES.chatgpt_web_via_hermes?.allowance_ownership?.state === "unverified",
+);
+check(
+  "chatgpt-web-forbidden-auth-includes-openai-api-key",
+  ["openai_api_key", "byok_openai", "api_billing"].every((f) =>
+    (SURFACES.chatgpt_web_via_hermes?.auth?.forbidden || []).includes(f),
+  ),
+);
+check(
+  "chatgpt-web-no-new-quota-pool-created",
+  !Object.keys(POOLS).some((id) => /chatgpt_web/i.test(id)),
+  Object.keys(POOLS).join(","),
+);
+check(
+  "chatgpt-web-does-not-claim-free-or-unlimited",
+  /MUST NOT be assumed unlimited, free, or quota-independent from Codex without fresh verified account evidence/i.test(
+    SURFACES.chatgpt_web_via_hermes?.allowance_ownership?.note || "",
+  ) &&
+    !/\binfinite\b/i.test(
+      SURFACES.chatgpt_web_via_hermes?.allowance_ownership?.note || "",
+    ),
+);
+check(
+  "chatgpt-web-v1-resources-projection-unchanged-by-slice",
+  V1 !== null &&
+    JSON.stringify(REGISTRY.resources) === JSON.stringify(V1.resources) &&
+    JSON.stringify(Object.keys(REGISTRY.resources).sort()) ===
+      JSON.stringify(Object.keys(V1.resources).sort()),
+);
+check(
+  "chatgpt-web-dynamic-selection-not-frozen",
+  MODELS.chatgpt_web_models?.model_selection_policy?.selection === "dynamic" &&
+    MODELS.chatgpt_web_models?.model_selection_policy?.frozen_list === false &&
+    SURFACES.chatgpt_web_via_hermes?.model_selection_policy?.selection ===
+      "dynamic" &&
+    SURFACES.chatgpt_web_via_hermes?.model_selection_policy?.frozen_list ===
+      false,
+);
+check(
+  "chatgpt-web-browser-qualified-promotion-pending",
+  /qualified/i.test(MODELS.chatgpt_web_models?.status || "") &&
+    /pending/i.test(MODELS.chatgpt_web_models?.status || "") &&
+    /qualified/i.test(SURFACES.chatgpt_web_via_hermes?.status || "") &&
+    /pending/i.test(SURFACES.chatgpt_web_via_hermes?.status || "") &&
+    SURFACES.chatgpt_web_via_hermes?.qualification?.runtime_qualified === true,
+);
+
 // ------------------------------------------ 13. bridge exports both schemas
 check(
   "bridge-accepts-v1-and-v2-schema-constants",
