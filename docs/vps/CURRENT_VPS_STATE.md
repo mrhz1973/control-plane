@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after successful NEW Tailscale join, GOI OLD↔NEW parity reconciliation, NEW-only parity/config render PASS, and GOI post-render pre-activation verification PASS on 2026-09-07.
+Updated after successful NEW Tailscale join, GOI OLD↔NEW parity reconciliation, NEW-only parity/config render PASS, GOI post-render pre-activation verification PASS, and the first NEW TLS issuance attempt on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -42,17 +42,19 @@ GOI_PARITY_FILES_AND_STATE=STAGED_VALIDATED
 GOI_NEW_IDENTITY_CONFIG=RENDERED_VALIDATED
 GOI_ACTIVE_OLD_IDENTITY_REFS=NONE
 GOI_SERVICES=NOT_ACTIVATED
-NEW_TLS_IDENTITY=NOT_YET_ISSUED
+NEW_TLS_ISSUANCE_ATTEMPT=PARTIAL_CERT_WRITTEN_QUALIFICATION_INTERRUPTED
+NEW_TLS_HELPER_BLOCKER=NGINX_RELOAD_WHILE_INACTIVE
+NEW_TLS_IDENTITY=VERIFY_REQUIRED_BEFORE_PROMOTION
 DEV_METHOD_HANDOFF=INGESTED_MIGRATED_VALIDATED
 SCHEMA_ENGINE_HANDOFF=INGESTED_PRESENT_NOT_VALIDATED_NON_NETWORK
 OPENCLAW_HANDOFF=INGESTED_KEEP_STAGED_PENDING
 CROSS_PROJECT_PREJOIN_RECONCILIATION=CLEARED
 TAILSCALE_UNIQUE_IDENTITY_JOIN=PASS
 TAILSCALE_DNSNAME_ROUTES_SERVE_VERIFY=PASS
-SHARED_INFRA_GATES=NEW_MAGICDNS_TLS,GOI_ACTIVATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
+SHARED_INFRA_GATES=NEW_MAGICDNS_TLS_RECOVERY_VERIFY,GOI_ACTIVATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=NEW_TAILSCALE_TLS_ISSUANCE_QUALIFICATION
+NEXT=CURSOR_TLS_RECOVERY_VERIFY_THEN_GOI_QUALIFICATION
 ```
 
 ## Current proven state
@@ -75,46 +77,42 @@ NEW currently has:
 - readiness helper expects NEW Tailscale IP;
 - nginx vhost is rendered to NEW TS IP/MagicDNS and `nginx -t` passes;
 - all GOI/nginx units still disabled/inactive;
-- no GOI listener open;
-- staged TLS certificate is still the OLD identity and must be replaced by a NEW Tailscale certificate;
-- renewal helper explicitly targets NEW MagicDNS, while renew timer remains disabled/inactive;
-- OpenClaw staged/inactive;
-- schema-engine resolver smoke still pending.
+- no GOI listener open before the TLS attempt;
+- renewal helper explicitly targets NEW MagicDNS.
 
-## Latest GOI post-render pre-activation pass
+## Latest TLS issuance attempt
 
-Canonical evidence: `reports/architecture/vps_goi_post_render_preactivation_verify_2026-09-07.md`.
-
-Operator-run live verification on NEW completed:
+Operator ran the NEW TLS issuance helper on NEW. Observed output:
 
 ```text
-TS_IP=100.99.54.93
-SYSTEMD_DROPINS=LOADED
-ORS_LOADCREDENTIAL=WIRED
-DFLIGHT_NEW_BIND_ORIGIN=PASS
-DFLIGHT_STATE_PERMISSIONS=PASS
-TAILSCALE_READINESS_NEW_IP=PASS
-GRAPHHOPPER_RENDERED_BIND=PASS
-NGINX_NEW_RENDER=PASS
-NGINX_SYNTAX=PASS
-CURRENT_STAGED_TLS_IDENTITY=OLD
-RENEW_HELPER_NEW_IDENTITY=PASS
-GOI_LISTENERS=NONE
-GOI_POST_RENDER_PREACTIVATION_VERIFY=PASS
-TLS_ISSUANCE_PERFORMED=NO
+SAFETY_ASSERTIONS=PASS
+TLS_BACKUP=/root/goi-tls-pre-new-20260907T015513Z
+RENEW_HELPER_TARGET=PASS
+Wrote public cert to temporary cert path
+Wrote private key to temporary key path
+nginx configuration syntax test successful
+nginx.service is not active, cannot reload
 ```
 
-No GOI/nginx activation, DNS/public routing change, cutover, OLD shutdown, or OLD decommission action occurred.
+Interpretation:
+- Tailscale certificate/key generation succeeded;
+- helper execution proceeded through `nginx -t`;
+- helper then attempted to reload inactive nginx and returned non-zero, which terminated the `set -e` SSH shell before the outer qualification checks ran;
+- because the helper installs cert/key before its nginx syntax/reload phase, the NEW certificate material is likely installed, but identity/SAN, permissions, cert-key match and final inactive-state safety are **not yet canonically qualified**;
+- this is a helper semantics issue for PREP state, not evidence of a certificate issuance failure.
+
+Required recovery is first read-only verification of the installed cert/key. If the NEW certificate is correct, adapt the NEW-only renewal helper so inactive nginx is a successful no-reload case and active nginx is reloaded only after `nginx -t` passes. Then re-run qualification without activating GOI/nginx accidentally.
 
 ## Remaining hard blockers
 
-1. Issue and qualify NEW Tailscale TLS identity for `ionos-n8n-new.tailc01234.ts.net`; confirm SAN, dates, permissions, nginx syntax and renewal helper semantics while GOI/nginx remain inactive.
-2. Controlled GOI service activation/qualification on NEW private Tailscale identity; prove private reachability and restart persistence.
-3. Validate schema-engine resolver on NEW and remaining `PRESENT_NOT_VALIDATED` rows.
-4. Parallel OLD↔NEW validation.
-5. Human cutover gate.
-6. Production n8n publication on NEW only in explicit cutover phase.
-7. OpenClaw final activate-or-archive decision remains later; current safe disposition is staged/inactive.
+1. Cursor recovery/verification of NEW TLS material and NEW-only renewal-helper inactive-nginx semantics.
+2. Complete NEW TLS qualification: SAN/dates, permissions, cert-key match, nginx syntax, helper exit=0 while nginx remains inactive.
+3. Controlled GOI service activation/qualification on NEW private Tailscale identity; prove private reachability and restart persistence.
+4. Consume concurrent schema-engine validation from its separate worker; do not duplicate that work.
+5. Parallel OLD↔NEW validation.
+6. Human cutover gate.
+7. Production n8n publication on NEW only in explicit cutover phase.
+8. OpenClaw final activate-or-archive decision remains later; current safe disposition is staged/inactive.
 
 Evidence anchors:
 - #68
@@ -125,4 +123,3 @@ Evidence anchors:
 - `reports/architecture/vps_goi_old_parity_probe_2026-09-07.md`
 - `reports/architecture/vps_goi_old_final_nonsecret_inspect_2026-09-07.md`
 - `reports/architecture/vps_goi_new_final_parity_verify_2026-09-07.md`
-- #67 Hermes qualification comments
