@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after `V4_VPS_GOI_ORS_LOOPBACK_FUNCTIONAL_QUALIFICATION_V1` on 2026-09-07.
+Updated after `V4_VPS_GOI_ORS_CORS_NEW_GIS_REMEDIATION_V1` on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -49,6 +49,9 @@ GOI_ORS_FUNCTIONAL_QUALIFICATION=PASS
 GOI_ORS_RUNTIME=ACTIVE_NOT_ENABLED
 GOI_ORS_BIND=127.0.0.1:8020
 GOI_ORS_BOOT_PERSISTENCE=PENDING
+GOI_ORS_CORS_REMEDIATION=PASS
+GOI_ORS_GIS_ORIGIN=NEW_IDENTITY
+GOI_ORS_READY_FOR_NGINX_PRIVATE_CHAIN=YES
 NEW_TLS_ISSUANCE_ATTEMPT=RECOVERED_QUALIFIED
 NEW_TLS_HELPER_INACTIVE_NGINX_SEMANTICS=PASS
 NEW_TLS_IDENTITY=QUALIFIED
@@ -99,7 +102,7 @@ NEW currently has:
 - unique Tailscale identity `ionos-n8n-new` / `100.99.54.93` / `ionos-n8n-new.tailc01234.ts.net` with no routes, exit-node, Serve or Funnel;
 - NEW TLS identity qualified;
 - GraphHopper functional qualification PASS on `100.99.54.93:8989`, admin `127.0.0.1:8990`, still not enabled at boot;
-- ORS loopback functional qualification PASS on `127.0.0.1:8020`, still not enabled at boot;
+- ORS loopback functional qualification PASS on `127.0.0.1:8020`, CORS GIS origin retargeted to `http://100.99.54.93:8000`, still not enabled at boot;
 - GIS, Nav, D-Flight inactive;
 - nginx inactive/disabled with GOI vhost included via `sites-enabled` symlink; syntax valid; no `:443` listener;
 - F02 GIS HTML retargeted to NEW GraphHopper/ORS/D-Flight identities; GIS still inactive.
@@ -146,6 +149,7 @@ Production n8n publication/cutover and OLD decommission remain separately gated.
 
 Evidence anchors:
 - #68
+- `reports/architecture/v4_vps_goi_ors_cors_new_gis_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_ors_loopback_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_f02_gis_endpoint_remediation_v1.md`
 - `reports/architecture/v4_vps_goi_f01_nginx_include_remediation_v1.md`

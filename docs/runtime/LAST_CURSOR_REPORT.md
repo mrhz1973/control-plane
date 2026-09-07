@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_GOI_ORS_CORS_NEW_GIS_REMEDIATION_V1` / #68
+**Classification:** `PASS — GOI_ORS_CORS_REMEDIATION=PASS · GOI_ORS_GIS_ORIGIN=NEW_IDENTITY · GOI_ORS_READY_FOR_NGINX_PRIVATE_CHAIN=YES`
+**Timestamp (UTC):** 2026-09-07T07:33:24Z
+**BASE_HEAD:** `2b723d54ba6f5bec4e1586f70b5493e13f91622d`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_GOI_ORS_CORS_NEW_GIS_REMEDIATION_V1` commit
+**Report:** `reports/architecture/v4_vps_goi_ors_cors_new_gis_remediation_v1.md`
+
+Retargeted ORS `ORIGIN_ALLOWLIST` from `http://100.114.7.53:8000` to `http://100.99.54.93:8000`. Restarted only ORS. GET `/ors/status` 200 ready/PRESENT; NEW Origin ACAO echoed; OLD Origin 403. nginx/GIS not started.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_GOI_ORS_LOOPBACK_FUNCTIONAL_QUALIFICATION_V1` / #68
 **Classification:** `PASS — GOI_ORS_FUNCTIONAL_QUALIFICATION=PASS · GOI_ORS_RUNTIME=ACTIVE_NOT_ENABLED · GOI_ORS_BIND=127.0.0.1:8020 · GOI_ORS_BOOT_PERSISTENCE=PENDING`
 **Timestamp (UTC):** 2026-09-07T07:17:15Z
