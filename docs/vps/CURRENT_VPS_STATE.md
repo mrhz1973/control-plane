@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after successful NEW Tailscale join on 2026-09-07, following prep-copy PASS, Hermes qualification, GOI handoff ingestion, and cross-project pre-join reconciliation.
+Updated after successful NEW Tailscale join and post-join read-only identity/network-state verification on 2026-09-07, following prep-copy PASS, Hermes qualification, GOI handoff ingestion, and cross-project pre-join reconciliation.
 
 ```text
 VPS_STATE
@@ -17,8 +17,14 @@ NEW_ROLE=PREP
 NEW_OS_HOSTNAME=ubuntu
 NEW_TAILSCALE_HOSTNAME=ionos-n8n-new
 NEW_TAILSCALE_IP=100.99.54.93
+NEW_TAILSCALE_IPV6=fd7a:115c:a1e0::6a3a:365f
 NEW_TAILSCALE_JOIN=PASS
-NEW_MAGICDNS=VERIFY_PENDING
+NEW_MAGICDNS=ionos-n8n-new.tailc01234.ts.net
+NEW_PRIMARY_ROUTES=NONE
+NEW_EXIT_NODE_OPTION=FALSE
+NEW_SERVE_CONFIG=NONE
+NEW_FUNNEL_CONFIG=NONE
+TAILSCALE_POST_JOIN_VERIFY=PASS
 
 MIGRATED_VALIDATED=15
 PRESENT_NOT_VALIDATED=14
@@ -31,10 +37,11 @@ SCHEMA_ENGINE_HANDOFF=INGESTED_PRESENT_NOT_VALIDATED_NON_NETWORK
 OPENCLAW_HANDOFF=INGESTED_KEEP_STAGED_PENDING
 CROSS_PROJECT_PREJOIN_RECONCILIATION=CLEARED
 TAILSCALE_UNIQUE_IDENTITY_JOIN=PASS
-SHARED_INFRA_GATES=TAILSCALE_DNSNAME_ACL_ROUTE_SERVE_VERIFY,MAGICDNS_TLS,GOI_IDENTITY_CONFIG_RECONCILIATION,GOI_ACTIVATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
+TAILSCALE_DNSNAME_ROUTES_SERVE_VERIFY=PASS
+SHARED_INFRA_GATES=GOI_IDENTITY_CONFIG_RECONCILIATION,NEW_MAGICDNS_TLS,GOI_ACTIVATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=VERIFY_NEW_TAILSCALE_DNSNAME_ROUTES_SERVE
+NEXT=GOI_IDENTITY_CONFIG_RECONCILIATION_READ_ONLY
 ```
 
 ## Current proven state
@@ -55,41 +62,46 @@ NEW currently has:
 - schema-engine copied as an isolated n8n/control-plane dependency; NEW resolver smoke still pending
 - `n8n-compose.service` present and validated for the isolated NEW stack
 - Tailscale joined successfully as unique node `ionos-n8n-new` with IPv4 `100.99.54.93`
+- exact NEW MagicDNS/DNSName verified as `ionos-n8n-new.tailc01234.ts.net`
+- no advertised primary routes, no exit-node role, no Serve configuration, and no Funnel configuration
 
-## Tailscale join evidence
+## Tailscale post-join evidence
 
-Operator executed on NEW `31.70.139.73`:
-
-```text
-tailscale up --hostname=ionos-n8n-new
-```
-
-After manual browser authentication, read-only evidence returned:
+Operator executed on NEW `31.70.139.73` and returned:
 
 ```text
-100.99.54.93    ionos-n8n-new    mrhz1973@  linux  -
-100.114.7.53    ubuntu            mrhz1973@  linux  -
-TAILSCALE_IP_V4=100.99.54.93
-OS_HOSTNAME=ubuntu
+DNSName=ionos-n8n-new.tailc01234.ts.net.
+HostName=ionos-n8n-new
+TailscaleIPs=100.99.54.93,fd7a:115c:a1e0::6a3a:365f
+PrimaryRoutes=
+ExitNodeOption=False
+No serve config
+No serve config
 ```
 
-This proves the NEW node has a distinct Tailscale identity and does not collide with OLD. The Linux OS hostname remains `ubuntu`; no OS-hostname mutation was performed or authorized.
+The trailing dot on `Self.DNSName` is normalized in canonical state as `ionos-n8n-new.tailc01234.ts.net`.
 
-The previous `MISSING` Tailscale row is therefore no longer missing, but remains `PRESENT_NOT_VALIDATED` until the NEW MagicDNS/DNSName and effective ACL/routes/Serve/Funnel state are read-only verified.
+The Tailscale admin UI screenshot additionally corroborates that both Linux nodes are simultaneously connected with distinct identities/IPs:
+- NEW `ionos-n8n-new` → `100.99.54.93`
+- OLD `ubuntu` → `100.114.7.53`
+
+This proves the NEW node has a distinct Tailscale identity and there is no MagicDNS/node-name collision with OLD. The Linux OS hostname remains `ubuntu`; no OS-hostname mutation was performed or authorized.
+
+The Tailscale row remains conservatively `PRESENT_NOT_VALIDATED` until component-level private reachability/restart persistence is proven during the GOI/shared-infrastructure qualification; identity and static post-join configuration verification are PASS.
 
 ## Cross-project pre-join reconciliation
 
-- **GOI:** network/TLS/bind requirements ingested; now waits for verified NEW Tailscale DNSName/IP before environment-specific reconciliation and activation.
+- **GOI:** network/TLS/bind requirements ingested; exact NEW Tailscale IPv4 and MagicDNS are now known, so environment-specific config reconciliation can proceed read-only-first.
 - **dev-method:** no runtime/listener/credentials; `MIGRATED_VALIDATED`.
 - **schema-engine:** local n8n/control-plane dependency only; no Tailscale/nginx/TLS/DNS dependence; resolver smoke pending.
 - **OpenClaw:** staged preserved fallback, no current unit/listener; future activation separately gated.
 
 ## Remaining hard blockers
 
-1. Read-only verify NEW Tailscale DNSName/MagicDNS plus effective routes and Serve/Funnel state.
-2. Reconcile GOI OLD-IP/domain-dependent readiness/config/client endpoints and ACL/routes against NEW `100.99.54.93` and verified MagicDNS.
-3. Issue and qualify NEW TLS identity/renewal only after MagicDNS is verified.
-4. Enable and qualify GOI services against the NEW Tailscale identity; prove restart persistence.
+1. Read-only reconcile GOI OLD-IP/domain-dependent readiness/config/client references against NEW `100.99.54.93` and `ionos-n8n-new.tailc01234.ts.net`; verify all project-local UNKNOWN files/drop-ins without exposing secrets.
+2. Prepare/apply bounded NEW-specific GOI config changes only after the reconciliation delta is explicit and collision-free.
+3. Issue and qualify NEW TLS identity/renewal for `ionos-n8n-new.tailc01234.ts.net`.
+4. Enable and qualify GOI services against the NEW Tailscale identity; prove component reachability and restart persistence.
 5. Validate schema-engine resolver on NEW and remaining `PRESENT_NOT_VALIDATED` rows.
 6. Parallel OLD↔NEW validation.
 7. Human cutover gate.
