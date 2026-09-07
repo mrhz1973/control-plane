@@ -97,9 +97,10 @@ local_dev:
   test_commands:
     - node tests/registry-v2/run.mjs
 
-human_gate_required_if: []
+human_gate_required_if:
+  - operator/workstation readiness not explicitly confirmed for this execution window
 context_refs:
   - github:mrhz1973/control-plane#73
 
-state: READY_FOR_PLANNING
+state: GATED
 ```
