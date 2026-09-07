@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+**BLOCK-ID:** `V4_VPS_ACTIVE_NGINX_TLS_RENEWAL_QUALIFICATION_V1` / #68
+**Classification:** `PASS — ACTIVE_NGINX_TLS_RENEWAL=PASS · TLS_RENEWAL_TIMER_ENABLEMENT=PASS · TLS_IDENTITY=NEW_MAGICDNS_ONLY`
+**Timestamp (UTC):** 2026-09-07T09:07:17Z
+**BASE_HEAD:** `9605eb4f1dbf3405a933d5c538f273788d9b8cf5`
+**FINAL HEAD:** this `cursor-pass: V4_VPS_ACTIVE_NGINX_TLS_RENEWAL_QUALIFICATION_V1` commit
+**Report:** `reports/architecture/v4_vps_active_nginx_tls_renewal_qualification_v1.md`
+
+Ran canonical renewal unit with nginx active: cert issued/same-valid returned, installs, nginx -t, reload proven (worker PID rotation), HTTPS hostname-verified 200, live cert = installed leaf, timer enabled weekly. TLS renewal row promoted; F03 frozen.
+
+---
+
+## HISTORICAL REPORT (superseded block, preserved verbatim)
+
+# LAST CURSOR REPORT
+
 **BLOCK-ID:** `V4_VPS_GOI_COLD_START_BOOT_PERSISTENCE_V1` / #68
 **Classification:** `PASS — GOI_COLD_START_PERSISTENCE_QUALIFICATION=PASS · GOI_BOOT_PERSISTENCE=PASS_ENABLED_AND_COLD_START · HOST_REBOOT_EXECUTED=NO`
 **Timestamp (UTC):** 2026-09-07T08:46:30Z

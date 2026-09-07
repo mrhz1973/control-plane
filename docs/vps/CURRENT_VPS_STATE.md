@@ -1,6 +1,6 @@
 # CURRENT VPS STATE
 
-Updated after `V4_VPS_GOI_COLD_START_BOOT_PERSISTENCE_V1` on 2026-09-07.
+Updated after `V4_VPS_ACTIVE_NGINX_TLS_RENEWAL_QUALIFICATION_V1` on 2026-09-07.
 
 ```text
 VPS_STATE
@@ -63,6 +63,17 @@ NEW_TLS_ISSUANCE_ATTEMPT=RECOVERED_QUALIFIED
 NEW_TLS_HELPER_INACTIVE_NGINX_SEMANTICS=PASS
 NEW_TLS_IDENTITY=QUALIFIED
 NEW_TAILSCALE_TLS_ISSUANCE_QUALIFICATION=PASS
+ACTIVE_NGINX_TLS_RENEWAL=PASS
+TLS_RENEWAL_HELPER_ACTIVE_NGINX=PASS
+TLS_RENEWAL_NGINX_TEST=PASS
+TLS_RENEWAL_NGINX_RELOAD=PASS
+TLS_RENEWAL_HTTPS_POST_RENEW=PASS
+TLS_RENEWAL_LIVE_CERT_MATCH=PASS
+TLS_RENEWAL_TIMER_ENABLEMENT=PASS
+TLS_RENEWAL_TIMER_PERSISTENCE=PASS
+TLS_IDENTITY=NEW_MAGICDNS_ONLY
+TLS_PUBLIC_EXPOSURE=NONE
+CERT_CONTENT_CHANGED=NO_SAME_VALID_CERT_RETURNED
 VPS_CONSUMER_REGISTRY_COVERAGE=PASS
 CODEX_VPS_EVIDENCE_AUDIT=F01_F02_CONFIGURATION_GAPS_CLOSED
 F01_NGINX_VHOST=EFFECTIVELY_INCLUDED_SYNTAX_VALID
@@ -140,7 +151,7 @@ VPS_CHAT_CLOSE_CONDITION=MIGRATION_COMPLETE_AND_HANDOFF_RECORDED
 SHARED_INFRA_GATES=GOI_ACTIVATION,SCHEMA_ENGINE_VALIDATION,PARALLEL_VALIDATION,HUMAN_CUTOVER
 CUTOVER=NOT_AUTHORIZED
 OLD_DECOMMISSION_ELIGIBLE=NO
-NEXT=CURSOR_ACTIVE_NGINX_TLS_RENEWAL
+NEXT=CURSOR_PARALLEL_VALIDATION_F03_F04_F05
 ```
 
 ## Current proven state
@@ -153,7 +164,7 @@ NEW currently has:
 - LiteLLM 1.98.0 running unpublished;
 - Hermes/browser stack qualified and private;
 - unique Tailscale identity `ionos-n8n-new` / `100.99.54.93` / `ionos-n8n-new.tailc01234.ts.net` with no routes, exit-node, Serve or Funnel;
-- NEW TLS identity qualified;
+- NEW TLS identity qualified; active-nginx TLS renewal PASS with nginx live (reload proven, worker PID rotation), weekly timer enabled;
 - GraphHopper functional qualification PASS on `100.99.54.93:8989`, admin `127.0.0.1:8990`, enabled with cold-start persistence PASS;
 - ORS loopback functional qualification PASS on `127.0.0.1:8020`, CORS GIS origin retargeted to `http://100.99.54.93:8000`, enabled with cold-start persistence PASS;
 - D-Flight private functional qualification PASS on `100.99.54.93:8010`, enabled with cold-start persistence PASS;
@@ -195,14 +206,14 @@ The historical rollup `15/14/0/1` is preserved but is not currently reproducible
 
 ## Remaining blockers before human cutover
 
-1. Qualify active-nginx TLS renewal on NEW (GOI cold-start persistence and schema-engine done; TLS renewal row still pending; F03 rollup frozen).
-2. Parallel OLD↔NEW validation, including F03 count denominator, OLD public `:80` requiredness and OLD TLS renewal/rollback health.
-3. Human cutover gate.
+1. Parallel OLD↔NEW validation: F03 count denominator/reconciliation, F04 OLD public `:80` requiredness, F05 OLD TLS renewal/rollback health, final parity acceptance.
+2. Human cutover gate.
 
 Production n8n publication/cutover and OLD decommission remain separately gated.
 
 Evidence anchors:
 - #68
+- `reports/architecture/v4_vps_active_nginx_tls_renewal_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_cold_start_boot_persistence_v1.md`
 - `reports/architecture/v4_vps_schema_engine_new_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_nav_private_functional_qualification_v1.md`

@@ -1,6 +1,6 @@
 # Project VPS registry
 
-Current projection after GOI cold-start boot persistence PASS. GOI stack active/enabled; TLS renewal row pending; schema-engine MIGRATED_VALIDATED; F03 rollup frozen.
+Current projection after active-nginx TLS renewal PASS. GOI stack active/enabled with cold-start persistence; TLS renewal row promoted; schema-engine MIGRATED_VALIDATED; F03 rollup frozen.
 
 | Project / component | OLD footprint | NEW state | Shared dependencies | Migration status | Evidence / next |
 |---|---|---|---|---|---|
@@ -13,7 +13,7 @@ Current projection after GOI cold-start boot persistence PASS. GOI stack active/
 | GOI GIS / cursor-coordinate-converter | OLD TS `:8000`; WD `/root/local-files/handoff-runtime/cursor-coordinate-converter` | runtime active enabled; bind `100.99.54.93:8000`; F02 HTML served; browser Origin PASS vs GH/ORS/D-Flight; cold-start PASS | Tailscale IP, local-files, GraphHopper/ORS/D-Flight | MIGRATED_VALIDATED | F03 rollup frozen |
 | GOI Navionics / Planet-Clone | OLD TS `:5000`; WD `/root/local-files/handoff-runtime/Planet-Clone` | runtime active enabled; bind `100.99.54.93:5000`; GET `/status` 200 `tokens_ok=true`; cold-start PASS | Tailscale IP, local-files | MIGRATED_VALIDATED | F03 rollup frozen |
 | GOI D-Flight | OLD TS `:8010`; `/opt/goi-dflight-helper` + `/var/lib/goi-dflight` | runtime active enabled; bind `100.99.54.93:8010`; GET `/status` READY LKG 841 features; NEW Origin CORS PASS; cold-start PASS | Tailscale, GIS client | MIGRATED_VALIDATED | F03 rollup frozen |
-| GOI TLS renewal | OLD timer live; cert files `/etc/goi-ors/tls`; oneshot observed failed on OLD | NEW cert SAN qualified; helper handles inactive nginx; NEW timer inactive | NEW MagicDNS/TLS identity | PRESENT_NOT_VALIDATED | active-nginx renewal/persistence proof later; OLD health checked in parallel validation |
+| GOI TLS renewal | OLD timer live; cert files `/etc/goi-ors/tls`; oneshot observed failed on OLD | active-nginx renewal PASS: unit run with nginx live, reload proven, weekly timer enabled, live cert = installed leaf, SAN NEW only | NEW MagicDNS/TLS identity | MIGRATED_VALIDATED | F03 rollup frozen; OLD health checked in F05/parallel validation |
 | nginx GOI vhost | OLD live TS `:443` + public default `:80` | runtime active enabled; bind `100.99.54.93:443` ssl only; HTTPS `/ors/status` 200 ready/PRESENT; no public `:80`/`:443`; cold-start PASS | Tailscale/TLS/ORS | MIGRATED_VALIDATED | F03 rollup frozen |
 | Control Plane checkout bind | `/root/local-files/handoff-runtime/control-plane` mounted read-only into n8n; LiteLLM config from this tree | present on NEW; same bind shape | n8n, LiteLLM, local-files | MIGRATED_VALIDATED | keep unpublished |
 | `/srv/cp-verifier-inbox` | n8n bind; owner `cpinbox` | present on NEW; same bind | n8n | MIGRATED_VALIDATED | empty inbox; no extra daemon |
@@ -78,6 +78,7 @@ CUTOVER=NOT_AUTHORIZED
 ```
 
 Canonical evidence:
+- `reports/architecture/v4_vps_active_nginx_tls_renewal_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_cold_start_boot_persistence_v1.md`
 - `reports/architecture/v4_vps_schema_engine_new_functional_qualification_v1.md`
 - `reports/architecture/v4_vps_goi_nav_private_functional_qualification_v1.md`
@@ -94,6 +95,6 @@ Canonical evidence:
 - `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`
 - `reports/architecture/v4_vps_new_tls_recovery_v1.md`
 
-GOI rows GraphHopper/ORS/GIS/Nav/D-Flight/nginx-vhost are `MIGRATED_VALIDATED` (functional + enabled + cold-start proof; canonical acceptance B). TLS renewal row remains `PRESENT_NOT_VALIDATED` until active-nginx renewal proof. Frozen F03 rollup unchanged.
+GOI rows GraphHopper/ORS/GIS/Nav/D-Flight/nginx-vhost/TLS-renewal are `MIGRATED_VALIDATED` (functional + enabled + cold-start proof; TLS renewal active-nginx proof). Frozen F03 rollup unchanged.
 
-Current next: active-nginx TLS renewal → parallel validation → human cutover.
+Current next: parallel OLD↔NEW validation (F03/F04/F05) → human cutover.
