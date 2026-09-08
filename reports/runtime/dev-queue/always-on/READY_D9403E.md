@@ -57,7 +57,7 @@ local_dev:
   timebox_hint: 900
   max_turns_hint: 8
   test_commands:
-    - node -e "const fs=require('fs');const p='reports/runtime/qwen-smoke/QWEN_GPTWEB_E2E_20260908.md';if(!fs.existsSync(p))process.exit(1);const s=fs.readFileSync(p,'utf8');for(const x of ['GPTWEB_QWEN_E2E=PASS','REQUEST_ORIGIN=GPT_WEB_CHAT','MODEL=qwen38-opus-q3-opencode-64k','TASK_REF=D-9403-E','PURPOSE=end-to-end-autonomous-queue-proof']){if(!s.includes(x))process.exit(2)}"
+    - node -e "const fs=require('fs');const p='reports/runtime/qwen-smoke/QWEN_GPTWEB_E2E_20260908.md';if(fs.existsSync(p)===false)process.exit(1);const s=fs.readFileSync(p,'utf8');for(const x of ['GPTWEB_QWEN_E2E=PASS','REQUEST_ORIGIN=GPT_WEB_CHAT','MODEL=qwen38-opus-q3-opencode-64k','TASK_REF=D-9403-E','PURPOSE=end-to-end-autonomous-queue-proof']){if(s.includes(x)===false)process.exit(2)}"
 
 human_gate_required_if: []
 

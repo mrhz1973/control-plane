@@ -106,5 +106,65 @@ await test("CLI with receipts path that does not exist yet -> treats as empty le
   assert.equal(decision.reason_code, "SELECTED");
 });
 
+await test("test_commands with JS bang operators fail bounded YAML (D-9403-E stall class)", () => {
+  const md = [
+    "# Bang regression",
+    "",
+    "```yaml",
+    "schema: backlog-item-v1",
+    "id: D-9BANG-1",
+    "title: bang in test_commands",
+    "created_at: 2026-09-08T00:00:00Z",
+    "created_by: gpt-web",
+    "repository: mrhz1973/control-plane",
+    "branch_target: main",
+    "objective: |",
+    "  prove bang rejection",
+    "scope:",
+    "  allowed_areas:",
+    "    - reports/runtime/qwen-smoke/x.md",
+    "  forbidden_areas:",
+    "    - tools/**",
+    "risk_hint: low",
+    "complexity_hint: low",
+    "planner:",
+    "  preferred: qwen",
+    "  fallback: []",
+    "  fallback_policy: gate_only",
+    "execution:",
+    "  target: cursor",
+    "  loop_allowed: true",
+    "  max_loop_rounds_hint: 1",
+    "acceptance:",
+    "  - x",
+    "local_dev:",
+    "  dev_profile: qwen38-opus-q3-opencode-64k",
+    "  timebox_hint: 900",
+    "  max_turns_hint: 8",
+    "  test_commands:",
+    "    - node -e \"if(!fs.existsSync('x'))process.exit(1)\"",
+    "human_gate_required_if: []",
+    "context_refs: []",
+    "state: READY_FOR_PLANNING",
+    "```",
+    "",
+  ].join("\n");
+  const parsed = parseBacklogFile(md);
+  assert.equal(parsed.ok, false);
+  assert.match(String(parsed.reason || ""), /unsupported YAML construct|anchor\/alias\/tag/i);
+});
+
+await test("canonical READY_D9403E.md is parseable and selector-admissible after bang-safe test_commands", () => {
+  const parsed = parseBacklogFile(readFileSync(join(ROOT, "reports/runtime/dev-queue/always-on/READY_D9403E.md"), "utf8").replace(/^\uFEFF/, ""));
+  assert.equal(parsed.ok, true, parsed.reason);
+  assert.equal(isAdmissible(parsed.item), true);
+  assert.equal(parsed.item.id, "D-9403-E");
+  assert.equal(parsed.item.local_dev.dev_profile, "qwen38-opus-q3-opencode-64k");
+  assert.equal(parsed.item.execution.loop_allowed, true);
+  assert.ok(!/![A-Za-z]/.test(parsed.item.local_dev.test_commands[0]));
+  const r = selectNextQueueItem([{ ok: true, item: parsed.item, source: "READY_D9403E.md" }], [], "2026-09-08T12:00:00.000Z");
+  assert.equal(r.selected.task_ref, "LOCAL_DEV_B_D-9403-E");
+});
+
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 if (failures.length) process.exit(1);
