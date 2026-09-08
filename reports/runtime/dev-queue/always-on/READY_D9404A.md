@@ -107,8 +107,7 @@ local_dev:
   timebox_hint: 900
   max_turns_hint: 8
   test_commands:
-    - node tests/v4-glm-quota-collector-windows-v1/run.mjs
-    - node tests/rt25-t03-glm-quota-ingest/run.mjs
+    - node tests/v4-glm-quota-collector-windows-v1/run.mjs && node tests/rt25-t03-glm-quota-ingest/run.mjs
 
 human_gate_required_if: []
 context_refs:
