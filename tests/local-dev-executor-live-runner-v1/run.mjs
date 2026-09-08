@@ -752,6 +752,36 @@ await test("STOP:OPENCODE_RUN_FAILED propagates failure evidence; PASS has none"
   assert.equal("failure_diagnostics" in passed, false);
 });
 
+await test("classifyOpenCodeFailure: context overflow / generic / numeric-not-context / blocked precedence / sanitize", async () => {
+  const { classifyOpenCodeFailure, sanitizeOpenCodeDiagnostic } = await import("../../tools/run-local-dev-executor-v1.mjs");
+  assert.equal(classifyOpenCodeFailure({
+    code: "OPENCODE_RUN_FAILED",
+    stderr: "Error: request tokens 31302 > 24576 context window",
+  }), "CONTEXT_WINDOW_EXCEEDED");
+  assert.equal(classifyOpenCodeFailure({
+    code: "OPENCODE_RUN_FAILED",
+    stdout: "input exceeds context window for profile",
+  }), "CONTEXT_WINDOW_EXCEEDED");
+  assert.equal(classifyOpenCodeFailure({
+    code: "OPENCODE_RUN_FAILED",
+    exitCode: 1,
+    stderr: "command failed with exit 1",
+  }), "OPENCODE_RUN_FAILED");
+  assert.equal(classifyOpenCodeFailure({
+    code: "OPENCODE_RUN_FAILED",
+    stderr: "trace id 31302 unrelated failure",
+  }), "OPENCODE_RUN_FAILED");
+  assert.equal(classifyOpenCodeFailure({
+    code: "OPENCODE_RUN_FAILED",
+    stderr: "Error: request tokens 31302 > 24576 context window",
+    guardAccounting: { blocked_generation_requests: 2 },
+  }), "MAX_AGENT_TURNS_EXCEEDED");
+  const sanitized = sanitizeOpenCodeDiagnostic("Authorization: Bearer sk-abc123456789 leaked");
+  assert.ok(!sanitized.includes("sk-abc123456789"));
+  assert.ok(sanitized.includes("[REDACTED]") || sanitized.includes("Bearer [REDACTED]"));
+  assert.ok(sanitized.length <= 2000);
+});
+
 // ---------- 14. TIMEOUT ARBITRATION (Phase A) + OUTPUT CAPTURE (Phase B) ----------
 await test("RETRY5-style race: timeout-triggered child exit 1 stays BOUNDS_TIMEBOX_EXPIRED", async () => {
   const { makeRunOpenCodeTask } = await import("../../tools/run-local-dev-executor-v1.mjs");

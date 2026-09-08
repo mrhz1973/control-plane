@@ -407,6 +407,186 @@ await test("test failure produces STOP:TEST_FAILED", async () => {
   assert.equal(result.classification, "STOP:TEST_FAILED");
 });
 
+function baseGitForConvergence(env, statusPorcelain = " M docs/notes.md\n") {
+  let uall = 0;
+  return fakeGit({
+    "rev-parse HEAD": { status: 0, stdout: env.dispatch_base_head + "\n" },
+    "remote get-url origin": { status: 0, stdout: env.target_remote + "\n" },
+    "status --porcelain=v1 -uall": () => {
+      uall += 1;
+      return uall >= 3 ? { status: 0, stdout: statusPorcelain } : { status: 0, stdout: "" };
+    },
+    "status --porcelain=v1 --untracked-files=no": { status: 0, stdout: statusPorcelain.includes("tools/") ? statusPorcelain : (statusPorcelain || "") },
+  });
+}
+
+function blockedGuard() {
+  return {
+    base_url: "http://127.0.0.1:54321",
+    getAccounting: () => ({
+      generation_requests_seen: 8,
+      upstream_generation_requests: 8,
+      blocked_generation_requests: 2,
+      informational_requests_forwarded: 0,
+      rejected_requests: 0,
+      secret_bearing_requests_rejected: 0,
+    }),
+    close: async () => {},
+  };
+}
+
+await test("context-window OpenCode failure -> STOP:CONTEXT_WINDOW_EXCEEDED and tests not run", async () => {
+  const env = validEnvelope({ git_persistence_required: false });
+  let tests = 0;
+  const result = await executeLocalDevTask(env, {
+    git: baseGitForConvergence(env, ""),
+    ensureQwenReady: async () => ({ ready: true, status: "READY", router_was_running: true }),
+    guardStart: async () => ({
+      base_url: "http://127.0.0.1:54321",
+      getAccounting: () => ({ upstream_generation_requests: 1, blocked_generation_requests: 0 }),
+      close: async () => {},
+    }),
+    runOpenCodeTask: async () => {
+      throw Object.assign(new Error("opencode run failed"), {
+        code: "OPENCODE_RUN_FAILED",
+        opencode_exit_code: 1,
+        stderr: "Error: request tokens 31302 > 24576 exceeds context window",
+      });
+    },
+    runTests: async () => { tests += 1; throw new Error("must not test"); },
+  });
+  assert.equal(result.classification, "STOP:CONTEXT_WINDOW_EXCEEDED");
+  assert.ok(result.reason_codes.includes("CONTEXT_WINDOW_EXCEEDED"));
+  assert.equal(tests, 0);
+  assert.ok(result.failure_diagnostics);
+});
+
+await test("ordinary OpenCode failure remains STOP:OPENCODE_RUN_FAILED", async () => {
+  const env = validEnvelope({ git_persistence_required: false });
+  const result = await executeLocalDevTask(env, {
+    git: baseGitForConvergence(env, ""),
+    ensureQwenReady: async () => ({ ready: true, status: "READY", router_was_running: true }),
+    guardStart: async () => ({
+      base_url: "http://127.0.0.1:54321",
+      getAccounting: () => ({ upstream_generation_requests: 0, blocked_generation_requests: 0 }),
+      close: async () => {},
+    }),
+    runOpenCodeTask: async () => {
+      throw Object.assign(new Error("exit 1"), {
+        code: "OPENCODE_RUN_FAILED",
+        opencode_exit_code: 1,
+        stderr: "generic tooling crash",
+      });
+    },
+    runTests: async () => { throw new Error("must not test"); },
+  });
+  assert.equal(result.classification, "STOP:OPENCODE_RUN_FAILED");
+});
+
+await test("max-turn exhausted + deterministic test PASS -> PASS with DETERMINISTIC_ACCEPTANCE; one OpenCode call", async () => {
+  const env = validEnvelope({ git_persistence_required: false, max_agent_turns: 4 });
+  let openCodeCalls = 0;
+  const result = await executeLocalDevTask(env, {
+    git: baseGitForConvergence(env),
+    ensureQwenReady: async () => ({ ready: true, status: "READY", router_was_running: true }),
+    guardStart: async () => blockedGuard(),
+    runOpenCodeTask: async () => {
+      openCodeCalls += 1;
+      throw Object.assign(new Error("exit 1"), { code: "OPENCODE_RUN_FAILED", opencode_exit_code: 1, stderr: "turn ceiling" });
+    },
+    runTests: async ({ testCommand }) => [{ command: testCommand, exit_code: 0, cycle: 1 }],
+  });
+  assert.equal(openCodeCalls, 1);
+  assert.equal(result.status, "PASS");
+  assert.equal(result.classification, "PASS");
+  assert.ok(result.reason_codes.includes("PASS"));
+  assert.ok(result.reason_codes.includes("DETERMINISTIC_ACCEPTANCE_AFTER_MAX_AGENT_TURNS"));
+  assert.equal(result.convergence_diagnostics.budget_exhausted, true);
+  assert.equal(result.convergence_diagnostics.reason, "MAX_AGENT_TURNS_EXCEEDED");
+  assert.equal(result.convergence_diagnostics.max_agent_turns, 4);
+});
+
+await test("max-turn exhausted + test FAIL -> STOP:MAX_AGENT_TURNS_EXCEEDED + TEST_FAILED", async () => {
+  const env = validEnvelope({ git_persistence_required: false });
+  let openCodeCalls = 0;
+  const result = await executeLocalDevTask(env, {
+    git: baseGitForConvergence(env),
+    ensureQwenReady: async () => ({ ready: true, status: "READY", router_was_running: true }),
+    guardStart: async () => blockedGuard(),
+    runOpenCodeTask: async () => {
+      openCodeCalls += 1;
+      throw Object.assign(new Error("exit 1"), { code: "OPENCODE_RUN_FAILED", opencode_exit_code: 1 });
+    },
+    runTests: async ({ testCommand }) => [{ command: testCommand, exit_code: 1, cycle: 1 }],
+  });
+  assert.equal(openCodeCalls, 1);
+  assert.equal(result.classification, "STOP:MAX_AGENT_TURNS_EXCEEDED");
+  assert.ok(result.reason_codes.includes("MAX_AGENT_TURNS_EXCEEDED"));
+  assert.ok(result.reason_codes.includes("TEST_FAILED"));
+});
+
+await test("max-turn exhausted + no test command -> ACCEPTANCE_TEST_MISSING", async () => {
+  const env = validEnvelope({ git_persistence_required: false, test_command: null });
+  let openCodeCalls = 0;
+  let tests = 0;
+  const result = await executeLocalDevTask(env, {
+    git: baseGitForConvergence(env, ""),
+    ensureQwenReady: async () => ({ ready: true, status: "READY", router_was_running: true }),
+    guardStart: async () => blockedGuard(),
+    runOpenCodeTask: async () => {
+      openCodeCalls += 1;
+      throw Object.assign(new Error("exit 1"), { code: "OPENCODE_RUN_FAILED", opencode_exit_code: 1 });
+    },
+    runTests: async () => { tests += 1; return []; },
+  });
+  assert.equal(openCodeCalls, 1);
+  assert.equal(tests, 0);
+  assert.equal(result.classification, "STOP:MAX_AGENT_TURNS_EXCEEDED");
+  assert.ok(result.reason_codes.includes("ACCEPTANCE_TEST_MISSING"));
+});
+
+await test("max-turn exhausted + out-of-scope change -> MAX_AGENT_TURNS with scope reason", async () => {
+  const env = validEnvelope({ git_persistence_required: false });
+  let openCodeCalls = 0;
+  const result = await executeLocalDevTask(env, {
+    git: fakeGit({
+      "rev-parse HEAD": { status: 0, stdout: env.dispatch_base_head + "\n" },
+      "remote get-url origin": { status: 0, stdout: env.target_remote + "\n" },
+      "status --porcelain=v1 -uall": { status: 0, stdout: "" },
+      "status --porcelain=v1 --untracked-files=no": { status: 0, stdout: " M tools/secret.mjs\n" },
+    }),
+    ensureQwenReady: async () => ({ ready: true, status: "READY", router_was_running: true }),
+    guardStart: async () => blockedGuard(),
+    runOpenCodeTask: async () => {
+      openCodeCalls += 1;
+      throw Object.assign(new Error("exit 1"), { code: "OPENCODE_RUN_FAILED", opencode_exit_code: 1 });
+    },
+    runTests: async () => { throw new Error("must not test after scope fail"); },
+  });
+  assert.equal(openCodeCalls, 1);
+  assert.equal(result.classification, "STOP:MAX_AGENT_TURNS_EXCEEDED");
+  assert.ok(result.reason_codes.includes("UNEXPECTED_FILE_CHANGES"));
+});
+
+await test("max-turn exhausted + persistence failure -> MAX_AGENT_TURNS + GIT_PERSISTENCE_FAILED", async () => {
+  const env = validEnvelope({ git_persistence_required: true });
+  let openCodeCalls = 0;
+  const result = await executeLocalDevTask(env, {
+    git: baseGitForConvergence(env),
+    ensureQwenReady: async () => ({ ready: true, status: "READY", router_was_running: true }),
+    guardStart: async () => blockedGuard(),
+    runOpenCodeTask: async () => {
+      openCodeCalls += 1;
+      throw Object.assign(new Error("exit 1"), { code: "OPENCODE_RUN_FAILED", opencode_exit_code: 1 });
+    },
+    runTests: async ({ testCommand }) => [{ command: testCommand, exit_code: 0, cycle: 1 }],
+    persistGit: async () => ({ ok: false, reason_codes: ["GIT_COMMIT_FAILED"] }),
+  });
+  assert.equal(openCodeCalls, 1);
+  assert.equal(result.classification, "STOP:MAX_AGENT_TURNS_EXCEEDED");
+  assert.ok(result.reason_codes.includes("GIT_PERSISTENCE_FAILED"));
+});
+
 // ---------- 10. production eligible set unchanged ----------
 await test("production eligible set unchanged vs base HEAD (additive DEV fields only)", async () => {
   const { execSync } = await import("node:child_process");

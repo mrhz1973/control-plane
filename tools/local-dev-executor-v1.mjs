@@ -56,6 +56,56 @@ export function buildOpenCodeFailureDiagnostics(error = {}) {
   return Object.keys(diagnostics).length ? diagnostics : undefined;
 }
 
+/**
+ * Pure OpenCode failure classifier (sanitized evidence only).
+ * Precedence: guard blocked generations → MAX_AGENT_TURNS_EXCEEDED;
+ * then robust context-overflow patterns → CONTEXT_WINDOW_EXCEEDED;
+ * else OPENCODE_RUN_FAILED.
+ */
+export function classifyOpenCodeFailure(input = {}) {
+  const blocked = Number(input.guardAccounting?.blocked_generation_requests) || 0;
+  if (blocked > 0) return "MAX_AGENT_TURNS_EXCEEDED";
+
+  const parts = [
+    input.code,
+    input.exitCode,
+    input.opencode_exit_code,
+    input.stdout,
+    input.stderr,
+    input.spawn_error,
+    input.error_message,
+  ]
+    .filter((v) => v !== undefined && v !== null && v !== "")
+    .map((v) => sanitizeOpenCodeDiagnostic(v))
+    .filter(Boolean);
+  const blob = parts.join("\n");
+  if (looksLikeContextWindowExceeded(blob)) return "CONTEXT_WINDOW_EXCEEDED";
+  return "OPENCODE_RUN_FAILED";
+}
+
+function looksLikeContextWindowExceeded(text) {
+  const t = String(text || "");
+  if (!t.trim()) return false;
+  if (/\b(context|token|request|input|prompt)\b[\s\S]{0,120}\b\d{2,}\s*>\s*\d{2,}\b/i.test(t)) return true;
+  if (/\b\d{2,}\s*>\s*\d{2,}\b[\s\S]{0,120}\b(context|token|context\s+window|context\s+length|maximum\s+context)\b/i.test(t)) return true;
+  if (/exceeds?\s+(the\s+)?(model\s+)?context\s+window/i.test(t)) return true;
+  if (/context\s+length\s+exceeded/i.test(t)) return true;
+  if (/maximum\s+context\s+length/i.test(t)) return true;
+  if (/too\s+many\s+tokens\s+for\s+(the\s+)?context/i.test(t)) return true;
+  if (/input\s+tokens?\s+exceed/i.test(t)) return true;
+  if (/request\s+.*\bexceed(ed|s)?\b.*\bcontext\b/i.test(t)) return true;
+  return false;
+}
+
+export function buildConvergenceDiagnostics({ envelope, turnsUsed, reason = "MAX_AGENT_TURNS_EXCEEDED" } = {}) {
+  return {
+    budget_exhausted: true,
+    reason,
+    max_agent_turns: Number(envelope?.max_agent_turns) || 0,
+    turns_used: Number(turnsUsed) || 0,
+  };
+}
+
 const STRING_FIELDS = [
   "task_ref",
   "target_repo_path",
@@ -353,6 +403,7 @@ function baseResult(partial) {
     ...(partial.failure_diagnostics ? { failure_diagnostics: partial.failure_diagnostics } : {}),
     ...(partial.timeout_diagnostics ? { timeout_diagnostics: partial.timeout_diagnostics } : {}),
     ...(partial.guard_accounting ? { guard_accounting: partial.guard_accounting } : {}),
+    ...(partial.convergence_diagnostics ? { convergence_diagnostics: partial.convergence_diagnostics } : {}),
   };
 }
 
@@ -466,7 +517,57 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
 
   let taskOutcome;
   let guardAccounting = null;
+  let convergenceBudgetExhausted = false;
+  let openCodeCalls = 0;
+
+  const guardAccountingFields = (acct) => ({
+    generation_requests_seen: acct?.generation_requests_seen ?? 0,
+    upstream_generation_requests: acct?.upstream_generation_requests ?? 0,
+    blocked_generation_requests: acct?.blocked_generation_requests ?? 0,
+    informational_requests_forwarded: acct?.informational_requests_forwarded ?? 0,
+    rejected_requests: acct?.rejected_requests ?? 0,
+    secret_bearing_requests_rejected: acct?.secret_bearing_requests_rejected ?? 0,
+  });
+
+  const applyConvergence = (partial) => {
+    if (!convergenceBudgetExhausted) return partial;
+    const turnsUsed = Number(partial.turns_used) || Number(guardAccounting?.upstream_generation_requests) || 0;
+    const diag = buildConvergenceDiagnostics({
+      envelope,
+      turnsUsed,
+      reason: "MAX_AGENT_TURNS_EXCEEDED",
+    });
+    const passed = partial.status === "PASS" || partial.classification === "PASS";
+    if (passed) {
+      const codes = ["PASS", "DETERMINISTIC_ACCEPTANCE_AFTER_MAX_AGENT_TURNS"];
+      for (const c of partial.reason_codes || []) {
+        if (!codes.includes(c)) codes.push(c);
+      }
+      return {
+        ...partial,
+        status: "PASS",
+        classification: "PASS",
+        reason_codes: codes,
+        convergence_diagnostics: diag,
+      };
+    }
+    const codes = ["MAX_AGENT_TURNS_EXCEEDED"];
+    for (const c of partial.reason_codes || []) {
+      if (c === "MAX_AGENT_TURNS_EXCEEDED") continue;
+      if (String(c).startsWith("STOP:")) continue;
+      codes.push(c);
+    }
+    return {
+      ...partial,
+      status: "STOP",
+      classification: "STOP:MAX_AGENT_TURNS_EXCEEDED",
+      reason_codes: codes,
+      convergence_diagnostics: diag,
+    };
+  };
+
   try {
+    openCodeCalls += 1;
     taskOutcome = await runOpenCodeTask({
       guardBaseUrl: guard.base_url,
       modelId: profile.model_id,
@@ -482,33 +583,69 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
   } catch (err) {
     guardAccounting = guard.getAccounting();
     const code = err?.code || "OPENCODE_TASK_ERROR";
-    return finish({
-      classification: `STOP:${code}`,
-      reason_codes: [code, ...(code === "BOUNDS_TIMEBOX_EXPIRED" && err?.timeout_diagnostics?.termination_confirmed !== true
-        ? ["TASK_CHILD_TERMINATION_UNCONFIRMED"]
-        : [])],
-      timeout_diagnostics: code === "BOUNDS_TIMEBOX_EXPIRED" ? err.timeout_diagnostics : undefined,
-      failure_diagnostics: code === "OPENCODE_RUN_FAILED" || code === "OPENCODE_CONFIG_REJECTED"
-        ? buildOpenCodeFailureDiagnostics(err)
-        : undefined,
-      guard_accounting: {
-        generation_requests_seen: guardAccounting.generation_requests_seen ?? 0,
-        upstream_generation_requests: guardAccounting.upstream_generation_requests ?? 0,
-        blocked_generation_requests: guardAccounting.blocked_generation_requests ?? 0,
-        informational_requests_forwarded: guardAccounting.informational_requests_forwarded ?? 0,
-        rejected_requests: guardAccounting.rejected_requests ?? 0,
-        secret_bearing_requests_rejected: guardAccounting.secret_bearing_requests_rejected ?? 0,
-      },
-      turns_used: guardAccounting.upstream_generation_requests,
+    const sessionFields = {
       router_was_running: session.router_was_running ?? null,
       launch_performed: Boolean(session.launch_performed),
-    });
+      turns_used: guardAccounting?.upstream_generation_requests ?? 0,
+      guard_accounting: guardAccountingFields(guardAccounting),
+    };
+
+    if (code === "BOUNDS_TIMEBOX_EXPIRED") {
+      return finish({
+        classification: `STOP:${code}`,
+        reason_codes: [code, ...(err?.timeout_diagnostics?.termination_confirmed !== true
+          ? ["TASK_CHILD_TERMINATION_UNCONFIRMED"]
+          : [])],
+        timeout_diagnostics: err.timeout_diagnostics,
+        ...sessionFields,
+      });
+    }
+
+    // Guard-proven turn ceiling: recover via deterministic acceptance (no second model turn).
+    if ((Number(guardAccounting?.blocked_generation_requests) || 0) > 0) {
+      convergenceBudgetExhausted = true;
+    } else {
+      const classified = classifyOpenCodeFailure({
+        code,
+        exitCode: err?.opencode_exit_code,
+        opencode_exit_code: err?.opencode_exit_code,
+        stdout: err?.stdout,
+        stderr: err?.stderr,
+        spawn_error: err?.spawn_error,
+        error_message: err?.message,
+        guardAccounting,
+        max_agent_turns: envelope.max_agent_turns,
+      });
+      if (classified === "CONTEXT_WINDOW_EXCEEDED") {
+        return finish({
+          classification: "STOP:CONTEXT_WINDOW_EXCEEDED",
+          reason_codes: ["CONTEXT_WINDOW_EXCEEDED"],
+          failure_diagnostics: buildOpenCodeFailureDiagnostics(err),
+          ...sessionFields,
+        });
+      }
+      return finish({
+        classification: `STOP:${code === "OPENCODE_RUN_FAILED" ? classified : code}`,
+        reason_codes: [
+          code === "OPENCODE_RUN_FAILED" ? classified : code,
+          ...(code === "BOUNDS_TIMEBOX_EXPIRED" && err?.timeout_diagnostics?.termination_confirmed !== true
+            ? ["TASK_CHILD_TERMINATION_UNCONFIRMED"]
+            : []),
+        ],
+        failure_diagnostics: code === "OPENCODE_RUN_FAILED" || code === "OPENCODE_CONFIG_REJECTED"
+          ? buildOpenCodeFailureDiagnostics(err)
+          : undefined,
+        ...sessionFields,
+      });
+    }
   } finally {
     await guard.close().catch(() => {});
   }
 
   const turns = guardAccounting.upstream_generation_requests;
-  if (guardAccounting.blocked_generation_requests > 0) {
+  // Successful OpenCode with blocked turns still stops (legacy ceiling) unless
+  // we already entered convergence recovery from a nonzero OpenCode exit.
+  if (!convergenceBudgetExhausted && guardAccounting.blocked_generation_requests > 0) {
     return finish({
       classification: "STOP:BOUNDS_TURN_CEILING_EXCEEDED",
       reason_codes: ["BOUNDS_TURN_CEILING_EXCEEDED"],
@@ -518,28 +655,39 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
     });
   }
   if (Date.now() - startedAt > timeboxMs) {
-    return finish({
+    return finish(applyConvergence({
       classification: "STOP:BOUNDS_TIMEBOX_EXPIRED",
       reason_codes: ["BOUNDS_TIMEBOX_EXPIRED"],
       turns_used: turns,
       router_was_running: session.router_was_running ?? null,
       launch_performed: Boolean(session.launch_performed),
-    });
+    }));
   }
 
   // POST-EXECUTION PATH ENFORCEMENT: before tests/staging/push.
   const pathCheck = await assertPathsInScope();
   if (!pathCheck.ok) {
-    return finish({
+    return finish(applyConvergence({
       classification: pathCheck.classification,
       reason_codes: pathCheck.reason_codes,
       turns_used: turns,
       router_was_running: session.router_was_running ?? null,
       launch_performed: Boolean(session.launch_performed),
-    });
+    }));
   }
 
-  // Tests (bounded cycles).
+  if (convergenceBudgetExhausted && (envelope.test_command === null || envelope.test_command === undefined || envelope.test_command === "")) {
+    return finish(applyConvergence({
+      classification: "STOP:MAX_AGENT_TURNS_EXCEEDED",
+      reason_codes: ["ACCEPTANCE_TEST_MISSING"],
+      turns_used: turns,
+      router_was_running: session.router_was_running ?? null,
+      launch_performed: Boolean(session.launch_performed),
+    }));
+  }
+
+  // Tests (bounded cycles). Absolutely no second OpenCode call.
+  void openCodeCalls;
   const testRuns = await runTests({
     testCommand: envelope.test_command ?? null,
     maxTestCycles: envelope.max_test_cycles,
@@ -547,26 +695,36 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
     repoPath: envelope.target_repo_path,
     taskOutcome,
   });
+  if (convergenceBudgetExhausted && (!Array.isArray(testRuns) || testRuns.length === 0)) {
+    return finish(applyConvergence({
+      classification: "STOP:MAX_AGENT_TURNS_EXCEEDED",
+      reason_codes: ["ACCEPTANCE_TEST_NOT_RUN"],
+      tests: testRuns || [],
+      turns_used: turns,
+      router_was_running: session.router_was_running ?? null,
+      launch_performed: Boolean(session.launch_performed),
+    }));
+  }
   if (testRuns.length > envelope.max_test_cycles) {
-    return finish({
+    return finish(applyConvergence({
       classification: "STOP:BOUNDS_TEST_CYCLES_EXCEEDED",
       reason_codes: ["BOUNDS_TEST_CYCLES_EXCEEDED"],
       tests: testRuns,
       turns_used: turns,
       router_was_running: session.router_was_running ?? null,
       launch_performed: Boolean(session.launch_performed),
-    });
+    }));
   }
   const finalRun = testRuns[testRuns.length - 1] ?? null;
   if (finalRun && finalRun.exit_code !== 0) {
-    return finish({
+    return finish(applyConvergence({
       classification: "STOP:TEST_FAILED",
       reason_codes: ["TEST_FAILED"],
       tests: testRuns,
       turns_used: turns,
       router_was_running: session.router_was_running ?? null,
       launch_performed: Boolean(session.launch_performed),
-    });
+    }));
   }
 
   // Changed files + Git persistence (option-B semantics: tracked in-scope
@@ -575,13 +733,13 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
   // classification is the SINGLE authority for the staging set.
   const classification = await classifyPostExecutionChanges(envelope, preUntracked, gitForPaths, matchForPaths);
   if (!classification.ok) {
-    return finish({
+    return finish(applyConvergence({
       classification: classification.classification,
       reason_codes: classification.reason_codes,
       turns_used: turns,
       router_was_running: session.router_was_running ?? null,
       launch_performed: Boolean(session.launch_performed),
-    });
+    }));
   }
   const changed = classification.stageable;
 
@@ -592,7 +750,7 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
       evidenceSubject: evidenceSubject(true, envelope.task_ref),
     });
     if (!persistence || persistence.ok !== true) {
-      return finish({
+      return finish(applyConvergence({
         classification: "STOP:GIT_PERSISTENCE_FAILED",
         reason_codes: ["GIT_PERSISTENCE_FAILED", ...(persistence?.reason_codes || [])],
         tests: testRuns,
@@ -600,9 +758,9 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
         turns_used: turns,
         router_was_running: session.router_was_running ?? null,
         launch_performed: Boolean(session.launch_performed),
-      });
+      }));
     }
-    return finish({
+    return finish(applyConvergence({
       status: "PASS",
       classification: "PASS",
       reason_codes: ["PASS"],
@@ -614,10 +772,10 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
       turns_used: turns,
       router_was_running: session.router_was_running ?? null,
       launch_performed: Boolean(session.launch_performed),
-    });
+    }));
   }
 
-  return finish({
+  return finish(applyConvergence({
     status: "PASS",
     classification: "PASS",
     reason_codes: ["PASS"],
@@ -628,7 +786,7 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
     turns_used: turns,
     router_was_running: session.router_was_running ?? null,
     launch_performed: Boolean(session.launch_performed),
-  });
+  }));
 }
 
 const isMain =

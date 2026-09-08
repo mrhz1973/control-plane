@@ -27,6 +27,8 @@ import { probeOpenCodeLocal } from "./probe-opencode-local-v1.mjs";
 import { startLocalDevGenerationGuard } from "./local-dev-generation-guard-v1.mjs";
 import { attachReviewStage } from "./run-review-stage-v1.mjs";
 
+export { classifyOpenCodeFailure, sanitizeOpenCodeDiagnostic } from "./local-dev-executor-v1.mjs";
+
 export const DIRECT_QWEN_ENDPOINT = "http://127.0.0.1:8080";
 
 /** Ordered deny-all-first V1 permission overlay (fail-closed enforcement). */
