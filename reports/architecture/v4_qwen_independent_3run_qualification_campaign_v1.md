@@ -49,9 +49,12 @@ Any QVAL STOP breaks the consecutive-pass claim. Diagnose it, but do not relabel
 
 `QWEN_INDEPENDENT_QUALIFIED=NO`
 
-D-9405-A: PENDING
-D-9405-B: PENDING
-D-9405-C: GATED_COLD_STATE_PREP
+D-9405-A: PASS — `0fdf3fc1d37b5e328e7c4d72933605dd06006852`
+D-9405-B: PASS — `e0fdc51ca18bf7c128440f5d58201bc760a7a98f`
+D-9405-C cold-state prep: PASS — `reports/runtime/qwen-qualification/QVAL3_COLD_STATE_GATE_EVIDENCE.md`
+D-9405-C: RELEASED / WAITING_NATURAL_WF90
+
+The exact `qwen38-opus-q3-opencode-64k` worker was independently observed `unloaded` while the canonical Qwen router remained alive before D-9405-C release. No manual `/v1/tick` is authorized for C.
 
 ## Hard walls
 
