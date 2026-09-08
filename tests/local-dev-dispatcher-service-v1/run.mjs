@@ -15,6 +15,8 @@ import {
   REQUEST_SCHEMA,
   TICK_PATH,
   STATUS_PATH,
+  DIAGNOSTICS_PATH,
+  DIAGNOSTICS_SCHEMA,
   STATUS_SCHEMA,
   CLASSIFICATIONS,
   validateTickRequest,
@@ -26,6 +28,11 @@ import {
   shouldPersistRuntimeArtifacts,
   persistReceiptsAtomic,
   createExecutionStatusTracker,
+  createLastTickStore,
+  buildQueueScanDiagnostics,
+  buildOperatorExplanation,
+  buildDiagnostics,
+  DASHBOARD_PATHS,
 } from "../../tools/serve-local-dev-autonomous-dispatcher-v1.mjs";
 import {
   CLAIM_STALE_AFTER_MS,
@@ -930,6 +937,155 @@ await test("S24 status tracker exceptions cannot break tick", async () => {
     },
   );
   assert.equal(result.classification, "WORK_EXECUTED_PASS");
+});
+
+await test("S25 GET /dashboard and / serve HTML; POST dashboard 405; no tick side effects", async () => {
+  let verify = 0;
+  const html = "<!DOCTYPE html><title>dash</title><body>ok</body>";
+  for (const path of DASHBOARD_PATHS) {
+    const res = mockRes();
+    await handleTickRequest(mockReq("GET", path), res, {
+      dashboardHtml: html,
+      tickDeps: {
+        verifyRepo: async () => { verify += 1; return { ok: true, head: BRIDGE_SHA }; },
+      },
+    });
+    assert.equal(res.status, 200, path);
+    assert.ok(String(res.body).includes("ok"), path);
+  }
+  const postRes = mockRes();
+  await handleTickRequest(mockReq("POST", "/dashboard", "{}"), postRes, { dashboardHtml: html });
+  assert.equal(postRes.status, 405);
+  assert.equal(verify, 0);
+});
+
+await test("S26 GET /v1/diagnostics schema + IDLE explanation; read-only; POST 405", async () => {
+  const tracker = createExecutionStatusTracker();
+  const lastTick = createLastTickStore();
+  lastTick.record({
+    ok: true,
+    request_id: "r-diag-1",
+    classification: "IDLE_CLEAN",
+    execution_performed: false,
+    reason_codes: ["NO_ELIGIBLE_READY"],
+  }, { elapsed_ms: 12, recorded_at: "2026-09-09T00:00:00.000Z" });
+  tracker.finish({
+    request_id: "r-diag-1",
+    classification: "IDLE_CLEAN",
+    last_event: "terminal:IDLE_CLEAN",
+  });
+
+  let probeCalls = 0;
+  const res = mockRes();
+  await handleTickRequest(mockReq("GET", DIAGNOSTICS_PATH), res, {
+    statusTracker: tracker,
+    lastTickStore: lastTick,
+    diagnosticsScanQueue: () => [],
+    diagnosticsLoadReceipts: () => [],
+    probeQwen: async () => {
+      probeCalls += 1;
+      return { reachable: false, health_summary: "unreachable", profile_status: "unreachable", models: [], error: "timeout" };
+    },
+  });
+  assert.equal(res.status, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.schema_version, DIAGNOSTICS_SCHEMA);
+  assert.equal(body.read_only, true);
+  assert.equal(body.last_tick.classification, "IDLE_CLEAN");
+  assert.ok(body.last_tick.reason_codes.includes("NO_ELIGIBLE_READY"));
+  assert.equal(body.queue.eligible_count, 0);
+  assert.equal(body.explanation.why_code, "NO_ELIGIBLE_READY");
+  assert.match(body.explanation.headline, /Idle/i);
+  assert.equal(probeCalls, 1);
+
+  const postRes = mockRes();
+  await handleTickRequest(mockReq("POST", DIAGNOSTICS_PATH, "{}"), postRes, { statusTracker: tracker, lastTickStore: lastTick });
+  assert.equal(postRes.status, 405);
+});
+
+await test("S27 diagnostics shows candidate + claim-blocked exclusion without mutating", async () => {
+  const readyMd = `\`\`\`yaml
+id: D-UI-1
+state: READY_FOR_PLANNING
+created_at: "2026-09-09T00:00:00Z"
+risk_hint: low
+human_gate_required_if: []
+execution:
+  target: cursor
+planner:
+  preferred: qwen
+objective: "ui test"
+allowed_areas: ["docs/"]
+\`\`\``;
+  const queue = buildQueueScanDiagnostics({
+    entries: [{ markdown: readyMd, source: "READY_DUI1.md", backlog_path: "q/READY_DUI1.md" }],
+    receipts: [{
+      task_ref: "LOCAL_DEV_B_D-UI-1",
+      state: "PASS",
+      execution_started: true,
+      replayable: false,
+      claimed_at: "2026-09-09T00:00:00.000Z",
+    }],
+    nowIso: "2026-09-09T01:00:00.000Z",
+  });
+  assert.equal(queue.eligible_count, 0);
+  assert.equal(queue.claim_present_count, 1);
+  assert.equal(queue.candidate_task_ref, null);
+  assert.ok(queue.skip_reason_summary.CLAIM_ALREADY_EXISTS >= 1);
+
+  const open = buildQueueScanDiagnostics({
+    entries: [{ markdown: readyMd, source: "READY_DUI1.md", backlog_path: "q/READY_DUI1.md" }],
+    receipts: [],
+    nowIso: "2026-09-09T01:00:00.000Z",
+  });
+  assert.equal(open.eligible_count, 1);
+  assert.equal(open.candidate_task_ref, "LOCAL_DEV_B_D-UI-1");
+  assert.equal(open.candidate_source_file, "READY_DUI1.md");
+
+  const expl = buildOperatorExplanation({
+    status: { active: false, classification: "HUMAN_GATE_REQUIRED", phase: "TERMINAL" },
+    last_tick: {
+      classification: "HUMAN_GATE_REQUIRED",
+      human_gate_required: true,
+      gate_summary: "QWEN_SESSION_NOT_READY",
+      reason_codes: ["QWEN_SESSION_NOT_READY", "ENDPOINT_OCCUPIED_UNHEALTHY"],
+    },
+    queue: open,
+  });
+  assert.equal(expl.blocked_at, "qwen_preflight");
+  assert.match(expl.headline, /Human gate/i);
+});
+
+await test("S28 performTick records lastTickStore; GET diagnostics exposes it", async () => {
+  const tracker = createExecutionStatusTracker();
+  const lastTick = createLastTickStore();
+  const result = await performTick(
+    { schema_version: REQUEST_SCHEMA, request_id: "r-last-tick", source: "n8n" },
+    {
+      statusTracker: tracker,
+      lastTickStore: lastTick,
+      verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+      scanQueue: () => [],
+      runDispatchLoop: () => ({ ok: true, claims: [], skipped: [], stop_reason: "QUEUE_DRAINED" }),
+      runExecutor: async () => { throw new Error("MUST NOT EXECUTE"); },
+      nowIso: () => "2026-09-09T02:00:00.000Z",
+    },
+  );
+  assert.equal(result.classification, "IDLE_CLEAN");
+  assert.equal(lastTick.snapshot().classification, "IDLE_CLEAN");
+  assert.ok(lastTick.snapshot().reason_codes.includes("NO_ELIGIBLE_READY"));
+
+  const diag = await buildDiagnostics({
+    statusTracker: tracker,
+    lastTickStore: lastTick,
+    scanQueue: () => [],
+    loadReceipts: () => [],
+    probeQwen: async () => ({ reachable: true, health_summary: "1_models", profile_status: "loaded", models: [{ id: "qwen38-opus-q3-opencode-64k", status: "loaded" }], error: null }),
+    nowIso: () => "2026-09-09T02:00:01.000Z",
+  });
+  assert.equal(diag.schema_version, DIAGNOSTICS_SCHEMA);
+  assert.equal(diag.last_tick.request_id, "r-last-tick");
+  assert.equal(diag.qwen.reachable, true);
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);

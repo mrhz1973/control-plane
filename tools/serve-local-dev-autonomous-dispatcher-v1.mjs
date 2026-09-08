@@ -52,17 +52,24 @@ import { executeLocalDevTask } from "./local-dev-executor-v1.mjs";
 import { composeRunners } from "./run-local-dev-executor-v1.mjs";
 import { admitMicroTaskDelta, extractMicroTaskAdmissionInput } from "./admit-micro-task-delta-v1.mjs";
 import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
+import { selectNextQueueItem, parseBacklogFile } from "./select-local-dev-queue-item-v1.mjs";
 
 export const RESULT_SCHEMA = "local-dev-dispatch-tick-result-v1";
 export const REQUEST_SCHEMA = "local-dev-dispatch-tick-v1";
 export const STATUS_SCHEMA = "local-dev-execution-status-v1";
+export const DIAGNOSTICS_SCHEMA = "local-dev-dispatch-diagnostics-v1";
+export const LAST_TICK_SCHEMA = "local-dev-dispatch-last-tick-v1";
 export const DEFAULT_HOST = "127.0.0.1";
 export const DEFAULT_PORT = 18793;
 export const TICK_PATH = "/v1/tick";
 export const STATUS_PATH = "/v1/status";
+export const DIAGNOSTICS_PATH = "/v1/diagnostics";
+export const DASHBOARD_PATHS = Object.freeze(["/", "/dashboard", "/dashboard/"]);
+export const QWEN_OBSERVE_BASE_URL = "http://127.0.0.1:8080";
 export const REPO = "mrhz1973/control-plane";
 export const CANONICAL_REPO_PATH = KNOWN_LOCAL_REPOS[REPO];
 export const QUEUE_DIR = "reports/runtime/dev-queue/always-on";
+const DASHBOARD_HTML_PATH = join(dirname(fileURLToPath(import.meta.url)), "local-dev-dispatcher-dashboard-v1.html");
 // Claim receipts for the always-on queue live INSIDE the queue dir (untracked
 // runtime state). The shared tracked ledger reports/runtime/dev-queue/receipts.json
 // must NOT be written by the service: a claim written there dirties a tracked
@@ -219,6 +226,291 @@ export function createExecutionStatusTracker(options = {}) {
   };
 }
 
+/** Read-only GET :8080/v1/models — never launches, loads, or recycles. */
+export async function probeQwenEndpointReadOnly(options = {}) {
+  const baseUrl = String(options.baseUrl || QWEN_OBSERVE_BASE_URL).replace(/\/$/, "");
+  const timeoutMs = Number.isFinite(options.timeoutMs) ? Math.max(200, options.timeoutMs) : 2000;
+  const fetchFn = options.fetchFn || globalThis.fetch;
+  const wanted = boundStr(options.wanted_profile, 120);
+  try {
+    const r = await fetchFn(`${baseUrl}/v1/models`, { signal: AbortSignal.timeout(timeoutMs) });
+    if (!r || !r.ok) {
+      return {
+        reachable: false,
+        health_summary: `HTTP_${r?.status || "ERR"}`,
+        profile_status: "unreachable",
+        models: [],
+        error: boundStr(`HTTP_${r?.status || "ERR"}`, 80),
+      };
+    }
+    const body = await r.json();
+    const raw = Array.isArray(body?.data) ? body.data : (Array.isArray(body?.models) ? body.models : []);
+    const models = raw.slice(0, 24).map((m) => ({
+      id: boundStr(m?.id || m?.model || m?.name, 120),
+      status: boundStr(m?.status || m?.state, 40),
+    })).filter((m) => m.id);
+    let profile_status = "unknown";
+    if (wanted) {
+      const hit = models.find((m) => m.id === wanted);
+      if (!hit) profile_status = "unloaded";
+      else if (/load/i.test(String(hit.status || ""))) profile_status = String(hit.status).toLowerCase();
+      else profile_status = hit.status ? String(hit.status).toLowerCase() : "listed";
+    } else if (models.length) {
+      profile_status = "listed";
+    }
+    return {
+      reachable: true,
+      health_summary: models.length ? `${models.length}_models` : "empty_catalog",
+      profile_status,
+      models,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      reachable: false,
+      health_summary: "unreachable",
+      profile_status: "unreachable",
+      models: [],
+      error: boundStr(err?.code || err?.message || "probe_failed", 80),
+    };
+  }
+}
+
+/** Dry-run queue explanation — never claims, never writes receipts. */
+export function buildQueueScanDiagnostics({ entries = [], receipts = [], nowIso } = {}) {
+  const decidedAt = nowIso || new Date().toISOString();
+  const parsed = (entries || []).map((e) => {
+    if (e.read_failed || !e.markdown) {
+      return { ok: false, source: e.source || null, reason: e.read_failed ? "READ_FAILED" : "EMPTY_FILE" };
+    }
+    if (e.ok === true && e.item) return e;
+    if (e.ok === false) return { ok: false, source: e.source || null, reason: e.reason || "PARSE_FAILED" };
+    try {
+      const p = parseBacklogFile(e.markdown);
+      return { ...p, markdown: e.markdown, source: e.source, backlog_path: e.backlog_path };
+    } catch (err) {
+      return { ok: false, source: e.source || null, reason: boundStr(err?.message || "PARSE_FAILED", 80) };
+    }
+  });
+  const decision = selectNextQueueItem(parsed, receipts, decidedAt);
+  const rejected_items = (decision.excluded || []).slice(0, 32).map((r) => ({
+    source: boundStr(r.source, 200),
+    reason: boundStr(r.reason, 80),
+  }));
+  const skip_reason_summary = {};
+  for (const r of rejected_items) {
+    const key = r.reason || "UNKNOWN";
+    skip_reason_summary[key] = (skip_reason_summary[key] || 0) + 1;
+  }
+  return {
+    eligible_count: boundInt(decision.eligible_count, { allowNull: false, min: 0 }),
+    candidate_task_ref: boundStr(decision.selected?.task_ref, 200),
+    candidate_source_file: boundStr(decision.selected?.source_file, 200),
+    candidate_risk_hint: boundStr(decision.selected?.risk_hint, 40),
+    selection_reason_code: boundStr(decision.reason_code, 80),
+    scanned_file_count: parsed.length,
+    claim_present_count: rejected_items.filter((r) => r.reason === "CLAIM_ALREADY_EXISTS").length,
+    rejected_items,
+    skip_reason_summary,
+  };
+}
+
+export function buildOperatorExplanation({ status, last_tick, queue } = {}) {
+  const s = status || emptyStatusSnapshot();
+  const tick = last_tick || null;
+  const q = queue || {};
+  const codes = Array.isArray(tick?.reason_codes) ? tick.reason_codes : [];
+  const primaryCode = codes[0] || null;
+  const classification = s.classification || tick?.classification || null;
+
+  if (s.active === true) {
+    return {
+      headline: `Dispatcher is working now (${s.phase || "in progress"}).`,
+      detail: s.task_ref
+        ? `Currently handling ${s.task_ref}. Watch phase/last_event for progress.`
+        : "A tick is in flight. Task selection may still be in early phases.",
+      blocked_at: null,
+      why_code: classification,
+    };
+  }
+
+  if (classification === "IDLE_CLEAN" || primaryCode === "NO_ELIGIBLE_READY" || primaryCode === "CLAIM_SKIPPED_PRESENT") {
+    const why = primaryCode || (q.eligible_count > 0 ? "CLAIM_SKIPPED_PRESENT" : "NO_ELIGIBLE_READY");
+    let detail = "The dispatcher checked everything and found nothing it could safely run.";
+    if (why === "NO_ELIGIBLE_READY") {
+      detail = q.claim_present_count > 0
+        ? "No eligible READY item is free to claim — some READY-looking files are blocked by existing receipts."
+        : "No backlog item currently passes READY + selector/bridge admissibility.";
+    } else if (why === "CLAIM_SKIPPED_PRESENT") {
+      detail = "A candidate was considered but the claim/bridge step skipped it (see last-tick reason codes and rejected items).";
+    }
+    if (q.candidate_task_ref) {
+      detail += ` Dry-run candidate right now: ${q.candidate_task_ref}.`;
+    }
+    return {
+      headline: "Idle — nothing safely runnable on the last tick.",
+      detail,
+      blocked_at: why === "CLAIM_SKIPPED_PRESENT" ? "claim/bridge" : "queue_selection",
+      why_code: why,
+    };
+  }
+
+  if (classification === "HUMAN_GATE_REQUIRED" || tick?.human_gate_required === true) {
+    const blocked_at = codes.includes("QWEN_SESSION_NOT_READY") || codes.some((c) => String(c).startsWith("QWEN"))
+      ? "qwen_preflight"
+      : (codes.includes("MICRO_TASK_ADMISSION_REJECTED") ? "admission"
+        : (codes.some((c) => /DIRTY|BRANCH|FETCH|HEAD|MERGE|REV_PARSE|LOCAL_AHEAD|DIVERGED/.test(String(c))) ? "repo_hygiene" : "human_gate"));
+    return {
+      headline: "Human gate — automation is waiting.",
+      detail: tick?.gate_summary
+        ? `Gate: ${tick.gate_summary}. ${codes.length ? `Codes: ${codes.join(", ")}.` : ""}`
+        : (codes.length ? `Reason codes: ${codes.join(", ")}.` : "A manual prerequisite or decision is required before the next claim/run."),
+      blocked_at,
+      why_code: primaryCode || "HUMAN_GATE_REQUIRED",
+    };
+  }
+
+  if (classification === "BUSY") {
+    return {
+      headline: "Busy — another tick is already running.",
+      detail: "Concurrent ticks are rejected (single-flight). Wait for the active tick to finish.",
+      blocked_at: "single_flight",
+      why_code: "BUSY",
+    };
+  }
+
+  if (String(classification || "").includes("PASS") || classification === "WORK_EXECUTED_PASS") {
+    return {
+      headline: "Last tick executed work successfully.",
+      detail: s.task_ref || tick?.task_ref
+        ? `Task ${s.task_ref || tick.task_ref} completed with PASS.`
+        : "Executor reported PASS on the last tick.",
+      blocked_at: null,
+      why_code: classification,
+    };
+  }
+
+  if (String(classification || "").includes("STOP") || classification === "WORK_EXECUTED_STOP") {
+    return {
+      headline: "Last tick ran and stopped.",
+      detail: codes.length
+        ? `Executor/stop codes: ${codes.join(", ")}.`
+        : "The executor finished with a STOP classification (safe stop, not a dispatcher crash).",
+      blocked_at: "executor",
+      why_code: primaryCode || classification,
+    };
+  }
+
+  if (classification === "SERVICE_ERROR") {
+    return {
+      headline: "Service error on the last tick.",
+      detail: codes.length ? `Codes: ${codes.join(", ")}.` : "Inspect reason codes and dispatcher logs.",
+      blocked_at: "service",
+      why_code: primaryCode || "SERVICE_ERROR",
+    };
+  }
+
+  return {
+    headline: s.terminal ? "Last tick finished." : "Dispatcher is idle between ticks.",
+    detail: classification
+      ? `Current classification: ${classification}.`
+      : "No terminal classification recorded yet — waiting for the next natural WF90 tick.",
+    blocked_at: null,
+    why_code: classification,
+  };
+}
+
+export async function buildDiagnostics(deps = {}) {
+  const status = (() => {
+    try {
+      return deps.statusTracker && typeof deps.statusTracker.snapshot === "function"
+        ? deps.statusTracker.snapshot()
+        : emptyStatusSnapshot();
+    } catch {
+      return emptyStatusSnapshot({ last_event: "status_snapshot_error" });
+    }
+  })();
+  const last_tick = (() => {
+    try {
+      return deps.lastTickStore && typeof deps.lastTickStore.snapshot === "function"
+        ? deps.lastTickStore.snapshot()
+        : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const scan = deps.scanQueue || ((queueDir) => {
+    const abs = resolve(CANONICAL_REPO_PATH, queueDir);
+    if (!existsSync(abs)) return [];
+    return readdirSync(abs).filter((f) => f.endsWith(".md")).sort().map((f) => {
+      try {
+        const markdown = readFileSync(join(abs, f), "utf8").replace(/^\uFEFF/, "");
+        return { markdown, source: f, backlog_path: `${queueDir}/${f}` };
+      } catch {
+        return { markdown: "", source: f, backlog_path: `${queueDir}/${f}`, read_failed: true };
+      }
+    });
+  });
+  const receiptsPath = deps.receiptsPath || resolve(CANONICAL_REPO_PATH, RECEIPTS_PATH);
+  const loadReceipts = deps.loadReceipts || (() => loadReceiptsFile(receiptsPath));
+  const nowIso = deps.nowIso ? deps.nowIso() : new Date().toISOString();
+  let queue;
+  try {
+    queue = buildQueueScanDiagnostics({
+      entries: scan(QUEUE_DIR),
+      receipts: loadReceipts(),
+      nowIso,
+    });
+  } catch (err) {
+    queue = {
+      eligible_count: 0,
+      candidate_task_ref: null,
+      candidate_source_file: null,
+      candidate_risk_hint: null,
+      selection_reason_code: "DIAGNOSTICS_QUEUE_SCAN_FAILED",
+      scanned_file_count: 0,
+      claim_present_count: 0,
+      rejected_items: [],
+      skip_reason_summary: { DIAGNOSTICS_QUEUE_SCAN_FAILED: 1 },
+      error: boundStr(err?.message || "queue_scan_failed", 80),
+    };
+  }
+
+  const probe = deps.probeQwen || probeQwenEndpointReadOnly;
+  const qwen = await probe({
+    wanted_profile: status.qwen_profile || null,
+  });
+
+  const explanation = buildOperatorExplanation({ status, last_tick, queue });
+  return {
+    schema_version: DIAGNOSTICS_SCHEMA,
+    generated_at: nowIso,
+    read_only: true,
+    status,
+    last_tick,
+    queue,
+    qwen: {
+      endpoint: QWEN_OBSERVE_BASE_URL,
+      reachable: qwen.reachable === true,
+      health_summary: boundStr(qwen.health_summary, 80),
+      profile_status: boundStr(qwen.profile_status, 40),
+      models: Array.isArray(qwen.models) ? qwen.models.slice(0, 24) : [],
+      error: boundStr(qwen.error, 80),
+    },
+    explanation,
+  };
+}
+
+function loadDashboardHtml() {
+  try {
+    if (existsSync(DASHBOARD_HTML_PATH)) {
+      return readFileSync(DASHBOARD_HTML_PATH, "utf8");
+    }
+  } catch { /* fall through */ }
+  return `<!DOCTYPE html><html><body><h1>Dispatcher dashboard missing</h1><p>Expected ${DASHBOARD_HTML_PATH}</p></body></html>`;
+}
+
 function gitExec(repoPath, args) {
   return new Promise((res) => {
     execFile("git.exe", args, { cwd: repoPath, windowsHide: true, timeout: 120_000 }, (err, stdout, stderr) => {
@@ -363,6 +655,39 @@ export function wrapTickResult(partial) {
   };
 }
 
+/**
+ * Remembers the most recent completed tick result (observability only).
+ * Never influences selection/claim/execution.
+ */
+export function createLastTickStore() {
+  let last = null;
+  return {
+    record(result, meta = {}) {
+      const wrapped = wrapTickResult(result || {});
+      last = {
+        schema_version: LAST_TICK_SCHEMA,
+        recorded_at: boundStr(meta.recorded_at || new Date().toISOString(), 40),
+        elapsed_ms: boundInt(meta.elapsed_ms, { allowNull: true, min: 0 }),
+        ok: wrapped.ok === true,
+        request_id: boundStr(wrapped.request_id, 200),
+        classification: boundStr(wrapped.classification, 120),
+        execution_performed: wrapped.execution_performed === true,
+        task_ref: boundStr(wrapped.task_ref, 200),
+        executor_classification: boundStr(wrapped.executor_classification, 120),
+        human_gate_required: wrapped.human_gate_required === true,
+        gate_summary: boundStr(wrapped.gate_summary, 240),
+        // WF90 may derive notify; dispatcher result does not emit it today.
+        notify_required: meta.notify_required === true ? true : (meta.notify_required === false ? false : null),
+        reason_codes: Array.isArray(wrapped.reason_codes) ? wrapped.reason_codes.slice(0, 16) : [],
+      };
+      return last;
+    },
+    snapshot() {
+      return last;
+    },
+  };
+}
+
 /** Normalize an executor result into the bounded tick result. */
 export function classificationFromExecutorResult(executorResult, request_id) {
   const pass = executorResult && executorResult.status === "PASS";
@@ -441,12 +766,20 @@ export async function performTick(body, deps = {}) {
     return result.classification || "SERVICE_ERROR";
   };
   const done = (result) => {
-    statusSafe("finish", {
+    const finished = statusSafe("finish", {
       request_id: requestId,
       task_ref: result?.task_ref ?? null,
       classification: terminalClassification(result),
       last_event: `terminal:${terminalClassification(result)}`,
     });
+    try {
+      if (deps.lastTickStore && typeof deps.lastTickStore.record === "function") {
+        deps.lastTickStore.record(result, {
+          elapsed_ms: finished?.elapsed_ms ?? null,
+          recorded_at: deps.nowIso ? deps.nowIso() : new Date().toISOString(),
+        });
+      }
+    } catch { /* observability only */ }
     return result;
   };
 
@@ -710,7 +1043,7 @@ function readBody(req) {
   });
 }
 
-/** HTTP handler. Injected deps only for tests. Routes /v1/tick and /v1/status. */
+/** HTTP handler. Injected deps only for tests. Routes tick/status/diagnostics/dashboard. */
 export async function handleTickRequest(req, res, deps = {}) {
   const send = (status, obj) => {
     try {
@@ -718,9 +1051,33 @@ export async function handleTickRequest(req, res, deps = {}) {
       res.end(`${JSON.stringify(obj)}\n`);
     } catch { /* client gone */ }
   };
+  const sendHtml = (status, html) => {
+    try {
+      res.writeHead(status, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
+      res.end(html);
+    } catch { /* client gone */ }
+  };
   let url;
   try { url = new URL(req.url, "http://127.0.0.1"); } catch { url = null; }
   const path = url?.pathname || "";
+
+  // Read-only dashboard (HTML). Never acquires the tick lock.
+  if (DASHBOARD_PATHS.includes(path)) {
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      send(405, wrapTickResult({ ok: false, classification: "SERVICE_ERROR", reason_codes: ["GET_ONLY"] }));
+      return;
+    }
+    const html = typeof deps.dashboardHtml === "string" ? deps.dashboardHtml : loadDashboardHtml();
+    if (req.method === "HEAD") {
+      try {
+        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
+        res.end();
+      } catch { /* ignore */ }
+      return;
+    }
+    sendHtml(200, html);
+    return;
+  }
 
   // Read-only status: never acquires the tick lock, never executes work.
   if (path === STATUS_PATH) {
@@ -738,6 +1095,34 @@ export async function handleTickRequest(req, res, deps = {}) {
       snap = emptyStatusSnapshot({ phase: "IDLE", last_event: "status_snapshot_error" });
     }
     send(200, snap);
+    return;
+  }
+
+  // Read-only diagnostics: queue dry-run + last tick + optional Qwen probe.
+  if (path === DIAGNOSTICS_PATH) {
+    if (req.method !== "GET") {
+      send(405, wrapTickResult({ ok: false, classification: "SERVICE_ERROR", reason_codes: ["GET_ONLY"] }));
+      return;
+    }
+    try {
+      const diag = await buildDiagnostics({
+        statusTracker: deps.statusTracker,
+        lastTickStore: deps.lastTickStore,
+        scanQueue: deps.diagnosticsScanQueue || deps.tickDeps?.scanQueue,
+        loadReceipts: deps.diagnosticsLoadReceipts || deps.tickDeps?.loadReceipts,
+        receiptsPath: deps.receiptsPath || deps.tickDeps?.receiptsPath,
+        probeQwen: deps.probeQwen,
+        nowIso: deps.nowIso || deps.tickDeps?.nowIso,
+      });
+      send(200, diag);
+    } catch (err) {
+      send(500, {
+        schema_version: DIAGNOSTICS_SCHEMA,
+        read_only: true,
+        ok: false,
+        reason_codes: ["DIAGNOSTICS_FAILED", boundStr(err?.message || err, 80)],
+      });
+    }
     return;
   }
 
@@ -772,6 +1157,7 @@ export async function handleTickRequest(req, res, deps = {}) {
   try {
     const tickDeps = { ...(deps.tickDeps || {}) };
     if (deps.statusTracker && !tickDeps.statusTracker) tickDeps.statusTracker = deps.statusTracker;
+    if (deps.lastTickStore && !tickDeps.lastTickStore) tickDeps.lastTickStore = deps.lastTickStore;
     const result = await performTick(body, tickDeps);
     if (deps.releaseLock) deps.releaseLock();
     // WORK_EXECUTED_STOP is a well-formed bounded contract result (executor
@@ -806,12 +1192,14 @@ export function startServer(options = {}) {
   };
   const releaseLock = () => { executing = false; };
   const statusTracker = options.statusTracker || createExecutionStatusTracker();
+  const lastTickStore = options.lastTickStore || createLastTickStore();
   const server = http.createServer((req, res) => {
     handleTickRequest(req, res, {
       ...(options.deps || {}),
       tryAcquireLock,
       releaseLock,
       statusTracker,
+      lastTickStore,
     }).catch(() => {
       releaseLock();
       try {
@@ -834,6 +1222,9 @@ async function main() {
     service: "local-dev-autonomous-dispatcher-v1",
     listening: `${addr.address}:${addr.port}`,
     tick_path: TICK_PATH,
+    status_path: STATUS_PATH,
+    diagnostics_path: DIAGNOSTICS_PATH,
+    dashboard_path: "/dashboard",
     external_route: "/v4/local-dev/dispatch-tick",
     repo: CANONICAL_REPO_PATH,
     queue_dir: QUEUE_DIR,

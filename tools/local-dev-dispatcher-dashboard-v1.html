@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Local Dev Dispatcher · Observability</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --bg-elev: #1a222c;
+      --bg-card: #1e2833;
+      --border: #2d3a47;
+      --text: #e8eef4;
+      --muted: #8b9aab;
+      --accent: #3db8a0;
+      --warn: #e6a23c;
+      --danger: #e35d6a;
+      --info: #5b9fd4;
+      --ok: #4caf82;
+      --idle: #7a8794;
+      --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+      --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+      --radius: 12px;
+      --shadow: 0 8px 24px rgba(0,0,0,.35);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f4f7fa;
+        --bg-elev: #ffffff;
+        --bg-card: #ffffff;
+        --border: #d5dee8;
+        --text: #1a2430;
+        --muted: #5c6b7a;
+        --shadow: 0 8px 24px rgba(26,36,48,.08);
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(61,184,160,.12), transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, rgba(91,159,212,.10), transparent 50%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.45;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 8px;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+    header .sub { color: var(--muted); font-size: .9rem; margin-top: 2px; }
+    .meta-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: .85rem; color: var(--muted); }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 12px 24px 40px;
+      display: grid;
+      gap: 16px;
+    }
+    .hero {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+      display: grid;
+      gap: 10px;
+    }
+    .hero .why {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    .hero .detail { color: var(--muted); max-width: 72ch; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+    .card {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      min-height: 74px;
+    }
+    .card .label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .card .value {
+      font-size: 1rem;
+      font-weight: 600;
+      word-break: break-word;
+    }
+    .card .value.mono { font-family: var(--mono); font-size: .88rem; font-weight: 500; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: .8rem;
+      font-weight: 650;
+      border: 1px solid transparent;
+    }
+    .badge.ok { background: rgba(76,175,130,.18); color: var(--ok); border-color: rgba(76,175,130,.35); }
+    .badge.warn { background: rgba(230,162,60,.16); color: var(--warn); border-color: rgba(230,162,60,.35); }
+    .badge.danger { background: rgba(227,93,106,.16); color: var(--danger); border-color: rgba(227,93,106,.35); }
+    .badge.info { background: rgba(91,159,212,.16); color: var(--info); border-color: rgba(91,159,212,.35); }
+    .badge.idle { background: rgba(122,135,148,.16); color: var(--idle); border-color: rgba(122,135,148,.35); }
+    .badge.active { background: rgba(61,184,160,.18); color: var(--accent); border-color: rgba(61,184,160,.4); }
+    section.panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px 16px;
+    }
+    section.panel h2 {
+      margin: 0 0 12px;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    details {
+      border-top: 1px solid var(--border);
+      margin-top: 12px;
+      padding-top: 10px;
+    }
+    details summary {
+      cursor: pointer;
+      color: var(--muted);
+      font-size: .9rem;
+      user-select: none;
+    }
+    details summary:hover { color: var(--text); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+      margin-top: 8px;
+    }
+    th, td {
+      text-align: left;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; }
+    .mono { font-family: var(--mono); }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .help {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(139,154,171,.25);
+      color: var(--muted);
+      cursor: help;
+      position: relative;
+      flex: 0 0 auto;
+    }
+    .help:hover, .help:focus-visible { color: var(--text); background: rgba(61,184,160,.35); outline: none; }
+    .help::after {
+      content: attr(data-tip);
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 8px);
+      transform: translateX(-50%);
+      background: #111820;
+      color: #f3f7fb;
+      border: 1px solid #334155;
+      padding: 8px 10px;
+      border-radius: 8px;
+      width: max-content;
+      max-width: 260px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.35;
+      white-space: normal;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: var(--shadow);
+      transition: opacity .12s ease;
+    }
+    @media (prefers-color-scheme: light) {
+      .help::after { background: #1a2430; color: #fff; }
+    }
+    .help:hover::after, .help:focus-visible::after { opacity: 1; }
+    .err { color: var(--danger); font-size: .9rem; }
+    .footer-note { color: var(--muted); font-size: .8rem; padding: 0 24px 28px; max-width: 1180px; margin: 0 auto; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--accent); }
+    .dot.off { background: var(--idle); }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Local Dev Dispatcher</h1>
+      <div class="sub">Read-only observability · port 18793</div>
+    </div>
+    <div class="meta-row">
+      <span id="poll-dot" class="dot off" title="poll"></span>
+      <span id="poll-age">Connecting…</span>
+      <span class="badge idle" id="live-badge">—</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero" id="hero">
+      <div class="why" id="headline">Loading dispatcher state…</div>
+      <div class="detail" id="detail"></div>
+      <div class="pill-row" id="block-pills"></div>
+    </div>
+
+    <section class="panel">
+      <h2>Overview <span class="help" tabindex="0" data-tip="High-level snapshot of the latest dispatcher tick and live execution phase.">i</span></h2>
+      <div class="cards" id="overview-cards"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Qwen / runtime <span class="help" tabindex="0" data-tip="Whether the local model endpoint looks reachable and matches the task profile.">i</span></h2>
+      <div class="cards" id="qwen-cards"></div>
+      <details>
+        <summary>Model list from endpoint</summary>
+        <div id="qwen-models" class="mono" style="font-size:.82rem; margin-top:8px; color:var(--muted);"></div>
+      </details>
+    </section>
+
+    <section class="panel">
+      <h2>Last tick decision <span class="help" tabindex="0" data-tip="Bounded result from the most recent completed /v1/tick (not a live mutation).">i</span></h2>
+      <div class="cards" id="tick-cards"></div>
+      <details>
+        <summary>Reason codes</summary>
+        <pre id="reason-codes" class="mono" style="white-space:pre-wrap; margin:8px 0 0; font-size:.82rem;"></pre>
+      </details>
+    </section>
+
+    <section class="panel">
+      <h2>Queue scan / selection <span class="help" tabindex="0" data-tip="Dry-run view of what the selector would pick right now — does not claim or mutate receipts.">i</span></h2>
+      <div class="cards" id="queue-cards"></div>
+      <details open>
+        <summary>Rejected / skipped items (bounded)</summary>
+        <div style="overflow:auto;">
+          <table>
+            <thead><tr><th>Source</th><th>Reason</th></tr></thead>
+            <tbody id="rejected-body"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <p class="footer-note">
+    Polls <span class="mono">/v1/status</span> and <span class="mono">/v1/diagnostics</span> every 3s.
+    Read-only — this page never triggers ticks or changes the queue.
+  </p>
+
+  <script>
+    const TIPS = {
+      active: "True while a tick is in flight; false when the dispatcher is idle between ticks.",
+      classification: "Final state assigned to the most recent dispatcher tick.",
+      phase: "Current stage of the in-flight tick, or TERMINAL/IDLE when finished.",
+      last_event: "Most recent internal progress marker (observability only).",
+      request_id: "Caller correlation id for the tick (usually from n8n WF90).",
+      task_ref: "Queue task identity considered or executed. Null means no task was claimed.",
+      executor_pid: "Process id of the dispatcher Node service handling the tick.",
+      qwen_profile: "Exact local model profile id required or used for the task.",
+      runtime_ready: "Whether the required local model/runtime was confirmed ready for the selected task.",
+      tests_state: "Focused test progress for the current/last execution (NOT_STARTED / RUNNING / PASS / FAIL).",
+      execution_performed: "True only when the local-dev executor actually ran for this tick.",
+      human_gate_required: "Automation stopped and is waiting for a human decision or manual prerequisite.",
+      reason_codes: "Machine-readable reasons explaining why the dispatcher made this decision.",
+      eligible_count: "How many READY backlog items currently pass selector admissibility and are not claim-blocked.",
+      candidate_task_ref: "Top eligible item the selector would claim next (dry-run; not yet claimed by this page).",
+      IDLE_CLEAN: "The dispatcher checked everything and found nothing it could safely run.",
+      HUMAN_GATE_REQUIRED: "Automation stopped and is waiting for a human decision or manual prerequisite.",
+      NO_ELIGIBLE_READY: "No backlog item was both READY and claimable under selector/bridge rules.",
+      CLAIM_SKIPPED_PRESENT: "At least one candidate was considered but bridge/claim skipped it (see skipped reasons).",
+      WORK_EXECUTED_PASS: "A real task ran and finished with PASS.",
+      WORK_EXECUTED_STOP: "A real task ran and stopped safely with a STOP classification.",
+      BUSY: "Another tick is already in flight; concurrent ticks are rejected.",
+      SERVICE_ERROR: "The dispatcher hit an unexpected service failure while handling the tick.",
+    };
+
+    function tip(key) {
+      return TIPS[key] || "Operator field from the dispatcher observability contract.";
+    }
+    function help(key) {
+      return `<span class="help" tabindex="0" data-tip="${escapeAttr(tip(key))}">i</span>`;
+    }
+    function escapeAttr(s) {
+      return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+    }
+    function escapeHtml(s) {
+      return String(s ?? "—").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+    function badgeClass(classification, active) {
+      if (active) return "active";
+      const c = String(classification || "");
+      if (c === "IDLE_CLEAN" || c === "PASS" || c === "WORK_EXECUTED_PASS") return "ok";
+      if (c.includes("HUMAN_GATE") || c === "BUSY") return "warn";
+      if (c.includes("STOP") || c === "SERVICE_ERROR" || c === "WORK_EXECUTED_STOP") return "danger";
+      if (!c) return "idle";
+      return "info";
+    }
+    function card(label, value, tipKey, mono) {
+      return `<div class="card"><div class="label">${escapeHtml(label)} ${help(tipKey || label)}</div><div class="value${mono ? " mono" : ""}">${escapeHtml(value)}</div></div>`;
+    }
+    function yn(v) {
+      if (v === true) return "true";
+      if (v === false) return "false";
+      return "null";
+    }
+
+    async function refresh() {
+      const dot = document.getElementById("poll-dot");
+      try {
+        const [statusRes, diagRes] = await Promise.all([
+          fetch("/v1/status", { cache: "no-store" }),
+          fetch("/v1/diagnostics", { cache: "no-store" }),
+        ]);
+        const status = await statusRes.json();
+        const diag = await diagRes.json();
+        render(status, diag);
+        dot.classList.remove("off");
+        document.getElementById("poll-age").textContent = `Updated ${new Date().toLocaleTimeString()}`;
+      } catch (err) {
+        dot.classList.add("off");
+        document.getElementById("poll-age").textContent = "Poll failed";
+        document.getElementById("headline").textContent = "Cannot reach dispatcher";
+        document.getElementById("detail").innerHTML = `<span class="err">${escapeHtml(err.message || err)}</span>`;
+      }
+    }
+
+    function render(status, diag) {
+      const s = diag.status || status || {};
+      const tick = diag.last_tick || {};
+      const queue = diag.queue || {};
+      const qwen = diag.qwen || {};
+      const expl = diag.explanation || {};
+
+      document.getElementById("headline").textContent = expl.headline || "Dispatcher state";
+      document.getElementById("detail").textContent = expl.detail || "";
+
+      const pills = [];
+      if (expl.blocked_at) pills.push(`<span class="badge warn">blocked @ ${escapeHtml(expl.blocked_at)}</span>`);
+      if (expl.why_code) pills.push(`<span class="badge idle">${escapeHtml(expl.why_code)} ${help(expl.why_code)}</span>`);
+      document.getElementById("block-pills").innerHTML = pills.join("");
+
+      const live = document.getElementById("live-badge");
+      live.className = `badge ${badgeClass(s.classification || tick.classification, s.active)}`;
+      live.innerHTML = s.active
+        ? `WORKING · ${escapeHtml(s.phase)}`
+        : escapeHtml(s.classification || tick.classification || "IDLE");
+
+      document.getElementById("overview-cards").innerHTML = [
+        card("Dispatcher", s.active ? "WORKING" : "IDLE", "active"),
+        card("Classification", s.classification ?? tick.classification ?? "—", "classification"),
+        card("Active", yn(s.active), "active"),
+        card("Phase", s.phase, "phase"),
+        card("Last event", s.last_event, "last_event"),
+        card("Request id", s.request_id, "request_id", true),
+        card("Task ref", s.task_ref, "task_ref", true),
+        card("Executor PID", s.executor_pid, "executor_pid", true),
+        card("Qwen profile", s.qwen_profile, "qwen_profile", true),
+        card("Runtime ready", yn(s.runtime_ready), "runtime_ready"),
+        card("Tests state", s.tests_state, "tests_state"),
+        card("Elapsed ms", s.elapsed_ms, "elapsed_ms"),
+      ].join("");
+
+      const models = Array.isArray(qwen.models) ? qwen.models : [];
+      document.getElementById("qwen-cards").innerHTML = [
+        card("Profile (status)", s.qwen_profile, "qwen_profile", true),
+        card("Runtime ready", yn(s.runtime_ready), "runtime_ready"),
+        card("Endpoint reachable", yn(qwen.reachable), "runtime_ready"),
+        card("Profile on endpoint", qwen.profile_status || "unknown", "runtime_ready"),
+        card("Preflight (last tick)", tick.gate_summary && String(tick.gate_summary).includes("QWEN") ? tick.gate_summary : (s.runtime_ready === true ? "ready" : (s.runtime_ready === false ? "not ready" : "n/a")), "runtime_ready"),
+        card("Health summary", qwen.health_summary || "—", "runtime_ready"),
+      ].join("");
+      document.getElementById("qwen-models").textContent = models.length
+        ? models.map((m) => `${m.id}${m.status ? ` [${m.status}]` : ""}`).join("\n")
+        : "(no model list — endpoint unreachable or empty)";
+
+      document.getElementById("tick-cards").innerHTML = [
+        card("Classification", tick.classification, "classification"),
+        card("Execution performed", yn(tick.execution_performed), "execution_performed"),
+        card("Human gate required", yn(tick.human_gate_required), "human_gate_required"),
+        card("Notify required", yn(tick.notify_required), "notify_required"),
+        card("Completed at", tick.recorded_at, "tick_completed_at", true),
+        card("Elapsed ms", tick.elapsed_ms, "elapsed_ms"),
+        card("Gate summary", tick.gate_summary, "human_gate_required"),
+        card("Task ref", tick.task_ref, "task_ref", true),
+      ].join("");
+      const codes = Array.isArray(tick.reason_codes) ? tick.reason_codes : [];
+      document.getElementById("reason-codes").textContent = codes.length ? codes.join("\n") : "(none)";
+
+      document.getElementById("queue-cards").innerHTML = [
+        card("Eligible count", queue.eligible_count, "eligible_count"),
+        card("Candidate task", queue.candidate_task_ref, "candidate_task_ref", true),
+        card("Candidate source", queue.candidate_source_file, "candidate_task_ref", true),
+        card("Candidate risk", queue.candidate_risk_hint, "candidate_task_ref"),
+        card("Selection reason", queue.selection_reason_code, "reason_codes"),
+        card("Scanned files", queue.scanned_file_count, "eligible_count"),
+        card("Claim-blocked", queue.claim_present_count, "CLAIM_SKIPPED_PRESENT"),
+        card("Skip summary", formatSkip(queue.skip_reason_summary), "reason_codes"),
+      ].join("");
+
+      const rejected = Array.isArray(queue.rejected_items) ? queue.rejected_items : [];
+      document.getElementById("rejected-body").innerHTML = rejected.length
+        ? rejected.map((r) => `<tr><td class="mono">${escapeHtml(r.source)}</td><td>${escapeHtml(r.reason)}</td></tr>`).join("")
+        : `<tr><td colspan="2" style="color:var(--muted)">No rejected items in this dry-run scan.</td></tr>`;
+    }
+
+    function formatSkip(summary) {
+      if (!summary || typeof summary !== "object") return "—";
+      const parts = Object.entries(summary).map(([k, v]) => `${k}:${v}`);
+      return parts.length ? parts.join(", ") : "—";
+    }
+
+    refresh();
+    setInterval(refresh, 3000);
+  </script>
+</body>
+</html>

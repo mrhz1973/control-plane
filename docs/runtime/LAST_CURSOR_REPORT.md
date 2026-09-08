@@ -1,5 +1,20 @@
 # LAST CURSOR REPORT
 
+## Local-dev dispatcher observability micro-UI — latest
+
+**TASK_REF:** `LOCAL_DEV_DISPATCHER_OBSERVABILITY_MICRO_UI_V1`
+**Classification:** `PASS — DASHBOARD=/dashboard · DIAGNOSTICS=/v1/diagnostics · STATUS_UNCHANGED · SUITE_28/28`
+**Date (UTC):** 2026-09-08
+**Report:** `reports/architecture/local_dev_dispatcher_observability_micro_ui_v1.md`
+
+Read-only operator dashboard served by the local-dev dispatcher
+(`http://127.0.0.1:18793/dashboard`). Adds `GET /v1/diagnostics` with last-tick
+memory, dry-run queue explanation, and GET-only `:8080` model probe. Existing
+`/v1/status` and `POST /v1/tick` behavior unchanged. Reload Scheduled Task
+`ControlPlane-V4-LocalDevDispatcher` once to load the new revision live.
+
+---
+
 ## V4 Qwen WF90 full live closure 10-loop — latest
 
 **TASK_REF:** `V4_QWEN_WF90_FULL_LIVE_CLOSURE_10LOOP_V1`
