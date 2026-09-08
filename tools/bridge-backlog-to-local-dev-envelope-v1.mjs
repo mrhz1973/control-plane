@@ -269,14 +269,18 @@ export function buildLocalDevEnvelopeFromBacklog(input = {}) {
     if (!Number.isInteger(dev.max_turns_hint)) return fail("BACKLOG_DEV_FIELDS_UNSUPPORTED");
     turnsHint = dev.max_turns_hint;
   }
-  // Multi-file loop-allowed MODIFY packages need more than smoke turn budgets.
-  // Proven live: D-9404-A with 3 allowed files exhausted max_turns_hint=8 mid-implement.
+  let timeboxCap = 900;
+  // Multi-file loop-allowed MODIFY packages need more than smoke turn/time budgets.
+  // Proven live: D-9404-A (3 files) exhausted turns=8 then timebox=900s after files existed
+  // but before focused tests/commit.
   if (
     b.execution.loop_allowed === true
     && Array.isArray(b.scope?.allowed_areas)
     && b.scope.allowed_areas.length >= 3
   ) {
     turnsHint = Math.max(turnsHint, 16);
+    timeboxHint = Math.max(timeboxHint, 1800);
+    timeboxCap = 1800;
   }
   let testCommand = FALLBACK_TEST_COMMAND;
   if (dev.test_commands !== undefined && dev.test_commands !== null) {
@@ -320,7 +324,7 @@ export function buildLocalDevEnvelopeFromBacklog(input = {}) {
     allowed_commands: allowedCommands,
     test_command: testCommand,
     network_policy: "localhost_only",
-    timebox_seconds: clamp(timeboxHint, 60, 900),
+    timebox_seconds: clamp(timeboxHint, 60, timeboxCap),
     max_agent_turns: clamp(turnsHint, 1, 16),
     max_test_cycles: maxTestCycles,
     git_persistence_required: true,
