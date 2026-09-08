@@ -54,7 +54,7 @@ local_dev:
   timebox_hint: 300
   max_turns_hint: 4
   test_commands:
-    - node -e "const fs=require('fs');const p='reports/runtime/qwen-smoke/QWEN_POST76_SMOKE_20260908.md';if(!fs.existsSync(p))process.exit(1);const s=fs.readFileSync(p,'utf8');for(const x of ['QWEN_POST76_SMOKE=PASS','MODEL=qwen38-opus-q3-opencode-64k','ISSUE_76=closed','PURPOSE=post76-runtime-smoke'])if(!s.includes(x))process.exit(2);"
+    - node -e "const fs=require('fs');const p='reports/runtime/qwen-smoke/QWEN_POST76_SMOKE_20260908.md';if(fs.existsSync(p)===false)process.exit(1);const s=fs.readFileSync(p,'utf8');for(const x of ['QWEN_POST76_SMOKE=PASS','MODEL=qwen38-opus-q3-opencode-64k','ISSUE_76=closed','PURPOSE=post76-runtime-smoke']){if(s.includes(x)===false)process.exit(2)}"
 
 human_gate_required_if: []
 
