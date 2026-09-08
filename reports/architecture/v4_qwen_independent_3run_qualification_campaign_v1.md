@@ -1,8 +1,9 @@
 # V4 Qwen independent 3-run qualification campaign V1
 
-Status: `RUNNING / NOT_YET_QUALIFIED`
+Status: `PASS / QUALIFIED`
 
 Created: 2026-09-08T21:45:00Z
+Closed: 2026-09-09T00:50:42+02:00
 
 ## Purpose
 
@@ -47,14 +48,27 @@ Any QVAL STOP breaks the consecutive-pass claim. Diagnose it, but do not relabel
 
 ## Current state
 
-`QWEN_INDEPENDENT_QUALIFIED=NO`
+`QWEN_INDEPENDENT_QUALIFIED=YES`
 
 D-9405-A: PASS — `0fdf3fc1d37b5e328e7c4d72933605dd06006852`
 D-9405-B: PASS — `e0fdc51ca18bf7c128440f5d58201bc760a7a98f`
 D-9405-C cold-state prep: PASS — `reports/runtime/qwen-qualification/QVAL3_COLD_STATE_GATE_EVIDENCE.md`
-D-9405-C: RELEASED / WAITING_NATURAL_WF90
+D-9405-C: PASS — `bef241fb711c25066e8076ec88b40510270696a0`
+Post-C natural IDLE_CLEAN #1: PASS — WF90 execution `317588`, completed `2026-09-08T22:45:42.430Z`
+Post-C natural IDLE_CLEAN #2: PASS — WF90 execution `317599`, completed `2026-09-08T22:50:42.517Z`
+Post-C evidence: `reports/runtime/qwen-qualification/QVAL3_POST_C_IDLE_EVIDENCE.md`
 
-The exact `qwen38-opus-q3-opencode-64k` worker was independently observed `unloaded` while the canonical Qwen router remained alive before D-9405-C release. No manual `/v1/tick` is authorized for C.
+The exact `qwen38-opus-q3-opencode-64k` worker was independently observed `unloaded` while the canonical Qwen router remained alive before D-9405-C release. Natural WF90 then recovered the exact profile and produced the executor-pass. Two subsequent natural WF90 executions were both `IDLE_CLEAN`, with `execution_performed=false`, `task_ref=null`, and no duplicate D-9405-C execution.
+
+## Qualification conclusion
+
+The independent three-run campaign satisfies every declared pass criterion.
+
+`PIPELINE_LIVE_PROOF=PASS`
+`QWEN_AUTONOMOUS_RELIABILITY=QUALIFIED_FOR_THIS_BOUNDED_LOCAL_DEV_SCOPE`
+`QWEN_INDEPENDENT_QUALIFIED=YES`
+
+This qualification is bounded to the tested workstation-local Qwen/OpenCode DEV lane and exact campaign conditions. It does not by itself authorize production model execution, D-0025, reviewer execution, retry execution, or commercial-provider fallback.
 
 ## Hard walls
 
