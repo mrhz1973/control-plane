@@ -200,6 +200,9 @@ export function buildTaskDelta(b, maxTestCycles) {
     lines.push(`Workflow: implement then test then correct corrective loop declared, test cycles: ${maxTestCycles}.`);
   }
   lines.push("Perform the change directly in the main agent; no subagents, no delegation; the executor owns tests and git persistence.");
+  lines.push(
+    "Windows Node path law: in any new test under tests/**, resolve the repo root with fileURLToPath(import.meta.url) + path.dirname + path.resolve(here, '../..'). Never use new URL(...).pathname string replaces — they resolve to the test directory and falsely look for tools/ beside the test file.",
+  );
   return lines.join("\n");
 }
 
