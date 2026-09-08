@@ -473,14 +473,56 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
     });
   }
 
-  const finish = (partial) =>
-    baseResult({
+  const emitStatus = (event = {}) => {
+    if (typeof options.onStatus !== "function") return;
+    try {
+      const safe = {
+        phase: typeof event.phase === "string" ? event.phase.slice(0, 80) : undefined,
+        tests_state: typeof event.tests_state === "string" ? event.tests_state.slice(0, 80) : undefined,
+        files_touched: Array.isArray(event.files_touched)
+          ? event.files_touched.map((p) => String(p).slice(0, 200)).filter(Boolean).slice(0, 16)
+          : undefined,
+        classification: typeof event.classification === "string" ? event.classification.slice(0, 120) : undefined,
+        last_event: typeof event.last_event === "string" ? event.last_event.slice(0, 160) : undefined,
+      };
+      options.onStatus(safe);
+    } catch {
+      /* observability must never alter PASS/STOP */
+    }
+  };
+
+  const inferTestsState = (result) => {
+    if (!result) return "UNKNOWN";
+    if (result.classification === "STOP:CONTEXT_WINDOW_EXCEEDED") return "NOT_APPLICABLE";
+    if (!Array.isArray(result.tests) || result.tests.length === 0) {
+      if (result.reason_codes?.includes("ACCEPTANCE_TEST_MISSING") || result.reason_codes?.includes("ACCEPTANCE_TEST_NOT_RUN")) {
+        return "NOT_APPLICABLE";
+      }
+      return "NOT_STARTED";
+    }
+    const last = result.tests[result.tests.length - 1];
+    if (last && last.exit_code === 0) return "PASS";
+    if (last && last.exit_code !== 0) return "FAIL";
+    return "UNKNOWN";
+  };
+
+  const finish = (partial) => {
+    const result = baseResult({
       task_ref: envelope.task_ref,
       profile_id: envelope.profile_id,
       base_head: pre.base_head,
       timebox_used_s: Math.round((Date.now() - startedAt) / 1000),
       ...partial,
     });
+    emitStatus({
+      phase: "TERMINAL",
+      classification: result.classification,
+      tests_state: inferTestsState(result),
+      files_touched: result.changed_files,
+      last_event: `terminal:${result.classification}`,
+    });
+    return result;
+  };
 
   // Qwen session (session-manager canonical principle via injected adapter).
   const session = await ensureQwenReady({ profile: envelope.profile_id });
@@ -568,6 +610,7 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
 
   try {
     openCodeCalls += 1;
+    emitStatus({ phase: "OPENCODE", tests_state: "NOT_STARTED", last_event: "opencode_start" });
     taskOutcome = await runOpenCodeTask({
       guardBaseUrl: guard.base_url,
       modelId: profile.model_id,
@@ -688,12 +731,20 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
 
   // Tests (bounded cycles). Absolutely no second OpenCode call.
   void openCodeCalls;
+  emitStatus({ phase: "TESTS", tests_state: "RUNNING", last_event: "tests_start" });
   const testRuns = await runTests({
     testCommand: envelope.test_command ?? null,
     maxTestCycles: envelope.max_test_cycles,
     allowedCommands: envelope.allowed_commands,
     repoPath: envelope.target_repo_path,
     taskOutcome,
+  });
+  const lastTest = testRuns?.[testRuns.length - 1];
+  emitStatus({
+    phase: "TESTS",
+    tests_state: !testRuns?.length ? "NOT_APPLICABLE"
+      : (lastTest?.exit_code === 0 ? "PASS" : "FAIL"),
+    last_event: "tests_done",
   });
   if (convergenceBudgetExhausted && (!Array.isArray(testRuns) || testRuns.length === 0)) {
     return finish(applyConvergence({
@@ -744,6 +795,7 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
   const changed = classification.stageable;
 
   if (envelope.git_persistence_required) {
+    emitStatus({ phase: "PERSISTENCE", last_event: "persistence_start" });
     const persistence = await persistGit({
       envelope,
       changedFiles: changed,

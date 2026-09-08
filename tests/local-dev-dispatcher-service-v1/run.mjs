@@ -14,6 +14,8 @@ import {
   RESULT_SCHEMA,
   REQUEST_SCHEMA,
   TICK_PATH,
+  STATUS_PATH,
+  STATUS_SCHEMA,
   CLASSIFICATIONS,
   validateTickRequest,
   wrapTickResult,
@@ -23,6 +25,7 @@ import {
   verifyRepoState,
   shouldPersistRuntimeArtifacts,
   persistReceiptsAtomic,
+  createExecutionStatusTracker,
 } from "../../tools/serve-local-dev-autonomous-dispatcher-v1.mjs";
 import {
   CLAIM_STALE_AFTER_MS,
@@ -779,6 +782,154 @@ await test("S21 Qwen readiness preflight before claim: exact profile_id, fail un
   assert.equal(snaps[1].find((r) => r.task_ref === taskRef).state, "EXECUTING");
   assert.equal(latestFor(taskRef, snaps).state, "PASS");
   assert.equal(snapshotCanonicalReceipts(), before);
+});
+
+await test("S22 status tracker IDLE + GET /v1/status schema; zero side effects; POST status 405", async () => {
+  const tracker = createExecutionStatusTracker();
+  const idle = tracker.snapshot();
+  assert.equal(idle.schema_version, STATUS_SCHEMA);
+  assert.equal(idle.active, false);
+  assert.equal(idle.terminal, false);
+  assert.equal(idle.phase, "IDLE");
+
+  let verify = 0, scan = 0, ready = 0, exec = 0;
+  const res = mockRes();
+  await handleTickRequest(mockReq("GET", STATUS_PATH), res, {
+    statusTracker: tracker,
+    tickDeps: {
+      verifyRepo: async () => { verify += 1; return { ok: true, head: BRIDGE_SHA }; },
+      scanQueue: () => { scan += 1; return []; },
+      ensureDevQwenReady: async () => { ready += 1; return { ready: true }; },
+      runExecutor: async () => { exec += 1; return { status: "PASS", classification: "PASS" }; },
+    },
+  });
+  assert.equal(res.status, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.schema_version, STATUS_SCHEMA);
+  assert.equal(body.phase, "IDLE");
+  assert.equal(verify + scan + ready + exec, 0);
+
+  const postRes = mockRes();
+  await handleTickRequest(mockReq("POST", STATUS_PATH, "{}"), postRes, { statusTracker: tracker });
+  assert.equal(postRes.status, 405);
+});
+
+await test("S23 concurrent GET status during slow tick; BUSY preserved; terminal PASS/STOP classifications", async () => {
+  const tracker = createExecutionStatusTracker();
+  let releaseExec = null;
+  let locked = false;
+  const tryAcquire = () => { if (locked) return false; locked = true; return true; };
+  const release = () => { locked = false; };
+  const profileId = "qwen38-opus-q3-opencode-64k";
+  const taskRef = "LOCAL_DEV_B_D-76B-A";
+
+  const tickDeps = {
+    statusTracker: tracker,
+    verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+    scanQueue: () => [{ markdown: "m", source: "x.md", backlog_path: "q/x.md" }],
+    runDispatchLoop: () => claimForTick(taskRef, {}, profileId),
+    loadReceipts: () => [],
+    persistReceipts: () => {},
+    ensureDevQwenReady: readyEnsureStub(),
+    admitMicroTaskDelta: () => ({ admitted: true }),
+    runExecutor: async (_envelope, opts) => {
+      opts?.onStatus?.({ phase: "OPENCODE", last_event: "opencode_start" });
+      opts?.onStatus?.({ phase: "TESTS", tests_state: "RUNNING", last_event: "tests_start" });
+      await new Promise((r) => { releaseExec = () => r(); });
+      opts?.onStatus?.({ phase: "TESTS", tests_state: "PASS", last_event: "tests_done" });
+      return { status: "PASS", classification: "PASS", task_ref: taskRef, reason_codes: ["PASS"] };
+    },
+  };
+
+  const firstRes = mockRes();
+  const first = handleTickRequest(
+    mockReq("POST", TICK_PATH, JSON.stringify({ schema_version: REQUEST_SCHEMA, request_id: "r-status-1", source: "n8n" })),
+    firstRes,
+    { tryAcquireLock: tryAcquire, releaseLock: release, statusTracker: tracker, tickDeps },
+  );
+  await new Promise((r) => setTimeout(r, 20));
+  const mid = tracker.snapshot();
+  assert.equal(mid.active, true);
+  assert.equal(mid.task_ref, taskRef);
+  assert.equal(mid.qwen_profile, profileId);
+  assert.ok(["EXECUTING", "OPENCODE", "TESTS"].includes(mid.phase), mid.phase);
+
+  const statusRes = mockRes();
+  await handleTickRequest(mockReq("GET", STATUS_PATH), statusRes, { statusTracker: tracker });
+  assert.equal(statusRes.status, 200);
+  assert.equal(JSON.parse(statusRes.body).active, true);
+
+  const busyRes = mockRes();
+  await handleTickRequest(
+    mockReq("POST", TICK_PATH, JSON.stringify({ schema_version: REQUEST_SCHEMA, request_id: "r-status-2", source: "n8n" })),
+    busyRes,
+    { tryAcquireLock: tryAcquire, releaseLock: release, statusTracker: tracker, tickDeps },
+  );
+  assert.equal(JSON.parse(busyRes.body).classification, "BUSY");
+  assert.equal(tracker.snapshot().request_id, "r-status-1");
+
+  releaseExec();
+  await first;
+  const term = tracker.snapshot();
+  assert.equal(term.active, false);
+  assert.equal(term.terminal, true);
+  assert.equal(term.phase, "TERMINAL");
+  assert.equal(term.classification, "PASS");
+  const serialized = JSON.stringify(term);
+  assert.ok(!serialized.includes("task_delta"));
+  assert.ok(!serialized.includes("stdout"));
+  assert.ok(!serialized.includes("stderr"));
+  assert.ok(!serialized.includes("Authorization"));
+  assert.ok(term.request_id.length <= 200);
+  assert.ok(term.phase.length <= 80);
+  assert.ok(Array.isArray(term.files_touched) && term.files_touched.length <= 16);
+
+  // Specific STOP classification preserved
+  const tracker2 = createExecutionStatusTracker();
+  await performTick(
+    { schema_version: REQUEST_SCHEMA, request_id: "r-ctx", source: "n8n" },
+    {
+      statusTracker: tracker2,
+      verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+      scanQueue: () => [{ markdown: "m", source: "x.md", backlog_path: "q/x.md" }],
+      runDispatchLoop: () => claimForTick("LOCAL_DEV_B_D-76B-CTX", {}, profileId),
+      loadReceipts: () => [],
+      persistReceipts: () => {},
+      ensureDevQwenReady: readyEnsureStub(),
+      admitMicroTaskDelta: () => ({ admitted: true }),
+      runExecutor: async () => ({
+        status: "STOP",
+        classification: "STOP:CONTEXT_WINDOW_EXCEEDED",
+        task_ref: "LOCAL_DEV_B_D-76B-CTX",
+        reason_codes: ["CONTEXT_WINDOW_EXCEEDED"],
+      }),
+    },
+  );
+  assert.equal(tracker2.snapshot().classification, "STOP:CONTEXT_WINDOW_EXCEEDED");
+});
+
+await test("S24 status tracker exceptions cannot break tick", async () => {
+  const boom = () => { throw new Error("status boom"); };
+  const result = await performTick(
+    { schema_version: REQUEST_SCHEMA, request_id: "r-boom", source: "n8n" },
+    {
+      statusTracker: {
+        start: boom,
+        update: boom,
+        finish: boom,
+        snapshot: boom,
+      },
+      verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+      scanQueue: () => [{ markdown: "m", source: "x.md", backlog_path: "q/x.md" }],
+      runDispatchLoop: () => claimForTick("LOCAL_DEV_B_D-76B-BOOM"),
+      loadReceipts: () => [],
+      persistReceipts: () => {},
+      ensureDevQwenReady: readyEnsureStub(),
+      admitMicroTaskDelta: () => ({ admitted: true }),
+      runExecutor: async () => ({ status: "PASS", classification: "PASS", task_ref: "LOCAL_DEV_B_D-76B-BOOM" }),
+    },
+  );
+  assert.equal(result.classification, "WORK_EXECUTED_PASS");
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);

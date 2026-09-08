@@ -55,9 +55,11 @@ import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.m
 
 export const RESULT_SCHEMA = "local-dev-dispatch-tick-result-v1";
 export const REQUEST_SCHEMA = "local-dev-dispatch-tick-v1";
+export const STATUS_SCHEMA = "local-dev-execution-status-v1";
 export const DEFAULT_HOST = "127.0.0.1";
 export const DEFAULT_PORT = 18793;
 export const TICK_PATH = "/v1/tick";
+export const STATUS_PATH = "/v1/status";
 export const REPO = "mrhz1973/control-plane";
 export const CANONICAL_REPO_PATH = KNOWN_LOCAL_REPOS[REPO];
 export const QUEUE_DIR = "reports/runtime/dev-queue/always-on";
@@ -78,6 +80,143 @@ export const CLASSIFICATIONS = Object.freeze([
   "HUMAN_GATE_REQUIRED",
   "SERVICE_ERROR",
 ]);
+
+function boundStr(value, max) {
+  if (value === null || value === undefined) return null;
+  const s = String(value);
+  if (!s) return null;
+  return s.length <= max ? s : s.slice(0, max);
+}
+
+function boundInt(value, { allowNull = true, min = 0 } = {}) {
+  if (value === null || value === undefined) return allowNull ? null : min;
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < min) return allowNull ? null : min;
+  return Math.floor(n);
+}
+
+function boundFilesTouched(list) {
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((p) => boundStr(p, 200))
+    .filter(Boolean)
+    .slice(0, 16);
+}
+
+function emptyStatusSnapshot(partial = {}) {
+  return {
+    schema_version: STATUS_SCHEMA,
+    active: false,
+    terminal: false,
+    request_id: null,
+    task_ref: null,
+    phase: "IDLE",
+    elapsed_ms: 0,
+    executor_pid: null,
+    qwen_profile: null,
+    runtime_ready: null,
+    tests_state: "NOT_STARTED",
+    files_touched: [],
+    classification: null,
+    last_event: null,
+    ...partial,
+  };
+}
+
+/**
+ * In-memory execution status tracker (observability only).
+ * Never throws into the execution path; callers should still wrap updates.
+ */
+export function createExecutionStatusTracker(options = {}) {
+  const nowFn = options.nowMs || (() => Date.now());
+  let startedAt = null;
+  let state = emptyStatusSnapshot();
+
+  const snapshot = () => {
+    const elapsed = startedAt == null ? (state.elapsed_ms || 0) : Math.max(0, nowFn() - startedAt);
+    return {
+      schema_version: STATUS_SCHEMA,
+      active: state.active === true,
+      terminal: state.terminal === true,
+      request_id: boundStr(state.request_id, 200),
+      task_ref: boundStr(state.task_ref, 200),
+      phase: boundStr(state.phase, 80) || "IDLE",
+      elapsed_ms: boundInt(elapsed, { allowNull: false, min: 0 }),
+      executor_pid: boundInt(state.executor_pid, { allowNull: true, min: 1 }),
+      qwen_profile: boundStr(state.qwen_profile, 120),
+      runtime_ready: state.runtime_ready === true ? true : (state.runtime_ready === false ? false : null),
+      tests_state: boundStr(state.tests_state, 80) || "NOT_STARTED",
+      files_touched: boundFilesTouched(state.files_touched),
+      classification: boundStr(state.classification, 120),
+      last_event: boundStr(state.last_event, 160),
+    };
+  };
+
+  return {
+    start(fields = {}) {
+      startedAt = nowFn();
+      state = emptyStatusSnapshot({
+        active: true,
+        terminal: false,
+        request_id: boundStr(fields.request_id, 200),
+        task_ref: boundStr(fields.task_ref, 200),
+        phase: boundStr(fields.phase, 80) || "REPO_HYGIENE",
+        executor_pid: boundInt(fields.executor_pid, { allowNull: true, min: 1 }),
+        qwen_profile: boundStr(fields.qwen_profile, 120),
+        runtime_ready: null,
+        tests_state: "NOT_STARTED",
+        files_touched: [],
+        classification: null,
+        last_event: boundStr(fields.last_event || "tick_started", 160),
+      });
+      return snapshot();
+    },
+    update(fields = {}) {
+      if (!state.active && !fields.force) {
+        // Still allow enriching terminal snapshot only via finish; ignore stray updates.
+        if (state.terminal) return snapshot();
+      }
+      if (fields.request_id !== undefined) state.request_id = boundStr(fields.request_id, 200);
+      if (fields.task_ref !== undefined) state.task_ref = boundStr(fields.task_ref, 200);
+      if (fields.phase !== undefined) state.phase = boundStr(fields.phase, 80) || state.phase;
+      if (fields.executor_pid !== undefined) state.executor_pid = boundInt(fields.executor_pid, { allowNull: true, min: 1 });
+      if (fields.qwen_profile !== undefined) state.qwen_profile = boundStr(fields.qwen_profile, 120);
+      if (fields.runtime_ready !== undefined) {
+        state.runtime_ready = fields.runtime_ready === true ? true : (fields.runtime_ready === false ? false : null);
+      }
+      if (fields.tests_state !== undefined) state.tests_state = boundStr(fields.tests_state, 80) || state.tests_state;
+      if (fields.files_touched !== undefined) state.files_touched = boundFilesTouched(fields.files_touched);
+      if (fields.classification !== undefined) state.classification = boundStr(fields.classification, 120);
+      if (fields.last_event !== undefined) state.last_event = boundStr(fields.last_event, 160);
+      if (fields.active !== undefined) state.active = fields.active === true;
+      if (fields.terminal !== undefined) state.terminal = fields.terminal === true;
+      return snapshot();
+    },
+    finish(fields = {}) {
+      const elapsed = startedAt == null ? 0 : Math.max(0, nowFn() - startedAt);
+      state = {
+        ...state,
+        active: false,
+        terminal: true,
+        phase: "TERMINAL",
+        elapsed_ms: elapsed,
+        classification: boundStr(fields.classification ?? state.classification, 120),
+        task_ref: fields.task_ref !== undefined ? boundStr(fields.task_ref, 200) : state.task_ref,
+        request_id: fields.request_id !== undefined ? boundStr(fields.request_id, 200) : state.request_id,
+        qwen_profile: fields.qwen_profile !== undefined ? boundStr(fields.qwen_profile, 120) : state.qwen_profile,
+        runtime_ready: fields.runtime_ready !== undefined
+          ? (fields.runtime_ready === true ? true : (fields.runtime_ready === false ? false : null))
+          : state.runtime_ready,
+        tests_state: fields.tests_state !== undefined ? (boundStr(fields.tests_state, 80) || state.tests_state) : state.tests_state,
+        files_touched: fields.files_touched !== undefined ? boundFilesTouched(fields.files_touched) : state.files_touched,
+        last_event: boundStr(fields.last_event || "terminal", 160),
+      };
+      startedAt = null;
+      return snapshot();
+    },
+    snapshot,
+  };
+}
 
 function gitExec(repoPath, args) {
   return new Promise((res) => {
@@ -284,11 +423,39 @@ export function persistReceiptsAtomic(targetPath, receipts) {
 
 /**
  * One bounded tick. deps are injectable for offline tests:
- * verifyRepo, scanQueue, runDispatchLoop, runExecutor, nowIso.
+ * verifyRepo, scanQueue, runDispatchLoop, runExecutor, nowIso, statusTracker.
  * scanQueue returns [{ ok, item, markdown, source, backlog_path }].
  */
 export async function performTick(body, deps = {}) {
   const requestId = typeof body?.request_id === "string" ? body.request_id : null;
+  const tracker = deps.statusTracker || null;
+  const statusSafe = (fn, ...args) => {
+    try { return tracker && typeof tracker[fn] === "function" ? tracker[fn](...args) : null; } catch { return null; }
+  };
+  const terminalClassification = (result) => {
+    if (!result) return "SERVICE_ERROR";
+    if (result.executor_classification) return result.executor_classification;
+    if (result.classification === "WORK_EXECUTED_PASS") return "PASS";
+    if (result.classification === "WORK_EXECUTED_STOP") return result.executor_classification || "STOP";
+    return result.classification || "SERVICE_ERROR";
+  };
+  const done = (result) => {
+    statusSafe("finish", {
+      request_id: requestId,
+      task_ref: result?.task_ref ?? null,
+      classification: terminalClassification(result),
+      last_event: `terminal:${terminalClassification(result)}`,
+    });
+    return result;
+  };
+
+  statusSafe("start", {
+    request_id: requestId,
+    phase: "REPO_HYGIENE",
+    executor_pid: process.pid,
+    last_event: "repo_hygiene",
+  });
+
   const verifyRepo = deps.verifyRepo || verifyRepoState;
   const scan = deps.scanQueue || ((queueDir) => {
     const abs = resolve(CANONICAL_REPO_PATH, queueDir);
@@ -303,7 +470,9 @@ export async function performTick(body, deps = {}) {
     });
   });
   const dispatchLoop = deps.runDispatchLoop || runDispatchLoop;
-  const runExecutor = deps.runExecutor || (async (envelope) => executeLocalDevTask(envelope, composeRunners()));
+  const defaultRunExecutor = async (envelope, execOpts = {}) =>
+    executeLocalDevTask(envelope, { ...composeRunners(), ...execOpts });
+  const runExecutor = deps.runExecutor || defaultRunExecutor;
   const nowIso = deps.nowIso ? deps.nowIso() : new Date().toISOString();
   const receiptsPath = deps.receiptsPath || resolve(CANONICAL_REPO_PATH, RECEIPTS_PATH);
   const loadReceipts = deps.loadReceipts || (() => loadReceiptsFile(receiptsPath));
@@ -311,18 +480,19 @@ export async function performTick(body, deps = {}) {
   // 1. Repo hygiene (fail-closed, non-destructive).
   const repoState = await verifyRepo();
   if (!repoState.ok) {
-    return wrapTickResult({
+    return done(wrapTickResult({
       ok: false,
       request_id: requestId,
       classification: "HUMAN_GATE_REQUIRED",
       human_gate_required: true,
       gate_summary: repoState.gate_summary || (repoState.reason_codes || []).join(","),
       reason_codes: repoState.reason_codes,
-    });
+    }));
   }
   const head = repoState.head;
 
   // 2. Claim AT MOST ONE real READY item via the proven dispatcher primitive.
+  statusSafe("update", { phase: "QUEUE_SCAN", last_event: "queue_scan" });
   const receipts = loadReceipts();
   const entries = scan(QUEUE_DIR).map((e) => {
     if (e.read_failed || !e.markdown) return { ok: false, source: e.source };
@@ -342,15 +512,21 @@ export async function performTick(body, deps = {}) {
     queueDir: QUEUE_DIR,
   });
   if (!loop.claims.length) {
-    return wrapTickResult({
+    return done(wrapTickResult({
       ok: true,
       request_id: requestId,
       classification: "IDLE_CLEAN",
       execution_performed: false,
       reason_codes: loop.skipped?.length ? ["CLAIM_SKIPPED_PRESENT"] : ["NO_ELIGIBLE_READY"],
-    });
+    }));
   }
   const claim = loop.claims[0];
+  statusSafe("update", {
+    phase: "QWEN_PREFLIGHT",
+    task_ref: claim.task_ref,
+    qwen_profile: claim?.envelope?.profile_id ?? null,
+    last_event: "qwen_preflight",
+  });
 
   // 2b. Exact DEV profile readiness BEFORE any durable claim/envelope write.
   // In-memory selection is not consumption; persistence is.
@@ -363,7 +539,8 @@ export async function performTick(body, deps = {}) {
       readinessTimeoutMs: deps.qwenPreflightTimeoutMs ?? QWEN_PREFLIGHT_TIMEOUT_MS,
     });
   } catch (err) {
-    return wrapTickResult({
+    statusSafe("update", { runtime_ready: false, last_event: "qwen_preflight_threw" });
+    return done(wrapTickResult({
       ok: false,
       request_id: requestId,
       classification: "HUMAN_GATE_REQUIRED",
@@ -375,11 +552,12 @@ export async function performTick(body, deps = {}) {
         "QWEN_SESSION_NOT_READY",
         String(err?.code || err?.message || "ensure_threw").slice(0, 80),
       ],
-    });
+    }));
   }
   if (!readiness || readiness.ready !== true) {
     const status = readiness?.reason_code || readiness?.status || "QWEN_SESSION_NOT_READY";
-    return wrapTickResult({
+    statusSafe("update", { runtime_ready: false, last_event: "qwen_not_ready" });
+    return done(wrapTickResult({
       ok: false,
       request_id: requestId,
       classification: "HUMAN_GATE_REQUIRED",
@@ -388,12 +566,14 @@ export async function performTick(body, deps = {}) {
       human_gate_required: true,
       gate_summary: `QWEN_SESSION_NOT_READY:${status}`,
       reason_codes: ["QWEN_SESSION_NOT_READY", String(status).slice(0, 80)],
-    });
+    }));
   }
+  statusSafe("update", { runtime_ready: true, last_event: "qwen_ready" });
 
   // 3. Persist claim receipts + envelope ONLY after exact profile READY.
   // Real runtime (zero injected deps) persists BOTH; ANY injected performTick
   // dependency persists NEITHER (shouldPersistRuntimeArtifacts).
+  statusSafe("update", { phase: "CLAIM", last_event: "claim_persist" });
   const realRuntimePersistence = shouldPersistRuntimeArtifacts(deps);
   const persistReceiptsFn = deps.persistReceipts
     || (realRuntimePersistence ? (list) => persistReceiptsAtomic(receiptsPath, list) : null);
@@ -414,13 +594,14 @@ export async function performTick(body, deps = {}) {
     }
     if (persistReceiptsFn) persistReceiptsFn(ledger);
   } catch (err) {
-    return persistFailed(err);
+    return done(persistFailed(err));
   }
 
   // 3b. MICRO_TASK_DELTA admission — AFTER claim, BEFORE executor.
   // Rejected admission never reaches runExecutor (execution_performed=false).
   // Classification HUMAN_GATE_REQUIRED stays within the WF90 ALLOWED set
   // (no live schema expansion in this pass).
+  statusSafe("update", { phase: "ADMISSION", last_event: "admission" });
   const admitFn = deps.admitMicroTaskDelta || admitMicroTaskDelta;
   const admissionInput = deps.admissionInput
     || extractMicroTaskAdmissionInput(claim);
@@ -433,9 +614,9 @@ export async function performTick(body, deps = {}) {
       });
       if (persistReceiptsFn) persistReceiptsFn(ledger);
     } catch (err) {
-      return persistFailed(err);
+      return done(persistFailed(err));
     }
-    return wrapTickResult({
+    return done(wrapTickResult({
       ok: false,
       request_id: requestId,
       classification: "HUMAN_GATE_REQUIRED",
@@ -447,7 +628,7 @@ export async function performTick(body, deps = {}) {
         "MICRO_TASK_ADMISSION_REJECTED",
         ...(Array.isArray(admission?.reason_codes) ? admission.reason_codes : ["ADMISSION_HELPER_INVALID"]),
       ].slice(0, 16),
-    });
+    }));
   }
 
   // 4. Persist EXECUTING immediately BEFORE runExecutor, then execute.
@@ -455,11 +636,25 @@ export async function performTick(body, deps = {}) {
     ledger = transitionLatestReceipt(ledger, claim.task_ref, "EXECUTING");
     if (persistReceiptsFn) persistReceiptsFn(ledger);
   } catch (err) {
-    return persistFailed(err);
+    return done(persistFailed(err));
   }
+  statusSafe("update", {
+    phase: "EXECUTING",
+    executor_pid: process.pid,
+    last_event: "executor_start",
+  });
   let executorResult;
   try {
-    executorResult = await runExecutor(claim.envelope);
+    const onStatus = (event = {}) => {
+      statusSafe("update", {
+        phase: event.phase || "EXECUTING",
+        tests_state: event.tests_state,
+        files_touched: event.files_touched,
+        classification: event.classification,
+        last_event: event.last_event || event.phase || "executor_event",
+      });
+    };
+    executorResult = await runExecutor(claim.envelope, { onStatus });
   } catch (err) {
     executorResult = {
       status: "STOP",
@@ -478,9 +673,9 @@ export async function performTick(body, deps = {}) {
     );
     if (persistReceiptsFn) persistReceiptsFn(ledger);
   } catch (err) {
-    return persistFailed(err);
+    return done(persistFailed(err));
   }
-  return classificationFromExecutorResult(executorResult, requestId);
+  return done(classificationFromExecutorResult(executorResult, requestId));
 }
 
 // parseBacklog via the proven selector module (imported lazily to keep the
@@ -514,7 +709,7 @@ function readBody(req) {
   });
 }
 
-/** HTTP handler. Injected deps only for tests. */
+/** HTTP handler. Injected deps only for tests. Routes /v1/tick and /v1/status. */
 export async function handleTickRequest(req, res, deps = {}) {
   const send = (status, obj) => {
     try {
@@ -522,14 +717,35 @@ export async function handleTickRequest(req, res, deps = {}) {
       res.end(`${JSON.stringify(obj)}\n`);
     } catch { /* client gone */ }
   };
-  if (req.method !== "POST") {
-    send(405, wrapTickResult({ ok: false, classification: "SERVICE_ERROR", reason_codes: ["POST_ONLY"] }));
-    return;
-  }
   let url;
   try { url = new URL(req.url, "http://127.0.0.1"); } catch { url = null; }
-  if (!url || url.pathname !== TICK_PATH) {
+  const path = url?.pathname || "";
+
+  // Read-only status: never acquires the tick lock, never executes work.
+  if (path === STATUS_PATH) {
+    if (req.method !== "GET") {
+      send(405, wrapTickResult({ ok: false, classification: "SERVICE_ERROR", reason_codes: ["GET_ONLY"] }));
+      return;
+    }
+    const tracker = deps.statusTracker || null;
+    let snap;
+    try {
+      snap = tracker && typeof tracker.snapshot === "function"
+        ? tracker.snapshot()
+        : emptyStatusSnapshot();
+    } catch {
+      snap = emptyStatusSnapshot({ phase: "IDLE", last_event: "status_snapshot_error" });
+    }
+    send(200, snap);
+    return;
+  }
+
+  if (path !== TICK_PATH) {
     send(404, wrapTickResult({ ok: false, classification: "SERVICE_ERROR", reason_codes: ["PATH_NOT_FOUND"] }));
+    return;
+  }
+  if (req.method !== "POST") {
+    send(405, wrapTickResult({ ok: false, classification: "SERVICE_ERROR", reason_codes: ["POST_ONLY"] }));
     return;
   }
   const raw = await readBody(req);
@@ -553,7 +769,9 @@ export async function handleTickRequest(req, res, deps = {}) {
     return;
   }
   try {
-    const result = await performTick(body, deps.tickDeps || {});
+    const tickDeps = { ...(deps.tickDeps || {}) };
+    if (deps.statusTracker && !tickDeps.statusTracker) tickDeps.statusTracker = deps.statusTracker;
+    const result = await performTick(body, tickDeps);
     if (deps.releaseLock) deps.releaseLock();
     // WORK_EXECUTED_STOP is a well-formed bounded contract result (executor
     // stopped safely) — transport 200; the n8n normalizer keys off
@@ -565,6 +783,13 @@ export async function handleTickRequest(req, res, deps = {}) {
     send(status, result);
   } catch (err) {
     if (deps.releaseLock) deps.releaseLock();
+    try {
+      deps.statusTracker?.finish?.({
+        request_id: body.request_id,
+        classification: "SERVICE_ERROR",
+        last_event: "tick_unhandled",
+      });
+    } catch { /* observability only */ }
     send(500, wrapTickResult({ ok: false, request_id: body.request_id, classification: "SERVICE_ERROR", reason_codes: ["TICK_UNHANDLED", String(err?.message || err).slice(0, 80)] }));
   }
 }
@@ -579,8 +804,14 @@ export function startServer(options = {}) {
     return true;
   };
   const releaseLock = () => { executing = false; };
+  const statusTracker = options.statusTracker || createExecutionStatusTracker();
   const server = http.createServer((req, res) => {
-    handleTickRequest(req, res, { ...(options.deps || {}), tryAcquireLock, releaseLock }).catch(() => {
+    handleTickRequest(req, res, {
+      ...(options.deps || {}),
+      tryAcquireLock,
+      releaseLock,
+      statusTracker,
+    }).catch(() => {
       releaseLock();
       try {
         res.writeHead(500, { "Content-Type": "application/json" });

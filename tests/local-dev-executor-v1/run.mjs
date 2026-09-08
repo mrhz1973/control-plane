@@ -587,6 +587,86 @@ await test("max-turn exhausted + persistence failure -> MAX_AGENT_TURNS + GIT_PE
   assert.ok(result.reason_codes.includes("GIT_PERSISTENCE_FAILED"));
 });
 
+await test("onStatus optional; observer throw does not change result; structural phases emitted", async () => {
+  const env = validEnvelope({ git_persistence_required: true });
+  const events = [];
+  const result = await executeLocalDevTask(env, {
+    git: baseGitForConvergence(env),
+    ensureQwenReady: async () => ({ ready: true, status: "READY", router_was_running: true }),
+    guardStart: async () => ({
+      base_url: "http://127.0.0.1:54321",
+      getAccounting: () => ({ upstream_generation_requests: 1, blocked_generation_requests: 0 }),
+      close: async () => {},
+    }),
+    runOpenCodeTask: async () => ({ ok: true }),
+    runTests: async ({ testCommand }) => [{ command: testCommand, exit_code: 0, cycle: 1 }],
+    persistGit: async () => ({ ok: true, final_head: env.dispatch_base_head }),
+    onStatus: (e) => {
+      events.push(e);
+      if (e.phase === "TESTS") throw new Error("observer boom");
+    },
+  });
+  assert.equal(result.status, "PASS");
+  const phases = events.map((e) => e.phase);
+  assert.ok(phases.includes("OPENCODE"));
+  assert.ok(phases.includes("TESTS"));
+  assert.ok(phases.includes("PERSISTENCE"));
+  assert.ok(phases.includes("TERMINAL"));
+  for (const e of events) {
+    const s = JSON.stringify(e);
+    assert.ok(!s.includes("task_delta"));
+    assert.ok(!s.includes("stdout"));
+    assert.ok(!s.includes("stderr"));
+    assert.ok(!("prompt" in e));
+  }
+  const testsEv = events.find((e) => e.phase === "TESTS" && e.tests_state === "PASS");
+  assert.ok(testsEv);
+});
+
+await test("context-window STOP does not emit TESTS; max-turn convergence emits TESTS; one OpenCode", async () => {
+  const env = validEnvelope({ git_persistence_required: false });
+  const ctxEvents = [];
+  await executeLocalDevTask(env, {
+    git: baseGitForConvergence(env, ""),
+    ensureQwenReady: async () => ({ ready: true, status: "READY", router_was_running: true }),
+    guardStart: async () => ({
+      base_url: "http://127.0.0.1:54321",
+      getAccounting: () => ({ upstream_generation_requests: 1, blocked_generation_requests: 0 }),
+      close: async () => {},
+    }),
+    runOpenCodeTask: async () => {
+      throw Object.assign(new Error("overflow"), {
+        code: "OPENCODE_RUN_FAILED",
+        opencode_exit_code: 1,
+        stderr: "request tokens 31302 > 24576 exceeds context window",
+      });
+    },
+    runTests: async () => { throw new Error("must not"); },
+    onStatus: (e) => ctxEvents.push(e),
+  });
+  assert.ok(ctxEvents.some((e) => e.phase === "OPENCODE"));
+  assert.ok(!ctxEvents.some((e) => e.phase === "TESTS"));
+  assert.equal(ctxEvents[ctxEvents.length - 1].phase, "TERMINAL");
+
+  let openCodeCalls = 0;
+  const convEvents = [];
+  const conv = await executeLocalDevTask(env, {
+    git: baseGitForConvergence(env),
+    ensureQwenReady: async () => ({ ready: true, status: "READY", router_was_running: true }),
+    guardStart: async () => blockedGuard(),
+    runOpenCodeTask: async () => {
+      openCodeCalls += 1;
+      throw Object.assign(new Error("exit 1"), { code: "OPENCODE_RUN_FAILED", opencode_exit_code: 1 });
+    },
+    runTests: async ({ testCommand }) => [{ command: testCommand, exit_code: 0, cycle: 1 }],
+    onStatus: (e) => convEvents.push(e),
+  });
+  assert.equal(openCodeCalls, 1);
+  assert.equal(conv.status, "PASS");
+  assert.ok(convEvents.some((e) => e.phase === "TESTS"));
+  assert.ok(!convEvents.some((e) => e.phase === "PERSISTENCE"));
+});
+
 // ---------- 10. production eligible set unchanged ----------
 await test("production eligible set unchanged vs base HEAD (additive DEV fields only)", async () => {
   const { execSync } = await import("node:child_process");
