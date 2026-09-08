@@ -269,6 +269,15 @@ export function buildLocalDevEnvelopeFromBacklog(input = {}) {
     if (!Number.isInteger(dev.max_turns_hint)) return fail("BACKLOG_DEV_FIELDS_UNSUPPORTED");
     turnsHint = dev.max_turns_hint;
   }
+  // Multi-file loop-allowed MODIFY packages need more than smoke turn budgets.
+  // Proven live: D-9404-A with 3 allowed files exhausted max_turns_hint=8 mid-implement.
+  if (
+    b.execution.loop_allowed === true
+    && Array.isArray(b.scope?.allowed_areas)
+    && b.scope.allowed_areas.length >= 3
+  ) {
+    turnsHint = Math.max(turnsHint, 16);
+  }
   let testCommand = FALLBACK_TEST_COMMAND;
   if (dev.test_commands !== undefined && dev.test_commands !== null) {
     if (!isStringArray(dev.test_commands) || dev.test_commands.length > 1) return fail("BACKLOG_DEV_FIELDS_UNSUPPORTED");
