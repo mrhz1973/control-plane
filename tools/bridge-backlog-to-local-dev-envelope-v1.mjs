@@ -203,6 +203,9 @@ export function buildTaskDelta(b, maxTestCycles) {
   lines.push(
     "Windows Node path law: in any new test under tests/**, resolve the repo root with fileURLToPath(import.meta.url) + path.dirname + path.resolve(here, '../..'). Never use new URL(...).pathname string replaces — they resolve to the test directory and falsely look for tools/ beside the test file.",
   );
+  lines.push(
+    "If all exact allowed_paths already exist and the focused test_command already exits 0, do not rewrite them; exit promptly so the executor can persist git.",
+  );
   return lines.join("\n");
 }
 
@@ -273,17 +276,19 @@ export function buildLocalDevEnvelopeFromBacklog(input = {}) {
     turnsHint = dev.max_turns_hint;
   }
   let timeboxCap = 900;
+  let turnsCap = 16;
   // Multi-file loop-allowed MODIFY packages need more than smoke turn/time budgets.
-  // Proven live: D-9404-A (3 files) exhausted turns=8 then timebox=900s after files existed
-  // but before focused tests/commit.
+  // Proven live: D-9404-A (3 exact files) exhausted turns=8, then timebox=900s/1800s
+  // before tests/commit; drafts must remain stageable on retry.
   if (
     b.execution.loop_allowed === true
     && Array.isArray(b.scope?.allowed_areas)
     && b.scope.allowed_areas.length >= 3
   ) {
-    turnsHint = Math.max(turnsHint, 16);
-    timeboxHint = Math.max(timeboxHint, 1800);
-    timeboxCap = 1800;
+    turnsHint = Math.max(turnsHint, 24);
+    timeboxHint = Math.max(timeboxHint, 3600);
+    timeboxCap = 3600;
+    turnsCap = 24;
   }
   let testCommand = FALLBACK_TEST_COMMAND;
   if (dev.test_commands !== undefined && dev.test_commands !== null) {
@@ -328,7 +333,7 @@ export function buildLocalDevEnvelopeFromBacklog(input = {}) {
     test_command: testCommand,
     network_policy: "localhost_only",
     timebox_seconds: clamp(timeboxHint, 60, timeboxCap),
-    max_agent_turns: clamp(turnsHint, 1, 16),
+    max_agent_turns: clamp(turnsHint, 1, turnsCap),
     max_test_cycles: maxTestCycles,
     git_persistence_required: true,
   };

@@ -26,8 +26,8 @@ export const DEFAULT_DEV_PROFILE_ID = "qwen38-opus-q3-opencode-24k";
 export const QWEN_LOCAL_PROVIDER_ID = "qwen_local";
 export const CANONICAL_QWEN_ENDPOINT = "http://127.0.0.1:8080";
 
-export const HARD_TIMEBOX_SECONDS = 1800;
-export const HARD_MAX_AGENT_TURNS = 16;
+export const HARD_TIMEBOX_SECONDS = 3600;
+export const HARD_MAX_AGENT_TURNS = 24;
 export const HARD_MAX_TEST_CYCLES = 3;
 export const MAX_OPENCODE_DIAGNOSTIC_CHARS = 2000;
 
@@ -293,8 +293,22 @@ export async function classifyPostExecutionChanges(envelope, preUntracked, git =
   }
   const taskCreatedNew = [];
   let preexistingProtected = 0;
+  const exactAllowed = new Set(
+    (envelope.allowed_paths || [])
+      .map((a) => normalizeRepoPath(String(a || "")))
+      .filter((a) => a && !/[?*\[]/.test(a) && !a.endsWith("/")),
+  );
   for (const p of untrackedNow) {
-    if (preSet.has(p)) { preexistingProtected += 1; continue; }
+    if (preSet.has(p)) {
+      // Exact allowed-file recovery: durable drafts left by a prior non-PASS
+      // STOP on exact allowed_paths entries may be staged (glob roots stay protected).
+      if (exactAllowed.has(p)) {
+        taskCreatedNew.push(p);
+        continue;
+      }
+      preexistingProtected += 1;
+      continue;
+    }
     if (preCase.has(p.toLowerCase())) {
       return { ok: false, classification: "STOP:PATH_NORMALIZATION_AMBIGUOUS", reason_codes: ["PATH_NORMALIZATION_AMBIGUOUS", `PATH:${p}`] };
     }
