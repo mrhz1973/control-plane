@@ -1,5 +1,27 @@
 # LAST CURSOR REPORT
 
+## V4 Qwen WF90 full live closure 10-loop — latest
+
+**TASK_REF:** `V4_QWEN_WF90_FULL_LIVE_CLOSURE_10LOOP_V1`
+**Classification:** `PASS — D9404A_EXECUTOR_PASS=c2ca76e · WF90_NATURAL · QWEN_64K_READY · POST_PASS_IDLE_TICKS=2 · LOOPS_USED=7/10`
+**Date (UTC):** 2026-09-08
+**BASE_HEAD:** `221e66b1f83ae080603cc88cb0ef9c55abc54ea6`
+**Report:** `reports/architecture/v4_qwen_wf90_full_live_closure_10loop_v1.md`
+
+Operator dispatcher reload proven (PID 30968→52316); later identity-verified
+Scheduled Task restarts during corrective loops; post-run listener PID 32596.
+Natural WF90 delivered D-9404-A; Qwen profile `qwen38-opus-q3-opencode-64k`
+runtime_ready; OpenCode + focused tests PASS; remote
+`executor-pass: LOCAL_DEV_B_D-9404-A` at `c2ca76e` (exact 3 allowed files;
+`rt25-quota-ingest-glm-v1.mjs` unchanged; no GLM Scheduled Task installed;
+provider/GLM/Codex/Hermes calls 0). Post-pass natural IDLE_CLEAN ticks
+`…205041-317335-0` and `…205541-317346-0`; duplicate executions 0; dispatcher
+healthy. Corrective loops 1–6: STOP receipt / turn floor / hygiene /
+timebox / draft staging / Windows path hint / 3600s+exact-draft recovery.
+D-9404-B not activated; n8n/WF40/WF61/D-0025/VPS unchanged.
+
+---
+
 ## V4 Qwen local autorecovery exhaustive remediation — latest
 
 **TASK_REF:** `V4_QWEN_LOCAL_AUTORECOVERY_EXHAUSTIVE_REMEDIATION_V1`
