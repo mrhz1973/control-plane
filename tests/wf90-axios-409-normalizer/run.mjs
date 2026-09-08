@@ -200,6 +200,100 @@ await test("error-without-message-stays-service-error", () => {
   assert.equal(out.classification, "SERVICE_ERROR");
 });
 
+// ---------------------------------------------------------------------------
+// 5. #76-C — surface executor_classification (CONTEXT / MAX_TURNS) + Telegram/terminal bounds.
+// ---------------------------------------------------------------------------
+await test("stop-context-window-exceeded-executor-classification-preserved", () => {
+  const body = tickResult({
+    classification: "WORK_EXECUTED_STOP",
+    ok: true,
+    execution_performed: true,
+    task_ref: "LOCAL_DEV_B_D-76C-CTX",
+    executor_classification: "STOP:CONTEXT_WINDOW_EXCEEDED",
+    reason_codes: ["CONTEXT_WINDOW_EXCEEDED"],
+    gate_summary: "CONTEXT_WINDOW_EXCEEDED",
+  });
+  const out = normalize(body);
+  assert.equal(out.response_valid, true);
+  assert.equal(out.classification, "WORK_EXECUTED_STOP");
+  assert.equal(out.notify_required, true);
+  assert.equal(out.executor_classification, "STOP:CONTEXT_WINDOW_EXCEEDED");
+});
+
+await test("stop-max-agent-turns-exceeded-executor-classification-preserved", () => {
+  const body = tickResult({
+    classification: "WORK_EXECUTED_STOP",
+    ok: true,
+    execution_performed: true,
+    task_ref: "LOCAL_DEV_B_D-76C-TURNS",
+    executor_classification: "STOP:MAX_AGENT_TURNS_EXCEEDED",
+    reason_codes: ["MAX_AGENT_TURNS_EXCEEDED"],
+    gate_summary: "MAX_AGENT_TURNS_EXCEEDED",
+  });
+  const out = normalize(body);
+  assert.equal(out.response_valid, true);
+  assert.equal(out.classification, "WORK_EXECUTED_STOP");
+  assert.equal(out.notify_required, true);
+  assert.equal(out.executor_classification, "STOP:MAX_AGENT_TURNS_EXCEEDED");
+});
+
+await test("pass-idle-busy-notification-policy-unchanged", () => {
+  assert.equal(normalize(tickResult({ classification: "WORK_EXECUTED_PASS", ok: true, execution_performed: true })).notify_required, false);
+  assert.equal(normalize(tickResult({ classification: "IDLE_CLEAN", ok: true })).notify_required, false);
+  assert.equal(normalize(tickResult({ classification: "BUSY", ok: true })).notify_required, false);
+});
+
+const telegramNode = artifact.nodes.find((n) => n.name === "Telegram - LOCAL_DEV gate notification");
+assert.ok(telegramNode, "workflow artifact must contain Telegram gate notification node");
+const telegramExpr = String(telegramNode.parameters?.jsonBody ?? "");
+
+const terminalNode = artifact.nodes.find((n) => n.name === "Code - LOCAL_DEV tick terminal");
+assert.ok(terminalNode, "workflow artifact must contain LOCAL_DEV tick terminal node");
+assert.equal(terminalNode.type, "n8n-nodes-base.code");
+const terminalCode = String(terminalNode.parameters?.jsCode ?? "");
+
+const runTerminal = (itemJson) => {
+  const fn = new Function("$input", terminalCode);
+  return fn({ item: { json: itemJson } }).json;
+};
+
+await test("telegram-expression-includes-executor-classification-with-none-fallback", () => {
+  assert.match(telegramExpr, /executor_classification/);
+  assert.match(telegramExpr, /executor:\s*'\s*\+\s*\(\$json\.executor_classification\s*\|\|\s*'NONE'\)/);
+  assert.match(telegramExpr, /NONE/);
+});
+
+await test("terminal-preserves-executor-classification-and-reason-codes", () => {
+  assert.match(terminalCode, /executor_classification/);
+  assert.match(terminalCode, /reason_codes/);
+  const out = runTerminal({
+    classification: "WORK_EXECUTED_STOP",
+    execution_performed: true,
+    task_ref: "T-TERM",
+    executor_classification: "STOP:CONTEXT_WINDOW_EXCEEDED",
+    reason_codes: ["CONTEXT_WINDOW_EXCEEDED", "EXTRA"],
+    human_gate_required: false,
+    notify_required: true,
+  });
+  assert.equal(out.executor_classification, "STOP:CONTEXT_WINDOW_EXCEEDED");
+  assert.deepEqual(out.reason_codes, ["CONTEXT_WINDOW_EXCEEDED", "EXTRA"]);
+});
+
+await test("terminal-reason-codes-capped-to-16", () => {
+  assert.match(terminalCode, /\.slice\(\s*0\s*,\s*16\s*\)/);
+  const codes = Array.from({ length: 20 }, (_, i) => `RC_${i}`);
+  const out = runTerminal({ reason_codes: codes });
+  assert.equal(out.reason_codes.length, 16);
+  assert.deepEqual(out.reason_codes, codes.slice(0, 16));
+});
+
+await test("telegram-and-terminal-exclude-stdout-stderr-task-delta-prompt", () => {
+  for (const forbidden of ["stdout", "stderr", "task_delta", "prompt"]) {
+    assert.equal(telegramExpr.includes(forbidden), false, `telegram must not contain ${forbidden}`);
+    assert.equal(terminalCode.includes(forbidden), false, `terminal must not contain ${forbidden}`);
+  }
+});
+
 const failed = failures.length;
 console.log(JSON.stringify({ ok: failed === 0, passed, failed, total: passed + failed }));
 process.exitCode = failed ? 1 : 0;

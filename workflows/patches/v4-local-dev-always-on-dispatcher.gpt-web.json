@@ -7,7 +7,10 @@
   "target_workflow": {
     "name_exact": "90 - CP V4 LOCAL DEV ALWAYS-ON DISPATCHER - ACTIVE",
     "new_workflow": true,
-    "must_not_touch_workflow_ids": ["9ZMj2ACTKyDVhCue", "d0025-6100-4001-8001-000000000061"],
+    "must_not_touch_workflow_ids": [
+      "9ZMj2ACTKyDVhCue",
+      "d0025-6100-4001-8001-000000000061"
+    ],
     "settings": {
       "executionOrder": "v1"
     }
@@ -28,7 +31,10 @@
       "name": "Schedule Trigger - LOCAL_DEV tick",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [-200, 0]
+      "position": [
+        -200,
+        0
+      ]
     },
     {
       "parameters": {
@@ -39,7 +45,10 @@
       "name": "Code - Build LOCAL_DEV tick request",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [40, 0]
+      "position": [
+        40,
+        0
+      ]
     },
     {
       "parameters": {
@@ -56,7 +65,10 @@
       "name": "HTTP Request - LOCAL_DEV dispatcher tick",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [280, 0],
+      "position": [
+        280,
+        0
+      ],
       "onError": "continueRegularOutput",
       "alwaysOutputData": true,
       "notes": "Tailscale tailnet-private transport only. No Funnel. No authorization object. No credential."
@@ -70,7 +82,10 @@
       "name": "Code - Normalize LOCAL_DEV tick result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [520, 0]
+      "position": [
+        520,
+        0
+      ]
     },
     {
       "parameters": {
@@ -100,7 +115,10 @@
       "name": "IF - LOCAL_DEV notification required?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [760, 0]
+      "position": [
+        760,
+        0
+      ]
     },
     {
       "parameters": {
@@ -108,26 +126,32 @@
         "url": "https://api.telegram.org/bot{{$credentials.telegramBotToken}}/sendMessage",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ chat_id: $credentials.telegramChatId, text: ['LOCAL_DEV AUTO DISPATCH', 'classification: ' + $json.classification, 'task: ' + ($json.task_ref || 'NONE'), 'gate: ' + ($json.gate_summary || ($json.reason_codes || []).join(',') || 'none'), 'origin: n8n always-on dispatcher'].join('\\n') }) }}",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $credentials.telegramChatId, text: ['LOCAL_DEV AUTO DISPATCH', 'classification: ' + $json.classification, 'executor: ' + ($json.executor_classification || 'NONE'), 'task: ' + ($json.task_ref || 'NONE'), 'gate: ' + ($json.gate_summary || ($json.reason_codes || []).join(',') || 'none'), 'origin: n8n always-on dispatcher'].join('\\n') }) }}",
         "options": {}
       },
       "id": "90ld-0006-4006-8006-000000000006",
       "name": "Telegram - LOCAL_DEV gate notification",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1000, -120],
+      "position": [
+        1000,
+        -120
+      ],
       "notes": "LIVE APPLY ONLY: clone Telegram credential metadata IN MEMORY from live WF40 node 'Telegram - Send PM21 bridge summary' (secret-safe; never persist credential id/chat id in repo artifacts). Notification only; no buttons; no decision semantics."
     },
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const j = $input.item.json ?? {};\nreturn { json: {\n  schema: 'local-dev-always-on-tick-terminal-v1',\n  classification: j.classification ?? null,\n  execution_performed: j.execution_performed === true,\n  task_ref: j.task_ref ?? null,\n  human_gate_required: j.human_gate_required === true,\n  notify_required: j.notify_required === true,\n  tick_completed_at: new Date().toISOString()\n} };"
+        "jsCode": "const j = $input.item.json ?? {};\nconst reason_codes = Array.isArray(j.reason_codes) ? j.reason_codes.slice(0, 16) : [];\nreturn { json: {\n  schema: 'local-dev-always-on-tick-terminal-v1',\n  classification: j.classification ?? null,\n  execution_performed: j.execution_performed === true,\n  task_ref: j.task_ref ?? null,\n  executor_classification: j.executor_classification ?? null,\n  reason_codes,\n  human_gate_required: j.human_gate_required === true,\n  notify_required: j.notify_required === true,\n  tick_completed_at: new Date().toISOString()\n} };"
       },
       "id": "90ld-0007-4007-8007-000000000007",
       "name": "Code - LOCAL_DEV tick terminal",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1000, 120]
+      "position": [
+        1000,
+        120
+      ]
     }
   ],
   "connections": {
