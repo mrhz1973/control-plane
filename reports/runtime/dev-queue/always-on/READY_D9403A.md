@@ -5,7 +5,7 @@ schema: backlog-item-v1
 id: D-9403-A
 title: Post-#76 real Qwen LOCAL_DEV runtime smoke
 created_at: 2026-09-08T01:00:00Z
-created_by: operator-authorized-smoke
+created_by: gpt-web
 repository: mrhz1973/control-plane
 branch_target: main
 
