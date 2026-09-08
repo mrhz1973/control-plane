@@ -1,5 +1,23 @@
 # LAST CURSOR REPORT
 
+## V4 Qwen local autorecovery exhaustive remediation — latest
+
+**TASK_REF:** `V4_QWEN_LOCAL_AUTORECOVERY_EXHAUSTIVE_REMEDIATION_V1`
+**Classification:** `PASS — ROOT_CAUSE=CANONICAL_ZOMBIE_NO_RECYCLE · LIVE_COLD_START=PASS · EXACT_64K_LOADED · WARM_REUSE=PASS · D9404A_CONSUMED=NO`
+**Date (UTC):** 2026-09-08
+**BASE_HEAD:** `3b600b187c4c547676580e91dfed4cbbd7d5d52c`
+**Report:** `reports/architecture/v4_qwen_local_autorecovery_exhaustive_remediation_v1.md`
+
+Live boundary: canonical `qwen_runtime_router.py` held `:8080` with HTTP 502
+(backend dead). Session manager fail-closed as `ENDPOINT_OCCUPIED_UNHEALTHY`
+without recycle. Fix: recycle only identified canonical zombie tree, headless
+relaunch, exact `/models/load`, READY only when `/v1/models` exposes exact id
+in `loaded|loading`, DEV/preflight timeout 120s. Matrix 15/15; bridge 26/26;
+dispatcher suite 24/24. Live zombie→READY then warm reuse; dispatcher
+`:18793/v1/status` healthy; D-9404-A not consumed.
+
+---
+
 ## WF90 post-cutover Telegram SERVICE_ERROR storm remediation — latest
 
 **TASK_REF:** `V4_WF90_POST_CUTOVER_TELEGRAM_SERVICE_ERROR_STORM_REMEDIATION_V1` / #72

@@ -146,19 +146,54 @@ await test("router absent + port free -> headless router launch exactly once, th
   assert.equal(r.launch_count, 1);
 });
 
-await test("router port occupied but API unhealthy -> fail closed, zero launches", async () => {
+await test("router port occupied by foreign process + API unhealthy -> fail closed, zero launches", async () => {
   reset();
   let launchCount = 0;
+  let recycleCount = 0;
   const r = await ensureWorkstationDevRouterReady({
     ...BRIDGE_OPTS,
     checkRouterApi: async () => ({ ok: false, classification: "API_UNREACHABLE" }),
     checkEndpointOccupied: async () => true,
+    recycleCanonicalZombieRouter: async () => {
+      recycleCount += 1;
+      return { ok: false, recycled: false, reason_code: "FOREIGN_OR_UNKNOWN_OCCUPANT" };
+    },
     launchHeadlessRouter: async () => { launchCount += 1; },
   });
   assert.equal(r.ready, false);
   assert.equal(r.status, "ENDPOINT_OCCUPIED_UNHEALTHY");
+  assert.equal(r.reason_code, "FOREIGN_OR_UNKNOWN_OCCUPANT");
   assert.equal(r.launch_count, 0);
   assert.equal(launchCount, 0);
+  assert.equal(recycleCount, 1);
+});
+
+await test("canonical zombie router on port -> recycle once then headless relaunch READY", async () => {
+  reset();
+  let launchCount = 0;
+  let recycleCount = 0;
+  let occupied = true;
+  const r = await ensureWorkstationDevRouterReady({
+    ...BRIDGE_OPTS,
+    checkRouterApi: async () => (launchCount >= 1
+      ? { ok: true, classification: "ROUTER_API_HEALTHY", http_status: 200, ids: [] }
+      : { ok: false, classification: "API_UNREACHABLE" }),
+    checkEndpointOccupied: async () => occupied,
+    recycleCanonicalZombieRouter: async () => {
+      recycleCount += 1;
+      occupied = false;
+      return { ok: true, recycled: true, reason_code: "CANONICAL_ZOMBIE_RECYCLED", killed_pids: [99] };
+    },
+    launchHeadlessRouter: async () => {
+      launchCount += 1;
+      return { pid: 42 };
+    },
+  });
+  assert.equal(r.ready, true);
+  assert.equal(r.status, "LAUNCH_STARTED_AND_READY");
+  assert.equal(recycleCount, 1);
+  assert.equal(launchCount, 1);
+  assert.equal(r.launch_count, 1);
 });
 
 await test("missing router entrypoint -> fail closed", async () => {
@@ -277,9 +312,10 @@ await test("API absent -> one router restore -> exact requested profile becomes 
   assert.equal(r.model_id, DEV_PROFILE);
 });
 
-await test("router healthy + exact requested profile absent -> PROFILE_NOT_EXPOSED, zero launch", async () => {
+await test("router healthy + exact requested profile absent -> exact load attempt, fail closed, zero launch", async () => {
   reset();
   let routerCalls = 0;
+  let loadCalls = 0;
   const r = await ensureWorkstationDevQwenReady({
     ...BRIDGE_OPTS,
     checkReadiness: async () => ({
@@ -289,12 +325,46 @@ await test("router healthy + exact requested profile absent -> PROFILE_NOT_EXPOS
       ids: ["other-model"],
     }),
     ensureDevRouterReady: async () => { routerCalls += 1; return { ready: true, status: "READY", launch_count: 0 }; },
+    loadExactProfile: async ({ modelId }) => {
+      loadCalls += 1;
+      assert.equal(modelId, DEV_PROFILE);
+      return { ok: false, classification: "PROFILE_LOAD_REJECTED", http_status: 404 };
+    },
     profile: DEV_PROFILE,
   });
   assert.equal(r.ready, false);
-  assert.equal(r.status, "PROFILE_NOT_EXPOSED");
+  assert.equal(r.status, "PROFILE_LOAD_REJECTED");
+  assert.equal(r.load_performed, true);
   assert.equal(r.launch_count, 0);
   assert.equal(routerCalls, 0);
+  assert.equal(loadCalls, 1);
+});
+
+await test("wrong profile exposed -> exact load then READY without fallback", async () => {
+  reset();
+  let loadCalls = 0;
+  let exposed = ["other-model"];
+  const r = await ensureWorkstationDevQwenReady({
+    ...BRIDGE_OPTS,
+    checkReadiness: async ({ modelId }) => (
+      exposed.includes(modelId)
+        ? { ok: true, classification: "READY", http_status: 200, ids: [...exposed] }
+        : { ok: false, classification: "PROFILE_NOT_EXPOSED", http_status: 200, ids: [...exposed] }
+    ),
+    ensureDevRouterReady: async () => { throw new Error("must not restore router"); },
+    loadExactProfile: async ({ modelId }) => {
+      loadCalls += 1;
+      exposed = [modelId];
+      return { ok: true, classification: "PROFILE_LOAD_ACCEPTED", http_status: 200 };
+    },
+    profile: DEV_PROFILE,
+  });
+  assert.equal(r.ready, true);
+  assert.equal(r.status, "PROFILE_LOADED_AND_READY");
+  assert.equal(r.model_id, DEV_PROFILE);
+  assert.equal(r.load_performed, true);
+  assert.equal(loadCalls, 1);
+  assert.equal(r.launch_count, 0);
 });
 
 await test("no profile fallback: requested id stays exact", async () => {

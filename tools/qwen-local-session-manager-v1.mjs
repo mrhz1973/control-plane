@@ -2,18 +2,21 @@
 /**
  * qwen-local-session-manager-v1 — ensure canonical llama.cpp qwen_local READY.
  *
- * Reuses healthy server. If absent, launches the operator-tested PowerShell
- * launcher once (no reconstructed llama-server flags). Bounded readiness poll.
- * No kill/restart/shutdown. No model generation.
+ * Reuses healthy server. DEV path launches detached headless router
+ * (python -u qwen_runtime_router.py --config …). Bounded readiness poll.
+ * Foreign :8080 occupants: fail closed (no kill). Canonical zombie router
+ * (our entrypoint+config listening but API unhealthy): recycle only that
+ * identified process tree, then relaunch. No model generation.
  *
  * Usage:
  *   node tools/qwen-local-session-manager-v1.mjs [--profile qwen38-opus-q3-daily-16k]
  */
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { createConnection } from "node:net";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
-import { spawn } from "node:child_process";
+import { join, resolve, basename } from "node:path";
+import { spawn, execFile } from "node:child_process";
+import { promisify } from "node:util";
 import {
   STARTUP_PROFILE_ID,
   getProfile,
@@ -21,10 +24,13 @@ import {
   validateRuntimeDocument,
 } from "./qwen-local-runtime-v1.mjs";
 
+const execFileAsync = promisify(execFile);
+
 export const RESULT_SCHEMA = "qwen-local-session-manager-result-v1";
 export const DEFAULT_TIMEOUT_MS = 180_000;
 export const DEFAULT_POLL_MS = 2_000;
-export const DEFAULT_DEV_ROUTER_TIMEOUT_MS = 30_000;
+/** Matches router start_backend ~90s budget + headroom for model expose. */
+export const DEFAULT_DEV_ROUTER_TIMEOUT_MS = 120_000;
 
 /** In-process start lock (dedupe concurrent ensure while launching). */
 let inFlightEnsure = null;
@@ -41,6 +47,8 @@ function result(partial) {
     wait_elapsed_ms: Number(partial.wait_elapsed_ms) || 0,
     reason_code: partial.reason_code || partial.status,
     launch_count: Number(partial.launch_count) || 0,
+    load_performed: Boolean(partial.load_performed),
+    ...(partial.http_status != null ? { http_status: partial.http_status } : {}),
   };
 }
 
@@ -67,13 +75,22 @@ export async function defaultCheckReadiness({ baseUrl, modelId, timeoutMs = 3000
       return { ok: false, classification: "API_UNREACHABLE", http_status: r.status };
     }
     const data = await r.json();
-    const ids = Array.isArray(data?.data)
-      ? data.data.map((row) => (row && typeof row.id === "string" ? row.id : null)).filter(Boolean)
-      : [];
-    if (!ids.includes(modelId)) {
+    const rows = Array.isArray(data?.data) ? data.data : [];
+    const ids = rows
+      .map((row) => (row && typeof row.id === "string" ? row.id : null))
+      .filter(Boolean);
+    const match = rows.find((row) => row && row.id === modelId);
+    if (!match) {
       return { ok: false, classification: "PROFILE_NOT_EXPOSED", http_status: 200, ids };
     }
-    return { ok: true, classification: "READY", http_status: 200, ids };
+    // Model-manager catalogs list unloaded presets; READY requires loaded/loading.
+    const st = match.status && typeof match.status.value === "string"
+      ? match.status.value.toLowerCase()
+      : null;
+    if (st && st !== "loaded" && st !== "loading") {
+      return { ok: false, classification: "PROFILE_NOT_EXPOSED", http_status: 200, ids, load_state: st };
+    }
+    return { ok: true, classification: "READY", http_status: 200, ids, load_state: st };
   } catch {
     return { ok: false, classification: "API_UNREACHABLE" };
   } finally {
@@ -515,6 +532,183 @@ export async function defaultCheckEndpointOccupied({ host, port, timeoutMs = 400
   });
 }
 
+export function normalizeCmdPath(p) {
+  return String(p || "").replace(/\\/g, "/").toLowerCase();
+}
+
+/** Windows process census for recycle decisions (injectable). */
+export async function defaultListWindowsProcesses(options = {}) {
+  const run = options.execFileAsync || execFileAsync;
+  const ps = [
+    "$ErrorActionPreference='SilentlyContinue';",
+    "Get-CimInstance Win32_Process |",
+    " Select-Object ProcessId,Name,CommandLine |",
+    " ConvertTo-Json -Compress",
+  ].join(" ");
+  try {
+    const { stdout } = await run(
+      "powershell.exe",
+      ["-NoProfile", "-NonInteractive", "-Command", ps],
+      { windowsHide: true, timeout: 20_000, maxBuffer: 8 * 1024 * 1024 },
+    );
+    const raw = String(stdout || "").trim();
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    const rows = Array.isArray(parsed) ? parsed : [parsed];
+    return rows
+      .map((r) => ({
+        pid: Number(r.ProcessId) || 0,
+        name: String(r.Name || ""),
+        commandLine: String(r.CommandLine || ""),
+      }))
+      .filter((r) => r.pid > 0);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Decide whether :8080 occupant is OUR canonical router (entrypoint+config).
+ * Foreign listeners must never be killed.
+ */
+export function classifyCanonicalRouterOccupant({
+  processes,
+  routerEntrypoint,
+  routerConfig,
+} = {}) {
+  const entry = normalizeCmdPath(routerEntrypoint);
+  const cfg = normalizeCmdPath(routerConfig);
+  const entryBase = basename(entry || "").toLowerCase();
+  const routerPids = [];
+  for (const p of processes || []) {
+    const cmd = normalizeCmdPath(p.commandLine);
+    if (!cmd) continue;
+    const isPython = /python/i.test(p.name || "") || /python/i.test(cmd);
+    if (!isPython) continue;
+    const hasEntry = (entry && cmd.includes(entry))
+      || (entryBase && cmd.includes(entryBase) && cmd.includes("qwen_runtime_router"));
+    const hasCfg = (cfg && cmd.includes(cfg))
+      || cmd.includes("qwen-runtime-router.json");
+    if (hasEntry && hasCfg) routerPids.push(p.pid);
+  }
+  if (!routerPids.length) {
+    return { is_canonical: false, router_pids: [], reason_code: "FOREIGN_OR_UNKNOWN_OCCUPANT" };
+  }
+  return { is_canonical: true, router_pids: [...new Set(routerPids)], reason_code: "CANONICAL_ROUTER" };
+}
+
+function readRouterBackendPorts(routerConfig, existsPath = existsSync) {
+  const ports = new Set([18080]);
+  try {
+    if (!routerConfig || !existsPath(routerConfig)) return [...ports];
+    const cfg = JSON.parse(readFileSync(routerConfig, "utf8"));
+    if (Number.isFinite(Number(cfg.backend_port))) ports.add(Number(cfg.backend_port));
+    for (const p of cfg.external_profiles || []) {
+      if (Number.isFinite(Number(p.port))) ports.add(Number(p.port));
+    }
+  } catch {
+    /* keep defaults */
+  }
+  return [...ports];
+}
+
+export function collectCanonicalRouterTreePids({
+  processes,
+  routerPids,
+  routerConfig,
+  existsPath = existsSync,
+} = {}) {
+  const kill = new Set((routerPids || []).map(Number).filter((n) => n > 0));
+  const ports = readRouterBackendPorts(routerConfig, existsPath);
+  const portRe = ports.map((p) => String(p)).join("|");
+  const re = portRe
+    ? new RegExp(`(?:--port|-p)\\s+(?:${portRe})\\b`, "i")
+    : null;
+  for (const p of processes || []) {
+    const cmd = String(p.commandLine || "");
+    const name = String(p.name || "");
+    if (/llama-server/i.test(name) || /llama-server/i.test(cmd)) {
+      if (re && re.test(cmd)) kill.add(p.pid);
+    }
+  }
+  return [...kill];
+}
+
+async function defaultForceKillPids(pids, options = {}) {
+  const run = options.execFileAsync || execFileAsync;
+  const killed = [];
+  for (const pid of pids || []) {
+    try {
+      await run("taskkill.exe", ["/PID", String(pid), "/T", "/F"], {
+        windowsHide: true,
+        timeout: 10_000,
+      });
+      killed.push(pid);
+    } catch {
+      /* best-effort */
+    }
+  }
+  return killed;
+}
+
+/**
+ * If :8080 is held by OUR unhealthy router, stop only that identified tree.
+ * Never kills foreign occupants.
+ */
+export async function defaultRecycleCanonicalZombieRouter(options = {}) {
+  const listProcesses = options.listWindowsProcesses || defaultListWindowsProcesses;
+  const forceKillPids = options.forceKillPids || defaultForceKillPids;
+  const checkEndpointOccupied = options.checkEndpointOccupied || defaultCheckEndpointOccupied;
+  const sleepFn = options.sleepFn || ((ms) => new Promise((r) => setTimeout(r, ms)));
+  const existsPath = options.existsPath || existsSync;
+  const host = options.host || "127.0.0.1";
+  const port = options.port || 8080;
+  const routerEntrypoint = options.routerEntrypoint;
+  const routerConfig = options.routerConfig;
+  if (!routerEntrypoint || !routerConfig) {
+    return { ok: false, recycled: false, reason_code: "ROUTER_PATHS_REQUIRED" };
+  }
+  const processes = await listProcesses(options);
+  const classified = classifyCanonicalRouterOccupant({
+    processes,
+    routerEntrypoint,
+    routerConfig,
+  });
+  if (!classified.is_canonical) {
+    return {
+      ok: false,
+      recycled: false,
+      reason_code: classified.reason_code || "FOREIGN_OR_UNKNOWN_OCCUPANT",
+    };
+  }
+  const tree = collectCanonicalRouterTreePids({
+    processes,
+    routerPids: classified.router_pids,
+    routerConfig,
+    existsPath,
+  });
+  await forceKillPids(tree, options);
+  const deadline = Date.now() + (options.portFreeTimeoutMs || 8_000);
+  while (Date.now() < deadline) {
+    const still = await checkEndpointOccupied({ host, port, timeoutMs: 200 });
+    if (!still) {
+      return {
+        ok: true,
+        recycled: true,
+        reason_code: "CANONICAL_ZOMBIE_RECYCLED",
+        killed_pids: tree,
+      };
+    }
+    await sleepFn(200);
+  }
+  return {
+    ok: false,
+    recycled: false,
+    reason_code: "CANONICAL_RECYCLE_PORT_STILL_OCCUPIED",
+    killed_pids: tree,
+  };
+}
+
 /** Detached headless router: python -u <entrypoint> --config <config>. No Edge/shell. */
 export async function defaultLaunchHeadlessDevRouter({
   pythonExecutable,
@@ -578,6 +772,7 @@ export async function ensureWorkstationDevRouterReady(options = {}) {
   const checkRouterApi = options.checkRouterApi || defaultCheckRouterApiHealthy;
   const checkEndpointOccupied = options.checkEndpointOccupied || defaultCheckEndpointOccupied;
   const launchHeadlessRouter = options.launchHeadlessRouter || defaultLaunchHeadlessDevRouter;
+  const recycleCanonicalZombieRouter = options.recycleCanonicalZombieRouter || defaultRecycleCanonicalZombieRouter;
   const existsPath = options.existsPath || existsSync;
   const sleepFn = options.sleepFn || ((ms) => new Promise((r) => setTimeout(r, ms)));
 
@@ -624,21 +819,6 @@ export async function ensureWorkstationDevRouterReady(options = {}) {
         });
       }
 
-      const occupied = await checkEndpointOccupied({
-        host: endpoint.host,
-        port: endpoint.port,
-      });
-      if (occupied) {
-        return result({
-          status: "ENDPOINT_OCCUPIED_UNHEALTHY",
-          ready: false,
-          base_url: baseUrl,
-          launch_performed: false,
-          reason_code: "ENDPOINT_OCCUPIED_UNHEALTHY",
-          launch_count: 0,
-        });
-      }
-
       const paths = resolveDevRouterPaths(runtime, { ...options, existsPath });
       if (!paths.ok) {
         return result({
@@ -649,6 +829,47 @@ export async function ensureWorkstationDevRouterReady(options = {}) {
           reason_code: paths.reason_code,
           launch_count: 0,
         });
+      }
+
+      let occupied = await checkEndpointOccupied({
+        host: endpoint.host,
+        port: endpoint.port,
+      });
+      if (occupied) {
+        const recycled = await recycleCanonicalZombieRouter({
+          ...options,
+          host: endpoint.host,
+          port: endpoint.port,
+          routerEntrypoint: paths.router_entrypoint,
+          routerConfig: paths.router_config,
+          existsPath,
+          sleepFn,
+          checkEndpointOccupied,
+        });
+        if (!recycled.ok) {
+          return result({
+            status: "ENDPOINT_OCCUPIED_UNHEALTHY",
+            ready: false,
+            base_url: baseUrl,
+            launch_performed: false,
+            reason_code: recycled.reason_code || "ENDPOINT_OCCUPIED_UNHEALTHY",
+            launch_count: 0,
+          });
+        }
+        occupied = await checkEndpointOccupied({
+          host: endpoint.host,
+          port: endpoint.port,
+        });
+        if (occupied) {
+          return result({
+            status: "ENDPOINT_OCCUPIED_UNHEALTHY",
+            ready: false,
+            base_url: baseUrl,
+            launch_performed: false,
+            reason_code: "CANONICAL_RECYCLE_PORT_STILL_OCCUPIED",
+            launch_count: 0,
+          });
+        }
       }
 
       const py = resolvePythonExecutable({ ...options, existsPath });
@@ -718,9 +939,32 @@ export async function ensureWorkstationDevRouterReady(options = {}) {
   return inFlightDevRouterEnsure;
 }
 
+/** POST /models/load for exact requested id only — never substitutes another profile. */
+export async function defaultLoadExactDevProfile({ baseUrl, modelId, timeoutMs = 60_000 }) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(`${String(baseUrl).replace(/\/$/, "")}/models/load`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ model: modelId }),
+      signal: ctrl.signal,
+    });
+    if (!r.ok) {
+      return { ok: false, classification: "PROFILE_LOAD_REJECTED", http_status: r.status };
+    }
+    return { ok: true, classification: "PROFILE_LOAD_ACCEPTED", http_status: r.status };
+  } catch {
+    return { ok: false, classification: "PROFILE_LOAD_FAILED" };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /**
  * Ensure exact workstation DEV profile is exposed on the canonical router.
- * Uses headless router restore only; never falls back to another profile.
+ * Headless router restore + canonical zombie recycle + exact /models/load.
+ * Never falls back to another profile.
  */
 export async function ensureWorkstationDevQwenReady(options = {}) {
   const profileId = options.profile;
@@ -731,6 +975,7 @@ export async function ensureWorkstationDevQwenReady(options = {}) {
   const pollIntervalMs = options.pollIntervalMs ?? DEFAULT_POLL_MS;
   const loadRuntime = options.loadRuntime || loadQwenLocalRuntime;
   const checkReadiness = options.checkReadiness || defaultCheckReadiness;
+  const loadExactProfile = options.loadExactProfile || defaultLoadExactDevProfile;
   const existsPath = options.existsPath || existsSync;
   const sleepFn = options.sleepFn || ((ms) => new Promise((r) => setTimeout(r, ms)));
   const ensureRouter = options.ensureDevRouterReady || ensureWorkstationDevRouterReady;
@@ -759,16 +1004,7 @@ export async function ensureWorkstationDevQwenReady(options = {}) {
     return result({
       status: "READY", ready: true, profile: profileId, model_id: modelId,
       base_url: baseUrl, launch_performed: false, wait_elapsed_ms: 0,
-      reason_code: "READY", launch_count: 0,
-    });
-  }
-
-  // Router healthy but exact profile missing — never launch / never fallback.
-  if (readyNow.classification === "PROFILE_NOT_EXPOSED") {
-    return result({
-      status: "PROFILE_NOT_EXPOSED", ready: false, profile: profileId, model_id: modelId,
-      base_url: baseUrl, launch_performed: false, wait_elapsed_ms: 0,
-      reason_code: "PROFILE_NOT_EXPOSED", launch_count: 0,
+      reason_code: "READY", launch_count: 0, load_performed: false,
     });
   }
 
@@ -781,38 +1017,74 @@ export async function ensureWorkstationDevQwenReady(options = {}) {
         return result({
           status: "READY", ready: true, profile: profileId, model_id: modelId,
           base_url: baseUrl, launch_performed: false, wait_elapsed_ms: 0,
-          reason_code: "READY", launch_count: 0,
-        });
-      }
-      if (again.classification === "PROFILE_NOT_EXPOSED") {
-        return result({
-          status: "PROFILE_NOT_EXPOSED", ready: false, profile: profileId, model_id: modelId,
-          base_url: baseUrl, launch_performed: false, wait_elapsed_ms: 0,
-          reason_code: "PROFILE_NOT_EXPOSED", launch_count: 0,
+          reason_code: "READY", launch_count: 0, load_performed: false,
         });
       }
 
       const started = Date.now();
-      const router = await ensureRouter({
-        ...options,
-        loadRuntime: () => runtime,
-        existsPath,
-        sleepFn,
-        readinessTimeoutMs: timeoutMs,
-        pollIntervalMs,
-        baseUrl,
-      });
-      if (!router.ready) {
+      let launchCount = 0;
+      let launchPerformed = false;
+
+      // Only restore router when API is unreachable / unhealthy (not when wrong profile).
+      if (again.classification !== "PROFILE_NOT_EXPOSED") {
+        const router = await ensureRouter({
+          ...options,
+          loadRuntime: () => runtime,
+          existsPath,
+          sleepFn,
+          readinessTimeoutMs: timeoutMs,
+          pollIntervalMs,
+          baseUrl,
+        });
+        launchCount = Number(router.launch_count) || 0;
+        launchPerformed = Boolean(router.launch_performed) || launchCount > 0;
+        if (!router.ready) {
+          return result({
+            status: router.status || router.reason_code || "API_UNREACHABLE",
+            ready: false,
+            profile: profileId,
+            model_id: modelId,
+            base_url: baseUrl,
+            launch_performed: launchPerformed,
+            wait_elapsed_ms: router.wait_elapsed_ms || (Date.now() - started),
+            reason_code: router.reason_code || router.status || "API_UNREACHABLE",
+            launch_count: launchCount,
+            load_performed: false,
+          });
+        }
+
+        const afterRouter = await checkReadiness({ baseUrl, modelId });
+        if (afterRouter.ok) {
+          return result({
+            status: launchPerformed ? "LAUNCH_STARTED_AND_READY" : "READY",
+            ready: true,
+            profile: profileId,
+            model_id: modelId,
+            base_url: baseUrl,
+            launch_performed: launchPerformed,
+            wait_elapsed_ms: Date.now() - started,
+            reason_code: launchPerformed ? "LAUNCH_STARTED_AND_READY" : "READY",
+            launch_count: launchCount,
+            load_performed: false,
+          });
+        }
+      }
+
+      // Exact profile missing while router API is up: load exact id only (no fallback).
+      const loadResult = await loadExactProfile({ baseUrl, modelId, timeoutMs });
+      if (!loadResult.ok) {
         return result({
-          status: router.status || router.reason_code || "API_UNREACHABLE",
+          status: loadResult.classification || "PROFILE_LOAD_FAILED",
           ready: false,
           profile: profileId,
           model_id: modelId,
           base_url: baseUrl,
-          launch_performed: Boolean(router.launch_performed),
-          wait_elapsed_ms: router.wait_elapsed_ms || (Date.now() - started),
-          reason_code: router.reason_code || router.status || "API_UNREACHABLE",
-          launch_count: Number(router.launch_count) || 0,
+          launch_performed: launchPerformed,
+          wait_elapsed_ms: Date.now() - started,
+          reason_code: loadResult.classification || "PROFILE_LOAD_FAILED",
+          launch_count: launchCount,
+          load_performed: true,
+          http_status: loadResult.http_status,
         });
       }
 
@@ -825,23 +1097,22 @@ export async function ensureWorkstationDevQwenReady(options = {}) {
         checkReadiness,
         sleepFn,
       });
-      const launchCount = Number(router.launch_count) || 0;
-      const launchPerformed = Boolean(router.launch_performed) || launchCount > 0;
       if (waited.ok) {
         return result({
-          status: launchPerformed ? "LAUNCH_STARTED_AND_READY" : "READY",
+          status: "PROFILE_LOADED_AND_READY",
           ready: true,
           profile: profileId,
           model_id: modelId,
           base_url: baseUrl,
           launch_performed: launchPerformed,
           wait_elapsed_ms: Date.now() - started,
-          reason_code: launchPerformed ? "LAUNCH_STARTED_AND_READY" : "READY",
+          reason_code: "PROFILE_LOADED_AND_READY",
           launch_count: launchCount,
+          load_performed: true,
         });
       }
       const lastClass = waited.last?.classification;
-      let status = "READINESS_TIMEOUT";
+      let status = "PROFILE_READINESS_TIMEOUT";
       if (lastClass === "PROFILE_NOT_EXPOSED") status = "PROFILE_NOT_EXPOSED";
       else if (lastClass === "API_UNREACHABLE") status = "API_UNREACHABLE";
       return result({
@@ -854,6 +1125,7 @@ export async function ensureWorkstationDevQwenReady(options = {}) {
         wait_elapsed_ms: Date.now() - started,
         reason_code: status,
         launch_count: launchCount,
+        load_performed: true,
       });
     } finally {
       inFlightDevEnsure = null;

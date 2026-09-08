@@ -71,7 +71,8 @@ export const QUEUE_DIR = "reports/runtime/dev-queue/always-on";
 export const RECEIPTS_PATH = "reports/runtime/dev-queue/always-on/receipts.json";
 export const MAX_BODY_BYTES = 64 * 1024;
 /** Bounded DEV Qwen readiness preflight before claim persistence. */
-export const QWEN_PREFLIGHT_TIMEOUT_MS = 30_000;
+/** Align with session-manager DEV router/backend readiness budget. */
+export const QWEN_PREFLIGHT_TIMEOUT_MS = 120_000;
 export const CLASSIFICATIONS = Object.freeze([
   "WORK_EXECUTED_PASS",
   "WORK_EXECUTED_STOP",
