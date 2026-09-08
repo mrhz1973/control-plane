@@ -94,10 +94,10 @@ local_dev:
   test_commands:
     - node tests/qwen-independent-qval3/run.mjs
 
-human_gate_required_if:
-  - QWEN_64K_COLD_STATE_PREP_REQUIRED_AFTER_D9405A_AND_D9405B_PASS
+human_gate_required_if: []
 context_refs:
   - reports/architecture/v4_qwen_independent_3run_qualification_campaign_v1.md
+  - reports/runtime/qwen-qualification/QVAL3_COLD_STATE_GATE_EVIDENCE.md
 
-state: GATED
+state: READY_FOR_PLANNING
 ```
