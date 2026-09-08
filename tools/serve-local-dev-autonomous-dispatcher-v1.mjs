@@ -47,12 +47,14 @@ import {
   KNOWN_LOCAL_REPOS,
   buildReceiptLifecycle,
   transitionLatestReceipt,
+  isReceiptBlocking,
+  CLAIM_STALE_AFTER_MS,
 } from "./bridge-backlog-to-local-dev-envelope-v1.mjs";
 import { executeLocalDevTask } from "./local-dev-executor-v1.mjs";
 import { composeRunners } from "./run-local-dev-executor-v1.mjs";
 import { admitMicroTaskDelta, extractMicroTaskAdmissionInput } from "./admit-micro-task-delta-v1.mjs";
 import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
-import { selectNextQueueItem, parseBacklogFile } from "./select-local-dev-queue-item-v1.mjs";
+import { selectNextQueueItem, parseBacklogFile, isAdmissible } from "./select-local-dev-queue-item-v1.mjs";
 
 export const RESULT_SCHEMA = "local-dev-dispatch-tick-result-v1";
 export const REQUEST_SCHEMA = "local-dev-dispatch-tick-v1";
@@ -226,14 +228,70 @@ export function createExecutionStatusTracker(options = {}) {
   };
 }
 
+// Diagnostic-only normalization. Do not change boundStr/status/tick contracts.
+const diagnosticObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+const diagnosticText = (value, max = 200) => typeof value === "string" && value.trim()
+  ? value.trim().slice(0, max) : null;
+const diagnosticBoolean = (value) => typeof value === "boolean" ? value : null;
+const diagnosticNumber = (value) => (typeof value === "number" || (typeof value === "string" && value.trim()))
+  && Number.isFinite(Number(value)) && Number(value) >= 0 ? Number(value) : null;
+
+function diagnosticDetails(value, depth = 0) {
+  if (value === null || typeof value === "boolean" || typeof value === "number") return value;
+  if (typeof value === "string") return value.slice(0, 600);
+  if (depth >= 3) return null;
+  if (Array.isArray(value)) return value.slice(0, 24).map((v) => diagnosticDetails(v, depth + 1));
+  if (diagnosticObject(value)) return Object.fromEntries(Object.entries(value).slice(0, 16)
+    .map(([key, val]) => [key.slice(0, 80), diagnosticDetails(val, depth + 1)]));
+  return null;
+}
+
+const MODEL_STATUS_LABELS = Object.freeze({
+  loaded: "Caricato", unloaded: "Non caricato", loading: "Caricamento in corso",
+  unloading: "Scaricamento in corso", ready: "Pronto", error: "Errore",
+  failed: "Errore", unknown: "Sconosciuto", listed: "Presente nel catalogo",
+  not_listed: "Assente dal catalogo", unreachable: "Non raggiungibile",
+});
+
+/** The live router exposes status.value and status.args; catalog presence is not readiness. */
+export function normalizeQwenModel(value) {
+  const model = diagnosticObject(value) ? value : {};
+  const rawStatus = model.status ?? model.state;
+  const nested = diagnosticObject(rawStatus) ? rawStatus : {};
+  const state = diagnosticText(nested.value ?? nested.state ?? nested.status ?? rawStatus, 40)?.toLowerCase()
+    || (rawStatus === null || rawStatus === undefined ? null : "unknown");
+  const args = Array.isArray(nested.args) ? nested.args : [];
+  const argument = (...flags) => {
+    const index = args.findIndex((arg) => typeof arg === "string" && flags.includes(arg));
+    return index >= 0 ? args[index + 1] : null;
+  };
+  const observedContext = diagnosticNumber(model.meta?.n_ctx ?? model.context_tokens ?? model.context_length);
+  const configuredContext = diagnosticNumber(argument("--ctx-size", "-c"));
+  return {
+    id: diagnosticText(model.id ?? model.model ?? model.name, 120),
+    status: state,
+    status_label: state ? (MODEL_STATUS_LABELS[state] || "Sconosciuto") : "Non disponibile",
+    health: diagnosticText(model.health?.value ?? model.health?.status ?? model.health ?? nested.health, 80),
+    context_tokens: observedContext ?? configuredContext,
+    context_source: observedContext !== null ? (diagnosticText(model.context_source, 80) || "model_metadata")
+      : (configuredContext !== null ? "configured_args" : null),
+    runtime: diagnosticText(model.runtime, 80),
+    owned_by: diagnosticText(model.owned_by, 80),
+    worker_pid: diagnosticNumber(model.worker_pid ?? model.worker?.pid ?? nested.pid),
+    worker_port: diagnosticNumber(model.worker_port ?? model.worker?.port ?? nested.port)
+      || (state === "loaded" ? diagnosticNumber(argument("--port")) || null : null),
+    status_details: diagnosticDetails(model.status_details ?? (diagnosticObject(rawStatus) ? rawStatus : null)),
+  };
+}
+
 /** Read-only GET :8080/v1/models — never launches, loads, or recycles. */
 export async function probeQwenEndpointReadOnly(options = {}) {
   const baseUrl = String(options.baseUrl || QWEN_OBSERVE_BASE_URL).replace(/\/$/, "");
   const timeoutMs = Number.isFinite(options.timeoutMs) ? Math.max(200, options.timeoutMs) : 2000;
   const fetchFn = options.fetchFn || globalThis.fetch;
-  const wanted = boundStr(options.wanted_profile, 120);
+  const wanted = diagnosticText(options.wanted_profile, 120);
   try {
-    const r = await fetchFn(`${baseUrl}/v1/models`, { signal: AbortSignal.timeout(timeoutMs) });
+    const r = await fetchFn(`${baseUrl}/v1/models`, { method: "GET", signal: AbortSignal.timeout(timeoutMs) });
     if (!r || !r.ok) {
       return {
         reachable: false,
@@ -244,26 +302,29 @@ export async function probeQwenEndpointReadOnly(options = {}) {
       };
     }
     const body = await r.json();
-    const raw = Array.isArray(body?.data) ? body.data : (Array.isArray(body?.models) ? body.models : []);
-    const models = raw.slice(0, 24).map((m) => ({
-      id: boundStr(m?.id || m?.model || m?.name, 120),
-      status: boundStr(m?.status || m?.state, 40),
-    })).filter((m) => m.id);
+    const raw = Array.isArray(body?.data) ? body.data : (Array.isArray(body?.models) ? body.models : null);
+    if (!raw) return {
+      reachable: true, health_summary: "invalid_catalog", profile_status: "unknown",
+      models: [], model_count: null, loaded_count: null, error: "QWEN_CATALOG_INVALID",
+    };
+    const allModels = raw.map(normalizeQwenModel).filter((m) => m.id);
+    const models = allModels.slice(0, 24);
     let profile_status = "unknown";
     if (wanted) {
-      const hit = models.find((m) => m.id === wanted);
-      if (!hit) profile_status = "unloaded";
-      else if (/load/i.test(String(hit.status || ""))) profile_status = String(hit.status).toLowerCase();
-      else profile_status = hit.status ? String(hit.status).toLowerCase() : "listed";
+      const hit = allModels.find((m) => m.id === wanted);
+      profile_status = hit ? (hit.status || "unknown") : "not_listed";
     } else if (models.length) {
       profile_status = "listed";
     }
     return {
       reachable: true,
-      health_summary: models.length ? `${models.length}_models` : "empty_catalog",
+      health_summary: allModels.length ? `${allModels.length}_models` : "empty_catalog",
       profile_status,
       models,
-      error: null,
+      model_count: allModels.length,
+      loaded_count: allModels.filter((m) => m.status === "loaded").length,
+      models_truncated: allModels.length > models.length,
+      error: allModels.length < raw.length ? "QWEN_MODEL_INVALID" : null,
     };
   } catch (err) {
     return {
@@ -279,12 +340,17 @@ export async function probeQwenEndpointReadOnly(options = {}) {
 /** Dry-run queue explanation — never claims, never writes receipts. */
 export function buildQueueScanDiagnostics({ entries = [], receipts = [], nowIso } = {}) {
   const decidedAt = nowIso || new Date().toISOString();
-  const parsed = (entries || []).map((e) => {
-    if (e.read_failed || !e.markdown) {
+  if (!Array.isArray(entries) || !Array.isArray(receipts)) {
+    return queueDiagnosticsFailure("DIAGNOSTICS_QUEUE_DATA_INVALID");
+  }
+  const parsed = entries.map((value) => {
+    const e = diagnosticObject(value) ? value : {};
+    if (e.read_failed) return { ok: false, source: diagnosticText(e.source), reason: "READ_FAILED" };
+    if (e.ok === true && diagnosticObject(e.item)) return e;
+    if (e.ok === false) return { ok: false, source: diagnosticText(e.source), reason: diagnosticText(e.reason, 80) || "PARSE_FAILED" };
+    if (typeof e.markdown !== "string" || !e.markdown) {
       return { ok: false, source: e.source || null, reason: e.read_failed ? "READ_FAILED" : "EMPTY_FILE" };
     }
-    if (e.ok === true && e.item) return e;
-    if (e.ok === false) return { ok: false, source: e.source || null, reason: e.reason || "PARSE_FAILED" };
     try {
       const p = parseBacklogFile(e.markdown);
       return { ...p, markdown: e.markdown, source: e.source, backlog_path: e.backlog_path };
@@ -293,148 +359,211 @@ export function buildQueueScanDiagnostics({ entries = [], receipts = [], nowIso 
     }
   });
   const decision = selectNextQueueItem(parsed, receipts, decidedAt);
-  const rejected_items = (decision.excluded || []).slice(0, 32).map((r) => ({
-    source: boundStr(r.source, 200),
-    reason: boundStr(r.reason, 80),
+  const excluded = (decision.excluded || []).map((r) => ({
+    source: diagnosticText(r.source, 200),
+    reason: diagnosticText(r.reason, 80),
   }));
-  const skip_reason_summary = {};
-  for (const r of rejected_items) {
+  const reasons = new Map();
+  for (const r of excluded) {
     const key = r.reason || "UNKNOWN";
-    skip_reason_summary[key] = (skip_reason_summary[key] || 0) + 1;
+    reasons.set(key, (reasons.get(key) || 0) + 1);
   }
+  const now = new Date(decidedAt);
+  const items = parsed.map((entry) => {
+    const item = entry.ok ? entry.item : null;
+    const task_ref = typeof item?.id === "string" && item.id ? `LOCAL_DEV_B_${item.id}` : null;
+    const admissible = entry.ok === true && isAdmissible(item);
+    // Selector authority is ANY matching receipt, including older ledger entries.
+    const matching = task_ref ? receipts.map((receipt, ledger_index) => ({ receipt, ledger_index }))
+      .filter(({ receipt }) => receipt && receipt.task_ref === task_ref) : [];
+    const observations = matching.map(({ receipt, ledger_index }) => ({
+      ...receiptDiagnostic(receipt, now), ledger_index,
+    }));
+    const blocking = observations.filter((receipt) => receipt.currently_blocking);
+    return {
+      id: diagnosticText(item?.id), task_ref: diagnosticText(task_ref),
+      source_file: diagnosticText(entry.source), backlog_state: diagnosticText(item?.state, 80),
+      ready_looking: item?.state === "READY_FOR_PLANNING" || /^READY[_-]/i.test(diagnosticText(entry.source) || ""),
+      admissible, eligible: admissible && blocking.length === 0,
+      matching_receipt_present: matching.length > 0, matching_receipt_count: matching.length,
+      currently_blocking: blocking.length > 0,
+      blocking_reason: !entry.ok ? (diagnosticText(entry.reason, 80) || "PARSE_FAILED")
+        : (!admissible ? "INADMISSIBLE_STATE_OR_SCOPE" : (blocking.length ? "CLAIM_ALREADY_EXISTS" : null)),
+      latest_receipt: observations.at(-1) || null,
+      blocking_receipt_count: blocking.length,
+      blocking_receipts: blocking.slice(-16),
+      blocking_receipts_truncated: blocking.length > 16,
+    };
+  }).sort((a, b) => Number(b.admissible) - Number(a.admissible)
+    || Number(b.ready_looking) - Number(a.ready_looking)
+    || (a.source_file || "").localeCompare(b.source_file || ""));
   return {
+    ok: true,
+    observed_at: decidedAt,
     eligible_count: boundInt(decision.eligible_count, { allowNull: false, min: 0 }),
     candidate_task_ref: boundStr(decision.selected?.task_ref, 200),
     candidate_source_file: boundStr(decision.selected?.source_file, 200),
     candidate_risk_hint: boundStr(decision.selected?.risk_hint, 40),
     selection_reason_code: boundStr(decision.reason_code, 80),
     scanned_file_count: parsed.length,
-    claim_present_count: rejected_items.filter((r) => r.reason === "CLAIM_ALREADY_EXISTS").length,
-    rejected_items,
-    skip_reason_summary,
+    claim_present_count: excluded.filter((r) => r.reason === "CLAIM_ALREADY_EXISTS").length,
+    ready_count: items.filter((item) => item.backlog_state === "READY_FOR_PLANNING").length,
+    matching_receipt_item_count: items.filter((item) => item.matching_receipt_present).length,
+    rejected_count: excluded.length,
+    rejected_items: excluded.slice(0, 128),
+    rejected_items_truncated: excluded.length > 128,
+    items: items.slice(0, 128),
+    items_truncated: items.length > 128,
+    skip_reason_summary: Object.fromEntries(reasons),
+  };
+}
+
+function receiptDiagnostic(receipt, now) {
+  // The canonical helper alone determines blocking. Everything below only explains its result.
+  const currently_blocking = isReceiptBlocking(receipt, now, CLAIM_STALE_AFTER_MS);
+  // Preserve malformed whitespace/type states: the authority compares exact raw values.
+  const rawState = receipt?.state;
+  const state = typeof rawState === "string" ? rawState.slice(0, 40) : null;
+  const claimed_at = diagnosticText(receipt?.claimed_at, 80);
+  const age = claimed_at ? now.getTime() - Date.parse(claimed_at) : NaN;
+  let interpretation_code;
+  let interpretation;
+  if (!currently_blocking) {
+    interpretation_code = state === "CLAIMED" ? "STALE_CLAIM_REPLAYABLE" : "PRE_EXECUTION_STOP_REPLAYABLE";
+    interpretation = state === "CLAIMED"
+      ? "Il criterio canonico consente una nuova candidatura: claim scaduto, esecuzione non avviata e ripetizione consentita."
+      : "Il criterio canonico consente una nuova candidatura dopo uno STOP precedente all’esecuzione con ripetizione consentita.";
+  } else if (!["CLAIMED", "EXECUTING", "PASS", "STOP"].includes(rawState)) {
+    interpretation_code = rawState === null || rawState === undefined ? "LEGACY_RECEIPT_BLOCKING" : "UNKNOWN_RECEIPT_STATE_BLOCKING";
+    interpretation = "Lo stato del receipt manca o non è riconosciuto. Il criterio canonico mantiene il blocco per sicurezza, indipendentemente dall’età.";
+  } else if (state === "PASS" || state === "EXECUTING") {
+    interpretation_code = `RECEIPT_${state}_BLOCKING`;
+    interpretation = state === "PASS"
+      ? "Il receipt registra un esito PASS e impedisce una nuova selezione dello stesso task."
+      : "Il receipt registra un’esecuzione avviata e impedisce una nuova selezione. Questo dato non prova che il processo sia ancora attivo.";
+  } else {
+    interpretation_code = `RECEIPT_${state}_BLOCKING`;
+    interpretation = state === "STOP"
+      ? "Lo STOP non soddisfa le condizioni canoniche di ripetizione: devono risultare replayable=true ed execution_started=false."
+      : `Il claim non soddisfa tutte le condizioni canoniche di ripetizione: età valida di almeno ${CLAIM_STALE_AFTER_MS / 60_000} minuti, replayable=true ed execution_started=false.`;
+  }
+  return {
+    state, execution_started: diagnosticBoolean(receipt?.execution_started),
+    replayable: diagnosticBoolean(receipt?.replayable), claimed_at,
+    age_ms: Number.isFinite(age) && age >= 0 ? age : null,
+    currently_blocking, interpretation_code, interpretation,
+  };
+}
+
+function queueDiagnosticsFailure(error) {
+  return {
+    ok: false, observed_at: null, eligible_count: null, ready_count: null,
+    candidate_task_ref: null, candidate_source_file: null, candidate_risk_hint: null,
+    selection_reason_code: "DIAGNOSTICS_QUEUE_SCAN_FAILED", scanned_file_count: null,
+    claim_present_count: null, matching_receipt_item_count: null, rejected_count: null,
+    items: [], items_truncated: false, rejected_items: [], rejected_items_truncated: false,
+    skip_reason_summary: { DIAGNOSTICS_QUEUE_SCAN_FAILED: 1 },
+    error: diagnosticText(error, 160) || "DIAGNOSTICS_QUEUE_SCAN_FAILED",
   };
 }
 
 export function buildOperatorExplanation({ status, last_tick, queue } = {}) {
-  const s = status || emptyStatusSnapshot();
-  const tick = last_tick || null;
-  const q = queue || {};
-  const codes = Array.isArray(tick?.reason_codes) ? tick.reason_codes : [];
+  const s = diagnosticObject(status) ? status : {};
+  const tick = diagnosticObject(last_tick) ? last_tick : {};
+  const q = diagnosticObject(queue) ? queue : {};
+  // A previous tick is historical evidence, not the current queue snapshot.
+  const sameTick = !s.request_id || !tick.request_id || s.request_id === tick.request_id;
+  const codes = sameTick && Array.isArray(tick.reason_codes)
+    ? tick.reason_codes.map((code) => diagnosticText(code, 80)).filter(Boolean).slice(0, 16) : [];
   const primaryCode = codes[0] || null;
-  const classification = s.classification || tick?.classification || null;
+  const classification = diagnosticText(s.classification, 120) || (sameTick ? diagnosticText(tick.classification, 120) : null);
+  const task = diagnosticText(s.task_ref) || (sameTick ? diagnosticText(tick.task_ref) : null);
+  const result = (headline, detail, blocked_at, why_code, action_required, operator_action, severity = "info") => ({
+    headline, detail, blocked_at, why_code, action_required, operator_action, severity,
+    blocked_at_label: ({ queue_selection: "Selezione della coda", "claim/bridge": "Assegnazione del claim",
+      qwen_preflight: "Verifica del runtime Qwen", admission: "Ammissione del task", repo_hygiene: "Verifica del repository",
+      human_gate: "Intervento umano", single_flight: "Esclusione dei cicli concorrenti", executor: "Esecuzione",
+      service: "Servizio dispatcher", diagnostics: "Lettura diagnostica" })[blocked_at] || null,
+  });
 
   if (s.active === true) {
-    return {
-      headline: `Dispatcher is working now (${s.phase || "in progress"}).`,
-      detail: s.task_ref
-        ? `Currently handling ${s.task_ref}. Watch phase/last_event for progress.`
-        : "A tick is in flight. Task selection may still be in early phases.",
-      blocked_at: null,
-      why_code: classification,
-    };
+    return result("Il dispatcher sta lavorando.", task ? `Il ciclo corrente sta elaborando ${task}.`
+      : "Un ciclo è in corso; il task non è ancora stato selezionato.", null, diagnosticText(s.phase, 80), false,
+    "Attendere l’avanzamento del ciclo e osservare la fase corrente.");
   }
 
-  if (classification === "IDLE_CLEAN" || primaryCode === "NO_ELIGIBLE_READY" || primaryCode === "CLAIM_SKIPPED_PRESENT") {
-    const why = primaryCode || (q.eligible_count > 0 ? "CLAIM_SKIPPED_PRESENT" : "NO_ELIGIBLE_READY");
-    let detail = "The dispatcher checked everything and found nothing it could safely run.";
-    if (why === "NO_ELIGIBLE_READY") {
-      detail = q.claim_present_count > 0
-        ? "No eligible READY item is free to claim — some READY-looking files are blocked by existing receipts."
-        : "No backlog item currently passes READY + selector/bridge admissibility.";
-    } else if (why === "CLAIM_SKIPPED_PRESENT") {
-      detail = "A candidate was considered but the claim/bridge step skipped it (see last-tick reason codes and rejected items).";
-    }
-    if (q.candidate_task_ref) {
-      detail += ` Dry-run candidate right now: ${q.candidate_task_ref}.`;
-    }
-    return {
-      headline: "Idle — nothing safely runnable on the last tick.",
-      detail,
-      blocked_at: why === "CLAIM_SKIPPED_PRESENT" ? "claim/bridge" : "queue_selection",
-      why_code: why,
-    };
-  }
-
-  if (classification === "HUMAN_GATE_REQUIRED" || tick?.human_gate_required === true) {
-    const blocked_at = codes.includes("QWEN_SESSION_NOT_READY") || codes.some((c) => String(c).startsWith("QWEN"))
+  if (classification === "HUMAN_GATE_REQUIRED" || (sameTick && tick.human_gate_required === true)) {
+    const blocked_at = codes.some((c) => c.startsWith("QWEN"))
       ? "qwen_preflight"
       : (codes.includes("MICRO_TASK_ADMISSION_REJECTED") ? "admission"
-        : (codes.some((c) => /DIRTY|BRANCH|FETCH|HEAD|MERGE|REV_PARSE|LOCAL_AHEAD|DIVERGED/.test(String(c))) ? "repo_hygiene" : "human_gate"));
-    return {
-      headline: "Human gate — automation is waiting.",
-      detail: tick?.gate_summary
-        ? `Gate: ${tick.gate_summary}. ${codes.length ? `Codes: ${codes.join(", ")}.` : ""}`
-        : (codes.length ? `Reason codes: ${codes.join(", ")}.` : "A manual prerequisite or decision is required before the next claim/run."),
-      blocked_at,
-      why_code: primaryCode || "HUMAN_GATE_REQUIRED",
-    };
-  }
-
-  if (classification === "BUSY") {
-    return {
-      headline: "Busy — another tick is already running.",
-      detail: "Concurrent ticks are rejected (single-flight). Wait for the active tick to finish.",
-      blocked_at: "single_flight",
-      why_code: "BUSY",
-    };
-  }
-
-  if (String(classification || "").includes("PASS") || classification === "WORK_EXECUTED_PASS") {
-    return {
-      headline: "Last tick executed work successfully.",
-      detail: s.task_ref || tick?.task_ref
-        ? `Task ${s.task_ref || tick.task_ref} completed with PASS.`
-        : "Executor reported PASS on the last tick.",
-      blocked_at: null,
-      why_code: classification,
-    };
-  }
-
-  if (String(classification || "").includes("STOP") || classification === "WORK_EXECUTED_STOP") {
-    return {
-      headline: "Last tick ran and stopped.",
-      detail: codes.length
-        ? `Executor/stop codes: ${codes.join(", ")}.`
-        : "The executor finished with a STOP classification (safe stop, not a dispatcher crash).",
-      blocked_at: "executor",
-      why_code: primaryCode || classification,
-    };
+        : (codes.some((c) => /DIRTY|BRANCH|FETCH|HEAD|MERGE|REV_PARSE|LOCAL_AHEAD|DIVERGED/.test(c)) ? "repo_hygiene" : "human_gate"));
+    return result("È richiesto un intervento umano.", "L’automazione si è fermata perché un prerequisito o una decisione richiede una verifica umana.",
+      blocked_at, primaryCode || "HUMAN_GATE_REQUIRED", true,
+      blocked_at === "qwen_preflight" ? "Verificare il runtime e il profilo richiesto usando i codici tecnici dell’ultimo ciclo."
+      : "Esaminare la fase di blocco e i codici tecnici prima di autorizzare il proseguimento.", "warn");
   }
 
   if (classification === "SERVICE_ERROR") {
-    return {
-      headline: "Service error on the last tick.",
-      detail: codes.length ? `Codes: ${codes.join(", ")}.` : "Inspect reason codes and dispatcher logs.",
-      blocked_at: "service",
-      why_code: primaryCode || "SERVICE_ERROR",
-    };
+    return result("Il dispatcher ha incontrato un errore di servizio.", "L’ultimo ciclo disponibile segnala un errore del servizio; i codici tecnici ne descrivono la causa.",
+      "service", primaryCode || "SERVICE_ERROR", true, "Consultare i codici dell’ultimo ciclo e i log del dispatcher.", "danger");
   }
 
-  return {
-    headline: s.terminal ? "Last tick finished." : "Dispatcher is idle between ticks.",
-    detail: classification
-      ? `Current classification: ${classification}.`
-      : "No terminal classification recorded yet — waiting for the next natural WF90 tick.",
-    blocked_at: null,
-    why_code: classification,
-  };
+  if (classification === "STOP" || classification?.startsWith("STOP:") || classification === "WORK_EXECUTED_STOP") {
+    return result("L’ultima esecuzione si è fermata con esito STOP.", "L’esecutore ha registrato un arresto; il codice STOP va interpretato prima di valutare ulteriori azioni.",
+      "executor", primaryCode || classification, true, "Esaminare i codici dell’esecutore e il receipt del task; il dashboard non autorizza ripetizioni.", "warn");
+  }
+
+  if (q.ok === false) {
+    return result("La coda non è verificabile in questo momento.", "La lettura diagnostica non è riuscita: il numero di task eseguibili e lo stato dei claim non sono disponibili.",
+      "diagnostics", "DIAGNOSTICS_QUEUE_SCAN_FAILED", true, "Verificare l’errore di lettura prima di interpretare la coda come vuota.", "danger");
+  }
+
+  if (classification === "BUSY") {
+    return result("L’ultimo ciclo è stato rifiutato perché il dispatcher era occupato.", "Il vincolo di un solo ciclo alla volta impedisce esecuzioni concorrenti.",
+      "single_flight", "BUSY", false, "Attendere il completamento del ciclo e aggiornare lo stato.");
+  }
+
+  if (q.eligible_count > 0 && diagnosticText(q.candidate_task_ref)) {
+    return result("Un task è candidato al prossimo ciclo.", `${q.candidate_task_ref} risulta selezionabile nella lettura corrente. L’avvio dipende ancora dai controlli di esecuzione del prossimo ciclo.`,
+      null, "SELECTED", false, "Attendere il prossimo ciclo pianificato; questa lettura non assegna lavoro.");
+  }
+
+  if (classification === "PASS" || classification === "WORK_EXECUTED_PASS") {
+    return result("L’ultima esecuzione è terminata con esito PASS.", task ? `Il task ${task} ha riportato un esito PASS.` : "L’esecutore ha riportato un esito PASS nell’ultimo ciclo disponibile.",
+      null, classification, false, "Consultare la coda corrente per verificare i prossimi candidati.", "ok");
+  }
+
+  if (classification === "IDLE_CLEAN" || primaryCode === "NO_ELIGIBLE_READY" || primaryCode === "CLAIM_SKIPPED_PRESENT" || q.eligible_count === 0) {
+    const why = primaryCode === "CLAIM_SKIPPED_PRESENT" ? primaryCode : "NO_ELIGIBLE_READY";
+    return result("Nessun task eseguibile in questo momento.", q.claim_present_count > 0
+      ? "La coda è stata controllata, ma i task READY ammissibili risultano bloccati da receipt esistenti."
+      : "La coda è stata controllata, ma nessun task READY è attualmente libero e ammissibile per la selezione.",
+    why === "CLAIM_SKIPPED_PRESENT" ? "claim/bridge" : "queue_selection", why, false,
+    q.claim_present_count > 0 ? "Consultare i receipt bloccanti: un claim esistente non richiede automaticamente un intervento o una cancellazione."
+      : "Attendere la presenza di un task ammissibile nella coda.", q.claim_present_count > 0 ? "warning" : "info");
+  }
+
+  return result("Il dispatcher è in attesa di dati.", "Non è disponibile un esito conclusivo sufficiente per spiegare lo stato corrente.",
+    null, classification, null, "Aggiornare la lettura e attendere il prossimo ciclo pianificato.");
 }
 
 export async function buildDiagnostics(deps = {}) {
   const status = (() => {
     try {
-      return deps.statusTracker && typeof deps.statusTracker.snapshot === "function"
+      const value = deps.statusTracker && typeof deps.statusTracker.snapshot === "function"
         ? deps.statusTracker.snapshot()
         : emptyStatusSnapshot();
+      return diagnosticObject(value) ? value : emptyStatusSnapshot({ last_event: "status_snapshot_unavailable" });
     } catch {
       return emptyStatusSnapshot({ last_event: "status_snapshot_error" });
     }
   })();
   const last_tick = (() => {
     try {
-      return deps.lastTickStore && typeof deps.lastTickStore.snapshot === "function"
+      const value = deps.lastTickStore && typeof deps.lastTickStore.snapshot === "function"
         ? deps.lastTickStore.snapshot()
         : null;
+      return diagnosticObject(value) ? value : null;
     } catch {
       return null;
     }
@@ -453,7 +582,14 @@ export async function buildDiagnostics(deps = {}) {
     });
   });
   const receiptsPath = deps.receiptsPath || resolve(CANONICAL_REPO_PATH, RECEIPTS_PATH);
-  const loadReceipts = deps.loadReceipts || (() => loadReceiptsFile(receiptsPath));
+  // Diagnostics must distinguish an empty ledger from an unreadable ledger.
+  // The existing execution loader and its execution policy remain unchanged.
+  const loadReceipts = deps.loadReceipts || (() => {
+    if (!existsSync(receiptsPath)) return [];
+    const ledger = JSON.parse(readFileSync(receiptsPath, "utf8").replace(/^\uFEFF/, ""));
+    if (!Array.isArray(ledger)) throw new Error("DIAGNOSTICS_RECEIPTS_INVALID");
+    return ledger;
+  });
   const nowIso = deps.nowIso ? deps.nowIso() : new Date().toISOString();
   let queue;
   try {
@@ -463,24 +599,20 @@ export async function buildDiagnostics(deps = {}) {
       nowIso,
     });
   } catch (err) {
-    queue = {
-      eligible_count: 0,
-      candidate_task_ref: null,
-      candidate_source_file: null,
-      candidate_risk_hint: null,
-      selection_reason_code: "DIAGNOSTICS_QUEUE_SCAN_FAILED",
-      scanned_file_count: 0,
-      claim_present_count: 0,
-      rejected_items: [],
-      skip_reason_summary: { DIAGNOSTICS_QUEUE_SCAN_FAILED: 1 },
-      error: boundStr(err?.message || "queue_scan_failed", 80),
-    };
+    queue = queueDiagnosticsFailure(err?.message);
   }
 
   const probe = deps.probeQwen || probeQwenEndpointReadOnly;
-  const qwen = await probe({
-    wanted_profile: status.qwen_profile || null,
-  });
+  let observation;
+  try {
+    observation = await probe({ wanted_profile: diagnosticText(status.qwen_profile, 120) });
+  } catch (err) {
+    observation = { reachable: null, error: diagnosticText(err?.message, 80) || "QWEN_PROBE_FAILED" };
+  }
+  const qwen = diagnosticObject(observation) ? observation : {};
+  const models = Array.isArray(qwen.models) ? qwen.models.slice(0, 24).map(normalizeQwenModel).filter((model) => model.id) : [];
+  const profile_status = diagnosticText(qwen.profile_status, 40)
+    || (qwen.profile_status === null || qwen.profile_status === undefined ? null : "unknown");
 
   const explanation = buildOperatorExplanation({ status, last_tick, queue });
   return {
@@ -492,11 +624,15 @@ export async function buildDiagnostics(deps = {}) {
     queue,
     qwen: {
       endpoint: QWEN_OBSERVE_BASE_URL,
-      reachable: qwen.reachable === true,
-      health_summary: boundStr(qwen.health_summary, 80),
-      profile_status: boundStr(qwen.profile_status, 40),
-      models: Array.isArray(qwen.models) ? qwen.models.slice(0, 24) : [],
-      error: boundStr(qwen.error, 80),
+      reachable: diagnosticBoolean(qwen.reachable),
+      health_summary: diagnosticText(qwen.health_summary, 80),
+      profile_status,
+      profile_status_label: profile_status ? (MODEL_STATUS_LABELS[profile_status] || "Sconosciuto") : "Non disponibile",
+      models,
+      model_count: diagnosticNumber(qwen.model_count) ?? (qwen.reachable === true && !qwen.error ? models.length : null),
+      loaded_count: diagnosticNumber(qwen.loaded_count) ?? (qwen.reachable === true && !qwen.error ? models.filter((model) => model.status === "loaded").length : null),
+      models_truncated: qwen.models_truncated === true || (Array.isArray(qwen.models) && qwen.models.length > models.length),
+      error: diagnosticText(qwen.error, 80) || (!diagnosticObject(observation) ? "QWEN_OBSERVATION_UNAVAILABLE" : null),
     },
     explanation,
   };

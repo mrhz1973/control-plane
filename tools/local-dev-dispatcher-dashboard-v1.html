@@ -1,450 +1,180 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Local Dev Dispatcher · Observability</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Local Dev Dispatcher · Console operativa</title>
   <style>
-    :root {
-      --bg: #0f1419;
-      --bg-elev: #1a222c;
-      --bg-card: #1e2833;
-      --border: #2d3a47;
-      --text: #e8eef4;
-      --muted: #8b9aab;
-      --accent: #3db8a0;
-      --warn: #e6a23c;
-      --danger: #e35d6a;
-      --info: #5b9fd4;
-      --ok: #4caf82;
-      --idle: #7a8794;
-      --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
-      --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
-      --radius: 12px;
-      --shadow: 0 8px 24px rgba(0,0,0,.35);
-    }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg: #f4f7fa;
-        --bg-elev: #ffffff;
-        --bg-card: #ffffff;
-        --border: #d5dee8;
-        --text: #1a2430;
-        --muted: #5c6b7a;
-        --shadow: 0 8px 24px rgba(26,36,48,.08);
-      }
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: var(--sans);
-      background:
-        radial-gradient(1200px 600px at 10% -10%, rgba(61,184,160,.12), transparent 55%),
-        radial-gradient(900px 500px at 100% 0%, rgba(91,159,212,.10), transparent 50%),
-        var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      line-height: 1.45;
-    }
-    header {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px 20px;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 24px 8px;
-      max-width: 1180px;
-      margin: 0 auto;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.35rem;
-      font-weight: 650;
-      letter-spacing: -0.02em;
-    }
-    header .sub { color: var(--muted); font-size: .9rem; margin-top: 2px; }
-    .meta-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: .85rem; color: var(--muted); }
-    main {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 12px 24px 40px;
-      display: grid;
-      gap: 16px;
-    }
-    .hero {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 18px 20px;
-      display: grid;
-      gap: 10px;
-    }
-    .hero .why {
-      font-size: 1.05rem;
-      font-weight: 600;
-    }
-    .hero .detail { color: var(--muted); max-width: 72ch; }
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 10px;
-    }
-    .card {
-      background: var(--bg-elev);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      min-height: 74px;
-    }
-    .card .label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: .72rem;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .card .value {
-      font-size: 1rem;
-      font-weight: 600;
-      word-break: break-word;
-    }
-    .card .value.mono { font-family: var(--mono); font-size: .88rem; font-weight: 500; }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: .8rem;
-      font-weight: 650;
-      border: 1px solid transparent;
-    }
-    .badge.ok { background: rgba(76,175,130,.18); color: var(--ok); border-color: rgba(76,175,130,.35); }
-    .badge.warn { background: rgba(230,162,60,.16); color: var(--warn); border-color: rgba(230,162,60,.35); }
-    .badge.danger { background: rgba(227,93,106,.16); color: var(--danger); border-color: rgba(227,93,106,.35); }
-    .badge.info { background: rgba(91,159,212,.16); color: var(--info); border-color: rgba(91,159,212,.35); }
-    .badge.idle { background: rgba(122,135,148,.16); color: var(--idle); border-color: rgba(122,135,148,.35); }
-    .badge.active { background: rgba(61,184,160,.18); color: var(--accent); border-color: rgba(61,184,160,.4); }
-    section.panel {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 16px 16px;
-    }
-    section.panel h2 {
-      margin: 0 0 12px;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    details {
-      border-top: 1px solid var(--border);
-      margin-top: 12px;
-      padding-top: 10px;
-    }
-    details summary {
-      cursor: pointer;
-      color: var(--muted);
-      font-size: .9rem;
-      user-select: none;
-    }
-    details summary:hover { color: var(--text); }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: .88rem;
-      margin-top: 8px;
-    }
-    th, td {
-      text-align: left;
-      padding: 6px 8px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
-    }
-    th { color: var(--muted); font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; }
-    .mono { font-family: var(--mono); }
-    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-    .help {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      font-size: 11px;
-      font-weight: 700;
-      background: rgba(139,154,171,.25);
-      color: var(--muted);
-      cursor: help;
-      position: relative;
-      flex: 0 0 auto;
-    }
-    .help:hover, .help:focus-visible { color: var(--text); background: rgba(61,184,160,.35); outline: none; }
-    .help::after {
-      content: attr(data-tip);
-      position: absolute;
-      left: 50%;
-      bottom: calc(100% + 8px);
-      transform: translateX(-50%);
-      background: #111820;
-      color: #f3f7fb;
-      border: 1px solid #334155;
-      padding: 8px 10px;
-      border-radius: 8px;
-      width: max-content;
-      max-width: 260px;
-      font-size: 12px;
-      font-weight: 500;
-      line-height: 1.35;
-      white-space: normal;
-      z-index: 20;
-      opacity: 0;
-      pointer-events: none;
-      box-shadow: var(--shadow);
-      transition: opacity .12s ease;
-    }
-    @media (prefers-color-scheme: light) {
-      .help::after { background: #1a2430; color: #fff; }
-    }
-    .help:hover::after, .help:focus-visible::after { opacity: 1; }
-    .err { color: var(--danger); font-size: .9rem; }
-    .footer-note { color: var(--muted); font-size: .8rem; padding: 0 24px 28px; max-width: 1180px; margin: 0 auto; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--accent); }
-    .dot.off { background: var(--idle); }
+    :root{color-scheme:dark;--bg:#08090b;--panel:#111317;--raised:#181b21;--line:#292e37;--text:#eff2f7;--muted:#9ba5b5;--cyan:#65d6ee;--green:#73e3a4;--amber:#f5c16b;--red:#ff8792;--violet:#bcabff;--mono:ui-monospace,"Cascadia Code",Consolas,monospace;--sans:"Segoe UI",system-ui,sans-serif}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0,rgba(72,100,147,.065),transparent 45%),var(--bg);color:var(--text);font:14px/1.5 var(--sans)}button,input,select{font:inherit}button,summary,select{cursor:pointer}button,input,select{color:var(--text);border:1px solid var(--line);border-radius:8px;background:var(--raised)}button{padding:8px 12px}button:hover{border-color:#52647b;background:#222833}button:disabled{opacity:.55;cursor:wait}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,.help:focus-visible,a:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}a{color:inherit}h1,h2,h3,p{margin:0}h1{font-size:25px;letter-spacing:-.8px;font-weight:650}h2{font-size:15px;font-weight:650;letter-spacing:-.2px}h3{font-size:14px}code,.mono{font-family:var(--mono);font-size:12px;overflow-wrap:anywhere}pre{font:12px/1.6 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted);margin:10px 0 0}svg{flex:none}button svg{vertical-align:-3px;margin-right:6px}
+    .shell{max-width:1880px;margin:auto;padding:0 30px}.topbar{border-bottom:1px solid #20242b;background:#0b0d10}.topbar-inner{display:flex;align-items:center;justify-content:space-between;height:58px;gap:16px}.brand{display:flex;gap:12px;align-items:center}.brand-mark{display:grid;place-items:center;width:30px;height:30px;border:1px solid #344356;border-radius:8px;color:var(--cyan);background:#151e29}.brand-name{font-weight:650;letter-spacing:.2px}.breadcrumb{color:var(--muted);font-size:12px;border-left:1px solid var(--line);padding-left:14px}.read-only{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px}.read-only svg{color:var(--green)}
+    .page-head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 0 19px}.eyebrow{text-transform:uppercase;letter-spacing:1.8px;color:var(--muted);font-size:10px;font-weight:650;margin-bottom:4px}.page-head p{font-size:12px;color:var(--muted);margin-top:4px}.controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.auto{font-size:12px;display:flex;gap:7px;align-items:center;color:var(--muted)}input[type=checkbox]{accent-color:var(--cyan);width:15px;height:15px}.freshness{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px}.dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 9px #73e3a422}.dot.off{background:var(--amber);box-shadow:none}
+    main{padding-bottom:24px!important}.summary-grid{display:grid;grid-template-columns:1.12fr 1.3fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px}.metric{border:1px solid var(--line);background:linear-gradient(135deg,#171a20,#111317);border-radius:12px;padding:14px 15px;min-width:0;min-height:113px;position:relative}.metric:before{content:"";height:2px;width:30px;background:currentColor;position:absolute;left:15px;top:-1px;opacity:.65}.metric-label{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:10px;font-weight:650;letter-spacing:1px;text-transform:uppercase}.metric-value{font-size:23px;line-height:1.25;letter-spacing:-.7px;font-weight:650;margin:12px 0 6px;overflow-wrap:anywhere}.metric-value.identity{font-size:20px;letter-spacing:-.3px}.metric-sub{font-size:11px;color:var(--muted);overflow-wrap:anywhere}.ok{color:var(--green)}.warn{color:var(--amber)}.danger{color:var(--red)}.info{color:var(--cyan)}.identity{color:var(--violet)}.neutral{color:var(--muted)}
+    .workspace{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}.primary,.sidebar{display:grid;gap:16px;min-width:0}.panel{border:1px solid var(--line);border-radius:13px;background:var(--panel);min-width:0}.panel-head{padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #242830}.panel-head .heading{display:flex;align-items:center;gap:8px}.section-index{font:10px var(--mono);color:#758295;margin-right:3px}.panel-body{padding:16px 18px}.hero{border-color:#3c3325;background:linear-gradient(120deg,#1b1914 0,#131518 65%);overflow:visible}.hero.info{border-color:#294753;background:linear-gradient(120deg,#111e23,#131518 65%)}.hero.danger{border-color:#533039;background:linear-gradient(120deg,#24161c,#131518 65%)}.hero.ok{border-color:#2b4639;background:linear-gradient(120deg,#15211c,#131518 65%)}.hero h2{font-size:12px;color:var(--muted);font-weight:500}.hero-heading{display:flex;align-items:center;gap:13px;margin:16px 0 10px}.hero-icon{width:37px;height:37px;display:grid;place-items:center;border-radius:10px;background:#f5c16b0c;border:1px solid currentColor;font-size:19px;flex:none}.hero h3{font-size:22px;line-height:1.3;font-weight:600;letter-spacing:-.5px;color:var(--text)}.explanation{color:#bac1cd;font-size:13px;max-width:105ch}.pill-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}.pill{display:inline-flex;gap:6px;align-items:center;border:1px solid currentColor;border-radius:6px;padding:3px 7px;font-size:10px;line-height:1.4;font-weight:600;max-width:100%;overflow-wrap:anywhere}.pill.subtle{border-color:var(--line);background:#ffffff03;color:var(--muted)}.interpretation{border-top:1px solid #ffffff12;margin-top:16px;padding-top:13px;display:grid;grid-template-columns:145px 1fr;gap:12px}.interpretation-label{font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}.interpretation p{font-size:12px;color:#c3cad4}.alert{padding:11px 15px;border:1px solid #784450;background:#27161c;border-radius:9px;font-size:12px;color:var(--red);margin:0 0 14px}.alert[hidden]{display:none}
+    .queue-metrics{display:flex;gap:24px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid #242830}.queue-stat strong{font:600 20px var(--sans);margin-right:6px}.queue-stat span{color:var(--muted);font-size:11px}.toolbar{display:flex;gap:9px;padding:13px 18px;align-items:center;flex-wrap:wrap}.search{position:relative;flex:1;min-width:180px}.search svg{position:absolute;left:10px;top:10px;color:var(--muted)}.search input{width:100%;padding:7px 10px 7px 32px;background:#0c0e12;font-size:12px}.toolbar select{font-size:11px;padding:8px;max-width:180px}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:12px;text-align:left}th{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.7px;font-weight:500;padding:10px 18px;background:#0e1014;border-top:1px solid #242830;border-bottom:1px solid #242830}td{padding:13px 18px;border-bottom:1px solid #242830;vertical-align:top}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#ffffff02}.task-name{font-family:var(--mono);color:var(--violet);font-weight:600;font-size:12px}.source{font:10px var(--mono);color:var(--muted);display:block;margin-top:5px;overflow-wrap:anywhere}.row-state{font-size:11px;white-space:nowrap}.reason{font-size:11px;color:#c3cad4}.raw-reason{display:block;font:9px var(--mono);color:#a1a9b7;margin-top:5px}.queue-note{padding:12px 18px;border-top:1px solid #242830;color:var(--muted);font-size:11px}.empty{text-align:center;padding:30px 16px;color:var(--muted);font-size:12px}.receipt-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:12px}.receipt-grid dt{font-size:10px;color:var(--muted)}.receipt-grid dd{margin:3px 0 0;color:var(--text);font:11px var(--mono);overflow-wrap:anywhere}.receipt-note{margin:10px 0;color:var(--muted);font-size:11px;max-width:65ch}.receipt-details{min-width:135px}.receipt-details[open]{min-width:290px}details summary{font-size:11px;color:var(--muted);border-radius:3px}details summary:hover{color:var(--text)}details[open]>summary{color:var(--cyan)}.technical{border-top:1px solid var(--line);padding-top:12px;margin-top:14px}.technical summary{font-size:11px}.facts{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin:0}.facts dt{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px}.facts dd{margin:4px 0 0;font-size:12px;overflow-wrap:anywhere}.model{padding:11px 0;border-top:1px solid #252931}.model:first-child{border-top:0;padding-top:0}.model-line{display:flex;justify-content:space-between;gap:12px;align-items:start}.model-id{font:11px/1.5 var(--mono);color:var(--violet);overflow-wrap:anywhere}.model-meta{margin-top:6px;color:var(--muted);font-size:10px}.catalog{max-height:325px;overflow:auto;padding-right:3px}.qwen-caption{font-size:11px;color:var(--muted);margin:13px 0 10px}.outcome{font-size:20px;font-weight:600;letter-spacing:-.4px;margin-bottom:3px}.outcome-time{font-size:11px;color:var(--muted);margin-bottom:16px}.technical-panel{margin-top:16px}.technical-panel>summary{padding:13px 18px;font-size:12px}.technical-panel .facts{padding:4px 18px 18px;grid-template-columns:repeat(4,minmax(0,1fr))}.footer{display:flex;justify-content:space-between;gap:15px;padding:15px 2px 0;color:#8993a3;font-size:10px}.footer code{font-size:10px}.help{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:14px;height:14px;border-radius:50%;border:1px solid #4c586b;color:#aebacc;font:9px var(--sans);text-transform:none;letter-spacing:0;cursor:help;vertical-align:1px}.tooltip{position:fixed;left:16px;top:70px;width:260px;max-width:calc(100vw - 24px);z-index:100;background:#222a36;border:1px solid #52617a;box-shadow:0 8px 24px #0009;padding:10px 12px;border-radius:8px;color:#f0f4fa;font:12px/1.5 var(--sans);text-transform:none;letter-spacing:0;pointer-events:none;visibility:hidden}.help:hover .tooltip,.help:focus .tooltip,.help:focus-visible .tooltip{visibility:visible}.help.tip-dismissed .tooltip{visibility:hidden}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+    @media(min-width:1700px){.workspace{grid-template-columns:minmax(0,1fr) 420px}.metric{min-height:121px}.hero h3{font-size:25px}.hero .panel-body{padding:20px 22px}td{padding-top:15px;padding-bottom:15px}}
+    @media(max-width:1200px){.shell{padding:0 20px}.workspace{grid-template-columns:minmax(0,1fr) 330px}.summary-grid{grid-template-columns:repeat(3,1fr)}.metric{min-height:105px}.metric-value{font-size:21px}.toolbar{gap:6px}td,th{padding-left:12px;padding-right:12px}.hero h3{font-size:20px}}
+    @media(max-width:900px){.workspace{grid-template-columns:1fr}.sidebar{grid-template-columns:1fr 1fr}.page-head{align-items:start}.controls{justify-content:flex-end}.freshness{width:100%;justify-content:flex-end}.technical-panel .facts{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:620px){.shell{padding:0 12px}.breadcrumb{display:none}.page-head{flex-direction:column;gap:12px;padding-top:18px}.controls{justify-content:flex-start;gap:10px}.freshness{width:auto}.summary-grid{grid-template-columns:repeat(2,1fr)}.metric{padding:12px;min-height:102px}.metric-value{font-size:20px}.sidebar{grid-template-columns:1fr}.interpretation{grid-template-columns:1fr;gap:5px}.hero h3{font-size:19px}.panel-body,.panel-head{padding:14px}.queue-metrics{gap:14px}.toolbar select{max-width:145px}.footer{flex-direction:column;gap:5px}.receipt-details[open]{min-width:230px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
   </style>
 </head>
 <body>
-  <header>
-    <div>
-      <h1>Local Dev Dispatcher</h1>
-      <div class="sub">Read-only observability · port 18793</div>
+  <a class="sr-only" href="#main">Vai alla console</a>
+  <div class="topbar"><div class="shell topbar-inner">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 3 9 5-9 5-9-5 9-5Z M3 12l9 5 9-5 M3 16l9 5 9-5"/></svg></span><span class="brand-name">Control Plane</span><span class="breadcrumb">Sviluppo locale / Dispatcher</span></div>
+    <span class="read-only"><svg width="13" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="4" y="8" width="12" height="9" rx="2"/><path d="M7 8V5a3 3 0 0 1 6 0v3"/></svg>Sola lettura</span>
+  </div></div>
+  <main class="shell" id="main">
+    <div class="page-head"><div><div class="eyebrow">Console operativa</div><h1>Local Dev Dispatcher</h1><p>Attività, decisioni e disponibilità del runtime locale.</p></div>
+      <div class="controls"><span class="freshness"><span id="poll-dot" class="dot off" aria-hidden="true"></span><span id="poll-age" role="status">Connessione in corso…</span></span><label class="auto"><input id="auto-refresh" type="checkbox" checked>Aggiorna ogni 3 s</label><button id="refresh-button" type="button"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M16 8a6 6 0 1 0 0 5M16 3v5h-5"/></svg>Aggiorna</button></div>
     </div>
-    <div class="meta-row">
-      <span id="poll-dot" class="dot off" title="poll"></span>
-      <span id="poll-age">Connecting…</span>
-      <span class="badge idle" id="live-badge">—</span>
+    <div id="data-alert" class="alert" role="alert" hidden></div>
+    <section class="summary-grid" id="summary-cards" aria-label="Sintesi operativa"></section>
+    <div class="workspace">
+      <div class="primary">
+        <section id="hero" class="panel hero warn" aria-labelledby="why-title"><div class="panel-body">
+          <div class="model-line"><h2 id="why-title">Perché il sistema è in questo stato?</h2><span id="live-badge" class="pill subtle">In attesa dei dati</span></div>
+          <div class="hero-heading"><span class="hero-icon" id="hero-icon" aria-hidden="true">·</span><h3 id="headline">Lettura dello stato del dispatcher…</h3></div>
+          <p id="detail" class="explanation"></p><div class="pill-row" id="block-pills"></div>
+          <div class="interpretation"><span class="interpretation-label">Indicazione operativa</span><p id="operator-action">In attesa della prima risposta.</p></div>
+        </div></section>
+        <section class="panel" aria-labelledby="queue-title">
+          <div class="panel-head"><div class="heading"><span class="section-index">01</span><h2 id="queue-title">Coda e selezione</h2></div><span class="pill subtle">Scansione in sola lettura</span></div>
+          <div class="queue-metrics" id="queue-metrics"></div>
+          <div class="toolbar"><label class="search"><span class="sr-only">Cerca nella coda e negli scarti</span><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="m12 12 5 5"/></svg><input id="queue-search" type="search" placeholder="Cerca task, file o motivo…" autocomplete="off"></label>
+            <label><span class="sr-only">Filtra la coda</span><select id="queue-filter"><option value="all">Tutti gli elementi</option><option value="blocked">Bloccati da claim</option><option value="eligible">Eseguibili</option><option value="rejected">Esclusi o non validi</option></select></label>
+            <label><span class="sr-only">Ordina la coda</span><select id="queue-sort"><option value="priority">Blocchi in evidenza</option><option value="task">Identificativo task</option><option value="source">Nome del file</option></select></label></div>
+          <div class="table-wrap"><table><thead><tr><th scope="col">Task / origine</th><th scope="col">Stato</th><th scope="col">Esito selezione</th><th scope="col">Receipt</th></tr></thead><tbody id="queue-body"></tbody></table></div>
+          <p class="queue-note" id="queue-note"></p>
+        </section>
+      </div>
+      <aside class="sidebar" aria-label="Runtime e ultimo risultato">
+        <section class="panel" aria-labelledby="qwen-title"><div class="panel-head"><div class="heading"><span class="section-index">02</span><h2 id="qwen-title">Qwen e runtime</h2></div><span id="qwen-badge" class="pill subtle">In attesa</span></div><div class="panel-body"><div id="qwen-summary"></div><p class="qwen-caption">Modelli dichiarati dall’endpoint</p><div id="qwen-models" class="catalog"></div></div></section>
+        <section class="panel" aria-labelledby="tick-title"><div class="panel-head"><div class="heading"><span class="section-index">03</span><h2 id="tick-title">Ultimo ciclo completato</h2></div></div><div class="panel-body"><div id="tick-summary"></div><details class="technical" id="tick-technical"><summary>Mostra dettagli tecnici del ciclo</summary><pre id="reason-codes"></pre></details></div></section>
+      </aside>
     </div>
-  </header>
-
-  <main>
-    <div class="hero" id="hero">
-      <div class="why" id="headline">Loading dispatcher state…</div>
-      <div class="detail" id="detail"></div>
-      <div class="pill-row" id="block-pills"></div>
-    </div>
-
-    <section class="panel">
-      <h2>Overview <span class="help" tabindex="0" data-tip="High-level snapshot of the latest dispatcher tick and live execution phase.">i</span></h2>
-      <div class="cards" id="overview-cards"></div>
-    </section>
-
-    <section class="panel">
-      <h2>Qwen / runtime <span class="help" tabindex="0" data-tip="Whether the local model endpoint looks reachable and matches the task profile.">i</span></h2>
-      <div class="cards" id="qwen-cards"></div>
-      <details>
-        <summary>Model list from endpoint</summary>
-        <div id="qwen-models" class="mono" style="font-size:.82rem; margin-top:8px; color:var(--muted);"></div>
-      </details>
-    </section>
-
-    <section class="panel">
-      <h2>Last tick decision <span class="help" tabindex="0" data-tip="Bounded result from the most recent completed /v1/tick (not a live mutation).">i</span></h2>
-      <div class="cards" id="tick-cards"></div>
-      <details>
-        <summary>Reason codes</summary>
-        <pre id="reason-codes" class="mono" style="white-space:pre-wrap; margin:8px 0 0; font-size:.82rem;"></pre>
-      </details>
-    </section>
-
-    <section class="panel">
-      <h2>Queue scan / selection <span class="help" tabindex="0" data-tip="Dry-run view of what the selector would pick right now — does not claim or mutate receipts.">i</span></h2>
-      <div class="cards" id="queue-cards"></div>
-      <details open>
-        <summary>Rejected / skipped items (bounded)</summary>
-        <div style="overflow:auto;">
-          <table>
-            <thead><tr><th>Source</th><th>Reason</th></tr></thead>
-            <tbody id="rejected-body"></tbody>
-          </table>
-        </div>
-      </details>
-    </section>
+    <details class="panel technical-panel" id="status-technical"><summary>Mostra dettagli tecnici del dispatcher</summary><dl class="facts" id="status-details"></dl></details>
+    <footer class="footer"><span>Osservazione locale · Nessuna azione di esecuzione disponibile in questa console.</span><span>Fonti: <code>GET /v1/status</code> · <code>GET /v1/diagnostics</code></span></footer>
   </main>
-
-  <p class="footer-note">
-    Polls <span class="mono">/v1/status</span> and <span class="mono">/v1/diagnostics</span> every 3s.
-    Read-only — this page never triggers ticks or changes the queue.
-  </p>
-
   <script>
-    const TIPS = {
-      active: "True while a tick is in flight; false when the dispatcher is idle between ticks.",
-      classification: "Final state assigned to the most recent dispatcher tick.",
-      phase: "Current stage of the in-flight tick, or TERMINAL/IDLE when finished.",
-      last_event: "Most recent internal progress marker (observability only).",
-      request_id: "Caller correlation id for the tick (usually from n8n WF90).",
-      task_ref: "Queue task identity considered or executed. Null means no task was claimed.",
-      executor_pid: "Process id of the dispatcher Node service handling the tick.",
-      qwen_profile: "Exact local model profile id required or used for the task.",
-      runtime_ready: "Whether the required local model/runtime was confirmed ready for the selected task.",
-      tests_state: "Focused test progress for the current/last execution (NOT_STARTED / RUNNING / PASS / FAIL).",
-      execution_performed: "True only when the local-dev executor actually ran for this tick.",
-      human_gate_required: "Automation stopped and is waiting for a human decision or manual prerequisite.",
-      reason_codes: "Machine-readable reasons explaining why the dispatcher made this decision.",
-      eligible_count: "How many READY backlog items currently pass selector admissibility and are not claim-blocked.",
-      candidate_task_ref: "Top eligible item the selector would claim next (dry-run; not yet claimed by this page).",
-      IDLE_CLEAN: "The dispatcher checked everything and found nothing it could safely run.",
-      HUMAN_GATE_REQUIRED: "Automation stopped and is waiting for a human decision or manual prerequisite.",
-      NO_ELIGIBLE_READY: "No backlog item was both READY and claimable under selector/bridge rules.",
-      CLAIM_SKIPPED_PRESENT: "At least one candidate was considered but bridge/claim skipped it (see skipped reasons).",
-      WORK_EXECUTED_PASS: "A real task ran and finished with PASS.",
-      WORK_EXECUTED_STOP: "A real task ran and stopped safely with a STOP classification.",
-      BUSY: "Another tick is already in flight; concurrent ticks are rejected.",
-      SERVICE_ERROR: "The dispatcher hit an unexpected service failure while handling the tick.",
-    };
-
-    function tip(key) {
-      return TIPS[key] || "Operator field from the dispatcher observability contract.";
+    'use strict';
+    const TIPS = Object.freeze({
+      active:'Indica se il dispatcher sta elaborando un ciclo in questo momento.',
+      classification:'Esito finale assegnato all’ultimo ciclo del dispatcher.',
+      phase:'Fase interna corrente dell’elaborazione.',
+      task_ref:'Identificatore canonico del task selezionato o eseguito.',
+      request_id:'Identificatore univoco del ciclo generato dal workflow n8n.',
+      runtime_ready:'Indica se il runtime richiesto dal task è stato verificato come pronto. La verifica appartiene al ciclo indicato, non alla sonda attuale.',
+      eligible_count:'Numero di task READY attualmente eseguibili secondo le regole del selector.',
+      claim_present_count:'Numero di task la cui selezione è impedita da receipt secondo le regole canoniche.',
+      execution_performed:'Indica se durante questo ciclo è stata realmente eseguita un’attività.',
+      human_gate_required:'Indica che l’automazione richiede un intervento umano prima di proseguire.',
+      reason_codes:'Codici tecnici che spiegano la decisione presa dal dispatcher.',
+      receipt:'Registrazione dello stato di claim ed esecuzione usata per impedire esecuzioni duplicate o non sicure.',
+      replayable:'Indica se il task può essere nuovamente candidato nelle condizioni previste dal contratto. Da solo non autorizza il riavvio.',
+      claimed_at:'Data e ora del claim registrate nel receipt. L’età non autorizza il rilascio o la ripetizione del task.',
+      execution_started:'Indica se il receipt registra l’avvio dell’esecuzione. Non indica che il processo sia ancora attivo.',
+      admissible:'Il backlog rispetta le condizioni canoniche di ammissibilità, valutate separatamente dai receipt.',
+      currently_blocking:'Almeno un receipt corrispondente impedisce la selezione secondo la funzione canonica. Può essere un receipt precedente all’ultimo.',
+      qwen_profile:'Identificatore esatto del profilo modello richiesto dal task.',
+      qwen_reachable:'L’endpoint risponde alla lettura del catalogo. Questo dato da solo non prova la capacità del modello di eseguire un task.',
+      model_status:'Stato dichiarato dal modello nel catalogo. La sola presenza in elenco non significa che sia caricato.',
+      context:'Numero di token di contesto dichiarato dalla sorgente, se presente. Non è una misura di utilizzo.',
+      health:'Indicazione di salute fornita esplicitamente dall’endpoint; non viene dedotta dallo stato del catalogo.',
+      tests_state:'Avanzamento o esito dei test riportato dal ciclo corrente o dall’ultima esecuzione.',
+      elapsed_ms:'Durata osservata del ciclo; non è il tempo di attesa del task in coda.',
+      recorded_at:'Istante di registrazione dell’ultimo ciclo completato. L’orario è mostrato nel fuso locale del browser.',
+      last_event:'Ultimo evento interno di avanzamento riportato dal servizio.',
+      executor_pid:'Identificatore di processo riportato dal servizio per il ciclo.',
+      scanned_file_count:'Numero totale di file considerati nella scansione corrente. Non tutti sono task READY.',
+      candidate_task_ref:'Primo candidato della scansione attuale secondo il selector. La scansione non crea claim e non avvia il task.',
+      backlog_state:'Stato dichiarato nel file di backlog. Le regole del selector stabiliscono se è ammissibile.',
+      notify_required:'Indica se l’ultimo risultato richiede una notifica secondo il servizio.',
+      files_touched:'File riportati dall’esecuzione nel riepilogo del servizio.',
+      action_required:'Indicazione diagnostica di intervento umano. Non concede autorizzazioni di esecuzione o ripetizione.',
+    });
+    const LABELS = Object.freeze({IDLE:'In attesa',IDLE_CLEAN:'In attesa',BUSY:'Occupato',HUMAN_GATE_REQUIRED:'Intervento umano',SERVICE_ERROR:'Errore di servizio',WORK_EXECUTED_PASS:'Completato',PASS:'Superato',WORK_EXECUTED_STOP:'Esecuzione arrestata',STOP:'Arrestato',FAIL:'Non superato',RUNNING:'In corso',NOT_STARTED:'Non avviati',TERMINAL:'Ciclo concluso',REPO_HYGIENE:'Verifica repository',QUEUE_SCAN:'Scansione della coda',SELECTING:'Selezione del task',CLAIM:'Registrazione claim',CLAIMED:'Claim registrato',EXECUTING:'Esecuzione',OPENCODE:'Elaborazione OpenCode',TESTS:'Verifica dei test',QWEN_PREFLIGHT:'Verifica Qwen',ADMISSION:'Verifica ammissione',READY:'Pronto',READY_FOR_PLANNING:'Pronto per la pianificazione',RELEASED:'Rilasciato',CLAIM_RELEASED:'Claim rilasciato',FAILED_BEFORE_EXECUTION:'Fermato prima dell’esecuzione',loaded:'Caricato',unloaded:'Non caricato',loading:'Caricamento',unloading:'Scaricamento',ready:'Pronto',healthy:'Disponibile',unhealthy:'Non disponibile',error:'Errore',unreachable:'Non raggiungibile',unknown:'Sconosciuto',missing:'Non disponibile',listed:'Presente nel catalogo',not_listed:'Assente dal catalogo'});
+    const REASONS = Object.freeze({CLAIM_ALREADY_EXISTS:'Bloccato da claim',NO_ELIGIBLE_READY:'Nessun task eseguibile',CLAIM_SKIPPED_PRESENT:'Selezione fermata dal claim',NOT_READY:'Backlog non pronto',STATE_NOT_READY:'Backlog non pronto',NOT_LOCAL_DEV:'Destinazione non locale',HUMAN_GATE_REQUIRED:'Intervento umano richiesto',READ_FAILED:'Lettura del file non riuscita',EMPTY_FILE:'File vuoto',PARSE_FAILED:'Formato del backlog non valido',INVALID_ENTRY:'Elemento non valido',DIAGNOSTICS_QUEUE_SCAN_FAILED:'Scansione non disponibile',QWEN_SESSION_NOT_READY:'Runtime Qwen non pronto',MICRO_TASK_ADMISSION_REJECTED:'Ammissione del task rifiutata',TRACKED_DIRTY_CONFLICT:'Modifiche locali da verificare'});
+    const STAGES = Object.freeze({queue_selection:'Selezione della coda','claim/bridge':'Registrazione del claim',qwen_preflight:'Verifica del runtime Qwen',admission:'Ammissione del task',repo_hygiene:'Verifica del repository',human_gate:'Verifica umana',executor:'Esecutore',service:'Servizio',single_flight:'Ciclo già in corso',diagnostics:'Diagnostica'});
+    const obj = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    const list = value => Array.isArray(value) ? value : [];
+    const scalar = value => typeof value === 'string' ? value : (typeof value === 'number' && Number.isFinite(value) ? String(value) : null);
+    const text = (value,fallback='Non disponibile') => scalar(value) || fallback;
+    const number = value => typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
+    const count = value => number(value) === null ? '—' : value.toLocaleString('it-IT');
+    const yn = value => value === true ? 'Sì' : value === false ? 'No' : 'Non disponibile';
+    const label = value => LABELS[text(value,'')] || (scalar(value) ? 'Sconosciuto' : 'Non disponibile');
+    const escapeHtml = value => text(value,'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    const json = value => {try{return JSON.stringify(value,null,2) || 'Non disponibile';}catch{return 'Dati tecnici non serializzabili';}};
+    function help(key){const tip = TIPS[key] || TIPS.reason_codes;return `<span class="help" tabindex="0" aria-label="${escapeHtml(tip)}">?<span class="tooltip" role="tooltip">${escapeHtml(tip)}</span></span>`;}
+    function pill(value,tone='subtle'){return `<span class="pill ${tone}">${escapeHtml(value)}</span>`;}
+    function tone(value){const v=text(value,'');return /STOP|ERROR|FAIL/.test(v)?'danger':/HUMAN|BUSY|CLAIM/.test(v)?'warn':/PASS/.test(v)?'ok':'info';}
+    function duration(value){const n=number(value);if(n===null)return 'Non disponibile';if(n<1000)return `${Math.round(n)} ms`;if(n<60000)return `${(n/1000).toLocaleString('it-IT',{maximumFractionDigits:1})} s`;if(n<3600000)return `${Math.floor(n/60000)} min ${Math.floor(n%60000/1000)} s`;if(n<86400000)return `${Math.floor(n/3600000)} h ${Math.floor(n%3600000/60000)} min`;return `${Math.floor(n/86400000)} g ${Math.floor(n%86400000/3600000)} h`;}
+    function date(value,timeOnly=false){const raw=scalar(value);const d=raw?new Date(raw):null;return d && Number.isFinite(d.getTime()) ? (timeOnly?d.toLocaleTimeString('it-IT'):d.toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'})):'Non disponibile';}
+    function shortTask(value){return text(value).replace(/^LOCAL_DEV_B_/,'');}
+    function fact(name,value,key,mono=false){return `<div><dt>${escapeHtml(name)} ${help(key)}</dt><dd${mono?' class="mono"':''}>${escapeHtml(value)}</dd></div>`;}
+    function metric(name,value,sub,key,color='info',identity=false){return `<article class="metric ${color}"><div class="metric-label">${escapeHtml(name)} ${help(key)}</div><div class="metric-value${identity?' identity':''}">${escapeHtml(value)}</div><p class="metric-sub">${escapeHtml(sub)}</p></article>`;}
+    const el = id => document.getElementById(id);
+    // Keep disclosure state and keyboard focus stable across refreshed snapshots.
+    function put(id,html){const node=el(id);if(node.innerHTML===html)return;const openIds=Array.from(node.querySelectorAll('details[open]')).map(d=>d.id);const focused=document.activeElement;const focusId=node.contains(focused)?focused.id:null;const focusTip=node.contains(focused)?focused.getAttribute('aria-label'):null;node.innerHTML=html;for(const did of openIds){const d=document.getElementById(did);if(d)d.open=true;}if(focusId)document.getElementById(focusId)?.focus();else if(focusTip)Array.from(node.querySelectorAll('.help')).find(n=>n.getAttribute('aria-label')===focusTip)?.focus();}
+    function fallbackExplanation(s,t,q){const c=text(s.classification || t.classification,'');const codes=list(t.reason_codes).filter(v=>typeof v==='string');let e={headline:'Nessun ciclo registrato.',detail:'Il dispatcher è in attesa. La disponibilità attuale dei task è riportata nella coda.',operator_action:'Attendere un ciclo naturale del dispatcher.',action_required:false,severity:'info',why_code:null,blocked_at:null};
+      if(s.active===true)return {...e,headline:'Il dispatcher sta lavorando.',detail:s.task_ref?`Elaborazione del task ${shortTask(s.task_ref)}. Fase: ${label(s.phase)}.`:'Il ciclo è in corso; il task non è ancora disponibile.',why_code:s.phase};
+      if(c==='HUMAN_GATE_REQUIRED'||t.human_gate_required===true)return {...e,headline:'È richiesto un intervento umano.',detail:'L’automazione si è fermata su un prerequisito. Consultare il motivo tecnico dell’ultimo ciclo.',operator_action:'Verificare il prerequisito segnalato prima di proseguire secondo la procedura prevista.',action_required:true,severity:'warn',why_code:codes[0]||c,blocked_at:'human_gate'};
+      if(c==='SERVICE_ERROR')return {...e,headline:'Il dispatcher ha incontrato un errore di servizio.',detail:'L’ultimo ciclo non è stato completato regolarmente.',operator_action:'Controllare i codici tecnici e i log del servizio.',action_required:true,severity:'danger',why_code:codes[0]||c,blocked_at:'service'};
+      if(c.includes('STOP'))return {...e,headline:'L’ultima esecuzione si è arrestata.',detail:'Il ciclo ha restituito un esito di arresto. Non equivale a un’attività ancora in corso.',operator_action:'Esaminare il motivo dell’arresto e il risultato prima di ogni ulteriore decisione.',action_required:t.human_gate_required===true,severity:'danger',why_code:codes[0]||c,blocked_at:'executor'};
+      if(q.error)return {...e,headline:'La coda non può essere verificata.',detail:'La scansione diagnostica non è disponibile; i task eseguibili sono sconosciuti.',operator_action:'Verificare l’errore di lettura nei dettagli tecnici.',action_required:true,severity:'danger',why_code:q.selection_reason_code,blocked_at:'diagnostics'};
+      if(number(q.eligible_count)>0)return {...e,headline:'La coda contiene task eseguibili.',detail:`La scansione attuale individua ${count(q.eligible_count)} candidati. La selezione avverrà al prossimo ciclo autorizzato.`,operator_action:'Attendere il prossimo ciclo naturale. Il candidato non è ancora un task in esecuzione.',why_code:q.selection_reason_code};
+      if(number(q.claim_present_count)>0)return {...e,headline:'Nessun task eseguibile: sono presenti claim bloccanti.',detail:'I receipt correnti impediscono una nuova selezione dei task indicati. I dettagli della coda spiegano quali registrazioni bloccano e perché.',operator_action:'Verificare i receipt nella coda. Un claim non richiede automaticamente il rilascio o la ripetizione del task.',severity:'warn',why_code:'NO_ELIGIBLE_READY',blocked_at:'queue_selection'};
+      if(c==='IDLE_CLEAN'||q.eligible_count===0)return {...e,headline:'Nessun task eseguibile in questo momento.',detail:'La coda è stata controllata, ma nessun task READY è attualmente libero e ammissibile per l’esecuzione.',why_code:'NO_ELIGIBLE_READY',blocked_at:'queue_selection'};
+      if(c.includes('PASS'))return {...e,headline:'L’ultimo task è stato completato.',detail:'L’ultima esecuzione ha restituito un esito positivo.',severity:'ok',why_code:c};
+      if(!scalar(s.phase)&&!scalar(t.classification))return {...e,headline:'Stato del dispatcher non disponibile.',detail:'La risposta non contiene uno stato interpretabile.',action_required:null,operator_action:'Attendere un aggiornamento valido dei dati.'};return e;
     }
-    function help(key) {
-      return `<span class="help" tabindex="0" data-tip="${escapeAttr(tip(key))}">i</span>`;
+    let currentQueue = {};
+    function receiptFields(r){return `<dl class="receipt-grid">${fact('Stato',label(r.state),'receipt')}${fact('Blocca ora',yn(r.currently_blocking),'currently_blocking')}${fact('Esecuzione avviata',yn(r.execution_started),'execution_started')}${fact('Ripetibile',yn(r.replayable),'replayable')}${fact('Registrato il',date(r.claimed_at),'claimed_at')}${fact('Età osservata',duration(r.age_ms),'claimed_at')}</dl><p class="receipt-note">${escapeHtml(r.interpretation || 'Interpretazione non disponibile. Fare riferimento alle regole canoniche dei receipt.')}</p><code class="raw-reason">${escapeHtml(r.state)} · ${escapeHtml(r.interpretation_code)}</code>`;}
+    function renderQueue(){const q=currentQueue;let items=list(q.items);const legacy=!Array.isArray(q.items);if(legacy)items=list(q.rejected_items).map(r=>({...obj(r),source_file:obj(r).source,blocking_reason:obj(r).reason,currently_blocking:obj(r).reason==='CLAIM_ALREADY_EXISTS'}));
+      const rows=items.map(obj);const search=el('queue-search').value.trim().toLocaleLowerCase('it-IT');const filter=el('queue-filter').value;const sort=el('queue-sort').value;
+      const filtered=rows.filter(r=>{if(filter==='blocked'&&r.currently_blocking!==true)return false;if(filter==='eligible'&&r.eligible!==true)return false;if(filter==='rejected'&&(r.eligible===true||r.currently_blocking===true))return false;return !search||[r.id,r.task_ref,r.source_file,r.backlog_state,r.blocking_reason,r.reason,REASONS[r.blocking_reason||r.reason]].some(v=>text(v,'').toLocaleLowerCase('it-IT').includes(search));});
+      filtered.sort((a,b)=>{if(sort==='priority'){const rank=r=>r.currently_blocking===true?0:r.eligible===true?1:2;const delta=rank(a)-rank(b);if(delta)return delta;}const key=sort==='source'?'source_file':'task_ref';return text(a[key],text(a.source_file,'')).localeCompare(text(b[key],text(b.source_file,'')),'it-IT');});
+      put('queue-body',filtered.length?filtered.map(r=>{const reason=text(r.blocking_reason||r.reason,'');const blocked=r.currently_blocking===true;const rowTone=blocked?'warn':r.eligible===true?'ok':'neutral';const status=r.eligible===true?'Eseguibile':REASONS[reason]||(blocked?'Bloccato da claim':'Escluso dalla selezione');const receipt=obj(r.latest_receipt);const rid=`receipt-${encodeURIComponent(text(r.source_file,text(r.task_ref,'elemento')))}`;const prior=list(r.blocking_receipts).filter(v=>obj(v).currently_blocking===true);
+        const receiptHtml=r.matching_receipt_present===true?`<details class="receipt-details" id="${escapeHtml(rid)}"><summary id="${escapeHtml(rid)}-toggle">${escapeHtml(label(receipt.state))} · Dettagli</summary><p class="receipt-note">Ultimo receipt nel registro · ${count(r.matching_receipt_count)} corrispondenze ${help('receipt')}</p>${receiptFields(receipt)}${prior.length && receipt.currently_blocking!==true?`<p class="receipt-note warn">Un receipt precedente impedisce la selezione.</p>${prior.map(v=>receiptFields(obj(v))).join('')}`:''}<pre>${escapeHtml(json({task_ref:r.task_ref,admissible:r.admissible,latest_receipt:r.latest_receipt,blocking_receipts:r.blocking_receipts}))}</pre></details>`:r.matching_receipt_present===false?'<span class="neutral">Nessun receipt</span>':'<span class="neutral">Dettagli non disponibili</span>';
+        return `<tr><td><span class="task-name">${escapeHtml(r.id||shortTask(r.task_ref))}</span><span class="source">${escapeHtml(r.source_file)}</span></td><td><span class="row-state">${escapeHtml(label(r.backlog_state))}</span><span class="source">Ammissibile: ${yn(r.admissible)} ${help('admissible')}</span></td><td><span class="${rowTone}">${blocked?'⚠ ':r.eligible===true?'✓ ':''}${escapeHtml(status)}</span>${reason?`<code class="raw-reason">${escapeHtml(reason)}</code>`:''}</td><td>${receiptHtml}</td></tr>`;
+      }).join(''):`<tr><td colspan="4" class="empty">${search||filter!=='all'?'Nessun elemento corrisponde ai filtri locali.':q.error?'Scansione non disponibile. Nessuna conclusione sulla coda.':legacy?'Nessun elemento scartato disponibile.':'Nessun elemento nella scansione corrente.'}</td></tr>`);
+      const shown=`${filtered.length} di ${rows.length} elementi disponibili mostrati`;
+      el('queue-note').textContent=`${shown}. ${q.items_truncated||q.rejected_items_truncated?'Elenco limitato dal servizio; i conteggi in alto includono tutta la scansione. ':''}${legacy?'I dettagli receipt richiedono la versione aggiornata del servizio.':'La scansione applica le regole canoniche senza acquisire task.'}`;
     }
-    function escapeAttr(s) {
-      return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+    function modelState(m){const raw=m.status??m.state;return scalar(raw)||scalar(obj(raw).value)||scalar(obj(raw).state)||scalar(obj(raw).status);}
+    function render(status,diag){const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);const t=obj(d.last_tick),q=obj(d.queue),w=obj(d.qwen);const fallback=fallbackExplanation(s,t,q);const e=typeof obj(d.explanation).action_required==='boolean'||obj(d.explanation).action_required===null?{...fallback,...obj(d.explanation)}:fallback;const severity=['ok','warn','danger','info'].includes(e.severity)?e.severity:'info';const active=s.active===true;const c=text(s.classification||t.classification,'');const models=list(w.models).map(obj).filter(m=>scalar(m.id));const loaded=models.filter(m=>modelState(m)==='loaded');const qwenTitle=w.reachable===false?'Non raggiungibile':w.reachable===true?(loaded.length?`${loaded.length} caricato${loaded.length===1?'':'i'}`:'Endpoint disponibile'):'Non disponibile';
+      put('summary-cards',[
+        metric('Stato dispatcher',active?'Al lavoro':s.active===false?(c==='HUMAN_GATE_REQUIRED'?'Intervento umano':c==='SERVICE_ERROR'?'Errore servizio':'In attesa'):'Sconosciuto',active?label(s.phase):`Ultimo esito: ${label(c)}`,'active',active?'info':tone(c)),
+        metric('Task',s.task_ref?shortTask(s.task_ref):q.candidate_task_ref?shortTask(q.candidate_task_ref):'Nessun task',s.task_ref?(active?'Task in elaborazione':'Ultimo task osservato'):q.candidate_task_ref?'Candidato · non ancora avviato':'Nessun task selezionato','task_ref','identity',true),
+        metric('Coda',`${count(q.eligible_count)} eseguibili`,`${count(q.claim_present_count)} bloccati da claim`,'eligible_count',q.claim_present_count>0?'warn':'info'),
+        metric('Qwen',qwenTitle,w.reachable===true?'Catalogo letto · disponibilità per modello':'Sonda del catalogo locale','qwen_reachable',w.reachable===false?'danger':loaded.length?'ok':'info'),
+        metric('Ultimo tick',date(t.recorded_at,true),t.recorded_at?date(t.recorded_at):'Nessun ciclo completato registrato','recorded_at','info'),
+        metric('Esecuzione',active?label(s.phase):label(t.classification||s.classification),active?`Durata ciclo: ${duration(s.elapsed_ms)}`:`Attività svolta nell’ultimo ciclo: ${yn(t.execution_performed)}`,'execution_performed',active?'info':tone(c)),
+      ].join(''));
+      el('headline').textContent=text(e.headline,fallback.headline);el('detail').textContent=text(e.detail,fallback.detail);el('operator-action').textContent=text(e.operator_action,fallback.operator_action);el('hero').className=`panel hero ${severity}`;el('hero-icon').textContent=severity==='danger'?'!':severity==='ok'?'✓':severity==='warn'?'!':'·';el('live-badge').className=`pill ${severity}`;el('live-badge').textContent=active?'Ciclo in corso':label(c);
+      put('block-pills',`${pill(`Intervento umano: ${yn(e.action_required)}`,e.action_required===true?'warn':'subtle')}${help('action_required')}${e.blocked_at?pill(`Fase: ${text(e.blocked_at_label,STAGES[e.blocked_at]||'Sconosciuta')}`,'subtle'):''}${e.why_code?`<span class="pill subtle mono">${escapeHtml(e.why_code)} ${help('reason_codes')}</span>`:''}`);
+      put('queue-metrics',`<div class="queue-stat info"><strong>${count(q.scanned_file_count)}</strong><span>file analizzati ${help('scanned_file_count')}</span></div><div class="queue-stat ok"><strong>${count(q.eligible_count)}</strong><span>eseguibili ${help('eligible_count')}</span></div><div class="queue-stat warn"><strong>${count(q.claim_present_count)}</strong><span>bloccati da claim ${help('claim_present_count')}</span></div>`);currentQueue=q;renderQueue();
+      el('qwen-badge').className=`pill ${w.reachable===false?'danger':w.reachable===true?'ok':'subtle'}`;el('qwen-badge').textContent=w.reachable===true?'Endpoint raggiungibile':w.reachable===false?'Non raggiungibile':'Non disponibile';
+      put('qwen-summary',`<dl class="facts">${fact('Profilo richiesto',s.qwen_profile,'qwen_profile',true)}${fact('Verifica nel ciclo',yn(s.runtime_ready),'runtime_ready')}${fact('Stato del profilo',label(w.profile_status),'model_status')}${fact('Modelli in elenco',Array.isArray(w.models)?count(models.length):'Non disponibile','qwen_reachable')}</dl>${w.error?`<p class="receipt-note danger">Sonda non completata: ${escapeHtml(w.error)}</p>`:''}`);
+      put('qwen-models',models.length?[...models].sort((a,b)=>(modelState(b)==='loaded'?1:0)-(modelState(a)==='loaded'?1:0)).map((m,i)=>{const state=modelState(m);const ctx=number(m.context_tokens)??number(obj(m.meta).n_ctx);return `<article class="model"><div class="model-line"><span class="model-id">${escapeHtml(m.id)}</span>${pill(label(state),state==='loaded'?'ok':state==='loading'?'warn':'subtle')}</div>${ctx!==null?`<p class="model-meta">Contesto: ${count(ctx)} token ${help('context')}</p>`:''}${m.runtime?`<p class="model-meta">Runtime: ${escapeHtml(m.runtime)}</p>`:''}<details id="model-${i}" class="technical"><summary>Mostra dettagli tecnici del modello ${help('model_status')}</summary><pre>${escapeHtml(json(m))}</pre></details></article>`;}).join(''):`<p class="empty">${w.reachable===false?'Endpoint non raggiungibile. Stato dei modelli non disponibile.':w.reachable===true?'Il catalogo non contiene modelli.':'Catalogo non disponibile.'}</p>`);
+      put('tick-summary',`<p class="outcome ${tone(t.classification)}">${escapeHtml(label(t.classification))}</p><p class="outcome-time">${escapeHtml(date(t.recorded_at))}</p><dl class="facts">${fact('Task',t.task_ref?shortTask(t.task_ref):'Nessun task registrato','task_ref',true)}${fact('Durata del ciclo',duration(t.elapsed_ms),'elapsed_ms')}${fact('Attività svolta',yn(t.execution_performed),'execution_performed')}${fact('Intervento umano',yn(t.human_gate_required),'human_gate_required')}</dl>`);
+      el('reason-codes').textContent=json({classification:t.classification??null,reason_codes:t.reason_codes??[],gate_summary:t.gate_summary??null,request_id:t.request_id??null,notify_required:t.notify_required??null});
+      put('status-details',fact('Fase',label(s.phase),'phase')+fact('Classificazione',label(s.classification),'classification')+fact('Identificativo ciclo',s.request_id,'request_id',true)+fact('Identificativo task',s.task_ref,'task_ref',true)+fact('Durata osservata',duration(s.elapsed_ms),'elapsed_ms')+fact('Processo',s.executor_pid,'executor_pid')+fact('Test',label(s.tests_state),'tests_state')+fact('Ultimo evento',s.last_event,'last_event',true)+fact('File coinvolti',list(s.files_touched).filter(v=>typeof v==='string').join(', ')||'Nessun file riportato','files_touched',true));
     }
-    function escapeHtml(s) {
-      return String(s ?? "—").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    }
-    function badgeClass(classification, active) {
-      if (active) return "active";
-      const c = String(classification || "");
-      if (c === "IDLE_CLEAN" || c === "PASS" || c === "WORK_EXECUTED_PASS") return "ok";
-      if (c.includes("HUMAN_GATE") || c === "BUSY") return "warn";
-      if (c.includes("STOP") || c === "SERVICE_ERROR" || c === "WORK_EXECUTED_STOP") return "danger";
-      if (!c) return "idle";
-      return "info";
-    }
-    function card(label, value, tipKey, mono) {
-      return `<div class="card"><div class="label">${escapeHtml(label)} ${help(tipKey || label)}</div><div class="value${mono ? " mono" : ""}">${escapeHtml(value)}</div></div>`;
-    }
-    function yn(v) {
-      if (v === true) return "true";
-      if (v === false) return "false";
-      return "null";
-    }
-
-    async function refresh() {
-      const dot = document.getElementById("poll-dot");
-      try {
-        const [statusRes, diagRes] = await Promise.all([
-          fetch("/v1/status", { cache: "no-store" }),
-          fetch("/v1/diagnostics", { cache: "no-store" }),
-        ]);
-        const status = await statusRes.json();
-        const diag = await diagRes.json();
-        render(status, diag);
-        dot.classList.remove("off");
-        document.getElementById("poll-age").textContent = `Updated ${new Date().toLocaleTimeString()}`;
-      } catch (err) {
-        dot.classList.add("off");
-        document.getElementById("poll-age").textContent = "Poll failed";
-        document.getElementById("headline").textContent = "Cannot reach dispatcher";
-        document.getElementById("detail").innerHTML = `<span class="err">${escapeHtml(err.message || err)}</span>`;
-      }
-    }
-
-    function render(status, diag) {
-      const s = diag.status || status || {};
-      const tick = diag.last_tick || {};
-      const queue = diag.queue || {};
-      const qwen = diag.qwen || {};
-      const expl = diag.explanation || {};
-
-      document.getElementById("headline").textContent = expl.headline || "Dispatcher state";
-      document.getElementById("detail").textContent = expl.detail || "";
-
-      const pills = [];
-      if (expl.blocked_at) pills.push(`<span class="badge warn">blocked @ ${escapeHtml(expl.blocked_at)}</span>`);
-      if (expl.why_code) pills.push(`<span class="badge idle">${escapeHtml(expl.why_code)} ${help(expl.why_code)}</span>`);
-      document.getElementById("block-pills").innerHTML = pills.join("");
-
-      const live = document.getElementById("live-badge");
-      live.className = `badge ${badgeClass(s.classification || tick.classification, s.active)}`;
-      live.innerHTML = s.active
-        ? `WORKING · ${escapeHtml(s.phase)}`
-        : escapeHtml(s.classification || tick.classification || "IDLE");
-
-      document.getElementById("overview-cards").innerHTML = [
-        card("Dispatcher", s.active ? "WORKING" : "IDLE", "active"),
-        card("Classification", s.classification ?? tick.classification ?? "—", "classification"),
-        card("Active", yn(s.active), "active"),
-        card("Phase", s.phase, "phase"),
-        card("Last event", s.last_event, "last_event"),
-        card("Request id", s.request_id, "request_id", true),
-        card("Task ref", s.task_ref, "task_ref", true),
-        card("Executor PID", s.executor_pid, "executor_pid", true),
-        card("Qwen profile", s.qwen_profile, "qwen_profile", true),
-        card("Runtime ready", yn(s.runtime_ready), "runtime_ready"),
-        card("Tests state", s.tests_state, "tests_state"),
-        card("Elapsed ms", s.elapsed_ms, "elapsed_ms"),
-      ].join("");
-
-      const models = Array.isArray(qwen.models) ? qwen.models : [];
-      document.getElementById("qwen-cards").innerHTML = [
-        card("Profile (status)", s.qwen_profile, "qwen_profile", true),
-        card("Runtime ready", yn(s.runtime_ready), "runtime_ready"),
-        card("Endpoint reachable", yn(qwen.reachable), "runtime_ready"),
-        card("Profile on endpoint", qwen.profile_status || "unknown", "runtime_ready"),
-        card("Preflight (last tick)", tick.gate_summary && String(tick.gate_summary).includes("QWEN") ? tick.gate_summary : (s.runtime_ready === true ? "ready" : (s.runtime_ready === false ? "not ready" : "n/a")), "runtime_ready"),
-        card("Health summary", qwen.health_summary || "—", "runtime_ready"),
-      ].join("");
-      document.getElementById("qwen-models").textContent = models.length
-        ? models.map((m) => `${m.id}${m.status ? ` [${m.status}]` : ""}`).join("\n")
-        : "(no model list — endpoint unreachable or empty)";
-
-      document.getElementById("tick-cards").innerHTML = [
-        card("Classification", tick.classification, "classification"),
-        card("Execution performed", yn(tick.execution_performed), "execution_performed"),
-        card("Human gate required", yn(tick.human_gate_required), "human_gate_required"),
-        card("Notify required", yn(tick.notify_required), "notify_required"),
-        card("Completed at", tick.recorded_at, "tick_completed_at", true),
-        card("Elapsed ms", tick.elapsed_ms, "elapsed_ms"),
-        card("Gate summary", tick.gate_summary, "human_gate_required"),
-        card("Task ref", tick.task_ref, "task_ref", true),
-      ].join("");
-      const codes = Array.isArray(tick.reason_codes) ? tick.reason_codes : [];
-      document.getElementById("reason-codes").textContent = codes.length ? codes.join("\n") : "(none)";
-
-      document.getElementById("queue-cards").innerHTML = [
-        card("Eligible count", queue.eligible_count, "eligible_count"),
-        card("Candidate task", queue.candidate_task_ref, "candidate_task_ref", true),
-        card("Candidate source", queue.candidate_source_file, "candidate_task_ref", true),
-        card("Candidate risk", queue.candidate_risk_hint, "candidate_task_ref"),
-        card("Selection reason", queue.selection_reason_code, "reason_codes"),
-        card("Scanned files", queue.scanned_file_count, "eligible_count"),
-        card("Claim-blocked", queue.claim_present_count, "CLAIM_SKIPPED_PRESENT"),
-        card("Skip summary", formatSkip(queue.skip_reason_summary), "reason_codes"),
-      ].join("");
-
-      const rejected = Array.isArray(queue.rejected_items) ? queue.rejected_items : [];
-      document.getElementById("rejected-body").innerHTML = rejected.length
-        ? rejected.map((r) => `<tr><td class="mono">${escapeHtml(r.source)}</td><td>${escapeHtml(r.reason)}</td></tr>`).join("")
-        : `<tr><td colspan="2" style="color:var(--muted)">No rejected items in this dry-run scan.</td></tr>`;
-    }
-
-    function formatSkip(summary) {
-      if (!summary || typeof summary !== "object") return "—";
-      const parts = Object.entries(summary).map(([k, v]) => `${k}:${v}`);
-      return parts.length ? parts.join(", ") : "—";
-    }
-
-    refresh();
-    setInterval(refresh, 3000);
+    let refreshing=false,lastSuccess=null;
+    async function readJson(path){const response=await fetch(path,{method:'GET',cache:'no-store',signal:AbortSignal.timeout(7000)});if(!response.ok)throw new Error(`HTTP ${response.status}`);const body=await response.json();if(!body||typeof body!=='object'||Array.isArray(body))throw new Error('Risposta non valida');return body;}
+    async function refresh(){if(refreshing)return;refreshing=true;el('refresh-button').disabled=true;try{const responses=await Promise.allSettled([readJson('/v1/status'),readJson('/v1/diagnostics')]);const sr=responses[0],dr=responses[1];const s=sr.status==='fulfilled'?sr.value:null,d=dr.status==='fulfilled'?dr.value:null;
+      if(!s&&!d)throw new Error('Entrambe le fonti non sono disponibili');
+      render(s,d);const partial=!s||!d;el('data-alert').hidden=!partial;el('data-alert').textContent=partial?`Dati parziali: ${!s?'/v1/status':'/v1/diagnostics'} non disponibile. I campi mancanti non sono confermati.`:'';lastSuccess=new Date();el('poll-dot').className=partial?'dot off':'dot';el('poll-age').textContent=`${partial?'Lettura parziale':'Aggiornato'} alle ${lastSuccess.toLocaleTimeString('it-IT')}`;
+    }catch{el('poll-dot').className='dot off';el('poll-age').textContent='Aggiornamento non riuscito';el('data-alert').hidden=false;el('data-alert').textContent=`Connessione al dispatcher non disponibile. ${lastSuccess?`Ultima lettura riuscita alle ${lastSuccess.toLocaleTimeString('it-IT')}. I dati sottostanti non sono aggiornati.`:'Nessuno stato confermato.'}`;el('headline').textContent='Lo stato attuale non è verificabile.';el('detail').textContent='Le fonti del dispatcher non hanno restituito una risposta valida.';el('operator-action').textContent='Verificare la disponibilità del servizio e aggiornare la lettura.';el('hero').className='panel hero danger';el('live-badge').textContent='Dati non aggiornati';el('live-badge').className='pill danger';
+    }finally{refreshing=false;el('refresh-button').disabled=false;}}
+    function positionTip(event){const target=event.target.closest?.('.help');if(!target)return;target.classList.remove('tip-dismissed');const tip=target.querySelector('.tooltip');const rect=target.getBoundingClientRect();tip.style.left=`${Math.max(12,Math.min(rect.left,window.innerWidth-280))}px`;tip.style.top=`${Math.max(12,Math.min(rect.bottom+8,window.innerHeight-140))}px`;}
+    document.addEventListener('mouseover',positionTip);document.addEventListener('focusin',positionTip);document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelectorAll('.help').forEach(n=>n.classList.add('tip-dismissed'));});
+    el('queue-search').addEventListener('input',renderQueue);el('queue-filter').addEventListener('change',renderQueue);el('queue-sort').addEventListener('change',renderQueue);el('refresh-button').addEventListener('click',refresh);el('auto-refresh').addEventListener('change',()=>{if(el('auto-refresh').checked)refresh();else el('poll-age').textContent='Actualisation automatique suspendue'.replace('Actualisation automatique suspendue','Aggiornamento automatico sospeso');});
+    render(null,null);refresh();setInterval(()=>{if(el('auto-refresh').checked&&!document.hidden)refresh();},3000);
   </script>
 </body>
 </html>

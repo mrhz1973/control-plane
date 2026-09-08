@@ -7,9 +7,11 @@
  * Run: node tests/local-dev-dispatcher-service-v1/run.mjs
  */
 import assert from "node:assert/strict";
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdtempSync, unlinkSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdtempSync, unlinkSync, statSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { createContext, runInContext } from "node:vm";
 import {
   RESULT_SCHEMA,
   REQUEST_SCHEMA,
@@ -32,6 +34,8 @@ import {
   buildQueueScanDiagnostics,
   buildOperatorExplanation,
   buildDiagnostics,
+  normalizeQwenModel,
+  probeQwenEndpointReadOnly,
   DASHBOARD_PATHS,
 } from "../../tools/serve-local-dev-autonomous-dispatcher-v1.mjs";
 import {
@@ -39,7 +43,7 @@ import {
   isReceiptBlocking,
   buildLocalDevEnvelopeFromBacklog,
 } from "../../tools/bridge-backlog-to-local-dev-envelope-v1.mjs";
-import { selectNextQueueItem } from "../../tools/select-local-dev-queue-item-v1.mjs";
+import { parseBacklogFile, selectNextQueueItem } from "../../tools/select-local-dev-queue-item-v1.mjs";
 
 let passed = 0;
 const failures = [];
@@ -995,7 +999,7 @@ await test("S26 GET /v1/diagnostics schema + IDLE explanation; read-only; POST 4
   assert.ok(body.last_tick.reason_codes.includes("NO_ELIGIBLE_READY"));
   assert.equal(body.queue.eligible_count, 0);
   assert.equal(body.explanation.why_code, "NO_ELIGIBLE_READY");
-  assert.match(body.explanation.headline, /Idle/i);
+  assert.match(body.explanation.headline, /coda|task|eseguibil|attesa/i);
   assert.equal(probeCalls, 1);
 
   const postRes = mockRes();
@@ -1053,7 +1057,7 @@ allowed_areas: ["docs/"]
     queue: open,
   });
   assert.equal(expl.blocked_at, "qwen_preflight");
-  assert.match(expl.headline, /Human gate/i);
+  assert.match(expl.headline, /intervento umano/i);
 });
 
 await test("S28 performTick records lastTickStore; GET diagnostics exposes it", async () => {
@@ -1086,6 +1090,493 @@ await test("S28 performTick records lastTickStore; GET diagnostics exposes it", 
   assert.equal(diag.schema_version, DIAGNOSTICS_SCHEMA);
   assert.equal(diag.last_tick.request_id, "r-last-tick");
   assert.equal(diag.qwen.reachable, true);
+});
+
+function diagnosticsEntry(id, extraItem = {}) {
+  const markdown = backlogMarkdown(id);
+  return {
+    ...parseBacklogFile(markdown),
+    markdown,
+    source: "READY_" + id + ".md",
+    backlog_path: "q/READY_" + id + ".md",
+    item: { ...parseBacklogFile(markdown).item, ...extraItem },
+  };
+}
+
+function freezeTree(value) {
+  if (value && typeof value === "object" && !Object.isFrozen(value)) {
+    Object.values(value).forEach(freezeTree);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+await test("S29 queue receipt explanations follow canonical lifecycle and exact stale boundary, without mutation", () => {
+  const entry = diagnosticsEntry("D-9402-OBS");
+  const task_ref = "LOCAL_DEV_B_D-9402-OBS";
+  const cases = [
+    ["legacy", {}],
+    ["null state", { state: null }],
+    ["unknown state", { state: "UNRECOGNIZED" }],
+    ["whitespace is not a canonical state", { state: " STOP ", execution_started: false, replayable: true }],
+    ["numeric state is not canonical", { state: 17, execution_started: false, replayable: true }],
+    ["executing", { state: "EXECUTING", execution_started: true, replayable: false }],
+    ["pass", { state: "PASS", execution_started: true, replayable: false }],
+    ["terminal stop", { state: "STOP", execution_started: true, replayable: false }],
+    ["pre-execution stop", { state: "STOP", execution_started: false, replayable: true }],
+    ["ambiguous stop", { state: "STOP", replayable: true }],
+    ["fresh claimed", { state: "CLAIMED", execution_started: false, replayable: true, claimed_at: FRESH_CLAIMED_AT }],
+    ["stale claimed", { state: "CLAIMED", execution_started: false, replayable: true, claimed_at: STALE_CLAIMED_AT }],
+    ["exact stale boundary", { state: "CLAIMED", execution_started: false, replayable: true, claimed_at: new Date(LAW_NOW_DATE.getTime() - CLAIM_STALE_AFTER_MS).toISOString() }],
+    ["before stale boundary", { state: "CLAIMED", execution_started: false, replayable: true, claimed_at: new Date(LAW_NOW_DATE.getTime() - CLAIM_STALE_AFTER_MS + 1).toISOString() }],
+    ["stale but executed", { state: "CLAIMED", execution_started: true, replayable: true, claimed_at: STALE_CLAIMED_AT }],
+    ["stale without replay permission", { state: "CLAIMED", execution_started: false, claimed_at: STALE_CLAIMED_AT }],
+    ["invalid timestamp", { state: "CLAIMED", execution_started: false, replayable: true, claimed_at: "invalid" }],
+    ["future timestamp", { state: "CLAIMED", execution_started: false, replayable: true, claimed_at: "2099-01-01T00:00:00Z" }],
+    ["object flags fail closed", { state: "CLAIMED", execution_started: {}, replayable: {}, claimed_at: STALE_CLAIMED_AT }],
+  ];
+  for (const [name, fields] of cases) {
+    const receipts = freezeTree([{ task_ref, claimed_at: STALE_CLAIMED_AT, ...fields }]);
+    const entries = freezeTree([entry]);
+    const before = JSON.stringify({ entries, receipts });
+    const canonical = selectNextQueueItem(entries, receipts, LAW_NOW);
+    const blocking = isReceiptBlocking(receipts[0], LAW_NOW_DATE, CLAIM_STALE_AFTER_MS);
+    const queue = buildQueueScanDiagnostics({ entries, receipts, nowIso: LAW_NOW });
+    assert.equal(queue.eligible_count, canonical.eligible_count, name);
+    assert.equal(queue.candidate_task_ref, canonical.selected?.task_ref || null, name);
+    const item = queue.items.find((candidate) => candidate.task_ref === task_ref);
+    assert.ok(item, name + ": READY item must be explained");
+    assert.equal(item.admissible, true, name);
+    assert.equal(item.currently_blocking, blocking, name);
+    assert.equal(item.eligible, !blocking, name);
+    assert.equal(item.matching_receipt_present, true, name);
+    assert.equal(item.matching_receipt_count, 1, name);
+    assert.equal(item.blocking_reason, blocking ? "CLAIM_ALREADY_EXISTS" : null, name);
+    assert.equal(item.latest_receipt.currently_blocking, blocking, name);
+    assert.equal(item.latest_receipt.state, typeof fields.state === "string" ? fields.state : null, name);
+    assert.equal(typeof item.latest_receipt.interpretation, "string", name);
+    assert.ok(item.latest_receipt.interpretation.length > 12, name);
+    if (fields.claimed_at === "invalid") assert.equal(item.latest_receipt.age_ms, null);
+    assert.equal(JSON.stringify({ entries, receipts }), before, name + ": no mutation");
+  }
+  const open = buildQueueScanDiagnostics({ entries: [entry], receipts: [], nowIso: LAW_NOW }).items[0];
+  assert.equal(open.matching_receipt_present, false);
+  assert.equal(open.latest_receipt, null);
+  assert.equal(open.currently_blocking, false);
+  assert.equal(open.eligible, true);
+});
+
+await test("S30 historical blocking receipts remain visible even when latest receipt permits replay", () => {
+  const entry = diagnosticsEntry("D-9402-HISTORY");
+  const receipts = freezeTree([
+    { task_ref: "LOCAL_DEV_B_D-9402-HISTORY", state: "PASS", execution_started: true, replayable: false, claimed_at: STALE_CLAIMED_AT },
+    { task_ref: "UNRELATED", state: "PASS", execution_started: true, replayable: false },
+    { task_ref: "LOCAL_DEV_B_D-9402-HISTORY", state: "STOP", execution_started: false, replayable: true, claimed_at: FRESH_CLAIMED_AT },
+  ]);
+  const canonical = selectNextQueueItem([entry], receipts, LAW_NOW);
+  const queue = buildQueueScanDiagnostics({ entries: [entry], receipts, nowIso: LAW_NOW });
+  assert.equal(queue.eligible_count, canonical.eligible_count);
+  assert.equal(queue.eligible_count, 0);
+  assert.equal(queue.items[0].matching_receipt_count, 2);
+  assert.equal(queue.items[0].latest_receipt.state, "STOP");
+  assert.equal(queue.items[0].latest_receipt.currently_blocking, false);
+  assert.equal(queue.items[0].currently_blocking, true);
+  assert.ok(queue.items[0].blocking_receipts.some((receipt) => receipt.state === "PASS"));
+  assert.equal(queue.items[0].blocking_reason, "CLAIM_ALREADY_EXISTS");
+});
+
+await test("S31 queue counts are complete beyond disclosure caps and inadmissible READY preserves selector decision", () => {
+  const entries = Array.from({ length: 140 }, (_, i) => diagnosticsEntry("D-9402-C" + i));
+  const receipts = entries.map((entry) => ({
+    task_ref: "LOCAL_DEV_B_" + entry.item.id,
+    state: "PASS",
+    execution_started: true,
+    replayable: false,
+    claimed_at: STALE_CLAIMED_AT,
+  }));
+  entries.push(diagnosticsEntry("D-9402-GATED", { human_gate_required_if: ["MANUAL"] }));
+  const queue = buildQueueScanDiagnostics({ entries, receipts, nowIso: LAW_NOW });
+  assert.equal(queue.eligible_count, 0);
+  assert.equal(queue.scanned_file_count, 141);
+  assert.equal(queue.claim_present_count, 140);
+  assert.equal(queue.skip_reason_summary.CLAIM_ALREADY_EXISTS, 140);
+  assert.equal(queue.skip_reason_summary.INADMISSIBLE_STATE_OR_SCOPE, 1);
+  assert.equal(queue.rejected_count, 141);
+  assert.ok(queue.items.length <= 128);
+  assert.ok(queue.rejected_items.length <= 128);
+  assert.equal(queue.items_truncated, true);
+  assert.equal(queue.rejected_items_truncated, true);
+  const gated = buildQueueScanDiagnostics({ entries: [entries.at(-1)], receipts: [], nowIso: LAW_NOW }).items[0];
+  assert.equal(gated.admissible, false);
+  assert.equal(gated.eligible, false);
+  assert.equal(gated.currently_blocking, false);
+});
+
+await test("S32 repeated GET diagnostics preserves receipt bytes, status, last tick and all execution side-effect counters", async () => {
+  const canonicalBefore = snapshotCanonicalReceipts();
+  const dir = mkdtempSync(join(tmpdir(), "dispatcher-observe-"));
+  const receiptsPath = join(dir, "receipts.json");
+  const task_ref = "LOCAL_DEV_B_D-9402-READONLY";
+  writeFileSync(receiptsPath, JSON.stringify([{ task_ref, state: "CLAIMED", execution_started: false, replayable: true, claimed_at: STALE_CLAIMED_AT }], null, 2) + "\n", "utf8");
+  const before = { bytes: readFileSync(receiptsPath, "utf8"), mtime: statSync(receiptsPath).mtimeMs };
+  const tracker = createExecutionStatusTracker();
+  const lastTick = createLastTickStore();
+  lastTick.record({ request_id: "preserved", classification: "IDLE_CLEAN", reason_codes: ["NO_ELIGIBLE_READY"] });
+  const statusBefore = tracker.snapshot();
+  const lastTickBefore = lastTick.snapshot();
+  const effects = [];
+  const forbidden = (name) => () => { effects.push(name); throw new Error("Unexpected mutation: " + name); };
+  const deps = {
+    statusTracker: tracker,
+    lastTickStore: lastTick,
+    receiptsPath,
+    nowIso: () => LAW_NOW,
+    diagnosticsScanQueue: () => [diagnosticsEntry("D-9402-READONLY")],
+    probeQwen: async () => ({ reachable: true, models: [] }),
+    tryAcquireLock: forbidden("lock"),
+    releaseLock: forbidden("unlock"),
+    tickDeps: {
+      verifyRepo: forbidden("repo sync"),
+      runDispatchLoop: forbidden("claim"),
+      ensureDevQwenReady: forbidden("Qwen load"),
+      runExecutor: forbidden("execution"),
+      admitMicroTaskDelta: forbidden("admission"),
+      persistReceipts: forbidden("receipt write"),
+      scanQueue: forbidden("execution queue scan"),
+    },
+  };
+  try {
+    for (let i = 0; i < 3; i += 1) {
+      const response = mockRes();
+      await handleTickRequest(mockReq("GET", DIAGNOSTICS_PATH), response, deps);
+      assert.equal(response.status, 200);
+      const diag = JSON.parse(response.body);
+      assert.equal(diag.read_only, true);
+      assert.equal(diag.queue.eligible_count, 1, "stale receipt is explained as replayable without being released");
+      assert.equal(diag.queue.items[0].latest_receipt.state, "CLAIMED");
+    }
+    assert.deepEqual(effects, []);
+    assert.equal(readFileSync(receiptsPath, "utf8"), before.bytes);
+    assert.equal(statSync(receiptsPath).mtimeMs, before.mtime);
+    assert.deepEqual(tracker.snapshot(), statusBefore);
+    assert.deepEqual(lastTick.snapshot(), lastTickBefore);
+    assert.equal(snapshotCanonicalReceipts(), canonicalBefore);
+    for (const method of ["POST", "PUT", "PATCH", "DELETE"]) {
+      const response = mockRes();
+      await handleTickRequest(mockReq(method, DIAGNOSTICS_PATH, "{}"), response, deps);
+      assert.equal(response.status, 405);
+    }
+    const statusResponse = mockRes();
+    await handleTickRequest(mockReq("GET", STATUS_PATH), statusResponse, deps);
+    assert.deepEqual(JSON.parse(statusResponse.body), statusBefore, "/v1/status contract is unchanged");
+    assert.deepEqual(effects, []);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+await test("S33 Qwen actual nested model status is normalized and probing emits only GET /v1/models", async () => {
+  const calls = [];
+  const model = freezeTree({
+    id: "qwen38-opus-q3-opencode-64k",
+    status: { value: "loaded", args: ["--ctx-size", "65536"], pid: 4321, port: 8081 },
+    meta: { n_ctx: 65536 },
+  });
+  const normalized = normalizeQwenModel(model);
+  assert.equal(normalized.id, model.id);
+  assert.equal(normalized.status, "loaded");
+  assert.match(normalized.status_label, /caricato/i);
+  assert.equal(normalized.context_tokens, 65536);
+  assert.ok(normalized.context_source);
+  assert.ok(!JSON.stringify(normalized).includes("[object Object]"));
+  const probe = await probeQwenEndpointReadOnly({
+    baseUrl: "http://127.0.0.1:8080",
+    wanted_profile: model.id,
+    fetchFn: async (url, options = {}) => {
+      calls.push({ url, method: options.method || "GET" });
+      return { ok: true, json: async () => ({ data: [model] }) };
+    },
+  });
+  assert.deepEqual(calls, [{ url: "http://127.0.0.1:8080/v1/models", method: "GET" }]);
+  assert.equal(probe.reachable, true);
+  assert.equal(probe.profile_status, "loaded");
+  assert.equal(probe.models[0].status, "loaded");
+  const unknown = normalizeQwenModel({ id: "unknown", status: { strange: "payload" } });
+  assert.equal(unknown.status, "unknown");
+  assert.equal(unknown.status_label, "Sconosciuto");
+  const absent = normalizeQwenModel({ id: "missing" });
+  assert.equal(absent.status, null);
+  assert.equal(absent.status_label, "Non disponibile");
+  for (const invalid of [null, {}, [], 17, "malformed"]) {
+    const safe = normalizeQwenModel(invalid);
+    assert.ok(!JSON.stringify(safe).includes("[object Object]"));
+  }
+});
+
+await test("S34 diagnostics null, malformed collection and unavailable sources fail safely without fabricated readiness", async () => {
+  for (const probeQwen of [
+    async () => null,
+    async () => ({ reachable: null, profile_status: { nested: "unknown" }, health_summary: {}, models: [null, {}, { id: "nested", status: { unsupported: true } }] }),
+    async () => { throw new Error("QWEN_PROBE_FAILED"); },
+  ]) {
+    const diag = await buildDiagnostics({
+      statusTracker: { snapshot: () => null },
+      lastTickStore: { snapshot: () => null },
+      scanQueue: () => [],
+      loadReceipts: () => [],
+      probeQwen,
+      nowIso: () => LAW_NOW,
+    });
+    assert.equal(diag.read_only, true);
+    assert.notEqual(diag.qwen.reachable, true);
+    assert.notEqual(diag.qwen.profile_status, "loaded");
+    assert.ok(!JSON.stringify(diag).includes("[object Object]"));
+    assert.doesNotThrow(() => JSON.stringify(diag));
+  }
+  for (const source of [
+    { scanQueue: () => null, loadReceipts: () => [] },
+    { scanQueue: () => ({}), loadReceipts: () => [] },
+    { scanQueue: () => [diagnosticsEntry("D-9402-BAD")], loadReceipts: () => ({}) },
+    { scanQueue: () => { throw new Error("SCAN_FAILED"); }, loadReceipts: () => [] },
+  ]) {
+    const diag = await buildDiagnostics({ ...source, probeQwen: async () => null, nowIso: () => LAW_NOW });
+    assert.equal(diag.queue.ok, false);
+    assert.equal(diag.queue.candidate_task_ref, null);
+    assert.equal(diag.queue.eligible_count, null, "unreadable queue is unknown, not empty");
+    assert.match(diag.queue.selection_reason_code, /FAILED|INVALID/);
+  }
+});
+
+const DASHBOARD_FILE = resolve(dirname(fileURLToPath(import.meta.url)), "../../tools/local-dev-dispatcher-dashboard-v1.html");
+
+/**
+ * Execute the shipped script, including its startup and refresh listeners.
+ * This small DOM records HTML sinks and network requests; CSS contracts are
+ * checked separately. It never opens a browser or contacts the live service.
+ */
+async function dashboardHarness(initial = {}) {
+  const html = readFileSync(DASHBOARD_FILE, "utf8");
+  const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
+  assert.equal(scripts.length, 1, "dashboard stays self-contained");
+  const elements = new Map();
+  const htmlWrites = [];
+  const fetches = [];
+  const otherNetwork = [];
+  const intervals = new Map();
+  let timerId = 0;
+  let scenario = initial;
+  function element(id) {
+    if (elements.has(id)) return elements.get(id);
+    const listeners = new Map();
+    const attributes = new Map();
+    const classes = new Set();
+    let text = "", markup = "";
+    const result = {
+      id,
+      value: "",
+      checked: true,
+      disabled: false,
+      hidden: false,
+      dataset: {},
+      style: {},
+      className: "",
+      get textContent() { return text; },
+      set textContent(value) { text = String(value ?? ""); markup = ""; },
+      get innerHTML() { return markup; },
+      set innerHTML(value) { markup = String(value ?? ""); text = ""; htmlWrites.push({ id, value: markup }); },
+      classList: {
+        add: (...values) => values.forEach((value) => classes.add(value)),
+        remove: (...values) => values.forEach((value) => classes.delete(value)),
+        toggle: (value, force) => {
+          const enabled = force ?? !classes.has(value);
+          if (enabled) classes.add(value); else classes.delete(value);
+          return enabled;
+        },
+        contains: (value) => classes.has(value),
+      },
+      setAttribute: (name, value) => attributes.set(name, String(value)),
+      getAttribute: (name) => attributes.get(name) ?? null,
+      removeAttribute: (name) => attributes.delete(name),
+      addEventListener: (name, listener) => {
+        if (!listeners.has(name)) listeners.set(name, []);
+        listeners.get(name).push(listener);
+      },
+      querySelectorAll: () => [],
+      querySelector: () => null,
+      // The harness does not model a full DOM tree; no refreshed node owns
+      // the synthetic active element. The production browser supplies the
+      // native Element#contains implementation.
+      contains: () => false,
+      async fire(name) {
+        for (const listener of listeners.get(name) || []) {
+          await listener({ target: result, currentTarget: result, preventDefault() {} });
+        }
+      },
+      focus() {},
+    };
+    elements.set(id, result);
+    return result;
+  }
+  for (const match of html.matchAll(/\bid="([^"]+)"/g)) element(match[1]);
+  const document = {
+    hidden: false,
+    visibilityState: "visible",
+    readyState: "complete",
+    getElementById: (id) => element(id),
+    querySelector: (selector) => selector.startsWith("#") ? element(selector.slice(1)) : null,
+    querySelectorAll: () => [],
+    addEventListener: (name, listener) => element("__document").addEventListener(name, listener),
+    createElement: (tag) => element("__created_" + tag + "_" + elements.size),
+    documentElement: element("__root"),
+  };
+  const sandbox = {
+    document,
+    AbortController,
+    AbortSignal,
+    URL,
+    console,
+    fetch: async (url, options = {}) => {
+      fetches.push({ url: String(url), method: String(options.method || "GET").toUpperCase() });
+      if (scenario.networkError) throw new Error("Errore rete simulato");
+      const statusEndpoint = String(url) === STATUS_PATH;
+      return {
+        ok: scenario.httpError !== true,
+        status: scenario.httpError ? 503 : 200,
+        json: async () => {
+          if (scenario.badJson) throw new SyntaxError("JSON non valido");
+          return statusEndpoint ? (scenario.status ?? null) : (scenario.diag ?? null);
+        },
+      };
+    },
+    setInterval: (callback) => { const id = ++timerId; intervals.set(id, callback); return id; },
+    clearInterval: (id) => intervals.delete(id),
+    setTimeout: () => ++timerId,
+    clearTimeout() {},
+    navigator: { sendBeacon: (...args) => { otherNetwork.push(["beacon", args]); return false; } },
+    XMLHttpRequest: class { constructor() { otherNetwork.push("xhr"); throw new Error("Unexpected XHR"); } },
+    WebSocket: class { constructor() { otherNetwork.push("websocket"); throw new Error("Unexpected WebSocket"); } },
+    EventSource: class { constructor() { otherNetwork.push("eventsource"); throw new Error("Unexpected EventSource"); } },
+    addEventListener: (name, listener) => element("__window").addEventListener(name, listener),
+  };
+  sandbox.window = sandbox;
+  const context = createContext(sandbox);
+  runInContext(scripts[0][1], context, { timeout: 2000, filename: DASHBOARD_FILE });
+  const settle = () => new Promise((resolvePromise) => setImmediate(resolvePromise));
+  await settle();
+  return {
+    html, context, elements, fetches, otherNetwork, htmlWrites, intervals, element, settle,
+    setScenario: (next) => { scenario = next; },
+    evaluate: (script) => runInContext(script, context, { timeout: 2000 }),
+    render: (status, diag) => {
+      context.__testStatus = status;
+      context.__testDiag = diag;
+      return runInContext("render(__testStatus, __testDiag)", context, { timeout: 2000 });
+    },
+  };
+}
+
+await test("S35 dashboard startup, automatic and manual refresh execute only the two read-only GET endpoints", async () => {
+  const dashboard = await dashboardHarness({ status: { active: false }, diag: { queue: { eligible_count: 0 }, qwen: {} } });
+  await dashboard.evaluate("refresh()");
+  for (const callback of [...dashboard.intervals.values()]) await callback();
+  await dashboard.element("refresh-button").fire("click");
+  await dashboard.element("queue-search").fire("input");
+  await dashboard.element("queue-filter").fire("change");
+  await dashboard.element("queue-sort").fire("change");
+  await dashboard.settle();
+  assert.ok(dashboard.fetches.length >= 4, "startup and manual refresh both fetch");
+  assert.ok(dashboard.fetches.some((request) => request.url === STATUS_PATH));
+  assert.ok(dashboard.fetches.some((request) => request.url === DIAGNOSTICS_PATH));
+  for (const request of dashboard.fetches) {
+    assert.equal(request.method, "GET");
+    assert.ok([STATUS_PATH, DIAGNOSTICS_PATH].includes(request.url), request.url);
+  }
+  assert.deepEqual(dashboard.otherNetwork, []);
+  assert.doesNotMatch(dashboard.html, /<form\b|<script\b[^>]*\bsrc\s*=|\b(?:src|href)\s*=\s*["']https?:\/\//i);
+});
+
+await test("S36 dashboard safely renders null, malformed collections and nested Qwen objects without implicit coercion", async () => {
+  const dashboard = await dashboardHarness();
+  const payloads = [
+    [null, null],
+    [null, {}],
+    [{ active: null, classification: {}, task_ref: {}, phase: [] }, { status: {}, last_tick: null, queue: null, qwen: null, explanation: null }],
+    [null, { queue: { items: {}, rejected_items: {}, skip_reason_summary: {} }, qwen: { models: {}, profile_status: {} }, last_tick: { reason_codes: {} } }],
+    [null, {
+      qwen: { reachable: true, profile_status: { value: "loaded" }, health_summary: {}, models: [null, {}, { id: "Qwen", status: { value: "loaded", args: ["--ctx-size", "65536"] }, meta: { n_ctx: 65536 } }] },
+      queue: { items: [null, {}, { task_ref: {}, source_file: {}, latest_receipt: {}, blocking_receipts: {} }], rejected_items: [null, {}] },
+      explanation: { headline: {}, detail: {}, blocked_at: {}, why_code: {}, operator_action: {} },
+    }],
+  ];
+  for (const [status, diag] of payloads) {
+    assert.doesNotThrow(() => dashboard.render(status, diag));
+    const output = [...dashboard.elements.values()].map((node) => node.innerHTML + node.textContent).join("\n");
+    assert.doesNotMatch(output, /\[object Object\]|\bundefined\b|\bNaN\b/);
+  }
+});
+
+await test("S37 dashboard escapes untrusted model, queue, receipt and reason data at every HTML sink", async () => {
+  const dashboard = await dashboardHarness();
+  const attack = '<img src=x onerror="globalThis.__xss=1"><script>globalThis.__xss=1</script>';
+  const diag = {
+    status: { active: true, task_ref: attack, phase: attack, qwen_profile: attack, last_event: attack, classification: attack, request_id: attack },
+    last_tick: { classification: attack, reason_codes: [attack], gate_summary: attack, task_ref: attack },
+    queue: {
+      eligible_count: 0, claim_present_count: 1,
+      items: [{
+        task_ref: attack, source_file: attack, backlog_state: attack,
+        matching_receipt_present: true, currently_blocking: true, blocking_reason: attack,
+        latest_receipt: { state: attack, claimed_at: attack, interpretation: attack, interpretation_code: attack },
+        blocking_receipts: [{ state: attack, interpretation: attack }],
+      }],
+      rejected_items: [{ source: attack, reason: attack }],
+      skip_reason_summary: { [attack]: 1 },
+    },
+    qwen: { reachable: true, profile_status: attack, health_summary: attack, error: attack, models: [{ id: attack, status: { value: attack, unknown: attack }, runtime: attack, health: attack }] },
+    explanation: { headline: attack, detail: attack, blocked_at: attack, blocked_at_label: attack, why_code: attack, operator_action: attack },
+  };
+  dashboard.render(null, diag);
+  const sinks = dashboard.htmlWrites.map((write) => write.value).join("\n");
+  assert.doesNotMatch(sinks, /<img\b|<script\b|<svg\b/i);
+  assert.ok(sinks.includes("&lt;img"), "payload must be rendered as escaped data");
+  assert.equal(dashboard.context.__xss, undefined);
+});
+
+await test("S38 Italian tooltip dictionary is complete and tooltip content supports hover and keyboard focus", async () => {
+  const dashboard = await dashboardHarness();
+  assert.match(dashboard.html, /<html\b[^>]*lang=["']it["']/i);
+  const tips = dashboard.evaluate("TIPS");
+  for (const key of [
+    "active", "classification", "phase", "task_ref", "request_id", "runtime_ready",
+    "eligible_count", "claim_present_count", "execution_performed", "human_gate_required",
+    "reason_codes", "receipt", "replayable",
+  ]) {
+    assert.equal(typeof tips[key], "string", key);
+    assert.ok(tips[key].length >= 25, key + ": helpful explanation");
+    assert.doesNotMatch(tips[key], /\b(?:whether|current|indicates|assigned|execution is|true while|the dispatcher)\b/i, key);
+    const markup = dashboard.evaluate("help(" + JSON.stringify(key) + ")");
+    assert.match(markup, /tabindex=["']0["']/i, key + ": keyboard focusable");
+    assert.match(markup, /role=["']tooltip["']/i, key + ": semantic tooltip");
+    assert.match(markup, /aria-(?:label|describedby)=/i, key + ": accessible description");
+  }
+  assert.match(dashboard.html, /:hover/);
+  assert.match(dashboard.html, /:focus(?:-visible|-within)?/);
+  // Keep the detector itself UTF-8 clean: these escapes represent the common
+  // mojibake byte sequences without placing mojibake in the source file.
+  assert.doesNotMatch(dashboard.html, /\u00e2\u20ac|\u00c3\u00a9|\u00c3\u00a8|\u00e2\u20ac\u00a6|\uFFFD/);
+});
+
+await test("S39 refresh handles HTTP, network and malformed JSON failures without execution requests", async () => {
+  const dashboard = await dashboardHarness({ status: { active: false }, diag: {} });
+  for (const failure of [{ httpError: true }, { networkError: true }, { badJson: true }]) {
+    dashboard.setScenario(failure);
+    await assert.doesNotReject(async () => dashboard.evaluate("refresh()"));
+    await dashboard.settle();
+    const output = [...dashboard.elements.values()].map((node) => node.textContent + node.innerHTML).join("\n");
+    assert.match(output, /errore|non (?:raggiungibile|disponibile)|connessione|fallit|aggiornamento/i);
+  }
+  assert.ok(dashboard.fetches.every((request) => request.method === "GET" && [STATUS_PATH, DIAGNOSTICS_PATH].includes(request.url)));
+  assert.deepEqual(dashboard.otherNetwork, []);
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
