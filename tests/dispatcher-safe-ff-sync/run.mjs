@@ -187,6 +187,7 @@ function mockGit(state) {
     {
       verifyRepo: async () => ({ ok: true, head: A, sync_performed: true, reason_codes: ["FAST_FORWARD_SYNCED"] }),
       scanQueue: () => [],
+      ensureDevQwenReady: async () => ({ ready: true, status: "READY" }),
       runDispatchLoop: () => ({
         claims: [{
           task_ref: "LOCAL_DEV_B_D-49-A",

@@ -414,6 +414,8 @@ function baseResult(partial) {
     turns_used: Number(partial.turns_used) || 0,
     timebox_used_s: Number(partial.timebox_used_s) || 0,
     reason_codes: partial.reason_codes || [],
+    human_gate_required: partial.human_gate_required === true,
+    post_exec_integration: partial.post_exec_integration ?? null,
     ...(partial.failure_diagnostics ? { failure_diagnostics: partial.failure_diagnostics } : {}),
     ...(partial.timeout_diagnostics ? { timeout_diagnostics: partial.timeout_diagnostics } : {}),
     ...(partial.guard_accounting ? { guard_accounting: partial.guard_accounting } : {}),
@@ -824,12 +826,18 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
         turns_used: turns,
         router_was_running: session.router_was_running ?? null,
         launch_performed: Boolean(session.launch_performed),
+        post_exec_integration: persistence?.post_exec_integration ?? null,
+        human_gate_required: persistence?.human_gate_required === true,
       }));
     }
+    const passCodes =
+      Array.isArray(persistence.reason_codes) && persistence.reason_codes.length > 0
+        ? ["PASS", ...persistence.reason_codes.filter((c) => c !== "PASS")].slice(0, 16)
+        : ["PASS"];
     return finish(applyConvergence({
       status: "PASS",
       classification: "PASS",
-      reason_codes: ["PASS"],
+      reason_codes: passCodes,
       tests: testRuns,
       changed_files: changed,
       task_created_new: classification.task_created_new,
@@ -838,6 +846,7 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
       turns_used: turns,
       router_was_running: session.router_was_running ?? null,
       launch_performed: Boolean(session.launch_performed),
+      post_exec_integration: persistence.post_exec_integration ?? null,
     }));
   }
 

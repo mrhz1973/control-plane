@@ -247,7 +247,18 @@ await test("persistGit stages only allowed paths and never untracked", async () 
     "push": { status: 0, stdout: "" },
     "rev-parse HEAD": { status: 0, stdout: "e".repeat(40) + "\n" },
   });
-  const persist = makePersistGit({ gitExec: git });
+  const persist = makePersistGit({
+    gitExec: git,
+    reconcilePostExec: async () => ({
+      ok: true,
+      reason_codes: ["POST_EXEC_NORMAL_FF"],
+      post_exec_integration: {
+        path: "normal_ff",
+        classification: "POST_EXEC_NORMAL_FF",
+        rescue_ref: null,
+      },
+    }),
+  });
   const out = await persist({
     envelope: ENVELOPE,
     changedFiles: ["docs/a.md", "docs/b.md", "tools/untracked-new.mjs"],
@@ -260,7 +271,10 @@ await test("persistGit stages only allowed paths and never untracked", async () 
 });
 
 await test("persistGit fails closed when nothing stageable in scope", async () => {
-  const persist = makePersistGit({ gitExec: fakeGit({}) });
+  const persist = makePersistGit({
+    gitExec: fakeGit({}),
+    reconcilePostExec: async () => ({ ok: true, reason_codes: ["POST_EXEC_NORMAL_FF"] }),
+  });
   const out = await persist({ envelope: ENVELOPE, changedFiles: ["tools/x.mjs"], evidenceSubject: "executor-stop: T" });
   assert.equal(out.ok, false);
   assert.deepEqual(out.reason_codes, ["NOTHING_STAGEABLE_IN_SCOPE"]);

@@ -26,6 +26,7 @@ import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.m
 import { probeOpenCodeLocal } from "./probe-opencode-local-v1.mjs";
 import { startLocalDevGenerationGuard } from "./local-dev-generation-guard-v1.mjs";
 import { attachReviewStage } from "./run-review-stage-v1.mjs";
+import { reconcilePostExecWithOrigin } from "./local-dev-post-exec-integration-fence-v1.mjs";
 
 export { classifyOpenCodeFailure, sanitizeOpenCodeDiagnostic } from "./local-dev-executor-v1.mjs";
 
@@ -419,6 +420,10 @@ export function makeRunTests(deps = {}) {
 export function makePersistGit(deps = {}) {
   const gitExec = deps.gitExec || defaultGitExec;
   const pathMatch = deps.pathMatch || null;
+  const runTests = deps.runTests || null;
+  const reconcile =
+    deps.reconcilePostExec ||
+    ((args) => reconcilePostExecWithOrigin(args));
   return async ({ envelope, changedFiles, evidenceSubject: subject }) => {
     const repo = envelope.target_repo_path;
     const stageable = (changedFiles || []).filter((p) => pathAllowed(envelope.allowed_paths, p, pathMatch));
@@ -429,22 +434,85 @@ export function makePersistGit(deps = {}) {
     if (add.status !== 0) return { ok: false, reason_codes: ["GIT_ADD_FAILED"] };
     const commit = await gitExec(repo, ["commit", "-m", subject]);
     if (commit.status !== 0) return { ok: false, reason_codes: ["GIT_COMMIT_FAILED"] };
+
+    // Post-execution anti-race fence: ordinary ff when possible; safe disjoint
+    // replay onto current origin/main when proven; otherwise STOP (never force).
+    const fence = await reconcile({
+      gitExec,
+      repoPath: repo,
+      executionBase: envelope.dispatch_base_head,
+      taskRef: envelope.task_ref,
+      testCommand: envelope.test_command || null,
+      runTests: runTests || (deps.testDeps ? makeRunTests(deps.testDeps) : makeRunTests()),
+    });
+    if (!fence || fence.ok !== true) {
+      return {
+        ok: false,
+        reason_codes: [
+          "GIT_PERSISTENCE_FAILED",
+          ...(Array.isArray(fence?.reason_codes) ? fence.reason_codes : ["POST_EXEC_FENCE_FAILED"]),
+        ].slice(0, 16),
+        post_exec_integration: fence?.post_exec_integration || {
+          path: "stop",
+          classification: fence?.classification || "POST_EXEC_FENCE_FAILED",
+          rescue_ref: fence?.rescue_ref || null,
+        },
+        human_gate_required: fence?.human_gate_required === true,
+      };
+    }
+
     const push = await gitExec(repo, ["push", "origin", "HEAD"]);
-    if (push.status !== 0) return { ok: false, reason_codes: ["GIT_PUSH_FAILED"] };
+    if (push.status !== 0) {
+      // Ordinary push rejection after origin moved again / non-ff — never force.
+      const moved =
+        fence.classification === "POST_EXEC_REMOTE_ADVANCED_SAFE_DISJOINT"
+          ? ["POST_EXEC_ORIGIN_MOVED_AGAIN"]
+          : [];
+      return {
+        ok: false,
+        reason_codes: ["GIT_PUSH_FAILED", ...moved].slice(0, 16),
+        post_exec_integration: {
+          ...(fence.post_exec_integration || {}),
+          path: "stop",
+          classification:
+            moved[0] || fence.post_exec_integration?.classification || "GIT_PUSH_FAILED",
+          push_rejected: true,
+        },
+        human_gate_required: true,
+      };
+    }
     const head = await gitExec(repo, ["rev-parse", "HEAD"]);
     if (head.status !== 0) return { ok: false, reason_codes: ["REV_PARSE_FAILED"] };
-    return { ok: true, final_head: head.stdout.trim(), staged_files: stageable };
+    return {
+      ok: true,
+      final_head: head.stdout.trim(),
+      staged_files: stageable,
+      reason_codes: fence.reason_codes || ["POST_EXEC_NORMAL_FF"],
+      post_exec_integration: fence.post_exec_integration || {
+        path: "normal_ff",
+        classification: "POST_EXEC_NORMAL_FF",
+        rescue_ref: null,
+      },
+    };
   };
 }
 
 /** Compose the concrete collaborator bundle (all injectable for tests). */
 export function composeRunners(options = {}) {
+  const runTests = options.runTests || makeRunTests(options.testDeps || {});
   return {
     ensureQwenReady: options.ensureQwenReady || makeEnsureQwenReady(options.ensureWorkstationDevQwenReady),
     guardStart: options.guardStart || startLocalDevGenerationGuard,
     runOpenCodeTask: options.runOpenCodeTask || makeRunOpenCodeTask(options.opencodeDeps || {}),
-    runTests: options.runTests || makeRunTests(options.testDeps || {}),
-    persistGit: options.persistGit || makePersistGit(options.gitDeps || {}),
+    runTests,
+    persistGit:
+      options.persistGit ||
+      makePersistGit({
+        ...(options.gitDeps || {}),
+        runTests,
+        reconcilePostExec: options.reconcilePostExec,
+        testDeps: options.testDeps,
+      }),
   };
 }
 

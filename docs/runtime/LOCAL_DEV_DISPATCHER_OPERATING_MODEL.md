@@ -389,6 +389,32 @@ The deterministic quota pacing simulator task `D-9407-A` is preparation/design w
 
 ---
 
+## 12b. Post-execution main-race integration fence
+
+Concurrent remote `main` advancement during a LOCAL_DEV execution is tolerated automatically **only** for a proven, structurally bounded, **disjoint** post-execution integration:
+
+- execution base is known (`dispatch_base_head`);
+- local task history since base is bounded and non-merge;
+- tracked worktree is clean;
+- remote advancement is a descendant of the execution base;
+- task-changed files and remote-changed files since base are disjoint;
+- rescue ref is recorded before replay;
+- focused tests + `git diff --check` pass after replay;
+- final push remains ordinary fast-forward only (never force).
+
+Overlap, ambiguous ancestry, dirty tracked worktree, failed replay tests, or origin moving again after reconciliation → **fail closed** with precise `POST_EXEC_*` reason codes (not a generic overloaded `HEAD_ORIGIN_DIVERGED`). Neither side is discarded; rescue evidence is preserved.
+
+Observability: `/v1/diagnostics` exposes `post_exec_integration` from the last tick (`normal_ff` | `safe_disjoint_replay` | `stop`).
+
+Implementation:
+
+```text
+tools/local-dev-post-exec-integration-fence-v1.mjs
+tools/run-local-dev-executor-v1.mjs (makePersistGit)
+```
+
+---
+
 ## 13. Canonical references
 
 Primary implementation / observability references:
@@ -400,6 +426,7 @@ tools/bridge-backlog-to-local-dev-envelope-v1.mjs
 tools/local-dev-resource-observatory-v1.mjs
 tools/local-dev-dispatcher-dashboard-v1.html
 tools/collect-openclaw-quota-v1.mjs
+tools/local-dev-post-exec-integration-fence-v1.mjs
 docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md
 reports/architecture/local_dev_dispatcher_observability_micro_ui_v1.md
 reports/architecture/v4_cursor_codex_ide_quota_source_probe_v1.md

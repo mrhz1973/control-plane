@@ -498,7 +498,7 @@ export function buildOperatorExplanation({ status, last_tick, queue } = {}) {
     const blocked_at = codes.some((c) => c.startsWith("QWEN"))
       ? "qwen_preflight"
       : (codes.includes("MICRO_TASK_ADMISSION_REJECTED") ? "admission"
-        : (codes.some((c) => /DIRTY|BRANCH|FETCH|HEAD|MERGE|REV_PARSE|LOCAL_AHEAD|DIVERGED/.test(c)) ? "repo_hygiene" : "human_gate"));
+        : (codes.some((c) => /POST_EXEC_|DIRTY|BRANCH|FETCH|HEAD|MERGE|REV_PARSE|LOCAL_AHEAD|DIVERGED/.test(c)) ? "repo_hygiene" : "human_gate"));
     return result("È richiesto un intervento umano.", "L’automazione si è fermata perché un prerequisito o una decisione richiede una verifica umana.",
       blocked_at, primaryCode || "HUMAN_GATE_REQUIRED", true,
       blocked_at === "qwen_preflight" ? "Verificare il runtime e il profilo richiesto usando i codici tecnici dell’ultimo ciclo."
@@ -617,6 +617,10 @@ export async function buildDiagnostics(deps = {}) {
     || (qwen.profile_status === null || qwen.profile_status === undefined ? null : "unknown");
 
   const explanation = buildOperatorExplanation({ status, last_tick, queue });
+  const post_exec_integration =
+    last_tick && last_tick.post_exec_integration && typeof last_tick.post_exec_integration === "object"
+      ? last_tick.post_exec_integration
+      : null;
   return {
     schema_version: DIAGNOSTICS_SCHEMA,
     generated_at: nowIso,
@@ -624,6 +628,7 @@ export async function buildDiagnostics(deps = {}) {
     status,
     last_tick,
     queue,
+    post_exec_integration,
     qwen: {
       endpoint: QWEN_OBSERVE_BASE_URL,
       reachable: diagnosticBoolean(qwen.reachable),
@@ -779,6 +784,14 @@ export function validateTickRequest(body) {
 }
 
 export function wrapTickResult(partial) {
+  const postExec =
+    partial.post_exec_integration && typeof partial.post_exec_integration === "object"
+      ? {
+          path: boundStr(partial.post_exec_integration.path, 80),
+          classification: boundStr(partial.post_exec_integration.classification, 120),
+          rescue_ref: boundStr(partial.post_exec_integration.rescue_ref, 200),
+        }
+      : null;
   return {
     schema_version: RESULT_SCHEMA,
     ok: partial.ok === true,
@@ -790,6 +803,7 @@ export function wrapTickResult(partial) {
     human_gate_required: partial.human_gate_required === true,
     gate_summary: partial.gate_summary ?? null,
     reason_codes: Array.isArray(partial.reason_codes) ? partial.reason_codes.slice(0, 16) : [],
+    post_exec_integration: postExec,
   };
 }
 
@@ -817,6 +831,13 @@ export function createLastTickStore() {
         // WF90 may derive notify; dispatcher result does not emit it today.
         notify_required: meta.notify_required === true ? true : (meta.notify_required === false ? false : null),
         reason_codes: Array.isArray(wrapped.reason_codes) ? wrapped.reason_codes.slice(0, 16) : [],
+        post_exec_integration: wrapped.post_exec_integration && typeof wrapped.post_exec_integration === "object"
+          ? {
+              path: boundStr(wrapped.post_exec_integration.path, 80),
+              classification: boundStr(wrapped.post_exec_integration.classification, 120),
+              rescue_ref: boundStr(wrapped.post_exec_integration.rescue_ref, 200),
+            }
+          : null,
       };
       return last;
     },
@@ -829,6 +850,13 @@ export function createLastTickStore() {
 /** Normalize an executor result into the bounded tick result. */
 export function classificationFromExecutorResult(executorResult, request_id) {
   const pass = executorResult && executorResult.status === "PASS";
+  const postExec = executorResult?.post_exec_integration && typeof executorResult.post_exec_integration === "object"
+    ? {
+        path: boundStr(executorResult.post_exec_integration.path, 80),
+        classification: boundStr(executorResult.post_exec_integration.classification, 120),
+        rescue_ref: boundStr(executorResult.post_exec_integration.rescue_ref, 200),
+      }
+    : null;
   return wrapTickResult({
     ok: pass,
     request_id,
@@ -836,8 +864,9 @@ export function classificationFromExecutorResult(executorResult, request_id) {
     execution_performed: true,
     task_ref: executorResult?.task_ref ?? null,
     executor_classification: executorResult?.classification ?? null,
-    human_gate_required: false,
+    human_gate_required: executorResult?.human_gate_required === true,
     reason_codes: Array.isArray(executorResult?.reason_codes) ? executorResult.reason_codes : [],
+    post_exec_integration: postExec,
   });
 }
 
