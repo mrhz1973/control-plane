@@ -430,4 +430,29 @@ await test("C26 default TTL constant is 60s and timeout stays above observed CLI
   assert.equal(OPENCLAW_CACHE_TTL_MS, 60_000);
 });
 
+await test("C27 default runner backstop: a never-terminating exec rejects (UNKNOWN), not an eternal hang", async () => {
+  const nowMs = Date.parse("2026-09-09T05:00:00.000Z");
+  const obs = await collectOpenClawQuotaObservation({
+    nowMs,
+    timeoutMs: 50,
+    // Simulates the observed Windows failure mode (grandchild holds the stdio
+    // pipe open; the exec callback never fires). The collector's own backstop
+    // law must bound this path (OPENCLAW_BACKSTOP → timeout classification).
+    execFn: (file, args, opts) => new Promise((resolve, reject) => {
+      const limit = (opts && (opts.timeoutMs ?? opts.timeout)) || 50;
+      setTimeout(() => {
+        const err = new Error("openclaw usage command backstop timeout");
+        err.code = "OPENCLAW_BACKSTOP";
+        reject(err);
+      }, limit + 20);
+      // The "child" never closes on its own; resolution comes only from the
+      // backstop above (kept referenced so the promise settles deterministically).
+      void resolve;
+    }),
+  });
+  assert.equal(obs.ok, false);
+  assert.equal(obs.pools.glm_coding_plan.reason_code, "OPENCLAW_USAGE_TIMEOUT");
+  assert.equal(obs.pools.chatgpt_codex_subscription.reason_code, "OPENCLAW_USAGE_TIMEOUT");
+});
+
 resetOpenClawObservationCache();

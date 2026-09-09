@@ -48,13 +48,10 @@
  * a previous value FRESH: after a failure the previous observation may be
  * exposed only as STALE (degraded) until a refresh succeeds again.
  */
-import { execFile as execFileCb } from "node:child_process";
+import { execFile as execFileCb, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { promisify } from "node:util";
 import { STATUS_MAX_AGE_MS } from "./compose-v4-resource-status-control-plane-v1.mjs";
-
-const execFileAsync = promisify(execFileCb);
 
 export const OPENCLAW_QUOTA_SCHEMA = "openclaw-quota-observation-v1";
 export const OPENCLAW_ARGS = Object.freeze(["status", "--usage", "--json"]);
@@ -159,13 +156,66 @@ function classifyExecError(err) {
   if (err && (err.code === "ENOENT" || err.code === "ENOTDIR")) {
     return { reason_code: "OPENCLAW_NOT_FOUND", detail: boundReason(err.code) };
   }
-  if (err && (err.killed === true || err.signal === "SIGTERM" || err.code === "ETIMEDOUT")) {
+  if (err && (err.killed === true || err.signal === "SIGTERM" || err.code === "ETIMEDOUT" || err.code === "OPENCLAW_BACKSTOP")) {
     return { reason_code: "OPENCLAW_USAGE_TIMEOUT", detail: "timeout" };
   }
   return {
     reason_code: "OPENCLAW_USAGE_COMMAND_FAILED",
     detail: boundStr(err && err.code ? err.code : err && err.message ? err.message : "exec_failed", MAX_REASON),
   };
+}
+
+/** Injected default runner: execFile semantics with a HARD backstop. */
+async function defaultOpenClawExec(file, args, opts) {
+  return new Promise((resolvePromise, rejectPromise) => {
+    let settled = false;
+    let child = null;
+    const backstop = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      if (child && typeof child.kill === "function") {
+        try { child.kill(); } catch { /* best effort */ }
+      }
+      const err = new Error("openclaw usage command backstop timeout");
+      err.code = "OPENCLAW_BACKSTOP";
+      rejectPromise(err);
+    }, (opts?.timeoutMs || OPENCLAW_TIMEOUT_MS) + 5_000);
+
+    try {
+      child = spawn(file, args, {
+        timeout: opts?.timeoutMs,
+        windowsHide: true,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+    } catch (err) {
+      settled = true;
+      clearTimeout(backstop);
+      rejectPromise(err);
+      return;
+    }
+
+    let stdout = "";
+    let stderr = "";
+    try { child.stdout?.on("data", (chunk) => { stdout += chunk; }); } catch { /* pipe optional */ }
+    try { child.stderr?.on("data", (chunk) => { stderr += String(chunk).slice(0, MAX_STDERR_BYTES); }); } catch { /* pipe optional */ }
+
+    const finish = (err, code, signal) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(backstop);
+      if (err) rejectPromise(err);
+      else if (code === 0) resolvePromise({ stdout, stderr });
+      else {
+        const e = new Error(`openclaw exited ${code ?? ""}${signal ? ` (${signal})` : ""}`);
+        e.code = code === null && signal ? "OPENCLAW_BACKSTOP" : `EXIT_${code}`;
+        e.killed = signal === "SIGTERM" || signal === "SIGKILL";
+        rejectPromise(e);
+      }
+    };
+
+    child.on("error", (err) => finish(err));
+    child.on("close", (code, signal) => finish(null, code, signal));
+  });
 }
 
 /** Normalize ONE provider entry into a bounded pool observation. */
@@ -293,7 +343,7 @@ function normalizePlanLabel(plan) {
  */
 export async function collectOpenClawQuotaObservation(options = {}) {
   const nowMs = Number.isFinite(options.nowMs) ? options.nowMs : Date.now();
-  const execFn = options.execFn || execFileAsync;
+  const execFn = options.execFn || defaultOpenClawExec;
   const timeoutMs = Number.isFinite(options.timeoutMs) ? options.timeoutMs : OPENCLAW_TIMEOUT_MS;
   const collectedAtMs = nowMs;
   const reasonCodes = [];
@@ -316,6 +366,7 @@ export async function collectOpenClawQuotaObservation(options = {}) {
   let stdout;
   try {
     const executed = await execFn(launch.file, launch.args, {
+      timeoutMs,
       timeout: timeoutMs,
       windowsHide: true,
       maxBuffer: MAX_STDOUT_BYTES,
