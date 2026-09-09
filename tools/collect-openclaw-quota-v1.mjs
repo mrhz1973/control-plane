@@ -554,8 +554,12 @@ let openclawInflight = null;
 
 async function probeAndStore(options) {
   const payload = await collectOpenClawQuotaObservation(options);
+  // Cache TTL runs from COMPLETION time (not probe start): a ~150s CLI run
+  // must not leave an already-expired cache entry that triggers back-to-back
+  // refreshes on every GET. Injectable nowMs keeps tests deterministic.
+  const cachedAtMs = Number.isFinite(options.nowMs) ? options.nowMs : Date.now();
   if (payload.ok === true || !openclawCache) {
-    openclawCache = { collected_at_ms: payload.collected_at_ms, payload, degraded: false };
+    openclawCache = { collected_at_ms: cachedAtMs, payload, degraded: false };
   } else {
     // Failed refresh with a previous observation: keep the previous value,
     // degraded → STALE only. Never overwrite good data with UNKNOWN, never
