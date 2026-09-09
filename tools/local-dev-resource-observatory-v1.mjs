@@ -459,13 +459,26 @@ export async function collectQuotaObservatory(options = {}) {
     if (!live) return pool;
     // Window detail comes from the SAME single live pool observation (no
     // per-model duplication — glm-5.3 and flash share one pool entry).
+    // Binding windows only; auxiliary (MCP) is separate non-routing metadata.
     pool.windows = live.windows.map((w) => ({
       window_type: w.window_type,
       label: w.label,
       remaining_percent: w.remaining_percent,
       reset_at: w.reset_at,
     }));
+    pool.auxiliary_windows = (live.auxiliary_windows || []).slice(0, 8).map((w) => ({
+      kind: w.kind || "auxiliary",
+      label: w.label,
+      remaining_percent: w.remaining_percent,
+      reset_at: w.reset_at,
+    }));
     pool.unmapped_windows = (live.unmapped_windows || []).slice(0, 8);
+    // Headline remaining + reset come from the LIMITING binding window (MIN).
+    if (typeof live.effective_remaining_percent === "number") {
+      pool.remaining_percent = live.effective_remaining_percent;
+    } else if (live.primary && typeof live.primary.remaining_percent === "number") {
+      pool.remaining_percent = live.primary.remaining_percent;
+    }
     pool.reset_at = live.primary?.reset_at ?? pool.reset_at;
     pool.observed_at = openclaw.observed_at;
     if (typeof live.plan === "string" && live.plan) pool.plan = boundStr(live.plan, 40);

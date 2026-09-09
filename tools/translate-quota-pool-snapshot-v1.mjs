@@ -59,6 +59,62 @@ function looksSecretLike(text) {
 }
 
 /**
+ * Binding-window capacity law (issue #73 multi-window correction):
+ *
+ * For one commercial model quota pool with multiple simultaneously binding
+ * provider windows, effective remaining for routing projection is the MIN of
+ * fresh binding windows — NOT the MAX. ANY zero binding window exhausts the
+ * pool. Auxiliary / non-routing windows (e.g. Z.AI MCP under GLM "Monthly")
+ * must not inflate model quota and are excluded via role === "auxiliary".
+ *
+ * Returns { state, limiting, remaining_percent, binding, reason }.
+ * remaining_percent is always in percent units (normalized × 100) when known.
+ */
+export function selectLimitingBindingWindow(windows, options = {}) {
+  const list = Array.isArray(windows) ? windows : [];
+  const requireFresh = options.requireFresh !== false;
+  const binding = list.filter((w) => w && w.role !== "auxiliary");
+  if (!binding.length) {
+    return { state: "unknown", limiting: null, remaining_percent: null, binding: [], reason: "NO_BINDING_WINDOWS" };
+  }
+
+  const usable = [];
+  for (const w of binding) {
+    if (requireFresh && w.freshness && w.freshness !== "fresh") {
+      return { state: "unknown", limiting: null, remaining_percent: null, binding, reason: "BINDING_WINDOW_STALE" };
+    }
+    const unit = w.remaining?.unit;
+    const value = w.remaining?.value;
+    if (unit === "unknown" || typeof value !== "number" || !Number.isFinite(value)) {
+      // Flat remaining_percent from collector observations is also accepted.
+      if (typeof w.remaining_percent === "number" && Number.isFinite(w.remaining_percent)) {
+        usable.push({ window: w, remaining_percent: w.remaining_percent });
+        continue;
+      }
+      return { state: "unknown", limiting: null, remaining_percent: null, binding, reason: "BINDING_WINDOW_UNKNOWN" };
+    }
+    const remaining_percent =
+      unit === "normalized" ? Math.round(value * 1000) / 10 : value;
+    usable.push({ window: w, remaining_percent });
+  }
+
+  if (!usable.length) {
+    return { state: "unknown", limiting: null, remaining_percent: null, binding, reason: "NO_USABLE_BINDING_WINDOWS" };
+  }
+
+  usable.sort((a, b) => a.remaining_percent - b.remaining_percent);
+  const limiting = usable[0];
+  const state = limiting.remaining_percent > 0 ? "available" : "exhausted";
+  return {
+    state,
+    limiting: limiting.window,
+    remaining_percent: limiting.remaining_percent,
+    binding,
+    reason: state === "available" ? "MIN_BINDING_WINDOWS" : "BINDING_WINDOW_ZERO",
+  };
+}
+
+/**
  * Normalize ONE observed window entry from snapshot input.
  * Returns { ok, window?, reason? } — never invents values.
  */
@@ -120,7 +176,17 @@ function normalizeWindow(raw, observedAt, nowMs, reasonCodes) {
     ? "fresh"
     : "stale";
 
-  return { ok: true, window: { window_type, remaining, window_ends_at, reset_at, freshness: windowFreshness } };
+  return {
+    ok: true,
+    window: {
+      window_type,
+      remaining,
+      window_ends_at,
+      reset_at,
+      freshness: windowFreshness,
+      ...(raw.role === "auxiliary" ? { role: "auxiliary" } : {}),
+    },
+  };
 }
 
 /**
@@ -197,19 +263,23 @@ export function translateQuotaPoolSnapshot(snapshot, options = {}) {
     windows.push(w.window);
   }
 
-  // state: observed remaining drives state; anything unknown/none observed stays unknown.
-  const positiveObserved = windows.some(
-    (w) => w.remaining.unit !== "unknown" && typeof w.remaining.value === "number" && w.remaining.value > 0,
-  );
-  const zeroObserved =
-    windows.length > 0 &&
-    windows.every(
-      (w) =>
-        w.remaining.unit !== "unknown" &&
-        typeof w.remaining.value === "number" &&
-        w.remaining.value === 0,
-    );
-  const state = positiveObserved ? "available" : zeroObserved ? "exhausted" : "unknown";
+  // Binding windows only enter the pool status / capacity law. Auxiliary
+  // windows (e.g. Z.AI MCP observed under a "Monthly" label) are retained
+  // only as diagnostic metadata and MUST NOT inflate model quota.
+  const bindingWindows = windows
+    .filter((w) => w.role !== "auxiliary")
+    .map(({ role, ...rest }) => rest); // role is input-only; status windows stay schema-clean
+  const auxiliaryWindows = windows
+    .filter((w) => w.role === "auxiliary")
+    .map(({ role, ...rest }) => ({ ...rest, role: "auxiliary" }));
+
+  if (!bindingWindows.length) {
+    return result({ reason_codes: ["SNAPSHOT_MISSING_DATA"], reason: "no binding windows" });
+  }
+
+  // Capacity law: MIN of fresh binding windows; ANY zero exhausts; unknown/stale fail closed.
+  const capacity = selectLimitingBindingWindow(bindingWindows, { requireFresh: true });
+  const state = capacity.state;
 
   // economics: ONLY when explicitly supplied and marked verified. Otherwise unknown.
   let economics = null;
@@ -222,7 +292,7 @@ export function translateQuotaPoolSnapshot(snapshot, options = {}) {
   const status = {
     quota_pool_id: poolId,
     state,
-    windows,
+    windows: bindingWindows,
     source,
     observed_at: observedAt,
     updated_at: new Date(nowMs).toISOString(),
@@ -237,7 +307,15 @@ export function translateQuotaPoolSnapshot(snapshot, options = {}) {
   return result(
     {
       quota_pool_status: status,
-      reason_codes: [...new Set(reasonCodes)],
+      auxiliary_windows: auxiliaryWindows.length ? auxiliaryWindows : undefined,
+      limiting_window: capacity.limiting
+        ? {
+            window_type: capacity.limiting.window_type,
+            remaining_percent: capacity.remaining_percent,
+            reset_at: capacity.limiting.reset_at || capacity.limiting.window_ends_at || null,
+          }
+        : null,
+      reason_codes: [...new Set([...reasonCodes, capacity.reason].filter(Boolean))],
     },
     true,
     "PASS_QUOTA_POOL_STATUS_TRANSLATED",

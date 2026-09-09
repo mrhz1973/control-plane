@@ -30,6 +30,7 @@ import { dirname, resolve, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   translateQuotaPoolSnapshot,
+  selectLimitingBindingWindow,
   POOL_IDS,
 } from "./translate-quota-pool-snapshot-v1.mjs";
 
@@ -84,16 +85,18 @@ export function normalizeMonitorPayload(payload, options = {}) {
       window_type: unitInfo.window,
       remaining: { value: Math.round(remainingFraction * 1000) / 10, unit: "percent" },
       reset_at: typeof lim.nextResetTime === "number" ? new Date(lim.nextResetTime).toISOString() : null,
+      freshness: "fresh",
     });
   }
   if (windows.length === 0) {
     return { ok: false, classification: "MONITOR_PAYLOAD_NO_KNOWN_WINDOWS" };
   }
+  const capacity = selectLimitingBindingWindow(windows, { requireFresh: true });
   return {
     ok: true,
     status: {
       quota_pool_id: POOL_IDS.glm,
-      state: windows.every((w) => w.remaining.value === 0) ? "exhausted" : "available",
+      state: capacity.state,
       windows,
       source: "provider_api",
       observed_at: iso(nowMs),
@@ -190,19 +193,19 @@ export async function ingestGlmQuota(options = {}) {
     mode = "manual";
   }
 
-  const freshWindow = [...poolStatus.windows]
-    .filter((w) => w.freshness === "fresh" && typeof w.remaining?.value === "number")
-    .sort((a, b) => b.remaining.value - a.remaining.value)[0] || null;
-  const projectedAvailable = poolStatus.state === "available" && freshWindow && freshWindow.remaining.value > 0;
-  const quotaValue = freshWindow ? freshWindow.remaining.value : null;
+  const capacity = selectLimitingBindingWindow(poolStatus.windows, { requireFresh: true });
+  const limiting = capacity.limiting;
+  const projectedAvailable = capacity.state === "available" && capacity.remaining_percent !== null && capacity.remaining_percent > 0;
+  const quotaValue = capacity.remaining_percent;
+  const poolState = capacity.state !== "unknown" ? capacity.state : poolStatus.state;
 
-  const evidenceClassification = `QUOTA_POOL_INGEST_${poolStatus.state.toUpperCase()}_MODE_${mode.toUpperCase()}_FRESH_${poolStatus.freshness.toUpperCase()}`;
+  const evidenceClassification = `QUOTA_POOL_INGEST_${poolState.toUpperCase()}_MODE_${mode.toUpperCase()}_FRESH_${poolStatus.freshness.toUpperCase()}`;
   const projection_status = {};
   for (const rid of GOVERNED_RESOURCES) {
     projection_status[rid] = {
       available: projectedAvailable === true,
       quota_remaining: { value: projectedAvailable ? quotaValue : quotaValue ?? 0, unit: quotaValue === null ? "unknown" : "percent" },
-      reset_at: freshWindow?.reset_at || freshWindow?.window_ends_at || null,
+      reset_at: limiting?.reset_at || limiting?.window_ends_at || null,
       cost_mode: "included",
       location: "cloud",
       updated_at: iso(nowMs),
@@ -225,7 +228,7 @@ export async function ingestGlmQuota(options = {}) {
     mode,
     classification: projectedAvailable
       ? "INGEST_PASS_QUOTA_PROJECTED"
-      : poolStatus.state === "exhausted"
+      : poolState === "exhausted"
         ? "INGEST_PASS_POOL_EXHAUSTED_PROJECTED_UNAVAILABLE"
         : "INGEST_PASS_UNKNOWN_PROJECTED_UNAVAILABLE",
     contribution,
@@ -233,7 +236,8 @@ export async function ingestGlmQuota(options = {}) {
     reason_codes: [
       projectedAvailable ? "QUOTA_REMAINING_OBSERVED" : "QUOTA_UNKNOWN_FAIL_CLOSED",
       "SHARED_POOL_SINGLE_OBSERVATION_GLM_5_3_AND_FLASH",
-    ],
+      capacity.reason,
+    ].filter(Boolean),
   };
 }
 

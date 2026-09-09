@@ -52,7 +52,7 @@ for (const rid of GOVERNED_RESOURCES) {
     shapeOk &&
     typeof o.available === "boolean" &&
     o.quota_remaining?.unit === "percent" &&
-    o.quota_remaining?.value === 88 && // best fresh window = weekly 88%
+    o.quota_remaining?.value === 62 && // limiting fresh binding window = rolling 62% (MIN, not weekly 88)
     ["reset_at", "cost_mode", "location", "updated_at", "evidence"].every((k) => k in o) &&
     o.evidence?.kind === "source_snapshot";
 }
@@ -62,7 +62,7 @@ check("projection-covers-governed-resource-codex", shapeOk);
 //    both v2 surfaces share the same pool upstream — no double counting representable)
 check(
   "single-observation-no-double-counting",
-  t.contribution.resources.codex.quota_remaining.value === 88 &&
+  t.contribution.resources.codex.quota_remaining.value === 62 &&
     t.contribution.contribution_id.includes("chatgpt_codex_subscription"),
 );
 
@@ -77,7 +77,7 @@ check(
   "composer-accepts-rt25-contribution",
   composed.ok === true &&
     composed.resource_status.resources.codex.available === true &&
-    composed.resource_status.resources.codex.quota_remaining.value === 88,
+    composed.resource_status.resources.codex.quota_remaining.value === 62,
   JSON.stringify({ ok: composed.ok, cls: composed.classification }).slice(0, 200),
 );
 check(
@@ -103,6 +103,21 @@ check(
   "exhausted-projects-unavailable",
   exh.ok === true && exh.classification === "INGEST_PASS_POOL_EXHAUSTED_PROJECTED_UNAVAILABLE" &&
     exh.contribution.resources.codex.available === false,
+);
+
+// 7b. weekly zero + rolling positive ⇒ EXHAUSTED (MIN binding law)
+const weekZero = ingestCodexQuotaSnapshot(snapshot({
+  windows: [
+    { window_type: "rolling", remaining: { value: 90, unit: "percent" }, window_ends_at: "2026-09-05T19:00:00.000Z" },
+    { window_type: "weekly", remaining: { value: 0, unit: "percent" }, reset_at: "2026-09-08T00:00:00.000Z" },
+  ],
+}), { nowMs: NOW });
+check(
+  "weekly-zero-exhausts-despite-healthy-rolling",
+  weekZero.ok === true &&
+    weekZero.classification === "INGEST_PASS_POOL_EXHAUSTED_PROJECTED_UNAVAILABLE" &&
+    weekZero.contribution.resources.codex.available === false &&
+    weekZero.contribution.resources.codex.quota_remaining.value === 0,
 );
 
 // 8. runtime pass writes decisions into untracked runtime dir (no tracked writes)

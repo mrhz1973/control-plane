@@ -44,8 +44,8 @@ POOL serves every model/surface referencing that pool.
 | Field | Meaning |
 |---|---|
 | `quota_pool_id` | registry-v2 pool identity (binding) |
-| `state` | observed state: `available` (remaining observed > 0), `exhausted` (observed 0), `unknown` (insufficient evidence). Missing input data NEVER becomes availability |
-| `windows[]` | one entry per observed window: `window_type` (`rolling`/`weekly`/`monthly`/`unknown`), `remaining` (`percent` 0–100, `normalized` 0–1, or `unknown` with `value: null`), optional `window_ends_at`/`reset_at` (from evidence only, else null), per-window `freshness` |
+| `state` | observed state: `available` (all fresh binding windows remaining > 0), `exhausted` (any binding window remaining == 0), `unknown` (insufficient evidence). Missing input data NEVER becomes availability. Auxiliary / non-routing windows do not drive this state |
+| `windows[]` | one entry per **binding** observed window: `window_type` (`rolling`/`weekly`/`monthly`/`unknown`), `remaining` (`percent` 0–100, `normalized` 0–1, or `unknown` with `value: null`), optional `window_ends_at`/`reset_at` (from evidence only, else null), per-window `freshness`. Auxiliary quotas belonging to another capability/domain MUST NOT appear here |
 | `source` | `dashboard_snapshot` / `manual` / `provider_api` / `internal_ledger` |
 | `observed_at` | provider-side observation timestamp (from snapshot) |
 | `updated_at` | translator composition timestamp |
@@ -83,6 +83,22 @@ A translator for an **already-collected** normalized/manual snapshot:
   required data, future-dated or stale inputs (classification preserved, values not
   fabricated);
 - MUST NOT interpret missing data as available quota (`state: "unknown"` only).
+
+### 5.1 Multi-window binding law
+
+Within one commercial model quota pool, multiple simultaneously observed provider
+windows are **binding constraints** for that pool unless the source adapter
+explicitly classifies a window as auxiliary / non-routing (e.g. Z.AI MCP quota
+observed under a "Monthly" label for GLM):
+
+- `effective_remaining_percent` for routing projection =
+  **MIN**(remaining of all fresh binding windows) — never MAX;
+- ANY fresh binding window with remaining == 0 ⇒ pool `exhausted`, regardless of
+  healthier sibling windows;
+- a required binding window that is missing, unknown, or stale ⇒ pool `unknown`
+  (fail closed);
+- auxiliary windows MUST NOT inflate model-quota remaining, MUST NOT make the
+  pool `available`, and MUST NOT supply the headline reset for model capacity.
 
 ## 6. Result wrapper
 

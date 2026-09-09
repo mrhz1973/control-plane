@@ -37,7 +37,7 @@
           "pattern": "^[a-z][a-z0-9_]*$"
         },
         "state": {
-          "description": "Known/availability state observed at observed_at. available = observed with remaining > 0; exhausted = observed remaining 0; unknown = insufficient evidence. Never implies current availability.",
+          "description": "Known/availability state observed at observed_at. available = all fresh binding windows remaining > 0; exhausted = any binding window remaining 0; unknown = insufficient evidence. Auxiliary windows never drive this. Never implies current availability.",
           "enum": ["available", "exhausted", "unknown"]
         },
         "windows": {

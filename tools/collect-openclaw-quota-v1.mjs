@@ -21,8 +21,8 @@
  *     never mutates OpenClaw config; never calls Hermes/OpenCode/providers.
  *   - NO second quota authority: freshness reuses the composer's own
  *     STATUS_MAX_AGE_MS; pool projection reuses the RT25 ingest semantics
- *     (primary = fresh mapped window with MAX remaining; shared pool observed
- *     once; contribution per pool with one registry resource entry).
+ *     (primary = limiting fresh binding window = MIN remaining; shared pool
+ *     observed once; contribution per pool with one registry resource entry).
  *   - usedPercent means USED: remaining_percent = clamp(100 - usedPercent,0,100)
  *     — direction is fixed by law and asserted in tests.
  *   - resetAt is epoch milliseconds → ISO-8601 reset_at. Observation time is
@@ -52,6 +52,7 @@ import { execFile as execFileCb, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { STATUS_MAX_AGE_MS } from "./compose-v4-resource-status-control-plane-v1.mjs";
+import { selectLimitingBindingWindow } from "./translate-quota-pool-snapshot-v1.mjs";
 
 export const OPENCLAW_QUOTA_SCHEMA = "openclaw-quota-observation-v1";
 export const OPENCLAW_ARGS = Object.freeze(["status", "--usage", "--json"]);
@@ -72,20 +73,33 @@ export const POOL_PROVIDER_BINDINGS = Object.freeze({
   glm_coding_plan: Object.freeze({
     provider_id: "zai",
     resource_id: "glm",
-    /** Exact semantic label (trimmed, lower-cased) → canonical window type. */
-    window_labels: Object.freeze({ "tokens (5h)": "rolling", monthly: "monthly" }),
     /**
-     * "Tokens (Limit)" identity is NOT proven weekly by the capability probe +
-     * existing canonical source law → kept as UNMAPPED diagnostic metadata.
-     * Window identity is NEVER inferred from reset duration.
+     * Exact semantic label (trimmed, lower-cased) → canonical window type.
+     * Proven 2026-09-09 by operator Z.AI dashboard vs OpenClaw usage:
+     *   "Tokens (5h)"    → rolling (5 Hours Quota)
+     *   "Tokens (Limit)" → weekly  (Weekly Quota; reset matches Europe/Rome)
+     * "Monthly" is MCP quota — auxiliary/non-routing (see auxiliary_labels).
      */
-    unmapped_labels: Object.freeze(["tokens (limit)"]),
+    window_labels: Object.freeze({
+      "tokens (5h)": "rolling",
+      "tokens (limit)": "weekly",
+    }),
+    /**
+     * Auxiliary / non-routing provider windows retained as diagnostic metadata
+     * only. Z.AI "Monthly" is MCP quota — MUST NOT enter glm_coding_plan
+     * effective remaining or availability.
+     */
+    auxiliary_labels: Object.freeze({
+      monthly: Object.freeze({ kind: "mcp", label: "MCP" }),
+    }),
+    unmapped_labels: Object.freeze([]),
     source_label: "OpenClaw / Z.AI usage",
   }),
   chatgpt_codex_subscription: Object.freeze({
     provider_id: "openai-codex",
     resource_id: "codex",
     window_labels: Object.freeze({ "5h": "rolling", week: "weekly" }),
+    auxiliary_labels: Object.freeze({}),
     unmapped_labels: Object.freeze([]),
     source_label: "OpenClaw / OpenAI Codex usage",
   }),
@@ -247,6 +261,7 @@ function normalizeProviderPool(binding, provider, observedAtMs, nowMs, reasonCod
         freshness: "stale",
         reason_code: "OPENCLAW_USAGE_WINDOWS_MISSING",
         windows: [],
+        auxiliary_windows: [],
         unmapped_windows: [],
         primary: null,
         source_label: binding.source_label,
@@ -255,17 +270,36 @@ function normalizeProviderPool(binding, provider, observedAtMs, nowMs, reasonCod
   }
 
   const windows = [];
+  const auxiliary = [];
   const unmapped = [];
+  const auxMap = binding.auxiliary_labels || {};
   for (const raw of rawWindows) {
     const label = boundStr(raw && raw.label, MAX_LABEL);
     if (!label) continue;
     const key = label.toLowerCase();
+    const remaining = usedToRemainingPercent(raw.usedPercent);
+    const resetMs = validEpochMs(raw.resetAt);
+
+    if (Object.prototype.hasOwnProperty.call(auxMap, key)) {
+      // Auxiliary / non-routing (e.g. Z.AI MCP under "Monthly") — diagnostic only.
+      if (remaining === null || resetMs === null) continue;
+      const meta = auxMap[key];
+      auxiliary.push({
+        kind: boundStr(meta.kind, 20) || "auxiliary",
+        label: boundStr(meta.label, MAX_LABEL) || label,
+        provider_label: label,
+        used_percent: Math.round(Number(raw.usedPercent) * 10) / 10,
+        remaining_percent: remaining,
+        reset_at: isoFromMs(resetMs),
+        role: "auxiliary",
+      });
+      continue;
+    }
+
     const mappedType = Object.prototype.hasOwnProperty.call(binding.window_labels, key)
       ? binding.window_labels[key]
       : null;
     if (mappedType) {
-      const remaining = usedToRemainingPercent(raw.usedPercent);
-      const resetMs = validEpochMs(raw.resetAt);
       if (remaining === null || resetMs === null) {
         reasonCodes.push(`OPENCLAW_USAGE_WINDOW_INVALID_${poolIdForReason}`);
         return {
@@ -276,6 +310,7 @@ function normalizeProviderPool(binding, provider, observedAtMs, nowMs, reasonCod
             freshness: "stale",
             reason_code: "OPENCLAW_USAGE_WINDOW_INVALID",
             windows: [],
+            auxiliary_windows: [],
             unmapped_windows: [],
             primary: null,
             source_label: binding.source_label,
@@ -289,15 +324,14 @@ function normalizeProviderPool(binding, provider, observedAtMs, nowMs, reasonCod
         remaining_percent: remaining,
         reset_at: isoFromMs(resetMs),
         reset_at_ms: resetMs,
+        freshness: "fresh",
+        role: "binding",
       });
     } else {
-      // Unknown / not-proven window: bounded non-sensitive diagnostic only —
-      // never classified into routing-capacity semantics.
-      const remaining = usedToRemainingPercent(raw.usedPercent);
-      const resetMs = validEpochMs(raw.resetAt);
+      // Unknown window: bounded non-sensitive diagnostic only — never routing.
       unmapped.push({
         label,
-        recognized_limit_window: binding.unmapped_labels.includes(key) || null,
+        recognized_limit_window: (binding.unmapped_labels || []).includes(key) || null,
         ...(remaining !== null ? { used_percent: Math.round(Number(raw.usedPercent) * 10) / 10 } : {}),
         ...(remaining !== null ? { remaining_percent: remaining } : {}),
         ...(resetMs !== null ? { reset_at: isoFromMs(resetMs) } : {}),
@@ -314,6 +348,7 @@ function normalizeProviderPool(binding, provider, observedAtMs, nowMs, reasonCod
         freshness: "stale",
         reason_code: "OPENCLAW_USAGE_WINDOWS_MISSING",
         windows: [],
+        auxiliary_windows: auxiliary.slice(0, MAX_WINDOWS),
         unmapped_windows: unmapped.slice(0, MAX_WINDOWS),
         primary: null,
         source_label: binding.source_label,
@@ -321,23 +356,42 @@ function normalizeProviderPool(binding, provider, observedAtMs, nowMs, reasonCod
     };
   }
 
-  // Existing RT25 ingest law: primary = mapped window with MAX remaining.
-  const primary = [...windows].sort((a, b) => b.remaining_percent - a.remaining_percent)[0];
-  const state = primary.remaining_percent > 0 ? "available" : "exhausted";
+  // Binding-window law: effective remaining = MIN of fresh binding windows.
+  // ANY zero binding window exhausts; auxiliary (MCP) never participates.
+  const capacity = selectLimitingBindingWindow(windows, { requireFresh: true });
+  if (capacity.state === "unknown" || !capacity.limiting) {
+    return {
+      ok: false,
+      pool: {
+        provider: binding.provider_id,
+        state: "unknown",
+        freshness: "stale",
+        reason_code: capacity.reason || "OPENCLAW_USAGE_WINDOWS_MISSING",
+        windows,
+        auxiliary_windows: auxiliary.slice(0, MAX_WINDOWS),
+        unmapped_windows: unmapped.slice(0, MAX_WINDOWS),
+        primary: null,
+        source_label: binding.source_label,
+      },
+    };
+  }
+  const primary = capacity.limiting;
   return {
     ok: true,
     pool: {
       provider: binding.provider_id,
-      state,
+      state: capacity.state,
       freshness: "fresh",
       reason_code: null,
       windows,
+      auxiliary_windows: auxiliary.slice(0, MAX_WINDOWS),
       unmapped_windows: unmapped.slice(0, MAX_WINDOWS),
       primary: {
         window_type: primary.window_type,
-        remaining_percent: primary.remaining_percent,
+        remaining_percent: capacity.remaining_percent,
         reset_at: primary.reset_at,
       },
+      effective_remaining_percent: capacity.remaining_percent,
       source_label: binding.source_label,
     },
   };
@@ -449,6 +503,7 @@ export async function collectOpenClawQuotaObservation(options = {}) {
         freshness: "stale",
         reason_code: "OPENCLAW_PROVIDER_MISSING",
         windows: [],
+        auxiliary_windows: [],
         unmapped_windows: [],
         primary: null,
         source_label: binding.source_label,
@@ -536,6 +591,7 @@ function unknownObservation(base, reasonCode, launch) {
       freshness: "stale",
       reason_code: reasonCode,
       windows: [],
+      auxiliary_windows: [],
       unmapped_windows: [],
       primary: null,
       source_label: binding.source_label,
@@ -634,6 +690,7 @@ function decoratePending(nowMs) {
       freshness: "stale",
       reason_code: "OPENCLAW_USAGE_PENDING",
       windows: [],
+      auxiliary_windows: [],
       unmapped_windows: [],
       primary: null,
       source_label: binding.source_label,

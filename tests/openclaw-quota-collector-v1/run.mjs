@@ -4,8 +4,8 @@
  * OpenClaw quota collector (#73).
  *
  * Covers: usedPercent→remaining direction, epoch resetAt→ISO, window mapping
- * (rolling/weekly/monthly; unproven "Tokens (Limit)" NOT misclassified),
- * shared-pool single entry, failure law (absent CLI/timeout/invalid JSON/
+ * (rolling/weekly; Tokens (Limit)→weekly; Monthly→MCP auxiliary),
+ * MIN binding effective remaining, shared-pool single entry, failure law,
  * missing provider → UNKNOWN; stale → STALE never FRESH; failed refresh after
  * success stays STALE), cache single-probe law, secrets never exposed,
  * GET-side no-write law, contribution schema conformance.
@@ -113,8 +113,10 @@ await test("C4 epoch resetAt => ISO-8601 reset_at", async () => {
   assert.equal(five.reset_at, new Date(1788948978000).toISOString());
   const week = obs.pools.chatgpt_codex_subscription.windows.find((w) => w.window_type === "weekly");
   assert.equal(week.reset_at, new Date(1789515761000).toISOString());
-  const glmMonthly = obs.pools.glm_coding_plan.windows.find((w) => w.window_type === "monthly");
-  assert.equal(glmMonthly.reset_at, new Date(1791153305998).toISOString());
+  const glmWeek = obs.pools.glm_coding_plan.windows.find((w) => w.window_type === "weekly");
+  assert.equal(glmWeek.reset_at, new Date(1789166105998).toISOString());
+  const mcp = obs.pools.glm_coding_plan.auxiliary_windows.find((w) => w.kind === "mcp");
+  assert.equal(mcp.reset_at, new Date(1791153305998).toISOString());
 });
 
 await test("C5/C6 GLM shared pool appears once; glm-5.3 + flash reference the same pool", async () => {
@@ -307,7 +309,7 @@ await test("C17 usedPercent direction cannot be inverted (0/100 and bounds)", ()
   assert.equal(usedToRemainingPercent("75"), 25);
 });
 
-await test("C18 unknown window not misclassified; 'Tokens (Limit)' stays unmapped diagnostic", async () => {
+await test("C18 Tokens (Limit) maps to weekly; Monthly is auxiliary MCP (non-routing)", async () => {
   const nowMs = Date.parse("2026-09-09T05:00:00.000Z");
   const obs = await collectOpenClawQuotaObservation({
     nowMs,
@@ -316,8 +318,8 @@ await test("C18 unknown window not misclassified; 'Tokens (Limit)' stays unmappe
       providers: [codexProvider(), {
         provider: "zai",
         windows: [
-          { label: "Tokens (5h)", usedPercent: 2, resetAt: nowMs + 3_600_000 },
-          { label: "Tokens (Limit)", usedPercent: 76, resetAt: nowMs + 100_000 },
+          { label: "Tokens (5h)", usedPercent: 60, resetAt: nowMs + 3_600_000 },
+          { label: "Tokens (Limit)", usedPercent: 87, resetAt: nowMs + 100_000 },
           { label: "Quarterly", usedPercent: 5, resetAt: nowMs + 86_400_000 * 90 }, // unknown
           { label: "Monthly", usedPercent: 0, resetAt: nowMs + 86_400_000 * 30 },
         ],
@@ -325,15 +327,132 @@ await test("C18 unknown window not misclassified; 'Tokens (Limit)' stays unmappe
     })),
   });
   const glm = obs.pools.glm_coding_plan;
-  assert.deepEqual(glm.windows.map((w) => w.window_type).sort(), ["monthly", "rolling"]);
+  assert.deepEqual(glm.windows.map((w) => w.window_type).sort(), ["rolling", "weekly"]);
+  assert.equal(glm.windows.find((w) => w.window_type === "rolling").remaining_percent, 40);
+  assert.equal(glm.windows.find((w) => w.window_type === "weekly").remaining_percent, 13);
+  // Effective = MIN(40, 13) = 13; MCP monthly must not inflate.
+  assert.equal(glm.effective_remaining_percent, 13);
+  assert.equal(glm.primary.remaining_percent, 13);
+  assert.equal(glm.primary.window_type, "weekly");
+  assert.equal(glm.auxiliary_windows.length, 1);
+  assert.equal(glm.auxiliary_windows[0].kind, "mcp");
+  assert.equal(glm.auxiliary_windows[0].remaining_percent, 100);
   const labels = glm.unmapped_windows.map((w) => w.label);
-  assert.ok(labels.includes("Tokens (Limit)"));
   assert.ok(labels.includes("Quarterly"));
+  assert.ok(!labels.includes("Tokens (Limit)"));
   assert.ok(!labels.includes("Monthly"));
-  // No window_type is invented for unknowns:
-  for (const w of glm.unmapped_windows) assert.equal(w.window_type, undefined);
-  // No "weekly" appears for GLM (Tokens (Limit) identity unproven):
-  assert.ok(!glm.windows.some((w) => w.window_type === "weekly"));
+  // No monthly binding window:
+  assert.ok(!glm.windows.some((w) => w.window_type === "monthly"));
+});
+
+await test("C18b GLM weekly zero exhausts despite healthy 5h; MCP zero does not", async () => {
+  const nowMs = Date.parse("2026-09-09T05:00:00.000Z");
+  const weeklyZero = await collectOpenClawQuotaObservation({
+    nowMs,
+    execFn: liveExec(usagePayload({
+      updatedAt: nowMs - 1000,
+      providers: [{
+        provider: "zai",
+        windows: [
+          { label: "Tokens (5h)", usedPercent: 10, resetAt: nowMs + 3_600_000 },
+          { label: "Tokens (Limit)", usedPercent: 100, resetAt: nowMs + 100_000 },
+          { label: "Monthly", usedPercent: 0, resetAt: nowMs + 86_400_000 },
+        ],
+      }, codexProvider()],
+    })),
+  });
+  assert.equal(weeklyZero.pools.glm_coding_plan.state, "exhausted");
+  assert.equal(weeklyZero.pools.glm_coding_plan.effective_remaining_percent, 0);
+
+  const fiveZero = await collectOpenClawQuotaObservation({
+    nowMs,
+    execFn: liveExec(usagePayload({
+      updatedAt: nowMs - 1000,
+      providers: [{
+        provider: "zai",
+        windows: [
+          { label: "Tokens (5h)", usedPercent: 100, resetAt: nowMs + 3_600_000 },
+          { label: "Tokens (Limit)", usedPercent: 50, resetAt: nowMs + 100_000 },
+          { label: "Monthly", usedPercent: 0, resetAt: nowMs + 86_400_000 },
+        ],
+      }, codexProvider()],
+    })),
+  });
+  assert.equal(fiveZero.pools.glm_coding_plan.state, "exhausted");
+  assert.equal(fiveZero.pools.glm_coding_plan.effective_remaining_percent, 0);
+
+  const mcpZeroModelOk = await collectOpenClawQuotaObservation({
+    nowMs,
+    execFn: liveExec(usagePayload({
+      updatedAt: nowMs - 1000,
+      providers: [{
+        provider: "zai",
+        windows: [
+          { label: "Tokens (5h)", usedPercent: 60, resetAt: nowMs + 3_600_000 },
+          { label: "Tokens (Limit)", usedPercent: 87, resetAt: nowMs + 100_000 },
+          { label: "Monthly", usedPercent: 100, resetAt: nowMs + 86_400_000 },
+        ],
+      }, codexProvider()],
+    })),
+  });
+  assert.equal(mcpZeroModelOk.pools.glm_coding_plan.state, "available");
+  assert.equal(mcpZeroModelOk.pools.glm_coding_plan.effective_remaining_percent, 13);
+  assert.equal(mcpZeroModelOk.pools.glm_coding_plan.auxiliary_windows[0].remaining_percent, 0);
+});
+
+await test("C18c Codex effective = MIN(5h, weekly); either zero exhausts", async () => {
+  const nowMs = Date.parse("2026-09-09T05:00:00.000Z");
+  const live = await collectOpenClawQuotaObservation({
+    nowMs,
+    execFn: liveExec(usagePayload({
+      updatedAt: nowMs - 1000,
+      providers: [
+        {
+          provider: "openai-codex",
+          plan: "plus ($0.00)",
+          windows: [
+            { label: "5h", usedPercent: 0, resetAt: nowMs + 3_600_000 },
+            { label: "Week", usedPercent: 16, resetAt: nowMs + 86_400_000 },
+          ],
+        },
+        zaiProvider(),
+      ],
+    })),
+  });
+  assert.equal(live.pools.chatgpt_codex_subscription.effective_remaining_percent, 84);
+  assert.equal(live.pools.chatgpt_codex_subscription.primary.remaining_percent, 84);
+  assert.equal(live.pools.chatgpt_codex_subscription.primary.window_type, "weekly");
+
+  const weekZero = await collectOpenClawQuotaObservation({
+    nowMs,
+    execFn: liveExec(usagePayload({
+      updatedAt: nowMs - 1000,
+      providers: [{
+        provider: "openai-codex",
+        windows: [
+          { label: "5h", usedPercent: 0, resetAt: nowMs + 3_600_000 },
+          { label: "Week", usedPercent: 100, resetAt: nowMs + 86_400_000 },
+        ],
+      }, zaiProvider()],
+    })),
+  });
+  assert.equal(weekZero.pools.chatgpt_codex_subscription.state, "exhausted");
+  assert.equal(weekZero.pools.chatgpt_codex_subscription.effective_remaining_percent, 0);
+
+  const fiveZero = await collectOpenClawQuotaObservation({
+    nowMs,
+    execFn: liveExec(usagePayload({
+      updatedAt: nowMs - 1000,
+      providers: [{
+        provider: "openai-codex",
+        windows: [
+          { label: "5h", usedPercent: 100, resetAt: nowMs + 3_600_000 },
+          { label: "Week", usedPercent: 16, resetAt: nowMs + 86_400_000 },
+        ],
+      }, zaiProvider()],
+    })),
+  });
+  assert.equal(fiveZero.pools.chatgpt_codex_subscription.state, "exhausted");
 });
 
 await test("C19/C20 GET-side law: collector performs no writes; no receipt/envelope/config artifacts", async () => {

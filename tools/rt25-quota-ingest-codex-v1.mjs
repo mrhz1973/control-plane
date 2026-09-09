@@ -27,6 +27,7 @@ import { dirname, resolve, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   translateQuotaPoolSnapshot,
+  selectLimitingBindingWindow,
   POOL_IDS,
 } from "./translate-quota-pool-snapshot-v1.mjs";
 
@@ -86,17 +87,12 @@ export function ingestCodexQuotaSnapshot(snapshot, options = {}) {
 
   const status = t.quota_pool_status;
   const snapshotSource = status.source;
-  const remainingWindow = [...status.windows]
-    .filter((w) => w.freshness === "fresh" && typeof w.remaining?.value === "number")
-    .sort((a, b) => b.remaining.value - a.remaining.value)[0] || null;
-
-  const state = status.state;
-  const projectedAvailable = state === "available" && remainingWindow && remainingWindow.remaining.value > 0;
-  const quotaValue = remainingWindow
-    ? remainingWindow.remaining.unit === "normalized"
-      ? Math.round(remainingWindow.remaining.value * 1000) / 10
-      : remainingWindow.remaining.value
-    : null;
+  // Binding-window law: effective remaining = MIN of fresh binding windows (NOT MAX).
+  const capacity = selectLimitingBindingWindow(status.windows, { requireFresh: true });
+  const remainingWindow = capacity.limiting;
+  const state = capacity.state !== "unknown" ? capacity.state : status.state;
+  const projectedAvailable = state === "available" && capacity.remaining_percent !== null && capacity.remaining_percent > 0;
+  const quotaValue = capacity.remaining_percent;
 
   // Runtime projection: one entry per governed resource (same pool evidence, no
   // double counting — all entries derive from the SAME single pool observation).
@@ -146,7 +142,8 @@ export function ingestCodexQuotaSnapshot(snapshot, options = {}) {
     reason_codes: [
       projectedAvailable ? "QUOTA_REMAINING_OBSERVED" : "QUOTA_UNKNOWN_FAIL_CLOSED",
       "SHARED_POOL_SINGLE_OBSERVATION",
-    ],
+      capacity.reason,
+    ].filter(Boolean),
   };
 }
 

@@ -2311,11 +2311,13 @@ await test("S58 #73 observatory consumes live OpenClaw observation: pools, windo
       freshness: "fresh",
       reason_code: null,
       windows: [
-        { window_type: "rolling", label: "Tokens (5h)", remaining_percent: 98, reset_at: "2026-09-09T06:00:00.000Z" },
-        { window_type: "monthly", label: "Monthly", remaining_percent: 100, reset_at: "2026-09-16T05:00:00.000Z" },
+        { window_type: "rolling", label: "Tokens (5h)", remaining_percent: 40, reset_at: "2026-09-09T06:00:00.000Z" },
+        { window_type: "weekly", label: "Tokens (Limit)", remaining_percent: 13, reset_at: "2026-09-11T22:35:05.998Z" },
       ],
-      unmapped_windows: [{ label: "Tokens (Limit)", recognized_limit_window: true, remaining_percent: 24 }],
-      primary: { window_type: "monthly", remaining_percent: 100, reset_at: "2026-09-16T05:00:00.000Z" },
+      auxiliary_windows: [{ kind: "mcp", label: "MCP", remaining_percent: 100, reset_at: "2026-10-04T22:35:05.999Z" }],
+      unmapped_windows: [],
+      primary: { window_type: "weekly", remaining_percent: 13, reset_at: "2026-09-11T22:35:05.998Z" },
+      effective_remaining_percent: 13,
       source_label: "OpenClaw / Z.AI usage",
     },
     chatgpt_codex_subscription: {
@@ -2327,8 +2329,10 @@ await test("S58 #73 observatory consumes live OpenClaw observation: pools, windo
         { window_type: "rolling", label: "5h", remaining_percent: 100, reset_at: "2026-09-09T08:16:18.000Z" },
         { window_type: "weekly", label: "Week", remaining_percent: 84, reset_at: "2026-09-16T08:09:21.000Z" },
       ],
+      auxiliary_windows: [],
       unmapped_windows: [],
-      primary: { window_type: "rolling", remaining_percent: 100, reset_at: "2026-09-09T08:16:18.000Z" },
+      primary: { window_type: "weekly", remaining_percent: 84, reset_at: "2026-09-16T08:09:21.000Z" },
+      effective_remaining_percent: 84,
       source_label: "OpenClaw / OpenAI Codex usage",
       plan: "plus",
     },
@@ -2359,8 +2363,8 @@ await test("S58 #73 observatory consumes live OpenClaw observation: pools, windo
         schema_version: "v4-rt25-canonical-quota-state-v1",
         joined: {
           pools: {
-            glm_coding_plan: { state: "available", freshness: "fresh", remaining_percent: 100, evaluation: "POOL_HEALTHY" },
-            chatgpt_codex_subscription: { state: "available", freshness: "fresh", remaining_percent: 100, evaluation: "POOL_HEALTHY" },
+            glm_coding_plan: { state: "available", freshness: "fresh", remaining_percent: 13, evaluation: "POOL_HEALTHY", reset_at: "2026-09-11T22:35:05.998Z" },
+            chatgpt_codex_subscription: { state: "available", freshness: "fresh", remaining_percent: 84, evaluation: "POOL_HEALTHY", reset_at: "2026-09-16T08:09:21.000Z" },
           },
         },
         reason_codes: [],
@@ -2372,17 +2376,20 @@ await test("S58 #73 observatory consumes live OpenClaw observation: pools, windo
   assert.equal(glm.quota_pool_id, "glm_coding_plan");
   assert.equal(glm.state, "AVAILABLE");
   assert.equal(glm.freshness, "fresh");
-  assert.equal(glm.remaining_percent, 100);
+  assert.equal(glm.remaining_percent, 13); // MIN(40,13), MCP excluded
   assert.equal(glm.windows.length, 2);
-  assert.equal(glm.windows.find((w) => w.window_type === "rolling").remaining_percent, 98);
-  assert.ok(glm.windows.find((w) => w.window_type === "monthly"));
-  assert.ok(!glm.windows.some((w) => w.window_type === "weekly")); // Tokens (Limit) NOT weekly
-  assert.equal(glm.unmapped_windows.length, 1);
+  assert.equal(glm.windows.find((w) => w.window_type === "rolling").remaining_percent, 40);
+  assert.equal(glm.windows.find((w) => w.window_type === "weekly").remaining_percent, 13);
+  assert.ok(!glm.windows.some((w) => w.window_type === "monthly")); // Monthly is MCP aux
+  assert.equal(glm.auxiliary_windows.length, 1);
+  assert.equal(glm.auxiliary_windows[0].kind, "mcp");
+  assert.equal(glm.auxiliary_windows[0].remaining_percent, 100);
   assert.equal(glm.collector_id, "openclaw_usage_live");
   assert.equal(glm.observed_at, observedAt);
   assert.deepEqual(glm.consumers, ["glm-5.3", "glm-5.3-flash"]); // one shared pool entry, both models
   const codex = quotas.pools.chatgpt_codex_subscription;
   assert.equal(codex.plan, "plus");
+  assert.equal(codex.remaining_percent, 84); // MIN(100,84)
   assert.equal(codex.windows.find((w) => w.window_type === "weekly").remaining_percent, 84);
   assert.equal(quotas.openclaw.collector, "openclaw_usage_live");
   assert.ok(!JSON.stringify(quotas).includes("[object Object]"));
@@ -2499,19 +2506,20 @@ await test("S60 #73 dashboard renders live GLM/Codex windows, plan metadata, Ope
         pools: {
           glm_coding_plan: {
             quota_pool_id: "glm_coding_plan", consumers: ["glm-5.3", "glm-5.3-flash"],
-            state: "AVAILABLE", freshness: "fresh", remaining_percent: 98,
-            reset_at: "2026-09-16T05:00:00.000Z", observed_at: "2026-09-09T04:59:55.000Z",
+            state: "AVAILABLE", freshness: "fresh", remaining_percent: 13,
+            reset_at: "2026-09-11T22:35:05.998Z", observed_at: "2026-09-09T04:59:55.000Z",
             collector_id: "openclaw_usage_live", collector_label: "OpenClaw usage (read-only CLI) / canonical quota state", collector_detail: "OpenClaw / Z.AI usage",
             windows: [
-              { window_type: "rolling", label: "Tokens (5h)", remaining_percent: 98, reset_at: "2026-09-09T06:00:00.000Z" },
-              { window_type: "monthly", label: "Monthly", remaining_percent: 100, reset_at: "2026-09-16T05:00:00.000Z" },
+              { window_type: "rolling", label: "Tokens (5h)", remaining_percent: 40, reset_at: "2026-09-09T06:00:00.000Z" },
+              { window_type: "weekly", label: "Tokens (Limit)", remaining_percent: 13, reset_at: "2026-09-11T22:35:05.998Z" },
             ],
-            unmapped_windows: [{ label: "Tokens (Limit)", recognized_limit_window: true, remaining_percent: 24 }],
+            auxiliary_windows: [{ kind: "mcp", label: "MCP", remaining_percent: 100, reset_at: "2026-10-04T22:35:05.999Z" }],
+            unmapped_windows: [],
           },
           chatgpt_codex_subscription: {
             quota_pool_id: "chatgpt_codex_subscription",
-            state: "AVAILABLE", freshness: "fresh", remaining_percent: 100,
-            reset_at: "2026-09-09T08:16:18.000Z", observed_at: "2026-09-09T04:59:55.000Z",
+            state: "AVAILABLE", freshness: "fresh", remaining_percent: 84,
+            reset_at: "2026-09-16T08:09:21.000Z", observed_at: "2026-09-09T04:59:55.000Z",
             plan: "plus",
             collector_id: "openclaw_usage_live", collector_label: "OpenClaw usage (read-only CLI) / canonical quota state", collector_detail: "OpenClaw / OpenAI Codex usage",
             windows: [
@@ -2529,19 +2537,23 @@ await test("S60 #73 dashboard renders live GLM/Codex windows, plan metadata, Ope
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = dashboardText(dashboard);
-  assert.match(out, /5h: 98 % residuo/);
-  assert.match(out, /Mensile: 100 % residuo/);
+  assert.match(out, /Residuo effettivo 13 %/);
+  assert.match(out, /5h: 40 % residuo/);
+  assert.match(out, /Settimanale: 13 % residuo/);
+  assert.match(out, /MCP: 100 % residuo/);
+  assert.match(out, /Residuo effettivo 84 %/);
+  assert.match(out, /5h: 100 % residuo/);
   assert.match(out, /Settimanale: 84 % residuo/);
   assert.match(out, /Piano: plus/i);
   assert.match(out, /OpenClaw \/ Z\.AI usage/);
   assert.match(out, /OpenClaw \/ OpenAI Codex usage/);
   assert.match(out, /Pool unico: glm_coding_plan/);
   assert.match(out, /glm-5\.3, glm-5\.3-flash/);
-  // GLM card never shows a fake weekly window (Tokens (Limit) stays unmapped):
+  // GLM card shows weekly (Tokens Limit mapped); MCP is aux, not Mensile:
   const glmCard = out.split(/Pool unico: glm_coding_plan/)[1]?.split(/Codex/)[0] || "";
-  assert.doesNotMatch(glmCard, /Settimanale/);
-  // No used-percent-as-remaining inversion: Codex 5h used 0 → 100% residuo shown
-  assert.match(out, /Residuo 100 %/);
+  assert.match(glmCard, /Settimanale/);
+  assert.match(glmCard, /MCP:/);
+  assert.doesNotMatch(glmCard, /Mensile:/);
   assert.doesNotMatch(out, /\$0\.00/);
   assert.doesNotMatch(out, /\[object Object\]/);
 });

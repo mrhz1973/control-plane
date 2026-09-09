@@ -111,8 +111,8 @@
       qwen_task_not_inference:'Task in corso oltre OpenCode: Qwen non è in inferenza in questa fase.',
       qwen_usage_mismatch:'Il profilo del ciclo non coincide esattamente con un modello caricato osservato.',
       vps_new:'Osservazione privata del NEW VPS, se il trasporto è disponibile.',
-      glm_pool:'Pool condiviso glm_coding_plan (glm-5.3 e flash). Finestre live da OpenClaw quando fresche; "Tokens (Limit)" resta diagnostica non mappata.',
-      codex_pool:'Pool chatgpt_codex_subscription: 5h e settimana da OpenClaw quando fresche; piano solo metadato, mai economia.',
+      glm_pool:'Pool condiviso glm_coding_plan (glm-5.3 e flash). Residuo effettivo = MIN delle finestre modello vincolanti (5h + settimanale). MCP è ausiliario e non influenza la capacità modello.',
+      codex_pool:'Pool chatgpt_codex_subscription. Residuo effettivo = MIN di 5h e settimana; una finestra a zero esaurisce il pool.',
       cursor_allowance:'Allowance Cursor non qualificata: mapping contabile non verificato.',
       chatgpt_web:'Dominio di disponibilità separato; non è un pool di quota.',
       collector:'Chi produce questa osservazione (fonte/collector).',
@@ -185,8 +185,8 @@
         const t=toneState(state);
         return `<article class="obs-card"><div class="obs-top"><h3>${escapeHtml(title)} ${help(tipKey)}</h3><span class="obs-dot ${t}" title="${escapeHtml(state)}"></span></div><div class="obs-main ${t}">${escapeHtml(main)}</div>${list(lines).filter(line=>line!==null&&line!==undefined&&line!=='').map(line=>`<p class="obs-line">${escapeHtml(line)}</p>`).join('')}<p class="obs-source">Fonte / Collector: ${escapeHtml(source)} ${help('collector')}</p></article>`;
       };
-      // Finestre quota live (OpenClaw): rolling=5h, weekly=solo se provata,
-      // monthly=se fornita dalla fonte; finestre non mappate restano diagnostico.
+      // Finestre quota live (OpenClaw): rolling=5h, weekly=binding,
+      // auxiliary (MCP) is diagnostic non-routing; never inflate headline.
       const WINDOW_LABELS_IT=Object.freeze({rolling:'5h',weekly:'Settimanale',monthly:'Mensile'});
       const quotaWindowLines=(pool,weeklyLabel)=>{
         const out=[];
@@ -196,8 +196,14 @@
           else if(key==='weekly'&&weeklyLabel)out.push(`${weeklyLabel}: ${pct(w.remaining_percent)} residuo`);
           else if(key==='monthly')out.push(`${WINDOW_LABELS_IT.monthly}: ${pct(w.remaining_percent)} residuo`);
         }
-        return out.filter((v,i,a)=>a.indexOf(v)===i).slice(0,4);
+        for(const a of list(pool.auxiliary_windows)){
+          const kind=text(a.kind,'').toLowerCase();
+          const label=kind==='mcp'?'MCP':(text(a.label,'Ausiliario'));
+          out.push(`${label}: ${pct(a.remaining_percent)} residuo`);
+        }
+        return out.filter((v,i,a)=>a.indexOf(v)===i).slice(0,6);
       };
+      const effectiveMain=(pool)=>pool.remaining_percent==null?text(pool.state,'UNKNOWN'):`Residuo effettivo ${pct(pool.remaining_percent)}`;
       if(!r.schema_version){
         put('resources-cards',`<p class="empty">Osservatorio risorse non ancora disponibile da questo servizio.</p>`);
         return;
@@ -215,18 +221,18 @@
           `n8n: ${text(v.n8n,'—')} · docker: ${text(v.docker,'—')} · postgres: ${text(v.postgresql,'—')}`,
           `Osservato: ${date(v.observed_at)} · cache: ${yn(v.cache_hit)} · ${text(v.freshness,'stale')}`,
         ],v.collector_label||'dispatcher private read-only remote probe'),
-        card('GLM','glm_pool',glm.freshness==='stale'?'STALE':glm.state,glm.remaining_percent==null?text(glm.state,'UNKNOWN'):`Residuo ${pct(glm.remaining_percent)}`,[
+        card('GLM','glm_pool',glm.freshness==='stale'?'STALE':glm.state,effectiveMain(glm),[
           `Pool unico: glm_coding_plan`,
           `Consumatori: ${(list(glm.consumers).join(', ')||'glm-5.3, glm-5.3-flash')}`,
           ...quotaWindowLines(glm,'Settimanale'),
-          `Freschezza: ${text(glm.freshness,'stale')} · reset: ${date(glm.reset_at)}`,
+          `Freschezza: ${text(glm.freshness,'stale')} · reset (vincolante): ${date(glm.reset_at)}`,
           `Osservato: ${date(glm.observed_at)} · Fonte: ${text(glm.collector_detail||'rt25 quota ingest','—')}`,
           `Valutazione: ${text(glm.evaluation,'—')}`,
         ],glm.collector_label||'rt25 quota ingest / canonical quota state'),
-        card('Codex','codex_pool',codex.freshness==='stale'?'STALE':codex.state,codex.remaining_percent==null?text(codex.state,'UNKNOWN'):`Residuo ${pct(codex.remaining_percent)}`,[
+        card('Codex','codex_pool',codex.freshness==='stale'?'STALE':codex.state,effectiveMain(codex),[
           `Pool: chatgpt_codex_subscription`,
           ...quotaWindowLines(codex,'Settimanale'),
-          `Freschezza: ${text(codex.freshness,'stale')} · reset: ${date(codex.reset_at)}`,
+          `Freschezza: ${text(codex.freshness,'stale')} · reset (vincolante): ${date(codex.reset_at)}`,
           codex.plan?`Piano: ${text(codex.plan,'—')} (metadato)`:null,
           `Osservato: ${date(codex.observed_at)} · Fonte: ${text(codex.collector_detail||'rt25 quota ingest','—')}`,
           `Valutazione: ${text(codex.evaluation,'—')}`,
