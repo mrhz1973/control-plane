@@ -208,6 +208,20 @@
       const aria=`${labelText}: ${display}, ${cls.label}`;
       return `<div class="hbar" role="img" aria-label="${escapeHtml(aria)}"><span class="hbar-label">${escapeHtml(labelText)}</span><div class="hbar-track"><div class="hbar-fill ${cls.tone}" style="width:${width}%"></div></div><span class="hbar-val ${cls.tone}">${escapeHtml(display)}</span><span class="hbar-status ${cls.tone}">${escapeHtml(cls.label)}</span></div>`;
     }
+    /** Observatory system_disk_percent is USED %; derive FREE % for disk_free bars. */
+    function deriveDiskFreePercent(workstation){
+      const w=obj(workstation);
+      const freeBytes=number(w.system_disk_free_bytes);
+      const totalBytes=number(w.system_disk_total_bytes);
+      if(freeBytes!==null&&totalBytes!==null&&totalBytes>0){
+        const pct=(freeBytes/totalBytes)*100;
+        return Number.isFinite(pct)?Math.max(0,Math.min(100,pct)):null;
+      }
+      const usedPct=number(w.system_disk_percent);
+      if(usedPct===null)return null;
+      const freePct=100-usedPct;
+      return Number.isFinite(freePct)?Math.max(0,Math.min(100,freePct)):null;
+    }
 
     function storageGet(key){
       try{const ls=typeof localStorage!=='undefined'?localStorage:null;if(!ls)return null;return ls.getItem(key);}catch{return null;}
@@ -342,6 +356,8 @@
         return;
       }
       const wsStale=staleFlag(w.freshness)||staleFlag(gpu.freshness);
+      const diskFreePct=deriveDiskFreePercent(w);
+      const diskUsedPct=number(w.system_disk_percent);
       const macchina=`<div class="obs-block"><h3>Macchina locale ${help('workstation')}</h3>
         <p class="obs-sub">Stato: ${escapeHtml(text(w.state||gpu.state,'UNKNOWN'))} · freschezza: ${escapeHtml(text(w.freshness,'unknown'))}</p>
         ${healthBar('CPU','util',w.cpu_percent,{stale:wsStale,freshness:w.freshness})}
@@ -349,12 +365,12 @@
         ${healthBar('GPU','util',gpu.gpu_util_percent,{stale:wsStale||staleFlag(gpu.freshness),freshness:gpu.freshness||w.freshness})}
         ${healthBar('VRAM','vram',vramPct(),{stale:wsStale||staleFlag(gpu.freshness),freshness:gpu.freshness||w.freshness})}
         ${healthBar('Temp GPU','temp_c',gpu.temperature_c,{stale:wsStale||staleFlag(gpu.freshness),freshness:gpu.freshness||w.freshness,unit:'°C'})}
-        ${number(w.system_disk_percent)!==null?healthBar('Disco libero','disk_free',w.system_disk_percent,{stale:wsStale,freshness:w.freshness}):`<div class="hbar" role="img" aria-label="Disco libero: non disponibile"><span class="hbar-label">Disco libero</span><div class="hbar-track"><div class="hbar-fill neutral" style="width:0%"></div></div><span class="hbar-val neutral">—</span><span class="hbar-status neutral">SCONOSCIUTO</span></div>`}
+        ${healthBar('Disco libero','disk_free',diskFreePct,{stale:wsStale||diskFreePct===null,freshness:w.freshness,unknown:diskFreePct===null})}
         <details class="technical" id="macchina-tech"><summary>Dettagli secondari macchina</summary>
           <p class="quota-meta">CPU logici: ${escapeHtml(count(w.logical_cpu_count))}</p>
           <p class="quota-meta">GPU: ${escapeHtml(text(gpu.gpu_name,text(gpu.state,'UNKNOWN')))}${gpu.reason_code?` · ${escapeHtml(text(gpu.reason_code))}`:''}</p>
           <p class="quota-meta">VRAM: ${number(gpu.vram_used_mb)===null?'—':`${escapeHtml(count(gpu.vram_used_mb))} / ${escapeHtml(count(gpu.vram_total_mb))} MB`}</p>
-          <p class="quota-meta">Disco: ${escapeHtml(bytes(w.system_disk_free_bytes))} liberi</p>
+          <p class="quota-meta">Disco libero: ${escapeHtml(diskFreePct===null?'Non disponibile':pct(diskFreePct))} · usati (system_disk_percent): ${escapeHtml(diskUsedPct===null?'Non disponibile':pct(diskUsedPct))} · ${escapeHtml(bytes(w.system_disk_free_bytes))} liberi</p>
           <p class="quota-meta">Osservato: ${escapeHtml(date(w.observed_at))} · GPU: ${escapeHtml(date(gpu.observed_at))}</p>
         </details>
         <p class="obs-source">Fonte / Collector: ${escapeHtml(w.collector_label||'Node.js dispatcher / Windows OS')} · ${escapeHtml(gpu.collector_label||'nvidia-smi')} ${help('collector')}</p>

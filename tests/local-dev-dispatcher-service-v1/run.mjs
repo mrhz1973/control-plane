@@ -2836,5 +2836,71 @@ await test("S71 D-9408-A dashboard compact health: qwen no fake 100%; cursor no 
   assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["candidate", "resources", "workspace"]));
 });
 
+await test("S72 D-9408-B disk free derived from used percent and free/total bytes", async () => {
+  const dashboard = await dashboardHarness({ status: { active: false }, diag: { queue: {}, qwen: {} } });
+  const used10 = dashboard.evaluate("deriveDiskFreePercent({ system_disk_percent: 10 })");
+  const used90 = dashboard.evaluate("deriveDiskFreePercent({ system_disk_percent: 90 })");
+  const used97 = dashboard.evaluate("deriveDiskFreePercent({ system_disk_percent: 97 })");
+  assert.equal(used10, 90);
+  assert.equal(used90, 10);
+  assert.equal(used97, 3);
+  assert.equal(dashboard.evaluate("classifyHealthBar('disk_free', deriveDiskFreePercent({ system_disk_percent: 10 })).tone"), "ok");
+  assert.equal(dashboard.evaluate("classifyHealthBar('disk_free', deriveDiskFreePercent({ system_disk_percent: 90 })).tone"), "caution");
+  assert.equal(dashboard.evaluate("classifyHealthBar('disk_free', deriveDiskFreePercent({ system_disk_percent: 97 })).tone"), "danger");
+  const fromBytes = dashboard.evaluate("deriveDiskFreePercent({ system_disk_free_bytes: 25, system_disk_total_bytes: 100, system_disk_percent: 99 })");
+  assert.equal(fromBytes, 25);
+  assert.equal(dashboard.evaluate("deriveDiskFreePercent({})"), null);
+  assert.equal(dashboard.evaluate("deriveDiskFreePercent({ system_disk_free_bytes: 10 })"), null);
+  assert.equal(dashboard.evaluate("classifyHealthBar('disk_free', deriveDiskFreePercent({}), { unknown: true }).tone"), "neutral");
+
+  async function renderDisk(workstation) {
+    dashboard.setScenario({
+      status: { active: false },
+      diag: { queue: { eligible_count: 0 }, qwen: {} },
+      resources: {
+        schema_version: RESOURCES_SCHEMA,
+        workstation: { state: "AVAILABLE", freshness: "fresh", collector_label: "ws", ...workstation },
+        qwen: { occupancy: "IDLE", capacity_label: "Capacità locale — nessuna quota commerciale", commercial_quota: "N/A" },
+        vps_new: { state: "UNAVAILABLE" },
+        quotas: { pools: {} },
+        chatgpt_web: { state: "UNKNOWN", unlimited: false, free: false },
+      },
+    });
+    dashboard.htmlWrites.length = 0;
+    await dashboard.evaluate("refresh()");
+    await dashboard.settle();
+    return dashboardText(dashboard);
+  }
+
+  const greenOut = await renderDisk({ system_disk_percent: 10 });
+  assert.match(greenOut, /aria-label="Disco libero: 90(?:[.,]0)? %/);
+  assert.match(greenOut, /hbar-label">Disco libero<\/span>[\s\S]{0,160}hbar-fill ok/);
+  assert.match(greenOut, /usati \(system_disk_percent\):\s*10(?:[.,]0)?\s*%/);
+  assert.doesNotMatch(greenOut, /aria-label="Disco libero: 10(?:[.,]0)? %/);
+
+  const orangeOut = await renderDisk({ system_disk_percent: 90 });
+  assert.match(orangeOut, /aria-label="Disco libero: 10(?:[.,]0)? %/);
+  assert.match(orangeOut, /hbar-label">Disco libero<\/span>[\s\S]{0,160}hbar-fill caution/);
+  assert.match(orangeOut, /usati \(system_disk_percent\):\s*90(?:[.,]0)?\s*%/);
+
+  const redOut = await renderDisk({ system_disk_percent: 97 });
+  assert.match(redOut, /aria-label="Disco libero: 3(?:[.,]0)? %/);
+  assert.match(redOut, /hbar-label">Disco libero<\/span>[\s\S]{0,160}hbar-fill danger/);
+
+  const bytesOut = await renderDisk({
+    system_disk_free_bytes: 40_000_000_000,
+    system_disk_total_bytes: 100_000_000_000,
+    system_disk_percent: 99,
+  });
+  assert.match(bytesOut, /aria-label="Disco libero: 40(?:[.,]0)? %/);
+  assert.match(bytesOut, /hbar-label">Disco libero<\/span>[\s\S]{0,160}hbar-fill ok/);
+  assert.doesNotMatch(bytesOut, /aria-label="Disco libero: 99(?:[.,]0)? %/);
+
+  const missingOut = await renderDisk({ ram_percent: 20 });
+  assert.match(missingOut, /aria-label="Disco libero: —, SCONOSCIUTO"/);
+  assert.match(missingOut, /hbar-label">Disco libero<\/span>[\s\S]{0,160}hbar-fill neutral/);
+  assert.doesNotMatch(missingOut, /hbar-label">Disco libero<\/span>[\s\S]{0,160}hbar-fill ok/);
+});
+
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 if (failures.length) process.exit(1);
