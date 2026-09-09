@@ -2,744 +2,390 @@
 
 **Repository:** `mrhz1973/control-plane`
 **Documento:** `docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md`
-**Stato:** `ACCEPTED_TARGET_DESIGN — PLANNING/DOCS ONLY`
-**Decisione operatore:** 2026-08-25 — proposta accettata direttamente dall'operatore
-**Runtime autorizzato da questo documento:** **NO**
+**Stato:** `FOUNDATION OPERATING MODEL — ALIGNED TO QUALIFIED RUNTIME + OPERATOR DECISIONS`
+**Runtime autorizzato da questo documento:** **NO** (docs only; non attiva routing/policy)
 **PM-34 / L5 / permanent schedule:** **INVARIATI E NON AUTORIZZATI**
 
----
-
-## 0. Scopo
-
-Questo documento registra la nuova modalità di lavoro accettata per l'evoluzione del `control-plane`.
-
-La modifica centrale rispetto alla foundation precedente è la separazione netta tra:
-
-1. **orchestrazione strategica del progetto**;
-2. **generazione del prompt operativo / Execution Packet**;
-3. **broker dei provider e delle quote**;
-4. **esecuzione agentica in loop**;
-5. **review e gate umano**;
-6. **memoria persistente e rollover delle finestre di contesto**.
-
-Questo documento descrive la **direzione architetturale accettata**. Non abilita worker, schedule, endurance runtime, PM-34, L5, workflow n8n nuovi o modifiche runtime.
-
 Lo stato runtime autorevole resta `docs/runtime/CURRENT_FRONTIER.md`.
+Questo file non lo aggiorna.
 
 ---
 
-## 1. Principio guida
+## 0. Scopo e classificazione
 
-Il sistema non deve concentrare tutto il lavoro in un solo abbonamento/modello.
+Questo documento allinea il modello operativo foundation con:
 
-**Default operating unit:** `MICRO_TASK_DELTA` (authoritative:
-`docs/foundation/MICRO_TASK_DELTA_OPERATING_LAW.md`). Broad regression and
-BugBot/cross-component review occur only at an explicit `CHECKPOINT_DELTA`.
-Long single-session megaprompt campaigns are exceptional and require
-`HUMAN_AUTHORIZED_CAMPAIGN_EXCEPTION`.
+1. componenti **LIVE / QUALIFIED** già provati nel repo/runtime;
+2. decisioni operatore già raccolte in Notion (**TARGET / DECIDED BUT NOT ACTIVE** dove indicato);
+3. percorsi **HISTORICAL / EXPERIMENTAL**;
+4. superfici **GATED / NOT AUTHORIZED**.
 
-Deve invece usare in modo coordinato i panieri già disponibili:
+| Etichetta | Significato |
+|-----------|-------------|
+| **LIVE / QUALIFIED** | Provato nel runtime o campagna di qualificazione; non implica policy di routing attiva |
+| **TARGET / DECIDED BUT NOT ACTIVE** | Decisione operatore registrata; **non** runtime-active |
+| **HISTORICAL / EXPERIMENTAL** | Provato abbastanza da esistere come evidenza; **non** qualificato come route live |
+| **GATED / NOT AUTHORIZED** | Dietro gate esistente; non attivabile da questo documento |
 
-- ChatGPT Web Plus per orchestrazione strategica e backlog;
-- Codex autenticato via ChatGPT/OAuth per planning/reasoning quando scelto;
-- GLM 5.3 via API/piano già disponibile per planning e, dove supportato, implementazione dentro Cursor;
-- Qwen 3.8 37B locale come planner/orchestratore gratuito quando il task lo giustifica;
-- modelli Cursor per implementazione e subagent quando economicamente/concretamente opportuno;
-- Bugbot per review, non per routing.
+**Default operating unit:** `MICRO_TASK_DELTA` (authoritative: `docs/foundation/MICRO_TASK_DELTA_OPERATING_LAW.md`).
 
-Obiettivo economico: **massimizzare il lavoro mensile usando più pool indipendenti, senza bruciare inutilmente il pool Cursor o il pool Codex**.
-
----
-
-## 2. Architettura target accettata
+Catena canonica del lavoro:
 
 ```text
-                        OPERATORE
-                           │
-                           ▼
-                    GPT WEB PLUS
-              STRATEGIC ORCHESTRATOR
-                           │
-               crea/aggiorna backlog
-                           │
-                           ▼
-                        GitHub
-                  SOURCE OF TRUTH
-                           │
-                           ▼
-                          n8n
-               WORKFLOW / POLICY / GATES
-                           │
-                           ▼
-                       OpenClaw
-              PROVIDER / AUTH / QUOTA BROKER
-                           │
-             ┌─────────────┼─────────────┐
-             │             │             │
-             ▼             ▼             ▼
-      Qwen 3.8 37B      GLM 5.3        Codex
-         locale          API/piano       OAuth
-             │             │             │
-             └─────────────┼─────────────┘
-                           │
-                 PLANNER SELEZIONATO
-                           │
-                           ▼
-                   EXECUTION PACKET
-                           │
-                           ▼
-                      n8n POLICY
-                    /            \
-             AUTO-ELIGIBLE       GATE
-                  │               │
-                  │            Telegram
-                  ▼               │
-             ╔══════════╗         │
-             ║  CURSOR  ║◄────────┘ after approval
-             ║ EXECUTION║
-             ║   LOOP   ║
-             ╚════╤═════╝
-                  │
-        ┌─────────┼─────────┐
-        │         │         │
-    Cursor      GLM       advisor tools
-    models      BYOK      Codex / Qwen
-        │         │         │
-        └─────────┼─────────┘
-                  │
-               tests
-                  │
-                  ▼
-               Bugbot
-                  │
-            ┌─────┴─────┐
-            │           │
-          PASS         ISSUE
-            │           │
-            ▼           └──► Cursor bounded loop
-          GitHub
-```
-
----
-
-## 3. Ruoli canonici
-
-### 3.1 GPT Web — strategic orchestrator
-
-GPT Web resta l'orchestratore human-facing e strategico del progetto.
-
-Responsabilità:
-
-- leggere il repository vivo prima di ricostruire lo stato dalla memoria chat;
-- mantenere la direzione generale;
-- creare e prioritizzare il backlog su GitHub;
-- definire objective, scope, rischio, acceptance criteria e preferenza planner;
-- preparare Decision Packet quando serve una vera decisione umana;
-- governare la documentazione foundation e l'authoring n8n secondo le invarianti esistenti;
-- non essere obbligato a produrre ogni dettaglio del prompt Cursor.
-
-GPT Web produce principalmente un **Backlog Item**. Il prompt operativo dettagliato destinato a Cursor viene generato dal planner scelto.
-
-### 3.2 GitHub — source of truth
-
-GitHub conserva:
-
-- backlog;
-- decisioni;
-- stato;
-- Execution Packet;
-- checkpoint di esecuzione;
-- risultati;
-- evidenza Git/test/review;
-- handoff e context rollover.
-
-Nessun agente deve dipendere esclusivamente dalla memoria della propria chat/sessione.
-
-### 3.3 n8n — workflow engine e policy gate
-
-n8n:
-
-- osserva eventi;
-- legge backlog/stato;
-- applica regole deterministiche;
-- invoca il provider broker;
-- decide se un packet è auto-eligible o deve andare a Telegram;
-- persiste stato operativo;
-- non diventa LLM planner.
-
-La decisione finale `CURSOR_LOOP` vs `TELEGRAM_GATE` deve essere deterministica/policy-driven. Il planner può raccomandare il rischio, ma non può auto-autorizzare operazioni che richiedono gate.
-
-### 3.4 OpenClaw — provider/auth/quota broker
-
-OpenClaw non è il strategic orchestrator e non è il coding executor.
-
-Ruolo target:
-
-- autenticazione/provider adapter;
-- accesso Codex OAuth quando supportato;
-- accesso GLM/Z.AI;
-- accesso a modello locale quando configurato;
-- osservazione disponibilità/rate-limit/quota quando esposta dal provider;
-- failover tecnico autorizzato dalla policy;
-- endpoint/tool comune verso i planner/advisor.
-
-OpenClaw **non deve inventare silenziosamente la strategia del progetto**.
-
-### 3.5 Planner pool — Codex / GLM / Qwen
-
-I tre planner/orchestratori tattici trasformano un Backlog Item in un **Execution Packet**.
-
-#### Codex
-
-Uso preferito:
-
-- task complessi;
-- debugging difficile;
-- architettura;
-- reasoning di alto valore;
-- secondo parere senior.
-
-L'accesso target resta subscription/OAuth quando tecnicamente disponibile e verificato, non OpenAI API billing di default.
-
-#### GLM 5.3
-
-Uso preferito:
-
-- planning ordinario/medio;
-- overflow Codex;
-- review/second opinion;
-- implementazione dentro Cursor via BYOK/API già disponibile, quando compatibile con l'harness Cursor.
-
-#### Qwen 3.8 37B locale
-
-Uso preferito:
-
-- planner gratuito locale;
-- task semplici o medi quando la qualità è sufficiente;
-- generazione Execution Packet;
-- eventuale advisor/reviewer mentre il modello è già caricato;
-- fallback quando gli altri pool devono essere preservati e il rischio consente l'uso locale.
-
-Qwen 3.8 37B **non viene tenuto obbligatoriamente residente 24/7**. Può essere caricato per il job e scaricato al termine per liberare RAM/VRAM.
-
-Non viene introdotto un secondo Qwen piccolo esclusivamente come router nella strada principale.
-
-### 3.6 Cursor — execution harness e loop
-
-Cursor diventa il **centro dell'esecuzione**, non il planner strategico.
-
-Riceve un Execution Packet già strutturato e usa:
-
-- Agent;
-- `/goal` / `/loop` o meccanismo equivalente disponibile nella versione installata;
-- subagent;
-- terminale;
-- filesystem;
-- test;
-- Git;
-- tool/MCP autorizzati;
-- GLM BYOK quando utile per scaricare consumo dai modelli Cursor.
-
-Cursor può usare modelli propri o GLM come motore di implementazione in base alla configurazione verificata.
-
-Codex OAuth non viene considerato selezionabile nativamente nel model picker Cursor finché questa capacità non viene verificata ufficialmente nel runtime reale. Codex può comunque essere esposto a Cursor come advisor/tool esterno tramite OpenClaw/CLI/MCP in una fase successiva.
-
-### 3.7 Bugbot — reviewer, non router
-
-Bugbot serve come quality gate:
-
-```text
-Cursor implementation
+Backlog Item
     ↓
-tests
-    ↓
-Bugbot review
-    ↓
-PASS → GitHub
-ISSUE → ritorno a Cursor
-```
-
-Default target:
-
-- review sì;
-- Autofix cloud **non** automatico;
-- massimo numero di review/fix round configurabile;
-- default proposto: `max_rounds = 3`;
-- se non converge → Telegram gate / escalation.
-
-Bugbot non seleziona Codex/GLM/Qwen.
-
-### 3.8 Telegram — human gate
-
-Telegram interviene solo per:
-
-- operazioni irreversibili/distruttive;
-- scope expansion;
-- produzione/deploy/runtime sensibile;
-- auth/credential/billing;
-- rischio alto;
-- planner non disponibile senza fallback equivalente;
-- confidence insufficiente;
-- review loop non convergente;
-- violazione di una policy.
-
----
-
-## 4. Dove nasce il task
-
-### 4.1 Backlog Item — scritto dall'orchestratore GPT Web
-
-Il Backlog Item è il contratto strategico. Non deve essere il prompt Cursor completo.
-
-Schema minimo target:
-
-```yaml
-id: D-NNNN-X
-title: <short title>
-repository: owner/repo
-objective: <desired outcome>
-scope:
-  allowed_areas: []
-  forbidden_areas: []
-risk_hint: low|medium|high
-complexity_hint: low|medium|high
-planner:
-  preferred: qwen|glm|codex
-  fallback: []
-  fallback_policy: normal|equivalent_or_gate|gate_only
-execution:
-  target: cursor
-  loop_allowed: true|false
-acceptance: []
-human_gate_required_if: []
-context_refs: []
-```
-
-GPT Web può assegnare `planner.preferred` già in fase di backlog. In questo modo non serve un modello separato dedicato esclusivamente al routing semantico.
-
-### 4.2 Planner selection
-
-La selezione usa due sorgenti:
-
-1. **semantic preference** dal backlog (`planner.preferred`);
-2. **availability/quota policy** da OpenClaw/provider state.
-
-Esempio deterministico:
-
-```text
-preferred = Codex
-Codex available e quota sopra soglia? → Codex
-no → fallback equivalente GLM se consentito
-no → Qwen se rischio/policy consentono
-no → Telegram gate
-```
-
-Per high-risk:
-
-```text
-preferred unavailable
-→ NO silent degradation
-→ equivalent planner oppure Telegram
-```
-
-### 4.3 Execution Packet — scritto dal planner
-
-Il planner selezionato produce il vero task esecutivo per Cursor.
-
-Schema minimo:
-
-```yaml
-task_id: D-NNNN-X
-planner_used: codex|glm|qwen
-executor: cursor
-goal: <single bounded goal>
-preflight: []
-allowed_paths: []
-forbidden_paths: []
-steps: []
-validation: []
-acceptance: []
-loop:
-  enabled: true|false
-  stop_when: []
-  max_rounds: <bounded>
-risk_assessment:
-  level: low|medium|high
-  reasons: []
-gate_recommendation:
-  required: true|false
-  reason: <text>
-context_checkpoint_policy: required
-final_report_contract: <reference to canonical Cursor report rules>
-```
-
-L'Execution Packet viene persistito su GitHub o in un artefatto GitHub-referenziato prima dell'esecuzione automatica, così è recuperabile da una nuova sessione.
-
----
-
-## 5. Gate dopo il planner
-
-Il planner **non auto-autorizza** il proprio packet.
-
-n8n applica policy deterministica.
-
-Esempio:
-
-```text
-risk == high                         → TELEGRAM
-scope_expansion == true              → TELEGRAM
-destructive == true                  → TELEGRAM
-production/runtime sensitive == true → TELEGRAM
-credentials/billing == true          → TELEGRAM
-confidence below threshold           → TELEGRAM
-policy violation                     → TELEGRAM
-otherwise                            → CURSOR
-```
-
-Le policy hard hanno precedenza sul giudizio del modello.
-
----
-
-## 6. Cursor execution loop
-
-Il loop Cursor è **task-bounded**, non un'autonomia generale sul progetto.
-
-Pattern:
-
-```text
 Execution Packet
-      ↓
-Cursor preflight
-      ↓
-/goal = acceptance criteria
-      ↓
-implement
-      ↓
-test
-   ┌──┴──┐
- FAIL   PASS
-  │       │
- fix      ▼
-  └──── Bugbot/review
-          │
-       ┌──┴──┐
-      ISSUE  PASS
-       │      │
-       └────► loop
-              │
-             DONE
+    ↓
+Execution Result
 ```
 
-Il loop deve avere almeno:
+Unità di lavoro piccola e bounded: **`MICRO_TASK_DELTA`**.
 
-- scope delimitato;
-- stop condition esplicita;
-- limite di round o altra protezione da loop infinito;
-- escalation su scope drift;
-- checkpoint persistente;
-- nessuna operazione high-risk implicita.
+Non esiste un componente architetturale separato chiamato “Prompt Executor”.
 
 ---
 
-## 7. Uso dei modelli dentro Cursor
+## 1. Mappa componenti concreta (“chi lo fa davvero”)
 
-### 7.1 GLM inside Cursor
+Per ogni stadio principale: funzione, componente reale, programma/servizio, dove gira, modello/harness, autorità, stato attuale.
 
-Poiché GLM 5.3 è già disponibile tramite API/BYOK nell'ambiente Cursor dell'operatore, il target è verificare e sfruttare:
+| FUNCTION | REAL COMPONENT | PROGRAM / SERVICE | WHERE IT RUNS | MODEL / HARNESS | AUTHORITY | CURRENT STATUS |
+|----------|----------------|-------------------|---------------|-----------------|-----------|----------------|
+| STRATEGIC ORCHESTRATOR / BACKLOG OWNER | ChatGPT Web (GPT Web Plus) + operatore | ChatGPT Web session / human | Browser / operatore | ChatGPT Web (cognitive; **SEPARATE_AVAILABILITY_DOMAIN**) | Operatore + GitHub SoT | **LIVE** (human-facing); non scheduler automatico |
+| BACKLOG ITEM | GitHub issue / backlog markdown / queue item | GitHub + `reports/runtime/dev-queue/` | GitHub + workstation repo | n/a (artifact) | GitHub = source of truth | **LIVE** |
+| BACKLOG SELECTOR | `tools/select-local-dev-queue-item-v1.mjs` | LOCAL_DEV queue selector | Workstation (Node) | deterministic (no LLM) | Selector + receipts ledger | **LIVE / QUALIFIED** (LOCAL_DEV lane) |
+| RESOURCE + QUOTA + AVAILABILITY STATE | `tools/local-dev-resource-observatory-v1.mjs` + `tools/rt25-canonical-quota-state-v1.mjs` + quota translators | Dispatcher `GET /v1/resources` + dashboard; canonical quota compose | Workstation dispatcher `127.0.0.1:18793` | collectors + ingest evidence | Deterministic compose; UNKNOWN/STALE valid | **LIVE** observatory UI; quota freshness observation-dependent |
+| ADMISSION GATE | `tools/admit-micro-task-delta-v1.mjs` (+ dispatcher hygiene / Qwen preflight) | LOCAL_DEV dispatcher tick path | Workstation | LLM may recommend; **final authority deterministic** | Fail-closed admission | **LIVE** (LOCAL_DEV); broader production gates separately gated |
+| PLANNER / PACKET BUILDER | Planner pool: Qwen local / GLM / Codex (surface-dependent) | Planner tools + Execution Packet artifacts | Workstation / IDE / provider surface | profile IDs / provider models (dynamic) | Packet persisted before auto-exec | **QUALIFIED** paths vary; see §5–§7 |
+| EXECUTION PACKET | Envelope / packet artifact (e.g. backlog-envelope bridge, dispatch envelope) | `tests`/`tools` bridge + queue envelopes | Repo filesystem + GitHub-referenced | n/a (artifact) | Must exist before execution | **LIVE** (LOCAL_DEV envelope path) |
+| EXECUTION ROUTER | `tools/n8n-v4-execution-routing-bridge-v1.mjs` + n8n V4 seams | n8n + Node bridge | VPS n8n + local tools | does **not** execute by itself | Deterministic route decision | **LIVE** structural; live production promotion **GATED** |
+| IMPLEMENTER | OpenCode (canonical Qwen path) **or** Cursor harness classes | OpenCode CLI / Cursor Agent | Workstation filesystem/terminal/tests/Git | See §5–§6 (harness ≠ model) | Bound by packet + admission | **QWEN→OpenCode QUALIFIED** (D-9405); Cursor classes proven variously |
+| DETERMINISTIC TESTS | Existing Node suites / task `test_commands` | `node tests/.../run.mjs` | Workstation | n/a | Pass/fail evidence | **LIVE** |
+| REVIEW STAGE | Bugbot / review-stage boundary tools | Bugbot + `tools` review-stage helpers | Cursor/cloud review where configured | Bugbot = quality gate, **not** router | Prefer checkpoint / significant delta | **LIVE** capability; **not** mandatory every MICRO_TASK_DELTA |
+| RESULT GATE | Deterministic post-exec evaluation (tests, diff, review, provenance/quota) | n8n / dispatcher / policy tools | Workstation + VPS policy surfaces | Implementer **must not** self-certify | Outputs PASS / RETRY / HUMAN_GATE / SERVICE_ERROR / DEFER | **LIVE** concepts + LOCAL_DEV receipts; full auto result-gate **partially GATED** |
+| RETRY ROUTER | Formal branch after repairable STOP | retry-stage boundary + policy | Same authority surfaces | Bounded re-attempt / re-route | Behind existing authorization gates | **TARGET / GATED** auto-retry unless separately proven |
+| HUMAN GATE | Telegram decision path | `tools/v4-runtime-authorization-issuance-v1.mjs` + Telegram bot | VPS/runtime auth service | human | Telegram = human gate only | **LIVE** issuance pattern; not every LOCAL_DEV tick |
+| NEXT BACKLOG ITEM | Selector + receipts after terminal outcome | `select-local-dev-queue-item-v1` + receipts.json | Workstation queue | deterministic | One claim per tick (LOCAL_DEV) | **LIVE** |
 
-- GLM come main Agent model;
-- GLM come custom subagent model, se supportato nella versione installata;
-- loop Cursor mantenuto dall'harness Cursor ma inferenza pagata/consumata sul pool GLM.
+### Superfici di autorità (non negoziabili)
 
-Questo è uno dei principali strumenti per aumentare autonomia senza esaurire rapidamente il pool Cursor.
+- **GitHub** — source of truth (backlog, decisioni, evidenza, handoff).
+- **Core deterministico** — selector, admission, quota compose, hygiene, receipts.
+- **n8n** — workflow engine / policy seams (non LLM planner).
+- **OpenClaw** — **non** è authority del Control Plane attuale; vedi §12 (`KEEP_STAGED_PENDING`).
 
-### 7.2 Cursor native models
+### Observatory operatore (visibilità risorse/quote)
 
-Restano disponibili per:
+- Dashboard: `http://127.0.0.1:18793/dashboard`
+- Resources: `GET http://127.0.0.1:18793/v1/resources`
+- Status / diagnostics: `GET /v1/status`, `GET /v1/diagnostics`
+- Servizio: Scheduled Task `ControlPlane-V4-LocalDevDispatcher` → `tools/serve-local-dev-autonomous-dispatcher-v1.mjs`
 
-- implementazione ordinaria;
-- subagent specializzati;
-- fallback;
-- task in cui l'integrazione nativa produce un vantaggio concreto.
+UNKNOWN / STALE / UNAVAILABLE sono osservazioni valide. Non inventare dati mancanti.
 
-### 7.3 Codex come advisor di Cursor
+---
 
-Target successivo, da verificare separatamente:
+## 2. Due gate distinti
+
+### 2.1 ADMISSION GATE — PRIMA dell’esecuzione
+
+**LIVE / QUALIFIED** come concetto e helper (`admit-micro-task-delta-v1` + preflight dispatcher).
+
+Controlla, tra gli altri:
+
+- HEAD / repo hygiene
+- scope
+- validità task / contratto backlog
+- disponibilità PC / workstation
+- readiness / occupancy Qwen (profile_id esatto dove applicabile)
+- finestra temporale (quando policy attiva — oggi spesso **TARGET**)
+- evidenza quota fresca
+- adeguatezza modello
+- rischio
+- autorizzazione
+
+L’LLM può raccomandare/classificare. **L’autorità finale resta deterministica.**
+
+### 2.2 RESULT GATE — DOPO l’esecuzione
+
+Consuma:
+
+- execution result
+- tests
+- Git diff
+- review (quando richiesta)
+- provenance / quota
+
+Output ammessi:
+
+- `PASS`
+- `RETRY`
+- `HUMAN_GATE`
+- `SERVICE_ERROR`
+- `DEFER`
+
+**L’implementer non auto-certifica l’acceptance.**
+
+---
+
+## 3. DEFER (plain Italian)
+
+**DEFER** = il task **non** è fallito e **non** è scartato.
+Resta **in sospeso** finché non diventa disponibile una route **permessa** e **adeguata**.
+
+Non confondere DEFER con STOP riparabile, HUMAN_GATE, o discard.
+
+---
+
+## 4. Quote e risorse (domini di accounting)
+
+| Dominio | Cosa è | Pool / accounting | Note |
+|---------|--------|-------------------|------|
+| **Qwen** | capacità di compute locale | **nessuna quota commerciale** | unmetered locale; subject to occupancy / adequacy |
+| **GLM-5.3** + **GLM-5.3-Flash** | modelli commerciali distinti | **UN solo pool** `glm_coding_plan` | non contare due quote separate |
+| **Codex** | superfici Codex (IDE extension / correlati) | `chatgpt_codex_subscription` | pool condiviso tra superfici Codex registrate |
+| **Cursor** | harness + eventuale allowance | mapping accounting **UNVERIFIED** salvo prova separata | non trattare allowance come verificata di default |
+| **ChatGPT Web** | dominio cognitivo / orchestrazione | **SEPARATE_AVAILABILITY_DOMAIN** | **non** illimitato e **non** “free” |
+
+Ogni diagramma di route deve rendere visibile il dominio quota/accounting applicabile.
+
+---
+
+## 5. Qwen
+
+### 5.1 Route canonica / qualificata — LIVE / QUALIFIED
 
 ```text
+Qwen locale
+    ↓
+OpenCode
+    ↓
+filesystem / terminal / tests / Git
+```
+
+- Campagna **D-9405-A/B/C**: **PASS / QUALIFIED**
+- **`QWEN_INDEPENDENT_QUALIFIED=YES`**
+- Usare **profile ID** di registry (es. profilo OpenCode 64k), **non** hardcodare un parameter-count/nome stale tipo “37B” come identità canonica.
+
+### 5.2 Route storica sperimentale — HISTORICAL / EXPERIMENTAL / NOT QUALIFIED
+
+```text
+Qwen
+    ↓
+Cline
+    ↓
 Cursor
-   ↓ tool/MCP/CLI
-OpenClaw
-   ↓
-Codex OAuth
-   ↓
-advice
-   ↓
-Cursor continua il loop
 ```
 
-Questa capacità non viene considerata attiva finché non esiste un test runtime dedicato e documentato.
+Evidenza operatore: **è stata provata** e ha dimostrato possibilità tecnica, ma **Cline non ha funzionato bene**.
 
-### 7.4 Qwen come advisor di Cursor
-
-Se Qwen 3.8 37B è già caricato per il planning, può essere riutilizzato durante lo stesso job come advisor/reviewer locale, senza introdurre un secondo modello locale in memoria.
+- Può essere valutata in futuro come **secondo harness Qwen**.
+- **NON** diventa route live solo perché documentata qui.
+- **Concurrency law:** un secondo harness Qwen può essere considerato solo quando lo **stesso** runtime/risorse Qwen locali **non** sono già occupati da un altro processo autorizzato (`docs/runtime/OPERATOR_CONSTRAINT_QWEN_SHARED_RUNTIME_CONCURRENCY.md`).
 
 ---
 
-## 8. Gestione finestra di contesto e nuove sessioni
+## 6. Cursor — EXECUTION HARNESS, non modello
 
-Questa sezione è parte essenziale dell'architettura, non un dettaglio UX.
+Cursor **non** è un LLM. È un **harness di esecuzione** (Agent, terminal, filesystem, tests, Git, tool/MCP).
 
-### 8.1 Principio
+Classi attualmente distinguibili:
 
-**La memoria del progetto vive su GitHub, non nella finestra di contesto di un modello.**
+| Classe | Stato tipico | Dominio quota |
+|--------|--------------|---------------|
+| Cursor native / Composer | proven as harness path | Cursor allowance **UNVERIFIED** unless proven |
+| GLM BYOK inside Cursor | proven where configured | `glm_coding_plan` |
+| Codex IDE extension | proven where registry surfaces say so | `chatgpt_codex_subscription` |
+| Future Qwen/Cline via Cursor | **HISTORICAL / EXPERIMENTAL** | Qwen local (no commercial quota) |
 
-Ogni attore deve poter essere sostituito da una nuova sessione senza perdere:
+---
 
-- task corrente;
-- decisioni;
-- HEAD;
-- scope;
-- acceptance criteria;
-- test già eseguiti;
-- findings;
-- next action;
-- gate aperti.
+## 7. PC ONLINE / OFFLINE
 
-### 8.2 GPT Web context rollover
-
-Restano valide le regole foundation esistenti:
-
-- `handoff ora` = kill switch manuale;
-- handoff periodico prima della degradazione del contesto;
-- limite storico di 20 prompt utente come hard bound salvo futura modifica esplicita;
-- nuova chat legge il repo vivo, non copie incollate.
-
-Target migliorato:
-
-- trattare 20 prompt come **limite massimo**, non come obiettivo da raggiungere;
-- produrre handoff prima se compaiono ripetizioni, perdita di vincoli, confusione di HEAD/repo o crescita eccessiva del contesto;
-- mantenere sempre margine sufficiente per scrivere un handoff completo.
-
-### 8.3 Planner sessions
-
-Codex / GLM / Qwen devono essere, per default, **ephemeral/task-oriented**.
-
-Ogni nuova planner session legge:
-
-1. Backlog Item;
-2. CURRENT_FRONTIER del repo target quando applicabile;
-3. documenti foundation/policy richiesti;
-4. repository state/diff pertinenti;
-5. ultimo Execution Packet/checkpoint se il task è già iniziato.
-
-Il planner non deve richiedere la cronologia completa delle planner session precedenti.
-
-### 8.4 Cursor context rollover
-
-Il loop Cursor deve poter sopravvivere alla fine della propria context window.
-
-Prima di chiudere/rollover una sessione Cursor ancora incompleta deve produrre un **Execution Checkpoint** persistente.
-
-Schema minimo:
-
-```yaml
-task_id: D-NNNN-X
-execution_packet_ref: <path/id>
-repository: owner/repo
-branch: <branch>
-head_observed: <sha>
-status: IN_PROGRESS|BLOCKED|READY_FOR_REVIEW
-completed_steps: []
-remaining_steps: []
-files_changed: []
-tests_run: []
-test_results: []
-open_findings: []
-loop_round: <n>
-next_action: <single concrete step>
-gates_open: []
-resume_read_set: []
-```
-
-Nuova sessione Cursor:
+### 7.1 PC ONLINE — implementazione
 
 ```text
-read Execution Packet
-+ read latest Execution Checkpoint
-+ verify Git HEAD/workspace
-+ continue from next_action
+Qwen → OpenCode → filesystem / tests / Git
 ```
 
-Non deve ricostruire il task dalla vecchia conversazione Cursor.
-
-### 8.5 Review rollover
-
-Bugbot/reviewer findings devono essere persistiti o riportati nel checkpoint prima di una nuova sessione.
-
-Una nuova sessione non deve rilanciare alla cieca tutti i test/review già chiusi, salvo motivo concreto.
-
-### 8.6 Handoff quality invariant
-
-Un handoff/checkpoint è valido solo se permette a una nuova sessione di rispondere senza chiedere all'utente:
-
-- "a che punto eravamo?";
-- "qual era il commit?";
-- "quale file dovevo modificare?";
-- "quali test erano passati?";
-- "qual era il prossimo passo?".
-
-Se una di queste domande è necessaria, il checkpoint è incompleto.
-
----
-
-## 9. Fallback e quote
-
-### 9.1 Principio
-
-Quota esaurita non deve equivalere a progetto bloccato, ma nemmeno a degradazione silenziosa di qualità.
-
-### 9.2 Policy proposta
-
-Low-risk:
+Quando serve lavoro cognitivo ChatGPT Web:
 
 ```text
-preferred → fallback 1 → fallback 2 → manual
+Qwen → Hermes → ChatGPT Web
 ```
 
-Medium-risk:
+(Shadow/qualification paths may still be separately gated; do not invent completion.)
+
+### 7.2 PC OFFLINE — target resilience — TARGET / DECIDED BUT NOT ACTIVE as full resilience story
 
 ```text
-preferred → equivalent fallback → Telegram/manual
+NEW VPS
+  ↓
+GLM-5.3-Flash
+  ↓
+Hermes
+  ↓
+ChatGPT Web
+  ↓
+planning / synthesis / review / Execution Packet
+  ↓
+GitHub
 ```
 
-High-risk:
+L’implementazione locale **attende** che una superficie di esecuzione autorizzata torni disponibile.
+
+**Non** implica che il VPS possa fare implementazione workstation-local.
+
+**Observability gap (live):** se NEW VPS osserva `VPS_PRIVATE_OBSERVATION_UNAVAILABLE`, quello è un gap di osservabilità residuo. Questo documento **non** autorizza un nuovo trasporto SSH.
+
+---
+
+## 8. Hermes — COGNITIVE WEB BRIDGE
+
+Etichetta canonica: **COGNITIVE WEB BRIDGE**.
+
+Può essere guidato da Qwen o GLM dove qualificati.
+
+Hermes **NON** è:
+
+- scheduler
+- broker authority
+- GitHub authority
+- secondo Control Plane
+- state owner
+
+GitHub + core deterministico + n8n restano le superfici di autorità.
+
+---
+
+## 9. Bugbot + Grok
+
+### Bugbot
+
+- Quality / review gate
+- **Non** obbligatorio per ogni `MICRO_TASK_DELTA`
+- Preferire review a **checkpoint** / delta significativi
+- Non seleziona route planner
+
+### Grok
+
+- Candidato **routing arbiter / persistent-agent** per: route ambigue, disaccordo modelli, non-convergenza, classificazione difficile, cross-check strategico
+- **NON** definire: ogni task → Bugbot → Grok
+- Esecuzione Grok: **non LIVE** salvo evidenza repo separata → trattare come **TARGET / GATED**
+
+---
+
+## 10. Retry (ramo formale)
 
 ```text
-preferred unavailable → equivalent planner oppure Telegram
+implementation
+  → tests
+  → review
+  → repairable STOP
+  → Retry Router
+  → bounded new attempt / route
 ```
 
-### 9.3 Nessun fallback infinito
-
-Ogni job deve registrare:
-
-- planner richiesto;
-- planner effettivo;
-- motivo del fallback;
-- quota/disponibilità osservata quando disponibile;
-- numero di tentativi.
+**Verità corrente:** reviewer execution e automatic retry execution restano dietro i **gate di autorizzazione esistenti**, salvo prova repo diversa. Documentare il ramo ≠ attivarlo.
 
 ---
 
-## 10. Invarianti che NON cambiano
+## 11. OPERATOR ROUTING TARGET — DOCUMENT ONLY
 
-Questa nuova modalità non modifica automaticamente:
+**OPERATOR-DECIDED TARGET POLICY**
+**NOT YET RUNTIME-ACTIVE**
 
-- `PM-34 = BLOCKED`;
-- `n8n_ready=false`;
-- `L5_PASS: NOT_CLAIMED`;
-- `l5_activation_authorized=false`;
-- `l5_runtime_authorized=false`;
-- `endurance_runtime_authorized=false`;
-- `permanent_schedule_authorized=false`;
-- nessun permanent loop attivo;
-- nessun nuovo schedule permanente;
-- nessun webhook pubblico;
-- nessun Telegram Trigger pubblico;
-- workflow n8n produzione non mutati in silenzio;
-- GPT Web/GPT-B resta autore autorevole dei workflow n8n secondo la foundation esistente;
-- Cursor non diventa autore autonomo dei workflow n8n;
-- Decision Packet richiesto per gate reali;
-- GitHub resta source of truth.
+Questo documento **non** attiva finestre orarie, non sblocca GLM, non cambia registry.
 
----
-
-## 11. Delta rispetto a PROJECT_VISION v2.19
-
-Il target precedente era sostanzialmente:
+### 11.1 Finestra 08:00–12:00 Europe/Rome — TARGET ONLY
 
 ```text
-Codex → Ollama classifier → Cursor CLI
+Qwen available + adequate
+    → Qwen / OpenCode
+
+else Codex capacity fresh + available
+    → Codex
+
+else
+    → DEFER
+
+glm-5.3-flash = BLOCKED
+glm-5.3       = BLOCKED
 ```
 
-Il nuovo target accettato diventa:
+Motivo blocco GLM in questa finestra: entrambi consumano lo stesso pool `glm_coding_plan`.
+
+### 11.2 Fuori 08:00–12:00 — TARGET ONLY
 
 ```text
-GPT Web → GitHub backlog → n8n → OpenClaw broker
-                                  ↓
-                         Codex / GLM / Qwen
-                                  ↓
-                           Execution Packet
-                                  ↓
-                              n8n gate
-                                  ↓
-                           Cursor /loop
-                                  ↓
-                               Bugbot
-                                  ↓
-                               GitHub
+Qwen when adequate/convenient
+    ↓
+GLM-5.3-Flash commercial priority
+    ↓
+Codex independent pool / alternative / review
+    ↓
+GLM-5.3 full = escalation
+    ↓
+stronger Codex route = difficult-case escalation
 ```
 
-Cambiamenti principali:
+### 11.3 Preferenza operativa Codex — TARGET ONLY
 
-1. GPT Web resta strategic orchestrator e backlog owner.
-2. OpenClaw rientra nella strada target come provider/auth/quota broker.
-3. Non esiste più un Ollama/Qwen classifier separato obbligatorio nella strada principale.
-4. Codex, GLM e Qwen sono **planner/prompt generators** intercambiabili.
-5. Qwen locale può fare anche task semplici/advice quando il 37B è caricato.
-6. Cursor diventa l'execution harness responsabile del loop task-bounded.
-7. GLM può essere usato anche dentro Cursor per scaricare il pool Cursor.
-8. Codex può diventare advisor esterno di Cursor tramite tool/MCP/CLI quando verificato.
-9. Bugbot è reviewer/quality gate, non router.
-10. Context rollover e checkpoint diventano parte esplicita del protocollo.
+| Classe di lavoro | Preferenza desiderata |
+|------------------|------------------------|
+| simple / quota-sensitive | Luna Low class |
+| normal / medium | Luna Medium class |
+| higher model | explicit escalation |
+
+**Non** congelare i nomi modello Codex nel registry statico. La disponibilità modello resta **dinamica** e va verificata sulla superficie di accesso reale.
 
 ---
 
-## 12. Migrazione — ordine consigliato
+## 12. OpenClaw
 
-Tutti i punti seguenti sono **docs/design/test-gated** finché non autorizzati separatamente.
+**Non** è l’authority / broker attivo del Control Plane corrente.
 
-1. Persistenza di questo operating model.
-2. Aggiornamento backlog/issue di migrazione.
-3. Verifica OpenClaw attuale: Codex OAuth, GLM/Z.AI, usage/failover realmente disponibili nell'installazione.
-4. Definizione machine-readable del Backlog Item.
-5. Definizione machine-readable dell'Execution Packet.
-6. Smoke test planner Qwen 3.8 37B → Execution Packet, read-only.
-7. Smoke test planner GLM 5.3 → Execution Packet, read-only.
-8. Smoke test planner Codex OAuth → Execution Packet, read-only.
-9. Verifica GLM 5.3 come main Cursor Agent e/o custom subagent.
-10. Bounded Cursor `/goal` + `/loop` smoke su task innocuo/test repository.
-11. Verifica Bugbot review senza Autofix automatico.
-12. Implementazione Execution Checkpoint + context rollover.
-13. Solo dopo evidence: progettazione modifiche n8n/OpenClaw runtime.
-14. Ogni attivazione permanente resta un Decision Packet separato.
+Stato accurato dove applicabile: **`KEEP_STAGED_PENDING`** (staged/inactive; future activation separately gated).
+
+Trattarlo solo secondo ruolo staged/proven — **non** come scheduler o state owner per assunzione.
 
 ---
 
-## 13. Claim boundary
+## 13. Ruoli residui (sintesi)
 
-**Claimed da questo documento:**
-
-- modalità architetturale accettata come target di migrazione;
-- ruoli descritti sopra;
-- Qwen router separato non necessario nella strada principale;
-- planner pool = Qwen 3.8 37B / GLM 5.3 / Codex;
-- Cursor = execution loop target;
-- context rollover/checkpoint = requisito architetturale.
-
-**Non claimed:**
-
-- OpenClaw aggiornato/configurato con tutti i provider;
-- Codex OAuth disponibile dentro Cursor nativamente;
-- GLM custom subagent verificato;
-- Cursor loop production-ready;
-- Bugbot integrato nel loop runtime;
-- n8n modificato;
-- PM-34 unlock;
-- L5 runtime/permanent pass;
-- schedule permanente;
-- automazione end-to-end attiva.
+| Ruolo | Componente | Status |
+|-------|------------|--------|
+| Strategic orchestrator | ChatGPT Web + operatore | LIVE (human) |
+| SoT | GitHub | LIVE |
+| Workflow / policy | n8n | LIVE structural; promotion GATED |
+| LOCAL_DEV autonomous lane | dispatcher + selector + admission + OpenCode | LIVE / QUALIFIED (bounded) |
+| Provider broker legacy | OpenClaw | KEEP_STAGED_PENDING |
+| Human gate | Telegram | LIVE pattern |
+| Cognitive web bridge | Hermes | role canonical; path proofs may be GATED |
+| Review | Bugbot | LIVE capability; selective |
+| Routing arbiter candidate | Grok | TARGET / GATED |
 
 ---
 
-**Fine documento.**
+## 14. Cosa questo documento NON fa
+
+- Non modifica routing runtime, registry, quota contracts, dispatcher code, n8n, Qwen profiles, Hermes, VPS, Tailscale.
+- Non aggiorna `CURRENT_FRONTIER`.
+- Non autorizza PM-34 / L5 / permanent schedule.
+- Non promuove Cline, Grok execution, o OpenClaw a LIVE.
+- Non inventa SSH/osservazione VPS privata.
+
+---
+
+## 15. Riferimenti operativi
+
+- `docs/foundation/MICRO_TASK_DELTA_OPERATING_LAW.md`
+- `docs/runtime/CURRENT_FRONTIER.md` (stato runtime)
+- `docs/runtime/OPERATOR_CONSTRAINT_QWEN_SHARED_RUNTIME_CONCURRENCY.md`
+- `docs/contracts/resource-registry-v2.md`
+- `tools/serve-local-dev-autonomous-dispatcher-v1.mjs`
+- `tools/local-dev-resource-observatory-v1.mjs`
+- `tools/select-local-dev-queue-item-v1.mjs`
+- `tools/admit-micro-task-delta-v1.mjs`
+- `tools/n8n-v4-execution-routing-bridge-v1.mjs`
+- `tools/rt25-canonical-quota-state-v1.mjs`
