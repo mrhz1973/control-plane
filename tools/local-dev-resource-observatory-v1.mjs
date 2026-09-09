@@ -13,6 +13,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { composeCanonicalQuotaState } from "./rt25-canonical-quota-state-v1.mjs";
+import { getOpenClawQuotaObservation } from "./collect-openclaw-quota-v1.mjs";
 
 const execFileAsync = promisify(execFile);
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -390,32 +391,108 @@ function poolCard(poolId, pool, consumers, collector) {
 export async function collectQuotaObservatory(options = {}) {
   const nowMs = options.nowMs ?? Date.now();
   const compose = options.composeCanonicalQuotaState || composeCanonicalQuotaState;
+
+  // LIVE OpenClaw read-only observation (#73). Bounded in-memory cache (default
+  // 60s TTL) so GET /v1/resources never executes the CLI on every browser
+  // refresh. The observation is in-memory only: no receipts, envelopes,
+  // configs or ingest files are written as a side effect of GET.
+  let openclaw = null;
+  if (options.collectOpenClaw !== null) {
+    const probeOpenClaw = options.collectOpenClaw || getOpenClawQuotaObservation;
+    try {
+      openclaw = await probeOpenClaw({
+        nowMs,
+        ...(options.openClawCacheTtlMs != null ? { cacheTtlMs: options.openClawCacheTtlMs } : {}),
+        ...(options.openClawTimeoutMs != null ? { timeoutMs: options.openClawTimeoutMs } : {}),
+      });
+    } catch {
+      openclaw = null; // collector failures never break /v1/resources
+    }
+  }
+
+  // Existing merge law: when OpenClaw emits fresh contributions they are merged
+  // with the ingest-lane contributions by the composer's deterministic
+  // priority/freshness selection — a newer valid canonical observation is
+  // never silently discarded.
+  const composeArgs = {
+    registry: options.registry,
+    baseline: options.baseline,
+    contributions: options.contributions,
+    ingestDir: options.ingestDir,
+    nowMs,
+  };
+  if (openclaw?.emit_contributions === true && Array.isArray(openclaw.contributions)) {
+    composeArgs.contributions = [...(options.contributions || [])];
+    if (composeArgs.ingestDir !== undefined) {
+      composeArgs.ingestDir = undefined; // contributions lane wins over dir lane
+    }
+    // Preserve ingest-lane contributions without re-reading the dir: the
+    // canonical producer merges live + ingested evidence deterministically.
+    if (options.ingestContributions && Array.isArray(options.ingestContributions)) {
+      composeArgs.contributions.push(...options.ingestContributions);
+    }
+    composeArgs.contributions.push(...openclaw.contributions);
+  }
   let canonical;
   try {
-    canonical = await compose({
-      registry: options.registry,
-      baseline: options.baseline,
-      contributions: options.contributions,
-      ingestDir: options.ingestDir,
-      nowMs,
-    });
+    canonical = await compose(composeArgs);
   } catch (err) {
     canonical = { ok: false, reason_codes: ["QUOTA_COMPOSE_FAILED", boundStr(err?.message, 60)] };
   }
 
   const joined = canonical?.joined && typeof canonical.joined === "object" ? canonical.joined : null;
   const pools = joined?.pools && typeof joined.pools === "object" ? joined.pools : {};
-  const glm = poolCard(
-    "glm_coding_plan",
-    pools.glm_coding_plan,
-    ["glm-5.3", "glm-5.3-flash"],
-    collectorMeta("rt25_quota_ingest", "rt25 quota ingest / canonical quota state", "glm_coding_plan shared once"),
+  const openclawLive = openclaw?.pools && typeof openclaw.pools === "object" ? openclaw.pools : {};
+  const liveSource = (poolId) =>
+    openclaw?.emit_contributions === true &&
+    openclawLive[poolId] &&
+    openclawLive[poolId].state !== "unknown" &&
+    openclawLive[poolId].freshness === "fresh"
+      ? openclawLive[poolId]
+      : null;
+  const liveMeta = (poolId) => {
+    const live = liveSource(poolId);
+    return live
+      ? collectorMeta(
+          "openclaw_usage_live",
+          "OpenClaw usage (read-only CLI) / canonical quota state",
+          boundStr(live.source_label, 80),
+        )
+      : collectorMeta("rt25_quota_ingest", "rt25 quota ingest / canonical quota state", `${poolId} shared once`);
+  };
+  const attachLive = (pool, live) => {
+    if (!live) return pool;
+    // Window detail comes from the SAME single live pool observation (no
+    // per-model duplication — glm-5.3 and flash share one pool entry).
+    pool.windows = live.windows.map((w) => ({
+      window_type: w.window_type,
+      label: w.label,
+      remaining_percent: w.remaining_percent,
+      reset_at: w.reset_at,
+    }));
+    pool.unmapped_windows = (live.unmapped_windows || []).slice(0, 8);
+    pool.reset_at = live.primary?.reset_at ?? pool.reset_at;
+    pool.observed_at = openclaw.observed_at;
+    if (typeof live.plan === "string" && live.plan) pool.plan = boundStr(live.plan, 40);
+    return pool;
+  };
+  const glm = attachLive(
+    poolCard(
+      "glm_coding_plan",
+      pools.glm_coding_plan,
+      ["glm-5.3", "glm-5.3-flash"],
+      liveMeta("glm_coding_plan"),
+    ),
+    liveSource("glm_coding_plan"),
   );
-  const codex = poolCard(
-    "chatgpt_codex_subscription",
-    pools.chatgpt_codex_subscription,
-    ["codex_ide_cursor_extension", "codex_external_planner"],
-    collectorMeta("rt25_quota_ingest", "rt25 quota ingest / canonical quota state", "chatgpt_codex_subscription"),
+  const codex = attachLive(
+    poolCard(
+      "chatgpt_codex_subscription",
+      pools.chatgpt_codex_subscription,
+      ["codex_ide_cursor_extension", "codex_external_planner"],
+      liveMeta("chatgpt_codex_subscription"),
+    ),
+    liveSource("chatgpt_codex_subscription"),
   );
 
   const cursorManual = loadCursorManualObservation(options);
@@ -441,6 +518,16 @@ export async function collectQuotaObservatory(options = {}) {
     ok: canonical?.ok === true,
     canonical_schema: boundStr(canonical?.schema_version, 80),
     reason_codes: Array.isArray(canonical?.reason_codes) ? canonical.reason_codes.slice(0, 8) : [],
+    openclaw: openclaw
+      ? {
+          collector: "openclaw_usage_live",
+          observed_at: openclaw.observed_at,
+          freshness: openclaw.freshness,
+          cache_hit: openclaw.cache_hit === true,
+          refresh_in_progress: openclaw.refresh_in_progress === true,
+          reason_codes: Array.isArray(openclaw.reason_codes) ? openclaw.reason_codes.slice(0, 8) : [],
+        }
+      : null,
     pools: {
       glm_coding_plan: glm,
       chatgpt_codex_subscription: codex,

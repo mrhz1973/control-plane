@@ -2294,5 +2294,301 @@ await test("S57 Qwen usage tooltips present; network remains GET-only without PO
   assert.doesNotMatch(dashboardText(dashboard), /\[object Object\]/);
 });
 
+await test("S58 #73 observatory consumes live OpenClaw observation: pools, windows, merge law", async () => {
+  const observedAt = new Date(Date.parse("2026-09-09T05:00:00.000Z") - 5000).toISOString();
+  const livePools = {
+    glm_coding_plan: {
+      provider: "zai",
+      state: "available",
+      freshness: "fresh",
+      reason_code: null,
+      windows: [
+        { window_type: "rolling", label: "Tokens (5h)", remaining_percent: 98, reset_at: "2026-09-09T06:00:00.000Z" },
+        { window_type: "monthly", label: "Monthly", remaining_percent: 100, reset_at: "2026-09-16T05:00:00.000Z" },
+      ],
+      unmapped_windows: [{ label: "Tokens (Limit)", recognized_limit_window: true, remaining_percent: 24 }],
+      primary: { window_type: "monthly", remaining_percent: 100, reset_at: "2026-09-16T05:00:00.000Z" },
+      source_label: "OpenClaw / Z.AI usage",
+    },
+    chatgpt_codex_subscription: {
+      provider: "openai-codex",
+      state: "available",
+      freshness: "fresh",
+      reason_code: null,
+      windows: [
+        { window_type: "rolling", label: "5h", remaining_percent: 100, reset_at: "2026-09-09T08:16:18.000Z" },
+        { window_type: "weekly", label: "Week", remaining_percent: 84, reset_at: "2026-09-16T08:09:21.000Z" },
+      ],
+      unmapped_windows: [],
+      primary: { window_type: "rolling", remaining_percent: 100, reset_at: "2026-09-09T08:16:18.000Z" },
+      source_label: "OpenClaw / OpenAI Codex usage",
+      plan: "plus",
+    },
+  };
+  const contributions = [
+    {
+      schema_version: "v4-resource-status-contribution-v1",
+      contribution_id: "openclaw-quota-glm_coding_plan-" + observedAt,
+      producer_id: "collect-openclaw-quota-v1",
+      source: "provider_api",
+      produced_at: observedAt,
+      resources: { glm: { available: true, quota_remaining: { value: 100, unit: "percent" }, reset_at: "2026-09-16T05:00:00.000Z", cost_mode: "included", location: "cloud", updated_at: observedAt, evidence: { kind: "source_snapshot", classification: "OPENCLAW_USAGE_LIVE_zai" } } },
+    },
+  ];
+  let composeCalls = 0;
+  const quotas = await collectQuotaObservatory({
+    nowMs: Date.parse("2026-09-09T05:00:00.000Z"),
+    collectOpenClaw: async () => ({
+      ok: true, freshness: "fresh", observed_at: observedAt, cache_hit: false,
+      reason_codes: [], emit_contributions: true, contributions, pools: livePools,
+    }),
+    composeCanonicalQuotaState: async (args) => {
+      composeCalls += 1;
+      assert.equal(args.contributions.length, 1);
+      assert.equal(args.contributions[0].producer_id, "collect-openclaw-quota-v1");
+      return {
+        ok: true,
+        schema_version: "v4-rt25-canonical-quota-state-v1",
+        joined: {
+          pools: {
+            glm_coding_plan: { state: "available", freshness: "fresh", remaining_percent: 100, evaluation: "POOL_HEALTHY" },
+            chatgpt_codex_subscription: { state: "available", freshness: "fresh", remaining_percent: 100, evaluation: "POOL_HEALTHY" },
+          },
+        },
+        reason_codes: [],
+      };
+    },
+  });
+  assert.equal(composeCalls, 1);
+  const glm = quotas.pools.glm_coding_plan;
+  assert.equal(glm.quota_pool_id, "glm_coding_plan");
+  assert.equal(glm.state, "AVAILABLE");
+  assert.equal(glm.freshness, "fresh");
+  assert.equal(glm.remaining_percent, 100);
+  assert.equal(glm.windows.length, 2);
+  assert.equal(glm.windows.find((w) => w.window_type === "rolling").remaining_percent, 98);
+  assert.ok(glm.windows.find((w) => w.window_type === "monthly"));
+  assert.ok(!glm.windows.some((w) => w.window_type === "weekly")); // Tokens (Limit) NOT weekly
+  assert.equal(glm.unmapped_windows.length, 1);
+  assert.equal(glm.collector_id, "openclaw_usage_live");
+  assert.equal(glm.observed_at, observedAt);
+  assert.deepEqual(glm.consumers, ["glm-5.3", "glm-5.3-flash"]); // one shared pool entry, both models
+  const codex = quotas.pools.chatgpt_codex_subscription;
+  assert.equal(codex.plan, "plus");
+  assert.equal(codex.windows.find((w) => w.window_type === "weekly").remaining_percent, 84);
+  assert.equal(quotas.openclaw.collector, "openclaw_usage_live");
+  assert.ok(!JSON.stringify(quotas).includes("[object Object]"));
+
+  // OpenClaw NOT fresh → falls back to canonical ingest labels, no crash:
+  const degraded = await collectQuotaObservatory({
+    nowMs: Date.parse("2026-09-09T05:00:00.000Z"),
+    collectOpenClaw: async () => ({
+      ok: false, freshness: "stale", observed_at: null, cache_hit: false,
+      reason_codes: ["OPENCLAW_NOT_FOUND"], emit_contributions: false, contributions: [],
+      pools: {
+        glm_coding_plan: { state: "unknown", freshness: "stale", reason_code: "OPENCLAW_NOT_FOUND", windows: [], unmapped_windows: [], primary: null },
+        chatgpt_codex_subscription: { state: "unknown", freshness: "stale", reason_code: "OPENCLAW_NOT_FOUND", windows: [], unmapped_windows: [], primary: null },
+      },
+    }),
+    composeCanonicalQuotaState: async () => ({
+      ok: true,
+      joined: {
+        pools: {
+          glm_coding_plan: { state: "unknown", freshness: "stale", remaining_percent: null, evaluation: "CONSERVE_UNKNOWN_MISSING" },
+          chatgpt_codex_subscription: { state: "unknown", freshness: "stale", remaining_percent: null, evaluation: "CONSERVE_UNKNOWN_MISSING" },
+        },
+      },
+      reason_codes: [],
+    }),
+  });
+  assert.equal(degraded.pools.glm_coding_plan.state, "UNKNOWN");
+  assert.equal(degraded.pools.glm_coding_plan.collector_id, "rt25_quota_ingest");
+  assert.equal(degraded.openclaw.reason_codes[0], "OPENCLAW_NOT_FOUND");
+
+  // Collector exception never breaks /v1/resources:
+  const resilient = await collectQuotaObservatory({
+    nowMs: Date.parse("2026-09-09T05:00:00.000Z"),
+    collectOpenClaw: async () => { throw new Error("unexpected"); },
+    composeCanonicalQuotaState: async () => ({
+      ok: true,
+      joined: { pools: {} },
+      reason_codes: [],
+    }),
+  });
+  assert.equal(resilient.pools.glm_coding_plan.state, "UNKNOWN");
+  assert.equal(resilient.openclaw, null);
+});
+
+await test("S59 #73 GET /v1/resources with live OpenClaw wiring stays read-only: no tick, no writes", async () => {
+  let dispatch = 0, exec = 0, persist = 0;
+  const res = mockRes();
+  await handleTickRequest(mockReq("GET", RESOURCES_PATH), res, {
+    buildResources: async () => {
+      const quotas = await collectQuotaObservatory({
+        nowMs: Date.parse("2026-09-09T05:00:00.000Z"),
+        collectOpenClaw: async () => ({
+          ok: true, freshness: "fresh", observed_at: "2026-09-09T04:59:55.000Z", cache_hit: false,
+          reason_codes: [], emit_contributions: true,
+          contributions: [{
+            schema_version: "v4-resource-status-contribution-v1",
+            contribution_id: "openclaw-quota-glm_coding_plan-2026-09-09T04:59:55.000Z",
+            producer_id: "collect-openclaw-quota-v1",
+            source: "provider_api",
+            produced_at: "2026-09-09T04:59:55.000Z",
+            resources: { glm: { available: true, quota_remaining: { value: 98, unit: "percent" }, reset_at: "2026-09-09T06:00:00.000Z", cost_mode: "included", location: "cloud", updated_at: "2026-09-09T04:59:55.000Z", evidence: { kind: "source_snapshot", classification: "OPENCLAW_USAGE_LIVE_zai" } } },
+          }],
+          pools: {
+            glm_coding_plan: { state: "available", freshness: "fresh", reason_code: null, windows: [{ window_type: "rolling", label: "Tokens (5h)", remaining_percent: 98, reset_at: "2026-09-09T06:00:00.000Z" }], unmapped_windows: [], primary: { window_type: "rolling", remaining_percent: 98, reset_at: "2026-09-09T06:00:00.000Z" } },
+            chatgpt_codex_subscription: { state: "unknown", freshness: "stale", reason_code: "OPENCLAW_PROVIDER_MISSING", windows: [], unmapped_windows: [], primary: null },
+          },
+        }),
+        composeCanonicalQuotaState: async (args) => {
+          // The live OpenClaw contribution rides the EXISTING canonical compose:
+          assert.equal(args.contributions.length, 1);
+          assert.equal(args.contributions[0].producer_id, "collect-openclaw-quota-v1");
+          return {
+            ok: true,
+            joined: { pools: { glm_coding_plan: { state: "available", freshness: "fresh", remaining_percent: 98, evaluation: "POOL_HEALTHY" } } },
+            reason_codes: [],
+          };
+        },
+      });
+      return {
+        schema_version: RESOURCES_SCHEMA,
+        read_only: true,
+        observed_at: "2026-09-09T05:00:00.000Z",
+        workstation: {}, qwen: {}, vps_new: {}, quotas, chatgpt_web: {}, collectors: {},
+      };
+    },
+    tickDeps: {
+      runDispatchLoop: () => { dispatch += 1; return { claims: [] }; },
+      runExecutor: async () => { exec += 1; return { status: "PASS" }; },
+      persistReceipts: () => { persist += 1; },
+    },
+  });
+  assert.equal(res.status, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.read_only, true);
+  assert.equal(body.quotas.pools.glm_coding_plan.state, "AVAILABLE");
+  assert.equal(body.quotas.openclaw.collector, "openclaw_usage_live");
+  assert.equal(dispatch + exec + persist, 0); // no tick side effects
+  // No raw OpenClaw JSON escapes: only bounded normalized pools/meta.
+  assert.ok(!JSON.stringify(body).includes("displayName"));
+  assert.ok(!JSON.stringify(body).includes('"providers"'));
+});
+
+await test("S60 #73 dashboard renders live GLM/Codex windows, plan metadata, OpenClaw source", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false },
+    diag: { queue: { eligible_count: 0 }, qwen: { reachable: true, models: [] } },
+    resources: {
+      schema_version: RESOURCES_SCHEMA,
+      workstation: { state: "AVAILABLE" },
+      qwen: { occupancy: "IDLE", capacity_label: "Capacità locale — nessuna quota commerciale", commercial_quota: "N/A", collector_label: "qwen probe", loaded_models: [] },
+      vps_new: { state: "UNAVAILABLE", reason_code: "VPS_PRIVATE_OBSERVATION_UNAVAILABLE", collector_label: "vps probe" },
+      quotas: {
+        openclaw: { collector: "openclaw_usage_live", observed_at: "2026-09-09T04:59:55.000Z", freshness: "fresh", cache_hit: false, refresh_in_progress: false, reason_codes: [] },
+        pools: {
+          glm_coding_plan: {
+            quota_pool_id: "glm_coding_plan", consumers: ["glm-5.3", "glm-5.3-flash"],
+            state: "AVAILABLE", freshness: "fresh", remaining_percent: 98,
+            reset_at: "2026-09-16T05:00:00.000Z", observed_at: "2026-09-09T04:59:55.000Z",
+            collector_id: "openclaw_usage_live", collector_label: "OpenClaw usage (read-only CLI) / canonical quota state", collector_detail: "OpenClaw / Z.AI usage",
+            windows: [
+              { window_type: "rolling", label: "Tokens (5h)", remaining_percent: 98, reset_at: "2026-09-09T06:00:00.000Z" },
+              { window_type: "monthly", label: "Monthly", remaining_percent: 100, reset_at: "2026-09-16T05:00:00.000Z" },
+            ],
+            unmapped_windows: [{ label: "Tokens (Limit)", recognized_limit_window: true, remaining_percent: 24 }],
+          },
+          chatgpt_codex_subscription: {
+            quota_pool_id: "chatgpt_codex_subscription",
+            state: "AVAILABLE", freshness: "fresh", remaining_percent: 100,
+            reset_at: "2026-09-09T08:16:18.000Z", observed_at: "2026-09-09T04:59:55.000Z",
+            plan: "plus",
+            collector_id: "openclaw_usage_live", collector_label: "OpenClaw usage (read-only CLI) / canonical quota state", collector_detail: "OpenClaw / OpenAI Codex usage",
+            windows: [
+              { window_type: "rolling", label: "5h", remaining_percent: 100, reset_at: "2026-09-09T08:16:18.000Z" },
+              { window_type: "weekly", label: "Week", remaining_percent: 84, reset_at: "2026-09-16T08:09:21.000Z" },
+            ],
+            unmapped_windows: [],
+          },
+        },
+        cursor: { accounting_mapping: "UNVERIFIED", state: "UNKNOWN", labels: {}, collector_label: "manual" },
+      },
+      chatgpt_web: { state: "UNKNOWN", unlimited: false, free: false, collector_label: "hermes" },
+    },
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(out, /5h: 98 % residuo/);
+  assert.match(out, /Mensile: 100 % residuo/);
+  assert.match(out, /Settimanale: 84 % residuo/);
+  assert.match(out, /Piano: plus/i);
+  assert.match(out, /OpenClaw \/ Z\.AI usage/);
+  assert.match(out, /OpenClaw \/ OpenAI Codex usage/);
+  assert.match(out, /Pool unico: glm_coding_plan/);
+  assert.match(out, /glm-5\.3, glm-5\.3-flash/);
+  // GLM card never shows a fake weekly window (Tokens (Limit) stays unmapped):
+  const glmCard = out.split(/Pool unico: glm_coding_plan/)[1]?.split(/Codex/)[0] || "";
+  assert.doesNotMatch(glmCard, /Settimanale/);
+  // No used-percent-as-remaining inversion: Codex 5h used 0 → 100% residuo shown
+  assert.match(out, /Residuo 100 %/);
+  assert.doesNotMatch(out, /\$0\.00/);
+  assert.doesNotMatch(out, /\[object Object\]/);
+});
+
+await test("S61 #73 dashboard pools without windows keep legacy canonical rendering", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false },
+    diag: { queue: { eligible_count: 0 }, qwen: {} },
+    resources: {
+      schema_version: RESOURCES_SCHEMA,
+      workstation: {}, qwen: {}, vps_new: {},
+      quotas: {
+        pools: {
+          glm_coding_plan: { quota_pool_id: "glm_coding_plan", consumers: ["glm-5.3", "glm-5.3-flash"], state: "UNKNOWN", freshness: "stale", collector_label: "rt25 quota ingest / canonical quota state" },
+          chatgpt_codex_subscription: { quota_pool_id: "chatgpt_codex_subscription", state: "UNKNOWN", freshness: "stale", collector_label: "rt25 quota ingest / canonical quota state" },
+        },
+        cursor: { accounting_mapping: "UNVERIFIED", state: "UNKNOWN", labels: {} },
+      },
+      chatgpt_web: { state: "UNKNOWN", unlimited: false, free: false },
+    },
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(out, /Pool unico: glm_coding_plan/);
+  assert.match(out, /Pool: chatgpt_codex_subscription/);
+  assert.doesNotMatch(out, /5h: \d+ % residuo/);
+  assert.doesNotMatch(out, /Settimanale: \d+ % residuo/);
+  assert.doesNotMatch(out, /\[object Object\]/);
+});
+
+await test("S62 #73 laws preserved: Cursor UNVERIFIED, ChatGPT Web not unlimited, Qwen LOCAL_COMPUTE, no POST tick", async () => {
+  const quotas = await collectQuotaObservatory({
+    nowMs: Date.parse("2026-09-09T05:00:00.000Z"),
+    collectOpenClaw: async () => ({
+      ok: true, freshness: "fresh", observed_at: "2026-09-09T04:59:55.000Z",
+      emit_contributions: true, contributions: [], pools: {
+        glm_coding_plan: { state: "available", freshness: "fresh", windows: [], unmapped_windows: [], primary: null },
+        chatgpt_codex_subscription: { state: "available", freshness: "fresh", windows: [], unmapped_windows: [], primary: null },
+      },
+    }),
+    composeCanonicalQuotaState: async () => ({ ok: true, joined: { pools: {} }, reason_codes: [] }),
+  });
+  assert.equal(quotas.cursor.accounting_mapping, "UNVERIFIED"); // unchanged
+  assert.equal(quotas.qwen_local.commercial_quota, "N/A"); // LOCAL_COMPUTE unchanged
+  const web = await collectChatgptWebObservation({});
+  assert.equal(web.unlimited, false);
+  assert.equal(web.free, false); // ChatGPT Web never unlimited/free
+  assert.equal(web.availability_domain, "SEPARATE_AVAILABILITY_DOMAIN");
+  assert.ok(!/"unlimited"\s*:\s*true/.test(JSON.stringify(web)));
+  // No POST /tick is ever issued by the observatory path:
+  const res = mockRes();
+  await handleTickRequest(mockReq("POST", RESOURCES_PATH, "{}"), res, {});
+  assert.equal(res.status, 405);
+});
+
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 if (failures.length) process.exit(1);
