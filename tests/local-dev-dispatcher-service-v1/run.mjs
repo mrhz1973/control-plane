@@ -2910,7 +2910,7 @@ await test("S72 D-9408-B disk free derived from used percent and free/total byte
   assert.doesNotMatch(missingOut, /hbar-label">Disco<\/span>[\s\S]{0,160}hbar-fill ok/);
 });
 
-await test("S73 D-9408-C ultra-compact resource cards: no visible severity words; 6-col grid; collapsible meta", async () => {
+await test("S73 D-9408-C ultra-compact resource cards: no visible severity words; 7-col grid; collapsible meta", async () => {
   const dashboard = await dashboardHarness({
     status: { active: false },
     diag: { queue: { eligible_count: 0 }, qwen: { reachable: true, models: [] } },
@@ -2945,10 +2945,16 @@ await test("S73 D-9408-C ultra-compact resource cards: no visible severity words
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = dashboardText(dashboard);
-  assert.match(dashboard.html, /\.res-grid\{[^}]*grid-template-columns:repeat\(6,/);
+  assert.match(dashboard.html, /\.res-grid\{[^}]*grid-template-columns:repeat\(7,/);
   assert.match(out, /class="res-grid"/);
   assert.match(out, /class="res-tile/);
-  assert.match(out, /Macchina locale|Qwen locale|NEW VPS|GLM|Codex|Cursor|ChatGPT Web/);
+  assert.match(out, /Macchina locale/);
+  assert.match(out, /Qwen locale/);
+  assert.match(out, /NEW VPS/);
+  assert.match(out, /\bGLM\b/);
+  assert.match(out, /Codex/);
+  assert.match(out, /Cursor/);
+  assert.match(out, /ChatGPT Web/);
   assert.match(out, /hbar-label">CPU<\/span>[\s\S]{0,200}20(?:[.,]6)?%/);
   assert.match(out, /hbar-label">RAM<\/span>[\s\S]{0,200}81(?:[.,]9)?%/);
   assert.match(out, /hbar-label">Effettivo<\/span>[\s\S]{0,200}42(?:[.,]0)?%/);
@@ -3023,6 +3029,55 @@ await test("S74 D-9408-D consolidated ops row: 3 cards; Qwen merged; no arrows; 
   assert.doesNotMatch(out, /Qwen[\s\S]{0,80}100%/);
   assert.match(out, /UNVERIFIED|MANUAL_ONLY/);
   assert.match(out, /Illimitato:\s*No|Infinito:\s*No|ChatGPT Web/);
+});
+
+await test("S75 D-9408-E seven resource cards on one wide-desktop row", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false },
+    diag: { queue: { eligible_count: 0 }, qwen: { reachable: true, models: [] } },
+    resources: {
+      schema_version: RESOURCES_SCHEMA,
+      workstation: { state: "AVAILABLE", freshness: "fresh", cpu_percent: 10, ram_percent: 40 },
+      qwen: { occupancy: "IDLE", capacity_label: "Capacità locale — nessuna quota commerciale", commercial_quota: "N/A", reachable: true, loaded_models: [] },
+      vps_new: { state: "UNAVAILABLE" },
+      quotas: {
+        pools: {
+          glm_coding_plan: { state: "AVAILABLE", remaining_percent: 50, windows: [{ window_type: "rolling", remaining_percent: 50 }, { window_type: "weekly", remaining_percent: 50 }], auxiliary_windows: [{ kind: "mcp", remaining_percent: 90 }] },
+          chatgpt_codex_subscription: { state: "AVAILABLE", remaining_percent: 20, windows: [{ window_type: "rolling", remaining_percent: 40 }, { window_type: "weekly", remaining_percent: 20 }] },
+        },
+        cursor: { accounting_mapping: "MANUAL_ONLY", state: "UNKNOWN", labels: {} },
+      },
+      chatgpt_web: { state: "UNKNOWN", unlimited: false, free: false },
+    },
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(dashboard.html, /\.res-grid\{[^}]*grid-template-columns:repeat\(7,minmax\(0,1fr\)\)/);
+  assert.match(dashboard.html, /@media\(max-width:1680px\)\{\.res-grid\{grid-template-columns:repeat\(6,/);
+  assert.match(dashboard.html, /@media\(max-width:1480px\)\{\.res-grid\{grid-template-columns:repeat\(5,/);
+  assert.match(dashboard.html, /@media\(max-width:1280px\)\{\.res-grid\{grid-template-columns:repeat\(4,/);
+  assert.match(dashboard.html, /@media\(max-width:1200px\)\{[\s\S]*?\.res-grid\{grid-template-columns:repeat\(3,/);
+  assert.match(dashboard.html, /@media\(max-width:900px\)\{[\s\S]*?\.res-grid\{grid-template-columns:repeat\(2,/);
+  assert.match(dashboard.html, /@media\(max-width:620px\)\{[\s\S]*?\.res-grid\{grid-template-columns:1fr/);
+  assert.match(dashboard.html, /\.res-tile\{[^}]*min-height:113px/);
+  assert.match(dashboard.html, /\.ops-row\{[^}]*grid-template-columns:repeat\(3,/);
+  const titles = ["Macchina locale", "Qwen locale", "NEW VPS", "GLM", "Codex", "Cursor", "ChatGPT Web"];
+  for (const title of titles) assert.match(out, new RegExp(title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  const resourcesHtml = [...dashboard.htmlWrites].filter((write) => write.id === "resources-cards").at(-1)?.value || "";
+  assert.equal((resourcesHtml.match(/class="res-tile/g) || []).length, 7);
+  assert.equal((resourcesHtml.match(/Qwen locale/g) || []).length, 1);
+  assert.doesNotMatch(dashboard.html, /Qwen e runtime|id="qwen-title"/);
+  assert.doesNotMatch(dashboard.html, /data-move-up|data-move-down|>▲<|>▼</);
+  assert.match(dashboard.html, /id="ops-task-card"/);
+  assert.match(dashboard.html, /id="ops-state-card"/);
+  assert.match(dashboard.html, /id="ops-tick-card"/);
+  const bars = out.match(/<div class="hbar"[^>]*>[\s\S]*?<\/div><\/div><span class="hbar-val[^"]*">[^<]*<\/span><\/div>/g) || [];
+  for (const chunk of bars) {
+    const visible = chunk.replace(/\s(?:aria-label|title)="[^"]*"/g, "");
+    assert.doesNotMatch(visible, /\b(?:OK|ATTENZIONE|ELEVATO|CRITICO|HEALTHY|WARNING|DANGER|SCONOSCIUTO)\b/);
+  }
+  assert.doesNotMatch(out, /\[object Object\]/);
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
