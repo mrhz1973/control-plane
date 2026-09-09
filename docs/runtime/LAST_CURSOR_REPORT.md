@@ -1,5 +1,26 @@
 # LAST CURSOR REPORT
 
+## Hermes Phase C closure checkpoint — latest
+
+**TASK_REF:** `V4_HERMES_PHASE_C_CLOSURE_CHECKPOINT_V8` / #73
+**Classification:** `PASS — ISSUE_73_PHASE_C=PASS · NEXT_PHASE=PHASE_D_FRESH_CHAT_ROLLOVER_AND_STALE_GENERATION_FENCE · CANDIDATE_EXECUTED=NO · PRODUCTION_DISPATCH=NO`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `a060ea40e570d18b1d2fa5eacdc7eddd10b2aa8f`
+**Report:** `reports/architecture/v4_hermes_phase_c_closure_checkpoint_v8.md`
+
+Repository-only cumulative checkpoint: all Phase C acceptance conditions A–H
+are satisfied by V5 plus V6. V5 remains `STOP_TIMEOUT`; its real authenticated
+`QWEN_LOCAL -> HERMES -> CHATGPT_WEB` request later produced the exact
+candidate recovered by V6. That candidate validates at original base
+`fe371ac3...`, stops as `STALE_BASE_HEAD` at the later base, cannot
+self-authorize, and was never executed or dispatched. V7 remains
+`STOP:PHASE_C_REQUEST_NOT_SENT` and supplies Phase D send-confirmation/fresh-chat
+learnings without invalidating Phase C. Focused validator fixtures pass 17/17.
+Issue #73 remains open; Phase D is the next real gap. No browser, Qwen,
+provider, `/v1/tick`, n8n, VPS, or production action occurred.
+
+---
+
 ## Local-dev dispatcher observability micro-UI — latest
 
 **TASK_REF:** `LOCAL_DEV_DISPATCHER_OBSERVABILITY_MICRO_UI_V1`
