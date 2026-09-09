@@ -10,16 +10,24 @@ The simulator consumes **already-normalized** observations only:
 | `glm_coding_plan` | Shared commercial pool for `glm_flash` and `glm_full` |
 | `chatgpt_codex_subscription` | Shared commercial pool for Codex model classes |
 
-Canonical commercial capacity is `effective_remaining_percent` (MIN of fresh binding windows, computed upstream). Rolling/weekly percentages and reset timestamps are **context only** (explanation, reset horizon, pacing). Auxiliary/MCP fields, if present in a scenario object, are ignored and must never inflate routing capacity.
+Canonical commercial **admission** capacity is `effective_remaining_percent` (MIN of fresh binding windows, computed upstream). The simulator consumes it directly and never recomputes a conflicting MAX/MIN.
+
+- `rolling_remaining_percent` / `rolling_reset_at` — short-window **context** only
+- `weekly_remaining_percent` / `weekly_reset_at` — **long-window pacing protection**
+- Auxiliary/MCP fields, if present, are ignored and must never inflate routing capacity
 
 ## Pacing policy
 
-1. Prefer `qwen_local` when available and adequate (no commercial spend).
+1. Prefer `qwen_local` when available and adequate (no commercial spend). This is the only fixed preference rule.
 2. GLM blackout **08:00–12:00 Europe/Rome** blocks **both** Flash and full (shared pool gate).
-3. Outside blackout, candidate order is policy-derived: Qwen → GLM Flash → Codex (burn class) → GLM full → other Codex classes.
-4. Admit a commercial class only when freshness is `fresh`, state is active/available, quality floor is met, projected post-task effective remaining stays above `reserve_floor_percent`, and empirical burn would not exhaust effective capacity before reset / within `horizon_hours`.
-5. On projected long-window exhaustion: try an adequate **less-demanding** class; otherwise `DEFER`.
-6. Reserve breach: alternate route, else `CONSERVE` or `DEFER` — never silent spend below reserve.
+3. Commercial candidates: generate all eligible model classes for both shared pools; filter by blackout, freshness/state, and quality floor. **Provider identity is never a ranking advantage.** Rank deterministically from scenario evidence:
+   - quality adequacy (closest adequate match);
+   - lower empirical burn;
+   - better projected post-task headroom / long-window pacing surplus;
+   - neutral tie-break by stable `model_class` identifier.
+4. Admit only when projected post-task **effective** remaining stays above `reserve_floor_percent`, and long-window burn would not exhaust `weekly_remaining_percent` before `weekly_reset_at` (planning-clipped by `horizon_hours`). Rolling reset must not mask weekly exhaustion.
+5. On long-window exhaustion: try a lower-burn class only if quality floor permits; otherwise `DEFER`.
+6. Reserve breach: alternate evidence-ranked route, else `CONSERVE` or `DEFER` — never silent spend below reserve.
 7. `DEFER` means **pending** eligibility later, not failure/discard.
 
 ## Empirical burn coefficients
@@ -29,7 +37,8 @@ Canonical commercial capacity is `effective_remaining_percent` (MIN of fresh bin
 They are used as:
 
 - one-shot projected spend (`effective - burn[class]`) for reserve checks;
-- burn rate (% / hour) for exhaustion-vs-reset pacing.
+- burn rate (% / hour) for weekly long-window exhaustion and horizon checks;
+- commercial ranking signal (lower burn preferred among quality-eligible classes).
 
 The simulator does **not** hardcode provider token economics and does **not** assume token count equals quota consumption.
 

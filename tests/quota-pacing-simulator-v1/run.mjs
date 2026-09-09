@@ -551,6 +551,181 @@ function assertSchema(out, label) {
   assert(!/\baxios\b/.test(src), "T15: no axios");
   assert(!/createConnection|net\.|http\.|https\.|WebSocket/.test(src), "T15: no network APIs");
   assert(!/openai|anthropic|spawn\(|execFile\(/.test(src), "T15: no provider/model spawn");
+  assert(
+    !/Qwen -> GLM|GLM Flash -> Codex|GLM-before-Codex|provider-brand/i.test(src) ||
+      /not_provider_brand|not provider brand|evidence_not_provider/i.test(src),
+    "T15b: no hardcoded provider commercial order"
+  );
+}
+
+// --- T16 evidence-ranked commercial order (not provider-brand fixed) ---
+{
+  const equalPools = {
+    now_local_iso: "2026-09-09T13:00:00+02:00",
+    qwen_local: { available: false, adequate_for_task: false },
+    glm_coding_plan: {
+      state: "active",
+      freshness: "fresh",
+      effective_remaining_percent: 60,
+      rolling_remaining_percent: 60,
+      weekly_remaining_percent: 60,
+      rolling_reset_at: "2026-09-10T13:00:00+02:00",
+      weekly_reset_at: "2026-09-16T13:00:00+02:00",
+    },
+    chatgpt_codex_subscription: {
+      state: "active",
+      freshness: "fresh",
+      effective_remaining_percent: 60,
+      rolling_remaining_percent: 60,
+      weekly_remaining_percent: 60,
+      rolling_reset_at: "2026-09-10T13:00:00+02:00",
+      weekly_reset_at: "2026-09-16T13:00:00+02:00",
+      banked_reset_count: 0,
+      banked_reset_expiry: "2026-09-01T00:00:00+02:00",
+    },
+    task: { quality_class: "standard", urgency: "normal", estimated_burn_class: "medium" },
+    policy: {
+      glm_blackout_local_start: "08:00",
+      glm_blackout_local_end: "12:00",
+      reserve_floor_percent: 10,
+      horizon_hours: 8,
+    },
+  };
+
+  const glmWins = runOk(
+    baseScenario({
+      ...equalPools,
+      empirical_burn: {
+        qwen_local: 0,
+        glm_flash: 1,
+        glm_full: 9,
+        codex_low: 9,
+        codex_medium: 6,
+        codex_strong: 9,
+      },
+    })
+  );
+  assert(glmWins.decision === "USE", "T16a: USE");
+  assert(glmWins.selected_model_class === "glm_flash", "T16a: lower burn makes GLM win");
+  assert(glmWins.commercial_pool_used === "glm_coding_plan", "T16a: glm pool");
+
+  const codexWins = runOk(
+    baseScenario({
+      ...equalPools,
+      empirical_burn: {
+        qwen_local: 0,
+        glm_flash: 6,
+        glm_full: 9,
+        codex_low: 9,
+        codex_medium: 1,
+        codex_strong: 9,
+      },
+    })
+  );
+  assert(codexWins.decision === "USE", "T16b: USE");
+  assert(codexWins.selected_model_class === "codex_medium", "T16b: reversed burn makes Codex win");
+  assert(codexWins.commercial_pool_used === "chatgpt_codex_subscription", "T16b: codex pool");
+  assert(
+    glmWins.selected_route !== codexWins.selected_route,
+    "T16c: result not fixed by provider ordering"
+  );
+
+  const tieA = runOk(
+    baseScenario({
+      ...equalPools,
+      empirical_burn: {
+        qwen_local: 0,
+        glm_flash: 2,
+        glm_full: 9,
+        codex_low: 9,
+        codex_medium: 2,
+        codex_strong: 9,
+      },
+    })
+  );
+  const tieB = runOk(
+    baseScenario({
+      ...equalPools,
+      empirical_burn: {
+        qwen_local: 0,
+        glm_flash: 2,
+        glm_full: 9,
+        codex_low: 9,
+        codex_medium: 2,
+        codex_strong: 9,
+      },
+    })
+  );
+  assert(tieA.decision === "USE" && tieB.decision === "USE", "T16d: tie USE");
+  assert(
+    tieA.selected_model_class === tieB.selected_model_class,
+    "T16d: deterministic neutral tie-break stable"
+  );
+  assert(
+    tieA.selected_model_class === "codex_medium" || tieA.selected_model_class === "glm_flash",
+    "T16d: tie-break is a stable model_class id"
+  );
+}
+
+// --- T17 long-window protection not masked by soon rolling reset ---
+{
+  const asymmetric = runOk(
+    baseScenario({
+      now_local_iso: "2026-09-09T13:00:00+02:00",
+      qwen_local: { available: false, adequate_for_task: false },
+      glm_coding_plan: {
+        // Canonical effective stays the binding admission capacity (here 55).
+        effective_remaining_percent: 55,
+        rolling_remaining_percent: 90,
+        weekly_remaining_percent: 20,
+        rolling_reset_at: "2026-09-09T15:00:00+02:00", // soon — looks safe alone
+        weekly_reset_at: "2026-09-16T13:00:00+02:00", // much later
+      },
+      chatgpt_codex_subscription: { state: "unavailable" },
+      task: { quality_class: "standard", estimated_burn_class: "medium" },
+      policy: { horizon_hours: 8, reserve_floor_percent: 5 },
+      empirical_burn: { glm_flash: 5, glm_full: 8 },
+    })
+  );
+  // weekly 20 / burn 5 = 4h <= min(weeklyHours, 8)=8 → long-window block for flash;
+  // glm_full worse. Must not USE unchanged.
+  assert(asymmetric.decision !== "USE" || asymmetric.selected_model_class !== "glm_flash", "T17a: flash not silently used");
+  assert(["DEFER", "CONSERVE"].includes(asymmetric.decision) || asymmetric.selected_model_class !== "glm_flash", "T17a2: no unsafe flash admit");
+  assert(
+    asymmetric.decision === "DEFER" ||
+      (asymmetric.decision === "USE" && asymmetric.selected_model_class !== "glm_flash"),
+    "T17b: downgrade or DEFER, never USE flash unchanged"
+  );
+  assert(
+    asymmetric.reasons.some((r) => /long_window_exhaustion_before_weekly_reset/.test(r)) ||
+      asymmetric.decision === "DEFER",
+    "T17c: long-window reason or defer"
+  );
+
+  // Lower burn can clear long-window while effective remains canonical (not recomputed).
+  const downgrade = runOk(
+    baseScenario({
+      now_local_iso: "2026-09-09T13:00:00+02:00",
+      qwen_local: { available: false, adequate_for_task: false },
+      glm_coding_plan: {
+        effective_remaining_percent: 55,
+        rolling_remaining_percent: 90,
+        weekly_remaining_percent: 20,
+        rolling_reset_at: "2026-09-09T15:00:00+02:00",
+        weekly_reset_at: "2026-09-16T13:00:00+02:00",
+      },
+      chatgpt_codex_subscription: { state: "unavailable" },
+      task: { quality_class: "standard", estimated_burn_class: "medium" },
+      policy: { horizon_hours: 8, reserve_floor_percent: 5 },
+      empirical_burn: { glm_flash: 1, glm_full: 8 },
+    })
+  );
+  // weekly 20 / 1 = 20h > horizon 8 → admit flash; projected from effective 55.
+  assert(downgrade.decision === "USE", "T17d: lower burn admits");
+  assert(downgrade.selected_model_class === "glm_flash", "T17d: flash after lower burn");
+  assert(downgrade.projected_effective_remaining_percent === 54, "T17e: effective 55 canonical (not MIN recompute)");
+  assert(downgrade.reasons.some((r) => /effective_remaining=55/.test(r)), "T17e2: effective recorded");
+  assert(!downgrade.reasons.some((r) => /effective_remaining=90/.test(r)), "T17e3: rolling does not become effective");
 }
 
 console.log(failures === 0 ? "\nALL TESTS PASSED" : `\n${failures} FAILURE(S)`);

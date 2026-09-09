@@ -226,41 +226,66 @@ function burnForClass(empirical_burn, modelClass) {
 }
 
 /**
- * Uses effective_remaining_percent directly for exhaustion math.
- * rolling/weekly inform reset horizon only — never recompute effective via Math.min.
+ * Admission capacity remains pool.effective_remaining_percent (never recomputed).
+ * Long-window pacing uses weekly_remaining_percent + weekly_reset_at explicitly.
+ * Rolling is short-window context only and must not mask long-window exhaustion.
  */
 function pacingAssessment(pool, burnPerHour, nowIso, horizonHours) {
   const effective = pool.effective_remaining_percent;
+  const weekly = pool.weekly_remaining_percent;
+  const rolling = pool.rolling_remaining_percent;
   const hoursToWeekly = hoursUntil(nowIso, pool.weekly_reset_at);
   const hoursToRolling = hoursUntil(nowIso, pool.rolling_reset_at);
-  let resetHorizonHours = null;
-  if (hoursToWeekly != null && hoursToRolling != null) {
-    resetHorizonHours = Math.min(hoursToWeekly, hoursToRolling);
-  } else {
-    resetHorizonHours = hoursToWeekly ?? hoursToRolling;
-  }
 
-  let exhaustBeforeReset = false;
-  let exhaustWithinHorizon = false;
-  if (burnPerHour > 0 && effective >= 0) {
-    const hoursToExhaust = effective / burnPerHour;
-    // Planning clip: compare exhaustion to the nearer of reset and policy horizon.
-    // Using the full multi-day weekly window alone would mark every positive burn as
-    // "exhaust before reset" and prevent legitimate admits.
-    const relevantHorizon =
-      resetHorizonHours == null
-        ? horizonHours
-        : Math.min(resetHorizonHours, horizonHours);
-    if (hoursToExhaust <= relevantHorizon) {
-      exhaustBeforeReset = resetHorizonHours != null && hoursToExhaust <= resetHorizonHours;
-      exhaustWithinHorizon = hoursToExhaust <= horizonHours;
+  let longWindowExhaust = false;
+  if (burnPerHour > 0 && hoursToWeekly != null && weekly >= 0) {
+    const hoursToExhaustWeekly = weekly / burnPerHour;
+    // Planning clip vs weekly reset only — rolling hours must not enter this min().
+    const longHorizon = Math.min(hoursToWeekly, horizonHours);
+    if (hoursToExhaustWeekly <= longHorizon) {
+      longWindowExhaust = true;
     }
   }
+
+  let shortWindowPressure = false;
+  if (burnPerHour > 0 && hoursToRolling != null && rolling >= 0) {
+    const hoursToExhaustRolling = rolling / burnPerHour;
+    if (hoursToExhaustRolling <= Math.min(hoursToRolling, horizonHours)) {
+      shortWindowPressure = true;
+    }
+  }
+
+  let exhaustWithinHorizon = false;
+  if (burnPerHour > 0 && effective >= 0 && effective / burnPerHour <= horizonHours) {
+    exhaustWithinHorizon = true;
+  }
+
+  const pacingBlock = longWindowExhaust || exhaustWithinHorizon;
   return {
-    resetHorizonHours,
-    exhaustBeforeReset,
+    resetHorizonHours: hoursToWeekly,
+    hoursToWeekly,
+    hoursToRolling,
+    longWindowExhaust,
+    shortWindowPressure,
     exhaustWithinHorizon,
+    exhaustBeforeReset: longWindowExhaust,
+    pacingBlock,
   };
+}
+
+function qualityAdequacyScore(modelClass, taskQuality) {
+  if (modelClass === "qwen_local") return 0;
+  const q = MODEL_CLASS_QUALITY[modelClass];
+  if (!q) return Number.NEGATIVE_INFINITY;
+  // Prefer closest adequate match (not provider brand; not automatic over-provisioning).
+  return -Math.abs(QUALITY_RANK[q] - QUALITY_RANK[taskQuality]);
+}
+
+function pacingSafetySurplus(pool, burnPerHour, nowIso) {
+  if (!(burnPerHour > 0)) return Number.POSITIVE_INFINITY;
+  const hoursToWeekly = hoursUntil(nowIso, pool.weekly_reset_at);
+  if (hoursToWeekly == null) return 0;
+  return pool.weekly_remaining_percent / burnPerHour - hoursToWeekly;
 }
 
 function commercialAdmissible(pool) {
@@ -291,50 +316,71 @@ function bankedResetValid(codex, nowIso) {
 }
 
 /**
- * Policy order (ordinary tasks): Qwen -> GLM Flash -> Codex preferred -> GLM full -> other Codex.
- * Inside blackout: omit all glm_* classes (shared pool gate).
+ * Commercial candidates: all eligible model classes for both shared pools.
+ * No provider-brand order (GLM-before-Codex / Codex-before-GLM). Ranking is
+ * evidence-based after evaluation. Blackout omits glm_* (shared pool gate).
  */
-function buildCandidates(task, blackoutActive) {
-  const burnClass = task.estimated_burn_class;
-  const codexPreferred =
-    burnClass === "low"
-      ? "codex_low"
-      : burnClass === "strong" || burnClass === "high"
-        ? "codex_strong"
-        : "codex_medium";
-  const codexAlt =
-    codexPreferred === "codex_strong"
-      ? ["codex_medium", "codex_low"]
-      : codexPreferred === "codex_low"
-        ? ["codex_medium", "codex_strong"]
-        : ["codex_low", "codex_strong"];
-
+function buildCommercialCandidates(blackoutActive) {
   const list = [];
-  list.push({ route: "qwen_local", model_class: "qwen_local", pool: null });
   if (!blackoutActive) {
-    list.push({ route: "glm_coding_plan", model_class: "glm_flash", pool: "glm_coding_plan" });
+    list.push({
+      route: "glm_coding_plan",
+      model_class: "glm_flash",
+      pool: "glm_coding_plan",
+    });
+    list.push({
+      route: "glm_coding_plan",
+      model_class: "glm_full",
+      pool: "glm_coding_plan",
+    });
   }
   list.push({
     route: "chatgpt_codex_subscription",
-    model_class: codexPreferred,
+    model_class: "codex_low",
     pool: "chatgpt_codex_subscription",
   });
-  if (!blackoutActive) {
-    list.push({ route: "glm_coding_plan", model_class: "glm_full", pool: "glm_coding_plan" });
-  }
-  for (const c of codexAlt) {
-    list.push({
-      route: "chatgpt_codex_subscription",
-      model_class: c,
-      pool: "chatgpt_codex_subscription",
-    });
-  }
-  const seen = new Set();
-  return list.filter((c) => {
-    const k = `${c.route}:${c.model_class}`;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
+  list.push({
+    route: "chatgpt_codex_subscription",
+    model_class: "codex_medium",
+    pool: "chatgpt_codex_subscription",
+  });
+  list.push({
+    route: "chatgpt_codex_subscription",
+    model_class: "codex_strong",
+    pool: "chatgpt_codex_subscription",
+  });
+  // Neutral pre-order by stable id only (not used as provider advantage).
+  return list.sort((a, b) => a.model_class.localeCompare(b.model_class));
+}
+
+/** @deprecated alias kept for tests exporting buildCandidates */
+function buildCandidates(task, blackoutActive) {
+  void task;
+  return [
+    { route: "qwen_local", model_class: "qwen_local", pool: null },
+    ...buildCommercialCandidates(blackoutActive),
+  ];
+}
+
+/**
+ * Deterministic commercial ranking from scenario evidence only:
+ * a) quality adequacy (desc)
+ * b) lower empirical burn (asc)
+ * c) better projected headroom / pacing safety (desc)
+ * d) stable model_class identifier (asc)
+ * Provider identity is never a ranking key.
+ */
+function rankCommercialUsable(usableRows) {
+  return usableRows.slice().sort((a, b) => {
+    const qDiff = b.qualityScore - a.qualityScore;
+    if (qDiff !== 0) return qDiff;
+    const burnDiff = a.burn - b.burn;
+    if (burnDiff !== 0) return burnDiff;
+    const headDiff = b.projected - a.projected;
+    if (headDiff !== 0) return headDiff;
+    const paceDiff = b.pacingSurplus - a.pacingSurplus;
+    if (paceDiff !== 0) return paceDiff;
+    return a.candidate.model_class.localeCompare(b.candidate.model_class);
   });
 }
 
@@ -402,24 +448,26 @@ function evaluateCandidate(candidate, ctx) {
       commercial_pool_used: candidate.pool,
       pacing_block: false,
       reserve_block: true,
+      pacing,
+      burn: cost,
     };
   }
 
-  if (pacing.exhaustBeforeReset || pacing.exhaustWithinHorizon) {
+  if (pacing.pacingBlock) {
+    const why = pacing.longWindowExhaust
+      ? "long_window_exhaustion_before_weekly_reset"
+      : "projected_exhaustion_within_horizon";
     return {
       usable: false,
       decision: "DEFER",
-      reasons: [
-        ...reasons,
-        pacing.exhaustBeforeReset
-          ? "projected_exhaustion_before_reset"
-          : "projected_exhaustion_within_horizon",
-      ],
+      reasons: [...reasons, why],
       projected,
       reset_horizon_hours: pacing.resetHorizonHours,
       commercial_pool_used: candidate.pool,
       pacing_block: true,
       reserve_block: false,
+      pacing,
+      burn: cost,
     };
   }
 
@@ -432,6 +480,8 @@ function evaluateCandidate(candidate, ctx) {
     commercial_pool_used: candidate.pool,
     pacing_block: false,
     reserve_block: false,
+    pacing,
+    burn: cost,
   };
 }
 
@@ -453,38 +503,96 @@ function simulate(input) {
     blackoutActive,
   };
 
-  const candidates = buildCandidates(input.task, blackoutActive);
   const reasons = [];
   if (blackoutActive) reasons.push("glm_blackout_active_0800_1200_Europe_Rome");
 
+  // Canonical rule: qwen_local first when available + adequate (no commercial quota).
+  const qwenCandidate = {
+    route: "qwen_local",
+    model_class: "qwen_local",
+    pool: null,
+  };
+  const qwenEv = evaluateCandidate(qwenCandidate, ctx);
+  if (qwenEv.usable && qwenEv.decision === "USE") {
+    return {
+      schema_version: SCHEMA_VERSION,
+      classification: "ADMIT",
+      selected_route: "qwen_local",
+      selected_model_class: "qwen_local",
+      decision: "USE",
+      reasons: boundReasons([
+        ...reasons,
+        "qwen_local_available_adequate_no_commercial_quota",
+      ]),
+      commercial_pool_used: null,
+      projected_effective_remaining_percent: null,
+      blackout_active: blackoutActive,
+      reset_horizon_hours: null,
+    };
+  }
+  for (const r of qwenEv.reasons || []) {
+    if (reasons.length < MAX_REASONS) reasons.push(r);
+  }
+
+  const commercial = buildCommercialCandidates(blackoutActive);
   let conserveHit = null;
   let anyPacingBlock = false;
+  const usableRows = [];
 
-  for (const candidate of candidates) {
+  for (const candidate of commercial) {
     const ev = evaluateCandidate(candidate, ctx);
-    for (const r of ev.reasons || []) {
-      if (reasons.length < MAX_REASONS) reasons.push(r);
-    }
-
-    if (ev.usable && ev.decision === "USE") {
-      return {
-        schema_version: SCHEMA_VERSION,
-        classification: "ADMIT",
-        selected_route: candidate.route,
-        selected_model_class: candidate.model_class,
-        decision: "USE",
-        reasons: boundReasons(reasons),
-        commercial_pool_used: ev.commercial_pool_used,
-        projected_effective_remaining_percent: ev.projected,
-        blackout_active: blackoutActive,
-        reset_horizon_hours: ev.reset_horizon_hours,
-      };
-    }
-
     if (ev.pacing_block) anyPacingBlock = true;
     if (ev.decision === "CONSERVE" && !conserveHit) {
       conserveHit = { candidate, ev };
     }
+    if (ev.usable && ev.decision === "USE") {
+      const pool =
+        candidate.pool === "glm_coding_plan" ? ctx.glm : ctx.codex;
+      usableRows.push({
+        candidate,
+        ev,
+        qualityScore: qualityAdequacyScore(
+          candidate.model_class,
+          input.task.quality_class
+        ),
+        burn: ev.burn,
+        projected: ev.projected,
+        pacingSurplus: pacingSafetySurplus(pool, ev.burn, ctx.now_local_iso),
+      });
+    } else {
+      // Keep a few rejection signals without flooding reasons beyond 16.
+      for (const r of ev.reasons || []) {
+        if (
+          /quality_floor|blackout|fail_closed|unavailable|long_window|reserve_floor|exhaustion/i.test(
+            r
+          ) &&
+          reasons.length < MAX_REASONS
+        ) {
+          reasons.push(r);
+        }
+      }
+    }
+  }
+
+  if (usableRows.length > 0) {
+    const ranked = rankCommercialUsable(usableRows);
+    const best = ranked[0];
+    for (const r of best.ev.reasons || []) {
+      if (reasons.length < MAX_REASONS) reasons.push(r);
+    }
+    reasons.push("commercial_rank_evidence_not_provider_brand");
+    return {
+      schema_version: SCHEMA_VERSION,
+      classification: "ADMIT",
+      selected_route: best.candidate.route,
+      selected_model_class: best.candidate.model_class,
+      decision: "USE",
+      reasons: boundReasons(reasons),
+      commercial_pool_used: best.ev.commercial_pool_used,
+      projected_effective_remaining_percent: best.ev.projected,
+      blackout_active: blackoutActive,
+      reset_horizon_hours: best.ev.reset_horizon_hours,
+    };
   }
 
   const banked = bankedResetValid(input.chatgpt_codex_subscription, input.now_local_iso);
@@ -492,9 +600,6 @@ function simulate(input) {
     input.qwen_local.available && input.qwen_local.adequate_for_task;
   const capacityCritical = Boolean(conserveHit) || anyPacingBlock;
 
-  // HUMAN_GATE_RESET only when a valid, soon-expiring banked reset is relevant.
-  // banked_reset_count=0 alone must never produce HUMAN_GATE_RESET.
-  // A non-expiring banked inventory stays advisory metadata only (CONSERVE/DEFER).
   if (banked.valid && banked.expiringSoon && capacityCritical && !qwenOk) {
     reasons.push("banked_reset_advisory_human_gate_only");
     reasons.push("banked_reset_does_not_increase_effective_remaining");
@@ -520,7 +625,6 @@ function simulate(input) {
     reasons.push("no_banked_reset_no_human_gate");
   }
 
-  // blackout + Qwen inadequate + commercial below reserve => DEFER (pending).
   if (blackoutActive && !qwenOk && Boolean(conserveHit)) {
     reasons.push("conserve_no_silent_spend_below_reserve");
     reasons.push("defer_pending_not_failure");
@@ -539,7 +643,6 @@ function simulate(input) {
     };
   }
 
-  // Reserve breach with no alternate: CONSERVE (never silent spend).
   if (conserveHit && !anyPacingBlock) {
     reasons.push("conserve_no_silent_spend_below_reserve");
     return {
@@ -621,4 +724,6 @@ export {
   pacingAssessment,
   bankedResetValid,
   buildCandidates,
+  buildCommercialCandidates,
+  rankCommercialUsable,
 };
