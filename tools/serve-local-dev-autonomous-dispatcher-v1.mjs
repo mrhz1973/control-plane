@@ -55,12 +55,14 @@ import { composeRunners } from "./run-local-dev-executor-v1.mjs";
 import { admitMicroTaskDelta, extractMicroTaskAdmissionInput } from "./admit-micro-task-delta-v1.mjs";
 import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
 import { selectNextQueueItem, parseBacklogFile, isAdmissible } from "./select-local-dev-queue-item-v1.mjs";
+import { buildResourceObservatory, RESOURCES_PATH, RESOURCES_SCHEMA } from "./local-dev-resource-observatory-v1.mjs";
 
 export const RESULT_SCHEMA = "local-dev-dispatch-tick-result-v1";
 export const REQUEST_SCHEMA = "local-dev-dispatch-tick-v1";
 export const STATUS_SCHEMA = "local-dev-execution-status-v1";
 export const DIAGNOSTICS_SCHEMA = "local-dev-dispatch-diagnostics-v1";
 export const LAST_TICK_SCHEMA = "local-dev-dispatch-last-tick-v1";
+export { RESOURCES_PATH, RESOURCES_SCHEMA };
 export const DEFAULT_HOST = "127.0.0.1";
 export const DEFAULT_PORT = 18793;
 export const TICK_PATH = "/v1/tick";
@@ -1337,6 +1339,35 @@ export async function handleTickRequest(req, res, deps = {}) {
     return;
   }
 
+  // Read-only resource + quota observatory (no tick lock, no mutations).
+  if (path === RESOURCES_PATH) {
+    if (req.method !== "GET") {
+      send(405, wrapTickResult({ ok: false, classification: "SERVICE_ERROR", reason_codes: ["GET_ONLY"] }));
+      return;
+    }
+    try {
+      const resources = await (deps.buildResources || buildResourceObservatory)({
+        probeQwen: deps.probeQwen || probeQwenEndpointReadOnly,
+        collectWorkstation: deps.collectWorkstation,
+        collectQwen: deps.collectQwen,
+        collectVps: deps.collectVps,
+        collectQuotas: deps.collectQuotas,
+        collectChatgptWeb: deps.collectChatgptWeb,
+        sshRunner: deps.sshRunner,
+        nowMs: deps.nowMs,
+      });
+      send(200, resources);
+    } catch (err) {
+      send(500, {
+        schema_version: RESOURCES_SCHEMA,
+        read_only: true,
+        ok: false,
+        reason_codes: ["RESOURCES_FAILED", boundStr(err?.message || err, 80)],
+      });
+    }
+    return;
+  }
+
   if (path !== TICK_PATH) {
     send(404, wrapTickResult({ ok: false, classification: "SERVICE_ERROR", reason_codes: ["PATH_NOT_FOUND"] }));
     return;
@@ -1435,6 +1466,7 @@ async function main() {
     tick_path: TICK_PATH,
     status_path: STATUS_PATH,
     diagnostics_path: DIAGNOSTICS_PATH,
+    resources_path: RESOURCES_PATH,
     dashboard_path: "/dashboard",
     external_route: "/v4/local-dev/dispatch-tick",
     repo: CANONICAL_REPO_PATH,

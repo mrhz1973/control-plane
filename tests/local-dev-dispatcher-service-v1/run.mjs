@@ -38,7 +38,21 @@ import {
   probeQwenEndpointReadOnly,
   loadReceiptsLedger,
   DASHBOARD_PATHS,
+  RESOURCES_PATH,
+  RESOURCES_SCHEMA,
 } from "../../tools/serve-local-dev-autonomous-dispatcher-v1.mjs";
+import {
+  buildResourceObservatory,
+  collectWorkstationMetrics,
+  collectGpuMetrics,
+  collectQwenResources,
+  collectVpsNewResources,
+  collectQuotaObservatory,
+  collectChatgptWebObservation,
+  assertVpsCommandSafe,
+  resetVpsObservationCache,
+  VPS_SAFE_REMOTE_COMMANDS,
+} from "../../tools/local-dev-resource-observatory-v1.mjs";
 import {
   CLAIM_STALE_AFTER_MS,
   isReceiptBlocking,
@@ -1439,13 +1453,16 @@ async function dashboardHarness(initial = {}) {
     fetch: async (url, options = {}) => {
       fetches.push({ url: String(url), method: String(options.method || "GET").toUpperCase() });
       if (scenario.networkError) throw new Error("Errore rete simulato");
-      const statusEndpoint = String(url) === STATUS_PATH;
+      const path = String(url);
       return {
         ok: scenario.httpError !== true,
         status: scenario.httpError ? 503 : 200,
         json: async () => {
           if (scenario.badJson) throw new SyntaxError("JSON non valido");
-          return statusEndpoint ? (scenario.status ?? null) : (scenario.diag ?? null);
+          if (path === STATUS_PATH) return scenario.status ?? null;
+          if (path === DIAGNOSTICS_PATH) return scenario.diag ?? null;
+          if (path === RESOURCES_PATH) return scenario.resources ?? { schema_version: RESOURCES_SCHEMA, workstation: {}, qwen: {}, vps_new: {}, quotas: { pools: {} }, chatgpt_web: {} };
+          return null;
         },
       };
     },
@@ -1468,15 +1485,16 @@ async function dashboardHarness(initial = {}) {
     html, context, elements, fetches, otherNetwork, htmlWrites, intervals, element, settle,
     setScenario: (next) => { scenario = next; },
     evaluate: (script) => runInContext(script, context, { timeout: 2000 }),
-    render: (status, diag) => {
+    render: (status, diag, resources) => {
       context.__testStatus = status;
       context.__testDiag = diag;
-      return runInContext("render(__testStatus, __testDiag)", context, { timeout: 2000 });
+      context.__testResources = resources ?? null;
+      return runInContext("render(__testStatus, __testDiag, __testResources)", context, { timeout: 2000 });
     },
   };
 }
 
-await test("S35 dashboard startup, automatic and manual refresh execute only the two read-only GET endpoints", async () => {
+await test("S35 dashboard startup, automatic and manual refresh execute only the read-only GET endpoints", async () => {
   const dashboard = await dashboardHarness({ status: { active: false }, diag: { queue: { eligible_count: 0 }, qwen: {} } });
   await dashboard.evaluate("refresh()");
   for (const callback of [...dashboard.intervals.values()]) await callback();
@@ -1485,12 +1503,13 @@ await test("S35 dashboard startup, automatic and manual refresh execute only the
   await dashboard.element("queue-filter").fire("change");
   await dashboard.element("queue-sort").fire("change");
   await dashboard.settle();
-  assert.ok(dashboard.fetches.length >= 4, "startup and manual refresh both fetch");
+  assert.ok(dashboard.fetches.length >= 6, "startup and manual refresh both fetch");
   assert.ok(dashboard.fetches.some((request) => request.url === STATUS_PATH));
   assert.ok(dashboard.fetches.some((request) => request.url === DIAGNOSTICS_PATH));
+  assert.ok(dashboard.fetches.some((request) => request.url === RESOURCES_PATH));
   for (const request of dashboard.fetches) {
     assert.equal(request.method, "GET");
-    assert.ok([STATUS_PATH, DIAGNOSTICS_PATH].includes(request.url), request.url);
+    assert.ok([STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH].includes(request.url), request.url);
   }
   assert.deepEqual(dashboard.otherNetwork, []);
   assert.doesNotMatch(dashboard.html, /<form\b|<script\b[^>]*\bsrc\s*=|\b(?:src|href)\s*=\s*["']https?:\/\//i);
@@ -1576,7 +1595,7 @@ await test("S39 refresh handles HTTP, network and malformed JSON failures withou
     const output = [...dashboard.elements.values()].map((node) => node.textContent + node.innerHTML).join("\n");
     assert.match(output, /errore|non (?:raggiungibile|disponibile)|connessione|fallit|aggiornamento/i);
   }
-  assert.ok(dashboard.fetches.every((request) => request.method === "GET" && [STATUS_PATH, DIAGNOSTICS_PATH].includes(request.url)));
+  assert.ok(dashboard.fetches.every((request) => request.method === "GET" && [STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH].includes(request.url)));
   assert.deepEqual(dashboard.otherNetwork, []);
 });
 
@@ -1886,6 +1905,161 @@ await test("S44 #77 diagnostics invalid ledger remains read-only / independent o
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+await test("S45 GET /v1/resources read-only observatory: no tick side effects; schema bound", async () => {
+  let dispatch = 0, ready = 0, exec = 0, persist = 0;
+  const res = mockRes();
+  await handleTickRequest(mockReq("GET", RESOURCES_PATH), res, {
+    buildResources: async () => ({
+      schema_version: RESOURCES_SCHEMA,
+      read_only: true,
+      observed_at: "2026-09-09T00:00:00.000Z",
+      workstation: { state: "AVAILABLE", collector_label: "Node.js dispatcher / Windows OS" },
+      qwen: { state: "AVAILABLE", capacity_label: "Capacità locale — nessuna quota commerciale", commercial_quota: "N/A", collector_label: "qwen probe" },
+      vps_new: { state: "UNAVAILABLE", reason_code: "VPS_PRIVATE_OBSERVATION_UNAVAILABLE", collector_label: "vps probe" },
+      quotas: {
+        pools: {
+          glm_coding_plan: { quota_pool_id: "glm_coding_plan", consumers: ["glm-5.3", "glm-5.3-flash"], state: "UNKNOWN", freshness: "stale" },
+          chatgpt_codex_subscription: { quota_pool_id: "chatgpt_codex_subscription", state: "UNKNOWN", freshness: "stale" },
+        },
+        cursor: { accounting_mapping: "UNVERIFIED", state: "UNKNOWN" },
+      },
+      chatgpt_web: { availability_domain: "SEPARATE_AVAILABILITY_DOMAIN", unlimited: false, free: false, state: "UNKNOWN" },
+      collectors: {},
+    }),
+    tickDeps: {
+      runDispatchLoop: () => { dispatch += 1; return { claims: [] }; },
+      ensureDevQwenReady: async () => { ready += 1; return { ready: true }; },
+      runExecutor: async () => { exec += 1; return { status: "PASS" }; },
+      persistReceipts: () => { persist += 1; },
+    },
+  });
+  assert.equal(res.status, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.schema_version, RESOURCES_SCHEMA);
+  assert.equal(body.read_only, true);
+  assert.equal(body.quotas.pools.glm_coding_plan.consumers.length, 2);
+  assert.equal(body.chatgpt_web.unlimited, false);
+  assert.equal(body.chatgpt_web.free, false);
+  assert.equal(dispatch + ready + exec + persist, 0);
+  const post = mockRes();
+  await handleTickRequest(mockReq("POST", RESOURCES_PATH, "{}"), post, {});
+  assert.equal(post.status, 405);
+});
+
+await test("S46 observatory collectors: GPU missing UNKNOWN; Qwen unreachable; VPS unavailable; mutation blocked; cache", async () => {
+  resetVpsObservationCache();
+  const gpu = await collectGpuMetrics({
+    execFile: async () => { const err = new Error("not found"); err.code = "ENOENT"; throw err; },
+  });
+  assert.equal(gpu.state, "UNAVAILABLE");
+  assert.equal(gpu.reason_code, "NVIDIA_SMI_NOT_FOUND");
+
+  const qwen = await collectQwenResources({
+    probeQwen: async () => ({ reachable: false, models: [], profile_status: "unreachable", error: "timeout" }),
+  });
+  assert.equal(qwen.reachable, false);
+  assert.equal(qwen.commercial_quota, "N/A");
+  assert.match(qwen.capacity_label, /nessuna quota commerciale/i);
+
+  assert.equal(assertVpsCommandSafe("docker restart n8n").ok, false);
+  assert.equal(assertVpsCommandSafe("systemctl restart docker").reason_code, "VPS_COMMAND_MUTATION_FORBIDDEN");
+  assert.equal(assertVpsCommandSafe("uptime").ok, true);
+  assert.ok(VPS_SAFE_REMOTE_COMMANDS.includes("uptime"));
+
+  const v1 = await collectVpsNewResources({ nowMs: 1_000 });
+  assert.equal(v1.state, "UNAVAILABLE");
+  assert.equal(v1.reason_code, "VPS_PRIVATE_OBSERVATION_UNAVAILABLE");
+  const v2 = await collectVpsNewResources({ nowMs: 1_000 + 5_000 });
+  assert.equal(v2.cache_hit, true);
+
+  let sshCalls = 0;
+  resetVpsObservationCache();
+  const vLive = await collectVpsNewResources({
+    nowMs: 2_000,
+    bypassCache: true,
+    sshRunner: async ({ commands, batchMode, timeoutMs }) => {
+      sshCalls += 1;
+      assert.equal(batchMode, true);
+      assert.ok(timeoutMs <= 8000);
+      for (const cmd of commands) assert.equal(assertVpsCommandSafe(cmd).ok, true);
+      return { reachable: true, observed_at: "2026-09-09T00:00:00.000Z", ram_percent: 40, n8n: "active", docker: "29.0", postgresql: "active", litellm: "unknown" };
+    },
+  });
+  assert.equal(vLive.state, "AVAILABLE");
+  assert.equal(sshCalls, 1);
+  const vCached = await collectVpsNewResources({ nowMs: 2_000 + 10_000 });
+  assert.equal(vCached.cache_hit, true);
+  assert.equal(sshCalls, 1);
+
+  const quotas = await collectQuotaObservatory({
+    composeCanonicalQuotaState: async () => ({
+      ok: true,
+      schema_version: "v4-rt25-canonical-quota-state-v1",
+      joined: {
+        pools: {
+          glm_coding_plan: { state: "unknown", freshness: "stale", remaining_percent: null, evaluation: "CONSERVE_UNKNOWN_MISSING" },
+          chatgpt_codex_subscription: { state: "unknown", freshness: "stale", remaining_percent: null, evaluation: "CONSERVE_UNKNOWN_MISSING" },
+        },
+      },
+      reason_codes: [],
+    }),
+  });
+  assert.equal(quotas.pools.glm_coding_plan.quota_pool_id, "glm_coding_plan");
+  assert.deepEqual(quotas.pools.glm_coding_plan.consumers, ["glm-5.3", "glm-5.3-flash"]);
+  assert.equal(quotas.pools.chatgpt_codex_subscription.state, "UNKNOWN");
+  assert.equal(quotas.cursor.accounting_mapping, "UNVERIFIED");
+  assert.equal(quotas.qwen_local.commercial_quota, "N/A");
+
+  const web = await collectChatgptWebObservation({});
+  assert.equal(web.unlimited, false);
+  assert.equal(web.free, false);
+  assert.equal(web.state, "UNKNOWN");
+  assert.equal(web.availability_domain, "SEPARATE_AVAILABILITY_DOMAIN");
+  assert.ok(!/"unlimited"\s*:\s*true/.test(JSON.stringify(web)));
+  assert.ok(!/"free"\s*:\s*true/.test(JSON.stringify(web)));
+
+  const obs = await buildResourceObservatory({
+    collectWorkstation: async () => ({ state: "AVAILABLE", ram_percent: 50, collector_label: "os", gpu }),
+    collectQwen: async () => qwen,
+    collectVps: async () => v1,
+    collectQuotas: async () => quotas,
+    collectChatgptWeb: async () => web,
+  });
+  assert.equal(obs.schema_version, RESOURCES_SCHEMA);
+  assert.equal(obs.read_only, true);
+  assert.ok(!JSON.stringify(obs).includes("[object Object]"));
+});
+
+await test("S47 dashboard resources section: no object Object; Italian labels; no unlimited ChatGPT Web", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false },
+    diag: { queue: { eligible_count: 0 }, qwen: { reachable: true, models: [] } },
+    resources: {
+      schema_version: RESOURCES_SCHEMA,
+      workstation: { state: "AVAILABLE", ram_percent: 42.5, observed_at: "2026-09-09T00:00:00Z", freshness: "fresh", collector_label: "Node.js dispatcher / Windows OS", gpu: { state: "UNKNOWN", reason_code: "NVIDIA_SMI_NOT_FOUND", collector_label: "nvidia-smi" } },
+      qwen: { occupancy: "IDLE", capacity_label: "Capacità locale — nessuna quota commerciale", commercial_quota: "N/A", collector_label: "qwen probe", loaded_models: [] },
+      vps_new: { state: "UNAVAILABLE", reason_code: "VPS_PRIVATE_OBSERVATION_UNAVAILABLE", collector_label: "vps probe" },
+      quotas: {
+        pools: {
+          glm_coding_plan: { state: "UNKNOWN", freshness: "stale", consumers: ["glm-5.3", "glm-5.3-flash"], collector_label: "rt25" },
+          chatgpt_codex_subscription: { state: "UNKNOWN", freshness: "stale", collector_label: "rt25" },
+        },
+        cursor: { accounting_mapping: "UNVERIFIED", state: "UNKNOWN", labels: {}, collector_label: "manual" },
+      },
+      chatgpt_web: { state: "UNKNOWN", unlimited: false, free: false, collector_label: "hermes" },
+    },
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = [...dashboard.htmlWrites.map((w) => w.value), ...[...dashboard.elements.values()].map((n) => n.innerHTML + n.textContent)].join("\n");
+  assert.match(out, /Risorse e quote|PC casa|Qwen locale|NEW VPS|GLM|Codex|Cursor|ChatGPT Web/i);
+  assert.match(out, /Capacità locale — nessuna quota commerciale/);
+  assert.match(out, /UNVERIFIED|Mapping/);
+  assert.match(out, /Fonte \/ Collector/);
+  assert.doesNotMatch(out, /\[object Object\]/);
+  assert.doesNotMatch(out, /\bUNLIMITED\b|\bFREE\b|100%\s*remaining/i);
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);

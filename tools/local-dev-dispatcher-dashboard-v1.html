@@ -17,6 +17,7 @@
     @media(max-width:1200px){.shell{padding:0 20px}.workspace{grid-template-columns:minmax(0,1fr) 330px}.summary-grid{grid-template-columns:repeat(3,1fr)}.metric{min-height:105px}.metric-value{font-size:21px}.toolbar{gap:6px}td,th{padding-left:12px;padding-right:12px}.hero h3{font-size:20px}}
     @media(max-width:900px){.workspace{grid-template-columns:1fr}.sidebar{grid-template-columns:1fr 1fr}.page-head{align-items:start}.controls{justify-content:flex-end}.freshness{width:100%;justify-content:flex-end}.technical-panel .facts{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:620px){.shell{padding:0 12px}.breadcrumb{display:none}.page-head{flex-direction:column;gap:12px;padding-top:18px}.controls{justify-content:flex-start;gap:10px}.freshness{width:auto}.summary-grid{grid-template-columns:repeat(2,1fr)}.metric{padding:12px;min-height:102px}.metric-value{font-size:20px}.sidebar{grid-template-columns:1fr}.interpretation{grid-template-columns:1fr;gap:5px}.hero h3{font-size:19px}.panel-body,.panel-head{padding:14px}.queue-metrics{gap:14px}.toolbar select{max-width:145px}.footer{flex-direction:column;gap:5px}.receipt-details[open]{min-width:230px}}
+    .obs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:0 0 16px}.obs-card{border:1px solid var(--line);border-radius:12px;background:linear-gradient(160deg,#171a20,#111317);padding:14px 15px;min-height:150px}.obs-card .obs-top{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}.obs-card h3{font-size:13px;letter-spacing:-.2px}.obs-dot{width:8px;height:8px;border-radius:50%;flex:none}.obs-dot.ok{background:var(--green);box-shadow:0 0 8px #73e3a455}.obs-dot.warn{background:var(--amber)}.obs-dot.danger{background:var(--red)}.obs-dot.neutral{background:#6b7380}.obs-main{font-size:18px;font-weight:650;letter-spacing:-.4px;margin:4px 0 8px}.obs-line{font-size:11px;color:var(--muted);margin:3px 0;overflow-wrap:anywhere}.obs-source{margin-top:10px;padding-top:8px;border-top:1px solid #242830;font-size:10px;color:#8b95a5}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
   </style>
 </head>
@@ -32,6 +33,10 @@
     </div>
     <div id="data-alert" class="alert" role="alert" hidden></div>
     <section class="summary-grid" id="summary-cards" aria-label="Sintesi operativa"></section>
+    <section class="panel" aria-labelledby="resources-title" style="margin-bottom:16px">
+      <div class="panel-head"><div class="heading"><span class="section-index">00</span><h2 id="resources-title">Risorse e quote</h2></div><span class="pill subtle">Osservatorio sola lettura</span></div>
+      <div class="panel-body" style="padding-top:12px"><div class="obs-grid" id="resources-cards"></div></div>
+    </section>
     <div class="workspace">
       <div class="primary">
         <section id="hero" class="panel hero warn" aria-labelledby="why-title"><div class="panel-body">
@@ -56,7 +61,7 @@
       </aside>
     </div>
     <details class="panel technical-panel" id="status-technical"><summary>Mostra dettagli tecnici del dispatcher</summary><dl class="facts" id="status-details"></dl></details>
-    <footer class="footer"><span>Osservazione locale · Nessuna azione di esecuzione disponibile in questa console.</span><span>Fonti: <code>GET /v1/status</code> · <code>GET /v1/diagnostics</code></span></footer>
+    <footer class="footer"><span>Osservazione locale · Nessuna azione di esecuzione disponibile in questa console.</span><span>Fonti: <code>GET /v1/status</code> · <code>GET /v1/diagnostics</code> · <code>GET /v1/resources</code></span></footer>
   </main>
   <script>
     'use strict';
@@ -94,6 +99,17 @@
       notify_required:'Indica se l’ultimo risultato richiede una notifica secondo il servizio.',
       files_touched:'File riportati dall’esecuzione nel riepilogo del servizio.',
       action_required:'Indicazione diagnostica di intervento umano. Non concede autorizzazioni di esecuzione o ripetizione.',
+      resources:'Osservatorio delle risorse locali, VPS e quote commerciali in sola lettura.',
+      workstation:'Risorse del PC Windows osservate dal dispatcher Node.',
+      gpu:'Metriche GPU da nvidia-smi, se disponibile.',
+      qwen_capacity:'Capacità locale Qwen: nessuna quota commerciale.',
+      vps_new:'Osservazione privata del NEW VPS, se il trasporto è disponibile.',
+      glm_pool:'Pool condiviso glm_coding_plan (glm-5.3 e flash).',
+      codex_pool:'Pool chatgpt_codex_subscription dalle osservazioni canoniche.',
+      cursor_allowance:'Allowance Cursor non qualificata: mapping contabile non verificato.',
+      chatgpt_web:'Dominio di disponibilità separato; non è un pool di quota.',
+      collector:'Chi produce questa osservazione (fonte/collector).',
+      freshness:'Indica se l’osservazione è fresca o stantia rispetto alla legge di freschezza.',
     });
     const LABELS = Object.freeze({IDLE:'In attesa',IDLE_CLEAN:'In attesa',BUSY:'Occupato',HUMAN_GATE_REQUIRED:'Intervento umano',SERVICE_ERROR:'Errore di servizio',WORK_EXECUTED_PASS:'Completato',PASS:'Superato',WORK_EXECUTED_STOP:'Esecuzione arrestata',STOP:'Arrestato',FAIL:'Non superato',RUNNING:'In corso',NOT_STARTED:'Non avviati',TERMINAL:'Ciclo concluso',REPO_HYGIENE:'Verifica repository',QUEUE_SCAN:'Scansione della coda',SELECTING:'Selezione del task',CLAIM:'Registrazione claim',CLAIMED:'Claim registrato',EXECUTING:'Esecuzione',OPENCODE:'Elaborazione OpenCode',TESTS:'Verifica dei test',QWEN_PREFLIGHT:'Verifica Qwen',ADMISSION:'Verifica ammissione',READY:'Pronto',READY_FOR_PLANNING:'Pronto per la pianificazione',RELEASED:'Rilasciato',CLAIM_RELEASED:'Claim rilasciato',FAILED_BEFORE_EXECUTION:'Fermato prima dell’esecuzione',loaded:'Caricato',unloaded:'Non caricato',loading:'Caricamento',unloading:'Scaricamento',ready:'Pronto',healthy:'Disponibile',unhealthy:'Non disponibile',error:'Errore',unreachable:'Non raggiungibile',unknown:'Sconosciuto',missing:'Non disponibile',listed:'Presente nel catalogo',not_listed:'Assente dal catalogo'});
     const REASONS = Object.freeze({CLAIM_ALREADY_EXISTS:'Bloccato da claim',NO_ELIGIBLE_READY:'Nessun task eseguibile',CLAIM_SKIPPED_PRESENT:'Selezione fermata dal claim',NOT_READY:'Backlog non pronto',STATE_NOT_READY:'Backlog non pronto',NOT_LOCAL_DEV:'Destinazione non locale',HUMAN_GATE_REQUIRED:'Intervento umano richiesto',READ_FAILED:'Lettura del file non riuscita',EMPTY_FILE:'File vuoto',PARSE_FAILED:'Formato del backlog non valido',INVALID_ENTRY:'Elemento non valido',DIAGNOSTICS_QUEUE_SCAN_FAILED:'Scansione non disponibile',QWEN_SESSION_NOT_READY:'Runtime Qwen non pronto',MICRO_TASK_ADMISSION_REJECTED:'Ammissione del task rifiutata',TRACKED_DIRTY_CONFLICT:'Modifiche locali da verificare'});
@@ -144,8 +160,78 @@
       const shown=`${filtered.length} di ${rows.length} elementi disponibili mostrati`;
       el('queue-note').textContent=`${shown}. ${q.items_truncated||q.rejected_items_truncated?'Elenco limitato dal servizio; i conteggi in alto includono tutta la scansione. ':''}${legacy?'I dettagli receipt richiedono la versione aggiornata del servizio.':'La scansione applica le regole canoniche senza acquisire task.'}`;
     }
+    function renderResources(resources){
+      const r=obj(resources);
+      const w=obj(r.workstation), q=obj(r.qwen), v=obj(r.vps_new), quotas=obj(r.quotas), web=obj(r.chatgpt_web);
+      const glm=obj(obj(quotas.pools).glm_coding_plan), codex=obj(obj(quotas.pools).chatgpt_codex_subscription), cursor=obj(quotas.cursor);
+      const gpu=obj(w.gpu);
+      const toneState=state=>{
+        const s=text(state,'').toUpperCase();
+        if(/AVAILABLE|LOADED|HEALTHY|OK|FRESH/.test(s)&&!/UNAVAILABLE|UNKNOWN|STALE|N\/A/.test(s))return 'ok';
+        if(/STALE|RESERVE|PARTIAL|WARN|LOADING/.test(s))return 'warn';
+        if(/UNAVAILABLE|ERROR|EXHAUSTED|OFFLINE|DANGER/.test(s))return 'danger';
+        return 'neutral';
+      };
+      const pct=value=>number(value)===null?'Non disponibile':`${value.toLocaleString('it-IT',{maximumFractionDigits:1})} %`;
+      const bytes=value=>{const n=number(value);if(n===null)return 'Non disponibile';const units=['B','KB','MB','GB','TB'];let x=n,i=0;while(x>=1024&&i<units.length-1){x/=1024;i+=1;}return `${x.toLocaleString('it-IT',{maximumFractionDigits:1})} ${units[i]}`;};
+      const card=(title,tipKey,state,main,lines,source)=>{
+        const t=toneState(state);
+        return `<article class="obs-card"><div class="obs-top"><h3>${escapeHtml(title)} ${help(tipKey)}</h3><span class="obs-dot ${t}" title="${escapeHtml(state)}"></span></div><div class="obs-main ${t}">${escapeHtml(main)}</div>${list(lines).map(line=>`<p class="obs-line">${escapeHtml(line)}</p>`).join('')}<p class="obs-source">Fonte / Collector: ${escapeHtml(source)} ${help('collector')}</p></article>`;
+      };
+      if(!r.schema_version){
+        put('resources-cards',`<p class="empty">Osservatorio risorse non ancora disponibile da questo servizio.</p>`);
+        return;
+      }
+      put('resources-cards',[
+        card('PC casa','workstation',w.state||w.freshness,`RAM ${pct(w.ram_percent)}`,[
+          `CPU: ${pct(w.cpu_percent)} · logici: ${count(w.logical_cpu_count)}`,
+          `Disco sistema: ${pct(w.system_disk_percent)} libero ${bytes(w.system_disk_free_bytes)}`,
+          `Osservato: ${date(w.observed_at)} · freschezza: ${text(w.freshness,'unknown')}`,
+        ],w.collector_label||'Node.js dispatcher / Windows OS'),
+        card('Qwen locale','qwen_capacity',q.occupancy||q.state,text(q.capacity_label,'Capacità locale — nessuna quota commerciale'),[
+          `Occupazione: ${text(q.occupancy,'UNKNOWN')} · caricati: ${count(list(q.loaded_models).length)}`,
+          `Endpoint: ${text(q.reachable===true?'raggiungibile':q.reachable===false?'non raggiungibile':'sconosciuto')}`,
+          `Quota commerciale: N/A`,
+          `Osservato: ${date(q.observed_at)} · ${text(q.freshness,'unknown')}`,
+        ],q.collector_label||'dispatcher read-only Qwen probe :8080'),
+        card('NEW VPS','vps_new',v.state,text(v.state,'UNAVAILABLE'),[
+          v.reason_code?`Motivo: ${text(v.reason_code)}`:'Trasporto privato di osservazione',
+          `RAM: ${pct(v.ram_percent)} · disco: ${pct(v.root_disk_percent)}`,
+          `n8n: ${text(v.n8n,'—')} · docker: ${text(v.docker,'—')} · postgres: ${text(v.postgresql,'—')}`,
+          `Osservato: ${date(v.observed_at)} · cache: ${yn(v.cache_hit)} · ${text(v.freshness,'stale')}`,
+        ],v.collector_label||'dispatcher private read-only remote probe'),
+        card('GLM','glm_pool',glm.freshness==='stale'?'STALE':glm.state,glm.remaining_percent==null?text(glm.state,'UNKNOWN'):`Residuo ${pct(glm.remaining_percent)}`,[
+          `Pool unico: glm_coding_plan`,
+          `Consumatori: ${(list(glm.consumers).join(', ')||'glm-5.3, glm-5.3-flash')}`,
+          `Freschezza: ${text(glm.freshness,'stale')} · reset: ${date(glm.reset_at)}`,
+          `Valutazione: ${text(glm.evaluation,'—')}`,
+        ],glm.collector_label||'rt25 quota ingest / canonical quota state'),
+        card('Codex','codex_pool',codex.freshness==='stale'?'STALE':codex.state,codex.remaining_percent==null?text(codex.state,'UNKNOWN'):`Residuo ${pct(codex.remaining_percent)}`,[
+          `Pool: chatgpt_codex_subscription`,
+          `Freschezza: ${text(codex.freshness,'stale')} · reset: ${date(codex.reset_at)}`,
+          `Valutazione: ${text(codex.evaluation,'—')}`,
+        ],codex.collector_label||'rt25 quota ingest / canonical quota state'),
+        card('Cursor','cursor_allowance',cursor.state||'UNKNOWN',`Mapping: ${text(cursor.accounting_mapping,'UNVERIFIED')}`,[
+          `Cursor Models: ${cursor.labels&&number(cursor.labels.cursor_models)!==null?pct(cursor.labels.cursor_models):'UNKNOWN'}`,
+          `Other Models: ${cursor.labels&&number(cursor.labels.other_models)!==null?pct(cursor.labels.other_models):'UNKNOWN'}`,
+          text(cursor.note,'Nessun pool inventato.'),
+          `Osservato: ${date(cursor.observed_at)} · ${text(cursor.freshness,'stale')}`,
+        ],cursor.collector_label||'manual runtime observation until accounting is qualified'),
+        card('ChatGPT Web','chatgpt_web',web.state||'UNKNOWN',text(web.state,'UNKNOWN'),[
+          'Dominio di disponibilità SEPARATO (non un pool)',
+          `Illimitato/gratuito: No / No`,
+          `Raggiungibile: ${yn(web.reachable)} · autenticato: ${yn(web.authenticated)}`,
+          `Osservato: ${date(web.observed_at)} · ${text(web.freshness,'stale')}`,
+        ],web.collector_label||'existing Hermes/Web observation if available'),
+        card('GPU','gpu',gpu.state||'UNKNOWN',text(gpu.gpu_name,text(gpu.state,'UNKNOWN')),[
+          `Utilizzo: ${pct(gpu.gpu_util_percent)} · temp: ${number(gpu.temperature_c)===null?'—':`${gpu.temperature_c} °C`}`,
+          `VRAM: ${number(gpu.vram_used_mb)===null?'—':`${count(gpu.vram_used_mb)} / ${count(gpu.vram_total_mb)} MB`}`,
+          gpu.reason_code?`Motivo: ${text(gpu.reason_code)}`:'nvidia-smi se presente',
+        ],gpu.collector_label||'nvidia-smi'),
+      ].join(''));
+    }
     function modelState(m){const raw=m.status??m.state;return scalar(raw)||scalar(obj(raw).value)||scalar(obj(raw).state)||scalar(obj(raw).status);}
-    function render(status,diag){const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);const t=obj(d.last_tick),q=obj(d.queue),w=obj(d.qwen);const fallback=fallbackExplanation(s,t,q);const e=typeof obj(d.explanation).action_required==='boolean'||obj(d.explanation).action_required===null?{...fallback,...obj(d.explanation)}:fallback;const severity=['ok','warn','danger','info'].includes(e.severity)?e.severity:'info';const active=s.active===true;const c=text(s.classification||t.classification,'');const models=list(w.models).map(obj).filter(m=>scalar(m.id));const loaded=models.filter(m=>modelState(m)==='loaded');const qwenTitle=w.reachable===false?'Non raggiungibile':w.reachable===true?(loaded.length?`${loaded.length} caricato${loaded.length===1?'':'i'}`:'Endpoint disponibile'):'Non disponibile';
+    function render(status,diag,resources){const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);const t=obj(d.last_tick),q=obj(d.queue),w=obj(d.qwen);const fallback=fallbackExplanation(s,t,q);const e=typeof obj(d.explanation).action_required==='boolean'||obj(d.explanation).action_required===null?{...fallback,...obj(d.explanation)}:fallback;const severity=['ok','warn','danger','info'].includes(e.severity)?e.severity:'info';const active=s.active===true;const c=text(s.classification||t.classification,'');const models=list(w.models).map(obj).filter(m=>scalar(m.id));const loaded=models.filter(m=>modelState(m)==='loaded');const qwenTitle=w.reachable===false?'Non raggiungibile':w.reachable===true?(loaded.length?`${loaded.length} caricato${loaded.length===1?'':'i'}`:'Endpoint disponibile'):'Non disponibile';
       put('summary-cards',[
         metric('Stato dispatcher',active?'Al lavoro':s.active===false?(c==='HUMAN_GATE_REQUIRED'?'Intervento umano':c==='SERVICE_ERROR'?'Errore servizio':'In attesa'):'Sconosciuto',active?label(s.phase):`Ultimo esito: ${label(c)}`,'active',active?'info':tone(c)),
         metric('Task',s.task_ref?shortTask(s.task_ref):q.candidate_task_ref?shortTask(q.candidate_task_ref):'Nessun task',s.task_ref?(active?'Task in elaborazione':'Ultimo task osservato'):q.candidate_task_ref?'Candidato · non ancora avviato':'Nessun task selezionato','task_ref','identity',true),
@@ -163,18 +249,19 @@
       put('tick-summary',`<p class="outcome ${tone(t.classification)}">${escapeHtml(label(t.classification))}</p><p class="outcome-time">${escapeHtml(date(t.recorded_at))}</p><dl class="facts">${fact('Task',t.task_ref?shortTask(t.task_ref):'Nessun task registrato','task_ref',true)}${fact('Durata del ciclo',duration(t.elapsed_ms),'elapsed_ms')}${fact('Attività svolta',yn(t.execution_performed),'execution_performed')}${fact('Intervento umano',yn(t.human_gate_required),'human_gate_required')}</dl>`);
       el('reason-codes').textContent=json({classification:t.classification??null,reason_codes:t.reason_codes??[],gate_summary:t.gate_summary??null,request_id:t.request_id??null,notify_required:t.notify_required??null});
       put('status-details',fact('Fase',label(s.phase),'phase')+fact('Classificazione',label(s.classification),'classification')+fact('Identificativo ciclo',s.request_id,'request_id',true)+fact('Identificativo task',s.task_ref,'task_ref',true)+fact('Durata osservata',duration(s.elapsed_ms),'elapsed_ms')+fact('Processo',s.executor_pid,'executor_pid')+fact('Test',label(s.tests_state),'tests_state')+fact('Ultimo evento',s.last_event,'last_event',true)+fact('File coinvolti',list(s.files_touched).filter(v=>typeof v==='string').join(', ')||'Nessun file riportato','files_touched',true));
+      renderResources(resources);
     }
     let refreshing=false,lastSuccess=null;
     async function readJson(path){const response=await fetch(path,{method:'GET',cache:'no-store',signal:AbortSignal.timeout(7000)});if(!response.ok)throw new Error(`HTTP ${response.status}`);const body=await response.json();if(!body||typeof body!=='object'||Array.isArray(body))throw new Error('Risposta non valida');return body;}
-    async function refresh(){if(refreshing)return;refreshing=true;el('refresh-button').disabled=true;try{const responses=await Promise.allSettled([readJson('/v1/status'),readJson('/v1/diagnostics')]);const sr=responses[0],dr=responses[1];const s=sr.status==='fulfilled'?sr.value:null,d=dr.status==='fulfilled'?dr.value:null;
-      if(!s&&!d)throw new Error('Entrambe le fonti non sono disponibili');
-      render(s,d);const partial=!s||!d;el('data-alert').hidden=!partial;el('data-alert').textContent=partial?`Dati parziali: ${!s?'/v1/status':'/v1/diagnostics'} non disponibile. I campi mancanti non sono confermati.`:'';lastSuccess=new Date();el('poll-dot').className=partial?'dot off':'dot';el('poll-age').textContent=`${partial?'Lettura parziale':'Aggiornato'} alle ${lastSuccess.toLocaleTimeString('it-IT')}`;
+    async function refresh(){if(refreshing)return;refreshing=true;el('refresh-button').disabled=true;try{const responses=await Promise.allSettled([readJson('/v1/status'),readJson('/v1/diagnostics'),readJson('/v1/resources')]);const sr=responses[0],dr=responses[1],rr=responses[2];const s=sr.status==='fulfilled'?sr.value:null,d=dr.status==='fulfilled'?dr.value:null,r=rr.status==='fulfilled'?rr.value:null;
+      if(!s&&!d&&!r)throw new Error('Tutte le fonti non sono disponibili');
+      render(s,d,r);const partial=!s||!d||!r;el('data-alert').hidden=!partial;el('data-alert').textContent=partial?`Dati parziali: ${[!s&&'/v1/status',!d&&'/v1/diagnostics',!r&&'/v1/resources'].filter(Boolean).join(', ')} non disponibile. I campi mancanti non sono confermati.`:'';lastSuccess=new Date();el('poll-dot').className=partial?'dot off':'dot';el('poll-age').textContent=`${partial?'Lettura parziale':'Aggiornato'} alle ${lastSuccess.toLocaleTimeString('it-IT')}`;
     }catch{el('poll-dot').className='dot off';el('poll-age').textContent='Aggiornamento non riuscito';el('data-alert').hidden=false;el('data-alert').textContent=`Connessione al dispatcher non disponibile. ${lastSuccess?`Ultima lettura riuscita alle ${lastSuccess.toLocaleTimeString('it-IT')}. I dati sottostanti non sono aggiornati.`:'Nessuno stato confermato.'}`;el('headline').textContent='Lo stato attuale non è verificabile.';el('detail').textContent='Le fonti del dispatcher non hanno restituito una risposta valida.';el('operator-action').textContent='Verificare la disponibilità del servizio e aggiornare la lettura.';el('hero').className='panel hero danger';el('live-badge').textContent='Dati non aggiornati';el('live-badge').className='pill danger';
     }finally{refreshing=false;el('refresh-button').disabled=false;}}
     function positionTip(event){const target=event.target.closest?.('.help');if(!target)return;target.classList.remove('tip-dismissed');const tip=target.querySelector('.tooltip');const rect=target.getBoundingClientRect();tip.style.left=`${Math.max(12,Math.min(rect.left,window.innerWidth-280))}px`;tip.style.top=`${Math.max(12,Math.min(rect.bottom+8,window.innerHeight-140))}px`;}
     document.addEventListener('mouseover',positionTip);document.addEventListener('focusin',positionTip);document.addEventListener('keydown',event=>{if(event.key==='Escape')document.querySelectorAll('.help').forEach(n=>n.classList.add('tip-dismissed'));});
-    el('queue-search').addEventListener('input',renderQueue);el('queue-filter').addEventListener('change',renderQueue);el('queue-sort').addEventListener('change',renderQueue);el('refresh-button').addEventListener('click',refresh);el('auto-refresh').addEventListener('change',()=>{if(el('auto-refresh').checked)refresh();else el('poll-age').textContent='Actualisation automatique suspendue'.replace('Actualisation automatique suspendue','Aggiornamento automatico sospeso');});
-    render(null,null);refresh();setInterval(()=>{if(el('auto-refresh').checked&&!document.hidden)refresh();},3000);
+    el('queue-search').addEventListener('input',renderQueue);el('queue-filter').addEventListener('change',renderQueue);el('queue-sort').addEventListener('change',renderQueue);el('refresh-button').addEventListener('click',refresh);el('auto-refresh').addEventListener('change',()=>{if(el('auto-refresh').checked)refresh();else el('poll-age').textContent='Aggiornamento automatico sospeso';});
+    render(null,null,null);refresh();setInterval(()=>{if(el('auto-refresh').checked&&!document.hidden)refresh();},3000);
   </script>
 </body>
 </html>
