@@ -1994,6 +1994,14 @@ await test("S46 observatory collectors: GPU missing UNKNOWN; Qwen unreachable; V
   assert.equal(sshCalls, 1);
 
   const quotas = await collectQuotaObservatory({
+    collectOpenClaw: async () => ({
+      ok: false, freshness: "stale", observed_at: null, cache_hit: false,
+      reason_codes: ["OPENCLAW_NOT_FOUND"], emit_contributions: false, contributions: [],
+      pools: {
+        glm_coding_plan: { state: "unknown", freshness: "stale", reason_code: "OPENCLAW_NOT_FOUND", windows: [], unmapped_windows: [], primary: null },
+        chatgpt_codex_subscription: { state: "unknown", freshness: "stale", reason_code: "OPENCLAW_NOT_FOUND", windows: [], unmapped_windows: [], primary: null },
+      },
+    }),
     composeCanonicalQuotaState: async () => ({
       ok: true,
       schema_version: "v4-rt25-canonical-quota-state-v1",
@@ -2588,6 +2596,65 @@ await test("S62 #73 laws preserved: Cursor UNVERIFIED, ChatGPT Web not unlimited
   const res = mockRes();
   await handleTickRequest(mockReq("POST", RESOURCES_PATH, "{}"), res, {});
   assert.equal(res.status, 405);
+});
+
+await test("S63 #73 merge law: OpenClaw live + ingest-lane contributions BOTH reach the canonical composer", async () => {
+  const observedAt = "2026-09-09T04:59:55.000Z";
+  const openclawContribution = {
+    schema_version: "v4-resource-status-contribution-v1",
+    contribution_id: "openclaw-quota-glm_coding_plan-" + observedAt,
+    producer_id: "collect-openclaw-quota-v1",
+    source: "provider_api",
+    produced_at: observedAt,
+    resources: { glm: { available: true, quota_remaining: { value: 76, unit: "percent" }, reset_at: "2026-09-09T10:03:41.662Z", cost_mode: "included", location: "cloud", updated_at: observedAt, evidence: { kind: "source_snapshot", classification: "OPENCLAW_USAGE_LIVE_zai" } } },
+  };
+  const ingestLaneDir = mkdtempSync(join(tmpdir(), "oc-ingest-lane-"));
+  try {
+    const ingestDecision = {
+      schema_version: "v4-rt25-quota-ingest-result-v1",
+      ok: true,
+      contribution: {
+        schema_version: "v4-resource-status-contribution-v1",
+        contribution_id: "rt25-glm-quota-glm_coding_plan-2026-09-09T04:50:00.000Z",
+        producer_id: "rt25-quota-ingest-glm-v1",
+        source: "dashboard_snapshot",
+        produced_at: "2026-09-09T04:50:00.000Z",
+        resources: { glm: { available: true, quota_remaining: { value: 60, unit: "percent" }, reset_at: "2026-09-09T10:00:00.000Z", cost_mode: "included", location: "cloud", updated_at: "2026-09-09T04:50:00.000Z", evidence: { kind: "source_snapshot", classification: "QUOTA_POOL_INGEST_AVAILABLE_FRESH_FRESH" } } },
+      },
+    };
+    writeFileSync(join(ingestLaneDir, "glm-quota-decision.json"), JSON.stringify(ingestDecision));
+    let seen = null;
+    const quotas = await collectQuotaObservatory({
+      nowMs: Date.parse("2026-09-09T05:00:00.000Z"),
+      ingestDir: ingestLaneDir,
+      collectOpenClaw: async () => ({
+        ok: true, freshness: "fresh", observed_at: observedAt, cache_hit: false,
+        reason_codes: [], emit_contributions: true,
+        contributions: [openclawContribution],
+        pools: {
+          glm_coding_plan: { state: "available", freshness: "fresh", reason_code: null, windows: [{ window_type: "rolling", label: "Tokens (5h)", remaining_percent: 76, reset_at: "2026-09-09T10:03:41.662Z" }], unmapped_windows: [], primary: { window_type: "rolling", remaining_percent: 76, reset_at: "2026-09-09T10:03:41.662Z" } },
+          chatgpt_codex_subscription: { state: "unknown", freshness: "stale", reason_code: "OPENCLAW_PROVIDER_MISSING", windows: [], unmapped_windows: [], primary: null },
+        },
+      }),
+      composeCanonicalQuotaState: async (args) => {
+        seen = args;
+        return {
+          ok: true,
+          joined: { pools: { glm_coding_plan: { state: "available", freshness: "fresh", remaining_percent: 76, evaluation: "POOL_HEALTHY" } } },
+          reason_codes: [],
+        };
+      },
+    });
+    // BOTH lanes merged — the ingest-lane observation is NOT silently discarded:
+    const ids = seen.contributions.map((c) => c.contribution_id);
+    assert.ok(ids.includes("rt25-glm-quota-glm_coding_plan-2026-09-09T04:50:00.000Z"));
+    assert.ok(ids.includes("openclaw-quota-glm_coding_plan-" + observedAt));
+    assert.equal(ids.length, 2);
+    assert.equal(quotas.pools.glm_coding_plan.remaining_percent, 76);
+    assert.equal(quotas.pools.glm_coding_plan.collector_id, "openclaw_usage_live");
+  } finally {
+    rmSync(ingestLaneDir, { recursive: true, force: true });
+  }
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);

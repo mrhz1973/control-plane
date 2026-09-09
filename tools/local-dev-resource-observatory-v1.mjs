@@ -12,7 +12,7 @@ import { existsSync, readFileSync, statfsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { composeCanonicalQuotaState } from "./rt25-canonical-quota-state-v1.mjs";
+import { composeCanonicalQuotaState, collectIngestContributions } from "./rt25-canonical-quota-state-v1.mjs";
 import { getOpenClawQuotaObservation } from "./collect-openclaw-quota-v1.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -410,32 +410,27 @@ export async function collectQuotaObservatory(options = {}) {
     }
   }
 
-  // Existing merge law: when OpenClaw emits fresh contributions they are merged
-  // with the ingest-lane contributions by the composer's deterministic
-  // priority/freshness selection — a newer valid canonical observation is
-  // never silently discarded.
-  const composeArgs = {
-    registry: options.registry,
-    baseline: options.baseline,
-    contributions: options.contributions,
-    ingestDir: options.ingestDir,
-    nowMs,
-  };
+  // Existing merge law: OpenClaw live contributions are merged WITH the
+  // ingest-lane contributions by the composer's deterministic priority/
+  // freshness selection — a newer valid canonical observation is never
+  // silently discarded.
+  let laneContributions = options.contributions;
   if (openclaw?.emit_contributions === true && Array.isArray(openclaw.contributions)) {
-    composeArgs.contributions = [...(options.contributions || [])];
-    if (composeArgs.ingestDir !== undefined) {
-      composeArgs.ingestDir = undefined; // contributions lane wins over dir lane
-    }
-    // Preserve ingest-lane contributions without re-reading the dir: the
-    // canonical producer merges live + ingested evidence deterministically.
-    if (options.ingestContributions && Array.isArray(options.ingestContributions)) {
-      composeArgs.contributions.push(...options.ingestContributions);
-    }
-    composeArgs.contributions.push(...openclaw.contributions);
+    const ingested =
+      Array.isArray(options.contributions) && options.contributions.length
+        ? options.contributions
+        : safeCollectIngestContributions(options.ingestDir);
+    laneContributions = [...(ingested || []), ...openclaw.contributions];
   }
   let canonical;
   try {
-    canonical = await compose(composeArgs);
+    canonical = await compose({
+      registry: options.registry,
+      baseline: options.baseline,
+      contributions: laneContributions,
+      ingestDir: options.ingestDir,
+      nowMs,
+    });
   } catch (err) {
     canonical = { ok: false, reason_codes: ["QUOTA_COMPOSE_FAILED", boundStr(err?.message, 60)] };
   }
@@ -536,6 +531,16 @@ export async function collectQuotaObservatory(options = {}) {
     qwen_local: qwen,
     observed_at: new Date(nowMs).toISOString(),
   };
+}
+
+/** Read-only ingest-lane collection for the merge law; failures yield []. */
+function safeCollectIngestContributions(ingestDir) {
+  try {
+    const lane = collectIngestContributions(ingestDir);
+    return Array.isArray(lane?.contributions) ? lane.contributions : [];
+  } catch {
+    return [];
+  }
 }
 
 function loadCursorManualObservation(options = {}) {
