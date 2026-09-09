@@ -36,6 +36,7 @@ import {
   buildDiagnostics,
   normalizeQwenModel,
   probeQwenEndpointReadOnly,
+  loadReceiptsLedger,
   DASHBOARD_PATHS,
 } from "../../tools/serve-local-dev-autonomous-dispatcher-v1.mjs";
 import {
@@ -1577,6 +1578,314 @@ await test("S39 refresh handles HTTP, network and malformed JSON failures withou
   }
   assert.ok(dashboard.fetches.every((request) => request.method === "GET" && [STATUS_PATH, DIAGNOSTICS_PATH].includes(request.url)));
   assert.deepEqual(dashboard.otherNetwork, []);
+});
+
+await test("S40 #77 loadReceiptsLedger: missing => []; valid []; invalid existing ledgers fail closed", () => {
+  const dir = mkdtempSync(join(tmpdir(), "cp-receipts-ledger-"));
+  try {
+    const missing = join(dir, "absent-receipts.json");
+    const miss = loadReceiptsLedger(missing);
+    assert.equal(miss.ok, true);
+    assert.equal(miss.missing, true);
+    assert.deepEqual(miss.receipts, []);
+
+    const emptyPath = join(dir, "empty-array.json");
+    writeFileSync(emptyPath, "[]\n", "utf8");
+    const empty = loadReceiptsLedger(emptyPath);
+    assert.equal(empty.ok, true);
+    assert.equal(empty.missing, false);
+    assert.deepEqual(empty.receipts, []);
+
+    const malformed = join(dir, "malformed.json");
+    writeFileSync(malformed, "{not-json", "utf8");
+    const badJson = loadReceiptsLedger(malformed);
+    assert.equal(badJson.ok, false);
+    assert.equal(badJson.reason_code, "RECEIPTS_LEDGER_JSON_INVALID");
+    assert.equal(badJson.receipts, null);
+    assert.ok(!JSON.stringify(badJson).includes("{not-json"));
+
+    const objPath = join(dir, "object.json");
+    writeFileSync(objPath, "{\"receipts\":[]}\n", "utf8");
+    const badObj = loadReceiptsLedger(objPath);
+    assert.equal(badObj.ok, false);
+    assert.equal(badObj.reason_code, "RECEIPTS_LEDGER_NOT_ARRAY");
+
+    for (const scalar of ["null", "17", "\"x\"", "true"]) {
+      const p = join(dir, `scalar-${Buffer.from(scalar).toString("hex")}.json`);
+      writeFileSync(p, `${scalar}\n`, "utf8");
+      const r = loadReceiptsLedger(p);
+      assert.equal(r.ok, false, scalar);
+      assert.equal(r.reason_code, "RECEIPTS_LEDGER_NOT_ARRAY", scalar);
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+await test("S41 #77 performTick invalid ledger: SERVICE_ERROR + zero selector/Qwen/executor/persist side effects", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "cp-receipts-tick-"));
+  const cases = [
+    { name: "malformed_json", body: "{nope", subtype: "RECEIPTS_LEDGER_JSON_INVALID" },
+    { name: "object", body: "{\"items\":[]}\n", subtype: "RECEIPTS_LEDGER_NOT_ARRAY" },
+    { name: "null_scalar", body: "null\n", subtype: "RECEIPTS_LEDGER_NOT_ARRAY" },
+  ];
+  try {
+    for (const c of cases) {
+      const receiptsPath = join(dir, `${c.name}.json`);
+      writeFileSync(receiptsPath, c.body, "utf8");
+      let dispatch = 0, ready = 0, exec = 0, persist = 0, scan = 0;
+      const result = await performTick(
+        { schema_version: REQUEST_SCHEMA, request_id: `r-77-${c.name}`, source: "n8n" },
+        {
+          verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+          receiptsPath,
+          scanQueue: () => { scan += 1; return [{ markdown: backlogMarkdown("D-77-X"), source: "READY_D-77-X.md", backlog_path: "q/READY_D-77-X.md" }]; },
+          runDispatchLoop: () => { dispatch += 1; return claimForTick("LOCAL_DEV_B_D-77-X"); },
+          ensureDevQwenReady: async () => { ready += 1; return { ready: true }; },
+          runExecutor: async () => { exec += 1; return { status: "PASS", classification: "PASS", task_ref: "LOCAL_DEV_B_D-77-X" }; },
+          persistReceipts: () => { persist += 1; },
+        },
+      );
+      assert.equal(result.classification, "SERVICE_ERROR", c.name);
+      assert.equal(result.execution_performed, false, c.name);
+      assert.equal(result.human_gate_required, false, c.name);
+      assert.equal(result.task_ref, null, c.name);
+      assert.ok(result.reason_codes.includes("RECEIPTS_LEDGER_INVALID"), c.name);
+      assert.ok(result.reason_codes.includes(c.subtype), c.name);
+      assert.equal(dispatch, 0, c.name);
+      assert.equal(ready, 0, c.name);
+      assert.equal(exec, 0, c.name);
+      assert.equal(persist, 0, c.name);
+      assert.equal(scan, 0, c.name);
+      if (c.name === "malformed_json") {
+        assert.ok(!JSON.stringify(result).includes("{nope"), c.name);
+      }
+      if (c.name === "object") {
+        assert.ok(!JSON.stringify(result).includes("\"items\""), c.name);
+      }
+    }
+
+    // Injected read error path (unreadable) — fail closed without touching selector.
+    let dispatch2 = 0, ready2 = 0, exec2 = 0, persist2 = 0;
+    const readFail = await performTick(
+      { schema_version: REQUEST_SCHEMA, request_id: "r-77-read-fail", source: "n8n" },
+      {
+        verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+        loadReceipts: () => {
+          const err = new Error("RECEIPTS_LEDGER_READ_FAILED");
+          err.code = "RECEIPTS_LEDGER_READ_FAILED";
+          throw err;
+        },
+        scanQueue: () => [{ markdown: backlogMarkdown("D-77-Y"), source: "y.md", backlog_path: "q/y.md" }],
+        runDispatchLoop: () => { dispatch2 += 1; return claimForTick("LOCAL_DEV_B_D-77-Y"); },
+        ensureDevQwenReady: async () => { ready2 += 1; return { ready: true }; },
+        runExecutor: async () => { exec2 += 1; return { status: "PASS", classification: "PASS" }; },
+        persistReceipts: () => { persist2 += 1; },
+      },
+    );
+    assert.equal(readFail.classification, "SERVICE_ERROR");
+    assert.equal(readFail.execution_performed, false);
+    assert.ok(readFail.reason_codes.includes("RECEIPTS_LEDGER_INVALID"));
+    assert.ok(readFail.reason_codes.includes("RECEIPTS_LEDGER_READ_FAILED"));
+    assert.equal(dispatch2 + ready2 + exec2 + persist2, 0);
+
+    // Injected non-array return (without throw).
+    let dispatch3 = 0;
+    const nonArray = await performTick(
+      { schema_version: REQUEST_SCHEMA, request_id: "r-77-non-array-inject", source: "n8n" },
+      {
+        verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+        loadReceipts: () => ({ not: "array" }),
+        runDispatchLoop: () => { dispatch3 += 1; return { ok: true, claims: [], skipped: [] }; },
+        ensureDevQwenReady: async () => ({ ready: true }),
+        runExecutor: async () => ({ status: "PASS", classification: "PASS" }),
+      },
+    );
+    assert.equal(nonArray.classification, "SERVICE_ERROR");
+    assert.ok(nonArray.reason_codes.includes("RECEIPTS_LEDGER_NOT_ARRAY"));
+    assert.equal(dispatch3, 0);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+await test("S42 #77 missing ledger and valid [] preserve empty-ledger selection path", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "cp-receipts-empty-"));
+  try {
+    const missingPath = join(dir, "no-such-receipts.json");
+    let dispatch = 0;
+    const miss = await performTick(
+      { schema_version: REQUEST_SCHEMA, request_id: "r-77-missing", source: "n8n" },
+      {
+        verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+        receiptsPath: missingPath,
+        scanQueue: () => [],
+        runDispatchLoop: (_entries, receipts) => {
+          dispatch += 1;
+          assert.ok(Array.isArray(receipts));
+          assert.equal(receipts.length, 0);
+          return { ok: true, claims: [], skipped: [], stop_reason: "QUEUE_DRAINED" };
+        },
+        ensureDevQwenReady: async () => { throw new Error("MUST NOT PREFLIGHT ON IDLE"); },
+        runExecutor: async () => { throw new Error("MUST NOT EXECUTE"); },
+      },
+    );
+    assert.equal(miss.classification, "IDLE_CLEAN");
+    assert.equal(miss.execution_performed, false);
+    assert.equal(dispatch, 1);
+
+    const emptyPath = join(dir, "empty.json");
+    writeFileSync(emptyPath, "[]\n", "utf8");
+    dispatch = 0;
+    const empty = await performTick(
+      { schema_version: REQUEST_SCHEMA, request_id: "r-77-empty", source: "n8n" },
+      {
+        verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+        receiptsPath: emptyPath,
+        scanQueue: () => [{ markdown: backlogMarkdown("D-77-Z"), source: "READY_D-77-Z.md", backlog_path: "q/READY_D-77-Z.md" }],
+        runDispatchLoop: (_entries, receipts) => {
+          dispatch += 1;
+          assert.deepEqual(receipts, []);
+          return { ok: true, claims: [], skipped: [], stop_reason: "QUEUE_DRAINED" };
+        },
+        ensureDevQwenReady: async () => { throw new Error("MUST NOT PREFLIGHT"); },
+        runExecutor: async () => { throw new Error("MUST NOT EXECUTE"); },
+      },
+    );
+    assert.equal(empty.classification, "IDLE_CLEAN");
+    assert.equal(dispatch, 1);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+await test("S43 #77 valid ledger: legacy no-state still blocks; #74 stale CLAIMED replay unchanged", async () => {
+  const id = "D-77-LEG";
+  const taskRef = `LOCAL_DEV_B_${id}`;
+  const markdown = backlogMarkdown(id);
+  const entry = { ...parseBacklogFile(markdown), markdown, source: `READY_${id}.md`, backlog_path: `q/READY_${id}.md` };
+
+  const legacyBlocks = selectNextQueueItem([entry], [{ task_ref: taskRef, claimed_at: STALE_CLAIMED_AT }], LAW_NOW);
+  assert.equal(legacyBlocks.selected, null);
+  assert.equal(legacyBlocks.eligible_count, 0);
+  assert.ok(legacyBlocks.excluded.some((e) => e.reason === "CLAIM_ALREADY_EXISTS"));
+
+  const staleReplay = selectNextQueueItem(
+    [entry],
+    [{ task_ref: taskRef, state: "CLAIMED", execution_started: false, replayable: true, claimed_at: STALE_CLAIMED_AT }],
+    LAW_NOW,
+  );
+  assert.equal(staleReplay.selected?.task_ref, taskRef);
+  assert.equal(staleReplay.eligible_count, 1);
+
+  // performTick with real file loader + real selector path via injected dispatch that receives ledger
+  const dir = mkdtempSync(join(tmpdir(), "cp-receipts-legacy-"));
+  try {
+    const legacyPath = join(dir, "legacy.json");
+    writeFileSync(legacyPath, `${JSON.stringify([{ task_ref: taskRef, claimed_at: STALE_CLAIMED_AT }], null, 2)}\n`, "utf8");
+    let seenReceipts = null;
+    const blocked = await performTick(
+      { schema_version: REQUEST_SCHEMA, request_id: "r-77-legacy-block", source: "n8n" },
+      {
+        verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+        receiptsPath: legacyPath,
+        scanQueue: () => [{ markdown, source: `READY_${id}.md`, backlog_path: `q/READY_${id}.md` }],
+        runDispatchLoop: (entries, receipts) => {
+          seenReceipts = receipts;
+          const decision = selectNextQueueItem(
+            entries.map((e) => {
+              try { return { ...parseBacklogFile(e.markdown), markdown: e.markdown, source: e.source }; }
+              catch { return { ok: false, source: e.source }; }
+            }),
+            receipts,
+            LAW_NOW,
+          );
+          assert.equal(decision.selected, null);
+          return { ok: true, claims: [], skipped: [], stop_reason: "QUEUE_DRAINED" };
+        },
+        ensureDevQwenReady: async () => { throw new Error("MUST NOT PREFLIGHT WHEN BLOCKED"); },
+        runExecutor: async () => { throw new Error("MUST NOT EXECUTE"); },
+      },
+    );
+    assert.equal(blocked.classification, "IDLE_CLEAN");
+    assert.equal(seenReceipts.length, 1);
+    assert.equal(seenReceipts[0].state, undefined);
+
+    const stalePath = join(dir, "stale-claimed.json");
+    writeFileSync(stalePath, `${JSON.stringify([{
+      task_ref: taskRef,
+      state: "CLAIMED",
+      execution_started: false,
+      replayable: true,
+      claimed_at: STALE_CLAIMED_AT,
+    }], null, 2)}\n`, "utf8");
+    let claimed = false;
+    const replay = await performTick(
+      { schema_version: REQUEST_SCHEMA, request_id: "r-77-stale-replay", source: "n8n" },
+      {
+        verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+        receiptsPath: stalePath,
+        scanQueue: () => [{ markdown, source: `READY_${id}.md`, backlog_path: `q/READY_${id}.md` }],
+        runDispatchLoop: (entries, receipts) => {
+          const decision = selectNextQueueItem(
+            entries.map((e) => ({ ...parseBacklogFile(e.markdown), markdown: e.markdown, source: e.source })),
+            receipts,
+            LAW_NOW,
+          );
+          assert.equal(decision.selected?.task_ref, taskRef);
+          claimed = true;
+          return claimForTick(taskRef);
+        },
+        loadReceipts: undefined,
+        persistReceipts: () => {},
+        ensureDevQwenReady: readyEnsureStub(),
+        admitMicroTaskDelta: () => ({ admitted: true }),
+        runExecutor: async () => ({ status: "PASS", classification: "PASS", task_ref: taskRef, reason_codes: ["PASS"] }),
+      },
+    );
+    assert.equal(claimed, true);
+    assert.equal(replay.classification, "WORK_EXECUTED_PASS");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+await test("S44 #77 diagnostics invalid ledger remains read-only / independent of execution authority", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "cp-diag-invalid-"));
+  try {
+    const badPath = join(dir, "bad-receipts.json");
+    writeFileSync(badPath, "{broken", "utf8");
+    const before = readFileSync(badPath, "utf8");
+    const diag = await buildDiagnostics({
+      statusTracker: createExecutionStatusTracker(),
+      lastTickStore: createLastTickStore(),
+      receiptsPath: badPath,
+      scanQueue: () => [],
+      probeQwen: async () => ({ reachable: false, health_summary: "unreachable", profile_status: "unreachable", models: [], error: "n/a" }),
+      nowIso: () => LAW_NOW,
+    });
+    assert.equal(diag.schema_version, DIAGNOSTICS_SCHEMA);
+    assert.equal(diag.read_only, true);
+    assert.ok(diag.queue);
+    // Diagnostics must not rewrite the invalid ledger file.
+    assert.equal(readFileSync(badPath, "utf8"), before);
+    // Execution path still fail-closed on same file.
+    const tick = await performTick(
+      { schema_version: REQUEST_SCHEMA, request_id: "r-77-diag-vs-exec", source: "n8n" },
+      {
+        verifyRepo: async () => ({ ok: true, head: BRIDGE_SHA, reason_codes: [] }),
+        receiptsPath: badPath,
+        runDispatchLoop: () => { throw new Error("SELECTOR_MUST_NOT_RUN"); },
+        ensureDevQwenReady: async () => { throw new Error("QWEN_MUST_NOT_RUN"); },
+        runExecutor: async () => { throw new Error("EXEC_MUST_NOT_RUN"); },
+      },
+    );
+    assert.equal(tick.classification, "SERVICE_ERROR");
+    assert.ok(tick.reason_codes.includes("RECEIPTS_LEDGER_INVALID"));
+    assert.equal(readFileSync(badPath, "utf8"), before);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);

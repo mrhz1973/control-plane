@@ -945,7 +945,15 @@ export async function performTick(body, deps = {}) {
   const runExecutor = deps.runExecutor || defaultRunExecutor;
   const nowIso = deps.nowIso ? deps.nowIso() : new Date().toISOString();
   const receiptsPath = deps.receiptsPath || resolve(CANONICAL_REPO_PATH, RECEIPTS_PATH);
-  const loadReceipts = deps.loadReceipts || (() => loadReceiptsFile(receiptsPath));
+  const loadReceipts = deps.loadReceipts || (() => {
+    const loaded = loadReceiptsLedger(receiptsPath);
+    if (!loaded.ok) {
+      const err = new Error(loaded.reason_code);
+      err.code = loaded.reason_code;
+      throw err;
+    }
+    return loaded.receipts;
+  });
 
   // 1. Repo hygiene (fail-closed, non-destructive).
   const repoState = await verifyRepo();
@@ -961,9 +969,44 @@ export async function performTick(body, deps = {}) {
   }
   const head = repoState.head;
 
+  // 1b. Canonical receipts ledger: missing => []; existing invalid => fail closed
+  // BEFORE selection/claim/Qwen/admission/executor (issue #77).
+  statusSafe("update", { phase: "QUEUE_SCAN", last_event: "receipts_load" });
+  let receipts;
+  try {
+    receipts = loadReceipts();
+  } catch (err) {
+    const subtype = boundStr(err?.code || err?.message, 80) || "RECEIPTS_LEDGER_READ_FAILED";
+    const known = new Set([
+      "RECEIPTS_LEDGER_READ_FAILED",
+      "RECEIPTS_LEDGER_JSON_INVALID",
+      "RECEIPTS_LEDGER_NOT_ARRAY",
+    ]);
+    const specific = known.has(subtype) ? subtype : "RECEIPTS_LEDGER_READ_FAILED";
+    return done(wrapTickResult({
+      ok: false,
+      request_id: requestId,
+      classification: "SERVICE_ERROR",
+      execution_performed: false,
+      task_ref: null,
+      human_gate_required: false,
+      reason_codes: ["RECEIPTS_LEDGER_INVALID", specific],
+    }));
+  }
+  if (!Array.isArray(receipts)) {
+    return done(wrapTickResult({
+      ok: false,
+      request_id: requestId,
+      classification: "SERVICE_ERROR",
+      execution_performed: false,
+      task_ref: null,
+      human_gate_required: false,
+      reason_codes: ["RECEIPTS_LEDGER_INVALID", "RECEIPTS_LEDGER_NOT_ARRAY"],
+    }));
+  }
+
   // 2. Claim AT MOST ONE real READY item via the proven dispatcher primitive.
   statusSafe("update", { phase: "QUEUE_SCAN", last_event: "queue_scan" });
-  const receipts = loadReceipts();
   const entries = scan(QUEUE_DIR).map((e) => {
     if (e.read_failed || !e.markdown) return { ok: false, source: e.source };
     try {
@@ -1153,13 +1196,45 @@ export async function performTick(body, deps = {}) {
 import { parseBacklogFile as parseBacklog } from "./select-local-dev-queue-item-v1.mjs";
 
 function loadReceiptsFile(path = resolve(CANONICAL_REPO_PATH, RECEIPTS_PATH)) {
-  if (!existsSync(path)) return [];
-  try {
-    const parsed = JSON.parse(readFileSync(path, "utf8").replace(/^\uFEFF/, ""));
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
+  const loaded = loadReceiptsLedger(path);
+  if (!loaded.ok) {
+    const err = new Error(loaded.reason_code);
+    err.code = loaded.reason_code;
+    throw err;
   }
+  return loaded.receipts;
+}
+
+/**
+ * Fail-closed receipts ledger loader (issue #77).
+ * Missing file => empty array semantics.
+ * Existing unreadable / malformed / non-array => { ok:false, reason_code }.
+ * Never returns [] for an existing invalid ledger.
+ * Never includes file contents in errors.
+ */
+export function loadReceiptsLedger(path = resolve(CANONICAL_REPO_PATH, RECEIPTS_PATH)) {
+  if (typeof path !== "string" || !path) {
+    return { ok: false, reason_code: "RECEIPTS_LEDGER_READ_FAILED", receipts: null };
+  }
+  if (!existsSync(path)) {
+    return { ok: true, reason_code: null, receipts: [], missing: true };
+  }
+  let raw;
+  try {
+    raw = readFileSync(path, "utf8");
+  } catch {
+    return { ok: false, reason_code: "RECEIPTS_LEDGER_READ_FAILED", receipts: null };
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(String(raw).replace(/^\uFEFF/, ""));
+  } catch {
+    return { ok: false, reason_code: "RECEIPTS_LEDGER_JSON_INVALID", receipts: null };
+  }
+  if (!Array.isArray(parsed)) {
+    return { ok: false, reason_code: "RECEIPTS_LEDGER_NOT_ARRAY", receipts: null };
+  }
+  return { ok: true, reason_code: null, receipts: parsed, missing: false };
 }
 
 /** Read the request body with a hard byte cap. */
