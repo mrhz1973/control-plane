@@ -175,6 +175,15 @@ async function defaultOpenClawExec(file, args, opts) {
       settled = true;
       if (child && typeof child.kill === "function") {
         try { child.kill(); } catch { /* best effort */ }
+        // Windows: also try taskkill /T so grandchildren holding the pipe die.
+        if (process.platform === "win32" && child.pid) {
+          try {
+            spawn("taskkill", ["/PID", String(child.pid), "/T", "/F"], {
+              windowsHide: true,
+              stdio: "ignore",
+            });
+          } catch { /* best effort */ }
+        }
       }
       const err = new Error("openclaw usage command backstop timeout");
       err.code = "OPENCLAW_BACKSTOP";
@@ -183,7 +192,6 @@ async function defaultOpenClawExec(file, args, opts) {
 
     try {
       child = spawn(file, args, {
-        timeout: opts?.timeoutMs,
         windowsHide: true,
         stdio: ["ignore", "pipe", "pipe"],
       });
@@ -196,8 +204,16 @@ async function defaultOpenClawExec(file, args, opts) {
 
     let stdout = "";
     let stderr = "";
-    try { child.stdout?.on("data", (chunk) => { stdout += chunk; }); } catch { /* pipe optional */ }
-    try { child.stderr?.on("data", (chunk) => { stderr += String(chunk).slice(0, MAX_STDERR_BYTES); }); } catch { /* pipe optional */ }
+    try {
+      child.stdout?.on("data", (chunk) => {
+        if (Buffer.byteLength(stdout, "utf8") < MAX_STDOUT_BYTES) stdout += chunk;
+      });
+    } catch { /* pipe optional */ }
+    try {
+      child.stderr?.on("data", (chunk) => {
+        stderr += String(chunk).slice(0, MAX_STDERR_BYTES);
+      });
+    } catch { /* pipe optional */ }
 
     const finish = (err, code, signal) => {
       if (settled) return;
@@ -554,10 +570,14 @@ let openclawInflight = null;
 
 async function probeAndStore(options) {
   const payload = await collectOpenClawQuotaObservation(options);
-  // Cache TTL runs from COMPLETION time (not probe start): a ~150s CLI run
-  // must not leave an already-expired cache entry that triggers back-to-back
-  // refreshes on every GET. Injectable nowMs keeps tests deterministic.
-  const cachedAtMs = Number.isFinite(options.nowMs) ? options.nowMs : Date.now();
+  // Cache TTL runs from COMPLETION wall-clock (not probe start): a ~150s CLI
+  // run must not leave an already-expired cache entry that triggers
+  // back-to-back refreshes on every GET. Tests that inject both nowMs and
+  // execFn keep a deterministic clock; production always uses Date.now().
+  const cachedAtMs =
+    Number.isFinite(options.nowMs) && typeof options.execFn === "function"
+      ? options.nowMs
+      : Date.now();
   if (payload.ok === true || !openclawCache) {
     openclawCache = { collected_at_ms: cachedAtMs, payload, degraded: false };
   } else {
