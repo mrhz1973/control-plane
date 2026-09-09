@@ -237,7 +237,7 @@ await test("S9 response normalization: bounded shape, no secrets field anywhere"
   const wrapped = wrapTickResult({ ok: true, request_id: "x", classification: "IDLE_CLEAN", reason_codes: Array(30).fill("R") });
   assert.equal(wrapped.schema_version, RESULT_SCHEMA);
   assert.ok(wrapped.reason_codes.length <= 16);
-  assert.deepEqual(Object.keys(wrapped).sort(), ["classification", "execution_performed", "executor_classification", "gate_summary", "human_gate_required", "ok", "reason_codes", "request_id", "schema_version", "task_ref"]);
+  assert.deepEqual(Object.keys(wrapped).sort(), ["classification", "execution_performed", "executor_classification", "gate_summary", "human_gate_required", "ok", "post_exec_integration", "reason_codes", "request_id", "schema_version", "task_ref"]);
   const fromExecutor = classificationFromExecutorResult({ status: "PASS", classification: "PASS", task_ref: "T", stdout: "SECRETSTUFF", stderr: "MORE" }, "req");
   assert.equal(fromExecutor.executor_classification, "PASS");
   assert.ok(!JSON.stringify(fromExecutor).includes("SECRETSTUFF"));
@@ -1378,8 +1378,10 @@ async function dashboardHarness(initial = {}) {
   const fetches = [];
   const otherNetwork = [];
   const intervals = new Map();
+  const localStore = new Map();
   let timerId = 0;
   let scenario = initial;
+  let sectionOrder = ["candidate", "resources", "workspace"];
   function element(id) {
     if (elements.has(id)) return elements.get(id);
     const listeners = new Map();
@@ -1392,6 +1394,7 @@ async function dashboardHarness(initial = {}) {
       checked: true,
       disabled: false,
       hidden: false,
+      open: false,
       dataset: {},
       style: {},
       className: "",
@@ -1410,14 +1413,31 @@ async function dashboardHarness(initial = {}) {
         contains: (value) => classes.has(value),
       },
       setAttribute: (name, value) => attributes.set(name, String(value)),
-      getAttribute: (name) => attributes.get(name) ?? null,
+      getAttribute: (name) => {
+        if (name === "data-section" && id.startsWith("sec-")) return id.slice(4);
+        return attributes.get(name) ?? null;
+      },
       removeAttribute: (name) => attributes.delete(name),
       addEventListener: (name, listener) => {
         if (!listeners.has(name)) listeners.set(name, []);
         listeners.get(name).push(listener);
       },
-      querySelectorAll: () => [],
+      querySelectorAll: (selector) => {
+        if (id === "layout-root" && selector.includes("data-section")) {
+          return sectionOrder.map((sec) => element("sec-" + sec));
+        }
+        return [];
+      },
       querySelector: () => null,
+      appendChild(child) {
+        if (id === "layout-root" && child && typeof child.getAttribute === "function") {
+          const sec = child.getAttribute("data-section");
+          if (sec) {
+            sectionOrder = [...sectionOrder.filter((value) => value !== sec), sec];
+          }
+        }
+        return child;
+      },
       // The harness does not model a full DOM tree; no refreshed node owns
       // the synthetic active element. The production browser supplies the
       // native Element#contains implementation.
@@ -1433,13 +1453,18 @@ async function dashboardHarness(initial = {}) {
     return result;
   }
   for (const match of html.matchAll(/\bid="([^"]+)"/g)) element(match[1]);
+  // queue-panel defaults collapsed (no open attribute in shipped markup)
+  element("queue-panel").open = false;
   const document = {
     hidden: false,
     visibilityState: "visible",
     readyState: "complete",
     getElementById: (id) => element(id),
     querySelector: (selector) => selector.startsWith("#") ? element(selector.slice(1)) : null,
-    querySelectorAll: () => [],
+    querySelectorAll: (selector) => {
+      if (String(selector).includes("data-section")) return sectionOrder.map((sec) => element("sec-" + sec));
+      return [];
+    },
     addEventListener: (name, listener) => element("__document").addEventListener(name, listener),
     createElement: (tag) => element("__created_" + tag + "_" + elements.size),
     documentElement: element("__root"),
@@ -1450,6 +1475,12 @@ async function dashboardHarness(initial = {}) {
     AbortSignal,
     URL,
     console,
+    localStorage: {
+      getItem: (key) => (localStore.has(String(key)) ? localStore.get(String(key)) : null),
+      setItem: (key, value) => { localStore.set(String(key), String(value)); },
+      removeItem: (key) => { localStore.delete(String(key)); },
+      clear: () => { localStore.clear(); },
+    },
     fetch: async (url, options = {}) => {
       fetches.push({ url: String(url), method: String(options.method || "GET").toUpperCase() });
       if (scenario.networkError) throw new Error("Errore rete simulato");
@@ -1482,7 +1513,8 @@ async function dashboardHarness(initial = {}) {
   const settle = () => new Promise((resolvePromise) => setImmediate(resolvePromise));
   await settle();
   return {
-    html, context, elements, fetches, otherNetwork, htmlWrites, intervals, element, settle,
+    html, context, elements, fetches, otherNetwork, htmlWrites, intervals, element, settle, localStore,
+    getSectionOrder: () => [...sectionOrder],
     setScenario: (next) => { scenario = next; },
     evaluate: (script) => runInContext(script, context, { timeout: 2000 }),
     render: (status, diag, resources) => {
@@ -2062,9 +2094,9 @@ await test("S47 dashboard resources section: no object Object; Italian labels; n
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = [...dashboard.htmlWrites.map((w) => w.value), ...[...dashboard.elements.values()].map((n) => n.innerHTML + n.textContent)].join("\n");
-  assert.match(out, /Risorse e quote|PC casa|Qwen locale|NEW VPS|GLM|Codex|Cursor|ChatGPT Web/i);
-  assert.match(out, /Capacità locale — nessuna quota commerciale/);
-  assert.match(out, /UNVERIFIED|Mapping/);
+  assert.match(out, /Risorse e quote|Macchina locale|Qwen locale|NEW VPS|GLM|Codex|Cursor|ChatGPT Web/i);
+  assert.match(out, /Capacità locale — nessuna quota commerciale|Nessuna quota commerciale/);
+  assert.match(out, /UNVERIFIED|MANUAL_ONLY|Mapping/i);
   assert.match(out, /Fonte \/ Collector/);
   assert.doesNotMatch(out, /\[object Object\]/);
   assert.doesNotMatch(out, /\bUNLIMITED\b|\bFREE\b|100%\s*remaining/i);
@@ -2537,13 +2569,13 @@ await test("S60 #73 dashboard renders live GLM/Codex windows, plan metadata, Ope
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = dashboardText(dashboard);
-  assert.match(out, /Residuo effettivo 13 %/);
-  assert.match(out, /5h: 40 % residuo/);
-  assert.match(out, /Settimanale: 13 % residuo/);
-  assert.match(out, /MCP: 100 % residuo/);
-  assert.match(out, /Residuo effettivo 84 %/);
-  assert.match(out, /5h: 100 % residuo/);
-  assert.match(out, /Settimanale: 84 % residuo/);
+  assert.match(out, /Residuo effettivo[\s\S]{0,240}13(?:[.,]0)?\s*%/);
+  assert.match(out, /5h[\s\S]{0,240}40(?:[.,]0)?\s*%/);
+  assert.match(out, /Settimanale[\s\S]{0,240}13(?:[.,]0)?\s*%/);
+  assert.match(out, /MCP \(ausiliario\):\s*100(?:[.,]0)?\s*% residuo|MCP[\s\S]{0,80}non influenza capacità modello/);
+  assert.match(out, /Residuo effettivo[\s\S]{0,240}84(?:[.,]0)?\s*%/);
+  assert.match(out, /5h[\s\S]{0,240}100(?:[.,]0)?\s*%/);
+  assert.match(out, /Settimanale[\s\S]{0,240}84(?:[.,]0)?\s*%/);
   assert.match(out, /Piano: plus/i);
   assert.match(out, /OpenClaw \/ Z\.AI usage/);
   assert.match(out, /OpenClaw \/ OpenAI Codex usage/);
@@ -2552,7 +2584,7 @@ await test("S60 #73 dashboard renders live GLM/Codex windows, plan metadata, Ope
   // GLM card shows weekly (Tokens Limit mapped); MCP is aux, not Mensile:
   const glmCard = out.split(/Pool unico: glm_coding_plan/)[1]?.split(/Codex/)[0] || "";
   assert.match(glmCard, /Settimanale/);
-  assert.match(glmCard, /MCP:/);
+  assert.match(glmCard, /MCP/);
   assert.doesNotMatch(glmCard, /Mensile:/);
   assert.doesNotMatch(out, /\$0\.00/);
   assert.doesNotMatch(out, /\[object Object\]/);
@@ -2667,6 +2699,141 @@ await test("S63 #73 merge law: OpenClaw live + ingest-lane contributions BOTH re
   } finally {
     rmSync(ingestLaneDir, { recursive: true, force: true });
   }
+});
+
+await test("S70 D-9408-A classifyHealthBar: util high worse; quota remaining low worse; temp; unknown neutral", async () => {
+  const dashboard = await dashboardHarness({ status: { active: false }, diag: {} });
+  const utilLow = dashboard.evaluate("classifyHealthBar('util', 40)");
+  const utilHigh = dashboard.evaluate("classifyHealthBar('util', 95)");
+  assert.equal(utilLow.tone, "ok");
+  assert.equal(utilHigh.tone, "danger");
+  assert.ok(utilHigh.tone !== "ok");
+  const quotaHigh = dashboard.evaluate("classifyHealthBar('quota_remaining', 80)");
+  const quotaLow = dashboard.evaluate("classifyHealthBar('quota_remaining', 5)");
+  assert.equal(quotaHigh.tone, "ok");
+  assert.equal(quotaLow.tone, "danger");
+  const tempOk = dashboard.evaluate("classifyHealthBar('temp_c', 50)");
+  const tempHot = dashboard.evaluate("classifyHealthBar('temp_c', 90)");
+  assert.equal(tempOk.tone, "ok");
+  assert.equal(tempHot.tone, "danger");
+  const unknown = dashboard.evaluate("classifyHealthBar('util', null)");
+  const stale = dashboard.evaluate("classifyHealthBar('util', 10, { stale: true })");
+  const missing = dashboard.evaluate("classifyHealthBar('vram', undefined)");
+  assert.equal(unknown.tone, "neutral");
+  assert.equal(stale.tone, "neutral");
+  assert.equal(missing.tone, "neutral");
+  assert.notEqual(unknown.tone, "ok");
+  assert.notEqual(stale.tone, "ok");
+  const vram = dashboard.evaluate("classifyHealthBar('vram', 96)");
+  const disk = dashboard.evaluate("classifyHealthBar('disk_free', 3)");
+  assert.equal(vram.tone, "danger");
+  assert.equal(disk.tone, "danger");
+});
+
+await test("S71 D-9408-A dashboard compact health: qwen no fake 100%; cursor no fabricated %; chatgpt never unlimited; MCP not effective; queue collapsed; layout; candidate precedes resources", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false, classification: "IDLE_CLEAN" },
+    diag: {
+      queue: { eligible_count: 1, claim_present_count: 0, scanned_file_count: 4, candidate_task_ref: "LOCAL_DEV_B_D-9408-A" },
+      qwen: { reachable: true, models: [] },
+      last_tick: { classification: "IDLE_CLEAN", reason_codes: ["CLAIM_ALREADY_EXISTS"] },
+    },
+    resources: {
+      schema_version: RESOURCES_SCHEMA,
+      workstation: {
+        state: "AVAILABLE",
+        cpu_percent: 92,
+        ram_percent: 55,
+        system_disk_percent: 18,
+        system_disk_free_bytes: 40_000_000_000,
+        logical_cpu_count: 16,
+        observed_at: "2026-09-09T00:00:00Z",
+        freshness: "fresh",
+        collector_label: "Node.js dispatcher / Windows OS",
+        gpu: {
+          state: "AVAILABLE",
+          gpu_name: "RTX",
+          gpu_util_percent: 40,
+          vram_used_mb: 1000,
+          vram_total_mb: 8000,
+          temperature_c: 70,
+          freshness: "fresh",
+          collector_label: "nvidia-smi",
+        },
+      },
+      qwen: {
+        occupancy: "IDLE",
+        capacity_label: "Capacità locale — nessuna quota commerciale",
+        commercial_quota: "N/A",
+        collector_label: "qwen probe",
+        loaded_models: [],
+      },
+      vps_new: { state: "UNAVAILABLE", reason_code: "VPS_PRIVATE_OBSERVATION_UNAVAILABLE", collector_label: "vps probe" },
+      quotas: {
+        pools: {
+          glm_coding_plan: {
+            quota_pool_id: "glm_coding_plan",
+            consumers: ["glm-5.3", "glm-5.3-flash"],
+            state: "AVAILABLE",
+            freshness: "fresh",
+            remaining_percent: 42,
+            windows: [
+              { window_type: "rolling", remaining_percent: 55 },
+              { window_type: "weekly", remaining_percent: 42 },
+            ],
+            auxiliary_windows: [{ kind: "mcp", remaining_percent: 99, label: "MCP" }],
+            collector_label: "openclaw",
+          },
+          chatgpt_codex_subscription: {
+            quota_pool_id: "chatgpt_codex_subscription",
+            state: "AVAILABLE",
+            freshness: "fresh",
+            remaining_percent: 12,
+            windows: [
+              { window_type: "rolling", remaining_percent: 30 },
+              { window_type: "weekly", remaining_percent: 12 },
+            ],
+            collector_label: "openclaw",
+          },
+        },
+        cursor: { accounting_mapping: "UNVERIFIED", state: "UNKNOWN", labels: {}, collector_label: "manual", freshness: "stale" },
+      },
+      chatgpt_web: { state: "UNKNOWN", unlimited: false, free: false, collector_label: "hermes" },
+    },
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(dashboard.html, /id="sec-candidate"/);
+  assert.match(dashboard.html, /id="sec-resources"/);
+  assert.ok(dashboard.html.indexOf('id="sec-candidate"') < dashboard.html.indexOf('id="sec-resources"'), "candidate strip precedes resources in document");
+  assert.match(dashboard.html, /<details class="panel queue-panel" id="queue-panel"/);
+  assert.doesNotMatch(dashboard.html, /<details class="panel queue-panel" id="queue-panel"[^>]*\sopen\b/);
+  assert.equal(dashboard.element("queue-panel").open, false);
+  assert.match(dashboard.html, /id="reset-layout"/);
+  assert.match(out, /Macchina locale/);
+  assert.match(out, /Nessuna quota commerciale|Capacità locale — nessuna quota commerciale/);
+  assert.doesNotMatch(out, /Qwen[\s\S]{0,120}100\s*%/);
+  assert.match(out, /MANUAL_ONLY|UNVERIFIED|percentuale non inventata/i);
+  assert.doesNotMatch(out, /Cursor Models:\s*100/);
+  assert.match(out, /Illimitato:\s*No|Infinito:\s*No/);
+  assert.doesNotMatch(out, /\bunlimited\b|\binfinite\b|\bgratuito illimitato\b/i);
+  assert.match(out, /MCP \(ausiliario\)|non influenza capacità modello/);
+  assert.match(out, /Residuo effettivo/);
+  assert.doesNotMatch(out, /Residuo effettivo[\s\S]{0,80}99/);
+  assert.doesNotMatch(out, /\[object Object\]/);
+  assert.match(out, /hbar-fill danger|CRITICO/);
+  // Layout persistence (browser-local only)
+  dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['workspace','candidate','resources']))");
+  dashboard.evaluate("applySectionOrder(readSavedOrder())");
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["workspace", "candidate", "resources"]));
+  assert.equal(dashboard.localStore.get("local-dev-dispatcher-dashboard-v1:section-order"), JSON.stringify(["workspace", "candidate", "resources"]));
+  dashboard.evaluate("resetLayout()");
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["candidate", "resources", "workspace"]));
+  assert.equal(dashboard.localStore.has("local-dev-dispatcher-dashboard-v1:section-order"), false);
+  // Invalid saved IDs fall back safely
+  dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['legacy','bogus']))");
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["candidate", "resources", "workspace"]));
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
