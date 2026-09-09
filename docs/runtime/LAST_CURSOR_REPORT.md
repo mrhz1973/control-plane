@@ -1740,3 +1740,17 @@ route activation; D-0025 CLOSED; no ACTIVE authorization).
 | `docs/runtime/LAST_CURSOR_REPORT.md` | updated (this file) |
 
 EXECUTOR_END_HEAD = the `cursor-pass:` commit carrying this report.
+
+## Cursor PASS — LOCAL_DEV_DASHBOARD_RESOURCES_7_INLINE_DESKTOP_V1
+
+- BASE: `c7fbba87c80f9867e31e93a47199f5ff8d3bb1dc`; branch `main`; tracked clean.
+- Change: removed the 1680/1480/1280 desktop `.res-grid` column overrides; base
+  `repeat(7,minmax(0,1fr))` now remains active above the existing `<=1200` responsive
+  breakpoint.
+- Visual evidence: live `/dashboard` at 1366px showed all seven cards in one row,
+  ordered Macchina locale, Qwen locale, NEW VPS, GLM, Codex, Cursor, ChatGPT Web;
+  no horizontal overflow.
+- Preserved: small-screen 3/2/1 breakpoints, compact cards, single Qwen card,
+  three-card operational row, read-only endpoints, and no arrow controls.
+- Tests: focused dashboard suite PASS; `git diff --check` PASS.
+- CURRENT_FRONTIER: unchanged by this layout-only task.

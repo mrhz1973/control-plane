@@ -3054,9 +3054,7 @@ await test("S75 D-9408-E seven resource cards on one wide-desktop row", async ()
   await dashboard.settle();
   const out = dashboardText(dashboard);
   assert.match(dashboard.html, /\.res-grid\{[^}]*grid-template-columns:repeat\(7,minmax\(0,1fr\)\)/);
-  assert.match(dashboard.html, /@media\(max-width:1680px\)\{\.res-grid\{grid-template-columns:repeat\(6,/);
-  assert.match(dashboard.html, /@media\(max-width:1480px\)\{\.res-grid\{grid-template-columns:repeat\(5,/);
-  assert.match(dashboard.html, /@media\(max-width:1280px\)\{\.res-grid\{grid-template-columns:repeat\(4,/);
+  assert.doesNotMatch(dashboard.html, /@media\(max-width:(?:1680|1480|1280)px\)\{\.res-grid\{grid-template-columns:repeat\((?:6|5|4),/);
   assert.match(dashboard.html, /@media\(max-width:1200px\)\{[\s\S]*?\.res-grid\{grid-template-columns:repeat\(3,/);
   assert.match(dashboard.html, /@media\(max-width:900px\)\{[\s\S]*?\.res-grid\{grid-template-columns:repeat\(2,/);
   assert.match(dashboard.html, /@media\(max-width:620px\)\{[\s\S]*?\.res-grid\{grid-template-columns:1fr/);
