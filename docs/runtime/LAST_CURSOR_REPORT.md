@@ -1,5 +1,22 @@
 # LAST CURSOR REPORT
 
+## Issue #77 stale-status reconciliation V9 — latest
+
+**TASK_REF:** `CURRENT_FRONTIER_ISSUE_77_STALE_STATUS_RECONCILIATION_V9`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `46e82ed7e0620df83fe32318cdebf3b9e19509ce`
+**RESULT_COMMIT:** `da51c46c0812f1951d262d8cf86f043792bd8822`
+
+- GitHub issue #77 was verified `CLOSED / COMPLETED`.
+- The stale #77 frontier status was corrected.
+- Issue #73 remains open with `ISSUE_73_PHASE_C=PASS`.
+- The next real #73 gap remains Phase D fresh-chat rollover and
+  stale-generation fence.
+- No runtime mutation or Qwen, Hermes, Chrome, n8n, or VPS execution occurred.
+
+---
+
 ## Hermes Phase C closure checkpoint — latest
 
 **TASK_REF:** `V4_HERMES_PHASE_C_CLOSURE_CHECKPOINT_V8` / #73
