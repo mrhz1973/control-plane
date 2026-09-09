@@ -14,6 +14,10 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { composeCanonicalQuotaState, collectIngestContributions } from "./rt25-canonical-quota-state-v1.mjs";
 import { getOpenClawQuotaObservation } from "./collect-openclaw-quota-v1.mjs";
+import {
+  normalizeCodexAppServerQuota,
+  reconcileCodexQuotaObservations,
+} from "./collect-codex-appserver-quota-v1.mjs";
 
 const execFileAsync = promisify(execFile);
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -502,6 +506,23 @@ export async function collectQuotaObservatory(options = {}) {
     ),
     liveSource("chatgpt_codex_subscription"),
   );
+  // Optional offline fixture/adapter input only. This branch never performs
+  // an app-server RPC and never changes the canonical OpenClaw projection.
+  const codexSecondaryInput =
+    options.codexAppServerObservation ??
+    options.codexAppServerResponse ??
+    null;
+  const codexSecondary = codexSecondaryInput
+    ? normalizeCodexAppServerQuota(codexSecondaryInput, { nowMs })
+    : null;
+  const codexPrimary = openclaw?.pools?.chatgpt_codex_subscription || null;
+  const codexReconciliation = codexSecondary
+    ? reconcileCodexQuotaObservations(codexPrimary, codexSecondary)
+    : null;
+  if (codexSecondary) {
+    codex.secondary_observation = codexSecondary;
+    codex.reconciliation = codexReconciliation;
+  }
 
   const cursorManual = loadCursorManualObservation(options);
   const cursor = {
@@ -540,6 +561,8 @@ export async function collectQuotaObservatory(options = {}) {
       glm_coding_plan: glm,
       chatgpt_codex_subscription: codex,
     },
+    codex_appserver_secondary: codexSecondary,
+    codex_reconciliation: codexReconciliation,
     cursor,
     qwen_local: qwen,
     observed_at: new Date(nowMs).toISOString(),

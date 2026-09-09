@@ -127,4 +127,19 @@ Classifications at minimum: `PASS_QUOTA_POOL_STATUS_TRANSLATED`,
   route/collector;
 - secret-like snapshot material is rejected, never persisted.
 
+## 8. Codex app-server secondary observation
+
+The Codex app-server `account/rateLimits/read` adapter is a secondary,
+observation-only cross-check for the existing
+`chatgpt_codex_subscription` pool. It is not a second pool and its values are
+never added to the OpenClaw primary observation. The source semantics are
+`usedPercent`, so the adapter derives `remaining_percent` as
+`clamp(100 - usedPercent, 0, 100)` and applies the MIN law across fresh
+required 5h and weekly binding windows.
+
+OpenClaw remains routing authority. A secondary mismatch is diagnostic only;
+stale or missing observations do not promote the secondary into routing
+authority. Banked reset credits are advisory and do not change effective
+capacity. No reset-credit consumption operation is part of this contract.
+
 **End of contract.**
