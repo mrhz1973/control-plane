@@ -17,7 +17,7 @@
     @media(max-width:1200px){.shell{padding:0 20px}.workspace{grid-template-columns:minmax(0,1fr) 330px}.summary-grid{grid-template-columns:repeat(3,1fr)}.metric{min-height:105px}.metric-value{font-size:21px}.toolbar{gap:6px}td,th{padding-left:12px;padding-right:12px}.hero h3{font-size:20px}}
     @media(max-width:900px){.workspace{grid-template-columns:1fr}.sidebar{grid-template-columns:1fr 1fr}.page-head{align-items:start}.controls{justify-content:flex-end}.freshness{width:100%;justify-content:flex-end}.technical-panel .facts{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:620px){.shell{padding:0 12px}.breadcrumb{display:none}.page-head{flex-direction:column;gap:12px;padding-top:18px}.controls{justify-content:flex-start;gap:10px}.freshness{width:auto}.summary-grid{grid-template-columns:repeat(2,1fr)}.metric{padding:12px;min-height:102px}.metric-value{font-size:20px}.sidebar{grid-template-columns:1fr}.interpretation{grid-template-columns:1fr;gap:5px}.hero h3{font-size:19px}.panel-body,.panel-head{padding:14px}.queue-metrics{gap:14px}.toolbar select{max-width:145px}.footer{flex-direction:column;gap:5px}.receipt-details[open]{min-width:230px}}
-    .obs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:0 0 16px}.obs-card{border:1px solid var(--line);border-radius:12px;background:linear-gradient(160deg,#171a20,#111317);padding:14px 15px;min-height:150px}.obs-card .obs-top{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}.obs-card h3{font-size:13px;letter-spacing:-.2px}.obs-dot{width:8px;height:8px;border-radius:50%;flex:none}.obs-dot.ok{background:var(--green);box-shadow:0 0 8px #73e3a455}.obs-dot.warn{background:var(--amber)}.obs-dot.danger{background:var(--red)}.obs-dot.neutral{background:#6b7380}.obs-main{font-size:18px;font-weight:650;letter-spacing:-.4px;margin:4px 0 8px}.obs-line{font-size:11px;color:var(--muted);margin:3px 0;overflow-wrap:anywhere}.obs-source{margin-top:10px;padding-top:8px;border-top:1px solid #242830;font-size:10px;color:#8b95a5}
+    .obs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:0 0 16px}.obs-card{border:1px solid var(--line);border-radius:12px;background:linear-gradient(160deg,#171a20,#111317);padding:14px 15px;min-height:150px}.obs-card .obs-top{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}.obs-card h3{font-size:13px;letter-spacing:-.2px}.obs-dot{width:8px;height:8px;border-radius:50%;flex:none}.obs-dot.ok{background:var(--green);box-shadow:0 0 8px #73e3a455}.obs-dot.warn{background:var(--amber)}.obs-dot.danger{background:var(--red)}.obs-dot.neutral{background:#6b7380}.obs-main{font-size:18px;font-weight:650;letter-spacing:-.4px;margin:4px 0 8px}.obs-line{font-size:11px;color:var(--muted);margin:3px 0;overflow-wrap:anywhere}.qwen-runtime{border:1px solid #2a3340;border-radius:10px;background:#0e1218;padding:12px 13px;margin-bottom:12px}.qwen-runtime .qr-row{display:grid;grid-template-columns:120px 1fr;gap:6px 10px;margin:4px 0}.qwen-runtime .qr-k{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}.qwen-runtime .qr-v{font-size:12px;overflow-wrap:anywhere}.qwen-runtime .qr-v.mono{font-family:var(--mono);font-size:11px;color:var(--violet)}.obs-source{margin-top:10px;padding-top:8px;border-top:1px solid #242830;font-size:10px;color:#8b95a5}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
   </style>
 </head>
@@ -103,6 +103,13 @@
       workstation:'Risorse del PC Windows osservate dal dispatcher Node.',
       gpu:'Metriche GPU da nvidia-smi, se disponibile.',
       qwen_capacity:'Capacità locale Qwen: nessuna quota commerciale.',
+      qwen_model_loaded:'Caricato: modello residente nel runtime; non significa che stia elaborando.',
+      qwen_in_use:'In uso dal dispatcher: esiste un ciclo LOCAL_DEV attivo in fase OpenCode con questo esatto profilo.',
+      qwen_no_dispatcher_use:'Nessun uso dispatcher osservato: il dispatcher non vede un proprio lavoro Qwen attivo; non garantisce assenza di utilizzi esterni/manuali.',
+      qwen_external_use:'Uso esterno: NON OSSERVABILE dal dispatcher; un altro processo potrebbe usare lo stesso runtime.',
+      qwen_preflight_use:'Preparazione o verifica Qwen in corso; non indica che l’inferenza sia in esecuzione.',
+      qwen_task_not_inference:'Task in corso oltre OpenCode: Qwen non è in inferenza in questa fase.',
+      qwen_usage_mismatch:'Il profilo del ciclo non coincide esattamente con un modello caricato osservato.',
       vps_new:'Osservazione privata del NEW VPS, se il trasporto è disponibile.',
       glm_pool:'Pool condiviso glm_coding_plan (glm-5.3 e flash).',
       codex_pool:'Pool chatgpt_codex_subscription dalle osservazioni canoniche.',
@@ -111,7 +118,7 @@
       collector:'Chi produce questa osservazione (fonte/collector).',
       freshness:'Indica se l’osservazione è fresca o stantia rispetto alla legge di freschezza.',
     });
-    const LABELS = Object.freeze({IDLE:'In attesa',IDLE_CLEAN:'In attesa',BUSY:'Occupato',HUMAN_GATE_REQUIRED:'Intervento umano',SERVICE_ERROR:'Errore di servizio',WORK_EXECUTED_PASS:'Completato',PASS:'Superato',WORK_EXECUTED_STOP:'Esecuzione arrestata',STOP:'Arrestato',FAIL:'Non superato',RUNNING:'In corso',NOT_STARTED:'Non avviati',TERMINAL:'Ciclo concluso',REPO_HYGIENE:'Verifica repository',QUEUE_SCAN:'Scansione della coda',SELECTING:'Selezione del task',CLAIM:'Registrazione claim',CLAIMED:'Claim registrato',EXECUTING:'Esecuzione',OPENCODE:'Elaborazione OpenCode',TESTS:'Verifica dei test',QWEN_PREFLIGHT:'Verifica Qwen',ADMISSION:'Verifica ammissione',READY:'Pronto',READY_FOR_PLANNING:'Pronto per la pianificazione',RELEASED:'Rilasciato',CLAIM_RELEASED:'Claim rilasciato',FAILED_BEFORE_EXECUTION:'Fermato prima dell’esecuzione',loaded:'Caricato',unloaded:'Non caricato',loading:'Caricamento',unloading:'Scaricamento',ready:'Pronto',healthy:'Disponibile',unhealthy:'Non disponibile',error:'Errore',unreachable:'Non raggiungibile',unknown:'Sconosciuto',missing:'Non disponibile',listed:'Presente nel catalogo',not_listed:'Assente dal catalogo'});
+    const LABELS = Object.freeze({IDLE:'In attesa',IDLE_CLEAN:'In attesa',BUSY:'Occupato',HUMAN_GATE_REQUIRED:'Intervento umano',SERVICE_ERROR:'Errore di servizio',WORK_EXECUTED_PASS:'Completato',PASS:'Superato',WORK_EXECUTED_STOP:'Esecuzione arrestata',STOP:'Arrestato',FAIL:'Non superato',RUNNING:'In corso',NOT_STARTED:'Non avviati',TERMINAL:'Ciclo concluso',REPO_HYGIENE:'Verifica repository',QUEUE_SCAN:'Scansione della coda',SELECTING:'Selezione del task',CLAIM:'Registrazione claim',CLAIMED:'Claim registrato',EXECUTING:'Esecuzione',OPENCODE:'Elaborazione OpenCode',TESTS:'Verifica dei test',PERSISTENCE:'Persistenza Git',QWEN_PREFLIGHT:'Verifica Qwen',ADMISSION:'Verifica ammissione',READY:'Pronto',READY_FOR_PLANNING:'Pronto per la pianificazione',RELEASED:'Rilasciato',CLAIM_RELEASED:'Claim rilasciato',FAILED_BEFORE_EXECUTION:'Fermato prima dell’esecuzione',loaded:'Caricato',unloaded:'Non caricato',loading:'Caricamento',unloading:'Scaricamento',ready:'Pronto',healthy:'Disponibile',unhealthy:'Non disponibile',error:'Errore',unreachable:'Non raggiungibile',unknown:'Sconosciuto',missing:'Non disponibile',listed:'Presente nel catalogo',not_listed:'Assente dal catalogo'});
     const REASONS = Object.freeze({CLAIM_ALREADY_EXISTS:'Bloccato da claim',NO_ELIGIBLE_READY:'Nessun task eseguibile',CLAIM_SKIPPED_PRESENT:'Selezione fermata dal claim',NOT_READY:'Backlog non pronto',STATE_NOT_READY:'Backlog non pronto',NOT_LOCAL_DEV:'Destinazione non locale',HUMAN_GATE_REQUIRED:'Intervento umano richiesto',READ_FAILED:'Lettura del file non riuscita',EMPTY_FILE:'File vuoto',PARSE_FAILED:'Formato del backlog non valido',INVALID_ENTRY:'Elemento non valido',DIAGNOSTICS_QUEUE_SCAN_FAILED:'Scansione non disponibile',QWEN_SESSION_NOT_READY:'Runtime Qwen non pronto',MICRO_TASK_ADMISSION_REJECTED:'Ammissione del task rifiutata',TRACKED_DIRTY_CONFLICT:'Modifiche locali da verificare'});
     const STAGES = Object.freeze({queue_selection:'Selezione della coda','claim/bridge':'Registrazione del claim',qwen_preflight:'Verifica del runtime Qwen',admission:'Ammissione del task',repo_hygiene:'Verifica del repository',human_gate:'Verifica umana',executor:'Esecutore',service:'Servizio',single_flight:'Ciclo già in corso',diagnostics:'Diagnostica'});
     const obj = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -160,7 +167,7 @@
       const shown=`${filtered.length} di ${rows.length} elementi disponibili mostrati`;
       el('queue-note').textContent=`${shown}. ${q.items_truncated||q.rejected_items_truncated?'Elenco limitato dal servizio; i conteggi in alto includono tutta la scansione. ':''}${legacy?'I dettagli receipt richiedono la versione aggiornata del servizio.':'La scansione applica le regole canoniche senza acquisire task.'}`;
     }
-    function renderResources(resources){
+    function renderResources(resources,status){
       const r=obj(resources);
       const w=obj(r.workstation), q=obj(r.qwen), v=obj(r.vps_new), quotas=obj(r.quotas), web=obj(r.chatgpt_web);
       const glm=obj(obj(quotas.pools).glm_coding_plan), codex=obj(obj(quotas.pools).chatgpt_codex_subscription), cursor=obj(quotas.cursor);
@@ -188,12 +195,7 @@
           `Disco sistema: ${pct(w.system_disk_percent)} libero ${bytes(w.system_disk_free_bytes)}`,
           `Osservato: ${date(w.observed_at)} · freschezza: ${text(w.freshness,'unknown')}`,
         ],w.collector_label||'Node.js dispatcher / Windows OS'),
-        card('Qwen locale','qwen_capacity',q.occupancy||q.state,text(q.capacity_label,'Capacità locale — nessuna quota commerciale'),[
-          `Occupazione: ${text(q.occupancy,'UNKNOWN')} · caricati: ${count(list(q.loaded_models).length)}`,
-          `Endpoint: ${text(q.reachable===true?'raggiungibile':q.reachable===false?'non raggiungibile':'sconosciuto')}`,
-          `Quota commerciale: N/A`,
-          `Osservato: ${date(q.observed_at)} · ${text(q.freshness,'unknown')}`,
-        ],q.collector_label||'dispatcher read-only Qwen probe :8080'),
+        (()=>{const usage=deriveQwenUsage(status,q);const lines=qwenResourceLines(usage,q);lines.push(`Osservato: ${date(q.observed_at)} · ${text(q.freshness,'unknown')}`);return card('Qwen locale','qwen_capacity',usage.usage_code==='IN_USE'?'LOADED':(q.occupancy||q.state||usage.model_state.code),qwenResourceMain(usage),lines,q.collector_label||'dispatcher read-only Qwen probe :8080');})(),
         card('NEW VPS','vps_new',v.state,text(v.state,'UNAVAILABLE'),[
           v.reason_code?`Motivo: ${text(v.reason_code)}`:'Trasporto privato di osservazione',
           `RAM: ${pct(v.ram_percent)} · disco: ${pct(v.root_disk_percent)}`,
@@ -231,25 +233,110 @@
       ].join(''));
     }
     function modelState(m){const raw=m.status??m.state;return scalar(raw)||scalar(obj(raw).value)||scalar(obj(raw).state)||scalar(obj(raw).status);}
-    function render(status,diag,resources){const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);const t=obj(d.last_tick),q=obj(d.queue),w=obj(d.qwen);const fallback=fallbackExplanation(s,t,q);const e=typeof obj(d.explanation).action_required==='boolean'||obj(d.explanation).action_required===null?{...fallback,...obj(d.explanation)}:fallback;const severity=['ok','warn','danger','info'].includes(e.severity)?e.severity:'info';const active=s.active===true;const c=text(s.classification||t.classification,'');const models=list(w.models).map(obj).filter(m=>scalar(m.id));const loaded=models.filter(m=>modelState(m)==='loaded');const qwenTitle=w.reachable===false?'Non raggiungibile':w.reachable===true?(loaded.length?`${loaded.length} caricato${loaded.length===1?'':'i'}`:'Endpoint disponibile'):'Non disponibile';
+    function activityClock(value){const n=number(value);if(n===null)return null;const total=Math.floor(n/1000);const h=Math.floor(total/3600);const m=Math.floor((total%3600)/60);const s=total%60;const pad=x=>String(x).padStart(2,'0');return h>0?`${pad(h)}:${pad(m)}:${pad(s)}`:`${pad(m)}:${pad(s)}`;}
+    function contextShort(tokens){const n=number(tokens);if(n===null)return null;if(n>=1024&&n%1024===0)return `${n/1024}K`;return count(n);}
+    function loadedModelsFrom(qwen){const q=obj(qwen);const fromLoaded=list(q.loaded_models).map(obj).filter(m=>scalar(m.id));if(fromLoaded.length)return fromLoaded.map(m=>({id:m.id,status:scalar(m.status)||'loaded',context_tokens:number(m.context_tokens),pid:number(m.pid),port:number(m.port)}));return list(q.models).map(obj).filter(m=>scalar(m.id)&&String(modelState(m)||'').toLowerCase()==='loaded').map(m=>({id:m.id,status:'loaded',context_tokens:number(m.context_tokens)??number(obj(m.meta).n_ctx),pid:number(m.pid)??number(obj(obj(m.status)).pid),port:number(m.port)??number(obj(obj(m.status)).port)}));}
+    function italianModelState(qwen,loaded){const q=obj(qwen);if(q.reachable===false)return {code:'OFFLINE',label:'Offline'};const raw=text(q.profile_status||q.occupancy,'').toLowerCase();if(raw==='loading'||raw==='caricamento')return {code:'LOADING',label:'Caricamento'};if(raw==='error'||raw==='unhealthy'||raw==='errore')return {code:'ERROR',label:'Errore'};if(loaded.length||raw==='loaded'||raw==='caricato')return {code:'LOADED',label:'Caricato'};if(raw==='unloaded'||raw==='idle'||raw===''||q.reachable===true)return {code:'UNLOADED',label:'Non caricato'};return {code:'UNKNOWN',label:'Sconosciuto'};}
+    function deriveQwenUsage(status,qwenObs){
+      const s=obj(status);const q=obj(qwenObs);const loaded=loadedModelsFrom(q);const modelStateInfo=italianModelState(q,loaded);const profile=scalar(s.qwen_profile);const phase=text(s.phase,'');const active=s.active===true;const matched=profile?loaded.find(m=>m.id===profile)||null:null;const primary=matched||(loaded.length===1?loaded[0]:null)||loaded[0]||null;
+      const base={model_state:modelStateInfo,loaded,primary,profile,phase,active,matched:!!matched,task_ref:scalar(s.task_ref),elapsed_ms:number(s.elapsed_ms),executor_pid:number(s.executor_pid),harness:null,usage_code:'NONE',usage_label:'Nessun uso dispatcher osservato',usage_tip:'qwen_no_dispatcher_use',usage_tone:'neutral',show_external_caution:false,inference:false};
+      if(q.reachable===false)return {...base,usage_code:'UNAVAILABLE',usage_label:'Endpoint non raggiungibile',usage_tip:'qwen_reachable',usage_tone:'danger',primary:null};
+      if(active&&phase==='OPENCODE'){
+        if(!profile)return {...base,usage_code:'NO_PROFILE',usage_label:'Ciclo OpenCode senza profilo Qwen',usage_tip:'qwen_usage_mismatch',usage_tone:'warn',harness:null,inference:false};
+        if(!matched)return {...base,usage_code:'MISMATCH',usage_label:'Uso dispatcher non correlato',usage_tip:'qwen_usage_mismatch',usage_tone:'warn',harness:null,inference:false};
+        return {...base,usage_code:'IN_USE',usage_label:'In uso dal dispatcher',usage_tip:'qwen_in_use',usage_tone:'ok',harness:'OpenCode',inference:true,primary:matched};
+      }
+      if(active&&phase==='QWEN_PREFLIGHT')return {...base,usage_code:'PREFLIGHT',usage_label:'Preparazione / verifica Qwen',usage_tip:'qwen_preflight_use',usage_tone:'warn',harness:null,inference:false};
+      if(active&&phase==='ADMISSION'&&profile)return {...base,usage_code:'ADMISSION',usage_label:'Riservato per task / ammissione',usage_tip:'qwen_preflight_use',usage_tone:'warn',harness:null,inference:false};
+      if(active&&(phase==='TESTS'||phase==='PERSISTENCE'))return {...base,usage_code:'POST_INFERENCE',usage_label:'Task in corso · Qwen non in inferenza',usage_tip:'qwen_task_not_inference',usage_tone:'info',harness:null,inference:false};
+      if(modelStateInfo.code==='LOADED')return {...base,usage_code:'LOADED_IDLE',usage_label:'Nessun uso dispatcher osservato',usage_tip:'qwen_no_dispatcher_use',usage_tone:'neutral',show_external_caution:true,inference:false};
+      return base;
+    }
+    function qwenSummaryMetric(usage){
+      if(usage.usage_code==='UNAVAILABLE')return {value:'Non raggiungibile',sub:'Sonda del catalogo locale',tone:'danger'};
+      const n=usage.loaded.length;const ctx=contextShort(usage.primary&&usage.primary.context_tokens);
+      const value=n?`${n} caricato${n===1?'':'i'}${ctx?` · ${ctx}`:''}`:(usage.model_state.code==='UNLOADED'?'Non caricato':usage.model_state.label);
+      let sub='Nessun uso dispatcher osservato';
+      if(usage.usage_code==='IN_USE')sub=`IN USO · OpenCode · ${shortTask(usage.task_ref)}`;
+      else if(usage.usage_code==='PREFLIGHT')sub='Preparazione / verifica Qwen';
+      else if(usage.usage_code==='ADMISSION')sub='Riservato / ammissione';
+      else if(usage.usage_code==='POST_INFERENCE')sub=`Task in corso · non in inferenza${usage.task_ref?` · ${shortTask(usage.task_ref)}`:''}`;
+      else if(usage.usage_code==='MISMATCH'||usage.usage_code==='NO_PROFILE')sub='Uso dispatcher non correlato';
+      else if(usage.model_state.code!=='LOADED')sub='Catalogo letto · disponibilità per modello';
+      const tone=usage.usage_code==='IN_USE'?'ok':usage.usage_code==='UNAVAILABLE'?'danger':(usage.usage_code==='PREFLIGHT'||usage.usage_code==='ADMISSION'||usage.usage_code==='MISMATCH')?'warn':n?'ok':'info';
+      return {value,sub,tone};
+    }
+    function qwenRuntimeBlock(usage){
+      const modelId=usage.primary?usage.primary.id:(usage.loaded[0]?usage.loaded[0].id:(usage.profile||'—'));
+      const harness=usage.harness||'Non osservato';
+      const task=usage.task_ref?shortTask(usage.task_ref):'—';
+      const clock=activityClock(usage.elapsed_ms)||'—';
+      const tip=usage.usage_tip||'qwen_no_dispatcher_use';
+      return `<div class="qwen-runtime"><div class="qr-row"><span class="qr-k">Modello caricato</span><span class="qr-v mono">${escapeHtml(modelId)}</span></div><div class="qr-row"><span class="qr-k">Stato modello ${help('qwen_model_loaded')}</span><span class="qr-v">${escapeHtml(usage.model_state.label)}</span></div><div class="qr-row"><span class="qr-k">Uso ${help(tip)}</span><span class="qr-v ${usage.usage_tone}">${escapeHtml(usage.usage_label)}</span></div><div class="qr-row"><span class="qr-k">Harness</span><span class="qr-v">${escapeHtml(harness)}</span></div><div class="qr-row"><span class="qr-k">Task</span><span class="qr-v mono">${escapeHtml(task)}</span></div><div class="qr-row"><span class="qr-k">Tempo attività</span><span class="qr-v">${escapeHtml(clock)}</span></div></div>`;
+    }
+    function qwenResourceMain(usage){
+      if(usage.usage_code==='IN_USE')return 'IN USO DAL DISPATCHER';
+      if(usage.usage_code==='PREFLIGHT')return 'PREPARAZIONE / VERIFICA QWEN';
+      if(usage.usage_code==='ADMISSION')return 'RISERVATO PER TASK / AMMISSIONE';
+      if(usage.usage_code==='POST_INFERENCE')return 'TASK IN CORSO · QWEN NON IN INFERENZA';
+      if(usage.usage_code==='MISMATCH'||usage.usage_code==='NO_PROFILE')return 'USO DISPATCHER NON CORRELATO';
+      if(usage.usage_code==='UNAVAILABLE')return 'ENDPOINT NON RAGGIUNGIBILE';
+      if(usage.model_state.code==='LOADED')return 'CARICATO';
+      if(usage.model_state.code==='LOADING')return 'CARICAMENTO';
+      if(usage.model_state.code==='UNLOADED')return 'NON CARICATO';
+      if(usage.model_state.code==='ERROR')return 'ERRORE';
+      if(usage.model_state.code==='OFFLINE')return 'OFFLINE';
+      return usage.model_state.label;
+    }
+    function qwenResourceLines(usage,q){
+      const lines=[];
+      const modelId=(usage.matched&&usage.primary)?usage.primary.id:(usage.loaded.map(m=>m.id).join(', ')||null);
+      if(modelId)lines.push(modelId);
+      if(usage.usage_code==='LOADED_IDLE'||usage.usage_code==='NONE')lines.push(usage.usage_label);
+      if(usage.usage_code==='IN_USE'){
+        lines.push('Harness: OpenCode');
+        if(usage.task_ref)lines.push(`Task: ${shortTask(usage.task_ref)}`);
+        const clock=activityClock(usage.elapsed_ms);if(clock)lines.push(`Attivo da: ${clock}`);
+      } else if(usage.usage_code==='PREFLIGHT'||usage.usage_code==='ADMISSION'){
+        if(usage.task_ref)lines.push(`Task: ${shortTask(usage.task_ref)}`);
+        if(usage.profile)lines.push(`Profilo: ${usage.profile}`);
+      } else if(usage.usage_code==='POST_INFERENCE'){
+        if(usage.task_ref)lines.push(`Task: ${shortTask(usage.task_ref)}`);
+      } else if(usage.show_external_caution){
+        lines.push('Uso esterno: NON OSSERVABILE');
+      }
+      const ctx=usage.primary?number(usage.primary.context_tokens):null;
+      if(ctx!==null)lines.push(`Contesto: ${count(ctx)} token`);
+      const workerBits=[];
+      if(usage.primary&&number(usage.primary.pid)!==null)workerBits.push(`PID ${usage.primary.pid}`);
+      else if(number(usage.executor_pid)!==null&&usage.inference)workerBits.push(`PID ${usage.executor_pid}`);
+      if(usage.primary&&number(usage.primary.port)!==null)workerBits.push(`porta ${usage.primary.port}`);
+      if(workerBits.length)lines.push(`Worker: ${workerBits.join(' · ')}`);
+      lines.push(`Endpoint: ${text(q.reachable===true?'raggiungibile':q.reachable===false?'non raggiungibile':'sconosciuto')}`);
+      lines.push('Quota commerciale: N/A');
+      lines.push(text(q.capacity_label,'Capacità locale — nessuna quota commerciale'));
+      return lines;
+    }
+
+    function render(status,diag,resources){const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);const t=obj(d.last_tick),q=obj(d.queue),w=obj(d.qwen);const resQwen=obj(obj(resources).qwen);const qwenObs=Object.keys(resQwen).length?resQwen:w;const usage=deriveQwenUsage(s,qwenObs);const fallback=fallbackExplanation(s,t,q);const e=typeof obj(d.explanation).action_required==='boolean'||obj(d.explanation).action_required===null?{...fallback,...obj(d.explanation)}:fallback;const severity=['ok','warn','danger','info'].includes(e.severity)?e.severity:'info';const active=s.active===true;const c=text(s.classification||t.classification,'');const models=list(w.models).map(obj).filter(m=>scalar(m.id));const loaded=models.filter(m=>modelState(m)==='loaded');const qwenMetric=qwenSummaryMetric(usage);
       put('summary-cards',[
         metric('Stato dispatcher',active?'Al lavoro':s.active===false?(c==='HUMAN_GATE_REQUIRED'?'Intervento umano':c==='SERVICE_ERROR'?'Errore servizio':'In attesa'):'Sconosciuto',active?label(s.phase):`Ultimo esito: ${label(c)}`,'active',active?'info':tone(c)),
         metric('Task',s.task_ref?shortTask(s.task_ref):q.candidate_task_ref?shortTask(q.candidate_task_ref):'Nessun task',s.task_ref?(active?'Task in elaborazione':'Ultimo task osservato'):q.candidate_task_ref?'Candidato · non ancora avviato':'Nessun task selezionato','task_ref','identity',true),
         metric('Coda',`${count(q.eligible_count)} eseguibili`,`${count(q.claim_present_count)} bloccati da claim`,'eligible_count',q.claim_present_count>0?'warn':'info'),
-        metric('Qwen',qwenTitle,w.reachable===true?'Catalogo letto · disponibilità per modello':'Sonda del catalogo locale','qwen_reachable',w.reachable===false?'danger':loaded.length?'ok':'info'),
+        metric('Qwen',qwenMetric.value,qwenMetric.sub,'qwen_reachable',qwenMetric.tone),
         metric('Ultimo tick',date(t.recorded_at,true),t.recorded_at?date(t.recorded_at):'Nessun ciclo completato registrato','recorded_at','info'),
         metric('Esecuzione',active?label(s.phase):label(t.classification||s.classification),active?`Durata ciclo: ${duration(s.elapsed_ms)}`:`Attività svolta nell’ultimo ciclo: ${yn(t.execution_performed)}`,'execution_performed',active?'info':tone(c)),
       ].join(''));
       el('headline').textContent=text(e.headline,fallback.headline);el('detail').textContent=text(e.detail,fallback.detail);el('operator-action').textContent=text(e.operator_action,fallback.operator_action);el('hero').className=`panel hero ${severity}`;el('hero-icon').textContent=severity==='danger'?'!':severity==='ok'?'✓':severity==='warn'?'!':'·';el('live-badge').className=`pill ${severity}`;el('live-badge').textContent=active?'Ciclo in corso':label(c);
       put('block-pills',`${pill(`Intervento umano: ${yn(e.action_required)}`,e.action_required===true?'warn':'subtle')}${help('action_required')}${e.blocked_at?pill(`Fase: ${text(e.blocked_at_label,STAGES[e.blocked_at]||'Sconosciuta')}`,'subtle'):''}${e.why_code?`<span class="pill subtle mono">${escapeHtml(e.why_code)} ${help('reason_codes')}</span>`:''}`);
       put('queue-metrics',`<div class="queue-stat info"><strong>${count(q.scanned_file_count)}</strong><span>file analizzati ${help('scanned_file_count')}</span></div><div class="queue-stat ok"><strong>${count(q.eligible_count)}</strong><span>eseguibili ${help('eligible_count')}</span></div><div class="queue-stat warn"><strong>${count(q.claim_present_count)}</strong><span>bloccati da claim ${help('claim_present_count')}</span></div>`);currentQueue=q;renderQueue();
-      el('qwen-badge').className=`pill ${w.reachable===false?'danger':w.reachable===true?'ok':'subtle'}`;el('qwen-badge').textContent=w.reachable===true?'Endpoint raggiungibile':w.reachable===false?'Non raggiungibile':'Non disponibile';
-      put('qwen-summary',`<dl class="facts">${fact('Profilo richiesto',s.qwen_profile,'qwen_profile',true)}${fact('Verifica nel ciclo',yn(s.runtime_ready),'runtime_ready')}${fact('Stato del profilo',label(w.profile_status),'model_status')}${fact('Modelli in elenco',Array.isArray(w.models)?count(models.length):'Non disponibile','qwen_reachable')}</dl>${w.error?`<p class="receipt-note danger">Sonda non completata: ${escapeHtml(w.error)}</p>`:''}`);
-      put('qwen-models',models.length?[...models].sort((a,b)=>(modelState(b)==='loaded'?1:0)-(modelState(a)==='loaded'?1:0)).map((m,i)=>{const state=modelState(m);const ctx=number(m.context_tokens)??number(obj(m.meta).n_ctx);return `<article class="model"><div class="model-line"><span class="model-id">${escapeHtml(m.id)}</span>${pill(label(state),state==='loaded'?'ok':state==='loading'?'warn':'subtle')}</div>${ctx!==null?`<p class="model-meta">Contesto: ${count(ctx)} token ${help('context')}</p>`:''}${m.runtime?`<p class="model-meta">Runtime: ${escapeHtml(m.runtime)}</p>`:''}<details id="model-${i}" class="technical"><summary>Mostra dettagli tecnici del modello ${help('model_status')}</summary><pre>${escapeHtml(json(m))}</pre></details></article>`;}).join(''):`<p class="empty">${w.reachable===false?'Endpoint non raggiungibile. Stato dei modelli non disponibile.':w.reachable===true?'Il catalogo non contiene modelli.':'Catalogo non disponibile.'}</p>`);
+      el('qwen-badge').className=`pill ${usage.usage_code==='IN_USE'?'ok':w.reachable===false?'danger':w.reachable===true?'ok':'subtle'}`;el('qwen-badge').textContent=usage.usage_code==='IN_USE'?'In uso':w.reachable===true?'Endpoint raggiungibile':w.reachable===false?'Non raggiungibile':'Non disponibile';
+      put('qwen-summary',`${qwenRuntimeBlock(usage)}<dl class="facts">${fact('Profilo richiesto',s.qwen_profile,'qwen_profile',true)}${fact('Verifica nel ciclo',yn(s.runtime_ready),'runtime_ready')}${fact('Stato del profilo',label(w.profile_status||qwenObs.profile_status),'model_status')}${fact('Modelli in elenco',Array.isArray(w.models)?count(models.length):(Array.isArray(qwenObs.models)?count(list(qwenObs.models).length):'Non disponibile'),'qwen_reachable')}</dl>${w.error?`<p class="receipt-note danger">Sonda non completata: ${escapeHtml(w.error)}</p>`:''}`);
+      put('qwen-models',models.length?[...models].sort((a,b)=>(modelState(b)==='loaded'?1:0)-(modelState(a)==='loaded'?1:0)).map((m,i)=>{const state=modelState(m);const ctx=number(m.context_tokens)??number(obj(m.meta).n_ctx);const isTaskModel=usage.profile&&m.id===usage.profile;return `<article class="model"><div class="model-line"><span class="model-id">${escapeHtml(m.id)}</span>${pill(label(state),state==='loaded'?'ok':state==='loading'?'warn':'subtle')}${isTaskModel?pill('Modello del task','info'):''}</div>${ctx!==null?`<p class="model-meta">Contesto: ${count(ctx)} token ${help('context')}</p>`:''}${m.runtime?`<p class="model-meta">Runtime: ${escapeHtml(m.runtime)}</p>`:''}<details id="model-${i}" class="technical"><summary>Mostra dettagli tecnici del modello ${help('model_status')}</summary><pre>${escapeHtml(json(m))}</pre></details></article>`;}).join(''):`<p class="empty">${w.reachable===false?'Endpoint non raggiungibile. Stato dei modelli non disponibile.':w.reachable===true?'Il catalogo non contiene modelli.':'Catalogo non disponibile.'}</p>`);
       put('tick-summary',`<p class="outcome ${tone(t.classification)}">${escapeHtml(label(t.classification))}</p><p class="outcome-time">${escapeHtml(date(t.recorded_at))}</p><dl class="facts">${fact('Task',t.task_ref?shortTask(t.task_ref):'Nessun task registrato','task_ref',true)}${fact('Durata del ciclo',duration(t.elapsed_ms),'elapsed_ms')}${fact('Attività svolta',yn(t.execution_performed),'execution_performed')}${fact('Intervento umano',yn(t.human_gate_required),'human_gate_required')}</dl>`);
       el('reason-codes').textContent=json({classification:t.classification??null,reason_codes:t.reason_codes??[],gate_summary:t.gate_summary??null,request_id:t.request_id??null,notify_required:t.notify_required??null});
       put('status-details',fact('Fase',label(s.phase),'phase')+fact('Classificazione',label(s.classification),'classification')+fact('Identificativo ciclo',s.request_id,'request_id',true)+fact('Identificativo task',s.task_ref,'task_ref',true)+fact('Durata osservata',duration(s.elapsed_ms),'elapsed_ms')+fact('Processo',s.executor_pid,'executor_pid')+fact('Test',label(s.tests_state),'tests_state')+fact('Ultimo evento',s.last_event,'last_event',true)+fact('File coinvolti',list(s.files_touched).filter(v=>typeof v==='string').join(', ')||'Nessun file riportato','files_touched',true));
-      renderResources(resources);
+      renderResources(resources,s);
     }
     let refreshing=false,lastSuccess=null;
     async function readJson(path){const response=await fetch(path,{method:'GET',cache:'no-store',signal:AbortSignal.timeout(7000)});if(!response.ok)throw new Error(`HTTP ${response.status}`);const body=await response.json();if(!body||typeof body!=='object'||Array.isArray(body))throw new Error('Risposta non valida');return body;}

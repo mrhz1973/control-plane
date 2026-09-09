@@ -2062,5 +2062,237 @@ await test("S47 dashboard resources section: no object Object; Italian labels; n
   assert.doesNotMatch(out, /\bUNLIMITED\b|\bFREE\b|100%\s*remaining/i);
 });
 
+function qwenResourcesFixture(extra = {}) {
+  const profile = extra.profile || "qwen38-opus-q3-opencode-64k";
+  const loaded = extra.loaded_models || [{
+    id: profile,
+    status: "loaded",
+    context_tokens: 65536,
+    pid: 4242,
+    port: 8080,
+  }];
+  return {
+    schema_version: RESOURCES_SCHEMA,
+    workstation: { state: "AVAILABLE", freshness: "fresh", collector_label: "ws" },
+    qwen: {
+      reachable: extra.reachable !== false,
+      occupancy: extra.occupancy || (loaded.length ? "LOADED" : "IDLE"),
+      profile_status: extra.profile_status || (loaded.length ? "loaded" : "listed"),
+      capacity_label: "Capacità locale — nessuna quota commerciale",
+      commercial_quota: "N/A",
+      collector_label: "qwen probe",
+      loaded_models: loaded,
+      models: loaded,
+      freshness: "fresh",
+      observed_at: "2026-09-09T00:00:00Z",
+      ...objish(extra.qwen),
+    },
+    vps_new: { state: "UNAVAILABLE", reason_code: "VPS_PRIVATE_OBSERVATION_UNAVAILABLE" },
+    quotas: { pools: {} },
+    chatgpt_web: { state: "UNKNOWN", unlimited: false, free: false },
+  };
+}
+function objish(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+function dashboardText(dashboard) {
+  const latestById = new Map();
+  for (const write of dashboard.htmlWrites) latestById.set(write.id, write.value);
+  return [...latestById.values(), ...[...dashboard.elements.values()].map((n) => n.innerHTML + n.textContent)].join("\n");
+}
+
+await test("S48 loaded idle: model id + CARICATO + nessun uso dispatcher; never LIBERO/IN USO", async () => {
+  const profile = "qwen38-opus-q3-opencode-64k";
+  const dashboard = await dashboardHarness({
+    status: { active: false, phase: "IDLE", qwen_profile: null },
+    diag: { queue: { eligible_count: 0 }, qwen: { reachable: true, models: [{ id: profile, status: "loaded", meta: { n_ctx: 65536 } }] } },
+    resources: qwenResourcesFixture({ profile }),
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(out, /qwen38-opus-q3-opencode-64k/);
+  assert.match(out, /CARICATO|Caricato/);
+  assert.match(out, /Nessun uso dispatcher osservato/i);
+  assert.match(out, /64K|65\.536|65536/);
+  assert.match(out, /Uso esterno: NON OSSERVABILE/);
+  assert.doesNotMatch(out, /\bLIBERO\b/);
+  assert.doesNotMatch(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+  assert.doesNotMatch(out, /\[object Object\]/);
+});
+
+await test("S49 OPENCODE exact profile match: IN USO + OpenCode + task + elapsed", async () => {
+  const profile = "qwen38-opus-q3-opencode-64k";
+  const dashboard = await dashboardHarness({
+    status: {
+      active: true,
+      phase: "OPENCODE",
+      qwen_profile: profile,
+      task_ref: "LOCAL_DEV_B_D-9405-A",
+      elapsed_ms: 151000,
+      executor_pid: 999,
+      runtime_ready: true,
+    },
+    diag: {
+      status: {
+        active: true,
+        phase: "OPENCODE",
+        qwen_profile: profile,
+        task_ref: "LOCAL_DEV_B_D-9405-A",
+        elapsed_ms: 151000,
+      },
+      queue: { eligible_count: 0 },
+      qwen: { reachable: true, models: [{ id: profile, status: "loaded", meta: { n_ctx: 65536 } }] },
+    },
+    resources: qwenResourcesFixture({ profile }),
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+  assert.match(out, /OpenCode/);
+  assert.match(out, /D-9405-A/);
+  assert.match(out, /02:31|Attivo da/);
+  assert.doesNotMatch(out, /Nessun uso dispatcher osservato/);
+  assert.doesNotMatch(out, /\[object Object\]/);
+});
+
+await test("S50 QWEN_PREFLIGHT is preparation, not inference", async () => {
+  const profile = "qwen38-opus-q3-opencode-64k";
+  const dashboard = await dashboardHarness({
+    status: { active: true, phase: "QWEN_PREFLIGHT", qwen_profile: profile, task_ref: "LOCAL_DEV_B_D-11", elapsed_ms: 5000 },
+    diag: { status: { active: true, phase: "QWEN_PREFLIGHT", qwen_profile: profile, task_ref: "LOCAL_DEV_B_D-11" }, queue: {}, qwen: { reachable: true, models: [{ id: profile, status: "loaded" }] } },
+    resources: qwenResourcesFixture({ profile }),
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(out, /PREPARAZIONE \/ VERIFICA QWEN|Preparazione \/ verifica Qwen/i);
+  assert.doesNotMatch(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+  assert.doesNotMatch(out, /inferenza in esecuzione|sta elaborando un’inferenza/i);
+});
+
+await test("S51 TESTS phase: task active, Qwen not in inference", async () => {
+  const profile = "qwen38-opus-q3-opencode-64k";
+  const dashboard = await dashboardHarness({
+    status: { active: true, phase: "TESTS", qwen_profile: profile, task_ref: "LOCAL_DEV_B_D-12", elapsed_ms: 90000 },
+    diag: { status: { active: true, phase: "TESTS", qwen_profile: profile, task_ref: "LOCAL_DEV_B_D-12" }, queue: {}, qwen: { reachable: true, models: [{ id: profile, status: "loaded" }] } },
+    resources: qwenResourcesFixture({ profile }),
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(out, /QWEN NON IN INFERENZA|non in inferenza/i);
+  assert.doesNotMatch(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+});
+
+await test("S52 PERSISTENCE phase: same non-inference semantics", async () => {
+  const profile = "qwen38-opus-q3-opencode-64k";
+  const dashboard = await dashboardHarness({
+    status: { active: true, phase: "PERSISTENCE", qwen_profile: profile, task_ref: "LOCAL_DEV_B_D-13", elapsed_ms: 120000 },
+    diag: { status: { active: true, phase: "PERSISTENCE", qwen_profile: profile, task_ref: "LOCAL_DEV_B_D-13" }, queue: {}, qwen: { reachable: true, models: [{ id: profile, status: "loaded" }] } },
+    resources: qwenResourcesFixture({ profile }),
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(out, /QWEN NON IN INFERENZA|non in inferenza/i);
+  assert.doesNotMatch(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+});
+
+await test("S53 active profile mismatch: no false attribution", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: true, phase: "OPENCODE", qwen_profile: "other-profile-id", task_ref: "LOCAL_DEV_B_D-14", elapsed_ms: 1000 },
+    diag: { status: { active: true, phase: "OPENCODE", qwen_profile: "other-profile-id", task_ref: "LOCAL_DEV_B_D-14" }, queue: {}, qwen: { reachable: true, models: [{ id: "qwen38-opus-q3-opencode-64k", status: "loaded" }] } },
+    resources: qwenResourcesFixture({ profile: "qwen38-opus-q3-opencode-64k" }),
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(out, /USO DISPATCHER NON CORRELATO|non correlato/i);
+  assert.doesNotMatch(out, /IN USO DAL DISPATCHER|IN USO · OpenCode · D-14/);
+  assert.doesNotMatch(out, /Harness: OpenCode/);
+});
+
+await test("S54 qwen_profile null: no invented owner", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: true, phase: "OPENCODE", qwen_profile: null, task_ref: "LOCAL_DEV_B_D-15", elapsed_ms: 1000 },
+    diag: { status: { active: true, phase: "OPENCODE", qwen_profile: null, task_ref: "LOCAL_DEV_B_D-15" }, queue: {}, qwen: { reachable: true, models: [{ id: "qwen38-opus-q3-opencode-64k", status: "loaded" }] } },
+    resources: qwenResourcesFixture({}),
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.doesNotMatch(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+  assert.doesNotMatch(out, /Harness: OpenCode/);
+  assert.match(out, /senza profilo|non correlato|Nessun uso dispatcher osservato/i);
+});
+
+await test("S55 multiple loaded models: exact correlation only", async () => {
+  const profile = "qwen38-opus-q3-opencode-64k";
+  const other = "qwen-other-profile";
+  const dashboard = await dashboardHarness({
+    status: { active: true, phase: "OPENCODE", qwen_profile: profile, task_ref: "LOCAL_DEV_B_D-16", elapsed_ms: 61000 },
+    diag: {
+      status: { active: true, phase: "OPENCODE", qwen_profile: profile, task_ref: "LOCAL_DEV_B_D-16", elapsed_ms: 61000 },
+      queue: {},
+      qwen: { reachable: true, models: [{ id: profile, status: "loaded" }, { id: other, status: "loaded" }] },
+    },
+    resources: qwenResourcesFixture({
+      loaded_models: [
+        { id: profile, status: "loaded", context_tokens: 65536, pid: 1, port: 8080 },
+        { id: other, status: "loaded", context_tokens: 32768, pid: 2, port: 8081 },
+      ],
+    }),
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+  assert.match(out, /Modello del task/);
+  assert.match(out, new RegExp(other));
+  assert.match(out, new RegExp(profile));
+});
+
+await test("S56 endpoint unreachable: bounded unavailable state", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false },
+    diag: { queue: {}, qwen: { reachable: false, models: [], error: "ECONNREFUSED" } },
+    resources: qwenResourcesFixture({
+      reachable: false,
+      occupancy: "UNKNOWN",
+      profile_status: "unreachable",
+      loaded_models: [],
+      qwen: { reachable: false, error: "ECONNREFUSED" },
+    }),
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(out, /non raggiungibile|Offline|ENDPOINT NON RAGGIUNGIBILE/i);
+  assert.doesNotMatch(out, /IN USO DAL DISPATCHER/);
+  assert.doesNotMatch(out, /\[object Object\]/);
+});
+
+await test("S57 Qwen usage tooltips present; network remains GET-only without POST tick", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false },
+    diag: { queue: { eligible_count: 0 }, qwen: { reachable: true, models: [] } },
+    resources: qwenResourcesFixture({ loaded_models: [] }),
+  });
+  const tips = dashboard.evaluate("TIPS");
+  for (const key of ["qwen_model_loaded", "qwen_in_use", "qwen_no_dispatcher_use"]) {
+    assert.equal(typeof tips[key], "string", key);
+    assert.ok(tips[key].length >= 25, key);
+  }
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  assert.ok(dashboard.fetches.every((request) => request.method === "GET"));
+  assert.ok(dashboard.fetches.every((request) => [STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH].includes(request.url)));
+  assert.ok(!dashboard.fetches.some((request) => /tick/i.test(request.url)));
+  assert.deepEqual(dashboard.otherNetwork, []);
+  assert.doesNotMatch(dashboardText(dashboard), /\[object Object\]/);
+});
+
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 if (failures.length) process.exit(1);
