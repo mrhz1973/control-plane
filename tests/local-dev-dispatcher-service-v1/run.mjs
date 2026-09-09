@@ -2569,23 +2569,21 @@ await test("S60 #73 dashboard renders live GLM/Codex windows, plan metadata, Ope
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = dashboardText(dashboard);
-  assert.match(out, /Residuo effettivo[\s\S]{0,240}13(?:[.,]0)?\s*%/);
-  assert.match(out, /5h[\s\S]{0,240}40(?:[.,]0)?\s*%/);
-  assert.match(out, /Settimanale[\s\S]{0,240}13(?:[.,]0)?\s*%/);
-  assert.match(out, /MCP \(ausiliario\):\s*100(?:[.,]0)?\s*% residuo|MCP[\s\S]{0,80}non influenza capacità modello/);
-  assert.match(out, /Residuo effettivo[\s\S]{0,240}84(?:[.,]0)?\s*%/);
-  assert.match(out, /5h[\s\S]{0,240}100(?:[.,]0)?\s*%/);
-  assert.match(out, /Settimanale[\s\S]{0,240}84(?:[.,]0)?\s*%/);
+  assert.match(out, /Effettivo[\s\S]{0,240}13(?:[.,]0)?%/);
+  assert.match(out, /5h[\s\S]{0,240}40(?:[.,]0)?%/);
+  assert.match(out, /Settim\.[\s\S]{0,240}13(?:[.,]0)?%/);
+  assert.match(out, /MCP \(ausiliario\):\s*100(?:[.,]0)?%|MCP[\s\S]{0,80}non influenza capacità modello/);
+  assert.match(out, /Effettivo[\s\S]{0,240}84(?:[.,]0)?%/);
+  assert.match(out, /5h[\s\S]{0,240}100(?:[.,]0)?%/);
+  assert.match(out, /Settim\.[\s\S]{0,240}84(?:[.,]0)?%/);
   assert.match(out, /Piano: plus/i);
   assert.match(out, /OpenClaw \/ Z\.AI usage/);
   assert.match(out, /OpenClaw \/ OpenAI Codex usage/);
   assert.match(out, /Pool unico: glm_coding_plan/);
   assert.match(out, /glm-5\.3, glm-5\.3-flash/);
-  // GLM card shows weekly (Tokens Limit mapped); MCP is aux, not Mensile:
-  const glmCard = out.split(/Pool unico: glm_coding_plan/)[1]?.split(/Codex/)[0] || "";
-  assert.match(glmCard, /Settimanale/);
-  assert.match(glmCard, /MCP/);
-  assert.doesNotMatch(glmCard, /Mensile:/);
+  assert.match(out, /Settim\./);
+  assert.match(out, /MCP \(ausiliario\)/);
+  assert.doesNotMatch(out, /Mensile:/);
   assert.doesNotMatch(out, /\$0\.00/);
   assert.doesNotMatch(out, /\[object Object\]/);
 });
@@ -2819,10 +2817,16 @@ await test("S71 D-9408-A dashboard compact health: qwen no fake 100%; cursor no 
   assert.match(out, /Illimitato:\s*No|Infinito:\s*No/);
   assert.doesNotMatch(out, /\bunlimited\b|\binfinite\b|\bgratuito illimitato\b/i);
   assert.match(out, /MCP \(ausiliario\)|non influenza capacità modello/);
-  assert.match(out, /Residuo effettivo/);
+  assert.match(out, /Residuo effettivo|Effettivo|hbar-fill danger/);
   assert.doesNotMatch(out, /Residuo effettivo[\s\S]{0,80}99/);
   assert.doesNotMatch(out, /\[object Object\]/);
-  assert.match(out, /hbar-fill danger|CRITICO/);
+  assert.match(out, /hbar-fill danger/);
+  // Visible bar markup must not show severity words (aria/title may still carry them).
+  const barChunks = out.match(/<div class="hbar"[^>]*>[\s\S]*?<\/div><\/div><span class="hbar-val[^"]*">[^<]*<\/span><\/div>/g) || [];
+  for (const chunk of barChunks) {
+    const visible = chunk.replace(/\s(?:aria-label|title)="[^"]*"/g, "");
+    assert.doesNotMatch(visible, /\b(?:OK|ATTENZIONE|ELEVATO|CRITICO|HEALTHY|WARNING|DANGER)\b/);
+  }
   // Layout persistence (browser-local only)
   dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['workspace','candidate','resources']))");
   dashboard.evaluate("applySectionOrder(readSavedOrder())");
@@ -2873,33 +2877,96 @@ await test("S72 D-9408-B disk free derived from used percent and free/total byte
   }
 
   const greenOut = await renderDisk({ system_disk_percent: 10 });
-  assert.match(greenOut, /aria-label="Disco libero: 90(?:[.,]0)? %/);
-  assert.match(greenOut, /hbar-label">Disco libero<\/span>[\s\S]{0,160}hbar-fill ok/);
-  assert.match(greenOut, /usati \(system_disk_percent\):\s*10(?:[.,]0)?\s*%/);
-  assert.doesNotMatch(greenOut, /aria-label="Disco libero: 10(?:[.,]0)? %/);
+  assert.match(greenOut, /aria-label="Disco: 90(?:[.,]0)?%/);
+  assert.match(greenOut, /hbar-label">Disco<\/span>[\s\S]{0,160}hbar-fill ok/);
+  assert.match(greenOut, /usati \(system_disk_percent\):\s*10(?:[.,]0)?%/);
+  assert.doesNotMatch(greenOut, /aria-label="Disco: 10(?:[.,]0)?%/);
 
   const orangeOut = await renderDisk({ system_disk_percent: 90 });
-  assert.match(orangeOut, /aria-label="Disco libero: 10(?:[.,]0)? %/);
-  assert.match(orangeOut, /hbar-label">Disco libero<\/span>[\s\S]{0,160}hbar-fill caution/);
-  assert.match(orangeOut, /usati \(system_disk_percent\):\s*90(?:[.,]0)?\s*%/);
+  assert.match(orangeOut, /aria-label="Disco: 10(?:[.,]0)?%/);
+  assert.match(orangeOut, /hbar-label">Disco<\/span>[\s\S]{0,160}hbar-fill caution/);
+  assert.match(orangeOut, /usati \(system_disk_percent\):\s*90(?:[.,]0)?%/);
 
   const redOut = await renderDisk({ system_disk_percent: 97 });
-  assert.match(redOut, /aria-label="Disco libero: 3(?:[.,]0)? %/);
-  assert.match(redOut, /hbar-label">Disco libero<\/span>[\s\S]{0,160}hbar-fill danger/);
+  assert.match(redOut, /aria-label="Disco: 3(?:[.,]0)?%/);
+  assert.match(redOut, /hbar-label">Disco<\/span>[\s\S]{0,160}hbar-fill danger/);
 
   const bytesOut = await renderDisk({
     system_disk_free_bytes: 40_000_000_000,
     system_disk_total_bytes: 100_000_000_000,
     system_disk_percent: 99,
   });
-  assert.match(bytesOut, /aria-label="Disco libero: 40(?:[.,]0)? %/);
-  assert.match(bytesOut, /hbar-label">Disco libero<\/span>[\s\S]{0,160}hbar-fill ok/);
-  assert.doesNotMatch(bytesOut, /aria-label="Disco libero: 99(?:[.,]0)? %/);
+  assert.match(bytesOut, /aria-label="Disco: 40(?:[.,]0)?%/);
+  assert.match(bytesOut, /hbar-label">Disco<\/span>[\s\S]{0,160}hbar-fill ok/);
+  assert.doesNotMatch(bytesOut, /aria-label="Disco: 99(?:[.,]0)?%/);
 
   const missingOut = await renderDisk({ ram_percent: 20 });
-  assert.match(missingOut, /aria-label="Disco libero: —, SCONOSCIUTO"/);
-  assert.match(missingOut, /hbar-label">Disco libero<\/span>[\s\S]{0,160}hbar-fill neutral/);
-  assert.doesNotMatch(missingOut, /hbar-label">Disco libero<\/span>[\s\S]{0,160}hbar-fill ok/);
+  assert.match(missingOut, /aria-label="Disco: —, SCONOSCIUTO"/);
+  assert.match(missingOut, /hbar-label">Disco<\/span>[\s\S]{0,160}hbar-fill neutral/);
+  assert.doesNotMatch(missingOut, /hbar-label">Disco<\/span>[\s\S]{0,160}hbar-fill ok/);
+});
+
+await test("S73 D-9408-C ultra-compact resource cards: no visible severity words; 6-col grid; collapsible meta", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false },
+    diag: { queue: { eligible_count: 0 }, qwen: { reachable: true, models: [] } },
+    resources: {
+      schema_version: RESOURCES_SCHEMA,
+      workstation: {
+        state: "AVAILABLE", freshness: "fresh", cpu_percent: 20.6, ram_percent: 81.9,
+        system_disk_percent: 96.2, collector_label: "ws",
+        gpu: { state: "AVAILABLE", gpu_util_percent: 0, vram_used_mb: 7680, vram_total_mb: 8000, temperature_c: 36, freshness: "fresh" },
+      },
+      qwen: { occupancy: "IDLE", capacity_label: "Capacità locale — nessuna quota commerciale", commercial_quota: "N/A", loaded_models: [] },
+      vps_new: { state: "UNAVAILABLE", reason_code: "VPS_PRIVATE_OBSERVATION_UNAVAILABLE" },
+      quotas: {
+        pools: {
+          glm_coding_plan: {
+            state: "AVAILABLE", freshness: "fresh", remaining_percent: 42,
+            windows: [{ window_type: "rolling", remaining_percent: 55 }, { window_type: "weekly", remaining_percent: 42 }],
+            auxiliary_windows: [{ kind: "mcp", remaining_percent: 99 }],
+            consumers: ["glm-5.3", "glm-5.3-flash"], collector_label: "openclaw",
+          },
+          chatgpt_codex_subscription: {
+            state: "AVAILABLE", freshness: "fresh", remaining_percent: 12,
+            windows: [{ window_type: "rolling", remaining_percent: 30 }, { window_type: "weekly", remaining_percent: 12 }],
+            collector_label: "openclaw",
+          },
+        },
+        cursor: { accounting_mapping: "UNVERIFIED", state: "UNKNOWN", labels: {}, freshness: "stale" },
+      },
+      chatgpt_web: { state: "UNKNOWN", unlimited: false, free: false },
+    },
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(dashboard.html, /\.res-grid\{[^}]*grid-template-columns:repeat\(6,/);
+  assert.match(out, /class="res-grid"/);
+  assert.match(out, /class="res-tile/);
+  assert.match(out, /Macchina locale|Qwen locale|NEW VPS|GLM|Codex|Cursor|ChatGPT Web/);
+  assert.match(out, /hbar-label">CPU<\/span>[\s\S]{0,200}20(?:[.,]6)?%/);
+  assert.match(out, /hbar-label">RAM<\/span>[\s\S]{0,200}81(?:[.,]9)?%/);
+  assert.match(out, /hbar-label">Effettivo<\/span>[\s\S]{0,200}42(?:[.,]0)?%/);
+  assert.match(out, /Nessuna quota commerciale/);
+  assert.doesNotMatch(out, /Qwen[\s\S]{0,120}100%/);
+  assert.match(out, /MANUAL_ONLY|UNVERIFIED/);
+  assert.match(out, /Illimitato:\s*No|Infinito:\s*No/);
+  assert.doesNotMatch(out, /\bunlimited\b|\binfinite\b/i);
+  assert.match(out, /details class="res-more"/);
+  assert.match(out, /Fonte \/ Collector/);
+  const bars = out.match(/<div class="hbar"[^>]*>[\s\S]*?<\/div><\/div><span class="hbar-val[^"]*">[^<]*<\/span><\/div>/g) || [];
+  assert.ok(bars.length >= 6, "machine + quota bars present");
+  for (const chunk of bars) {
+    assert.doesNotMatch(chunk, /hbar-status/);
+    const visible = chunk.replace(/\s(?:aria-label|title)="[^"]*"/g, "");
+    assert.doesNotMatch(visible, /\b(?:OK|ATTENZIONE|ELEVATO|CRITICO|HEALTHY|WARNING|DANGER|SCONOSCIUTO)\b/);
+    assert.match(visible, /hbar-val[^>]*>[^<]+</);
+  }
+  assert.equal(dashboard.evaluate("classifyHealthBar('util', 95).tone"), "danger");
+  assert.equal(dashboard.evaluate("classifyHealthBar('quota_remaining', 5).tone"), "danger");
+  assert.equal(dashboard.element("queue-panel").open, false);
+  assert.match(dashboard.html, /id="reset-layout"/);
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
