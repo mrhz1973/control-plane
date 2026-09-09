@@ -1381,7 +1381,7 @@ async function dashboardHarness(initial = {}) {
   const localStore = new Map();
   let timerId = 0;
   let scenario = initial;
-  let sectionOrder = ["candidate", "resources", "workspace"];
+  let sectionOrder = ["resources", "ops", "queue"];
   function element(id) {
     if (elements.has(id)) return elements.get(id);
     const listeners = new Map();
@@ -2802,9 +2802,13 @@ await test("S71 D-9408-A dashboard compact health: qwen no fake 100%; cursor no 
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = dashboardText(dashboard);
-  assert.match(dashboard.html, /id="sec-candidate"/);
+  assert.match(dashboard.html, /id="sec-ops"|id="ops-row"/);
   assert.match(dashboard.html, /id="sec-resources"/);
-  assert.ok(dashboard.html.indexOf('id="sec-candidate"') < dashboard.html.indexOf('id="sec-resources"'), "candidate strip precedes resources in document");
+  assert.match(dashboard.html, /Task \/ candidato/);
+  assert.match(dashboard.html, /Stato \/ motivo/);
+  assert.match(dashboard.html, /Ultimo ciclo completato/);
+  assert.doesNotMatch(dashboard.html, /Qwen e runtime|why-title|Perché il sistema è in questo stato/);
+  assert.doesNotMatch(dashboard.html, /data-move-up|data-move-down|>▲<|>▼</);
   assert.match(dashboard.html, /<details class="panel queue-panel" id="queue-panel"/);
   assert.doesNotMatch(dashboard.html, /<details class="panel queue-panel" id="queue-panel"[^>]*\sopen\b/);
   assert.equal(dashboard.element("queue-panel").open, false);
@@ -2828,16 +2832,16 @@ await test("S71 D-9408-A dashboard compact health: qwen no fake 100%; cursor no 
     assert.doesNotMatch(visible, /\b(?:OK|ATTENZIONE|ELEVATO|CRITICO|HEALTHY|WARNING|DANGER)\b/);
   }
   // Layout persistence (browser-local only)
-  dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['workspace','candidate','resources']))");
+  dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['queue','resources','ops']))");
   dashboard.evaluate("applySectionOrder(readSavedOrder())");
-  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["workspace", "candidate", "resources"]));
-  assert.equal(dashboard.localStore.get("local-dev-dispatcher-dashboard-v1:section-order"), JSON.stringify(["workspace", "candidate", "resources"]));
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["queue", "resources", "ops"]));
+  assert.equal(dashboard.localStore.get("local-dev-dispatcher-dashboard-v1:section-order"), JSON.stringify(["queue", "resources", "ops"]));
   dashboard.evaluate("resetLayout()");
-  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["candidate", "resources", "workspace"]));
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["resources", "ops", "queue"]));
   assert.equal(dashboard.localStore.has("local-dev-dispatcher-dashboard-v1:section-order"), false);
   // Invalid saved IDs fall back safely
   dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['legacy','bogus']))");
-  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["candidate", "resources", "workspace"]));
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["resources", "ops", "queue"]));
 });
 
 await test("S72 D-9408-B disk free derived from used percent and free/total bytes", async () => {
@@ -2967,6 +2971,58 @@ await test("S73 D-9408-C ultra-compact resource cards: no visible severity words
   assert.equal(dashboard.evaluate("classifyHealthBar('quota_remaining', 5).tone"), "danger");
   assert.equal(dashboard.element("queue-panel").open, false);
   assert.match(dashboard.html, /id="reset-layout"/);
+  assert.doesNotMatch(dashboard.html, /Qwen e runtime|data-move-up|data-move-down|>▲<|>▼</);
+  assert.match(dashboard.html, /\.ops-row\{[^}]*grid-template-columns:repeat\(3,/);
+});
+
+await test("S74 D-9408-D consolidated ops row: 3 cards; Qwen merged; no arrows; no hero", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false, classification: "IDLE_CLEAN" },
+    diag: {
+      queue: { eligible_count: 0, claim_present_count: 29, scanned_file_count: 40, candidate_task_ref: null },
+      qwen: { reachable: true, models: [{ id: "qwen38-opus-q3-opencode-64k", status: "loaded", meta: { n_ctx: 65536 } }] },
+      last_tick: { classification: "IDLE_CLEAN", recorded_at: "2026-09-09T13:30:42.000Z", execution_performed: false, elapsed_ms: 1000, reason_codes: ["NO_ELIGIBLE_READY"] },
+      explanation: { headline: "Nessun task eseguibile in questo momento.", detail: "La coda è stata controllata.", operator_action: "Attendere.", action_required: false, severity: "info", why_code: "NO_ELIGIBLE_READY" },
+    },
+    resources: {
+      schema_version: RESOURCES_SCHEMA,
+      workstation: { state: "AVAILABLE", freshness: "fresh", cpu_percent: 20.6, ram_percent: 50 },
+      qwen: { occupancy: "LOADED", capacity_label: "Capacità locale — nessuna quota commerciale", commercial_quota: "N/A", reachable: true, loaded_models: [{ id: "qwen38-opus-q3-opencode-64k", status: "loaded", context_tokens: 65536 }] },
+      vps_new: { state: "UNAVAILABLE" },
+      quotas: { pools: {}, cursor: { accounting_mapping: "UNVERIFIED", state: "UNKNOWN", labels: {} } },
+      chatgpt_web: { state: "UNKNOWN", unlimited: false, free: false },
+    },
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const out = dashboardText(dashboard);
+  assert.match(dashboard.html, /id="ops-row"|class="ops-row"/);
+  assert.match(dashboard.html, /\.ops-row\{[^}]*grid-template-columns:repeat\(3,/);
+  assert.match(dashboard.html, /Task \/ candidato/);
+  assert.match(dashboard.html, /Stato \/ motivo/);
+  assert.match(dashboard.html, /Ultimo ciclo completato/);
+  assert.match(out, /NO_ELIGIBLE_READY/);
+  assert.match(out, /29 bloccati da receipt|29<\/strong>claim|29/);
+  assert.match(out, /Qwen locale/);
+  assert.match(out, /qwen38-opus-q3-opencode-64k/);
+  assert.match(out, /Endpoint raggiungibile|Nessuna quota commerciale/);
+  assert.match(out, /Catalogo modelli|Contesto:/);
+  assert.doesNotMatch(dashboard.html, /id="qwen-title"|Qwen e runtime/);
+  assert.doesNotMatch(dashboard.html, /Perché il sistema è in questo stato|id="why-title"|class="panel hero/);
+  assert.doesNotMatch(dashboard.html, /data-move-up|data-move-down|>▲<|>▼</);
+  assert.match(dashboard.html, /sec-handle|data-drag=/);
+  assert.doesNotMatch(dashboard.html, /id="sec-candidate"/);
+  assert.ok(/id="ops-task-card"[\s\S]*id="ops-state-card"[\s\S]*id="ops-tick-card"/.test(dashboard.html));
+  assert.match(dashboard.html, /id="ops-task-card"/);
+  assert.match(dashboard.html, /id="ops-state-card"/);
+  assert.match(dashboard.html, /id="ops-tick-card"/);
+  assert.equal(dashboard.element("queue-panel").open, false);
+  assert.doesNotMatch(out, /\[object Object\]/);
+  assert.doesNotMatch(dashboard.html, /\u00e2\u20ac|\uFFFD/);
+  assert.match(out, /CLAIM_ALREADY_EXISTS|NO_ELIGIBLE_READY|Intervento umano: No/);
+  assert.doesNotMatch(out, /Qwen[\s\S]{0,80}100%/);
+  assert.match(out, /UNVERIFIED|MANUAL_ONLY/);
+  assert.match(out, /Illimitato:\s*No|Infinito:\s*No|ChatGPT Web/);
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
