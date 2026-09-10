@@ -551,6 +551,84 @@ export function buildOperatorExplanation({ status, last_tick, queue } = {}) {
     null, classification, null, "Aggiornare la lettura e attendere il prossimo ciclo pianificato.");
 }
 
+const HERMES_OPERATOR_ACTIVITY = Object.freeze(new Set([
+  "SESSION_START", "CONTROLLER_SELECTED", "MODEL_SELECTED", "DISCOVER_CHATGPT_TARGET",
+  "GET_COMPOSER_STATE", "PREFILL_SINGLE_LINE", "CLEAR_COMPOSER", "WAITING", "BLOCKED", "SESSION_END",
+]));
+
+/** Bounded, read-only operator identity view. It never infers missing actors. */
+export function buildOperatorVisibility({ status, last_tick, nowIso } = {}) {
+  const s = diagnosticObject(status) ? status : {};
+  const tick = diagnosticObject(last_tick) ? last_tick : {};
+  const observedAt = diagnosticText(nowIso, 80) || new Date().toISOString();
+  const active = s.active === true;
+  const phase = diagnosticText(s.phase, 80);
+  const taskRef = active ? diagnosticText(s.task_ref, 200) : null;
+  const profile = active && phase === "OPENCODE" ? diagnosticText(s.qwen_profile, 120) : null;
+  const classification = diagnosticText(s.classification, 120);
+  const componentState = active ? "ACTIVE"
+    : classification === "HUMAN_GATE_REQUIRED" ? "BLOCKED"
+      : classification === "SERVICE_ERROR" ? "OFFLINE"
+        : s.terminal === true ? "IDLE" : "NOT_OBSERVED";
+  const openCodeActive = active && phase === "OPENCODE";
+  const lastEvent = diagnosticText(s.last_event, 160);
+  const activityName = HERMES_OPERATOR_ACTIVITY.has(lastEvent) ? lastEvent : null;
+  const activity = activityName ? [{ name: activityName, phase, observed_at: observedAt }] : [];
+  const bounded = (value, max = 10) => Array.isArray(value) ? value.slice(0, max) : [];
+  const component = (name, role, state, extra = {}) => ({ name, role, state, observed_at: observedAt, ...extra });
+  return {
+    schema_version: "local-dev-operator-visibility-v1",
+    observed_at: observedAt,
+    read_only: true,
+    chain_of_thought_display: false,
+    raw_browser_cdp_exposed: false,
+    active_path: [
+      { label: "TASK", value: taskRef, observed: Boolean(taskRef) },
+      { label: "CONTROLLER", value: null, observed: false },
+      { label: "MODELLO", value: profile, observed: Boolean(profile) },
+      { label: "HARNESS / ORCHESTRATORE", value: openCodeActive ? "OpenCode" : (active ? "Hermes" : null), observed: active },
+      { label: "MACCHINA", value: active ? "Macchina locale" : null, observed: active },
+      { label: "FASE", value: active ? phase : null, observed: active && Boolean(phase) },
+    ],
+    hermes: component("Hermes", "ORCHESTRATOR / BRIDGE", componentState, {
+      machine: null,
+      current_task_ref: taskRef,
+      current_controller: null,
+      effective_model: null,
+      current_phase: active ? phase : null,
+      elapsed_ms: active ? boundInt(s.elapsed_ms, { allowNull: true, min: 0 }) : null,
+      last_tool_or_operation: lastEvent,
+      last_operational_event: lastEvent,
+      process_state: active ? "RUNNING" : (s.terminal === true ? "IDLE" : "NOT_OBSERVED"),
+      codex_app_server: "NOT_OBSERVED",
+      mcp: "NOT_OBSERVED",
+      chrome_cdp: "NOT_OBSERVED",
+      chatgpt_web_target: "NOT_OBSERVED",
+      controller_visibility: "NOT_OBSERVED",
+      effective_model_visibility: "NOT_OBSERVED",
+      activity_bounded: true,
+      activity_limit: 10,
+      activity: bounded(activity),
+      capabilities: ["DISCOVER_CHATGPT_TARGET", "GET_COMPOSER_STATE", "PREFILL_SINGLE_LINE", "CLEAR_COMPOSER"],
+      send_available: false,
+    }),
+    opencode: component("OpenCode", "HARNESS / LOCAL EXECUTOR", openCodeActive ? "ACTIVE" : "NOT_OBSERVED", {
+      machine: openCodeActive ? "Macchina locale" : null,
+      current_task_ref: openCodeActive ? taskRef : null,
+      current_phase: openCodeActive ? phase : null,
+      elapsed_ms: openCodeActive ? boundInt(s.elapsed_ms, { allowNull: true, min: 0 }) : null,
+      configured_profile: profile,
+      effective_model: null,
+      executor: "OpenCode",
+      repository: openCodeActive ? "control-plane" : null,
+      worktree_state: openCodeActive ? "CURRENT_DISPATCHER_WORKTREE" : null,
+      last_operational_event: openCodeActive ? lastEvent : null,
+      model_note: profile ? "Profilo Qwen assegnato osservato; LOADED non equivale a OpenCode ACTIVE." : "Nessun profilo attivo osservato.",
+    }),
+    last_completed_cycle: diagnosticText(tick.recorded_at, 80),
+  };
+}
+
 export async function buildDiagnostics(deps = {}) {
   const status = (() => {
     try {
@@ -619,6 +697,7 @@ export async function buildDiagnostics(deps = {}) {
     || (qwen.profile_status === null || qwen.profile_status === undefined ? null : "unknown");
 
   const explanation = buildOperatorExplanation({ status, last_tick, queue });
+  const operator_visibility = buildOperatorVisibility({ status, last_tick, nowIso });
   const post_exec_integration =
     last_tick && last_tick.post_exec_integration && typeof last_tick.post_exec_integration === "object"
       ? last_tick.post_exec_integration
@@ -644,6 +723,7 @@ export async function buildDiagnostics(deps = {}) {
       error: diagnosticText(qwen.error, 80) || (!diagnosticObject(observation) ? "QWEN_OBSERVATION_UNAVAILABLE" : null),
     },
     explanation,
+    operator_visibility,
   };
 }
 

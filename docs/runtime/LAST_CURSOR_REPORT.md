@@ -1,5 +1,27 @@
 # LAST CURSOR REPORT
 
+## Local Dev Hermes/OpenCode operator visibility V1 — Retry 1 latest
+
+**TASK_REF:** `V4_LOCAL_DEV_HERMES_OPENCODE_OPERATOR_VISIBILITY_V1_RETRY1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `17bca0ae1202b91df25f429fa1919cecdbf8b1a9`
+**Report:** `reports/architecture/v4_local_dev_hermes_opencode_operator_visibility_v1_retry1.md`
+
+- Added the dedicated “Chi sta facendo cosa” read-only view with separate
+  Hermes `ORCHESTRATOR / BRIDGE` and OpenCode `HARNESS / ESECUTORE LOCALE`
+  cards; Qwen remains a model and the six-card Resources row is unchanged.
+- Active path and identity fields use only current dispatcher evidence;
+  missing Hermes controller/effective model remain `NOT_OBSERVED`, and
+  `LOADED` Qwen never implies OpenCode `ACTIVE`.
+- Hermes activity is whitelist-only and bounded to ten events; no CoT, raw
+  prompt/response, secrets, or send capability is displayed. `RAW_BROWSER_CDP_EXPOSED=NO`.
+- Canonical dispatcher was identity-checked and reloaded; local and private
+  Tailscale GET smoke returned 200 for dashboard/status/diagnostics/resources.
+  `TAILSCALE_DASHBOARD_SURFACE=LIVE`; Qwen remained `AVAILABLE`.
+- `#73` remains OPEN, `PHASE_D=OPEN`, production routing remains disabled.
+  Next is `V4_HERMES_PRIVATE_NOVNC_OPERATOR_LINK_V1`.
+
 ## Local Dev Dispatcher runtime restore V1 — latest
 
 **TASK_REF:** `V4_LOCAL_DEV_DISPATCHER_RUNTIME_RESTORE_V1`
