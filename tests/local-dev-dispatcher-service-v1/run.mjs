@@ -2156,9 +2156,9 @@ await test("S48 loaded idle: model id + CARICATO + nessun uso dispatcher; never 
   assert.match(out, /CARICATO|Caricato/);
   assert.match(out, /Nessun uso dispatcher osservato/i);
   assert.match(out, /64K|65\.536|65536/);
-  assert.match(out, /Uso esterno: NON OSSERVABILE/);
+  assert.match(out, /Uso esterno: non osservabile/);
   assert.doesNotMatch(out, /\bLIBERO\b/);
-  assert.doesNotMatch(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+  assert.doesNotMatch(out, /In uso dal dispatcher|In uso · OpenCode/);
   assert.doesNotMatch(out, /\[object Object\]/);
 });
 
@@ -2190,7 +2190,7 @@ await test("S49 OPENCODE exact profile match: IN USO + OpenCode + task + elapsed
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = dashboardText(dashboard);
-  assert.match(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+  assert.match(out, /In uso dal dispatcher|In uso · OpenCode/);
   assert.match(out, /OpenCode/);
   assert.match(out, /D-9405-A/);
   assert.match(out, /02:31|Attivo da/);
@@ -2209,7 +2209,7 @@ await test("S50 QWEN_PREFLIGHT is preparation, not inference", async () => {
   await dashboard.settle();
   const out = dashboardText(dashboard);
   assert.match(out, /PREPARAZIONE \/ VERIFICA QWEN|Preparazione \/ verifica Qwen/i);
-  assert.doesNotMatch(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+  assert.doesNotMatch(out, /In uso dal dispatcher|In uso · OpenCode/);
   assert.doesNotMatch(out, /inferenza in esecuzione|sta elaborando un’inferenza/i);
 });
 
@@ -2224,7 +2224,7 @@ await test("S51 TESTS phase: task active, Qwen not in inference", async () => {
   await dashboard.settle();
   const out = dashboardText(dashboard);
   assert.match(out, /QWEN NON IN INFERENZA|non in inferenza/i);
-  assert.doesNotMatch(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+  assert.doesNotMatch(out, /In uso dal dispatcher|In uso · OpenCode/);
 });
 
 await test("S52 PERSISTENCE phase: same non-inference semantics", async () => {
@@ -2238,7 +2238,7 @@ await test("S52 PERSISTENCE phase: same non-inference semantics", async () => {
   await dashboard.settle();
   const out = dashboardText(dashboard);
   assert.match(out, /QWEN NON IN INFERENZA|non in inferenza/i);
-  assert.doesNotMatch(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+  assert.doesNotMatch(out, /In uso dal dispatcher|In uso · OpenCode/);
 });
 
 await test("S53 active profile mismatch: no false attribution", async () => {
@@ -2251,7 +2251,7 @@ await test("S53 active profile mismatch: no false attribution", async () => {
   await dashboard.settle();
   const out = dashboardText(dashboard);
   assert.match(out, /USO DISPATCHER NON CORRELATO|non correlato/i);
-  assert.doesNotMatch(out, /IN USO DAL DISPATCHER|IN USO · OpenCode · D-14/);
+  assert.doesNotMatch(out, /In uso dal dispatcher|In uso · OpenCode · D-14/);
   assert.doesNotMatch(out, /Harness: OpenCode/);
 });
 
@@ -2264,7 +2264,7 @@ await test("S54 qwen_profile null: no invented owner", async () => {
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = dashboardText(dashboard);
-  assert.doesNotMatch(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+  assert.doesNotMatch(out, /In uso dal dispatcher|In uso · OpenCode/);
   assert.doesNotMatch(out, /Harness: OpenCode/);
   assert.match(out, /senza profilo|non correlato|Nessun uso dispatcher osservato/i);
 });
@@ -2289,7 +2289,7 @@ await test("S55 multiple loaded models: exact correlation only", async () => {
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = dashboardText(dashboard);
-  assert.match(out, /IN USO DAL DISPATCHER|IN USO · OpenCode/);
+  assert.match(out, /In uso dal dispatcher|In uso · OpenCode/);
   assert.match(out, /Modello del task/);
   assert.match(out, new RegExp(other));
   assert.match(out, new RegExp(profile));
@@ -2311,7 +2311,7 @@ await test("S56 endpoint unreachable: bounded unavailable state", async () => {
   await dashboard.settle();
   const out = dashboardText(dashboard);
   assert.match(out, /non raggiungibile|Offline|ENDPOINT NON RAGGIUNGIBILE/i);
-  assert.doesNotMatch(out, /IN USO DAL DISPATCHER/);
+  assert.doesNotMatch(out, /In uso dal dispatcher/);
   assert.doesNotMatch(out, /\[object Object\]/);
 });
 
@@ -2906,7 +2906,7 @@ await test("S72 D-9408-B disk free derived from used percent and free/total byte
   assert.doesNotMatch(bytesOut, /aria-label="Disco: 99(?:[.,]0)?%/);
 
   const missingOut = await renderDisk({ ram_percent: 20 });
-  assert.match(missingOut, /aria-label="Disco: —, SCONOSCIUTO"/);
+  assert.match(missingOut, /aria-label="Disco: —, Sconosciuto"/);
   assert.match(missingOut, /hbar-label">Disco<\/span>[\s\S]{0,160}hbar-fill neutral/);
   assert.doesNotMatch(missingOut, /hbar-label">Disco<\/span>[\s\S]{0,160}hbar-fill ok/);
 });

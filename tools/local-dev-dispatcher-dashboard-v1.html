@@ -49,7 +49,7 @@
         <div class="sec-chrome" data-chrome="ops"><span class="sec-label">Sezione</span></div>
         <div class="panel operator-panel" id="operator-visibility-panel" aria-labelledby="operator-visibility-title">
           <div class="panel-head"><div><div class="heading"><span class="section-index">02</span><h2 id="operator-visibility-title">Chi sta facendo cosa</h2></div><p>Visibilità operativa bounded · osservazione sola lettura</p></div><span class="pill subtle">Nessun CoT / nessun invio</span></div>
-          <div class="panel-body"><div id="operator-path" class="operator-path" aria-label="Percorso attivo"></div><div id="operator-components" class="operator-components"></div><div class="operator-legend" aria-label="Distinzione dei ruoli"><span>QWEN = MODELLO</span><span>CODEX SUBSCRIPTION = CONTROLLER</span><span>OPENCODE = HARNESS / ESECUTORE</span><span>CURSOR = IDE / HARNESS / AGENT</span><span>HERMES = ORCHESTRATORE / BRIDGE</span><span>VPS / MACCHINA LOCALE = INFRASTRUTTURA</span></div></div>
+          <div class="panel-body"><div id="operator-path" class="operator-path" aria-label="Percorso attivo"></div><div id="operator-components" class="operator-components"></div><div class="operator-legend" aria-label="Distinzione dei ruoli"><span>QWEN = MODELLO</span><span>CODEX SUBSCRIPTION = CONTROLLER</span><span>OPENCODE = HARNESS / LOCAL EXECUTOR</span><span>CURSOR = IDE / HARNESS / AGENT</span><span>HERMES = ORCHESTRATOR / BRIDGE</span><span>VPS / MACCHINA LOCALE = INFRASTRUTTURA</span></div></div>
         </div>
         <div class="ops-row" id="ops-row">
           <article class="ops-card info" id="ops-task-card" aria-labelledby="candidate-title">
@@ -127,7 +127,7 @@
       qwen_model_loaded:'Caricato: modello residente nel runtime; non significa che stia elaborando.',
       qwen_in_use:'In uso dal dispatcher: esiste un ciclo LOCAL_DEV attivo in fase OpenCode con questo esatto profilo.',
       qwen_no_dispatcher_use:'Nessun uso dispatcher osservato: il dispatcher non vede un proprio lavoro Qwen attivo; non garantisce assenza di utilizzi esterni/manuali.',
-      qwen_external_use:'Uso esterno: NON OSSERVABILE dal dispatcher; un altro processo potrebbe usare lo stesso runtime.',
+      qwen_external_use:'Uso esterno: non osservabile dal dispatcher; un altro processo potrebbe usare lo stesso runtime.',
       qwen_preflight_use:'Preparazione o verifica Qwen in corso; non indica che l’inferenza sia in esecuzione.',
       qwen_task_not_inference:'Task in corso oltre OpenCode: Qwen non è in inferenza in questa fase.',
       qwen_usage_mismatch:'Il profilo del ciclo non coincide esattamente con un modello caricato osservato.',
@@ -140,7 +140,8 @@
       freshness:'Indica se l’osservazione è fresca o stantia rispetto alla legge di freschezza.',
       layout:'Ordine sezioni salvato solo in questo browser (localStorage). Nessuna scrittura sul servizio.',
     });
-    const LABELS = Object.freeze({IDLE:'In attesa',IDLE_CLEAN:'In attesa',BUSY:'Occupato',HUMAN_GATE_REQUIRED:'Intervento umano',SERVICE_ERROR:'Errore di servizio',WORK_EXECUTED_PASS:'Completato',PASS:'Superato',WORK_EXECUTED_STOP:'Esecuzione arrestata',STOP:'Arrestato',FAIL:'Non superato',RUNNING:'In corso',NOT_STARTED:'Non avviati',TERMINAL:'Ciclo concluso',REPO_HYGIENE:'Verifica repository',QUEUE_SCAN:'Scansione della coda',SELECTING:'Selezione del task',CLAIM:'Registrazione claim',CLAIMED:'Claim registrato',EXECUTING:'Esecuzione',OPENCODE:'Elaborazione OpenCode',TESTS:'Verifica dei test',PERSISTENCE:'Persistenza Git',QWEN_PREFLIGHT:'Verifica Qwen',ADMISSION:'Verifica ammissione',READY:'Pronto',READY_FOR_PLANNING:'Pronto per la pianificazione',RELEASED:'Rilasciato',CLAIM_RELEASED:'Claim rilasciato',FAILED_BEFORE_EXECUTION:'Fermato prima dell’esecuzione',loaded:'Caricato',unloaded:'Non caricato',loading:'Caricamento',unloading:'Scaricamento',ready:'Pronto',healthy:'Disponibile',unhealthy:'Non disponibile',error:'Errore',unreachable:'Non raggiungibile',unknown:'Sconosciuto',missing:'Non disponibile',listed:'Presente nel catalogo',not_listed:'Assente dal catalogo'});
+    const LABELS = Object.freeze({IDLE:'Inattivo',IDLE_CLEAN:'In attesa',BUSY:'Occupato',HUMAN_GATE_REQUIRED:'Intervento umano',SERVICE_ERROR:'Errore di servizio',WORK_EXECUTED_PASS:'Completato',PASS:'Superato',WORK_EXECUTED_STOP:'Esecuzione arrestata',STOP:'Arrestato',FAIL:'Non superato',RUNNING:'In corso',NOT_STARTED:'Non avviati',TERMINAL:'Ciclo concluso',REPO_HYGIENE:'Verifica repository',QUEUE_SCAN:'Scansione della coda',SELECTING:'Selezione del task',CLAIM:'Registrazione claim',CLAIMED:'Claim registrato',EXECUTING:'Esecuzione',OPENCODE:'Elaborazione OpenCode',TESTS:'Verifica dei test',PERSISTENCE:'Persistenza Git',QWEN_PREFLIGHT:'Verifica Qwen',ADMISSION:'Verifica ammissione',READY:'Pronto',READY_FOR_PLANNING:'Pronto per la pianificazione',RELEASED:'Rilasciato',CLAIM_RELEASED:'Claim rilasciato',FAILED_BEFORE_EXECUTION:'Fermato prima dell’esecuzione',loaded:'Caricato',unloaded:'Non caricato',loading:'Caricamento',unloading:'Scaricamento',ready:'Pronto',healthy:'Disponibile',unhealthy:'Non disponibile',error:'Errore',unreachable:'Non raggiungibile',unknown:'Sconosciuto',missing:'Non disponibile',listed:'Presente nel catalogo',not_listed:'Assente dal catalogo'});
+    const UI_STATE_LABELS = Object.freeze({AVAILABLE:'Disponibile',UNAVAILABLE:'Non disponibile',UNKNOWN:'Sconosciuto',NOT_OBSERVED:'Non osservato',OBSERVED:'Osservato',UNVERIFIED:'Non verificato',UNVERIFIED_ACCOUNTING:'Contabilizzazione non verificata',ACTIVE:'Attivo',IDLE:'Inattivo',BLOCKED:'Bloccato',OFFLINE:'Offline',STALE:'Dati non aggiornati',DEGRADED:'Degradato',NOT_APPLICABLE:'Non applicabile',READY:'Pronto',WAITING:'In attesa',REAL_FAILURE:'Guasto verificato',LOADED:'Caricato',UNLOADED:'Non caricato',LOADING:'Caricamento',ERROR:'Errore',CONNECTED:'Connesso',DISCONNECTED:'Disconnesso',REACHABLE:'Raggiungibile',UNREACHABLE:'Non raggiungibile',PREFILL_ONLY:'Solo precompilazione',PARTIAL_NOT_OBSERVED:'Parzialmente non osservato',OK:'Ok',ATTENZIONE:'Attenzione',ELEVATO:'Elevato',CRITICO:'Critico',SCONOSCIUTO:'Sconosciuto',loaded:'Caricato',unloaded:'Non caricato',loading:'Caricamento',ready:'Pronto',healthy:'Disponibile',unhealthy:'Non disponibile',error:'Errore',unreachable:'Non raggiungibile',unknown:'Sconosciuto',missing:'Non disponibile',listed:'Presente nel catalogo',not_listed:'Assente dal catalogo'});
     const REASONS = Object.freeze({CLAIM_ALREADY_EXISTS:'Bloccato da claim',NO_ELIGIBLE_READY:'Nessun task eseguibile',CLAIM_SKIPPED_PRESENT:'Selezione fermata dal claim',NOT_READY:'Backlog non pronto',STATE_NOT_READY:'Backlog non pronto',NOT_LOCAL_DEV:'Destinazione non locale',HUMAN_GATE_REQUIRED:'Intervento umano richiesto',READ_FAILED:'Lettura del file non riuscita',EMPTY_FILE:'File vuoto',PARSE_FAILED:'Formato del backlog non valido',INVALID_ENTRY:'Elemento non valido',DIAGNOSTICS_QUEUE_SCAN_FAILED:'Scansione non disponibile',QWEN_SESSION_NOT_READY:'Runtime Qwen non pronto',MICRO_TASK_ADMISSION_REJECTED:'Ammissione del task rifiutata',TRACKED_DIRTY_CONFLICT:'Modifiche locali da verificare'});
     const STAGES = Object.freeze({queue_selection:'Selezione della coda','claim/bridge':'Registrazione del claim',qwen_preflight:'Verifica del runtime Qwen',admission:'Ammissione del task',repo_hygiene:'Verifica del repository',human_gate:'Verifica umana',executor:'Esecutore',service:'Servizio',single_flight:'Ciclo già in corso',diagnostics:'Diagnostica'});
     const LAYOUT_KEY = 'local-dev-dispatcher-dashboard-v1:section-order';
@@ -154,7 +155,8 @@
     const number = value => typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
     const count = value => number(value) === null ? '—' : value.toLocaleString('it-IT');
     const yn = value => value === true ? 'Sì' : value === false ? 'No' : 'Non disponibile';
-    const label = value => LABELS[text(value,'')] || (scalar(value) ? 'Sconosciuto' : 'Non disponibile');
+    const uiStateLabel = value => {const raw=scalar(value);if(!raw)return 'Non disponibile';return UI_STATE_LABELS[raw]||UI_STATE_LABELS[raw.toUpperCase()]||LABELS[raw]||'Sconosciuto';};
+    const label = value => uiStateLabel(value);
     const escapeHtml = value => text(value,'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     const json = value => {try{return JSON.stringify(value,null,2) || 'Non disponibile';}catch{return 'Dati tecnici non serializzabili';}};
     function help(key){const tip = TIPS[key] || TIPS.reason_codes;return `<span class="help" tabindex="0" aria-label="${escapeHtml(tip)}">?<span class="tooltip" role="tooltip">${escapeHtml(tip)}</span></span>`;}
@@ -174,34 +176,34 @@
       const options=obj(opts);
       const raw=typeof value==='number'&&Number.isFinite(value)?value:null;
       const stale=options.stale===true||options.unknown===true||text(options.freshness,'').toLowerCase()==='stale';
-      if(raw===null||stale)return {tone:'neutral',label:'SCONOSCIUTO',numeric:null,kind:text(kind,'')};
+      if(raw===null||stale)return {tone:'neutral',label:uiStateLabel('SCONOSCIUTO'),numeric:null,kind:text(kind,'')};
       const n=raw;
-      let toneCls='neutral',status='SCONOSCIUTO';
+      let toneCls='neutral',status=uiStateLabel('SCONOSCIUTO');
       if(kind==='util'){
-        if(n<60){toneCls='ok';status='OK';}
-        else if(n<75){toneCls='warn';status='ATTENZIONE';}
-        else if(n<90){toneCls='caution';status='ELEVATO';}
-        else {toneCls='danger';status='CRITICO';}
+        if(n<60){toneCls='ok';status=uiStateLabel('OK');}
+        else if(n<75){toneCls='warn';status=uiStateLabel('ATTENZIONE');}
+        else if(n<90){toneCls='caution';status=uiStateLabel('ELEVATO');}
+        else {toneCls='danger';status=uiStateLabel('CRITICO');}
       } else if(kind==='vram'){
-        if(n<70){toneCls='ok';status='OK';}
-        else if(n<85){toneCls='warn';status='ATTENZIONE';}
-        else if(n<95){toneCls='caution';status='ELEVATO';}
-        else {toneCls='danger';status='CRITICO';}
+        if(n<70){toneCls='ok';status=uiStateLabel('OK');}
+        else if(n<85){toneCls='warn';status=uiStateLabel('ATTENZIONE');}
+        else if(n<95){toneCls='caution';status=uiStateLabel('ELEVATO');}
+        else {toneCls='danger';status=uiStateLabel('CRITICO');}
       } else if(kind==='temp_c'){
-        if(n<65){toneCls='ok';status='OK';}
-        else if(n<75){toneCls='warn';status='ATTENZIONE';}
-        else if(n<84){toneCls='caution';status='ELEVATO';}
-        else {toneCls='danger';status='CRITICO';}
+        if(n<65){toneCls='ok';status=uiStateLabel('OK');}
+        else if(n<75){toneCls='warn';status=uiStateLabel('ATTENZIONE');}
+        else if(n<84){toneCls='caution';status=uiStateLabel('ELEVATO');}
+        else {toneCls='danger';status=uiStateLabel('CRITICO');}
       } else if(kind==='disk_free'){
-        if(n>20){toneCls='ok';status='OK';}
-        else if(n>10){toneCls='warn';status='ATTENZIONE';}
-        else if(n>=5){toneCls='caution';status='ELEVATO';}
-        else {toneCls='danger';status='CRITICO';}
+        if(n>20){toneCls='ok';status=uiStateLabel('OK');}
+        else if(n>10){toneCls='warn';status=uiStateLabel('ATTENZIONE');}
+        else if(n>=5){toneCls='caution';status=uiStateLabel('ELEVATO');}
+        else {toneCls='danger';status=uiStateLabel('CRITICO');}
       } else if(kind==='quota_remaining'){
-        if(n>50){toneCls='ok';status='OK';}
-        else if(n>25){toneCls='warn';status='ATTENZIONE';}
-        else if(n>=10){toneCls='caution';status='ELEVATO';}
-        else {toneCls='danger';status='CRITICO';}
+        if(n>50){toneCls='ok';status=uiStateLabel('OK');}
+        else if(n>25){toneCls='warn';status=uiStateLabel('ATTENZIONE');}
+        else if(n>=10){toneCls='caution';status=uiStateLabel('ELEVATO');}
+        else {toneCls='danger';status=uiStateLabel('CRITICO');}
       }
       return {tone:toneCls,label:status,numeric:n,kind:text(kind,'')};
     }
@@ -213,7 +215,7 @@
       return fallback;
     }
     function observabilityLine(resource,label='Salute / osservazione'){
-      const r=obj(resource);const health=text(r.health_state,'NON OSSERVATA');const observation=text(r.observation_state,'NON OSSERVATA');const reason=text(r.observation_reason_code||r.reason_code,'');
+      const r=obj(resource);const health=uiStateLabel(r.health_state||'NOT_OBSERVED');const observation=uiStateLabel(r.observation_state||'NOT_OBSERVED');const reason=text(r.observation_reason_code||r.reason_code,'');
       return `<p class="quota-meta">${escapeHtml(label)}: ${escapeHtml(health)} · ${escapeHtml(observation)}${reason?` · ${escapeHtml(reason)}`:''}</p>`;
     }
     function healthBar(labelText, kind, value, opts){
@@ -360,10 +362,10 @@
 
     function renderOperatorVisibility(raw){
       const visibility=obj(raw);const path=list(visibility.active_path).map(obj);
-      put('operator-path',path.map(n=>`<span class="path-node ${n.observed===true?'observed':''}">${escapeHtml(text(n.label,'Campo'))}: ${escapeHtml(n.observed===true&&scalar(n.value)?text(n.value):'NOT OBSERVED')}</span>`).join(''));
-      const card=(key,cls,title,role)=>{const c=obj(visibility[key]);const state=text(c.state,'NOT OBSERVED');const stateCls=state==='ACTIVE'?'operator-safe':state==='NOT OBSERVED'?'operator-unknown':state==='BLOCKED'?'warn':state==='OFFLINE'?'danger':'';const task=scalar(c.current_task_ref)?c.current_task_ref:'NOT OBSERVED';const phase=scalar(c.current_phase)?c.current_phase:'NOT OBSERVED';const machine=scalar(c.machine)?c.machine:'NOT OBSERVED';const elapsed=number(c.elapsed_ms)!==null?duration(c.elapsed_ms):'NOT OBSERVED';const detail=[['TASK',task],['MACCHINA',machine],['FASE',phase],['ELAPSED',elapsed]];
-        const extra=key==='hermes'?`<p class="operator-note">Controller: <span class="mono">${escapeHtml(text(c.current_controller,'NOT OBSERVED'))}</span> · modello effettivo: <span class="mono">${escapeHtml(text(c.effective_model,'NOT OBSERVED'))}</span></p><p class="operator-note">RAW_BROWSER_CDP_EXPOSED: <span class="operator-safe">NO</span> · send/submit: <span class="operator-safe">NO</span></p><details><summary>Hermes activity (max 10)</summary><ul class="operator-activity">${list(c.activity).slice(0,10).map(e=>{const event=obj(e);return `<li>${escapeHtml(text(event.name,'NOT OBSERVED'))}${scalar(event.phase)?` · ${escapeHtml(event.phase)}`:''}</li>`;}).join('')||'<li>PARTIAL_NOT_OBSERVED</li>'}</ul></details>`:`<p class="operator-note">Profilo Qwen assegnato: <span class="mono">${escapeHtml(text(c.configured_profile,'NOT OBSERVED'))}</span> · modello effettivo: <span class="mono">${escapeHtml(text(c.effective_model,'NOT OBSERVED'))}</span></p><p class="operator-note">${escapeHtml(text(c.model_note,'LOADED non equivale a OpenCode ACTIVE.'))}</p>`;
-        return `<article class="operator-card ${cls}" aria-label="${escapeHtml(title)}"><div class="operator-kicker"><span>${escapeHtml(title)}</span><span class="${stateCls}">${escapeHtml(state)}</span></div><div class="operator-role">${escapeHtml(role)}</div><div class="operator-main">${escapeHtml(key==='hermes'?'ORCHESTRATOR / BRIDGE':'HARNESS / ESECUTORE LOCALE')}</div><dl class="operator-facts">${detail.map(([label,value])=>`<div class="operator-fact"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join('')}</dl>${extra}</article>`;};
+      put('operator-path',path.map(n=>{const pathValue=n.label==='FASE'&&n.observed===true?uiStateLabel(n.value):text(n.value,uiStateLabel('NOT_OBSERVED'));return `<span class="path-node ${n.observed===true?'observed':''}">${escapeHtml(text(n.label,'Campo'))}: ${escapeHtml(pathValue)}</span>`;}).join(''));
+      const card=(key,cls,title,role)=>{const c=obj(visibility[key]);const state=text(c.state,'NOT_OBSERVED');const stateCls=state==='ACTIVE'?'operator-safe':state==='NOT_OBSERVED'?'operator-unknown':state==='BLOCKED'?'warn':state==='OFFLINE'?'danger':'';const stateLabel=uiStateLabel(state);const task=scalar(c.current_task_ref)?c.current_task_ref:uiStateLabel('NOT_OBSERVED');const phase=scalar(c.current_phase)?uiStateLabel(c.current_phase):uiStateLabel('NOT_OBSERVED');const machine=scalar(c.machine)?c.machine:uiStateLabel('NOT_OBSERVED');const elapsed=number(c.elapsed_ms)!==null?duration(c.elapsed_ms):uiStateLabel('NOT_OBSERVED');const detail=[['TASK',task],['MACCHINA',machine],['FASE',phase],['ELAPSED',elapsed]];
+        const extra=key==='hermes'?`<p class="operator-note">Controller: <span class="mono">${escapeHtml(c.current_controller||uiStateLabel('NOT_OBSERVED'))}</span> · modello effettivo: <span class="mono">${escapeHtml(c.effective_model||uiStateLabel('NOT_OBSERVED'))}</span></p><p class="operator-note">RAW_BROWSER_CDP_EXPOSED: <span class="operator-safe">NO</span> · send/submit: <span class="operator-safe">NO</span></p><details><summary>Hermes activity (max 10)</summary><ul class="operator-activity">${list(c.activity).slice(0,10).map(e=>{const event=obj(e);return `<li>${escapeHtml(text(event.name,'NOT_OBSERVED'))}${scalar(event.phase)?` · ${escapeHtml(uiStateLabel(event.phase))}`:''}</li>`;}).join('')||`<li>${escapeHtml(uiStateLabel('PARTIAL_NOT_OBSERVED'))}</li>`}</ul></details>`:`<p class="operator-note">Profilo Qwen assegnato: <span class="mono">${escapeHtml(c.configured_profile||uiStateLabel('NOT_OBSERVED'))}</span> · modello effettivo: <span class="mono">${escapeHtml(c.effective_model||uiStateLabel('NOT_OBSERVED'))}</span></p><p class="operator-note">${escapeHtml(text(c.model_note,'LOADED non equivale a OpenCode ACTIVE.'))}</p>`;
+        return `<article class="operator-card ${cls}" aria-label="${escapeHtml(title)}"><div class="operator-kicker"><span>${escapeHtml(title)}</span><span class="${stateCls}">${escapeHtml(stateLabel)}</span></div><div class="operator-role">${escapeHtml(role)}</div><div class="operator-main">${escapeHtml(key==='hermes'?'ORCHESTRATOR / BRIDGE':'HARNESS / LOCAL EXECUTOR')}</div><dl class="operator-facts">${detail.map(([label,value])=>`<div class="operator-fact"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`).join('')}</dl>${extra}</article>`;};
       put('operator-components',card('hermes','operator-hermes','HERMES','Coordina controller, tool e browser. Hermes non è un modello.')+card('opencode','operator-opencode','OPENCODE','Usa il modello assegnato per file, terminale, test e repository. OpenCode non è un modello.'));
     }
 
@@ -432,13 +434,13 @@
       const models=list(extras.models).map(obj).filter(m=>scalar(m.id));
       const tile=(resourceId,title,tipKey,toneCls,main,body,detailId,detailHtml)=>`<article class="res-tile ${toneCls||'neutral'}" data-resource="${escapeHtml(resourceId)}"><div class="res-title"><span>${escapeHtml(title)} ${help(tipKey)}</span><button type="button" class="resource-drag-handle" data-resource-drag="${escapeHtml(resourceId)}" draggable="true" title="Trascina per riordinare questa risorsa" aria-label="Trascina ${escapeHtml(title)} per riordinare">⋮⋮</button></div><div class="res-main ${toneCls||''}">${main}</div>${body}<details class="res-more" id="${escapeHtml(detailId)}"><summary>Dettagli</summary>${detailHtml}</details></article>`;
 
-      const macchina=tile('workstation','Macchina locale','workstation',resourceTone(w,'info'),escapeHtml(text(w.state||gpu.state,'UNKNOWN')),
+      const macchina=tile('workstation','Macchina locale','workstation',resourceTone(w,'info'),escapeHtml(uiStateLabel(w.state||gpu.state||'UNKNOWN')),
         `<div class="res-bars">${healthBar('CPU','util',w.cpu_percent,{stale:wsStale,freshness:w.freshness})}${healthBar('RAM','util',w.ram_percent,{stale:wsStale,freshness:w.freshness})}${healthBar('GPU','util',gpu.gpu_util_percent,{stale:wsStale||staleFlag(gpu.freshness),freshness:gpu.freshness||w.freshness})}${healthBar('VRAM','vram',vramPct(),{stale:wsStale||staleFlag(gpu.freshness),freshness:gpu.freshness||w.freshness})}${healthBar('Temp','temp_c',gpu.temperature_c,{stale:wsStale||staleFlag(gpu.freshness),freshness:gpu.freshness||w.freshness,unit:'°C'})}${healthBar('Disco','disk_free',diskFreePct,{stale:wsStale||diskFreePct===null,freshness:w.freshness,unknown:diskFreePct===null})}</div>`,
         'macchina-tech',
-        `${observabilityLine(w)}<p class="quota-meta">CPU logici: ${escapeHtml(count(w.logical_cpu_count))}</p><p class="quota-meta">GPU: ${escapeHtml(text(gpu.gpu_name,text(gpu.state,'UNKNOWN')))}${gpu.reason_code?` · ${escapeHtml(text(gpu.reason_code))}`:''}</p><p class="quota-meta">VRAM: ${number(gpu.vram_used_mb)===null?'—':`${escapeHtml(count(gpu.vram_used_mb))} / ${escapeHtml(count(gpu.vram_total_mb))} MB`}</p><p class="quota-meta">Disco libero: ${escapeHtml(diskFreePct===null?'—':pct(diskFreePct))} · usati (system_disk_percent): ${escapeHtml(diskUsedPct===null?'—':pct(diskUsedPct))} · ${escapeHtml(bytes(w.system_disk_free_bytes))} liberi</p><p class="quota-meta">Osservato: ${escapeHtml(date(w.observed_at))} · freschezza: ${escapeHtml(text(w.freshness,'unknown'))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(w.collector_label||'Node.js dispatcher / Windows OS')} · ${escapeHtml(gpu.collector_label||'nvidia-smi')} ${help('collector')}</p>`);
+        `${observabilityLine(w)}<p class="quota-meta">CPU logici: ${escapeHtml(count(w.logical_cpu_count))}</p><p class="quota-meta">GPU: ${escapeHtml(text(gpu.gpu_name,uiStateLabel(gpu.state||'UNKNOWN')))}${gpu.reason_code?` · ${escapeHtml(text(gpu.reason_code))}`:''}</p><p class="quota-meta">VRAM: ${number(gpu.vram_used_mb)===null?'—':`${escapeHtml(count(gpu.vram_used_mb))} / ${escapeHtml(count(gpu.vram_total_mb))} MB`}</p><p class="quota-meta">Disco libero: ${escapeHtml(diskFreePct===null?'—':pct(diskFreePct))} · usati (system_disk_percent): ${escapeHtml(diskUsedPct===null?'—':pct(diskUsedPct))} · ${escapeHtml(bytes(w.system_disk_free_bytes))} liberi</p><p class="quota-meta">Osservato: ${escapeHtml(date(w.observed_at))} · freschezza: ${escapeHtml(uiStateLabel(w.freshness||'NOT_OBSERVED'))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(w.collector_label||'Node.js dispatcher / Windows OS')} · ${escapeHtml(gpu.collector_label||'nvidia-smi')} ${help('collector')}</p>`);
 
       const qwenModel=(usage.matched&&usage.primary)?usage.primary.id:(usage.loaded[0]?usage.loaded[0].id:null);
-      const endpointLine=q.reachable===true?'Endpoint raggiungibile':q.reachable===false?'Endpoint non raggiungibile':'Endpoint sconosciuto';
+      const endpointLine=q.reachable===true?`Endpoint ${uiStateLabel('REACHABLE')}`:q.reachable===false?`Endpoint ${uiStateLabel('UNREACHABLE')}`:`Endpoint ${uiStateLabel('UNKNOWN')}`;
       const catalogHtml=models.length?[...models].sort((a,b)=>(modelState(b)==='loaded'?1:0)-(modelState(a)==='loaded'?1:0)).map((m,i)=>{const state=modelState(m);const ctx=number(m.context_tokens)??number(obj(m.meta).n_ctx);return `<article class="model"><div class="model-line"><span class="model-id">${escapeHtml(m.id)}</span>${pill(label(state),state==='loaded'?'ok':state==='loading'?'warn':'subtle')}</div>${ctx!==null?`<p class="model-meta">Contesto: ${count(ctx)} token</p>`:''}<details id="model-${i}" class="technical"><summary>Tech modello</summary><pre>${escapeHtml(json(m))}</pre></details></article>`;}).join(''):`<p class="quota-meta">Catalogo non disponibile o vuoto.</p>`;
       const qwenTone=usage.usage_tone==='neutral'?resourceTone(q,'neutral'):usage.usage_tone;
       const qwenBlock=tile('qwen','Qwen locale','qwen_capacity',(usage.usage_code==='UNAVAILABLE'&&q.health_state!=='REAL_FAILURE'? 'neutral':qwenTone),escapeHtml(qwenResourceMain(usage)),
@@ -453,11 +455,11 @@
          <p class="obs-source">Fonte / Collector: ${escapeHtml(q.collector_label||'dispatcher read-only Qwen probe :8080')} ${help('collector')}</p>`);
 
       const vpsDiskFree=number(v.root_disk_total_bytes)!==null&&number(v.root_disk_free_bytes)!==null&&number(v.root_disk_total_bytes)>0?number(v.root_disk_free_bytes)/number(v.root_disk_total_bytes)*100:null;
-      const vpsServices=obj(v.service_states);const serviceRows=Object.entries(vpsServices).filter(([,value])=>scalar(value)).map(([name,value])=>`<p class="quota-meta">${escapeHtml(name)}: ${escapeHtml(value)}</p>`).join('');
-      const vpsBlock=tile('vps','VPS','vps_new',resourceTone(v,text(v.state,'').toUpperCase()==='AVAILABLE'?'ok':'neutral'),escapeHtml(text(v.state,'UNAVAILABLE')),
+      const vpsServices=obj(v.service_states);const serviceRows=Object.entries(vpsServices).filter(([,value])=>scalar(value)).map(([name,value])=>`<p class="quota-meta">${escapeHtml(name)}: ${escapeHtml(uiStateLabel(value))}</p>`).join('');
+      const vpsBlock=tile('vps','VPS','vps_new',resourceTone(v,text(v.state,'').toUpperCase()==='AVAILABLE'?'ok':'neutral'),escapeHtml(uiStateLabel(v.state||'UNAVAILABLE')),
         `<div class="res-bars">${healthBar('CPU','util',v.cpu_percent,{stale:staleFlag(v.freshness),freshness:v.freshness,unknown:number(v.cpu_percent)===null})}${healthBar('RAM','util',v.ram_percent,{stale:staleFlag(v.freshness),freshness:v.freshness,unknown:number(v.ram_percent)===null})}${healthBar('Swap','util',v.swap_percent,{stale:staleFlag(v.freshness)||number(v.swap_percent)===null,freshness:v.freshness,unknown:number(v.swap_percent)===null})}${healthBar('Disco','disk_free',vpsDiskFree,{stale:staleFlag(v.freshness)||vpsDiskFree===null,freshness:v.freshness,unknown:vpsDiskFree===null})}</div>`,
         'vps-tech',
-        `${observabilityLine(v)}<p class="quota-meta">${escapeHtml(text(v.vcpu_count,'—'))} vCPU · RAM ${escapeHtml(bytes(v.ram_total_bytes))} · disco ${escapeHtml(bytes(v.root_disk_total_bytes))}</p><p class="quota-meta">Identità: ${escapeHtml(text(v.hostname,v.host_hint||'—'))} · ${escapeHtml(text(v.os,'—'))} · ${escapeHtml(text(v.architecture,'—'))}</p><p class="quota-meta">Kernel: ${escapeHtml(text(v.kernel,'—'))} · uptime: ${escapeHtml(v.uptime_seconds===null||v.uptime_seconds===undefined?'—':duration(v.uptime_seconds*1000))}</p><p class="quota-meta">Rete privata: ${escapeHtml(text(v.tailscale_ip,'NON OSSERVATO'))} · MagicDNS: ${escapeHtml(text(v.tailscale_magicdns,v.host_hint||'NON OSSERVATO'))}</p><p class="quota-meta">Load: ${escapeHtml(list(v.load_average||v.load).map(value=>number(value)===null?'—':value.toLocaleString('it-IT',{maximumFractionDigits:2})).join(' · ')||'NON OSSERVATO')} · CPU: ${escapeHtml(pct(v.cpu_percent))}</p><p class="quota-meta">RAM: ${escapeHtml(bytes(v.ram_used_bytes))} usata · ${escapeHtml(bytes(v.ram_free_bytes))} libera · swap ${escapeHtml(bytes(v.swap_used_bytes))} / ${escapeHtml(bytes(v.swap_total_bytes))}</p><p class="quota-meta">Root: ${escapeHtml(bytes(v.root_disk_used_bytes))} usato · ${escapeHtml(bytes(v.root_disk_free_bytes))} libero · ${escapeHtml(pct(v.root_disk_percent))} usato</p>${serviceRows?`<p class="quota-meta">Servizi osservati</p>${serviceRows}`:''}<p class="quota-meta">Osservato: ${escapeHtml(date(v.observed_at))} · cache: ${escapeHtml(yn(v.cache_hit))} · ${escapeHtml(text(v.freshness,'stale'))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(v.collector_label||'dispatcher private read-only remote probe')} ${help('collector')}</p>`);
+        `${observabilityLine(v)}<p class="quota-meta">${escapeHtml(text(v.vcpu_count,'—'))} vCPU · RAM ${escapeHtml(bytes(v.ram_total_bytes))} · disco ${escapeHtml(bytes(v.root_disk_total_bytes))}</p><p class="quota-meta">Identità: ${escapeHtml(text(v.hostname,v.host_hint||'—'))} · ${escapeHtml(text(v.os,'—'))} · ${escapeHtml(text(v.architecture,'—'))}</p><p class="quota-meta">Kernel: ${escapeHtml(text(v.kernel,'—'))} · uptime: ${escapeHtml(v.uptime_seconds===null||v.uptime_seconds===undefined?'—':duration(v.uptime_seconds*1000))}</p><p class="quota-meta">Rete privata: ${escapeHtml(text(v.tailscale_ip,uiStateLabel('NOT_OBSERVED')))} · MagicDNS: ${escapeHtml(text(v.tailscale_magicdns,v.host_hint||uiStateLabel('NOT_OBSERVED')))}</p><p class="quota-meta">Load: ${escapeHtml(list(v.load_average||v.load).map(value=>number(value)===null?'—':value.toLocaleString('it-IT',{maximumFractionDigits:2})).join(' · ')||uiStateLabel('NOT_OBSERVED'))} · CPU: ${escapeHtml(pct(v.cpu_percent))}</p><p class="quota-meta">RAM: ${escapeHtml(bytes(v.ram_used_bytes))} usata · ${escapeHtml(bytes(v.ram_free_bytes))} libera · swap ${escapeHtml(bytes(v.swap_used_bytes))} / ${escapeHtml(bytes(v.swap_total_bytes))}</p><p class="quota-meta">Root: ${escapeHtml(bytes(v.root_disk_used_bytes))} usato · ${escapeHtml(bytes(v.root_disk_free_bytes))} libero · ${escapeHtml(pct(v.root_disk_percent))} usato</p>${serviceRows?`<p class="quota-meta">Servizi osservati</p>${serviceRows}`:''}<p class="quota-meta">Osservato: ${escapeHtml(date(v.observed_at))} · cache: ${escapeHtml(yn(v.cache_hit))} · ${escapeHtml(uiStateLabel(v.freshness||'STALE'))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(v.collector_label||'dispatcher private read-only remote probe')} ${help('collector')}</p>`);
 
       function quotaWindowBars(pool,opts){
         const options=obj(opts);
@@ -485,9 +487,9 @@
         const options=obj(extra);
         const poolStale=staleFlag(pool.freshness)||text(pool.state,'').toUpperCase()==='UNKNOWN';
         const effective=number(pool.remaining_percent);
-        const main=effective===null?escapeHtml(text(pool.state,'UNKNOWN')):escapeHtml(pct(effective));
+        const main=effective===null?escapeHtml(uiStateLabel(pool.state||'UNKNOWN')):escapeHtml(pct(effective));
         const bars=`<div class="res-bars">${healthBar('Effettivo','quota_remaining',effective,{stale:poolStale||effective===null,freshness:pool.freshness,unknown:effective===null})}${quotaWindowBars(pool,options)}</div>`;
-        const detail=`<p class="quota-meta">${escapeHtml(options.poolLine||'')}</p>${observabilityLine(pool,'Quota / osservazione')}${auxLines(pool)}<p class="quota-meta">Freschezza: ${escapeHtml(text(pool.freshness,'stale'))} · reset: ${escapeHtml(date(pool.reset_at))}</p>${options.extraHtml||''}<p class="obs-source">Fonte / Collector: ${escapeHtml(pool.collector_label||options.defaultCollector||'rt25 quota ingest / canonical quota state')} ${help('collector')}</p>`;
+        const detail=`<p class="quota-meta">${escapeHtml(options.poolLine||'')}</p>${observabilityLine(pool,'Quota / osservazione')}${auxLines(pool)}<p class="quota-meta">Freschezza: ${escapeHtml(uiStateLabel(pool.freshness||'STALE'))} · reset: ${escapeHtml(date(pool.reset_at))}</p>${options.extraHtml||''}<p class="obs-source">Fonte / Collector: ${escapeHtml(pool.collector_label||options.defaultCollector||'rt25 quota ingest / canonical quota state')} ${help('collector')}</p>`;
         return tile(resourceId,title,tipKey,effective===null?'neutral':'info',main,bars,options.detailId||`${title.toLowerCase()}-tech`,detail);
       }
       const banked=obj(codex.banked_resets||codex.rate_limit_reset_credits||codex.rateLimitResetCredits);
@@ -515,10 +517,10 @@
       const cursorBars=cursorHasPct
         ?`<div class="res-bars">${number(cursorLabels.cursor_models)!==null?healthBar('Cursor','quota_remaining',cursorLabels.cursor_models,{stale:staleFlag(cursor.freshness),freshness:cursor.freshness}):''}${number(cursorLabels.other_models)!==null?healthBar('Other','quota_remaining',cursorLabels.other_models,{stale:staleFlag(cursor.freshness),freshness:cursor.freshness}):''}</div>`
         :`<div class="res-bars">${healthBar('Allowance','quota_remaining',null,{unknown:true})}</div><p class="res-line">MANUAL_ONLY</p>`;
-      const cursorCard=tile('cursor','Cursor','cursor_allowance','neutral',escapeHtml(text(cursor.accounting_mapping,'UNVERIFIED')),
+      const cursorCard=tile('cursor','Cursor','cursor_allowance','neutral',escapeHtml(uiStateLabel(cursor.accounting_mapping||'UNVERIFIED')),
         cursorBars,
         'cursor-tech',
-        `${observabilityLine(cursor,'Accounting / osservazione')}<p class="quota-meta">Stato: ${escapeHtml(text(cursor.state,'UNKNOWN'))} · mapping ${escapeHtml(text(cursor.accounting_mapping,'UNVERIFIED'))}</p>${cursorHasPct?'':`<p class="quota-meta">Nessuna allowance machine-readable · percentuale non inventata</p>`}${number(cursorLabels.cursor_models)===null?`<p class="quota-meta">Cursor Models: —</p>`:''}${number(cursorLabels.other_models)===null?`<p class="quota-meta">Other Models: —</p>`:''}<p class="quota-meta">${escapeHtml(text(cursor.note,'Nessun pool inventato.'))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(cursor.collector_label||'manual runtime observation until accounting is qualified')} ${help('collector')}</p>`);
+        `${observabilityLine(cursor,'Accounting / osservazione')}<p class="quota-meta">Stato: ${escapeHtml(uiStateLabel(cursor.state||'UNKNOWN'))} · mapping ${escapeHtml(uiStateLabel(cursor.accounting_mapping||'UNVERIFIED'))}</p>${cursorHasPct?'':`<p class="quota-meta">Nessuna allowance machine-readable · percentuale non inventata</p>`}${number(cursorLabels.cursor_models)===null?`<p class="quota-meta">Cursor Models: —</p>`:''}${number(cursorLabels.other_models)===null?`<p class="quota-meta">Other Models: —</p>`:''}<p class="quota-meta">${escapeHtml(text(cursor.note,'Nessun pool inventato.'))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(cursor.collector_label||'manual runtime observation until accounting is qualified')} ${help('collector')}</p>`);
 
       put('resources-cards',`<div class="res-grid">${macchina}${vpsBlock}${qwenBlock}${glmCard}${codexCard}${cursorCard}</div>`);
       applyResourceOrder(readSavedResourceOrder());
@@ -527,7 +529,7 @@
     function activityClock(value){const n=number(value);if(n===null)return null;const total=Math.floor(n/1000);const h=Math.floor(total/3600);const m=Math.floor((total%3600)/60);const s=total%60;const pad=x=>String(x).padStart(2,'0');return h>0?`${pad(h)}:${pad(m)}:${pad(s)}`:`${pad(m)}:${pad(s)}`;}
     function contextShort(tokens){const n=number(tokens);if(n===null)return null;if(n>=1024&&n%1024===0)return `${n/1024}K`;return count(n);}
     function loadedModelsFrom(qwen){const q=obj(qwen);const fromLoaded=list(q.loaded_models).map(obj).filter(m=>scalar(m.id));if(fromLoaded.length)return fromLoaded.map(m=>({id:m.id,status:scalar(m.status)||'loaded',context_tokens:number(m.context_tokens),pid:number(m.pid),port:number(m.port)}));return list(q.models).map(obj).filter(m=>scalar(m.id)&&String(modelState(m)||'').toLowerCase()==='loaded').map(m=>({id:m.id,status:'loaded',context_tokens:number(m.context_tokens)??number(obj(m.meta).n_ctx),pid:number(m.pid)??number(obj(obj(m.status)).pid),port:number(m.port)??number(obj(obj(m.status)).port)}));}
-    function italianModelState(qwen,loaded){const q=obj(qwen);if(q.reachable===false)return {code:'OFFLINE',label:'Offline'};const raw=text(q.profile_status||q.occupancy,'').toLowerCase();if(raw==='loading'||raw==='caricamento')return {code:'LOADING',label:'Caricamento'};if(raw==='error'||raw==='unhealthy'||raw==='errore')return {code:'ERROR',label:'Errore'};if(loaded.length||raw==='loaded'||raw==='caricato')return {code:'LOADED',label:'Caricato'};if(raw==='unloaded'||raw==='idle'||raw===''||q.reachable===true)return {code:'UNLOADED',label:'Non caricato'};return {code:'UNKNOWN',label:'Sconosciuto'};}
+    function italianModelState(qwen,loaded){const q=obj(qwen);if(q.reachable===false)return {code:'OFFLINE',label:uiStateLabel('OFFLINE')};const raw=text(q.profile_status||q.occupancy,'').toLowerCase();if(raw==='loading'||raw==='caricamento')return {code:'LOADING',label:uiStateLabel('LOADING')};if(raw==='error'||raw==='unhealthy'||raw==='errore')return {code:'ERROR',label:uiStateLabel('ERROR')};if(loaded.length||raw==='loaded'||raw==='caricato')return {code:'LOADED',label:uiStateLabel('LOADED')};if(raw==='unloaded'||raw==='idle'||raw===''||q.reachable===true)return {code:'UNLOADED',label:uiStateLabel('UNLOADED')};return {code:'UNKNOWN',label:uiStateLabel('UNKNOWN')};}
     function deriveQwenUsage(status,qwenObs){
       const s=obj(status);const q=obj(qwenObs);const loaded=loadedModelsFrom(q);const modelStateInfo=italianModelState(q,loaded);const profile=scalar(s.qwen_profile);const phase=text(s.phase,'');const active=s.active===true;const matched=profile?loaded.find(m=>m.id===profile)||null:null;const primary=matched||(loaded.length===1?loaded[0]:null)||loaded[0]||null;
       const base={model_state:modelStateInfo,loaded,primary,profile,phase,active,matched:!!matched,task_ref:scalar(s.task_ref),elapsed_ms:number(s.elapsed_ms),executor_pid:number(s.executor_pid),harness:null,usage_code:'NONE',usage_label:'Nessun uso dispatcher osservato',usage_tip:'qwen_no_dispatcher_use',usage_tone:'neutral',show_external_caution:false,inference:false};
@@ -548,7 +550,7 @@
       const n=usage.loaded.length;const ctx=contextShort(usage.primary&&usage.primary.context_tokens);
       const value=n?`${n} caricato${n===1?'':'i'}${ctx?` · ${ctx}`:''}`:(usage.model_state.code==='UNLOADED'?'Non caricato':usage.model_state.label);
       let sub='Nessun uso dispatcher osservato';
-      if(usage.usage_code==='IN_USE')sub=`IN USO · OpenCode · ${shortTask(usage.task_ref)}`;
+      if(usage.usage_code==='IN_USE')sub=`In uso · OpenCode · ${shortTask(usage.task_ref)}`;
       else if(usage.usage_code==='PREFLIGHT')sub='Preparazione / verifica Qwen';
       else if(usage.usage_code==='ADMISSION')sub='Riservato / ammissione';
       else if(usage.usage_code==='POST_INFERENCE')sub=`Task in corso · non in inferenza${usage.task_ref?` · ${shortTask(usage.task_ref)}`:''}`;
@@ -566,17 +568,17 @@
       return `<div class="qwen-runtime"><div class="qr-row"><span class="qr-k">Modello caricato</span><span class="qr-v mono">${escapeHtml(modelId)}</span></div><div class="qr-row"><span class="qr-k">Stato modello ${help('qwen_model_loaded')}</span><span class="qr-v">${escapeHtml(usage.model_state.label)}</span></div><div class="qr-row"><span class="qr-k">Uso ${help(tip)}</span><span class="qr-v ${usage.usage_tone}">${escapeHtml(usage.usage_label)}</span></div><div class="qr-row"><span class="qr-k">Harness</span><span class="qr-v">${escapeHtml(harness)}</span></div><div class="qr-row"><span class="qr-k">Task</span><span class="qr-v mono">${escapeHtml(task)}</span></div><div class="qr-row"><span class="qr-k">Tempo attività</span><span class="qr-v">${escapeHtml(clock)}</span></div></div>`;
     }
     function qwenResourceMain(usage){
-      if(usage.usage_code==='IN_USE')return 'IN USO DAL DISPATCHER';
-      if(usage.usage_code==='PREFLIGHT')return 'PREPARAZIONE / VERIFICA QWEN';
-      if(usage.usage_code==='ADMISSION')return 'RISERVATO PER TASK / AMMISSIONE';
-      if(usage.usage_code==='POST_INFERENCE')return 'TASK IN CORSO · QWEN NON IN INFERENZA';
-      if(usage.usage_code==='MISMATCH'||usage.usage_code==='NO_PROFILE')return 'USO DISPATCHER NON CORRELATO';
-      if(usage.usage_code==='UNAVAILABLE')return 'ENDPOINT NON RAGGIUNGIBILE';
-      if(usage.model_state.code==='LOADED')return 'CARICATO';
-      if(usage.model_state.code==='LOADING')return 'CARICAMENTO';
-      if(usage.model_state.code==='UNLOADED')return 'NON CARICATO';
-      if(usage.model_state.code==='ERROR')return 'ERRORE';
-      if(usage.model_state.code==='OFFLINE')return 'OFFLINE';
+      if(usage.usage_code==='IN_USE')return 'In uso dal dispatcher';
+      if(usage.usage_code==='PREFLIGHT')return 'Preparazione / verifica Qwen';
+      if(usage.usage_code==='ADMISSION')return 'Riservato per task / ammissione';
+      if(usage.usage_code==='POST_INFERENCE')return 'Task in corso · Qwen non in inferenza';
+      if(usage.usage_code==='MISMATCH'||usage.usage_code==='NO_PROFILE')return 'Uso dispatcher non correlato';
+      if(usage.usage_code==='UNAVAILABLE')return 'Endpoint non raggiungibile';
+      if(usage.model_state.code==='LOADED')return uiStateLabel('LOADED');
+      if(usage.model_state.code==='LOADING')return uiStateLabel('LOADING');
+      if(usage.model_state.code==='UNLOADED')return uiStateLabel('UNLOADED');
+      if(usage.model_state.code==='ERROR')return uiStateLabel('ERROR');
+      if(usage.model_state.code==='OFFLINE')return uiStateLabel('OFFLINE');
       return usage.model_state.label;
     }
     function qwenResourceLines(usage,q){
@@ -594,7 +596,7 @@
       } else if(usage.usage_code==='POST_INFERENCE'){
         if(usage.task_ref)lines.push(`Task: ${shortTask(usage.task_ref)}`);
       } else if(usage.show_external_caution){
-        lines.push('Uso esterno: NON OSSERVABILE');
+        lines.push('Uso esterno: non osservabile');
       }
       const ctx=usage.primary?number(usage.primary.context_tokens):null;
       if(ctx!==null)lines.push(`Contesto: ${count(ctx)} token`);

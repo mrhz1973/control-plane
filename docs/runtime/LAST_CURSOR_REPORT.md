@@ -1,5 +1,28 @@
 # LAST CURSOR REPORT
 
+## Local Dev dashboard visible labels Italian V1 — latest
+
+**TASK_REF:** `V4_LOCAL_DEV_DASHBOARD_VISIBLE_LABELS_ITALIAN_V1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `56bfb9168d776d06412ed3d35473d5524d46ee2a`
+**Report:** `reports/architecture/v4_local_dev_dashboard_visible_labels_italian_v1.md`
+
+- All operator-visible state/status labels are Italian through the centralized
+  `uiStateLabel(code)` authority; internal/API enum codes remain unchanged.
+- Canonical component names and roles remain preserved (`Qwen`, `Codex`,
+  `Cursor`, `Hermes`, `OpenCode`, `ORCHESTRATOR / BRIDGE`, and
+  `HARNESS / LOCAL EXECUTOR`); canonical Resources order remains
+  workstation → VPS → Qwen → GLM → Codex → Cursor.
+- Focused localization, operator visibility, dispatcher, resource integrity,
+  and registry tests passed. Bounded recycle reloaded the canonical service;
+  local and private Tailscale GET smoke returned 200 for dashboard/status/
+  diagnostics/resources, with Qwen `AVAILABLE/OBSERVED` and dispatcher IDLE.
+- No `/v1/tick`, queue mutation, Qwen generation, Hermes/browser interaction,
+  production dispatch, n8n/VPS mutation, or credential material occurred.
+- `#73` remains OPEN, `ISSUE_73_PHASE_C=PASS`, `PHASE_D=OPEN`; next real gap
+  remains `V4_HERMES_PRIVATE_NOVNC_OPERATOR_LINK_V1`.
+
 ## Local Dev Hermes/OpenCode operator visibility V1 — Retry 1 latest
 
 **TASK_REF:** `V4_LOCAL_DEV_HERMES_OPENCODE_OPERATOR_VISIBILITY_V1_RETRY1`
