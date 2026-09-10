@@ -1544,7 +1544,7 @@ await test("S35 dashboard startup, automatic and manual refresh execute only the
     assert.ok([STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH].includes(request.url), request.url);
   }
   assert.deepEqual(dashboard.otherNetwork, []);
-  assert.doesNotMatch(dashboard.html, /<form\b|<script\b[^>]*\bsrc\s*=|\b(?:src|href)\s*=\s*["']https?:\/\//i);
+  assert.doesNotMatch(dashboard.html, /<form\b|<script\b[^>]*\bsrc\s*=|\b(?:src|href)\s*=\s*["']https?:\/\/(?!127\.0\.0\.1:16080\/vnc\.html)/i);
 });
 
 await test("S36 dashboard safely renders null, malformed collections and nested Qwen objects without implicit coercion", async () => {

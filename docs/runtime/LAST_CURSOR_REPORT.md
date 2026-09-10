@@ -1,5 +1,31 @@
 # LAST CURSOR REPORT
 
+## Hermes private noVNC operator link V1 — latest
+
+**TASK_REF:** `V4_HERMES_PRIVATE_NOVNC_OPERATOR_LINK_V1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-11
+**BASE_HEAD:** `c839a8d49d2b34db92a57b22e90391d6485f7df0`
+**Report:** `reports/architecture/v4_hermes_private_novnc_operator_link_v1.md`
+
+- `HERMES_NOVNC_OPERATOR_LINK=PASS`, `HERMES_NOVNC_VPS=AVAILABLE`, and the
+  canonical client URL is `http://127.0.0.1:16080/vnc.html`.
+- `HERMES_NOVNC_TUNNEL_STATE=INACTIVE`: no automatic tunnel was created; the
+  VPS noVNC state is distinct from the operator device’s localhost tunnel.
+- `HERMES_NOVNC_PUBLIC_EXPOSURE=NO`, `HERMES_NOVNC_AUTO_TUNNEL=NO`, and
+  `CHAIN_OF_THOUGHT_DISPLAY=NO`. Hermes remains `ORCHESTRATORE / BRIDGE` and
+  the dashboard adds no send, raw CDP, prompt, model-output, or credential view.
+- The private VPS stack and loopback `/vnc.html` were read-only observed as
+  available; public TCP probes for `9222`, `5900`, and `6080` were not reachable.
+- Exact dispatcher identity was checked and only
+  `ControlPlane-V4-LocalDevDispatcher` was bounded-recycled. Local and private
+  Tailscale dashboard GETs returned 200 with the same dashboard hash.
+- Focused noVNC, Hermes/OpenCode, Italian-label, quota/reset, dispatcher,
+  resource-integrity, and registry suites passed. `MANUAL_TICKS=0`,
+  `QUEUE_MUTATIONS=0`, and `MODEL_INFERENCE_CALLS=0`.
+- `#73` remains OPEN, `ISSUE_73_PHASE_C=PASS`, `PHASE_D=OPEN`; NEXT is
+  `V4_CONTROL_PLANE_ARCHITECTURE_WEB_MAP_DRAFT_V1`.
+
 ## Cursor plan-reset manual observation V1 — latest
 
 **TASK_REF:** `V4_LOCAL_DEV_CURSOR_PLAN_RESET_MANUAL_OBSERVATION_V1`

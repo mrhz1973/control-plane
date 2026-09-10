@@ -31,6 +31,9 @@ export const WORKSTATION_FRESH_MS = 15_000;
 export const QUOTA_DISPLAY_FRESH_MS = 300_000;
 export const VPS_SSH_ALIAS = "ionos-n8n-new";
 export const OBSERVABILITY_CONTRACT = "health-separated-from-observation-v1";
+export const HERMES_NOVNC_PRIVATE_URL = "http://127.0.0.1:16080/vnc.html";
+export const HERMES_NOVNC_VPS_BIND = "127.0.0.1:6080";
+export const HERMES_NOVNC_TUNNEL_TIMEOUT_MS = 2_500;
 
 /** Observation-only remote command allowlist (no mutation verbs). */
 export const VPS_SAFE_REMOTE_COMMANDS = Object.freeze([
@@ -49,9 +52,15 @@ export const VPS_SAFE_REMOTE_COMMANDS = Object.freeze([
   "systemctl is-active n8n || true",
   "systemctl is-active docker || true",
   "systemctl is-active postgresql || systemctl is-active postgresql@* || true",
+  "systemctl is-active hermes-xvfb || true",
+  "systemctl is-active hermes-chromium || true",
+  "systemctl is-active hermes-x11vnc || true",
+  "systemctl is-active hermes-novnc || true",
+  "curl --silent --show-error --max-time 2 --output /dev/null --write-out '%{http_code}' http://127.0.0.1:6080/vnc.html",
+  "ss -ltnH",
 ]);
 
-const MUTATION_RE = /\b(rm|mv|chmod|chown|tee|dd|kill|reboot|shutdown|apt|yum|dnf|systemctl\s+(start|stop|restart|enable|disable|reload)|docker\s+(run|rm|start|stop|restart|compose|exec)|curl\s+-X\s*(POST|PUT|PATCH|DELETE)|write|truncate)\b/i;
+const MUTATION_RE = /\b(rm|mv|chmod|chown|tee|dd|kill|reboot|shutdown|apt|yum|dnf|systemctl\s+(start|stop|restart|enable|disable|reload)|docker\s+(run|rm|start|stop|restart|compose|exec)|curl\s+-X\s*(POST|PUT|PATCH|DELETE)|write(?!-out)|truncate)\b/i;
 
 let vpsCache = null;
 
@@ -415,6 +424,17 @@ function parseVpsObservation(results, nowMs) {
     docker: serviceOutput(results, "systemctl is-active docker || true"),
     postgresql: serviceOutput(results, "systemctl is-active postgresql || systemctl is-active postgresql@* || true"),
   };
+  const hermesServiceStates = {
+    xvfb: serviceOutput(results, "systemctl is-active hermes-xvfb || true"),
+    chromium: serviceOutput(results, "systemctl is-active hermes-chromium || true"),
+    x11vnc: serviceOutput(results, "systemctl is-active hermes-x11vnc || true"),
+    novnc: serviceOutput(results, "systemctl is-active hermes-novnc || true"),
+  };
+  const hermesNovnc = buildHermesNovncVpsObservation({
+    hermes_service_states: hermesServiceStates,
+    http_status: serviceOutput(results, "curl --silent --show-error --max-time 2 --output /dev/null --write-out '%{http_code}' http://127.0.0.1:6080/vnc.html"),
+    listener_bindings: parsePrivatePortBindings(serviceOutput(results, "ss -ltnH")),
+  });
   return {
     reachable: true,
     observed_at: new Date(nowMs).toISOString(),
@@ -440,6 +460,7 @@ function parseVpsObservation(results, nowMs) {
     root_disk_percent: diskTotal && diskFree !== null ? percent(diskTotal - diskFree, diskTotal) : null,
     tailscale_ip: tailnetIp,
     service_states: serviceStates,
+    hermes_novnc: hermesNovnc,
     docker: docker || service("systemctl is-active docker || true"),
     n8n: serviceStates.n8n,
     postgresql: serviceStates.postgresql,
@@ -450,6 +471,121 @@ function parseVpsObservation(results, nowMs) {
 function serviceOutput(results, command) {
   const value = results.get(command)?.stdout?.trim();
   return value || null;
+}
+
+function normalizedServiceState(value) {
+  const state = boundStr(value, 40)?.toLowerCase();
+  return state || "not_observed";
+}
+
+function stateFromService(value) {
+  const state = normalizedServiceState(value);
+  if (state === "active") return "AVAILABLE";
+  if (["inactive", "failed", "deactivating"].includes(state)) return "UNAVAILABLE";
+  return "NOT_OBSERVED";
+}
+
+function parseHttpStatus(value) {
+  const raw = boundStr(value, 8);
+  return raw && /^\d{3}$/.test(raw) ? Number(raw) : null;
+}
+
+function parsePrivatePortBindings(value) {
+  const bindings = { "9222": [], "5900": [], "6080": [] };
+  for (const line of String(value || "").split(/\r?\n/)) {
+    const fields = line.trim().split(/\s+/);
+    if (fields[0] !== "LISTEN" || !fields[3]) continue;
+    const match = fields[3].match(/^(.*):(9222|5900|6080)$/);
+    if (!match) continue;
+    const host = match[1].replace(/^\[|\]$/g, "");
+    const loopback = host === "127.0.0.1" || host === "::1" || host === "localhost";
+    bindings[match[2]].push(loopback ? "LOOPBACK" : "NON_LOOPBACK");
+  }
+  return bindings;
+}
+
+function publicExposureFromBindings(bindings) {
+  const ports = ["9222", "5900", "6080"];
+  const values = ports.map((port) => Array.isArray(bindings?.[port]) ? bindings[port] : []);
+  if (values.some((entries) => entries.includes("NON_LOOPBACK"))) return "YES";
+  if (values.every((entries) => entries.length > 0 && entries.every((entry) => entry === "LOOPBACK"))) return "NO";
+  return "NOT_OBSERVED";
+}
+
+/** Bounded VPS-side Hermes/noVNC state; no listener addresses or response bodies escape. */
+export function buildHermesNovncVpsObservation({ hermes_service_states = {}, http_status = null, listener_bindings = {} } = {}) {
+  const status = parseHttpStatus(http_status);
+  const publicExposure = publicExposureFromBindings(listener_bindings);
+  const novncService = hermes_service_states.novnc;
+  const novncState = normalizedServiceState(novncService);
+  const vpsState = novncState === "active" && status === 200
+    ? "AVAILABLE"
+    : (novncState === "inactive" || (status !== null && status !== 200) ? "UNAVAILABLE" : "NOT_OBSERVED");
+  return {
+    chrome_state: stateFromService(hermes_service_states.chromium),
+    novnc_vps_state: vpsState,
+    xvfb_state: stateFromService(hermes_service_states.xvfb),
+    x11vnc_state: stateFromService(hermes_service_states.x11vnc),
+    novnc_http_status: status,
+    bind: HERMES_NOVNC_VPS_BIND,
+    public_exposure: publicExposure,
+    auto_tunnel: "NO",
+    source: "VPS_PRIVATE_READ_ONLY_OBSERVATION",
+    service_states: {
+      chromium: normalizedServiceState(hermes_service_states.chromium),
+      novnc: novncState,
+      x11vnc: normalizedServiceState(hermes_service_states.x11vnc),
+      xvfb: normalizedServiceState(hermes_service_states.xvfb),
+    },
+  };
+}
+
+function tunnelErrorCode(error) {
+  return boundStr(error?.cause?.code || error?.code, 40);
+}
+
+/** Local GET-only probe. It never starts a tunnel and never reads the response body. */
+export async function collectHermesNovncTunnel(options = {}) {
+  const nowMs = options.nowMs ?? Date.now();
+  const timeoutMs = Number.isFinite(options.timeoutMs)
+    ? Math.max(200, Math.min(5_000, options.timeoutMs))
+    : HERMES_NOVNC_TUNNEL_TIMEOUT_MS;
+  const fetchFn = options.fetchFn || globalThis.fetch;
+  try {
+    const response = await fetchFn(HERMES_NOVNC_PRIVATE_URL, {
+      method: "GET",
+      redirect: "manual",
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    const status = Number.isFinite(response?.status) ? response.status : null;
+    try { await response?.body?.cancel?.(); } catch { /* body intentionally ignored */ }
+    return {
+      state: status === 200 ? "CONNECTED" : "INACTIVE",
+      http_status: status,
+      private_url: HERMES_NOVNC_PRIVATE_URL,
+      observed_at: new Date(nowMs).toISOString(),
+      read_only: true,
+      auto_tunnel: "NO",
+      operator_host_scope: "DASHBOARD_HOST_LOCALHOST",
+      remote_browser_localhost_asserted: false,
+      ...collectorMeta("hermes_novnc_local_probe", "local GET-only noVNC tunnel probe", "GET /vnc.html; response body discarded"),
+    };
+  } catch (error) {
+    const code = tunnelErrorCode(error);
+    const inactiveCodes = new Set(["ECONNREFUSED", "ECONNRESET", "EPIPE", "ENOTFOUND"]);
+    return {
+      state: inactiveCodes.has(code) ? "INACTIVE" : "NOT_OBSERVABLE",
+      http_status: null,
+      private_url: HERMES_NOVNC_PRIVATE_URL,
+      observed_at: new Date(nowMs).toISOString(),
+      read_only: true,
+      auto_tunnel: "NO",
+      operator_host_scope: "DASHBOARD_HOST_LOCALHOST",
+      remote_browser_localhost_asserted: false,
+      ...(code ? { error_code: code } : {}),
+      ...collectorMeta("hermes_novnc_local_probe", "local GET-only noVNC tunnel probe", "GET /vnc.html; response body discarded"),
+    };
+  }
 }
 
 /** Canonical private SSH transport. Fixed alias, BatchMode, fixed read-only commands only. */
@@ -501,6 +637,7 @@ export async function collectVpsNewResources(options = {}) {
       cache_hit: false,
       host_hint: "ionos-n8n-new.tailc01234.ts.net",
       detail: "Nessun trasporto privato di osservazione è configurato nel runtime del dispatcher.",
+      hermes_novnc: buildHermesNovncVpsObservation(),
       ...collectorMeta("vps_private_probe", "dispatcher private read-only remote probe", "SSH BatchMode observation-only"),
     };
     vpsCache = { cached_at_ms: nowMs, payload };
@@ -567,6 +704,20 @@ export async function collectVpsNewResources(options = {}) {
       host_hint: "ionos-n8n-new.tailc01234.ts.net",
       tailscale_magicdns: "ionos-n8n-new.tailc01234.ts.net",
       service_states: observed?.service_states && typeof observed.service_states === "object" ? Object.fromEntries(Object.entries(observed.service_states).slice(0, 8).map(([key, value]) => [boundStr(key, 40), boundStr(value, 40)])) : {},
+      hermes_novnc: observed?.hermes_novnc && typeof observed.hermes_novnc === "object" ? {
+        chrome_state: boundStr(observed.hermes_novnc.chrome_state, 40),
+        novnc_vps_state: boundStr(observed.hermes_novnc.novnc_vps_state, 40),
+        xvfb_state: boundStr(observed.hermes_novnc.xvfb_state, 40),
+        x11vnc_state: boundStr(observed.hermes_novnc.x11vnc_state, 40),
+        novnc_http_status: boundNum(observed.hermes_novnc.novnc_http_status),
+        bind: HERMES_NOVNC_VPS_BIND,
+        public_exposure: boundStr(observed.hermes_novnc.public_exposure, 40),
+        auto_tunnel: "NO",
+        source: "VPS_PRIVATE_READ_ONLY_OBSERVATION",
+        service_states: observed.hermes_novnc.service_states && typeof observed.hermes_novnc.service_states === "object"
+          ? Object.fromEntries(Object.entries(observed.hermes_novnc.service_states).slice(0, 4).map(([key, value]) => [boundStr(key, 40), boundStr(value, 40)]))
+          : {},
+      } : buildHermesNovncVpsObservation(),
       docker: boundStr(observed?.docker, 80),
       n8n: boundStr(observed?.n8n, 80),
       postgresql: boundStr(observed?.postgresql, 80),
@@ -585,6 +736,7 @@ export async function collectVpsNewResources(options = {}) {
       freshness: "stale",
       ...healthMeta("NOT_OBSERVED", "NOT_OBSERVED", "VPS_OBSERVATION_NOT_OBSERVED"),
       cache_hit: false,
+      hermes_novnc: buildHermesNovncVpsObservation(),
       ...collectorMeta("vps_private_probe", "dispatcher private read-only remote probe"),
     };
     vpsCache = { cached_at_ms: nowMs, payload };
@@ -894,12 +1046,14 @@ export async function buildResourceObservatory(options = {}) {
   const nowMs = options.nowMs ?? Date.now();
   const observed_at = new Date(nowMs).toISOString();
   const collectVps = options.collectVps || collectVpsNewResources;
-  const [workstation, qwen, vps_new, quotas, chatgpt_web] = await Promise.all([
+  const collectHermesTunnel = options.collectHermesNovncTunnel || collectHermesNovncTunnel;
+  const [workstation, qwen, vps_new, quotas, chatgpt_web, hermes_novnc_tunnel] = await Promise.all([
     (options.collectWorkstation || collectWorkstationMetrics)({ ...options, nowMs }),
     (options.collectQwen || collectQwenResources)({ ...options, nowMs }),
     collectVps({ ...options, sshRunner: options.sshRunner || createCanonicalVpsSshRunner(), nowMs }),
     (options.collectQuotas || collectQuotaObservatory)({ ...options, nowMs }),
     (options.collectChatgptWeb || collectChatgptWebObservation)({ ...options, nowMs }),
+    collectHermesTunnel({ ...options, nowMs }),
   ]);
 
   return {
@@ -911,6 +1065,14 @@ export async function buildResourceObservatory(options = {}) {
     workstation,
     qwen,
     vps_new,
+    hermes_novnc: {
+      private_url: HERMES_NOVNC_PRIVATE_URL,
+      vps: vps_new?.hermes_novnc || buildHermesNovncVpsObservation(),
+      tunnel: hermes_novnc_tunnel,
+      public_exposure: vps_new?.hermes_novnc?.public_exposure || "NOT_OBSERVED",
+      auto_tunnel: "NO",
+      observed_at,
+    },
     quotas,
     chatgpt_web,
     collectors: {
@@ -922,6 +1084,7 @@ export async function buildResourceObservatory(options = {}) {
       codex: quotas.pools?.chatgpt_codex_subscription?.collector_label || null,
       cursor: quotas.cursor?.collector_label || null,
       chatgpt_web: chatgpt_web.collector_label,
+      hermes_novnc_tunnel: hermes_novnc_tunnel.collector_label,
     },
   };
 }
