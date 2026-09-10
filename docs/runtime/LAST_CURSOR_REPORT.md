@@ -1,5 +1,26 @@
 # LAST CURSOR REPORT
 
+## Hermes controller A/B diagnostic — latest
+
+**TASK_REF:** `V4_HERMES_CONTROLLER_AB_DIAGNOSTIC_GLM_FLASH_V1` / #73
+**Classification:** `PASS — RAW_AB=QWEN_FAIL/GLM_PASS · ROOT_CAUSE=QWEN_MODEL_BEHAVIOR · PHASE_D=OPEN`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `955f007a5959a618918e5a1aa05adc76b6dc8a30`
+**Report:** `reports/architecture/v4_hermes_controller_ab_diagnostic_glm_flash_v1.md`
+
+The identical raw action-classification prompt produced Qwen refusal prose
+but a positive GLM 5.3 Flash classification. Hermes Qwen returned the simple
+text marker, then timed out on the browser-action classification; Hermes GLM
+failed closed because OpenClaw's existing Z.AI auth profile is isolated from
+Hermes and no credential was copied or configured. Read-only inspection found
+no custom system prompt/prefix and a body-transparent router aside from model
+normalization, narrowing the primary failure to `QWEN_MODEL_BEHAVIOR`.
+Loopback CDP write/verify/clear passed with zero sends and turns still 0/0.
+Phase C remains PASS, Phase D remains OPEN, GLM is not promoted, and the new
+NEXT is `ARCHITECTURE_DECISION_REQUIRED_QWEN_CONTROLLER`.
+
+---
+
 ## Issue #77 stale-status reconciliation V9 — latest
 
 **TASK_REF:** `CURRENT_FRONTIER_ISSUE_77_STALE_STATUS_RECONCILIATION_V9`
