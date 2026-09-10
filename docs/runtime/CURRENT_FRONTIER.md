@@ -125,3 +125,12 @@ launch commands.
 - Qwen Control Plane role policy: `docs/foundation/QWEN_LOCAL_ROLE_ROUTING_POLICY.md`
 - WF40 post-PostgreSQL live proof STOP: `reports/architecture/v4_wf40_first_live_authorized_execution_proof_post_postgres.md`
 - PostgreSQL cutover retry PASS: `reports/architecture/v4_n8n_postgres_execution_entity_sequence_resync_and_cutover_tick_validation_retry.md`
+
+## Latest bounded capability qualification
+
+`V4_HERMES_NATIVE_CODEX_BROWSER_CDP_EPHEMERAL_EXPOSURE_V6` = **PASS** ·
+`CODEX_HERMES_BROWSER_CDP_CAPABILITY=QUALIFIED_WITH_EPHEMERAL_NATIVE_EXPOSURE` ·
+`PHASE_D=OPEN` · report:
+`reports/architecture/v4_hermes_native_codex_browser_cdp_ephemeral_exposure_v6.md`.
+Hermes was restored byte-for-byte; permanent exposure is not authorized.
+`NEXT=CODEX_HERMES_GOVERNED_BROWSER_CDP_EXPOSURE_AND_VPS_08_12_QUALIFICATION`.

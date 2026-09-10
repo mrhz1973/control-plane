@@ -1,5 +1,25 @@
 # LAST CURSOR REPORT
 
+## Hermes native Codex browser CDP ephemeral exposure V6 — latest
+
+**TASK_REF:** `V4_HERMES_NATIVE_CODEX_BROWSER_CDP_EPHEMERAL_EXPOSURE_V6`
+**Classification:** `PASS — QUALIFIED_WITH_EPHEMERAL_NATIVE_EXPOSURE · PHASE_D=OPEN`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `9d163b5b52aeda0b1288f7d74f6f920f31efe86a`
+**Report:** `reports/architecture/v4_hermes_native_codex_browser_cdp_ephemeral_exposure_v6.md`
+
+The Hermes v0.21.0 native transport was patched ephemerally with only
+`browser_cdp` added to `EXPOSED_TOOLS`. Codex app-server inventory and the
+bounded Hermes lane then passed `Target.getTargets`, composer discovery,
+exact 44-character prefill, clear, exact 900-character one-line prefill/hash,
+and final clear. Fresh authenticated ChatGPT remained at 0/0 turns and no
+message was sent. Hermes was restored byte-for-byte before evidence; no
+permanent patch, production exposure, VPS mutation, GLM, or OpenAI API/BYOK
+was used. Registry tests passed 76/76. This qualifies capability only and
+leaves Phase D open for governed/reproducible exposure.
+
+---
+
 ## Hermes controller A/B diagnostic — latest
 
 **TASK_REF:** `V4_HERMES_CONTROLLER_AB_DIAGNOSTIC_GLM_FLASH_V1` / #73
