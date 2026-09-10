@@ -2570,13 +2570,13 @@ await test("S60 #73 dashboard renders live GLM/Codex windows, plan metadata, Ope
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = dashboardText(dashboard);
-  assert.match(out, /Effettivo[\s\S]{0,240}13(?:[.,]0)?%/);
   assert.match(out, /5h[\s\S]{0,240}40(?:[.,]0)?%/);
   assert.match(out, /Settim\.[\s\S]{0,240}13(?:[.,]0)?%/);
   assert.match(out, /MCP \(ausiliario\):\s*100(?:[.,]0)?%|MCP[\s\S]{0,80}non influenza capacità modello/);
-  assert.match(out, /Effettivo[\s\S]{0,240}84(?:[.,]0)?%/);
   assert.match(out, /5h[\s\S]{0,240}100(?:[.,]0)?%/);
   assert.match(out, /Settim\.[\s\S]{0,240}84(?:[.,]0)?%/);
+  assert.match(out, /class="res-main info">Disponibile/);
+  assert.doesNotMatch(out, /Effettivo/);
   assert.match(out, /Piano: plus/i);
   assert.match(out, /OpenClaw \/ Z\.AI usage/);
   assert.match(out, /OpenClaw \/ OpenAI Codex usage/);
@@ -2958,7 +2958,9 @@ await test("S73 D-9408-C resource cards: no visible severity words; six-col grid
   assert.doesNotMatch(out, /ChatGPT Web/);
   assert.match(out, /hbar-label">CPU<\/span>[\s\S]{0,200}20(?:[.,]6)?%/);
   assert.match(out, /hbar-label">RAM<\/span>[\s\S]{0,200}81(?:[.,]9)?%/);
-  assert.match(out, /hbar-label">Effettivo<\/span>[\s\S]{0,200}42(?:[.,]0)?%/);
+  assert.match(out, /hbar-label">5h<\/span>[\s\S]{0,200}55(?:[.,]0)?%/);
+  assert.match(out, /hbar-label">Settim\.<\/span>[\s\S]{0,200}42(?:[.,]0)?%/);
+  assert.doesNotMatch(out, /Effettivo/);
   assert.match(out, /Nessuna quota commerciale/);
   assert.doesNotMatch(out, /Qwen[\s\S]{0,120}100%/);
   assert.match(out, /MANUAL_ONLY|UNVERIFIED/);

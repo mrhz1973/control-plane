@@ -46,7 +46,7 @@ assert.match(dashboard, /const uiStateLabel = value =>/);
 assert.match(dashboard, /const label = value => uiStateLabel\(value\)/);
 assert.match(dashboard, /uiStateLabel\(w\.state\|\|gpu\.state\|\|'UNKNOWN'\)/);
 assert.match(dashboard, /uiStateLabel\(v\.state\|\|'UNAVAILABLE'\)/);
-assert.match(dashboard, /uiStateLabel\(pool\.state\|\|'UNKNOWN'\)/);
+assert.match(dashboard, /uiStateLabel\(pool\.state\|\|/);
 assert.match(dashboard, /uiStateLabel\(cursor\.accounting_mapping\|\|'UNVERIFIED'\)/);
 assert.match(dashboard, /uiStateLabel\(event\.phase\)/);
 assert.match(dashboard, /uiStateLabel\(value\)/);

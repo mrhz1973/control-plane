@@ -704,10 +704,11 @@ export async function collectQuotaObservatory(options = {}) {
     health_state: "NOT_OBSERVED",
     observation_state: "UNVERIFIED_ACCOUNTING",
     reason_code: "CURSOR_ACCOUNTING_UNVERIFIED",
-    state: cursorManual ? boundStr(cursorManual.state, 40) || "UNKNOWN" : "UNKNOWN",
-    freshness: cursorManual ? freshnessFromAge(cursorManual.observed_at, nowMs, QUOTA_DISPLAY_FRESH_MS) : "stale",
-    observed_at: cursorManual?.observed_at || null,
-    labels: cursorManual?.labels || { cursor_models: null, other_models: null },
+      state: cursorManual ? boundStr(cursorManual.state, 40) || "UNKNOWN" : "UNKNOWN",
+      freshness: cursorManual ? freshnessFromAge(cursorManual.observed_at, nowMs, QUOTA_DISPLAY_FRESH_MS) : "stale",
+      observed_at: cursorManual?.observed_at || null,
+      plan_reset_at: cursorManual?.plan_reset_at || null,
+      labels: cursorManual?.labels || { cursor_models: null, other_models: null },
     note: "Cursor rimane un harness: nessun pool inventato. Solo osservazione manuale runtime se presente.",
     ...collectorMeta("cursor_manual", "manual runtime observation until accounting is qualified"),
   };
@@ -783,6 +784,7 @@ function loadCursorManualObservation(options = {}) {
         cursor_models: typeof raw?.labels?.cursor_models === "number" ? raw.labels.cursor_models : null,
         other_models: typeof raw?.labels?.other_models === "number" ? raw.labels.other_models : null,
       },
+      plan_reset_at: boundStr(raw.plan_reset_at, 40),
     };
   } catch {
     return null;

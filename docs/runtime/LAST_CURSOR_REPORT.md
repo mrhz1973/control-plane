@@ -1,5 +1,32 @@
 # LAST CURSOR REPORT
 
+## Local Dev dashboard quota reset times V1 — latest
+
+**TASK_REF:** `V4_LOCAL_DEV_DASHBOARD_QUOTA_RESET_TIMES_V1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `d283883e71ed9e8657d4771ae99e8ba95004de30`
+**Report:** `reports/architecture/v4_local_dev_dashboard_quota_reset_times_v1.md`
+
+- PRE: Codex/GLM used the generic `Effettivo` quota bar and pool reset line;
+  Cursor showed observed allowance bars without a plan-reset line.
+- POST: Codex and GLM render the respective `5h` and `Settim.` windows, each
+  with its own observed reset or `Reset: Non osservato`; the `Effettivo` UI
+  row/bar is removed. Cursor preserves `Cursor Models`/`Other Models` and
+  renders `Reset piano` only from additive `plan_reset_at` evidence.
+- Reset labels are centralized through `quotaResetLabel()` in `Europe/Rome`,
+  with CET/CEST handling and no timestamp invention. `pool.remaining_percent`
+  and API `windows[].reset_at` remain unchanged for internal quota logic.
+- Focused quota-reset, Italian-label, operator-visibility, dispatcher,
+  resource-integrity, and registry tests passed. Bounded recycle reloaded the
+  canonical service; local and private Tailscale GET smoke returned 200 for
+  dashboard/status/diagnostics/resources. Qwen remained `AVAILABLE/OBSERVED`.
+- No `/v1/tick`, queue/receipt mutation, Qwen load/generation, GLM/Codex/
+  Cursor execution, Hermes/browser interaction, production dispatch, n8n/VPS/
+  Tailscale mutation, or credential material occurred.
+- `#73` remains OPEN, `ISSUE_73_PHASE_C=PASS`, `PHASE_D=OPEN`; NEXT remains
+  `V4_HERMES_PRIVATE_NOVNC_OPERATOR_LINK_V1`.
+
 ## Local Dev dashboard visible labels Italian V1 — latest
 
 **TASK_REF:** `V4_LOCAL_DEV_DASHBOARD_VISIBLE_LABELS_ITALIAN_V1`
