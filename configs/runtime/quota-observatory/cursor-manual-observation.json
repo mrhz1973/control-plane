@@ -1,0 +1,20 @@
+{
+  "source": "operator_manual_observation",
+  "observed_at": "2026-09-10T21:59:22.460Z",
+  "state": "UNKNOWN",
+  "plan": "Pro+",
+  "plan_reset_date": "2026-09-19",
+  "plan_reset_precision": "date",
+  "plan_reset_at": null,
+  "labels": {
+    "cursor_models": 0,
+    "other_models": 1
+  },
+  "usage_semantics": "labels_are_remaining_percent",
+  "source_usage": {
+    "cursor_models_used_percent": 100,
+    "other_models_used_percent": 99
+  },
+  "on_demand_spending": "disabled",
+  "monthly_limit": "disabled"
+}

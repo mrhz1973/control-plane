@@ -176,6 +176,16 @@
       const prefix=dayDelta===0?'oggi':dayDelta===1?'domani':`${reset.day} ${ROME_MONTHS_IT[reset.month-1]}${reset.year!==now.year?` ${reset.year}`:''}`;
       return `${prefix} · ${reset.hour}:${reset.minute}`;
     }
+    function cursorPlanResetLabel(cursor){
+      const value=obj(cursor);
+      if(scalar(value.plan_reset_at))return quotaResetLabel(value.plan_reset_at);
+      const raw=scalar(value.plan_reset_date);
+      if(!raw||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(raw))return uiStateLabel('NOT_OBSERVED');
+      const [year,month,day]=raw.split('-').map(Number);
+      const ms=Date.UTC(year,month-1,day);
+      if(!Number.isFinite(ms)||new Date(ms).toISOString().slice(0,10)!==raw)return uiStateLabel('NOT_OBSERVED');
+      return `${day} ${ROME_MONTHS_IT[month-1]} ${year}`;
+    }
     function shortTask(value){return text(value).replace(/^LOCAL_DEV_B_/,'');}
     function fact(name,value,key,mono=false){return `<div><dt>${escapeHtml(name)} ${help(key)}</dt><dd${mono?' class="mono"':''}>${escapeHtml(value)}</dd></div>`;}
     function metric(name,value,sub,key,color='info',identity=false){return `<article class="metric ${color}"><div class="metric-label">${escapeHtml(name)} ${help(key)}</div><div class="metric-value${identity?' identity':''}">${escapeHtml(value)}</div><p class="metric-sub">${escapeHtml(sub)}</p></article>`;}
@@ -188,7 +198,9 @@
       const options=obj(opts);
       const raw=typeof value==='number'&&Number.isFinite(value)?value:null;
       const stale=options.stale===true||options.unknown===true||text(options.freshness,'').toLowerCase()==='stale';
-      if(raw===null||stale)return {tone:'neutral',label:uiStateLabel('SCONOSCIUTO'),numeric:null,kind:text(kind,'')};
+      if(raw===null)return {tone:'neutral',label:uiStateLabel('SCONOSCIUTO'),numeric:null,kind:text(kind,'')};
+      if(stale&&options.show_stale_value!==true)return {tone:'neutral',label:uiStateLabel('SCONOSCIUTO'),numeric:null,kind:text(kind,'')};
+      if(stale)return {tone:'neutral',label:uiStateLabel('SCONOSCIUTO'),numeric:raw,kind:text(kind,'')};
       const n=raw;
       let toneCls='neutral',status=uiStateLabel('SCONOSCIUTO');
       if(kind==='util'){
@@ -525,9 +537,9 @@
       const cursorLabels=obj(cursor.labels);
       const cursorHasPct=number(cursorLabels.cursor_models)!==null||number(cursorLabels.other_models)!==null;
       const cursorBars=cursorHasPct
-        ?`<div class="res-bars">${number(cursorLabels.cursor_models)!==null?healthBar('Cursor Models','quota_remaining',cursorLabels.cursor_models,{stale:staleFlag(cursor.freshness),freshness:cursor.freshness}):''}${number(cursorLabels.other_models)!==null?healthBar('Other Models','quota_remaining',cursorLabels.other_models,{stale:staleFlag(cursor.freshness),freshness:cursor.freshness}):''}</div>`
+        ?`<div class="res-bars">${number(cursorLabels.cursor_models)!==null?healthBar('Cursor Models','quota_remaining',cursorLabels.cursor_models,{stale:staleFlag(cursor.freshness),freshness:cursor.freshness,show_stale_value:true}):''}${number(cursorLabels.other_models)!==null?healthBar('Other Models','quota_remaining',cursorLabels.other_models,{stale:staleFlag(cursor.freshness),freshness:cursor.freshness,show_stale_value:true}):''}</div>`
         :`<div class="res-bars">${healthBar('Allowance','quota_remaining',null,{unknown:true})}</div><p class="res-line">MANUAL_ONLY</p>`;
-      const cursorReset=`<p class="quota-reset">Reset piano: ${escapeHtml(quotaResetLabel(cursor.plan_reset_at))}</p>`;
+      const cursorReset=`<p class="quota-reset">Reset piano: ${escapeHtml(cursorPlanResetLabel(cursor))}</p>`;
       const cursorCard=tile('cursor','Cursor','cursor_allowance','neutral',escapeHtml(uiStateLabel(cursor.accounting_mapping||'UNVERIFIED')),
         `${cursorBars}${cursorReset}`,
         'cursor-tech',

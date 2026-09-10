@@ -67,6 +67,65 @@ function boundNum(value) {
   return Number.isFinite(n) ? n : null;
 }
 
+function boundedPercent(value) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100
+    ? Math.round(value * 10) / 10
+    : null;
+}
+
+function validDateOnly(value) {
+  const raw = boundStr(value, 10);
+  if (!raw || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
+  const [year, month, day] = raw.split("-").map(Number);
+  const ms = Date.UTC(year, month - 1, day);
+  return Number.isFinite(ms) && new Date(ms).toISOString().slice(0, 10) === raw ? raw : null;
+}
+
+function validTimestampString(value) {
+  const raw = boundStr(value, 40);
+  return raw && Number.isFinite(Date.parse(raw)) ? raw : null;
+}
+
+function remainingFromUsed(value) {
+  const used = boundedPercent(value);
+  return used === null ? null : Math.round((100 - used) * 10) / 10;
+}
+
+/** Normalize explicit manual Cursor evidence without inventing timestamps. */
+export function normalizeCursorManualObservation(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const labels = raw.labels && typeof raw.labels === "object" && !Array.isArray(raw.labels) ? raw.labels : {};
+  const sourceUsage = raw.source_usage && typeof raw.source_usage === "object" && !Array.isArray(raw.source_usage)
+    ? raw.source_usage
+    : {};
+  const cursorUsed = boundedPercent(sourceUsage.cursor_models_used_percent);
+  const otherUsed = boundedPercent(sourceUsage.other_models_used_percent);
+  const cursorLabel = boundedPercent(labels.cursor_models);
+  const otherLabel = boundedPercent(labels.other_models);
+  const planResetAt = validTimestampString(raw.plan_reset_at);
+  const planResetDate = validDateOnly(raw.plan_reset_date);
+  return {
+    source: boundStr(raw.source, 80) || "operator_manual_observation",
+    state: boundStr(raw.state, 40) || "UNKNOWN",
+    observed_at: boundStr(raw.observed_at, 40),
+    plan: boundStr(raw.plan, 40),
+    plan_reset_at: planResetAt,
+    plan_reset_date: planResetDate,
+    plan_reset_precision: planResetDate ? "date" : planResetAt ? "timestamp" : null,
+    usage_semantics: "labels_are_remaining_percent",
+    labels: {
+      cursor_models: cursorLabel ?? remainingFromUsed(cursorUsed),
+      other_models: otherLabel ?? remainingFromUsed(otherUsed),
+    },
+    source_usage: {
+      cursor_models_used_percent: cursorUsed,
+      other_models_used_percent: otherUsed,
+    },
+    on_demand_spending: boundStr(raw.on_demand_spending, 20),
+    monthly_limit: boundStr(raw.monthly_limit, 20),
+  };
+}
+
 function freshnessFromAge(observedAt, nowMs, maxAgeMs) {
   const t = Date.parse(observedAt);
   if (!Number.isFinite(t) || t > nowMs) return "stale";
@@ -707,8 +766,16 @@ export async function collectQuotaObservatory(options = {}) {
       state: cursorManual ? boundStr(cursorManual.state, 40) || "UNKNOWN" : "UNKNOWN",
       freshness: cursorManual ? freshnessFromAge(cursorManual.observed_at, nowMs, QUOTA_DISPLAY_FRESH_MS) : "stale",
       observed_at: cursorManual?.observed_at || null,
+      source: cursorManual?.source || null,
+      plan: cursorManual?.plan || null,
       plan_reset_at: cursorManual?.plan_reset_at || null,
+      plan_reset_date: cursorManual?.plan_reset_date || null,
+      plan_reset_precision: cursorManual?.plan_reset_precision || null,
+      usage_semantics: cursorManual?.usage_semantics || "labels_are_remaining_percent",
       labels: cursorManual?.labels || { cursor_models: null, other_models: null },
+      source_usage: cursorManual?.source_usage || { cursor_models_used_percent: null, other_models_used_percent: null },
+      on_demand_spending: cursorManual?.on_demand_spending || null,
+      monthly_limit: cursorManual?.monthly_limit || null,
     note: "Cursor rimane un harness: nessun pool inventato. Solo osservazione manuale runtime se presente.",
     ...collectorMeta("cursor_manual", "manual runtime observation until accounting is qualified"),
   };
@@ -770,22 +837,14 @@ function safeCollectIngestContributions(ingestDir) {
 }
 
 function loadCursorManualObservation(options = {}) {
-  if (options.cursorObservation) return options.cursorObservation;
+  if (options.cursorObservation) return normalizeCursorManualObservation(options.cursorObservation);
   const path = options.cursorObservationPath
     || resolve(ROOT, "configs/runtime/quota-observatory/cursor-manual-observation.json");
   if (!existsSync(path)) return null;
   try {
     const raw = JSON.parse(readFileSync(path, "utf8").replace(/^\uFEFF/, ""));
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
-    return {
-      state: boundStr(raw.state, 40) || "UNKNOWN",
-      observed_at: boundStr(raw.observed_at, 40),
-      labels: {
-        cursor_models: typeof raw?.labels?.cursor_models === "number" ? raw.labels.cursor_models : null,
-        other_models: typeof raw?.labels?.other_models === "number" ? raw.labels.other_models : null,
-      },
-      plan_reset_at: boundStr(raw.plan_reset_at, 40),
-    };
+    return normalizeCursorManualObservation(raw);
   } catch {
     return null;
   }

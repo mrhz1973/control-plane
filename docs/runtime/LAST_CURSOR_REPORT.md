@@ -1,5 +1,33 @@
 # LAST CURSOR REPORT
 
+## Cursor plan-reset manual observation V1 — latest
+
+**TASK_REF:** `V4_LOCAL_DEV_CURSOR_PLAN_RESET_MANUAL_OBSERVATION_V1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-11
+**BASE_HEAD:** `4367d0336515e23d62ae31ec2e651604598c4356`
+**Report:** `reports/architecture/v4_local_dev_cursor_plan_reset_manual_observation_v1.md`
+
+- Human gate `HUMAN_GATE_CURSOR_PLAN_RESET_DATE` resolved from the supplied
+  Cursor Plan & Usage screenshot: plan `Pro+`, reset date `2026-09-19`,
+  `DATE_ONLY`, time not observed. No timestamp or time was invented.
+- Manual usage provenance is preserved as 100%/99% used and dashboard
+  remaining labels 0%/1%; `plan_reset_date` survives with
+  `plan_reset_at=null`. The stale usage snapshot remains freshness-aware and
+  does not invalidate the date-only plan evidence.
+- Local `/dashboard`, `/v1/status`, `/v1/diagnostics`, `/v1/resources` and
+  private Tailscale `/dashboard` returned 200 after the exact bounded
+  dispatcher recycle; local/private dashboard payloads matched.
+- Focused manual-observation, quota-reset, dispatcher, resource-integrity,
+  Hermes/OpenCode visibility, and registry suites passed. No browser,
+  inference, Qwen/Codex/GLM/Cursor execution, `/v1/tick`, queue/receipt,
+  n8n/VPS/Tailscale mutation occurred.
+- `HUMAN_GATE_CURSOR_PLAN_RESET_DATE=RESOLVED`,
+  `CURSOR_USAGE_SOURCE=OPERATOR_MANUAL_OBSERVATION`,
+  `CURSOR_RESET_TIME_INVENTED=NO`, `MODEL_INFERENCE_CALLS=0`.
+- `#73` remains OPEN, `ISSUE_73_PHASE_C=PASS`, `PHASE_D=OPEN`; NEXT is
+  `V4_HERMES_PRIVATE_NOVNC_OPERATOR_LINK_V1`.
+
 ## Local Dev quota reset live-source qualification V1 — latest
 
 **TASK_REF:** `V4_LOCAL_DEV_QUOTA_RESET_LIVE_SOURCE_QUALIFICATION_V1`
