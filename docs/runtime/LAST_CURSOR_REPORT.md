@@ -1,5 +1,27 @@
 # LAST CURSOR REPORT
 
+## Local Dev dashboard VPS card and resource reorder V1 — latest
+
+**TASK_REF:** `V4_LOCAL_DEV_DASHBOARD_VPS_CARD_AND_RESOURCE_REORDER_V1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `4ef484ad030433ac1ba35d63c106cc17ec5e4146`
+**Report:** `reports/architecture/v4_local_dev_dashboard_vps_card_and_resource_reorder_v1.md`
+
+- Default Resources order is `workstation → vps → qwen → glm → codex → cursor`.
+- All six cards have stable IDs and browser-local drag/drop order persistence;
+  stale IDs are ignored and reset restores the canonical order.
+- The visible `NEW VPS` card is now `VPS`, with read-only CPU/RAM/swap/disk
+  bars and bounded private observation details; the ChatGPT Web card was
+  removed from the main Resources row while backend observability remains.
+- `ISSUE_73_PHASE_C=PASS`; #73 remains OPEN and the next real gap is
+  `V4_QWEN_CANONICAL_ENDPOINT_502_RECOVERY_V1`.
+- No runtime mutation, Qwen/Hermes/Chrome/n8n/VPS execution, production
+  dispatch, or credential material occurred. Live dashboard/resource checks
+  were GET-only and the existing service was not restarted.
+
+---
+
 ## Local Dev resource observability integrity and recovery V1 — latest
 
 **TASK_REF:** `V4_LOCAL_DEV_RESOURCE_OBSERVABILITY_INTEGRITY_AND_RECOVERY_V1`

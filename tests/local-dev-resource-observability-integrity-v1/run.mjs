@@ -80,12 +80,16 @@ await test("canonical SSH runner parses bounded read-only observations", async (
       calls.push({ program, args });
       const command = args.at(-1);
       const stdout = {
-        "uname -a": "Linux new-vps",
+        "uname -a": "Linux ionos-n8n-new 6.8.0-31-generic #31 SMP x86_64 GNU/Linux",
         "uptime": " 00:00:00 up 1 day",
         "cat /proc/uptime": "86400.00 123.00",
         "cat /proc/loadavg": "0.08 0.07 0.09 1/640 1",
-        "free -b": "Mem: 8267018240 3682258944 615141376",
+        "free -b": "Mem: 8267018240 3682258944 615141376\nSwap: 2147483648 1073741824 1073741824",
         "df -B1 /": "Filesystem 1B-blocks Used Available Use% Mounted on\n/dev/vda1 248505155584 22030045184 226458333184 9% /",
+        "nproc": "4",
+        "hostname": "ionos-n8n-new",
+        "cat /etc/os-release": "PRETTY_NAME=\"Ubuntu 24.04.2 LTS\"",
+        "hostname -I": "10.0.0.5 100.64.12.34",
         "docker info --format '{{.ServerVersion}}'": "29.0",
         "docker ps --format '{{.Names}} {{.Status}}'": "n8n Up 1 hour",
         "systemctl is-active n8n || true": "active",
@@ -98,7 +102,15 @@ await test("canonical SSH runner parses bounded read-only observations", async (
   const observation = await runner({});
   assert.equal(observation.reachable, true);
   assert.equal(observation.ram_percent, 44.5);
+  assert.equal(observation.swap_percent, 50);
   assert.equal(observation.root_disk_percent, 8.9);
+  assert.equal(observation.hostname, "ionos-n8n-new");
+  assert.equal(observation.os, "Ubuntu 24.04.2 LTS");
+  assert.equal(observation.kernel, "6.8.0-31-generic");
+  assert.equal(observation.architecture, "x86_64");
+  assert.equal(observation.vcpu_count, 4);
+  assert.equal(observation.tailscale_ip, "100.64.12.34");
+  assert.deepEqual(observation.service_states, { n8n: "active", docker: "active", postgresql: "active" });
   assert.equal(observation.docker, "29.0");
   assert.equal(calls.every(({ program, args }) => program === "ssh" && args.includes("BatchMode=yes")), true);
   assert.equal(calls.some(({ args }) => args.includes("-X")), false);

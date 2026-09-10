@@ -40,6 +40,10 @@ export const VPS_SAFE_REMOTE_COMMANDS = Object.freeze([
   "cat /proc/loadavg",
   "free -b",
   "df -B1 /",
+  "nproc",
+  "hostname",
+  "cat /etc/os-release",
+  "hostname -I",
   "docker info --format '{{.ServerVersion}}'",
   "docker ps --format '{{.Names}} {{.Status}}'",
   "systemctl is-active n8n || true",
@@ -322,8 +326,14 @@ function parseVpsObservation(results, nowMs) {
   }
 
   const uptimeSeconds = parseFirstNumber(output("cat /proc/uptime"));
+  const uname = output("uname -a").trim();
+  const unameParts = uname.split(/\s+/);
+  const architecture = unameParts.length >= 2 ? unameParts[unameParts.length - 2] : null;
+  const osRelease = output("cat /etc/os-release").match(/^PRETTY_NAME=(.*)$/mi);
+  const osName = osRelease ? osRelease[1].trim().replace(/^['"]|['"]$/g, "") : null;
   const loadParts = output("cat /proc/loadavg").trim().split(/\s+/).slice(0, 3).map(boundNum);
   const mem = output("free -b").match(/Mem:\s+(\d+)\s+(\d+)\s+(\d+)/i);
+  const swap = output("free -b").match(/Swap:\s+(\d+)\s+(\d+)\s+(\d+)/i);
   const diskLine = output("df -B1 /").trim().split(/\r?\n/).find((line) => /^\S+\s+\d+\s+\d+\s+\d+\s+\d+%\s+\/$/.test(line.trim()));
   const disk = diskLine ? diskLine.trim().split(/\s+/) : [];
   const docker = output("docker info --format '{{.ServerVersion}}'").trim();
@@ -335,24 +345,52 @@ function parseVpsObservation(results, nowMs) {
   const used = mem ? boundNum(mem[2]) : null;
   const free = mem ? boundNum(mem[3]) : null;
   const diskTotal = disk.length ? boundNum(disk[1]) : null;
+  const diskUsed = disk.length ? boundNum(disk[2]) : null;
   const diskFree = disk.length ? boundNum(disk[3]) : null;
+  const swapTotal = swap ? boundNum(swap[1]) : null;
+  const swapUsed = swap ? boundNum(swap[2]) : null;
+  const swapFree = swap ? boundNum(swap[3]) : null;
+  const tailnetIp = output("hostname -I").trim().split(/\s+/).find((address) => /^100\.(?:6[4-9]|[78]\d|1[01]\d|12[0-7])\.\d{1,3}\.\d{1,3}$/.test(address)) || null;
+  const serviceStates = {
+    n8n: serviceOutput(results, "systemctl is-active n8n || true"),
+    docker: serviceOutput(results, "systemctl is-active docker || true"),
+    postgresql: serviceOutput(results, "systemctl is-active postgresql || systemctl is-active postgresql@* || true"),
+  };
   return {
     reachable: true,
     observed_at: new Date(nowMs).toISOString(),
+    hostname: boundStr(output("hostname").trim(), 120),
+    os: boundStr(osName, 120),
+    kernel: boundStr(unameParts[2], 120),
+    architecture: boundStr(architecture, 40),
+    vcpu_count: parseFirstNumber(output("nproc")),
     uptime_seconds: uptimeSeconds,
+    load_average: loadParts.every((value) => value !== null) ? loadParts : null,
     load: loadParts.every((value) => value !== null) ? loadParts : null,
     ram_total_bytes: total,
     ram_used_bytes: used,
     ram_free_bytes: free,
     ram_percent: total && used !== null ? percent(used, total) : null,
+    swap_total_bytes: swapTotal,
+    swap_used_bytes: swapUsed,
+    swap_free_bytes: swapFree,
+    swap_percent: swapTotal && swapUsed !== null ? percent(swapUsed, swapTotal) : null,
     root_disk_total_bytes: diskTotal,
+    root_disk_used_bytes: diskUsed,
     root_disk_free_bytes: diskFree,
     root_disk_percent: diskTotal && diskFree !== null ? percent(diskTotal - diskFree, diskTotal) : null,
+    tailscale_ip: tailnetIp,
+    service_states: serviceStates,
     docker: docker || service("systemctl is-active docker || true"),
-    n8n: service("systemctl is-active n8n || true"),
-    postgresql: service("systemctl is-active postgresql || systemctl is-active postgresql@* || true"),
+    n8n: serviceStates.n8n,
+    postgresql: serviceStates.postgresql,
     litellm: "unobserved",
   };
+}
+
+function serviceOutput(results, command) {
+  const value = results.get(command)?.stdout?.trim();
+  return value || null;
 }
 
 /** Canonical private SSH transport. Fixed alias, BatchMode, fixed read-only commands only. */
@@ -446,15 +484,30 @@ export async function collectVpsNewResources(options = {}) {
       ...(observed?.reachable === true ? {} : { reason_code: observed?.reason_code || "VPS_PROBE_FAILED" }),
       cache_hit: false,
       uptime_seconds: boundNum(observed?.uptime_seconds),
+      hostname: boundStr(observed?.hostname, 120),
+      os: boundStr(observed?.os, 120),
+      kernel: boundStr(observed?.kernel, 120),
+      architecture: boundStr(observed?.architecture, 40),
+      vcpu_count: boundNum(observed?.vcpu_count),
       load: observed?.load ?? null,
+      load_average: observed?.load_average ?? observed?.load ?? null,
       cpu_percent: boundNum(observed?.cpu_percent),
       ram_total_bytes: boundNum(observed?.ram_total_bytes),
       ram_used_bytes: boundNum(observed?.ram_used_bytes),
       ram_free_bytes: boundNum(observed?.ram_free_bytes),
       ram_percent: boundNum(observed?.ram_percent),
+      swap_total_bytes: boundNum(observed?.swap_total_bytes),
+      swap_used_bytes: boundNum(observed?.swap_used_bytes),
+      swap_free_bytes: boundNum(observed?.swap_free_bytes),
+      swap_percent: boundNum(observed?.swap_percent),
       root_disk_total_bytes: boundNum(observed?.root_disk_total_bytes),
+      root_disk_used_bytes: boundNum(observed?.root_disk_used_bytes),
       root_disk_free_bytes: boundNum(observed?.root_disk_free_bytes),
       root_disk_percent: boundNum(observed?.root_disk_percent),
+      tailscale_ip: boundStr(observed?.tailscale_ip, 40),
+      host_hint: "ionos-n8n-new.tailc01234.ts.net",
+      tailscale_magicdns: "ionos-n8n-new.tailc01234.ts.net",
+      service_states: observed?.service_states && typeof observed.service_states === "object" ? Object.fromEntries(Object.entries(observed.service_states).slice(0, 8).map(([key, value]) => [boundStr(key, 40), boundStr(value, 40)])) : {},
       docker: boundStr(observed?.docker, 80),
       n8n: boundStr(observed?.n8n, 80),
       postgresql: boundStr(observed?.postgresql, 80),

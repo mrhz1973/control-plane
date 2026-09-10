@@ -2094,7 +2094,8 @@ await test("S47 dashboard resources section: no object Object; Italian labels; n
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = [...dashboard.htmlWrites.map((w) => w.value), ...[...dashboard.elements.values()].map((n) => n.innerHTML + n.textContent)].join("\n");
-  assert.match(out, /Risorse e quote|Macchina locale|Qwen locale|NEW VPS|GLM|Codex|Cursor|ChatGPT Web/i);
+  assert.match(out, /Risorse e quote|Macchina locale|Qwen locale|VPS|GLM|Codex|Cursor/i);
+  assert.doesNotMatch(out, /ChatGPT Web/);
   assert.match(out, /Capacità locale — nessuna quota commerciale|Nessuna quota commerciale/);
   assert.match(out, /UNVERIFIED|MANUAL_ONLY|Mapping/i);
   assert.match(out, /Fonte \/ Collector/);
@@ -2818,7 +2819,7 @@ await test("S71 D-9408-A dashboard compact health: qwen no fake 100%; cursor no 
   assert.doesNotMatch(out, /Qwen[\s\S]{0,120}100\s*%/);
   assert.match(out, /MANUAL_ONLY|UNVERIFIED|percentuale non inventata/i);
   assert.doesNotMatch(out, /Cursor Models:\s*100/);
-  assert.match(out, /Illimitato:\s*No|Infinito:\s*No/);
+  assert.doesNotMatch(out, /Illimitato:\s*No|Infinito:\s*No|ChatGPT Web/);
   assert.doesNotMatch(out, /\bunlimited\b|\binfinite\b|\bgratuito illimitato\b/i);
   assert.match(out, /MCP \(ausiliario\)|non influenza capacità modello/);
   assert.match(out, /Residuo effettivo|Effettivo|hbar-fill danger/);
@@ -2910,7 +2911,7 @@ await test("S72 D-9408-B disk free derived from used percent and free/total byte
   assert.doesNotMatch(missingOut, /hbar-label">Disco<\/span>[\s\S]{0,160}hbar-fill ok/);
 });
 
-await test("S73 D-9408-C ultra-compact resource cards: no visible severity words; 7-col grid; collapsible meta", async () => {
+await test("S73 D-9408-C resource cards: no visible severity words; six-col grid; collapsible meta", async () => {
   const dashboard = await dashboardHarness({
     status: { active: false },
     diag: { queue: { eligible_count: 0 }, qwen: { reachable: true, models: [] } },
@@ -2945,23 +2946,23 @@ await test("S73 D-9408-C ultra-compact resource cards: no visible severity words
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = dashboardText(dashboard);
-  assert.match(dashboard.html, /\.res-grid\{[^}]*grid-template-columns:repeat\(7,/);
+  assert.match(dashboard.html, /\.res-grid\{[^}]*grid-template-columns:repeat\(6,/);
   assert.match(out, /class="res-grid"/);
   assert.match(out, /class="res-tile/);
   assert.match(out, /Macchina locale/);
   assert.match(out, /Qwen locale/);
-  assert.match(out, /NEW VPS/);
+  assert.match(out, /VPS/);
   assert.match(out, /\bGLM\b/);
   assert.match(out, /Codex/);
   assert.match(out, /Cursor/);
-  assert.match(out, /ChatGPT Web/);
+  assert.doesNotMatch(out, /ChatGPT Web/);
   assert.match(out, /hbar-label">CPU<\/span>[\s\S]{0,200}20(?:[.,]6)?%/);
   assert.match(out, /hbar-label">RAM<\/span>[\s\S]{0,200}81(?:[.,]9)?%/);
   assert.match(out, /hbar-label">Effettivo<\/span>[\s\S]{0,200}42(?:[.,]0)?%/);
   assert.match(out, /Nessuna quota commerciale/);
   assert.doesNotMatch(out, /Qwen[\s\S]{0,120}100%/);
   assert.match(out, /MANUAL_ONLY|UNVERIFIED/);
-  assert.match(out, /Illimitato:\s*No|Infinito:\s*No/);
+  assert.doesNotMatch(out, /Illimitato:\s*No|Infinito:\s*No|ChatGPT Web/);
   assert.doesNotMatch(out, /\bunlimited\b|\binfinite\b/i);
   assert.match(out, /details class="res-more"/);
   assert.match(out, /Fonte \/ Collector/);
@@ -3028,10 +3029,10 @@ await test("S74 D-9408-D consolidated ops row: 3 cards; Qwen merged; no arrows; 
   assert.match(out, /CLAIM_ALREADY_EXISTS|NO_ELIGIBLE_READY|Intervento umano: No/);
   assert.doesNotMatch(out, /Qwen[\s\S]{0,80}100%/);
   assert.match(out, /UNVERIFIED|MANUAL_ONLY/);
-  assert.match(out, /Illimitato:\s*No|Infinito:\s*No|ChatGPT Web/);
+  assert.doesNotMatch(out, /Illimitato:\s*No|Infinito:\s*No|ChatGPT Web/);
 });
 
-await test("S75 D-9408-E seven resource cards on one wide-desktop row", async () => {
+await test("S75 D-9408-E six resource cards on one wide-desktop row with canonical reorder", async () => {
   const dashboard = await dashboardHarness({
     status: { active: false },
     diag: { queue: { eligible_count: 0 }, qwen: { reachable: true, models: [] } },
@@ -3053,18 +3054,30 @@ await test("S75 D-9408-E seven resource cards on one wide-desktop row", async ()
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   const out = dashboardText(dashboard);
-  assert.match(dashboard.html, /\.res-grid\{[^}]*grid-template-columns:repeat\(7,minmax\(0,1fr\)\)/);
+  assert.match(dashboard.html, /\.res-grid\{[^}]*grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
   assert.doesNotMatch(dashboard.html, /@media\(max-width:(?:1680|1480|1280)px\)\{\.res-grid\{grid-template-columns:repeat\((?:6|5|4),/);
   assert.match(dashboard.html, /@media\(max-width:1200px\)\{[\s\S]*?\.res-grid\{grid-template-columns:repeat\(3,/);
   assert.match(dashboard.html, /@media\(max-width:900px\)\{[\s\S]*?\.res-grid\{grid-template-columns:repeat\(2,/);
   assert.match(dashboard.html, /@media\(max-width:620px\)\{[\s\S]*?\.res-grid\{grid-template-columns:1fr/);
-  assert.match(dashboard.html, /\.res-tile\{[^}]*min-height:113px/);
+  assert.match(dashboard.html, /\.res-tile\{[^}]*min-height:150px/);
   assert.match(dashboard.html, /\.ops-row\{[^}]*grid-template-columns:repeat\(3,/);
-  const titles = ["Macchina locale", "Qwen locale", "NEW VPS", "GLM", "Codex", "Cursor", "ChatGPT Web"];
+  const titles = ["Macchina locale", "VPS", "Qwen locale", "GLM", "Codex", "Cursor"];
   for (const title of titles) assert.match(out, new RegExp(title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.doesNotMatch(out, /ChatGPT Web/);
   const resourcesHtml = [...dashboard.htmlWrites].filter((write) => write.id === "resources-cards").at(-1)?.value || "";
-  assert.equal((resourcesHtml.match(/class="res-tile/g) || []).length, 7);
-  assert.equal((resourcesHtml.match(/Qwen locale/g) || []).length, 1);
+  assert.equal((resourcesHtml.match(/class="res-tile/g) || []).length, 6);
+  assert.match(resourcesHtml, /data-resource="qwen"/);
+  assert.deepEqual([...resourcesHtml.matchAll(/data-resource="([^"]+)"/g)].map((match) => match[1]), ["workstation", "vps", "qwen", "glm", "codex", "cursor"]);
+  assert.doesNotMatch(resourcesHtml, /data-resource="chatgpt_web"/);
+  assert.match(resourcesHtml, /data-resource-drag="workstation"/);
+  assert.match(resourcesHtml, /data-resource-drag="cursor"/);
+  assert.equal(JSON.stringify(dashboard.evaluate("mergeResourceOrder(['chatgpt_web','qwen','qwen','future','workstation'], ['workstation','vps','qwen','glm','codex','cursor','future'])")), JSON.stringify(["qwen", "future", "workstation", "vps", "glm", "codex", "cursor"]));
+  assert.equal(JSON.stringify(dashboard.evaluate("mergeResourceOrder(['chatgpt_web','qwen','qwen'], CANONICAL_RESOURCES)")), JSON.stringify(["qwen", "workstation", "vps", "glm", "codex", "cursor"]));
+  dashboard.evaluate("storageSet(RESOURCE_LAYOUT_KEY, JSON.stringify(['cursor','vps','chatgpt_web']))");
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedResourceOrder()")), JSON.stringify(["cursor", "vps", "workstation", "qwen", "glm", "codex"]));
+  dashboard.evaluate("resetLayout()");
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedResourceOrder()")), JSON.stringify(["workstation", "vps", "qwen", "glm", "codex", "cursor"]));
+  assert.equal(dashboard.localStore.has("local-dev-dispatcher-dashboard-v1:resource-order"), false);
   assert.doesNotMatch(dashboard.html, /Qwen e runtime|id="qwen-title"/);
   assert.doesNotMatch(dashboard.html, /data-move-up|data-move-down|>▲<|>▼</);
   assert.match(dashboard.html, /id="ops-task-card"/);
