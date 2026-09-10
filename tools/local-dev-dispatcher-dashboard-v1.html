@@ -196,6 +196,17 @@
       }
       return {tone:toneCls,label:status,numeric:n,kind:text(kind,'')};
     }
+    function resourceTone(resource,fallback='neutral'){
+      const r=obj(resource);const health=text(r.health_state,'').toUpperCase();const observation=text(r.observation_state,'').toUpperCase();
+      if(health==='REAL_FAILURE'&&observation==='OBSERVED')return 'danger';
+      if(health==='DEGRADED')return 'warn';
+      if(health==='AVAILABLE')return 'ok';
+      return fallback;
+    }
+    function observabilityLine(resource,label='Salute / osservazione'){
+      const r=obj(resource);const health=text(r.health_state,'NON OSSERVATA');const observation=text(r.observation_state,'NON OSSERVATA');const reason=text(r.observation_reason_code||r.reason_code,'');
+      return `<p class="quota-meta">${escapeHtml(label)}: ${escapeHtml(health)} · ${escapeHtml(observation)}${reason?` · ${escapeHtml(reason)}`:''}</p>`;
+    }
     function healthBar(labelText, kind, value, opts){
       const options=obj(opts);
       const unit=text(options.unit,'%');
@@ -373,18 +384,19 @@
       const models=list(extras.models).map(obj).filter(m=>scalar(m.id));
       const tile=(title,tipKey,toneCls,main,body,detailId,detailHtml)=>`<article class="res-tile ${toneCls||'neutral'}"><div class="res-title"><span>${escapeHtml(title)} ${help(tipKey)}</span></div><div class="res-main ${toneCls||''}">${main}</div>${body}<details class="res-more" id="${escapeHtml(detailId)}"><summary>Dettagli</summary>${detailHtml}</details></article>`;
 
-      const macchina=tile('Macchina locale','workstation','info',escapeHtml(text(w.state||gpu.state,'UNKNOWN')),
+      const macchina=tile('Macchina locale','workstation',resourceTone(w,'info'),escapeHtml(text(w.state||gpu.state,'UNKNOWN')),
         `<div class="res-bars">${healthBar('CPU','util',w.cpu_percent,{stale:wsStale,freshness:w.freshness})}${healthBar('RAM','util',w.ram_percent,{stale:wsStale,freshness:w.freshness})}${healthBar('GPU','util',gpu.gpu_util_percent,{stale:wsStale||staleFlag(gpu.freshness),freshness:gpu.freshness||w.freshness})}${healthBar('VRAM','vram',vramPct(),{stale:wsStale||staleFlag(gpu.freshness),freshness:gpu.freshness||w.freshness})}${healthBar('Temp','temp_c',gpu.temperature_c,{stale:wsStale||staleFlag(gpu.freshness),freshness:gpu.freshness||w.freshness,unit:'°C'})}${healthBar('Disco','disk_free',diskFreePct,{stale:wsStale||diskFreePct===null,freshness:w.freshness,unknown:diskFreePct===null})}</div>`,
         'macchina-tech',
-        `<p class="quota-meta">CPU logici: ${escapeHtml(count(w.logical_cpu_count))}</p><p class="quota-meta">GPU: ${escapeHtml(text(gpu.gpu_name,text(gpu.state,'UNKNOWN')))}${gpu.reason_code?` · ${escapeHtml(text(gpu.reason_code))}`:''}</p><p class="quota-meta">VRAM: ${number(gpu.vram_used_mb)===null?'—':`${escapeHtml(count(gpu.vram_used_mb))} / ${escapeHtml(count(gpu.vram_total_mb))} MB`}</p><p class="quota-meta">Disco libero: ${escapeHtml(diskFreePct===null?'—':pct(diskFreePct))} · usati (system_disk_percent): ${escapeHtml(diskUsedPct===null?'—':pct(diskUsedPct))} · ${escapeHtml(bytes(w.system_disk_free_bytes))} liberi</p><p class="quota-meta">Osservato: ${escapeHtml(date(w.observed_at))} · freschezza: ${escapeHtml(text(w.freshness,'unknown'))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(w.collector_label||'Node.js dispatcher / Windows OS')} · ${escapeHtml(gpu.collector_label||'nvidia-smi')} ${help('collector')}</p>`);
+        `${observabilityLine(w)}<p class="quota-meta">CPU logici: ${escapeHtml(count(w.logical_cpu_count))}</p><p class="quota-meta">GPU: ${escapeHtml(text(gpu.gpu_name,text(gpu.state,'UNKNOWN')))}${gpu.reason_code?` · ${escapeHtml(text(gpu.reason_code))}`:''}</p><p class="quota-meta">VRAM: ${number(gpu.vram_used_mb)===null?'—':`${escapeHtml(count(gpu.vram_used_mb))} / ${escapeHtml(count(gpu.vram_total_mb))} MB`}</p><p class="quota-meta">Disco libero: ${escapeHtml(diskFreePct===null?'—':pct(diskFreePct))} · usati (system_disk_percent): ${escapeHtml(diskUsedPct===null?'—':pct(diskUsedPct))} · ${escapeHtml(bytes(w.system_disk_free_bytes))} liberi</p><p class="quota-meta">Osservato: ${escapeHtml(date(w.observed_at))} · freschezza: ${escapeHtml(text(w.freshness,'unknown'))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(w.collector_label||'Node.js dispatcher / Windows OS')} · ${escapeHtml(gpu.collector_label||'nvidia-smi')} ${help('collector')}</p>`);
 
       const qwenModel=(usage.matched&&usage.primary)?usage.primary.id:(usage.loaded[0]?usage.loaded[0].id:null);
       const endpointLine=q.reachable===true?'Endpoint raggiungibile':q.reachable===false?'Endpoint non raggiungibile':'Endpoint sconosciuto';
       const catalogHtml=models.length?[...models].sort((a,b)=>(modelState(b)==='loaded'?1:0)-(modelState(a)==='loaded'?1:0)).map((m,i)=>{const state=modelState(m);const ctx=number(m.context_tokens)??number(obj(m.meta).n_ctx);return `<article class="model"><div class="model-line"><span class="model-id">${escapeHtml(m.id)}</span>${pill(label(state),state==='loaded'?'ok':state==='loading'?'warn':'subtle')}</div>${ctx!==null?`<p class="model-meta">Contesto: ${count(ctx)} token</p>`:''}<details id="model-${i}" class="technical"><summary>Tech modello</summary><pre>${escapeHtml(json(m))}</pre></details></article>`;}).join(''):`<p class="quota-meta">Catalogo non disponibile o vuoto.</p>`;
-      const qwenBlock=tile('Qwen locale','qwen_capacity',usage.usage_tone||'neutral',escapeHtml(qwenResourceMain(usage)),
+      const qwenTone=usage.usage_tone==='neutral'?resourceTone(q,'neutral'):usage.usage_tone;
+      const qwenBlock=tile('Qwen locale','qwen_capacity',(usage.usage_code==='UNAVAILABLE'&&q.health_state!=='REAL_FAILURE'? 'neutral':qwenTone),escapeHtml(qwenResourceMain(usage)),
         `<p class="res-line mono">${escapeHtml(qwenModel||'—')}</p><p class="res-line">${escapeHtml(endpointLine)}</p><p class="res-line">Nessuna quota commerciale</p>`,
         'qwen-tech',
-        `<p class="quota-meta">Stato modello: ${escapeHtml(usage.model_state.label)} · Uso: ${escapeHtml(usage.usage_label)}</p>
+        `${observabilityLine(q)}<p class="quota-meta">Stato modello: ${escapeHtml(usage.model_state.label)} · Uso: ${escapeHtml(usage.usage_label)}</p>
          ${usage.matched&&usage.primary?`<p class="quota-meta">Modello del task: <span class="mono">${escapeHtml(usage.primary.id)}</span></p>`:''}
          <p class="quota-meta">Harness: ${escapeHtml(usage.harness||'Non osservato')} · Task: ${escapeHtml(usage.task_ref?shortTask(usage.task_ref):'—')} · Attività: ${escapeHtml(activityClock(usage.elapsed_ms)||'—')}</p>
          <p class="quota-meta">Profilo richiesto: ${escapeHtml(text(status.qwen_profile,'—'))} · Contesto: ${escapeHtml(contextShort(usage.primary&&usage.primary.context_tokens)||'—')}</p>
@@ -392,10 +404,10 @@
          <p class="quota-meta">Catalogo modelli</p>${catalogHtml}
          <p class="obs-source">Fonte / Collector: ${escapeHtml(q.collector_label||'dispatcher read-only Qwen probe :8080')} ${help('collector')}</p>`);
 
-      const vpsBlock=tile('NEW VPS','vps_new',text(v.state,'').toUpperCase()==='AVAILABLE'?'ok':'neutral',escapeHtml(text(v.state,'UNAVAILABLE')),
+      const vpsBlock=tile('NEW VPS','vps_new',resourceTone(v,text(v.state,'').toUpperCase()==='AVAILABLE'?'ok':'neutral'),escapeHtml(text(v.state,'UNAVAILABLE')),
         `<p class="res-line">RAM ${escapeHtml(pct(v.ram_percent))} · disco ${escapeHtml(pct(v.root_disk_percent))}</p>${v.reason_code?`<p class="res-line">${escapeHtml(text(v.reason_code))}</p>`:''}`,
         'vps-tech',
-        `<p class="quota-meta">n8n: ${escapeHtml(text(v.n8n,'—'))} · docker: ${escapeHtml(text(v.docker,'—'))} · postgres: ${escapeHtml(text(v.postgresql,'—'))}</p><p class="quota-meta">Osservato: ${escapeHtml(date(v.observed_at))} · cache: ${escapeHtml(yn(v.cache_hit))} · ${escapeHtml(text(v.freshness,'stale'))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(v.collector_label||'dispatcher private read-only remote probe')} ${help('collector')}</p>`);
+        `${observabilityLine(v)}<p class="quota-meta">n8n: ${escapeHtml(text(v.n8n,'—'))} · docker: ${escapeHtml(text(v.docker,'—'))} · postgres: ${escapeHtml(text(v.postgresql,'—'))}</p><p class="quota-meta">Osservato: ${escapeHtml(date(v.observed_at))} · cache: ${escapeHtml(yn(v.cache_hit))} · ${escapeHtml(text(v.freshness,'stale'))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(v.collector_label||'dispatcher private read-only remote probe')} ${help('collector')}</p>`);
 
       function quotaWindowBars(pool,opts){
         const options=obj(opts);
@@ -425,7 +437,7 @@
         const effective=number(pool.remaining_percent);
         const main=effective===null?escapeHtml(text(pool.state,'UNKNOWN')):escapeHtml(pct(effective));
         const bars=`<div class="res-bars">${healthBar('Effettivo','quota_remaining',effective,{stale:poolStale||effective===null,freshness:pool.freshness,unknown:effective===null})}${quotaWindowBars(pool,options)}</div>`;
-        const detail=`<p class="quota-meta">${escapeHtml(options.poolLine||'')}</p>${auxLines(pool)}<p class="quota-meta">Freschezza: ${escapeHtml(text(pool.freshness,'stale'))} · reset: ${escapeHtml(date(pool.reset_at))}</p>${options.extraHtml||''}<p class="obs-source">Fonte / Collector: ${escapeHtml(pool.collector_label||options.defaultCollector||'rt25 quota ingest / canonical quota state')} ${help('collector')}</p>`;
+        const detail=`<p class="quota-meta">${escapeHtml(options.poolLine||'')}</p>${observabilityLine(pool,'Quota / osservazione')}${auxLines(pool)}<p class="quota-meta">Freschezza: ${escapeHtml(text(pool.freshness,'stale'))} · reset: ${escapeHtml(date(pool.reset_at))}</p>${options.extraHtml||''}<p class="obs-source">Fonte / Collector: ${escapeHtml(pool.collector_label||options.defaultCollector||'rt25 quota ingest / canonical quota state')} ${help('collector')}</p>`;
         return tile(title,tipKey,effective===null?'neutral':'info',main,bars,options.detailId||`${title.toLowerCase()}-tech`,detail);
       }
       const banked=obj(codex.banked_resets||codex.rate_limit_reset_credits||codex.rateLimitResetCredits);
@@ -446,7 +458,7 @@
         showMonthly:false,
         detailId:'codex-tech',
         defaultCollector:'rt25 quota ingest / canonical quota state',
-        extraHtml:`${codex.plan?`<p class="quota-meta">Piano: ${escapeHtml(text(codex.plan,'—'))} (metadato)</p>`:''}${bankedHtml}<p class="quota-meta">Valutazione: ${escapeHtml(text(codex.evaluation,'—'))} · Fonte: ${escapeHtml(text(codex.collector_detail||'rt25 quota ingest','—'))}</p>`,
+        extraHtml:`${observabilityLine(obj(quotas.codex_capability),'Capacità Codex')}${codex.plan?`<p class="quota-meta">Piano: ${escapeHtml(text(codex.plan,'—'))} (metadato)</p>`:''}${bankedHtml}<p class="quota-meta">Valutazione: ${escapeHtml(text(codex.evaluation,'—'))} · Fonte: ${escapeHtml(text(codex.collector_detail||'rt25 quota ingest','—'))}</p>`,
       });
       const cursorLabels=obj(cursor.labels);
       const cursorHasPct=number(cursorLabels.cursor_models)!==null||number(cursorLabels.other_models)!==null;
@@ -456,12 +468,12 @@
       const cursorCard=tile('Cursor','cursor_allowance','neutral',escapeHtml(text(cursor.accounting_mapping,'UNVERIFIED')),
         cursorBars,
         'cursor-tech',
-        `<p class="quota-meta">Stato: ${escapeHtml(text(cursor.state,'UNKNOWN'))} · mapping ${escapeHtml(text(cursor.accounting_mapping,'UNVERIFIED'))}</p>${cursorHasPct?'':`<p class="quota-meta">Nessuna allowance machine-readable · percentuale non inventata</p>`}${number(cursorLabels.cursor_models)===null?`<p class="quota-meta">Cursor Models: —</p>`:''}${number(cursorLabels.other_models)===null?`<p class="quota-meta">Other Models: —</p>`:''}<p class="quota-meta">${escapeHtml(text(cursor.note,'Nessun pool inventato.'))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(cursor.collector_label||'manual runtime observation until accounting is qualified')} ${help('collector')}</p>`);
+        `${observabilityLine(cursor,'Accounting / osservazione')}<p class="quota-meta">Stato: ${escapeHtml(text(cursor.state,'UNKNOWN'))} · mapping ${escapeHtml(text(cursor.accounting_mapping,'UNVERIFIED'))}</p>${cursorHasPct?'':`<p class="quota-meta">Nessuna allowance machine-readable · percentuale non inventata</p>`}${number(cursorLabels.cursor_models)===null?`<p class="quota-meta">Cursor Models: —</p>`:''}${number(cursorLabels.other_models)===null?`<p class="quota-meta">Other Models: —</p>`:''}<p class="quota-meta">${escapeHtml(text(cursor.note,'Nessun pool inventato.'))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(cursor.collector_label||'manual runtime observation until accounting is qualified')} ${help('collector')}</p>`);
 
       const webCard=tile('ChatGPT Web','chatgpt_web','neutral',escapeHtml(text(web.state,'UNKNOWN')),
         `<p class="res-line">Dominio separato</p><p class="res-line">Illimitato: No · Infinito: No</p>`,
         'web-tech',
-        `<p class="quota-meta">Gratuito: No · non è un pool di quota</p><p class="quota-meta">Raggiungibile: ${escapeHtml(yn(web.reachable))} · autenticato: ${escapeHtml(yn(web.authenticated))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(web.collector_label||'existing Hermes/Web observation if available')} ${help('collector')}</p>`);
+        `${observabilityLine(web,'Disponibilità / osservazione')}<p class="quota-meta">Gratuito: No · non è un pool di quota</p><p class="quota-meta">Raggiungibile: ${escapeHtml(yn(web.reachable))} · autenticato: ${escapeHtml(yn(web.authenticated))}</p><p class="obs-source">Fonte / Collector: ${escapeHtml(web.collector_label||'existing Hermes/Web observation if available')} ${help('collector')}</p>`);
 
       put('resources-cards',`<div class="res-grid">${macchina}${qwenBlock}${vpsBlock}${glmCard}${codexCard}${cursorCard}${webCard}</div>`);
     }
@@ -473,7 +485,7 @@
     function deriveQwenUsage(status,qwenObs){
       const s=obj(status);const q=obj(qwenObs);const loaded=loadedModelsFrom(q);const modelStateInfo=italianModelState(q,loaded);const profile=scalar(s.qwen_profile);const phase=text(s.phase,'');const active=s.active===true;const matched=profile?loaded.find(m=>m.id===profile)||null:null;const primary=matched||(loaded.length===1?loaded[0]:null)||loaded[0]||null;
       const base={model_state:modelStateInfo,loaded,primary,profile,phase,active,matched:!!matched,task_ref:scalar(s.task_ref),elapsed_ms:number(s.elapsed_ms),executor_pid:number(s.executor_pid),harness:null,usage_code:'NONE',usage_label:'Nessun uso dispatcher osservato',usage_tip:'qwen_no_dispatcher_use',usage_tone:'neutral',show_external_caution:false,inference:false};
-      if(q.reachable===false)return {...base,usage_code:'UNAVAILABLE',usage_label:'Endpoint non raggiungibile',usage_tip:'qwen_reachable',usage_tone:'danger',primary:null};
+      if(q.reachable===false)return {...base,usage_code:'UNAVAILABLE',usage_label:'Endpoint non raggiungibile',usage_tip:'qwen_reachable',usage_tone:q.health_state==='REAL_FAILURE'&&q.observation_state==='OBSERVED'?'danger':'neutral',primary:null};
       if(active&&phase==='OPENCODE'){
         if(!profile)return {...base,usage_code:'NO_PROFILE',usage_label:'Ciclo OpenCode senza profilo Qwen',usage_tip:'qwen_usage_mismatch',usage_tone:'warn',harness:null,inference:false};
         if(!matched)return {...base,usage_code:'MISMATCH',usage_label:'Uso dispatcher non correlato',usage_tip:'qwen_usage_mismatch',usage_tone:'warn',harness:null,inference:false};
@@ -486,7 +498,7 @@
       return base;
     }
     function qwenSummaryMetric(usage){
-      if(usage.usage_code==='UNAVAILABLE')return {value:'Non raggiungibile',sub:'Sonda del catalogo locale',tone:'danger'};
+      if(usage.usage_code==='UNAVAILABLE')return {value:'Non raggiungibile',sub:'Sonda del catalogo locale',tone:usage.usage_tone==='danger'?'danger':'info'};
       const n=usage.loaded.length;const ctx=contextShort(usage.primary&&usage.primary.context_tokens);
       const value=n?`${n} caricato${n===1?'':'i'}${ctx?` · ${ctx}`:''}`:(usage.model_state.code==='UNLOADED'?'Non caricato':usage.model_state.label);
       let sub='Nessun uso dispatcher osservato';
@@ -496,7 +508,7 @@
       else if(usage.usage_code==='POST_INFERENCE')sub=`Task in corso · non in inferenza${usage.task_ref?` · ${shortTask(usage.task_ref)}`:''}`;
       else if(usage.usage_code==='MISMATCH'||usage.usage_code==='NO_PROFILE')sub='Uso dispatcher non correlato';
       else if(usage.model_state.code!=='LOADED')sub='Catalogo letto · disponibilità per modello';
-      const tone=usage.usage_code==='IN_USE'?'ok':usage.usage_code==='UNAVAILABLE'?'danger':(usage.usage_code==='PREFLIGHT'||usage.usage_code==='ADMISSION'||usage.usage_code==='MISMATCH')?'warn':n?'ok':'info';
+      const tone=usage.usage_code==='IN_USE'?'ok':usage.usage_code==='UNAVAILABLE'?usage.usage_tone:(usage.usage_code==='PREFLIGHT'||usage.usage_code==='ADMISSION'||usage.usage_code==='MISMATCH')?'warn':n?'ok':'info';
       return {value,sub,tone};
     }
     function qwenRuntimeBlock(usage){

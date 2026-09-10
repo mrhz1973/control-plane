@@ -1,5 +1,27 @@
 # LAST CURSOR REPORT
 
+## Local Dev resource observability integrity and recovery V1 — latest
+
+**TASK_REF:** `V4_LOCAL_DEV_RESOURCE_OBSERVABILITY_INTEGRITY_AND_RECOVERY_V1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `65b7cfc69ccc4bb9973ad88cbd478cf763ea273b`
+**Report:** `reports/architecture/v4_local_dev_resource_observability_integrity_and_recovery_v1.md`
+
+Resource health and collector observation are now separated for the Local Dev
+dashboard. Verified Qwen HTTP 502 is a real observed endpoint failure; idle or
+unloaded Qwen remains distinct. The private NEW VPS SSH collector is wired
+read-only and live. GLM/Codex quota staleness, Codex qualified capability,
+Cursor unverified accounting, and ChatGPT Web unknown availability remain
+neutral and are not conflated with service failure.
+
+`ISSUE_73_PHASE_C=PASS`; `#73` remains OPEN; `PHASE_D=OPEN`; NEXT is
+`V4_LOCAL_DEV_DASHBOARD_VPS_CARD_AND_RESOURCE_REORDER_V1`. No runtime
+mutation, Qwen/Hermes/Chrome/n8n/VPS execution, production dispatch, or
+credential material occurred.
+
+---
+
 ## Hermes Codex dynamic GPT model router V1 — latest
 
 **TASK_REF:** `V4_HERMES_CODEX_DYNAMIC_GPT_MODEL_ROUTER_V1`

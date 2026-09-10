@@ -55,7 +55,7 @@ import { composeRunners } from "./run-local-dev-executor-v1.mjs";
 import { admitMicroTaskDelta, extractMicroTaskAdmissionInput } from "./admit-micro-task-delta-v1.mjs";
 import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
 import { selectNextQueueItem, parseBacklogFile, isAdmissible } from "./select-local-dev-queue-item-v1.mjs";
-import { buildResourceObservatory, RESOURCES_PATH, RESOURCES_SCHEMA } from "./local-dev-resource-observatory-v1.mjs";
+import { buildResourceObservatory, createCanonicalVpsSshRunner, QWEN_OBSERVATION_TIMEOUT_MS, RESOURCES_PATH, RESOURCES_SCHEMA } from "./local-dev-resource-observatory-v1.mjs";
 
 export const RESULT_SCHEMA = "local-dev-dispatch-tick-result-v1";
 export const REQUEST_SCHEMA = "local-dev-dispatch-tick-v1";
@@ -289,7 +289,7 @@ export function normalizeQwenModel(value) {
 /** Read-only GET :8080/v1/models — never launches, loads, or recycles. */
 export async function probeQwenEndpointReadOnly(options = {}) {
   const baseUrl = String(options.baseUrl || QWEN_OBSERVE_BASE_URL).replace(/\/$/, "");
-  const timeoutMs = Number.isFinite(options.timeoutMs) ? Math.max(200, options.timeoutMs) : 2000;
+  const timeoutMs = Number.isFinite(options.timeoutMs) ? Math.max(200, options.timeoutMs) : QWEN_OBSERVATION_TIMEOUT_MS;
   const fetchFn = options.fetchFn || globalThis.fetch;
   const wanted = diagnosticText(options.wanted_profile, 120);
   try {
@@ -297,6 +297,7 @@ export async function probeQwenEndpointReadOnly(options = {}) {
     if (!r || !r.ok) {
       return {
         reachable: false,
+        probe_status: "HTTP_FAILURE",
         health_summary: `HTTP_${r?.status || "ERR"}`,
         profile_status: "unreachable",
         models: [],
@@ -331,6 +332,7 @@ export async function probeQwenEndpointReadOnly(options = {}) {
   } catch (err) {
     return {
       reachable: false,
+      probe_status: "TRANSPORT_FAILURE",
       health_summary: "unreachable",
       profile_status: "unreachable",
       models: [],
@@ -1382,7 +1384,7 @@ export async function handleTickRequest(req, res, deps = {}) {
         collectVps: deps.collectVps,
         collectQuotas: deps.collectQuotas,
         collectChatgptWeb: deps.collectChatgptWeb,
-        sshRunner: deps.sshRunner,
+        sshRunner: deps.sshRunner || createCanonicalVpsSshRunner(),
         nowMs: deps.nowMs,
       });
       send(200, resources);

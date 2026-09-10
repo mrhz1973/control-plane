@@ -25,14 +25,18 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const RESOURCES_SCHEMA = "local-dev-resource-observatory-v1";
 export const RESOURCES_PATH = "/v1/resources";
 export const QWEN_OBSERVE_BASE_URL = "http://127.0.0.1:8080";
+export const QWEN_OBSERVATION_TIMEOUT_MS = 4_000;
 export const VPS_CACHE_TTL_MS = 30_000;
 export const WORKSTATION_FRESH_MS = 15_000;
 export const QUOTA_DISPLAY_FRESH_MS = 300_000;
+export const VPS_SSH_ALIAS = "ionos-n8n-new";
+export const OBSERVABILITY_CONTRACT = "health-separated-from-observation-v1";
 
 /** Observation-only remote command allowlist (no mutation verbs). */
 export const VPS_SAFE_REMOTE_COMMANDS = Object.freeze([
   "uname -a",
   "uptime",
+  "cat /proc/uptime",
   "cat /proc/loadavg",
   "free -b",
   "df -B1 /",
@@ -70,6 +74,14 @@ function collectorMeta(id, label, detail = null) {
     collector_id: id,
     collector_label: label,
     collector_detail: detail,
+  };
+}
+
+function healthMeta(healthState, observationState, reasonCode = null) {
+  return {
+    health_state: healthState,
+    observation_state: observationState,
+    ...(reasonCode ? { reason_code: reasonCode } : {}),
   };
 }
 
@@ -123,6 +135,7 @@ export async function collectWorkstationMetrics(options = {}) {
   return {
     reachable: true,
     state: "AVAILABLE",
+    ...healthMeta("AVAILABLE", "OBSERVED"),
     observed_at,
     freshness: freshnessFromAge(observed_at, nowMs, WORKSTATION_FRESH_MS),
     hostname: boundStr(hostname(), 120),
@@ -161,6 +174,7 @@ export async function collectGpuMetrics(options = {}) {
     const parts = line.split(",").map((p) => p.trim());
     return {
       state: "AVAILABLE",
+      ...healthMeta("AVAILABLE", "OBSERVED"),
       gpu_name: boundStr(parts[0], 120),
       gpu_util_percent: boundNum(parts[1]),
       temperature_c: boundNum(parts[2]),
@@ -172,6 +186,7 @@ export async function collectGpuMetrics(options = {}) {
   } catch (err) {
     return {
       state: err?.code === "ENOENT" ? "UNAVAILABLE" : "UNKNOWN",
+      ...healthMeta("NOT_OBSERVED", "NOT_OBSERVED", err?.code === "ENOENT" ? "GPU_COLLECTOR_NOT_AVAILABLE" : "GPU_OBSERVATION_FAILED"),
       reason_code: err?.code === "ENOENT" ? "NVIDIA_SMI_NOT_FOUND" : "NVIDIA_SMI_FAILED",
       error: boundStr(err?.code || err?.message, 80),
       ...collectorMeta("nvidia_smi", "nvidia-smi"),
@@ -187,7 +202,7 @@ export async function collectQwenResources(options = {}) {
     observation = await probe({
       baseUrl: options.baseUrl || QWEN_OBSERVE_BASE_URL,
       wanted_profile: options.wanted_profile || null,
-      timeoutMs: options.timeoutMs ?? 2000,
+      timeoutMs: options.timeoutMs ?? QWEN_OBSERVATION_TIMEOUT_MS,
       fetchFn: options.fetchFn,
     });
   } catch (err) {
@@ -203,6 +218,12 @@ export async function collectQwenResources(options = {}) {
   return {
     reachable: observation?.reachable === true,
     state: observation?.reachable === true ? "AVAILABLE" : "UNAVAILABLE",
+    ...healthMeta(
+      observation?.reachable === true ? "AVAILABLE" : (observation?.probe_status === "HTTP_FAILURE" ? "REAL_FAILURE" : "NOT_OBSERVED"),
+      observation?.reachable === true ? "OBSERVED" : (observation?.probe_status === "HTTP_FAILURE" ? "OBSERVED" : "NOT_OBSERVED"),
+      observation?.reachable === true ? null : (observation?.probe_status === "HTTP_FAILURE" ? "QWEN_ENDPOINT_UNHEALTHY" : "QWEN_ENDPOINT_NOT_OBSERVED"),
+    ),
+    failure_verified: observation?.probe_status === "HTTP_FAILURE",
     observed_at,
     freshness: observation?.reachable === true ? "fresh" : "stale",
     commercial_quota: "N/A",
@@ -228,12 +249,12 @@ export async function collectQwenResources(options = {}) {
 /** Local GET-only catalog probe (no launch/load). Prefer injected probe in production wiring. */
 async function defaultQwenCatalogProbe(options = {}) {
   const baseUrl = String(options.baseUrl || QWEN_OBSERVE_BASE_URL).replace(/\/$/, "");
-  const timeoutMs = Number.isFinite(options.timeoutMs) ? Math.max(200, options.timeoutMs) : 2000;
+  const timeoutMs = Number.isFinite(options.timeoutMs) ? Math.max(200, options.timeoutMs) : QWEN_OBSERVATION_TIMEOUT_MS;
   const fetchFn = options.fetchFn || globalThis.fetch;
   try {
     const r = await fetchFn(`${baseUrl}/v1/models`, { signal: AbortSignal.timeout(timeoutMs) });
     if (!r || !r.ok) {
-      return { reachable: false, health_summary: `HTTP_${r?.status || "ERR"}`, profile_status: "unreachable", models: [], error: `HTTP_${r?.status || "ERR"}` };
+      return { reachable: false, probe_status: "HTTP_FAILURE", health_summary: `HTTP_${r?.status || "ERR"}`, profile_status: "unreachable", models: [], error: `HTTP_${r?.status || "ERR"}` };
     }
     const body = await r.json();
     const raw = Array.isArray(body?.data) ? body.data : (Array.isArray(body?.models) ? body.models : []);
@@ -262,6 +283,7 @@ async function defaultQwenCatalogProbe(options = {}) {
   } catch (err) {
     return {
       reachable: false,
+      probe_status: "TRANSPORT_FAILURE",
       health_summary: "unreachable",
       profile_status: "unreachable",
       models: [],
@@ -280,6 +302,87 @@ export function assertVpsCommandSafe(command) {
   return { ok: true, command: cmd };
 }
 
+function parseFirstNumber(text) {
+  const match = String(text || "").match(/[-+]?\d+(?:\.\d+)?/);
+  return match ? boundNum(match[0]) : null;
+}
+
+function parseVpsObservation(results, nowMs) {
+  const output = (command) => results.get(command)?.stdout || "";
+  const failedCore = ["uname -a", "cat /proc/uptime", "cat /proc/loadavg", "free -b", "df -B1 /"]
+    .find((command) => results.get(command)?.ok !== true);
+  if (failedCore) {
+    const failure = results.get(failedCore);
+    return {
+      reachable: false,
+      reason_code: "VPS_OBSERVATION_CORE_COMMAND_FAILED",
+      error: boundStr(failure?.error || failedCore, 80),
+      observed_at: new Date(nowMs).toISOString(),
+    };
+  }
+
+  const uptimeSeconds = parseFirstNumber(output("cat /proc/uptime"));
+  const loadParts = output("cat /proc/loadavg").trim().split(/\s+/).slice(0, 3).map(boundNum);
+  const mem = output("free -b").match(/Mem:\s+(\d+)\s+(\d+)\s+(\d+)/i);
+  const diskLine = output("df -B1 /").trim().split(/\r?\n/).find((line) => /^\S+\s+\d+\s+\d+\s+\d+\s+\d+%\s+\/$/.test(line.trim()));
+  const disk = diskLine ? diskLine.trim().split(/\s+/) : [];
+  const docker = output("docker info --format '{{.ServerVersion}}'").trim();
+  const service = (command) => {
+    const value = output(command).trim();
+    return value || (results.get(command)?.ok === true ? "unknown" : "unobserved");
+  };
+  const total = mem ? boundNum(mem[1]) : null;
+  const used = mem ? boundNum(mem[2]) : null;
+  const free = mem ? boundNum(mem[3]) : null;
+  const diskTotal = disk.length ? boundNum(disk[1]) : null;
+  const diskFree = disk.length ? boundNum(disk[3]) : null;
+  return {
+    reachable: true,
+    observed_at: new Date(nowMs).toISOString(),
+    uptime_seconds: uptimeSeconds,
+    load: loadParts.every((value) => value !== null) ? loadParts : null,
+    ram_total_bytes: total,
+    ram_used_bytes: used,
+    ram_free_bytes: free,
+    ram_percent: total && used !== null ? percent(used, total) : null,
+    root_disk_total_bytes: diskTotal,
+    root_disk_free_bytes: diskFree,
+    root_disk_percent: diskTotal && diskFree !== null ? percent(diskTotal - diskFree, diskTotal) : null,
+    docker: docker || service("systemctl is-active docker || true"),
+    n8n: service("systemctl is-active n8n || true"),
+    postgresql: service("systemctl is-active postgresql || systemctl is-active postgresql@* || true"),
+    litellm: "unobserved",
+  };
+}
+
+/** Canonical private SSH transport. Fixed alias, BatchMode, fixed read-only commands only. */
+export function createCanonicalVpsSshRunner(options = {}) {
+  const execFn = options.execFile || execFileAsync;
+  return async ({ host = VPS_SSH_ALIAS, commands = VPS_SAFE_REMOTE_COMMANDS, timeoutMs = 8000, batchMode = true } = {}) => {
+    if (host !== VPS_SSH_ALIAS || batchMode !== true || !Array.isArray(commands) || commands.some((command) => !assertVpsCommandSafe(command).ok)) {
+      return { reachable: false, reason_code: "VPS_SSH_TRANSPORT_ARGUMENTS_REJECTED" };
+    }
+    const nowMs = Date.now();
+    const results = new Map();
+    const perCommandTimeout = Math.max(500, Math.min(2500, Number(timeoutMs) || 2500));
+    for (let i = 0; i < commands.length; i += 3) {
+      await Promise.all(commands.slice(i, i + 3).map(async (command) => {
+        try {
+          const { stdout } = await execFn("ssh", ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", host, command], {
+            timeout: perCommandTimeout,
+            windowsHide: true,
+            maxBuffer: 128 * 1024,
+          });
+          results.set(command, { ok: true, stdout: String(stdout || "").slice(0, 16_384) });
+        } catch (err) {
+          results.set(command, { ok: false, error: boundStr(err?.code || "SSH_COMMAND_FAILED", 80) });
+        }
+      }));
+    }
+    return parseVpsObservation(results, nowMs);
+  };
+}
+
 export async function collectVpsNewResources(options = {}) {
   const nowMs = options.nowMs ?? Date.now();
   const cacheTtl = Number.isFinite(options.cacheTtlMs) ? options.cacheTtlMs : VPS_CACHE_TTL_MS;
@@ -293,8 +396,11 @@ export async function collectVpsNewResources(options = {}) {
       reachable: false,
       state: "UNAVAILABLE",
       reason_code: "VPS_PRIVATE_OBSERVATION_UNAVAILABLE",
+      observation_reason_code: "VPS_PRIVATE_OBSERVATION_NOT_WIRED",
       observed_at: new Date(nowMs).toISOString(),
       freshness: "stale",
+      ...healthMeta("NOT_OBSERVED", "COLLECTOR_NOT_WIRED", "VPS_PRIVATE_OBSERVATION_NOT_WIRED"),
+      reason_code: "VPS_PRIVATE_OBSERVATION_UNAVAILABLE",
       cache_hit: false,
       host_hint: "ionos-n8n-new.tailc01234.ts.net",
       detail: "Nessun trasporto privato di osservazione è configurato nel runtime del dispatcher.",
@@ -332,6 +438,12 @@ export async function collectVpsNewResources(options = {}) {
       reason_code: observed?.reason_code || (observed?.reachable ? null : "VPS_PROBE_FAILED"),
       observed_at: observed?.observed_at || new Date(nowMs).toISOString(),
       freshness: observed?.reachable === true ? "fresh" : "stale",
+      ...healthMeta(
+        observed?.reachable === true ? "AVAILABLE" : "NOT_OBSERVED",
+        observed?.reachable === true ? "OBSERVED" : (observed?.observation_state || "NOT_OBSERVED"),
+        observed?.reachable === true ? null : (observed?.reason_code || "VPS_OBSERVATION_NOT_OBSERVED"),
+      ),
+      ...(observed?.reachable === true ? {} : { reason_code: observed?.reason_code || "VPS_PROBE_FAILED" }),
       cache_hit: false,
       uptime_seconds: boundNum(observed?.uptime_seconds),
       load: observed?.load ?? null,
@@ -359,6 +471,7 @@ export async function collectVpsNewResources(options = {}) {
       error: boundStr(err?.code || err?.message, 80),
       observed_at: new Date(nowMs).toISOString(),
       freshness: "stale",
+      ...healthMeta("NOT_OBSERVED", "NOT_OBSERVED", "VPS_OBSERVATION_NOT_OBSERVED"),
       cache_hit: false,
       ...collectorMeta("vps_private_probe", "dispatcher private read-only remote probe"),
     };
@@ -388,6 +501,11 @@ function poolCard(poolId, pool, consumers, collector) {
     windows: Array.isArray(p?.windows) ? p.windows.slice(0, 8) : null,
     source: boundStr(p?.source, 80),
     observed_at: p?.observed_at || p?.updated_at || null,
+    health_state: "NOT_APPLICABLE",
+    observation_state: freshness === "stale" ? "STALE" : "OBSERVED",
+    quota_observation_state: freshness === "stale" ? "STALE" : "OBSERVED",
+    quota_health_state: "NOT_APPLICABLE",
+    ...(freshness === "stale" ? { reason_code: boundStr(p?.reason_code, 80) || "QUOTA_NOT_OBSERVED" } : {}),
     ...collector,
   };
 }
@@ -485,6 +603,9 @@ export async function collectQuotaObservatory(options = {}) {
     }
     pool.reset_at = live.primary?.reset_at ?? pool.reset_at;
     pool.observed_at = openclaw.observed_at;
+    pool.freshness = "fresh";
+    pool.observation_state = "OBSERVED";
+    pool.quota_observation_state = "OBSERVED";
     if (typeof live.plan === "string" && live.plan) pool.plan = boundStr(live.plan, 40);
     return pool;
   };
@@ -527,6 +648,9 @@ export async function collectQuotaObservatory(options = {}) {
   const cursorManual = loadCursorManualObservation(options);
   const cursor = {
     accounting_mapping: "UNVERIFIED",
+    health_state: "NOT_OBSERVED",
+    observation_state: "UNVERIFIED_ACCOUNTING",
+    reason_code: "CURSOR_ACCOUNTING_UNVERIFIED",
     state: cursorManual ? boundStr(cursorManual.state, 40) || "UNKNOWN" : "UNKNOWN",
     freshness: cursorManual ? freshnessFromAge(cursorManual.observed_at, nowMs, QUOTA_DISPLAY_FRESH_MS) : "stale",
     observed_at: cursorManual?.observed_at || null,
@@ -539,6 +663,9 @@ export async function collectQuotaObservatory(options = {}) {
     capacity: "LOCAL_COMPUTE",
     commercial_quota: "N/A",
     state: "N/A",
+    health_state: "NOT_APPLICABLE",
+    observation_state: "NOT_APPLICABLE",
+    quota_observation_state: "NOT_APPLICABLE",
     note: "Capacità locale — nessuna quota commerciale",
     ...collectorMeta("qwen_local", "local compute (no commercial pool)"),
   };
@@ -547,6 +674,15 @@ export async function collectQuotaObservatory(options = {}) {
     ok: canonical?.ok === true,
     canonical_schema: boundStr(canonical?.schema_version, 80),
     reason_codes: Array.isArray(canonical?.reason_codes) ? canonical.reason_codes.slice(0, 8) : [],
+    codex_capability: {
+      state: "AVAILABLE",
+      health_state: "AVAILABLE",
+      observation_state: "NOT_OBSERVED",
+      reason_code: "CODEX_CAPABILITY_QUALIFIED_QUOTA_NOT_OBSERVED",
+      source: "hermes_codex_dynamic_model_router_qualification",
+      catalog_state: "DYNAMIC_LIVE",
+      quota_observation_state: codex.quota_observation_state,
+    },
     openclaw: openclaw
       ? {
           collector: "openclaw_usage_live",
@@ -615,6 +751,9 @@ export async function collectChatgptWebObservation(options = {}) {
       freshness: freshnessFromAge(o.observed_at || new Date(nowMs).toISOString(), nowMs, QUOTA_DISPLAY_FRESH_MS),
       unlimited: false,
       free: false,
+      health_state: "NOT_OBSERVED",
+      observation_state: "STALE",
+      reason_code: "CHATGPT_WEB_OBSERVATION_NOT_AVAILABLE",
       note: "ChatGPT Web è un dominio di disponibilità separato; non è un pool di quota.",
       ...collectorMeta("hermes_web_observation", "existing Hermes/Web observation if available"),
     };
@@ -629,6 +768,9 @@ export async function collectChatgptWebObservation(options = {}) {
     freshness: "stale",
     unlimited: false,
     free: false,
+    health_state: "NOT_OBSERVED",
+    observation_state: "NOT_OBSERVED",
+    reason_code: "CHATGPT_WEB_OBSERVATION_NOT_AVAILABLE",
     note: "Nessuna osservazione sicura disponibile. Non assumere disponibilità illimitata o gratuita.",
     ...collectorMeta("hermes_web_observation", "existing Hermes/Web observation if available"),
   };
@@ -637,16 +779,19 @@ export async function collectChatgptWebObservation(options = {}) {
 export async function buildResourceObservatory(options = {}) {
   const nowMs = options.nowMs ?? Date.now();
   const observed_at = new Date(nowMs).toISOString();
+  const collectVps = options.collectVps || collectVpsNewResources;
   const [workstation, qwen, vps_new, quotas, chatgpt_web] = await Promise.all([
     (options.collectWorkstation || collectWorkstationMetrics)({ ...options, nowMs }),
     (options.collectQwen || collectQwenResources)({ ...options, nowMs }),
-    (options.collectVps || collectVpsNewResources)({ ...options, nowMs }),
+    collectVps({ ...options, sshRunner: options.sshRunner || createCanonicalVpsSshRunner(), nowMs }),
     (options.collectQuotas || collectQuotaObservatory)({ ...options, nowMs }),
     (options.collectChatgptWeb || collectChatgptWebObservation)({ ...options, nowMs }),
   ]);
 
   return {
     schema_version: RESOURCES_SCHEMA,
+    observability_contract: OBSERVABILITY_CONTRACT,
+    dashboard_red_state_requires_real_failure: true,
     observed_at,
     read_only: true,
     workstation,
