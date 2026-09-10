@@ -63,6 +63,7 @@ export const VPS_SAFE_REMOTE_COMMANDS = Object.freeze([
 const MUTATION_RE = /\b(rm|mv|chmod|chown|tee|dd|kill|reboot|shutdown|apt|yum|dnf|systemctl\s+(start|stop|restart|enable|disable|reload)|docker\s+(run|rm|start|stop|restart|compose|exec)|curl\s+-X\s*(POST|PUT|PATCH|DELETE)|write(?!-out)|truncate)\b/i;
 
 let vpsCache = null;
+let vpsSshProbeInFlight = null;
 
 function boundStr(value, max = 120) {
   if (value === null || value === undefined) return null;
@@ -658,12 +659,19 @@ export async function collectVpsNewResources(options = {}) {
   }
 
   try {
-    const observed = await sshRunner({
+    const probe = vpsSshProbeInFlight || Promise.resolve().then(() => sshRunner({
       host: options.host || "ionos-n8n-new",
       commands: VPS_SAFE_REMOTE_COMMANDS,
       timeoutMs: options.timeoutMs ?? 8000,
       batchMode: true,
-    });
+    }));
+    if (!vpsSshProbeInFlight) vpsSshProbeInFlight = probe;
+    let observed;
+    try {
+      observed = await probe;
+    } finally {
+      if (vpsSshProbeInFlight === probe) vpsSshProbeInFlight = null;
+    }
     const payload = {
       reachable: observed?.reachable === true,
       state: observed?.reachable === true ? "AVAILABLE" : "UNAVAILABLE",
