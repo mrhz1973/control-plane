@@ -1,5 +1,27 @@
 # LAST CURSOR REPORT
 
+## Qwen canonical endpoint 502 recovery V1 — latest
+
+**TASK_REF:** `V4_QWEN_CANONICAL_ENDPOINT_502_RECOVERY_V1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `4cd860e4d6aeae76614ff282c678cff77a10a190`
+**Report:** `reports/architecture/v4_qwen_canonical_endpoint_502_recovery_v1.md`
+
+- Root cause was `CANONICAL_ZOMBIE_ROUTER_ON_8080`: canonical router alive,
+  backend `:18080` dead; existing bounded recovery recycled only that tree.
+- Canonical endpoint remained `http://127.0.0.1:8080`; post-recovery router and
+  backend were healthy, with three consecutive `/v1/models` HTTP 200 probes.
+- Warm reuse returned `READY` with `launch_count=0`; no new recovery mechanism
+  or code change was required.
+- Dashboard resource verification showed Qwen `AVAILABLE/OBSERVED`; no Qwen
+  generation, queue mutation, manual tick, provider/model call, or runtime
+  mutation occurred.
+- `#73` remains OPEN with `ISSUE_73_PHASE_C=PASS`; NEXT is
+  `V4_LOCAL_DEV_HERMES_OPENCODE_OPERATOR_VISIBILITY_V1`.
+
+---
+
 ## Local Dev dashboard VPS card and resource reorder V1 — latest
 
 **TASK_REF:** `V4_LOCAL_DEV_DASHBOARD_VPS_CARD_AND_RESOURCE_REORDER_V1`
