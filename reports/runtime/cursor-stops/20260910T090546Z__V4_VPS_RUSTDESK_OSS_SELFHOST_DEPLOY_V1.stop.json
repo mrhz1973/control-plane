@@ -1,0 +1,75 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_VPS_RUSTDESK_OSS_SELFHOST_DEPLOY_V1",
+  "result_cursor": "STOP",
+  "starting_head": "fc5bee0c8b9912a315899680a9891c977f79d83d",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "PUBLIC_REACHABILITY_VERIFY",
+  "finding": "IONOS_PROVIDER_FIREWALL_MANUAL_ACTION_REQUIRED",
+  "finding_detail": "NEW server-side RustDesk deployment is healthy and listening, but bounded TCP probes from the Windows workstation to 31.70.139.73:21115, :21116, and :21117 all timed out. A simultaneous tcpdump on ionos-n8n-new observed no SYN packets on those ports. Host UFW is inactive and nftables INPUT policy is ACCEPT; Docker published the required listeners. The block is therefore consistent with an upstream/provider-side firewall and cannot be remediated from SSH without unauthorized provider-side access. STOP after preserving server-side evidence; no workaround attempted.",
+  "target": {
+    "host_alias": "ionos-n8n-new",
+    "public_ip": "31.70.139.73",
+    "old_accessed": false
+  },
+  "server_side_deploy": {
+    "stack_path": "/opt/rustdesk-server",
+    "data_path": "/opt/rustdesk-server/data",
+    "compose_project": "rustdesk-server",
+    "image": "rustdesk/rustdesk-server",
+    "image_digest": "sha256:8ecdab65deb7c84652a626380e31d11a8f1fbafd97916d57f95c20628f943c00",
+    "hbbs": "RUNNING",
+    "hbbr": "RUNNING",
+    "restart_policy": "unless-stopped",
+    "public_key": "xs5Np8I4ncigDvCMUWW+g9HJWKHSAECGf7ELa+NPudY=",
+    "private_key_exposed": false,
+    "private_key_mode": "0600"
+  },
+  "listener_verification": {
+    "PORT_21115_TCP": "LISTENING",
+    "PORT_21116_TCP": "LISTENING",
+    "PORT_21116_UDP": "LISTENING",
+    "PORT_21117_TCP": "LISTENING",
+    "WEB_CLIENT_PORTS_EXPOSED": "NO",
+    "PRO_PORT_21114_EXPOSED": "NO",
+    "forbidden_rustdesk_ports_21114_21118_21119": "NONE_LISTENING",
+    "host_firewall": "UFW_INACTIVE; NFT_INPUT_ACCEPT; NO_FIREWALL_RULE_CHANGE"
+  },
+  "resource_verification": {
+    "preflight": "load 0.03/0.16/0.20; memory available 4.4GiB; root 212G available, 9% used",
+    "post_deploy": "load 0.19/0.23/0.21; memory available 4.4GiB; root 212G available, 9% used",
+    "NEW_VPS_HEADROOM": "PASS",
+    "VPS_REBOOTED": "NO"
+  },
+  "existing_stack_regression": {
+    "n8n": "RUNNING; loopback /healthz HTTP 200",
+    "postgresql": "RUNNING/healthy; pg_isready accepting connections",
+    "litellm": "RUNNING; internal /health/liveliness HTTP 200",
+    "EXISTING_STACK_REGRESSION": "PASS"
+  },
+  "final_classification": {
+    "RUSTDESK_SERVER_DEPLOY": "STOP",
+    "NEW_VPS_HEADROOM": "PASS",
+    "HBBS": "RUNNING",
+    "HBBR": "RUNNING",
+    "PORT_21115_TCP": "LISTENING",
+    "PORT_21116_TCP": "LISTENING",
+    "PORT_21116_UDP": "LISTENING",
+    "PORT_21117_TCP": "LISTENING",
+    "WEB_CLIENT_PORTS_EXPOSED": "NO",
+    "PRO_PORT_21114_EXPOSED": "NO",
+    "EXISTING_STACK_REGRESSION": "PASS",
+    "IONOS_PROVIDER_FIREWALL_MANUAL_ACTION_REQUIRED": "YES",
+    "OLD_CHANGED": "NO",
+    "VPS_REBOOTED": "NO",
+    "WINDOWS_REBOOT_REQUIRED": "NO",
+    "SECRET_VALUES_EXPOSED": 0,
+    "OPERATOR_CLIENT_TEST": "PENDING"
+  },
+  "dirty_paths_summary": [
+    "NEW host runtime state: /opt/rustdesk-server (deployed stack retained for provider-firewall remediation)",
+    "Local pre-existing untracked files preserved"
+  ],
+  "next_owner": "operator/IONOS",
+  "next": "Allow TCP 21115, TCP+UDP 21116, and TCP 21117 in the IONOS provider firewall, then rerun bounded external reachability and the RustDesk client test. No VPS or Windows reboot is required."
+}
