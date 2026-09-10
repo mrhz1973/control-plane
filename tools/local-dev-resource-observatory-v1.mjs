@@ -598,19 +598,17 @@ export function createCanonicalVpsSshRunner(options = {}) {
     const nowMs = Date.now();
     const results = new Map();
     const perCommandTimeout = Math.max(500, Math.min(2500, Number(timeoutMs) || 2500));
-    for (let i = 0; i < commands.length; i += 3) {
-      await Promise.all(commands.slice(i, i + 3).map(async (command) => {
-        try {
-          const { stdout } = await execFn("ssh", ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", host, command], {
-            timeout: perCommandTimeout,
-            windowsHide: true,
-            maxBuffer: 128 * 1024,
-          });
-          results.set(command, { ok: true, stdout: String(stdout || "").slice(0, 16_384) });
-        } catch (err) {
-          results.set(command, { ok: false, error: boundStr(err?.code || "SSH_COMMAND_FAILED", 80) });
-        }
-      }));
+    for (const command of commands) {
+      try {
+        const { stdout } = await execFn("ssh", ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", host, command], {
+          timeout: perCommandTimeout,
+          windowsHide: true,
+          maxBuffer: 128 * 1024,
+        });
+        results.set(command, { ok: true, stdout: String(stdout || "").slice(0, 16_384) });
+      } catch (err) {
+        results.set(command, { ok: false, error: boundStr(err?.code || "SSH_COMMAND_FAILED", 80) });
+      }
     }
     return parseVpsObservation(results, nowMs);
   };
