@@ -1,5 +1,33 @@
 # LAST CURSOR REPORT
 
+## Hermes governed Codex CDP and VPS 08/12 qualification V7 — latest
+
+**TASK_REF:** `V4_HERMES_CODEX_GOVERNED_CDP_AND_VPS_08_12_QUALIFICATION_V7`
+**Classification:** `PASS — CODEX_HERMES_GOVERNED_CDP=QUALIFIED · VPS_CODEX_HERMES_GOVERNED_CDP=QUALIFIED_PREFILL_ONLY · VPS_CODEX_08_12_POLICY=SHADOW_PASS · PHASE_D=OPEN`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `3760158cf196aad9f4db564e04ddf4e60b7a79b4`
+**Report:** `reports/architecture/v4_hermes_codex_governed_cdp_and_vps_08_12_qualification_v7.md`
+
+The repo-owned governed Hermes adapter was qualified locally and on the
+isolated NEW VPS with `RAW_BROWSER_CDP_EXPOSED=NO` and
+`GUARDED_COMPOSER_TOOL_EXPOSED=YES`. Hermes v0.21.0 and isolated Codex CLI
+v0.133.0 passed authenticated subscription/app-server checks. The governed
+browser proof passed discovery, exact single-line prefill, independent DOM
+verification, clear, 900-character SHA256 verification, and final clear.
+The authenticated fresh ChatGPT page remained at `USER_TURNS=0`,
+`ASSISTANT_TURNS=0`, `REQUESTS_SENT=0`, `COMPOSER_EMPTY=YES`; no message was
+sent and no production routing occurred.
+
+Europe/Rome shadow policy tests passed at 07:59, 08:00, 11:59, and 12:00,
+plus CET/CEST. `[08:00,12:00)` selects Codex subscription only,
+`GLM_ELIGIBLE=NO`, and unavailable/auth-missing/unqualified/exhausted Codex
+fails closed without silent GLM fallback. Focused tests and registry tests
+passed (`76/76`). `PHASE_D=OPEN`; this is prefill-only qualification, not a
+Phase D PASS. No GLM, OpenAI API/BYOK, raw CDP, Qwen generation, ChatGPT
+send, n8n/VPS/OLD mutation, or credentials were used or persisted.
+
+---
+
 ## Hermes native Codex browser CDP ephemeral exposure V6 — latest
 
 **TASK_REF:** `V4_HERMES_NATIVE_CODEX_BROWSER_CDP_EPHEMERAL_EXPOSURE_V6`
