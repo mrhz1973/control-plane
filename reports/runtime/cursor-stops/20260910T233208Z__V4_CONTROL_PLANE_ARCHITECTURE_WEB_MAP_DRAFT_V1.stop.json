@@ -1,0 +1,25 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_CONTROL_PLANE_ARCHITECTURE_WEB_MAP_DRAFT_V1",
+  "result_cursor": "STOP",
+  "starting_head": "c306e9983838c4a89517d10e0eeba6cf9d07c640",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "RUNTIME_APPLY",
+  "finding": "Local GET /architecture returned HTTP 200, but the required private Tailscale GET returned HTTP 502. Existing Tailscale Serve has no /architecture mapping; its root target 127.0.0.1:18789 refused the bounded local probe. The task hard wall forbids Tailscale mutation, so the required private HTTP 200 cannot be established without operator-authorized external state change.",
+  "target_result": "LOCAL_ARCHITECTURE_HTTP_200; TAILSCALE_ARCHITECTURE_HTTP_502",
+  "regressions_status": "PASS",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "LOCAL_DISPATCHER_ALIGNED; TAILSCALE_SURFACE_NOT_QUALIFIED",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "dirty_paths_summary": [
+    "tools/local-dev-dispatcher-dashboard-v1.html",
+    "tools/serve-local-dev-autonomous-dispatcher-v1.mjs",
+    "tools/local-dev-dispatcher-architecture-map-v1.html",
+    "tests/local-dev-architecture-web-map-draft-v1/"
+  ],
+  "next_owner": "GPT_WEB"
+}
