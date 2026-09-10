@@ -1,5 +1,23 @@
 # LAST CURSOR REPORT
 
+## Local Dev Dispatcher runtime restore V1 — latest
+
+**TASK_REF:** `V4_LOCAL_DEV_DISPATCHER_RUNTIME_RESTORE_V1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `cbaa2b70c1f69c65dd36fcf128566187cbc48936`
+**Report:** `reports/architecture/v4_local_dev_dispatcher_runtime_restore_v1.md`
+
+- The canonical task was present again at discovery, but its listener/process
+  was absent; the reason remains unproven (`TASK_ABSENT_CAUSE_NOT_PROVEN`).
+- The existing task configuration was verified, started unchanged, and
+  loaded the exact current workspace entrypoint on `127.0.0.1:18793`.
+- Read-only GET smoke passed for `/dashboard`, `/v1/status`,
+  `/v1/diagnostics`, and `/v1/resources`; Qwen remained `AVAILABLE`.
+- `/v1/tick` was not invoked; manual ticks, queue mutations, and Qwen
+  generations were zero. Hermes/OpenCode visibility remains unqualified and
+  is the next separate retry task.
+
 ## Qwen canonical endpoint 502 recovery V1 — latest
 
 **TASK_REF:** `V4_QWEN_CANONICAL_ENDPOINT_502_RECOVERY_V1`
