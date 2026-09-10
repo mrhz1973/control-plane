@@ -1,5 +1,31 @@
 # LAST CURSOR REPORT
 
+## Hermes Codex dynamic GPT model router V1 — latest
+
+**TASK_REF:** `V4_HERMES_CODEX_DYNAMIC_GPT_MODEL_ROUTER_V1`
+**Classification:** `PASS — HERMES_CODEX_DYNAMIC_GPT_MODEL_ROUTER=QUALIFIED · PHASE_D=OPEN`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `55ff01b7b37eee4a8d1d48ff67a6bcc55d6706c6`
+**Report:** `reports/architecture/v4_hermes_codex_dynamic_gpt_model_router_v1.md`
+
+The authenticated Codex app-server `model/list` catalog was used as the sole
+dynamic authority on local and isolated NEW VPS environments (5 live IDs on
+each; same common snapshot). Exact model selection through `thread/start` was
+validated for the complete catalog, with a harmless exact marker proven for
+`gpt-5.5`. Subscription runtime rejection of other advertised IDs was
+recorded as `ADVERTISED_NOT_SELECTABLE`; no fallback was used. Reasoning
+efforts are selected only when advertised, and unknown/removed/stale models,
+unsupported effort, catalog outage, and effective mismatch fail closed.
+
+`chatgpt_codex_subscription` remains the single quota pool. Native Codex
+default is preserved when no model is requested; explicit SET_MODEL uses a
+bounded new thread and retires only the current qualification session. No
+OpenAI API/BYOK/GLM, ChatGPT Web send, browser mutation, production routing,
+n8n/VPS/OLD mutation, or credential material was used or persisted. V7 and
+Phase D remain unchanged (`PHASE_D=OPEN`).
+
+---
+
 ## Hermes governed Codex CDP and VPS 08/12 qualification V7 — latest
 
 **TASK_REF:** `V4_HERMES_CODEX_GOVERNED_CDP_AND_VPS_08_12_QUALIFICATION_V7`

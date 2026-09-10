@@ -128,6 +128,17 @@ launch commands.
 
 ## Latest bounded capability qualification
 
+`V4_HERMES_CODEX_DYNAMIC_GPT_MODEL_ROUTER_V1` = **PASS** ·
+`HERMES_CODEX_DYNAMIC_GPT_MODEL_ROUTER=QUALIFIED` ·
+`CODEX_MODEL_CATALOG=DYNAMIC_LIVE` · `EXACT_MODEL_SELECTION=QUALIFIED` ·
+`NO_SILENT_MODEL_FALLBACK=YES` · `VPS_DYNAMIC_MODEL_ROUTER=QUALIFIED` ·
+`PRODUCTION_ROUTING_ENABLED=NO` · `PHASE_D=OPEN` · report:
+`reports/architecture/v4_hermes_codex_dynamic_gpt_model_router_v1.md`.
+The Codex subscription catalog is live and refreshable; account-level runtime
+rejections remain fail-closed as `ADVERTISED_NOT_SELECTABLE`. V7 governed CDP
+and prefill-only invariants are unchanged. `NEXT` remains
+`VPS_CODEX_08_12_PROMOTION_GATE_AND_PHASE_D_CHAT_N`.
+
 `V4_HERMES_CODEX_GOVERNED_CDP_AND_VPS_08_12_QUALIFICATION_V7` = **PASS** ·
 `CODEX_HERMES_GOVERNED_CDP=QUALIFIED` ·
 `VPS_CODEX_HERMES_GOVERNED_CDP=QUALIFIED_PREFILL_ONLY` ·
