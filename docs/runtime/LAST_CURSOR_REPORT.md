@@ -1,5 +1,32 @@
 # LAST CURSOR REPORT
 
+## Local Dev quota reset live-source qualification V1 — latest
+
+**TASK_REF:** `V4_LOCAL_DEV_QUOTA_RESET_LIVE_SOURCE_QUALIFICATION_V1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-10
+**BASE_HEAD:** `ec6d3853e79167b27fe2bc1c77854f172e69c496`
+**Report:** `reports/architecture/v4_local_dev_quota_reset_live_source_qualification_v1.md`
+
+- The fixed read-only `openclaw status --usage --json` observation ended with
+  `OPENCLAW_USAGE_TIMEOUT`; no live quota payload or reset value was
+  materialized. Codex 5h/weekly and GLM 5h/weekly are therefore
+  `NOT_PROVIDED_BY_SOURCE`, with no invented values.
+- Existing OpenClaw, offline Codex app-server, canonical observatory, and
+  dashboard contracts preserve reset fields when the source provides them;
+  no collector/translator/composer drop was found and no code fix was needed.
+- GLM mapping remains `Tokens (5h)` → rolling and `Tokens (Limit)` → weekly;
+  Monthly remains auxiliary MCP only. Cursor has no safe live plan-reset
+  source, so `CURSOR_PLAN_RESET_SOURCE=MANUAL_REQUIRED`.
+- Exact dispatcher task identity was checked and bounded-recycled once;
+  local and private Tailscale dashboard/status/diagnostics/resources GETs all
+  returned 200 on the same dashboard payload revision.
+- `MODEL_INFERENCE_CALLS=0`, `QUOTA_RESET_VALUES_INVENTED=NO`,
+  `MANUAL_TICKS=0`, and no queue/receipt/provider/browser/Hermes/Qwen/GLM/
+  Codex/Cursor execution occurred.
+- `#73` remains OPEN, `ISSUE_73_PHASE_C=PASS`, `PHASE_D=OPEN`; NEXT is
+  `HUMAN_GATE_CURSOR_PLAN_RESET_DATE`.
+
 ## Local Dev dashboard quota reset times V1 — latest
 
 **TASK_REF:** `V4_LOCAL_DEV_DASHBOARD_QUOTA_RESET_TIMES_V1`
