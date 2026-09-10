@@ -32,6 +32,12 @@ const unavailableVps = buildHermesNovncVpsObservation({
   listener_bindings: { "9222": ["LOOPBACK"], "5900": ["LOOPBACK"], "6080": ["LOOPBACK"] },
 });
 assert.equal(unavailableVps.novnc_vps_state, "UNAVAILABLE");
+const endpointObservedVps = buildHermesNovncVpsObservation({
+  hermes_service_states: { chromium: "active", novnc: null },
+  http_status: "200",
+  listener_bindings: { "9222": ["LOOPBACK"], "5900": ["LOOPBACK"], "6080": ["LOOPBACK"] },
+});
+assert.equal(endpointObservedVps.novnc_vps_state, "AVAILABLE", "HTTP 200 is sufficient availability evidence when the optional service read is not observed");
 
 const connected = await collectHermesNovncTunnel({
   nowMs: Date.parse("2026-09-11T00:00:00.000Z"),

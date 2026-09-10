@@ -519,9 +519,10 @@ export function buildHermesNovncVpsObservation({ hermes_service_states = {}, htt
   const publicExposure = publicExposureFromBindings(listener_bindings);
   const novncService = hermes_service_states.novnc;
   const novncState = normalizedServiceState(novncService);
-  const vpsState = novncState === "active" && status === 200
+  const novncExplicitlyDown = ["inactive", "failed", "deactivating"].includes(novncState);
+  const vpsState = status === 200 && !novncExplicitlyDown
     ? "AVAILABLE"
-    : (novncState === "inactive" || (status !== null && status !== 200) ? "UNAVAILABLE" : "NOT_OBSERVED");
+    : (novncExplicitlyDown || (status !== null && status !== 200) ? "UNAVAILABLE" : "NOT_OBSERVED");
   return {
     chrome_state: stateFromService(hermes_service_states.chromium),
     novnc_vps_state: vpsState,
