@@ -1,0 +1,31 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_TAILSCALE_ARCHITECTURE_PRIVATE_ROUTE_REMEDIATION_V1",
+  "result_cursor": "STOP",
+  "starting_head": "7e8e56151531e4d4c429ba3fd067a5ced531a1ed",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "PRECHECK",
+  "finding": "The expected architecture STOP work is present, but the worktree also contains unrelated or ambiguous dirty/untracked paths including .cursor, queue and receipt artifacts, helper scripts, all_files.txt, search_results.txt, and tools/__pycache__. The task requires an immediate STOP when dirty work is not deterministically limited to the four paths declared by the previous STOP evidence. No Tailscale snapshot or mutation was performed.",
+  "target_result": "NOT_RUN",
+  "regressions_status": "NOT_RUN",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "NOT_RUN",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "dirty_paths_summary": [
+    "expected: tools/local-dev-dispatcher-dashboard-v1.html",
+    "expected: tools/serve-local-dev-autonomous-dispatcher-v1.mjs",
+    "expected: tools/local-dev-dispatcher-architecture-map-v1.html",
+    "expected: tests/local-dev-architecture-web-map-draft-v1/",
+    "ambiguous: .cursor/",
+    "ambiguous: reports/runtime/dev-queue/",
+    "ambiguous: tools/*.sh",
+    "ambiguous: tools/__pycache__/",
+    "ambiguous: all_files.txt",
+    "ambiguous: search_results.txt"
+  ],
+  "next_owner": "GPT_WEB"
+}
