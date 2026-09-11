@@ -1,5 +1,25 @@
 # LAST CURSOR REPORT
 
+## Qwen Hermes controller profile tool-emission qualification V1 — latest
+
+**TASK_REF:** `V4_QWEN_HERMES_CONTROLLER_PROFILE_TOOL_EMISSION_QUALIFICATION_V1`
+**Classification:** `PASS — CONTROLLER_TOOL_EMISSION_DIAGNOSIS_COMPLETE=YES · PHASE_D=OPEN`
+**Date (UTC):** 2026-09-11
+**BASE_HEAD:** `78c1c9d39ed01776bfa0086c53ee5582adba5aa7`
+**Report:** `reports/architecture/v4_qwen_hermes_controller_profile_tool_emission_qualification_v1.md`
+
+- The failed Hermes one-shot used the manual OpenCode 64K profile, which is not
+  Control Plane eligible. Its effective browser toolset contained 12 schemas;
+  no tool call or browser action was observed.
+- The canonical `qwen38-opus-q3-agent-24k` profile is Control Plane eligible and
+  naturally emitted one structured tool call with unforced automatic selection.
+  The returned no-op call was not dispatched.
+- `CHATGPT_WEB_SENDS=0`, `GLM_CALLS=0`, `CODEX_CALLS=0`,
+  `OPENAI_API_CALLS=0`, and `PRODUCTION_DISPATCH=0`.
+- `ISSUE_73_PHASE_C=PASS` and `PHASE_D=OPEN` remain unchanged; no routing,
+  Hermes configuration, browser, or production promotion changed.
+- `NEXT=V4_HERMES_CONTROLLER_AGENT24K_NATIVE_BROWSER_SEND_QUALIFICATION_V1`.
+
 ## Ollama Desktop multi-model lane — Human Gate resolution V1 — latest
 
 **TASK_REF:** `V4_OLLAMA_DESKTOP_MULTI_MODEL_LANE_HUMAN_GATE_DEFER_V1`
