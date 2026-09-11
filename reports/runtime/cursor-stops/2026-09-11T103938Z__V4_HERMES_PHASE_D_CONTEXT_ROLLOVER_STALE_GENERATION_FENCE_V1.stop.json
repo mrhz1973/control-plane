@@ -1,0 +1,62 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1",
+  "result_cursor": "STOP",
+  "starting_head": "65a3163ac86aea602f79b88e0bfa141706bdba6d",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "RUNTIME_PREFLIGHT",
+  "finding": "Fail-closed runtime preflight: Qwen catalog endpoint responded, but no loopback CDP listener was available on 127.0.0.1:9222 and the configured private Hermes browser tunnel was not active. The authenticated ChatGPT Web profile, fresh-chat invariants, Hermes attach capability, and DOM send-confirmation fence could not be verified. No browser interaction, ChatGPT Web send, Qwen generation, provider call, candidate execution, production dispatch, tick, queue mutation, or runtime mutation occurred.",
+  "target_result": "STOP:PHASE_D_RUNTIME_UNAVAILABLE",
+  "regressions_status": "NOT_RUN",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "NOT_RUN",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "chatgpt_web_sends": 0,
+  "dirty_paths_summary": [
+    "reports/runtime/cursor-stops/2026-09-11T103938Z__V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1.stop.json"
+  ],
+  "next_owner": "GPT_WEB",
+  "result_envelope": {
+    "schema_version": "hermes-phase-d-rollover-stop-v1",
+    "status": "STOP",
+    "classification": "STOP:PHASE_D_RUNTIME_UNAVAILABLE",
+    "actor": "cursor-executor-v1",
+    "base_head": "65a3163ac86aea602f79b88e0bfa141706bdba6d",
+    "final_head": null,
+    "tests": [],
+    "changed_files": [
+      "reports/runtime/cursor-stops/2026-09-11T103938Z__V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1.stop.json"
+    ],
+    "chatgpt_web_sends": 0,
+    "qwen_generations": 0,
+    "reason_codes": [
+      "CDP_LOOPBACK_UNAVAILABLE",
+      "HERMES_PRIVATE_TUNNEL_INACTIVE",
+      "PHASE_D_REQUEST_NOT_SENT"
+    ]
+  },
+  "guard_accounting": {
+    "state": "stopped_before_live_proof",
+    "generation_requests_seen": 0,
+    "upstream_generation_requests": 0,
+    "blocked_generation_requests": 0,
+    "informational_requests_forwarded": 0,
+    "rejected_requests": 0,
+    "secret_bearing_requests_rejected": 0
+  },
+  "subagent_used": false,
+  "failure_diagnostics": {
+    "qwen_catalog_readiness": "PASS",
+    "cdp_127_0_0_1_9222": "UNAVAILABLE",
+    "hermes_browser_tunnel": "INACTIVE",
+    "chatgpt_web_auth_profile": "NOT_VERIFIED",
+    "fresh_chat_invariants": "NOT_VERIFIED"
+  },
+  "boundary_observed": "The read-only local dashboard reports Chrome Hermes and the private VPS surface as available but the noVNC tunnel as inactive; local port probes found no listener on 16080, 9222, 5900, or 6080.",
+  "next_bounded_action": "A human/operator must restore the already-governed private Hermes browser attach path and its loopback-only CDP exposure, then resume the same task from the unchanged base head. Do not infer authentication or send confirmation from dashboard availability alone.",
+  "note_on_dirty_tree": "Only this immutable STOP artifact was added; CURRENT_FRONTIER, LAST_CURSOR_REPORT, runtime code, tests, validators, queue, receipts, browser state, VPS, and n8n were not modified."
+}
