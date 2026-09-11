@@ -1,5 +1,31 @@
 # LAST CURSOR REPORT
 
+## Tailscale private architecture route remediation V1 — latest
+
+**TASK_REF:** `V4_TAILSCALE_ARCHITECTURE_PRIVATE_ROUTE_REMEDIATION_V1_RETRY1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-11
+**BASE_HEAD:** `bce647989c243515a9b23f80ff38ab397db94ff8`
+**Report:** `reports/architecture/v4_tailscale_architecture_private_route_remediation_v1_retry1.md`
+
+- Added only the private Serve path `/architecture` →
+  `http://127.0.0.1:18793/architecture` on `asusdesktop` using the
+  path-specific `tailscale serve --set-path` command.
+- PRE/POST Serve comparison is exact: existing handlers are preserved and the
+  only delta is `/architecture`; HTTPS remains tailnet-only and Funnel is NO.
+- Local and private `/architecture` returned HTTP 200 with the same SHA-256;
+  private `/dashboard`, `/v1/status`, `/v1/diagnostics`, and `/v1/resources`
+  also returned 200.
+- Dispatcher remained loopback-only. The previous architecture implementation
+  and focused test work were fingerprinted identically before/after and were
+  not modified or included in this remediation commit.
+- `TAILSCALE_ARCHITECTURE_PRIVATE_ROUTE=PASS`,
+  `TAILSCALE_ARCHITECTURE_SURFACE=LIVE`,
+  `EXISTING_TAILSCALE_ROUTES_PRESERVED=YES`,
+  `ARCHITECTURE_STOP_WORK_PRESERVED=YES`.
+- `MANUAL_TICKS=0`, `QUEUE_MUTATIONS=0`, `MODEL_INFERENCE_CALLS=0`.
+  NEXT is `V4_CONTROL_PLANE_ARCHITECTURE_WEB_MAP_DRAFT_V1_RETRY1`.
+
 ## Hermes private noVNC operator link V1 — latest
 
 **TASK_REF:** `V4_HERMES_PRIVATE_NOVNC_OPERATOR_LINK_V1`
