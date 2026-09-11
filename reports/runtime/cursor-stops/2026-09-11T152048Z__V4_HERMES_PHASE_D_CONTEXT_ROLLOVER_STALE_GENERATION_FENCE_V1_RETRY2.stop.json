@@ -1,0 +1,71 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1_RETRY2",
+  "result_cursor": "STOP",
+  "starting_head": "6fb7db0f851f1475f860eea2cea1e03e9245ae23",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "STATIC_PATH_FORENSICS",
+  "finding": "The required historical V5 send mechanism cannot be reconstructed exactly from canonical repository evidence. The V5 STOP artifact records that a real authenticated request used QWEN_LOCAL -> HERMES -> CHATGPT_WEB, but it persists no exact harness, Hermes invocation, browser capability, target-selection method, or submission ownership. The Phase C checkpoint repeats that bounded statement without those missing details. The later native Hermes browser_cdp evidence proves only Codex app-server -> Hermes MCP -> browser_cdp prefill/clear and explicitly records no Enter or Send. RETRY1 used the Hermes CLI oneshot browser-tool path, which is not proven equivalent to the V5 path and produced no confirmed user turn. No correction can be applied without guessing or broadening the browser capability.",
+  "target_result": "STOP:V5_SEND_MECHANISM_NOT_REPRODUCIBLE",
+  "root_cause": "HISTORICAL_V5_SEND_PATH_NOT_REPRODUCIBLE",
+  "v5_send_mechanism": "UNPROVEN_FROM_CANONICAL_EVIDENCE",
+  "retry1_send_mechanism": "HERMES_CLI_ONESHOT_BROWSER_TOOL_NOT_PROVEN_V5_EQUIVALENT",
+  "correction_applied": false,
+  "prefill_only_adapter_unchanged": true,
+  "raw_cdp_controller_exposure": false,
+  "regressions_status": "NOT_RUN",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "NOT_RUN",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "chatgpt_web_sends": 0,
+  "dirty_paths_summary": [
+    "reports/runtime/cursor-stops/2026-09-11T152048Z__V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1_RETRY2.stop.json"
+  ],
+  "next_owner": "GPT_WEB",
+  "result_envelope": {
+    "schema_version": "hermes-phase-d-rollover-stop-v1",
+    "status": "STOP",
+    "classification": "STOP:V5_SEND_MECHANISM_NOT_REPRODUCIBLE",
+    "actor": "cursor-executor-v1",
+    "base_head": "6fb7db0f851f1475f860eea2cea1e03e9245ae23",
+    "final_head": null,
+    "tests": [],
+    "changed_files": [
+      "reports/runtime/cursor-stops/2026-09-11T152048Z__V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1_RETRY2.stop.json"
+    ],
+    "chatgpt_web_sends": 0,
+    "qwen_generations": 0,
+    "reason_codes": [
+      "V5_HARNESS_NOT_PERSISTED",
+      "V5_SEND_CAPABILITY_NOT_IDENTIFIED",
+      "V5_SUBMISSION_OWNERSHIP_NOT_IDENTIFIED",
+      "NO_GUESSING_ALLOWED",
+      "FINAL_CORRECTIVE_LOOP_EXHAUSTED"
+    ]
+  },
+  "guard_accounting": {
+    "state": "stopped_before_model_generation",
+    "generation_requests_seen": 0,
+    "upstream_generation_requests": 0,
+    "blocked_generation_requests": 0,
+    "informational_requests_forwarded": 0,
+    "rejected_requests": 0,
+    "secret_bearing_requests_rejected": 0
+  },
+  "subagent_used": false,
+  "failure_diagnostics": {
+    "repository_preflight": "PASS",
+    "v5_stop_artifact": "PRESENT_BUT_MECHANISM_UNSPECIFIED",
+    "phase_c_checkpoint": "PRESENT_BUT_MECHANISM_UNSPECIFIED",
+    "native_browser_cdp_evidence": "PREFILL_CLEAR_ONLY_NO_SEND",
+    "retry1_delta": "GENERIC_HERMES_BROWSER_TOOL_NO_DOM_SEND_CONFIRMATION",
+    "required_new_qualification": "RECONSTRUCT_AND_QUALIFY_HISTORICAL_AUTHENTICATED_HERMES_SEND_PATH"
+  },
+  "boundary_observed": "Static evidence is sufficient to preserve Phase C and explain the RETRY1 failure, but insufficient to select or reproduce a real authenticated ChatGPT Web submission mechanism without guessing.",
+  "next_bounded_action": "No RETRY3. Create a separately scoped qualification task to reconstruct and qualify the historical V5 authenticated Hermes send path, including explicit submission ownership and independent DOM confirmation. Do not extend the prefill-only adapter, expose raw CDP, or mutate production runtime.",
+  "note_on_dirty_tree": "Only this immutable STOP artifact was added; CURRENT_FRONTIER, LAST_CURSOR_REPORT, Phase D reports/delta, harness/tests, runtime, queue, receipts, browser content, VPS, and n8n were not modified."
+}
