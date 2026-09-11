@@ -82,7 +82,9 @@ await check("static page has bounded interaction and responsive layout", () => {
   assert.match(html, /@media\(max-width:1180px\)/);
   assert.match(html, /@media\(max-width:760px\)/);
   assert.match(html, /grid-template-columns:1fr/);
-  assert.doesNotMatch(html, /<(?:script|link|img|iframe)\b/i);
+  assert.equal((html.match(/<script\b/g) || []).length, 1);
+  assert.doesNotMatch(html, /<script\b[^>]+src=/i);
+  assert.doesNotMatch(html, /<(?:link|img|iframe)\b/i);
 });
 
 await check("no public browser or sensitive-state surface", () => {

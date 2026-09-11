@@ -1,5 +1,33 @@
 # LAST CURSOR REPORT
 
+## Control Plane interactive infographic V1 — latest
+
+**TASK_REF:** `V4_CONTROL_PLANE_ARCHITECTURE_INTERACTIVE_INFOGRAPHIC_V1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-11
+**BASE_HEAD:** `65d451ccdebb3a4efadd7d928dacd52c1aaae248`
+**Report:** `reports/architecture/v4_control_plane_architecture_interactive_infographic_v1.md`
+
+- The existing `/architecture` “CITTÀ CONTROL PLANE” map now has a vanilla
+  component inspector, role filters, route explorer, bounded current-state
+  overlay, keyboard-addressable task flow, and reset view. `HERMES_PRESENT=YES`
+  and `HERMES_ROLE=ORCHESTRATORE_BRIDGE` remain explicit.
+- `AVAILABLE_ACTIVE_SEMANTICS=PRESERVED`, `ARCHITECTURE_READ_ONLY=YES`, and
+  `CHAIN_OF_THOUGHT_DISPLAY=NO`. The overlay uses only existing GET
+  `/v1/status`, `/v1/diagnostics`, and `/v1/resources` endpoints and renders
+  missing evidence as `NON OSSERVATO`.
+- Focused suites passed: interactive infographic `6/6`, preserved architecture
+  map `8/8`, dispatcher service `69/69`, and registry-v2 `76/76`.
+- The exact canonical `ControlPlane-V4-LocalDevDispatcher` task was
+  identity-checked and bounded-recycled; the resulting process is PID `36080`
+  on loopback `127.0.0.1:18793`. Local and private Tailscale GETs for
+  `/dashboard`, `/architecture`, `/v1/status`, `/v1/diagnostics`, and
+  `/v1/resources` returned 200; local/private architecture hashes matched.
+- `MANUAL_TICKS=0`, `QUEUE_MUTATIONS=0`, `MODEL_INFERENCE_CALLS=0`,
+  `CANDIDATE_EXECUTED=NO`, and `PRODUCTION_DISPATCH=NO`. No browser, ChatGPT
+  Web, Qwen, GLM, VPS, n8n, Tailscale, noVNC, or production mutation occurred.
+- `NEXT=V4_HERMES_CONTROLLER_OVERHEAD_DIRECT_VS_WEB_BENCHMARK_V1`.
+
 ## Control Plane architecture web map draft V1 — Retry 2 latest
 
 **TASK_REF:** `V4_CONTROL_PLANE_ARCHITECTURE_WEB_MAP_DRAFT_V1_RETRY2`
