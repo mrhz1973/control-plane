@@ -1,0 +1,45 @@
+# V4_HERMES_CONTROLLER_OVERHEAD_DIRECT_VS_WEB_BENCHMARK_V1
+
+RESULT=STOP
+TASK_REF=V4_HERMES_CONTROLLER_OVERHEAD_DIRECT_VS_WEB_BENCHMARK_V1
+BASE_HEAD=93b28ff2c195333ae874ad293c8acf3717819775
+MODEL_ID=gpt-5.5
+CASES=3
+CODEX_INFERENCE_TURNS=2
+DIRECT_ARM=STOP
+HERMES_CONTROLLER_ARM=STOP
+
+This is a non-production, explicit opt-in benchmark. It measures only the
+Codex controller arm and the governed Hermes PREFILL_ONLY controller arm.
+No ChatGPT Web answer was requested or generated.
+
+## Sanitized run evidence
+
+| CASE | DIRECT input/output/total | HERMES_CONTROLLER input/output/total | RATIO % | DIRECT elapsed | CONTROLLER elapsed | STATUS |
+|---|---:|---:|---:|---:|---:|---|
+| CASE_A | 19117/34/19151 | 21412/10/21422 | NOT_COMPUTABLE | 11442 | 7864 | PASS/FAIL |
+| CASE_B | NOT_COMPUTABLE | NOT_COMPUTABLE | NOT_COMPUTABLE | NOT_COMPUTABLE | NOT_COMPUTABLE | NOT_RUN/NOT_RUN |
+| CASE_C | NOT_COMPUTABLE | NOT_COMPUTABLE | NOT_COMPUTABLE | NOT_COMPUTABLE | NOT_COMPUTABLE | NOT_RUN/NOT_RUN |
+
+MEAN_RATIO=NOT_COMPUTABLE
+MEDIAN_RATIO=NOT_COMPUTABLE
+INTERPRETATION_HEURISTIC=NOT_COMPUTABLE
+END_TO_END_WEB_SAVINGS=NOT_PROVEN
+
+HERMES_PREFILL_ONLY=YES
+CHATGPT_WEB_SENDS=0
+VPS_REQUESTS_SENT=0
+PRODUCTION_ROUTING_ENABLED=NO
+PHASE_D=OPEN
+GLM_CALLS=0
+QWEN_CALLS=0
+
+The governed adapter exposes composer evidence only; user/assistant turn
+counts are not exposed by that capability. The no-send invariant therefore
+records CHATGPT_WEB_SENDS=0 and preserves PREFILL_ONLY without claiming a
+Phase D qualification or end-to-end Web savings.
+
+No prompt body, model output, chain-of-thought, cookie, token, credential,
+session material, browser storage, or raw tool output is persisted here.
+
+STOP_REASON=CASE_A/HERMES_CONTROLLER: NO_GOVERNED_HERMES_CALLS,TARGET_NOT_DISCOVERED,COMPOSER_STATE_NOT_READ,PREFILL_NOT_OBSERVED,COMPOSER_NOT_CLEARED,PREFILL_NOT_CONFIRMED,FINAL_CLEAR_NOT_CONFIRMED,EMPTY_COMPOSER_NOT_OBSERVED

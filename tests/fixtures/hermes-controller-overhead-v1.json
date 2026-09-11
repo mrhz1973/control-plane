@@ -1,0 +1,20 @@
+{
+  "schema_version": "hermes-controller-overhead-fixture-v1",
+  "cases": [
+    {
+      "case_id": "CASE_A",
+      "class": "short_structured_reasoning",
+      "prompt": "Synthetic CASE_A: Given three labeled boxes red, blue, and green where exactly one contains a key, the red box is not the key box, and the key is either in blue or green, return one compact JSON object with the possible boxes and one sentence explaining why. Use no outside facts."
+    },
+    {
+      "case_id": "CASE_B",
+      "class": "medium_architecture_review_reasoning",
+      "prompt": "Synthetic CASE_B: Review this toy architecture: a scheduler writes jobs to a queue, a worker reads jobs, and a receipt ledger records outcomes. Identify two concrete failure modes and one fail-closed control for each, then return exactly three numbered lines with bounded wording. This is a fictional system with no production meaning."
+    },
+    {
+      "case_id": "CASE_C",
+      "class": "medium_bounded_execution_packet_reasoning",
+      "prompt": "Synthetic CASE_C: Design a bounded execution packet for a fictional read-only task. Return exactly the fields scope, approval, mutation, and stop; set mutation to none, approval to required, and stop to any scope or auth mismatch, with each value under twelve words."
+    }
+  ]
+}
