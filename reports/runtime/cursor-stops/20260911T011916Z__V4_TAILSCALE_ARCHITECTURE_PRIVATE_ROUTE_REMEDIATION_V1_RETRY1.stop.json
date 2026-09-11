@@ -1,0 +1,22 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_TAILSCALE_ARCHITECTURE_PRIVATE_ROUTE_REMEDIATION_V1_RETRY1",
+  "result_cursor": "STOP",
+  "starting_head": "bce647989c243515a9b23f80ff38ab397db94ff8",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "PRECHECK",
+  "finding": "REMOTE_BASE_MISMATCH: the prompt requires origin/main bce647989c243515a9b23f80ff38ab397db94ff8, but after git fetch origin/main is ff507adf6d36b904642f02567ff106d47a7e3cc4. Branch main and local HEAD match the observed remote. No worktree audit, Tailscale snapshot, or Tailscale mutation was performed.",
+  "target_result": "NOT_RUN",
+  "regressions_status": "NOT_RUN",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "NOT_RUN",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "dirty_paths_summary": [
+    "NOT_AUDITED_AFTER_REMOTE_BASE_MISMATCH"
+  ],
+  "next_owner": "GPT_WEB"
+}
