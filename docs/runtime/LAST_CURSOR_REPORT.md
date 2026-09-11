@@ -1,5 +1,34 @@
 # LAST CURSOR REPORT
 
+## Ollama / ChatGPT Desktop multi-model lane audit V1 — latest
+
+**TASK_REF:** `V4_OLLAMA_CHATGPT_DESKTOP_MULTI_MODEL_LANE_AUDIT_V1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-11
+**BASE_HEAD:** `1fe1f1369b89f962a22a5a3eb554b7ebef80528f`
+**Report:** `reports/architecture/v4_ollama_chatgpt_desktop_multi_model_lane_audit_v1.md`
+
+- Analysis-only audit of the official Ollama v0.34 ChatGPT Desktop/Codex
+  integration; no implementation, configuration, login, browser automation,
+  provider call, or model inference occurred.
+- Feature-specific official evidence supports macOS and Windows, with Ollama
+  models routed through an OpenAI-compatible loopback surface. The local
+  workstation only has Ollama `0.33.3`, and no upgrade or model operation was
+  performed.
+- Qwen canonical remains `llama-server` behind `qwen_runtime_router.py` at
+  `http://127.0.0.1:8080`; `QWEN_OLLAMA_DEPENDENCY=NO`.
+- GLM through Ollama is a separate candidate surface; existing
+  `glm_coding_plan` reuse is `NOT_PROVEN`. Ollama-provided models are not
+  proven to consume `chatgpt_codex_subscription`.
+- Native and Ollama catalog entries can coexist at the official Desktop
+  implementation boundary, but selected-model tool inheritance, receipts,
+  quota observation, unattended execution, and subscription-pool reuse are
+  not Control Plane-qualified.
+- `HERMES_ARCHITECTURE_CHANGED=NO`, `CHATGPT_WEB_ROUTE_CHANGED=NO`,
+  `IMPLEMENTATION_PERFORMED=NO`, and `MODEL_INFERENCE_CALLS=0`.
+- `#73` remains OPEN, `ISSUE_73_PHASE_C=PASS`, and `PHASE_D=OPEN`.
+- `NEXT=HUMAN_GATE_OLLAMA_DESKTOP_MULTI_MODEL_LANE_DECISION`.
+
 ## Control Plane interactive infographic V1 — latest
 
 **TASK_REF:** `V4_CONTROL_PLANE_ARCHITECTURE_INTERACTIVE_INFOGRAPHIC_V1`
