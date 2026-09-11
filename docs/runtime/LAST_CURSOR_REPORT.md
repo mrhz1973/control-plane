@@ -1,6 +1,44 @@
 # LAST CURSOR REPORT
 
-## Qwen Hermes controller profile tool-emission qualification V1 — latest
+## Hermes multi-turn allowlist chain send V1 — latest
+
+**TASK_REF:** `V4_HERMES_MULTI_TURN_ALLOWLIST_CHAIN_SEND_V1`
+**Classification:** `PASS — HERMES_AGENT24K_NATIVE_BROWSER_SEND=QUALIFIED · CHATGPT_WEB_SENDS=1 · PHASE_D=OPEN`
+**Date (UTC):** 2026-09-11
+**BASE_HEAD:** `8a730bde03075061eeb7bbff4503da951d8e83dd`
+**Report:** `reports/architecture/v4_hermes_multi_turn_allowlist_chain_send_v1.md`
+
+- Control Plane per-invocation wrapper (dual barrier) qualified: exactly 4
+  model-visible Hermes schemas (`browser_navigate`, `browser_snapshot`,
+  `browser_type`, `browser_press`); exact-name execution allowlist;
+  `browser_cdp`/`browser_console`/`browser_exec` never model-visible, never
+  dispatchable, never executed; `RAW_CDP_CONTROLLER_EXPOSURE=NO`.
+- Multi-turn controller chain PASS with wrapper-owned state machine:
+  GEN1 `browser_snapshot` → GEN2 `browser_type` (exact composer ref + exact
+  payload identity) → GEN3 `browser_press` Enter; no fourth generation;
+  controller history preserved across generations with exact `tool_call_id`
+  association and bounded sanitized tool results only.
+- Independent read-only DOM verifier confirmed the new user turn containing
+  `task_ref`/`RUN_ID`/`NONCE`/`base_head`: `REAL_USER_TURN_DOM_CONFIRMED=PASS`,
+  `CHATGPT_WEB_SENDS=1` (single harmless shadow payload,
+  `production_dispatch=false`). No response wait.
+- `HERMES_GLOBAL_CONFIG_UNCHANGED=YES` (hash before/after),
+  `HERMES_INSTALL_UNCHANGED=YES`, `PREFILL_ONLY_ADAPTER_UNCHANGED=YES`.
+- Focused suite 73/73 (37 inherited + 36 multi-turn state-machine checks);
+  regressions PASS (`hermes-governed-cdp-adapter-v1`,
+  `qwen-hermes-controller-profile-tool-emission-v1`, `registry-v2` 76/76,
+  `git diff --check` clean).
+- `OFFLINE_QWEN_GENERATIONS=0`; `QWEN_GENERATIONS_LIVE=3` for the qualified
+  attempt; earlier in-task diagnostic attempts were operator-authorized
+  bounded determinism fixes with zero send side effects (fully disclosed in
+  the report).
+- `GLM_CALLS=0`, `CODEX_CALLS=0`, `OPENAI_API_CALLS=0`,
+  `PRODUCTION_DISPATCH=NO`, `CANDIDATE_EXECUTED=NO`.
+- `ISSUE_73_PHASE_C=PASS` and `PHASE_D=OPEN` remain unchanged; no routing,
+  Hermes configuration, browser, or production promotion changed.
+- `NEXT=V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2`.
+
+## Qwen Hermes controller profile tool-emission qualification V1
 
 **TASK_REF:** `V4_QWEN_HERMES_CONTROLLER_PROFILE_TOOL_EMISSION_QUALIFICATION_V1`
 **Classification:** `PASS — CONTROLLER_TOOL_EMISSION_DIAGNOSIS_COMPLETE=YES · PHASE_D=OPEN`
