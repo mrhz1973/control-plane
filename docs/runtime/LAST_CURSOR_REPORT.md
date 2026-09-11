@@ -1,5 +1,30 @@
 # LAST CURSOR REPORT
 
+## Ollama Desktop multi-model lane — Human Gate resolution V1 — latest
+
+**TASK_REF:** `V4_OLLAMA_DESKTOP_MULTI_MODEL_LANE_HUMAN_GATE_DEFER_V1`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-11
+**BASE_HEAD:** `cfeca3b95e5f46fe664ed50b8708a52e94016178`
+**Decision:** `DEFER_DOCUMENTED_ONLY`
+**Report:** `reports/architecture/v4_ollama_desktop_multi_model_lane_human_gate_defer_v1.md`
+
+- The operator Human Gate for the Ollama / ChatGPT Desktop multi-model audit
+  is resolved as `DEFER_DOCUMENTED_ONLY`; the preceding audit is preserved.
+- `OLLAMA_DESKTOP_IMPLEMENTATION=NO`, `OLLAMA_DESKTOP_ROUTING=NO`, and
+  `OLLAMA_DESKTOP_QUALIFICATION=NO`; no Qwen/GLM/Codex-via-Ollama lane was
+  implemented or qualified.
+- `QWEN_CANONICAL_CHANGED=NO`, `GLM_ROUTE_CHANGED=NO`,
+  `CODEX_ROUTE_CHANGED=NO`, `HERMES_ARCHITECTURE_CHANGED=NO`, and
+  `CHATGPT_WEB_ROUTE_CHANGED=NO`.
+- The operator’s GLM → human Codex App/subscription fallback practice is
+  recorded as context only; it was not implemented as automatic routing.
+- `ISSUE_73_PHASE_C=PASS`, `PHASE_D=OPEN` remain unchanged.
+- `NEXT=V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1`.
+- No model inference, provider call, browser automation, ChatGPT Web send,
+  runtime/configuration/registry/dispatcher/n8n/VPS/Tailscale mutation, or
+  production dispatch occurred.
+
 ## Ollama / ChatGPT Desktop multi-model lane audit V1 — latest
 
 **TASK_REF:** `V4_OLLAMA_CHATGPT_DESKTOP_MULTI_MODEL_LANE_AUDIT_V1`
