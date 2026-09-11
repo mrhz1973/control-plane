@@ -1,0 +1,65 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1_RETRY1",
+  "result_cursor": "STOP",
+  "starting_head": "34f16865beed3b44195e87e82307f5b116c3dcb1",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "PHASE_D_SEND_CONFIRMATION_FENCE",
+  "finding": "The single bounded Qwen_LOCAL -> HERMES -> CHATGPT_WEB controller attempt did not produce a deterministically observed new user turn within the short confirmation window. The independent read-only DOM fence remained USER_TURNS=0, ASSISTANT_TURNS=0, COMPOSER_EMPTY=YES with none of the required task, run, nonce, or base markers. Per protocol REQUEST_ATTEMPTED + USER_TURN_NOT_OBSERVED = REQUEST_NOT_SENT_OR_UNCONFIRMED = STOP. The controller was terminated after the bounded window; no retry was performed.",
+  "target_result": "STOP:PHASE_D_REQUEST_NOT_SENT",
+  "regressions_status": "NOT_RUN",
+  "bugbot_status": "NOT_RUN",
+  "runtime_apply_status": "NOT_RUN",
+  "execution_route_contained": true,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 1,
+  "provider_calls": 1,
+  "chatgpt_web_sends": 0,
+  "dirty_paths_summary": [
+    "reports/runtime/cursor-stops/2026-09-11T151311Z__V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1_RETRY1.stop.json"
+  ],
+  "next_owner": "GPT_WEB",
+  "result_envelope": {
+    "schema_version": "hermes-phase-d-rollover-stop-v1",
+    "status": "STOP",
+    "classification": "STOP:PHASE_D_REQUEST_NOT_SENT",
+    "actor": "cursor-executor-v1",
+    "base_head": "34f16865beed3b44195e87e82307f5b116c3dcb1",
+    "final_head": null,
+    "tests": [],
+    "changed_files": [
+      "reports/runtime/cursor-stops/2026-09-11T151311Z__V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1_RETRY1.stop.json"
+    ],
+    "chatgpt_web_sends": 0,
+    "qwen_generations": 1,
+    "reason_codes": [
+      "REQUEST_ATTEMPTED",
+      "USER_TURN_NOT_OBSERVED",
+      "SEND_NOT_CONFIRMED",
+      "PHASE_D_REQUEST_NOT_SENT"
+    ]
+  },
+  "guard_accounting": {
+    "state": "stopped_before_response_wait",
+    "generation_requests_seen": 1,
+    "upstream_generation_requests": 1,
+    "blocked_generation_requests": 0,
+    "informational_requests_forwarded": 0,
+    "rejected_requests": 0,
+    "secret_bearing_requests_rejected": 0
+  },
+  "subagent_used": false,
+  "failure_diagnostics": {
+    "qwen_catalog_readiness": "PASS",
+    "cdp_127_0_0_1_9222": "PASS",
+    "hermes_private_tunnel": "PASS",
+    "chatgpt_web_auth_profile": "PASS",
+    "fresh_chat_invariant": "PASS",
+    "send_confirmation_fence": "STOP",
+    "post_termination_dom": "USER_TURNS=0;ASSISTANT_TURNS=0;COMPOSER_EMPTY=YES"
+  },
+  "boundary_observed": "The pre-send and post-termination read-only verifier observed one ChatGPT page, no new user turn, no assistant turn, and an empty composer. No live web send was accepted.",
+  "next_bounded_action": "Do not retry inside this task. A later explicitly bounded run may investigate the Hermes browser-controller send path while preserving the same fail-closed confirmation fence.",
+  "note_on_dirty_tree": "Only this immutable STOP artifact was added; CURRENT_FRONTIER, LAST_CURSOR_REPORT, Phase D report, rollover delta, harness/tests, runtime, queue, receipts, browser content, VPS, and n8n were not modified."
+}
