@@ -1,0 +1,99 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2",
+  "result_cursor": "STOP",
+  "starting_head": "0090e29a7a43a4f4491fb0f69b7a1f0959cc1d8e",
+  "origin_main": "0090e29a7a43a4f4491fb0f69b7a1f0959cc1d8e",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "CHAT_N_SEND_RECONCILIATION",
+  "finding": "Live Chat N chain executed through the qualified wrapper: GEN1 browser_snapshot (Hermes-native PASS, composer_ref e160 via stored_full_snapshot), GEN2 browser_type (Hermes-native PASS, 930 chars typed), GEN3 browser_press Enter (Hermes-native PASS). The independent DOM reconciliation initially classified REAL_USER_TURN_DOM_CONFIRMED=PASS, but that verdict was a FALSE POSITIVE: the turn-verify body-substring checks matched the payload draft text still sitting in the composer (1379 chars accumulated across previous qualification attempts), not a committed user turn. Deep DOM inspection proved: [data-message-author-role] element count = 0 on the current ChatGPT Web frontend (marker-based turn detection obsolete), no assistant response arrived within the 300s bounded window, and the full Chat N payload plus older payloads remain inside the composer ProseMirror draft (unsubmitted). Ground truth: the send did not happen (CHATGPT_WEB_SENDS actual = 0 for this run; the predecessor run's confirmed send is unrelated and consumed). Root cause chain: (1) ChatGPT Web frontend no longer renders data-message-author-role attributes, invalidating the verifier's turn detection; (2) composer draft accumulation across attempts keeps identity substrings present in body.innerText, defeating body-substring fences; (3) Enter via Hermes browser_press on this frontend did not submit the draft. Budget consumed: 3/6 Qwen generations (one 3-generation Chat N chain), CHATGPT_WEB_SENDS delta 0, no Chat N+1 send attempted. No retry permitted inside this task; remaining 3 generations cannot complete both required chains (3+3), so continuation is impossible within budget and the task stops fail-closed. No GLM/Codex/OpenAI API calls, no /v1/tick, no production dispatch, no candidate execution, no implicit fallback, Hermes global config unchanged.",
+  "target_result": "STOP:SEND_NOT_CONFIRMED_COMPOSER_DRAFT_FALSE_POSITIVE",
+  "canonical_result": "STOP:SEND_NOT_CONFIRMED",
+  "root_cause": [
+    "CHATGPT_WEB_FRONTEND_TURN_MARKERS_OBSOLETE (data-message-author-role no longer rendered)",
+    "COMPOSER_DRAFT_ACCUMULATION_DEFEATS_BODY_SUBSTRING_FENCES",
+    "HERMES_BROWSER_PRESS_ENTER_DID_NOT_SUBMIT_DRAFT_ON_CURRENT_FRONTEND"
+  ],
+  "stale_generation_fence": "PASS_OFFLINE (43/43 focused checks; deterministic rejection of wrong base/run/chat/nonce and old/superseded generation pre-dispatch)",
+  "context_delta_fence": "PASS_OFFLINE (schema/size/unexpected-fields/stale/wrong-base/wrong-run/tampered-hash all rejected)",
+  "live_evidence": {
+    "phase_d_run_id": "a8b172a6eada47e79be78d1b9c08286b",
+    "chat_n_id": "chat_n_8ab6551a85cf",
+    "chat_n_nonce": "PD_N_20260911TMTXGTIQ0_ff066749",
+    "chat_n_generation_id": "gen_n_20ec765836e942bf",
+    "GEN1_TOOL_NAME": "browser_snapshot",
+    "GEN1_DISPATCH_STATUS": "DISPATCHED_SUCCESS",
+    "SNAPSHOT_COMPOSER_REF_OBTAINED": "e160",
+    "GEN2_TOOL_NAME": "browser_type",
+    "GEN2_REF_MATCH": true,
+    "GEN2_PAYLOAD_MATCH": true,
+    "GEN2_DISPATCH_STATUS": "DISPATCHED_SUCCESS",
+    "GEN3_TOOL_NAME": "browser_press",
+    "GEN3_KEY": "Enter",
+    "GEN3_DISPATCH_STATUS": "DISPATCHED_SUCCESS",
+    "REAL_USER_TURN_DOM_CONFIRMED_INITIAL": "FALSE_POSITIVE_PASS",
+    "REAL_USER_TURN_DOM_CONFIRMED_GROUND_TRUTH": "NO_USER_TURN",
+    "ROLE_MARKER_ELEMENTS_OBSERVED": 0,
+    "ASSISTANT_RESPONSE_ARRIVED": "NO",
+    "COMPOSER_DRAFT_CHARS_OBSERVED": 1379,
+    "COMPOSER_DRAFT_CONTAINS_CHAT_N_PAYLOAD": true,
+    "CHAT_N_CLASSIFICATION_GROUND_TRUTH": "SEND_NOT_CONFIRMED"
+  },
+  "qwen_generations_live_used": 3,
+  "qwen_generations_live_max": 6,
+  "offline_qwen_generations": 0,
+  "chatgpt_web_sends_actual": 0,
+  "chatgpt_web_sends_budget": 2,
+  "glm_calls": 0,
+  "codex_calls": 0,
+  "openai_api_calls": 0,
+  "provider_fallback": "NONE",
+  "raw_cdp_controller_exposure": false,
+  "hermes_global_config_unchanged": true,
+  "production_dispatch": false,
+  "candidate_executed": false,
+  "focused_tests_status": "PASS (43/43 tests/phase-d-rollover-v2/run.mjs)",
+  "regressions_status": "PASS (73/73 wrapper suite, governed-cdp-adapter PASS, qwen-profile 30/30, registry-v2 76/76, git diff --check clean)",
+  "verifier_change_this_run": "tools/chatgpt-web-dom-verifier-v1.mjs gained a bounded read-only raw-eval mode used for diagnosis; left uncommitted per STOP protocol.",
+  "uncommitted_paths_summary": [
+    "tools/phase-d-rollover-core-v1.mjs (new, fence + bounded delta)",
+    "tools/phase-d-rollover-live-v1.mjs (new, Phase D live driver)",
+    "tests/phase-d-rollover-v2/run.mjs (new, 43-check focused suite)",
+    "tools/chatgpt-web-dom-verifier-v1.mjs (modified: raw-eval diagnosis mode)",
+    "reports/runtime/dev-queue/phase-d-live-v2.json",
+    "reports/runtime/dev-queue/phase-d-live-v2.err.txt"
+  ],
+  "dirty_paths_summary": [
+    "reports/runtime/cursor-stops/2026-09-11T232242Z__V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2.stop.json"
+  ],
+  "next_owner": "CURSOR",
+  "required_next_scope": "V4_HERMES_PHASE_D_SEND_SUBMISSION_AND_TURN_DETECTION_REPAIR_V1: (1) rebuild independent turn detection without data-message-author-role (e.g. structural conversation-list probing validated against live DOM); (2) add pre-type composer-draft clearing or draft-state fencing so body-substring identity checks cannot match draft text; (3) determine a working submit mechanism on the current frontend (Enter via ProseMirror keydown semantics, send-button ref dispatch through the allowlist, or operator-gated manual submit with verifier fence) without expanding the model-visible tool surface; (4) then re-run V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2 fresh.",
+  "result_envelope": {
+    "schema_version": "hermes-phase-d-rollover-stop-v2",
+    "status": "STOP",
+    "classification": "STOP:SEND_NOT_CONFIRMED",
+    "actor": "cursor-executor-v1",
+    "base_head": "0090e29a7a43a4f4491fb0f69b7a1f0959cc1d8e",
+    "final_head": null,
+    "tests": [
+      "tests/phase-d-rollover-v2/run.mjs 43/43 PASS",
+      "tests/hermes-per-invocation-browser-allowlist-v1/run.mjs 73/73 PASS",
+      "tests/hermes-governed-cdp-adapter-v1/run.mjs PASS",
+      "tests/qwen-hermes-controller-profile-tool-emission-v1/run.mjs 30/30 PASS",
+      "tests/registry-v2/run.mjs 76/76 PASS",
+      "git diff --check clean"
+    ],
+    "changed_files": [
+      "reports/runtime/cursor-stops/2026-09-11T232242Z__V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2.stop.json"
+    ],
+    "chatgpt_web_sends": 0,
+    "qwen_generations": 3,
+    "reason_codes": [
+      "TURN_MARKERS_OBSOLETE_ON_CURRENT_FRONTEND",
+      "COMPOSER_DRAFT_FALSE_POSITIVE_IN_TURN_VERIFY",
+      "PRESS_DID_NOT_SUBMIT_DRAFT",
+      "SEND_NOT_CONFIRMED_NO_RETRY_PERMITTED",
+      "REMAINING_GENERATIONS_INSUFFICIENT_FOR_BOTH_CHAINS"
+    ]
+  }
+}
