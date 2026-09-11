@@ -68,12 +68,14 @@ export const DEFAULT_PORT = 18793;
 export const TICK_PATH = "/v1/tick";
 export const STATUS_PATH = "/v1/status";
 export const DIAGNOSTICS_PATH = "/v1/diagnostics";
+export const ARCHITECTURE_PATH = "/architecture";
 export const DASHBOARD_PATHS = Object.freeze(["/", "/dashboard", "/dashboard/"]);
 export const QWEN_OBSERVE_BASE_URL = "http://127.0.0.1:8080";
 export const REPO = "mrhz1973/control-plane";
 export const CANONICAL_REPO_PATH = KNOWN_LOCAL_REPOS[REPO];
 export const QUEUE_DIR = "reports/runtime/dev-queue/always-on";
 const DASHBOARD_HTML_PATH = join(dirname(fileURLToPath(import.meta.url)), "local-dev-dispatcher-dashboard-v1.html");
+const ARCHITECTURE_HTML_PATH = join(dirname(fileURLToPath(import.meta.url)), "local-dev-dispatcher-architecture-map-v1.html");
 // Claim receipts for the always-on queue live INSIDE the queue dir (untracked
 // runtime state). The shared tracked ledger reports/runtime/dev-queue/receipts.json
 // must NOT be written by the service: a claim written there dirties a tracked
@@ -736,6 +738,15 @@ function loadDashboardHtml() {
   return `<!DOCTYPE html><html><body><h1>Dispatcher dashboard missing</h1><p>Expected ${DASHBOARD_HTML_PATH}</p></body></html>`;
 }
 
+function loadArchitectureHtml() {
+  try {
+    if (existsSync(ARCHITECTURE_HTML_PATH)) {
+      return readFileSync(ARCHITECTURE_HTML_PATH, "utf8");
+    }
+  } catch { /* fall through */ }
+  return `<!DOCTYPE html><html><body><h1>Architecture map missing</h1><p>Expected ${ARCHITECTURE_HTML_PATH}</p></body></html>`;
+}
+
 function gitExec(repoPath, args) {
   return new Promise((res) => {
     execFile("git.exe", args, { cwd: repoPath, windowsHide: true, timeout: 120_000 }, (err, stdout, stderr) => {
@@ -1367,7 +1378,7 @@ function readBody(req) {
   });
 }
 
-/** HTTP handler. Injected deps only for tests. Routes tick/status/diagnostics/dashboard. */
+/** HTTP handler. Injected deps only for tests. Routes tick/status/diagnostics/dashboard/architecture. */
 export async function handleTickRequest(req, res, deps = {}) {
   const send = (status, obj) => {
     try {
@@ -1392,6 +1403,24 @@ export async function handleTickRequest(req, res, deps = {}) {
       return;
     }
     const html = typeof deps.dashboardHtml === "string" ? deps.dashboardHtml : loadDashboardHtml();
+    if (req.method === "HEAD") {
+      try {
+        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
+        res.end();
+      } catch { /* ignore */ }
+      return;
+    }
+    sendHtml(200, html);
+    return;
+  }
+
+  // Read-only architecture map (static HTML). Never acquires the tick lock.
+  if (path === ARCHITECTURE_PATH) {
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      send(405, wrapTickResult({ ok: false, classification: "SERVICE_ERROR", reason_codes: ["GET_ONLY"] }));
+      return;
+    }
+    const html = typeof deps.architectureHtml === "string" ? deps.architectureHtml : loadArchitectureHtml();
     if (req.method === "HEAD") {
       try {
         res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" });
@@ -1579,6 +1608,7 @@ async function main() {
     diagnostics_path: DIAGNOSTICS_PATH,
     resources_path: RESOURCES_PATH,
     dashboard_path: "/dashboard",
+    architecture_path: ARCHITECTURE_PATH,
     external_route: "/v4/local-dev/dispatch-tick",
     repo: CANONICAL_REPO_PATH,
     queue_dir: QUEUE_DIR,

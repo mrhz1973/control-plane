@@ -1,5 +1,33 @@
 # LAST CURSOR REPORT
 
+## Control Plane architecture web map draft V1 — Retry 2 latest
+
+**TASK_REF:** `V4_CONTROL_PLANE_ARCHITECTURE_WEB_MAP_DRAFT_V1_RETRY2`
+**Classification:** `PASS`
+**Date (UTC):** 2026-09-11
+**BASE_HEAD:** `a05d51d2ebadda910985034887293fdc5d53b4c4`
+**Report:** `reports/architecture/v4_control_plane_architecture_web_map_draft_v1_retry2.md`
+
+- The preserved architecture implementation passed its focused `8/8` suite;
+  the page remains a responsive Italian “CITTÀ CONTROL PLANE” map with
+  Control Plane at the centre and Hermes explicitly marked
+  `ORCHESTRATORE / BRIDGE`.
+- `CONTROL_PLANE_ARCHITECTURE_WEB_MAP_DRAFT=PASS`,
+  `CONTROL_PLANE_ARCHITECTURE_ROUTE=/architecture`,
+  `HERMES_ARCHITECTURE_MAP_PRESENT=YES`,
+  `MODEL_HARNESS_CONTROLLER_TAXONOMY=EXPLICIT`, and
+  `DASHBOARD_ARCHITECTURE_LINK=PASS`.
+- After the exact bounded recycle of only the canonical dispatcher, local
+  `/dashboard`, `/architecture`, `/v1/status`, `/v1/resources` and private
+  `/architecture`, `/dashboard`, `/v1/status`, `/v1/diagnostics`,
+  `/v1/resources` all returned 200. Architecture local/private payload hashes
+  matched.
+- The already qualified private Tailscale route was not changed. Dispatcher
+  remains loopback-only; Funnel is NO; no execution or browser interaction
+  occurred. `MANUAL_TICKS=0`, `QUEUE_MUTATIONS=0`,
+  `MODEL_INFERENCE_CALLS=0`.
+- `NEXT=V4_CONTROL_PLANE_ARCHITECTURE_INTERACTIVE_INFOGRAPHIC_V1`.
+
 ## Tailscale private architecture route remediation V1 — latest
 
 **TASK_REF:** `V4_TAILSCALE_ARCHITECTURE_PRIVATE_ROUTE_REMEDIATION_V1_RETRY1`
