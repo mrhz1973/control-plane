@@ -1,0 +1,90 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_HERMES_PER_INVOCATION_BROWSER_TOOL_ALLOWLIST_AND_SEND_QUALIFICATION_V1",
+  "result_cursor": "STOP",
+  "starting_head": "cea4297c8aee3c9303539b2cecc485d2b1cc75e8",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "failure_stage": "LIVE_SINGLE_GENERATION_CHAIN_BOUNDARY",
+  "finding": "The Control Plane per-invocation allowlist wrapper was implemented and its dual barrier fully qualified offline: Hermes native browser schemas were enumerated in-process (12 tools), filtered to EXACTLY browser_navigate/browser_snapshot/browser_type/browser_press for the model (MODEL_VISIBLE_TOOL_COUNT=4, forbidden tools never visible), the execution dispatcher enforce-demonstrated exact-name allowlisting (browser_cdp, browser_console, browser_exec, synthetic_unknown_tool all deterministically rejected pre-execution with hermes_handler_invoked=false), schemas were the existing Hermes schemas (not hand-invented), state was per-invocation (BROWSER_CDP_URL set only inside bridge processes; disappears at exit), and the global Hermes config hash/size remained unchanged across before/after probes (sha256 53a5841d293311a196aeb65999e39e22db4fd2f5febdee9f218ef491eb15d533, 6814 bytes). Offline model tool-emission proof returned browser_navigate (allowed, not executed). Focused deterministic suite 37/37 PASS. Two live send attempts were operator-authorized under explicit budget overrides (first attempt consumed its single Qwen generation on a deterministic bridge bootstrap bug - Hermes registry not initialized in the exec path - fixed and verified offline with a real Hermes-native snapshot that observed composer_ref=e160 on the authenticated fresh ChatGPT Web page; second attempt dispatched browser_snapshot successfully through Hermes but the controller emits one tool call per generation, and the harness was bounded to ONE live generation, so browser_type/browser_press were never reached). Both live attempts ended at the TYPE stage with CHATGPT_WEB_SENDS=0: no message was ever typed or sent, the ChatGPT conversation remained fresh (USER_TURNS=0, ASSISTANT_TURNS=0, COMPOSER_EMPTY=YES) as confirmed by the independent read-only DOM verifier. Total Qwen generations consumed: 4 (2 offline emission probes, 2 live attempts). No GLM/Codex/OpenAI API/provider fallback, no raw CDP controller exposure, no /v1/tick, no production dispatch, no candidate execution, no Phase D rollover.",
+  "target_result": "STOP:LIVE_SINGLE_GENERATION_CHAIN_BOUNDARY",
+  "implementation_kind": "CONTROL_PLANE_PER_INVOCATION_WRAPPER",
+  "wrapper_components": [
+    "tools/hermes-per-invocation-browser-allowlist-v1.mjs (Node wrapper: schemas, exact-name gate, Qwen chat, payload builder)",
+    "tools/hermes-per-invocation-browser-allowlist-v1.py (Python bridge inside Hermes venv: read-only in-process Hermes imports, dispatch gate, sanitized envelopes)",
+    "tools/chatgpt-web-dom-verifier-v1.mjs (independent read-only CDP DOM verifier, trusted Control Plane component, never model-visible)",
+    "tools/hermes-allowlist-live-send-v1.mjs (operator live flow driver)",
+    "tests/hermes-per-invocation-browser-allowlist-v1/run.mjs (37-check focused deterministic suite)"
+  ],
+  "allowlist_evidence": {
+    "exact_allowlist": [
+      "browser_navigate",
+      "browser_snapshot",
+      "browser_type",
+      "browser_press"
+    ],
+    "model_visible_tool_count": 4,
+    "forbidden_model_visible": [],
+    "negative_dispatch_probes": {
+      "browser_cdp": "TOOL_NOT_ALLOWED",
+      "browser_console": "TOOL_NOT_ALLOWED",
+      "browser_exec": "TOOL_NOT_ALLOWED",
+      "synthetic_unknown_tool": "TOOL_NOT_ALLOWED"
+    },
+    "rejected_calls_hermes_handler_invoked": false,
+    "hermes_global_config_sha256_before_after": "53a5841d293311a196aeb65999e39e22db4fd2f5febdee9f218ef491eb15d533",
+    "hermes_global_config_bytes": 6814,
+    "focused_tests": "37/37 PASS"
+  },
+  "live_evidence": {
+    "effective_controller_profile": "qwen38-opus-q3-agent-24k",
+    "live_runtime_precheck": "PASS (8080 agent24k loaded; 9222 dedicated Chrome relaunched on persistent profile C:/Users/mrhz/AppData/Local/hermes/chrome-chatgpt; 16080 noVNC tunnel restored via qualified ssh -N -L command)",
+    "authenticated_chatgpt_web": "YES (independent DOM verifier: loginButton=false, accountMenu=true, sidebarNewChat=true)",
+    "fresh_chat": "YES (USER_TURNS=0, ASSISTANT_TURNS=0, COMPOSER_EMPTY=YES before both attempts)",
+    "attempt_1": {
+      "stage_failed": "browser_snapshot dispatch (HERMES_ENTRY_MISSING bridge bootstrap bug)",
+      "qwen_emitted": "browser_snapshot (allowed)",
+      "browser_actions": "none",
+      "web_sends": 0
+    },
+    "attempt_2": {
+      "stage_failed": "TYPE_NOT_SUCCESSFUL (single-generation chain boundary)",
+      "qwen_emitted": "browser_snapshot (allowed, dispatched, Hermes-native execution success, composer_ref=e160 observed)",
+      "browser_actions": "snapshot only (read-only)",
+      "web_sends": 0,
+      "post_state": "USER_TURNS=0, ASSISTANT_TURNS=0, COMPOSER_EMPTY=YES"
+    }
+  },
+  "budget_accounting": {
+    "qwen_generations_offline": 2,
+    "qwen_generations_live": 2,
+    "total_qwen_generations": 4,
+    "operator_budget_overrides": [
+      "Override 1 (user, pre-live): total raised 2->3 to absorb an offline evidence-capture duplicate (identical harmless synthetic probe, never executed)",
+      "Override 2 (user, pre-attempt-2): one re-run authorized after deterministic bridge bug fix; no further retry authorized"
+    ],
+    "chatgpt_web_sends": 0,
+    "glm_calls": 0,
+    "codex_calls": 0,
+    "openai_api_calls": 0,
+    "production_dispatch": 0,
+    "candidate_executed": 0
+  },
+  "regressions_status": "NOT_RUN_ON_STOP",
+  "runtime_apply_status": "NONE",
+  "execution_route_contained": true,
+  "hermes_install_unchanged": true,
+  "hermes_global_config_unchanged": true,
+  "raw_cdp_controller_exposure": "NO",
+  "prefill_only_adapter_unchanged": true,
+  "issue_73_phase_c": "PASS",
+  "issue_73_phase_d": "OPEN",
+  "dirty_paths_summary": [
+    "tools/hermes-per-invocation-browser-allowlist-v1.mjs (uncommitted, left per STOP protocol)",
+    "tools/hermes-per-invocation-browser-allowlist-v1.py (uncommitted, left per STOP protocol)",
+    "tools/chatgpt-web-dom-verifier-v1.mjs (uncommitted, left per STOP protocol)",
+    "tools/hermes-allowlist-live-send-v1.mjs (uncommitted, left per STOP protocol)",
+    "tests/hermes-per-invocation-browser-allowlist-v1/run.mjs (uncommitted, left per STOP protocol)",
+    "reports/runtime/cursor-stops/2026-09-11T195500Z__V4_HERMES_PER_INVOCATION_BROWSER_TOOL_ALLOWLIST_AND_SEND_QUALIFICATION_V1.stop.json (this artifact)"
+  ],
+  "required_next_scope": "V4_HERMES_MULTI_TURN_ALLOWLIST_CHAIN_SEND_V1: same dual-barrier wrapper, same budgets (1 live send, CHATGPT_WEB_MAX_SENDS=1), but the live flow must loop controller turns (each Qwen generation returns one tool call; the chain snapshot->type->press needs up to 3 controller generations) OR the wrapper must synthesize the chain after the first generation within already-qualified dispatch rules. All offline qualifications from this task remain valid evidence; only the live send remains to be qualified."
+}
