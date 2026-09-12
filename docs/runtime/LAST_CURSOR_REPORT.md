@@ -1,5 +1,40 @@
 # LAST CURSOR REPORT
 
+## ACP MCP human-gate minimal slice implementation V1 — latest
+
+**TASK_REF:** `V4_CURSOR_ACP_MCP_HUMAN_GATE_MINIMAL_SLICE_IMPLEMENTATION_V1`
+**Classification:** `PASS — MINIMAL_SLICE_IMPLEMENTED_AND_PROVEN (synthetic transport only; TELEGRAM_E2E=NOT_CLAIMED)`
+**Date (Europe/Rome):** 2026-09-12
+**BASE_HEAD:** `b1c15165d4768f1d33e1f61d1941461e89ee1f86`
+**Report:** `reports/architecture/v4_cursor_acp_mcp_human_gate_minimal_slice_implementation_v1.md`
+
+- Implemented the selected minimal slice: canonical gate-core extracted from
+  the proven V2 law (`tools/v4-cursor-acp-gate-core-v1.mjs` — single decision
+  authority, REGISTERED→NOTIFIED→VERIFIED→RETURNED→CONSUMED, EXPIRED/NO_ANSWER
+  terminal, decision_id binding task/run/session-sha/generation, bounded TTL);
+  adapter-only MCP stdio server with exactly one `human_gate` tool (schema
+  A/B/C enforced, fail-closed, no default answer, no credentials in the
+  adapter); ACP wiring probe (driver writes the trusted session binding;
+  agent-side `session/new` guard = 0).
+- Vendor MCP contract discovered read-only and applied: per-session stdio
+  server shape `{name, command, args[], env:[{name,value}]}`; a real
+  `agent acp` `session/new` accepted the project server
+  (`ACP_MCP_WIRING=PASS`).
+- Deterministic suite 32/32 PASS (`tests/v4-cursor-acp-mcp-gate/`, synthetic
+  transports only): all negative fences (stale/duplicate/wrong
+  task/session/generation/invalid option/unknown decision), fences never
+  mutate a healthy decision, NO_DEFAULT_ANSWER, adapter-cannot-self-authorize
+  (missing binding fails closed), synthetic valid callback returned the
+  option through the MCP tool result, unknown tool rejected.
+- Not claimed: `TELEGRAM_E2E`, `REAL_OPERATOR_CALLBACK`, live same-session
+  continuation — next task.
+- No walls touched. `PRODUCTION_CHANGED=NO`.
+- **NEXT = `V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1`**: real Telegram
+  transport (canonical credential path, unchanged) + real operator callback +
+  live same-session ACP continuation with the full marker set.
+
+---
+
 ## ACP external human-gate architecture selection V1 — latest
 
 **TASK_REF:** `V4_CURSOR_ACP_EXTERNAL_HUMAN_GATE_ARCHITECTURE_SELECTION_V1`

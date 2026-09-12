@@ -1,0 +1,11 @@
+{
+  "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_MINIMAL_SLICE_IMPLEMENTATION_V1",
+  "run_id": "590f84041b6a431f",
+  "session_id_sha": "9a6c0dfe335f",
+  "mcp_server_passed_in_session_new": true,
+  "binding_written_by_driver": true,
+  "agent_side_session_new_calls": 0,
+  "SAME_SESSION_GUARD": "PASS",
+  "ACP_MCP_WIRING": "PASS",
+  "LOGICAL_RECOVERY_LABEL": "reserved (not exercised here)"
+}

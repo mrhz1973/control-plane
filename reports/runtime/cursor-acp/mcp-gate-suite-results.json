@@ -1,0 +1,175 @@
+{
+  "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_MINIMAL_SLICE_IMPLEMENTATION_V1",
+  "ran_at": "2026-09-12T22:05:50.487Z",
+  "duration_ms": 5590,
+  "totals": {
+    "pass": 32,
+    "fail": 0
+  },
+  "results": [
+    {
+      "name": "MCP_SERVER_START",
+      "ok": true,
+      "detail": "v4-cursor-acp-human-gate"
+    },
+    {
+      "name": "HUMAN_GATE_TOOL_DISCOVERABLE",
+      "ok": true,
+      "detail": "1 tool(s)"
+    },
+    {
+      "name": "HUMAN_GATE_SCHEMA_VALIDATION",
+      "ok": true,
+      "detail": "inputSchema enforces A/B/C + required fields"
+    },
+    {
+      "name": "SCHEMA_OK_ACCEPTS_VALID",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "SCHEMA_REJECT_missing_task_ref",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "SCHEMA_REJECT_bad_generation_zero",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "SCHEMA_REJECT_two_options",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "SCHEMA_REJECT_four_options",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "SCHEMA_REJECT_wrong_letters",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "SCHEMA_REJECT_empty_prompt",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "STORE_SCHEMA_DEFAULT",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "GATE_STATE_REGISTERED",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "DECISION_ID_BINDING",
+      "ok": true,
+      "detail": "id=ACP-GATE-6dea070678af"
+    },
+    {
+      "name": "GATE_STATE_NOTIFIED",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "CALLBACK_BINDING_HAPPY",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "GATE_STATE_RETURNED",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "GATE_STATE_CONSUMED",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "DUPLICATE_CALLBACK_REJECTED",
+      "ok": true,
+      "detail": "GATE_DECISION_ALREADY_CONSUMED"
+    },
+    {
+      "name": "STALE_CALLBACK_REJECTED",
+      "ok": true,
+      "detail": "GATE_DECISION_EXPIRED"
+    },
+    {
+      "name": "WRONG_TASK_REJECTED",
+      "ok": true,
+      "detail": "GATE_TASK_MISMATCH"
+    },
+    {
+      "name": "WRONG_SESSION_REJECTED",
+      "ok": true,
+      "detail": "GATE_SESSION_MISMATCH"
+    },
+    {
+      "name": "WRONG_GENERATION_REJECTED",
+      "ok": true,
+      "detail": "GATE_GENERATION_MISMATCH"
+    },
+    {
+      "name": "INVALID_OPTION_REJECTED",
+      "ok": true,
+      "detail": "GATE_ANSWER_INVALID"
+    },
+    {
+      "name": "UNKNOWN_DECISION_REJECTED",
+      "ok": true,
+      "detail": "GATE_DECISION_UNKNOWN"
+    },
+    {
+      "name": "FENCES_LEAVE_DECISION_UNTOUCHED",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "NO_DEFAULT_ANSWER",
+      "ok": true,
+      "detail": "NO_ANSWER"
+    },
+    {
+      "name": "ADAPTER_SYNTHETIC_ANSWERED",
+      "ok": true,
+      "detail": "status=answered option=C"
+    },
+    {
+      "name": "ADAPTER_NO_BINDING_FAILS_CLOSED",
+      "ok": true,
+      "detail": "SESSION_BINDING_MISSING"
+    },
+    {
+      "name": "ADAPTER_SILENT_NO_ANSWER",
+      "ok": true,
+      "detail": "status=no_answer"
+    },
+    {
+      "name": "ADAPTER_UNKNOWN_TOOL_REJECTED",
+      "ok": true,
+      "detail": "isError=true"
+    },
+    {
+      "name": "ADAPTER_STATE_VERIFIED_RETURNED",
+      "ok": true,
+      "detail": "RETURNED"
+    },
+    {
+      "name": "ACP_MCP_WIRING",
+      "ok": true,
+      "detail": "session_sha=9a6c0dfe335f"
+    }
+  ],
+  "claims": {
+    "TELEGRAM_E2E": "NOT_CLAIMED",
+    "REAL_OPERATOR_CALLBACK": "NOT_CLAIMED"
+  }
+}
