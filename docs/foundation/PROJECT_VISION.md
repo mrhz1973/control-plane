@@ -8,7 +8,7 @@
 
 ## 0. Visione in una frase
 
-`control-plane` è un sistema personale di sviluppo AI-assisted in cui **GPT Web governa strategia/backlog, GitHub conserva la verità, n8n applica workflow/policy/gate, LiteLLM è il primary remote gateway per GLM/Codex, OpenClaw resta preserved fallback/existing broker, Codex/GLM producono Execution Packet (Qwen locale deferred), Cursor implementa in loop task-bounded, Bugbot verifica e Telegram interviene sui gate umani reali**.
+`control-plane` è un sistema personale di sviluppo AI-assisted in cui **GPT Web governa strategia/backlog, GitHub conserva la verità, n8n applica workflow/policy/gate, LiteLLM è il primary remote gateway strutturale per GLM/Codex, OpenClaw resta preserved fallback/existing broker staged, Qwen locale è qualificato soltanto per ruolo/profilo provato, Cursor implementa in loop task-bounded, Bugbot verifica e Telegram interviene sui gate umani reali**.
 
 Obiettivo: aumentare autonomia e throughput usando più pool/modelli senza perdere auditabilità, controllo del rischio o memoria persistente.
 
@@ -96,7 +96,7 @@ Questa architettura è **target accettato**, non prova che ogni capability sia g
 | **OpenClaw** | preserved fallback/existing broker provider/auth/quota/failover consentito | primary remote gateway; strategic orchestrator |
 | **Codex OAuth** | planner/reasoner senior/advisor via LiteLLM primary remote path quando verificato | modello Cursor nativo assunto; OpenAI Platform API key path |
 | **GLM 5.3** | Advisor / Planner / Cursor Executor via LiteLLM primary remote path secondo mode verificato | autorità derivata dal nome modello |
-| **Qwen 3.8 37B** | planner/advisor locale per-job (**deferred** — non blocking current remote path) | router daemon obbligatorio; primary remote gateway |
+| **Qwen 3.8 37B** | planner/advisor/implementer locale per-job, soltanto per ruolo/profilo qualificato | router daemon obbligatorio; primary remote gateway |
 | **Cursor** | execution harness: Agent, edit, terminal, test, Git, subagent, bounded loop | orchestratore strategico generale |
 | **Bugbot** | reviewer/quality gate | router/orchestrator |
 | **Telegram** | human gate | archivio/source of truth |
@@ -104,7 +104,7 @@ Questa architettura è **target accettato**, non prova che ogni capability sia g
 
 ### 3.1 Qwen locale
 
-Qwen 3.8 37B può essere caricato per un job e riusato come planner/advisor/reviewer mentre residente. Non deve restare in memoria 24/7 solo per scegliere provider.
+Qwen 3.8 37B può essere caricato per un job e riusato come planner/advisor/reviewer/implementer mentre residente, ma soltanto nei ruoli e profili qualificati dal frontier. Non deve restare in memoria 24/7 solo per scegliere provider.
 
 ### 3.2 GLM dentro Cursor
 
@@ -363,7 +363,7 @@ Un componente fallito deve degradare a una modalità supervisionata senza perder
 - planner unavailable → fallback consentito oppure gate;
 - LiteLLM unavailable → OpenClaw/manual/gated path secondo policy; **mai** silent fallback non equivalente;
 - OpenClaw unavailable → path manuale/gated;
-- resource pressure Qwen → altro planner consentito solo se esplicitamente autorizzato (Qwen deferred on current remote path);
+- Qwen unavailable o resource pressure → altro planner consentito solo se esplicitamente autorizzato;
 - Cursor non converge → checkpoint + gate;
 - Bugbot non converge → gate;
 - Tailscale/nodo locale down → offline/manual;
@@ -434,7 +434,7 @@ AUTO-VIA elimina i `vai` ridondanti quando NEXT è già tecnicamente determinato
 - GitHub source of truth;
 - **LiteLLM primary remote gateway for GLM+Codex (architecture decision 2026-08-28; D-0024 runtime qualification PASS)**;
 - OpenClaw preserved fallback/existing broker;
-- planner pool GLM 5.3 / Codex OAuth on primary remote path; Qwen 3.8 37B deferred;
+- planner pool GLM 5.3 / Codex OAuth on primary remote path; Qwen locale qualificato per ruolo/profilo, senza router daemon obbligatorio;
 - planner → Execution Packet;
 - n8n deterministic gate;
 - Cursor target bounded execution harness;

@@ -288,32 +288,54 @@ implementation
 
 **Verità corrente:** reviewer execution e automatic retry execution restano dietro i **gate di autorizzazione esistenti**, salvo prova repo diversa. Documentare il ramo ≠ attivarlo.
 
+La continuazione bounded dopo uno STOP è definita dal contratto
+`docs/contracts/bounded-repair-continuation-policy-v1.md`. È harness-independent
+e non conferisce nuova authority: Cursor, ACP, Codex, Qwen/OpenCode, Hermes e
+future superfici devono avere qualification specifica prima di essere dichiarati
+same-session proven.
+
+`RT25_REUSE_REQUIRED=YES` · `ARE_WE_REBUILDING_RT25_ALREADY_IMPLEMENTED=NO`.
+Quota state, review, retry, checkpoint e provenance machinery RT25 già
+implementate sono la base da riusare; questo operating model non crea un nuovo
+quota router.
+
 ---
 
-## 11. OPERATOR ROUTING TARGET — DOCUMENT ONLY
+## 11. OPERATOR ROUTING POLICY — DOCUMENT ONLY
 
-**OPERATOR-DECIDED TARGET POLICY**
+**OPERATOR-CONFIRMED POLICY**
 **NOT YET RUNTIME-ACTIVE**
 
-Questo documento **non** attiva finestre orarie, non sblocca GLM, non cambia registry.
+Questa policy documenta l’evidenza empirica dell’operatore e il comportamento
+del Control Plane; **non** attiva finestre runtime, non sblocca GLM, non cambia
+registry e non autorizza fallback silenziosi.
 
-### 11.1 Finestra 08:00–12:00 Europe/Rome — TARGET ONLY
+### 11.1 Finestra 08:00–12:00 Europe/Rome — OPERATOR POLICY
 
 ```text
 Qwen available + adequate
     → Qwen / OpenCode
 
-else Codex capacity fresh + available
+    else Codex capacity fresh + available
     → Codex
 
 else
     → DEFER
 
-glm-5.3-flash = BLOCKED
-glm-5.3       = BLOCKED
+glm-5.3-flash = INELIGIBLE
+glm-5.3       = INELIGIBLE
 ```
 
-Motivo blocco GLM in questa finestra: entrambi consumano lo stesso pool `glm_coding_plan`.
+`GLM_08_12_CLASSIFICATION=OPERATOR_POLICY`
+`GLM_08_12_EMPIRICAL_EVIDENCE=CONFIRMED_BY_OPERATOR`
+`GLM_08_12_APPLIES_WEEKEND=YES`
+`GLM_08_12_BYDAY=MO,TU,WE,TH,FR,SA,SU`
+`GLM_08_12_WINDOW=[08:00,12:00)` · `GLM_08_12_TIMEZONE=Europe/Rome`
+`GLM_53_BLACKOUT_08_12=YES` · `GLM_53_FLASH_BLACKOUT_08_12=YES`
+
+Motivo della policy: entrambi consumano lo stesso pool `glm_coding_plan`.
+Il pool resta uno solo; la policy è operatore + Control Plane, non una provider
+rule Z.AI.
 
 ### 11.2 Fuori 08:00–12:00 — TARGET ONLY
 

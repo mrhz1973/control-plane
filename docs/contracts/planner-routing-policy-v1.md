@@ -21,7 +21,7 @@ The planner pool is:
 
 There is no mandatory fourth LLM dedicated only to routing.
 
-GPT Web provides the **semantic preference** in the Backlog Item. OpenClaw provides provider/auth/availability/usage state where available. n8n applies deterministic policy to choose the effective planner or escalate.
+GPT Web provides the **semantic preference** in the Backlog Item. Provider/access-surface state is supplied where available; OpenClaw is a staged, non-active broker path and is not current authority. n8n applies deterministic policy to choose the effective planner or escalate.
 
 ---
 
@@ -31,7 +31,7 @@ GPT Web provides the **semantic preference** in the Backlog Item. OpenClaw provi
 GPT Web
   → what planner is preferred for this kind of work
 
-OpenClaw/provider state
+provider/access-surface state
   → what providers are technically available and what usage state is observable
 
 n8n deterministic policy
@@ -39,7 +39,15 @@ n8n deterministic policy
     or whether a Telegram gate is required
 ```
 
-OpenClaw is the broker. It is not the strategic project planner.
+OpenClaw is a preserved staged broker capability, not the current Control Plane
+authority, active broker, scheduler, state owner, or quota source. It is not the
+strategic project planner.
+
+The terms remain separate: the deterministic backlog selector chooses an item;
+the planner semantic preference describes intended cognition; planner
+admission/fallback policy determines eligibility; and the execution router
+decides where an already authorized Execution Packet runs. There is no silent
+fallback.
 
 Qwen is a planner when selected. It is not required merely to route to another planner.
 

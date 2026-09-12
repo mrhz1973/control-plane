@@ -239,7 +239,59 @@ The checkpoint is incomplete if the next session must ask any of:
 
 ---
 
-## 10. Hard boundaries
+## 10. Bounded continuation and human gate
+
+Classification and continuation eligibility are canonicalized in
+`docs/contracts/bounded-repair-continuation-policy-v1.md`; this checkpoint
+remains the persistence artifact consumed by that policy.
+
+The checkpoint is the persistence component for a bounded continuation; it is
+not a second retry system and never grants new authority. The policy is
+harness-independent and applies to Cursor Agent/ACP, Codex, Qwen/OpenCode,
+Hermes, or a future executor only after the relevant harness behavior is
+qualified.
+
+```text
+OBSERVED FAILURE
+  → classify STOP
+  → STOP_REPAIRABLE_IN_SCOPE
+  → HUMAN_GATE
+  → RESUME SAME TASK/SESSION
+  → bounded repair
+  → validation / regressions
+  → PASS or STOP
+```
+
+`STOP_TERMINAL` and `STOP_NEW_SCOPE_REQUIRED` cannot resume in the same task.
+`STOP_REPAIRABLE_IN_SCOPE` may resume only when all of these remain unchanged:
+
+```text
+SAME_TASK_REF=YES
+SAME_OBJECTIVE=YES
+SCOPE_EXPANSION=NO
+AUTHORITY_EXPANSION=NO
+HARD_WALL_CHANGE=NO
+PRODUCTION_AUTHORITY_CHANGE=NO
+REPAIR_DERIVED_FROM_OBSERVED_FAILURE=YES
+```
+
+The Human Gate is mandatory before same-session resume. The continuation
+preserves task identity, objective, scope, hard walls, side-effect/provider/
+retry-send budgets, fallback policy, and production authority. A checkpoint
+never self-authorizes a repair or a new scope.
+
+Bounded is not synonymous with short duration. A session may continue across
+checkpoints for hours while it produces new evidence, converges, and remains
+within the same bounds. It must gate or stop on non-convergence, repetitive
+proof without new information, scope/authority expansion, production
+authorization, exhausted side-effect budget, changed base, or operator-only
+decision. No universal `MAX_RUNTIME=20m` or `MAX_RUNTIME=30m` rule applies.
+
+Same-session classifications remain evidence-specific: `PROJECT_PROVEN`,
+`PARTIALLY_PROVEN`, and `VENDOR_SUPPORTED_NOT_PROJECT_PROVEN` must not be
+collapsed into one another.
+
+## 11. Hard boundaries
 
 A checkpoint never authorizes scope expansion, destructive actions, runtime activation, PM-34, L5, permanent schedules or permanent loops.
 

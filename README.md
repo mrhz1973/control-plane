@@ -225,7 +225,7 @@ HEAD, gate, runtime, task e NEXT vivono nel frontier/active work, non qui.
 | Doc | Ruolo |
 |---|---|
 | [docs/runtime/CURRENT_FRONTIER.md](docs/runtime/CURRENT_FRONTIER.md) | **LIVE STATE** compatto — unica autorità sullo stato operativo corrente |
-| [docs/foundation/PROJECT_VISION.md](docs/foundation/PROJECT_VISION.md) | Foundation **v3.1** e invarianti |
+| [docs/foundation/PROJECT_VISION.md](docs/foundation/PROJECT_VISION.md) | Foundation **v3.2** e invarianti |
 | [docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md](docs/foundation/STANDING_OPERATOR_AUTHORIZATION.md) | autorizzazione persistente dell'operatore per AUTO-VIA senza round-trip ripetuti |
 | [docs/foundation/PROMPT_SEQUENCING_GATE.md](docs/foundation/PROMPT_SEQUENCING_GATE.md) | gate canonico `prompt N → agg → riepilogo → prompt N+1` |
 | [docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md](docs/foundation/MULTI_PLANNER_CURSOR_LOOP_OPERATING_MODEL.md) | Operating model multi-planner → Cursor, on demand |
@@ -237,7 +237,11 @@ HEAD, gate, runtime, task e NEXT vivono nel frontier/active work, non qui.
 
 ## Architettura target v3
 
-`GPT Web → GitHub backlog → n8n policy/gates → OpenClaw broker → Qwen/GLM/Codex planner → Execution Packet → Cursor bounded loop → Bugbot → GitHub`
+`GPT Web/operator → GitHub backlog → deterministic selector/admission → n8n policy/gates → LiteLLM structural remote gateway → Execution Packet → qualified OpenCode/Qwen or Cursor harness → Bugbot → GitHub`
+
+`OpenClaw = KEEP_STAGED_PENDING` (historical/future broker path; explicit
+selection and authorization only). It is not the current authority, active
+broker, scheduler, state owner, or quota source.
 
 Dettaglio e capability runtime effettivamente verificate: leggere il frontier e l'ACTIVE WORK corrente.
 
@@ -246,7 +250,8 @@ Dettaglio e capability runtime effettivamente verificate: leggere il frontier e 
 - GitHub = source of truth.
 - GPT Web = orchestratore strategico / backlog owner.
 - n8n = workflow/policy/gate; non planner LLM.
-- OpenClaw = provider/auth/quota broker target.
+- OpenClaw = preserved staged fallback/provider-auth-quota capability; not the
+  current active broker or authority.
 - Cursor = execution harness; loop task-bounded.
 - Workflow produzione mai mutati in silenzio.
 - Runtime/credential/PM-34/L5/permanent schedule/loop seguono il frontier, l'AUTO-VIA e la standing operator authorization; si ferma solo davanti a un blocco manuale/tecnico reale o a scope non definito.
