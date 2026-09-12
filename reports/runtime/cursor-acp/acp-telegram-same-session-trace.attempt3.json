@@ -1,0 +1,521 @@
+{
+  "task_ref": "V4_CURSOR_AGENT_ACP_TELEGRAM_SAME_SESSION_HUMAN_GATE_V2",
+  "run_id": "db9cebd183f94a78b57410f424be73b6",
+  "decision_id": "ACP-GATE-DB9CEBD183F9",
+  "trace": [
+    {
+      "ts": "2026-09-12T20:59:46.456Z",
+      "stage": "RUN_IDENTITY",
+      "run_id": "db9cebd183f94a78b57410f424be73b6",
+      "decision_id": "ACP-GATE-DB9CEBD183F9"
+    },
+    {
+      "ts": "2026-09-12T20:59:47.765Z",
+      "stage": "ACP_INITIALIZED",
+      "protocolVersion": 1,
+      "agent": "caps-present"
+    },
+    {
+      "ts": "2026-09-12T20:59:50.826Z",
+      "stage": "ACP_SESSION_NEW",
+      "session_id_sha12": "44d85f323807",
+      "session_len": 36
+    },
+    {
+      "ts": "2026-09-12T20:59:51.758Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"session_info_update\",\"title\":\"Gate Proof Agent\"}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:51.800Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"available_commands_update\",\"availableCommands\":[{\"name\":\"copy-request-id\",\"description\":\"Copy the last request ID to clip"
+    },
+    {
+      "ts": "2026-09-12T20:59:52.511Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"Running the bounded \"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:52.512Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"same-session human-gate\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:52.513Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" proof test.\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.128Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"\\n\\nChecking available\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.218Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" tools. The AskQuestion\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.305Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" tool is not among them.\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.910Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"\\n\\nProceeding to attempt\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.912Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" the AskQuestion tool\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.912Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" call despite its absence\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.913Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" from the visible tool\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.915Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" list.\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.915Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"Calling\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.916Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" Ask\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.917Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"Question once with\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.918Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" the exact gate\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.918Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"-proof\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.919Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" prompt and\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.920Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" options\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:53.920Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\".\\n\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:54.937Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"The AskQuestion tool\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.016Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" is unavailable in this\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.097Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" environment.\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.767Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"\\n\\nThe proof failed because\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.769Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" the AskQuestion tool\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.772Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" was not found. No operator\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.773Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" answer was returned.\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.774Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" I will not read files,\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.775Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" run commands, or touch\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.776Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" git.\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.776Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"**\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.777Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"Proof status\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.778Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\": FAILED**\\n\\n\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.779Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"`AskQuestion`\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.780Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" was invoked once\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.782Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" with\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.783Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" the exact\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.784Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" prompt\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.785Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" and options (\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.786Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"A,\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.787Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" B, C),\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.788Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" but the call\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.789Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" returned\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.791Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" **\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.792Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"Tool not found:\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.793Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" AskQuestion**.\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.794Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" This\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.795Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" session does\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.796Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" not expose that tool\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.799Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\", so there\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.800Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" was\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.801Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" no operator answer to\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.802Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" record\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.803Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\".\\n\\nPer\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.805Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" your instructions, the\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.806Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" expected final line\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.807Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" (`\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.810Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"GATE_ANS\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.812Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"WER=<letter>\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.813Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" CONTINUED_IN\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.815Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"_SAME_SESSION=true\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.816Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"`) requires\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.818Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" a\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.819Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" successful\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.820Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" tool response\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.821Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\"; that\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.823Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" could\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.824Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\" not be produced here\"}}}"
+    },
+    {
+      "ts": "2026-09-12T20:59:55.826Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "session_id": "f85c8933-f630-450f-a888-73fa1326cb5d",
+      "preview": "{\"sessionId\":\"f85c8933-f630-450f-a888-73fa1326cb5d\",\"update\":{\"sessionUpdate\":\"agent_message_chunk\",\"content\":{\"type\":\"text\",\"text\":\".\"}}}"
+    },
+    {
+      "ts": "2026-09-12T21:04:50.836Z",
+      "stage": "UNCAUGHT",
+      "status": "STOP",
+      "reason": "ask timeout"
+    }
+  ]
+}

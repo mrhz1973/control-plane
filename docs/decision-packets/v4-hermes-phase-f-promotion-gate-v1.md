@@ -290,7 +290,8 @@ CURRENT_MODE_FINAL=SHADOW_ONLY
 ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0
 PRODUCTION_DISPATCH=NO
 PROMOTION_ACTIVATED=NO
-ISSUE_73=OPEN
+ISSUE_73=OPEN (historical at that update's time; later CLOSED_COMPLETED on
+2026-09-12 — preserved verbatim as history)
 ```
 
 The TEST-ONLY synthetic authorization fixture used in proofs
@@ -361,7 +362,8 @@ ROUTE_CONTROL_STATE_FINAL=DISABLED
 RESTORATION_STATE=SHADOW_ONLY
 ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0
 LIVE_DISPATCH_COUNT_TOTAL=1
-ISSUE_73=OPEN
+ISSUE_73=OPEN (at activation time; closed completed later on 2026-09-12 after
+this packet's acceptance update — see issue #73 closure comment)
 ```
 
 Report: `reports/architecture/v4_hermes_phase_f_bounded_production_activation_v1.md`.

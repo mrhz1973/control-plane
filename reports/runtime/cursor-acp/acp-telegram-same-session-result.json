@@ -1,0 +1,25 @@
+{
+  "RESULT": "STOP",
+  "TASK_REF": "V4_CURSOR_AGENT_ACP_TELEGRAM_SAME_SESSION_HUMAN_GATE_V2",
+  "BASE_HEAD": "f6e96cfec89c28ee92bcaaca6248d8f85d27a29c",
+  "ACP_SESSION_ID_PRESENT": true,
+  "ACP_SESSIONS_CREATED_TOTAL": 3,
+  "ASK_QUESTION": "FAIL — cursor/ask_question never emitted by agent (tool not exposed in ACP runtime default mode)",
+  "TELEGRAM_NOTIFICATION": "NOT_RECEIVED — send never attempted (driver blocked upstream at ask event)",
+  "TELEGRAM_BINDING_SANITIZED_CHECK": "PASS — getMe ok, bot Mar***, chat/user ids present, no token exposure",
+  "CALLBACK_VERIFIED": false,
+  "SAME_SESSION_RESUME": "NOT_REACHED",
+  "STALE_DUPLICATE_FENCES": "NOT_REACHED (implemented in driver, unexercised)",
+  "NEW_SESSION_SUBSTITUTION": "NO",
+  "PRODUCTION_CHANGED": "NO",
+  "ISSUE_73": "CLOSED_COMPLETED",
+  "STEP_0_FRONTIER_RECONCILE": "DONE",
+  "RETRY_BUDGET_USED": "1_OF_1",
+  "HUMAN_GATE_REQUIRED": "NO — gate path healthy, never reached; no mutation/credential change needed",
+  "BLOCKER": "ASK_QUESTION_TOOL_NOT_EXPOSED_IN_ACP_RUNTIME (v2026.09.10-fd3934a)",
+  "EVIDENCE": [
+    "reports/runtime/cursor-acp/acp-telegram-same-session-trace.attempt2.json",
+    "reports/runtime/cursor-acp/acp-telegram-same-session-trace.attempt3.json",
+    "reports/architecture/v4_cursor_agent_acp_telegram_same_session_human_gate_v2.md"
+  ]
+}
