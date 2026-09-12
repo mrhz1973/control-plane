@@ -302,3 +302,68 @@ This update records implementation capability only. The FINAL production activat
 decision (A: activate under bounded production authorization / B: keep ready but disabled /
 C: reject activation) remains an explicit future HUMAN GATE, distinguishable and
 unexecuted.
+
+---
+
+## Update: FINAL production activation decision A recorded + bounded activation executed + rolled back
+
+**ACTIVATION_TASK_REF:** `V4_HERMES_PHASE_F_BOUNDED_PRODUCTION_ACTIVATION_V1`
+**ACTIVATION_BASE_HEAD:** `8323b2f91b91ba120a8fc142fe0313e7b8c31db8`
+**ACTIVATION_DATE:** 2026-09-12
+
+### Human decision A — RECORDED and EXECUTED (bounded)
+
+```text
+FINAL_PRODUCTION_ACTIVATION_DECISION=A_RECORDED
+PROMOTED_ROUTE_ACTIVATION=PASS
+EXACT_ROUTE_AUTHORIZATION=PASS
+AUTHORIZATION_BOUNDED=YES
+ROUTE_CONTROL_ACTIVE_STATE=CANDIDATE_ENABLED (canary window only)
+RT25_ADMISSION_REUSED=YES
+HERMES_QUALIFIED_TRANSPORT_REUSED=YES
+OBSERVABILITY_LIVE=PASS
+ROLLBACK_READY=YES
+SILENT_FALLBACK=NO
+AUTHORIZATION_BYPASS=NO
+LIVE_CANARY=PASS
+LIVE_DISPATCH_COUNT=1
+```
+
+Decision A authorized bounded activation of the qualified
+`qwen_local -> hermes -> chatgpt_web` route ONLY (exact route). The human gate was
+exercised in-band through the canonical Telegram issuance service (operator APPROVE),
+producing a route-pinned `ACTIVE` authorization with 1h TTL that was ledger-consumed
+and transitioned `ACTIVE -> SPENT` BEFORE the single production dispatch.
+
+### Activation chronology
+
+1. Exact-route authorization delta: the three repo allow-list pins (provenance
+   registry validator, appended-entry pin, issuance `ALLOWED_ROUTES` + pending-store
+   validator) plus user-local issuance config now admit EXACTLY two routes
+   (`opencode+qwen_local`, `hermes+chatgpt_web`); I05 regression updated to assert
+   the two-route law (anti-broadening intent preserved).
+2. Route control `DISABLED -> CANDIDATE_ENABLED` (the only production-capable
+   canonical state), consumed by the real promotion adapter dual gate.
+3. Canonical issuance + operator Telegram APPROVE ->
+   `AUTH-PROMO-ACT-4c15532ece9fcce4` ACTIVE (route-pinned, provenance-bound).
+4. ONE bounded live canary (RUN_ID `108690b6ad15430eb2f55c885b1eca9e`):
+   2 Qwen controller generations, ONE ChatGPT Web send via the qualified chain-send
+   primitive routed through `executePromotedRoute`
+   (`EXECUTED_CONFIRMED`), independent DOM verification `CONFIRMED`
+   (`REAL_USER_TURN_DOM_CONFIRMED=PASS`).
+5. Post-canary bounded restore: route control back to `DISABLED`
+   (restoration `SHADOW_ONLY`, `disable_history` recorded); adapter re-check now
+   returns `BLOCKED / ROUTE_CONTROL_DISABLED` — the route cannot dispatch again
+   without a new human gate.
+
+```text
+ROUTE_CONTROL_STATE_FINAL=DISABLED
+RESTORATION_STATE=SHADOW_ONLY
+ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0
+LIVE_DISPATCH_COUNT_TOTAL=1
+ISSUE_73=OPEN
+```
+
+Report: `reports/architecture/v4_hermes_phase_f_bounded_production_activation_v1.md`.
+Evidence: `reports/runtime/phase-f/phase-f-bounded-production-activation-evidence.json`
+(+ canary `phase-f-activation-canary-trace.json` / `-result.json`).

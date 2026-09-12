@@ -1,0 +1,101 @@
+{
+  "schema_version": "v4-phase-f-bounded-production-activation-evidence-v1",
+  "task_ref": "V4_HERMES_PHASE_F_BOUNDED_PRODUCTION_ACTIVATION_V1",
+  "base_head": "8323b2f91b91ba120a8fc142fe0313e7b8c31db8",
+  "generated_at": "2026-09-12T16:50:00.000Z",
+  "human_decision": "A_RECORDED",
+  "activation": {
+    "PROMOTED_ROUTE_ACTIVATION": "PASS",
+    "EXACT_ROUTE_AUTHORIZATION": "PASS",
+    "AUTHORIZATION_BOUNDED": "YES",
+    "ROUTE_CONTROL_ACTIVE_STATE_AT_CANARY": "CANDIDATE_ENABLED",
+    "ROUTE_CONTROL_STATE_FINAL": "DISABLED",
+    "RESTORATION_STATE": "SHADOW_ONLY",
+    "RT25_ADMISSION_REUSED": "YES",
+    "HERMES_QUALIFIED_TRANSPORT_REUSED": "YES",
+    "OBSERVABILITY_LIVE": "PASS",
+    "ROLLBACK_READY": "YES",
+    "SILENT_FALLBACK": "NO",
+    "AUTHORIZATION_BYPASS": "NO",
+    "LIVE_CANARY": "PASS",
+    "LIVE_DISPATCH_COUNT": 1
+  },
+  "authorization": {
+    "authorization_id": "AUTH-PROMO-ACT-4c15532ece9fcce4",
+    "route_id": "hermes+chatgpt_web",
+    "scope_digest": "4c15532ece9fcce4ecc6f1957b94999757c9a38939554a8b7f4ab389814fea45",
+    "execution_id": "EXEC-PROMO-ACT-CANARY-0003",
+    "issued_at": "2026-09-12T16:44:46.865Z",
+    "expires_at": "2026-09-12T17:44:46.865Z",
+    "human_gate": "TELEGRAM_APPROVE_OPERATOR_IN_BAND",
+    "issuance_service": "tools/serve-v4-runtime-authorization-issuance-v1.mjs (127.0.0.1:18792)",
+    "ledger_first": true,
+    "active_to_spent_before_transport": true,
+    "state_final": "SPENT"
+  },
+  "canary": {
+    "run_id": "108690b6ad15430eb2f55c885b1eca9e",
+    "dispatched_at": "2026-09-12T16:47:27.942Z",
+    "route": { "controller": "qwen_local", "bridge": "hermes", "target": "chatgpt_web" },
+    "dual_gate_classification": "READY_FOR_AUTHORIZED_DISPATCH",
+    "qwen_generations_live": 2,
+    "chatgpt_web_sends": 1,
+    "transport": "chain-send S1 (snapshot -> fill -> press Enter, ONE agent-browser connection) via tools/hermes-per-invocation-browser-allowlist-v1.mjs",
+    "transport_routed_through": "tools/v4-phase-f-promotion-adapter-v1.mjs executePromotedRoute (production_activation_confirmed=true)",
+    "verification": {
+      "verifier": "tools/chatgpt-web-dom-verifier-v1.mjs (independent DOM)",
+      "verification_state": "CONFIRMED",
+      "real_user_turn_dom_confirmed": "PASS",
+      "user_turns_after": 1,
+      "assistant_turns_after": 1,
+      "composer_empty_after": true
+    },
+    "trace": "reports/runtime/phase-f/phase-f-activation-canary-trace.json",
+    "result": "reports/runtime/phase-f/phase-f-activation-canary-result.json"
+  },
+  "rollback": {
+    "post_canary_state": "DISABLED",
+    "restoration_state": "SHADOW_ONLY",
+    "disable_history_entry": true,
+    "adapter_post_rollback_classification": "ROUTE_CONTROL_DISABLED (status=BLOCKED)",
+    "verified_at": "2026-09-12T16:49:30.000Z"
+  },
+  "regressions": [
+    { "suite": "tests/phase-f-bounded-production-activation-v1", "result": "13/13 PASS" },
+    { "suite": "tests/phase-f-bounded-promotion-implementation-v1", "result": "24/24 PASS" },
+    { "suite": "tests/v4-runtime-authorization-issuance", "result": "60/60 PASS" },
+    { "suite": "tests/v4-runtime-authorization-durable-spend-ledger", "result": "13/13 PASS" },
+    { "suite": "tests/hermes-phase-e-quota-degraded-shadow-route-v1", "result": "10/10 PASS" },
+    { "suite": "tests/phase-f-readiness-gap-closure-v1", "result": "30/30 PASS" },
+    { "suite": "tests/v4-local-runtime-readonly-contribution", "result": "57/57 PASS" },
+    { "suite": "tests/rt25-t04-quota-state-join", "result": "8/8 PASS" },
+    { "suite": "tests/rt25-t09-execution-selector", "result": "5/5 PASS" }
+  ],
+  "failures_repaired_in_session": [
+    {
+      "attempt": 1,
+      "stage": "S1_TYPE",
+      "reason": "HERMES_TYPE_EXECUTION_FAILED (error_class=str: agent-browser Unknown ref)",
+      "classification": "STOP_REPAIRABLE_IN_SCOPE",
+      "root_cause": "agent-browser snapshot refs are connection-scoped; a standalone exec-tool browser_type (separate CLI invocation = separate client connection) can never resolve the S0 snapshot ref. The qualified Phase D transport already executes type INSIDE chain-send on ONE connection; the canary driver deviated from it.",
+      "repair": "S1 now VALIDATES the GEN2 browser_type decision (state machine, allowlist, composer-ref identity, payload identity) and the type executes inside the adapter-routed chain-send S1 batch; no new transport, no authority change, same send budget (1).",
+      "authorization_note": "The prior authorization (AUTH-PROMO-ACT-5dac3f49bf0f771e) was ledger-consumed with ZERO production dispatches; re-issuance via the canonical Telegram gate was required and obtained (AUTH-PROMO-ACT-4c15532ece9fcce4). No sends occurred under the prior authorization.",
+      "human_gate": "per docs/contracts/bounded-repair-continuation-policy-v1.md (same task, same objective, no scope/authority/hard-wall change)"
+    },
+    {
+      "attempt": 2,
+      "stage": "RT25_JOIN",
+      "reason": "ADMISSION_NOT_FRESH_ADMISSIBLE (composer CONTRIBUTION_FUTURE_DATED)",
+      "root_cause": "driver captured nowMs BEFORE spawning the producer; produced_at exceeded nowMs -> composer correctly rejected the contribution as future-dated.",
+      "repair": "driver now captures nowMs AFTER the producer run (admission clock never predates the observation it admits). Composer law unchanged."
+    }
+  ],
+  "scope_invariants": {
+    "SECOND_ROUTER_CREATED": false,
+    "SECOND_QUOTA_SYSTEM": false,
+    "SECOND_AUTHORIZATION_SYSTEM": false,
+    "SECOND_TRANSPORT": false,
+    "ALLOW_LIST_MODEL": "extension to exactly two canonical routes (opencode+qwen_local, hermes+chatgpt_web); no other route admitted",
+    "OPERATOR_RESOURCE_POLICIES_AUTHORITATIVE": true
+  }
+}

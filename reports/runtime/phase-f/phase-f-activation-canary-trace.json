@@ -1,0 +1,142 @@
+{
+  "task_ref": "V4_HERMES_PHASE_F_BOUNDED_PRODUCTION_ACTIVATION_V1",
+  "base_head": "8323b2f91b91ba120a8fc142fe0313e7b8c31db8",
+  "trace": [
+    {
+      "ts": "2026-09-12T16:45:42.758Z",
+      "stage": "RUN_IDENTITY",
+      "run_id": "108690b6ad15430eb2f55c885b1eca9e",
+      "nonce": "PROMO_ACT_MTYM9I3Q_3e3cf2e4",
+      "route": "hermes+chatgpt_web"
+    },
+    {
+      "ts": "2026-09-12T16:45:52.593Z",
+      "stage": "LOCAL_RUNTIME_PRODUCER",
+      "ok": true,
+      "qwen_classification": "QWEN_READY_IDLE",
+      "qwen_available": true
+    },
+    {
+      "ts": "2026-09-12T16:45:56.440Z",
+      "stage": "RT25_JOIN",
+      "ok": true,
+      "joined_at": "2026-09-12T16:45:52.593Z",
+      "qwen_available": true
+    },
+    {
+      "ts": "2026-09-12T16:45:56.529Z",
+      "stage": "LIVE_PRECHECK",
+      "status": "PASS",
+      "surface": "CDP_9222"
+    },
+    {
+      "ts": "2026-09-12T16:45:56.668Z",
+      "stage": "LIVE_PRECHECK",
+      "status": "PASS",
+      "surface": "HERMES_16080"
+    },
+    {
+      "ts": "2026-09-12T16:45:56.850Z",
+      "stage": "FRESH_CHAT_CHECK",
+      "observed_at": "2026-09-12T16:45:56.829Z",
+      "USER_TURNS": 0,
+      "ASSISTANT_TURNS": 0,
+      "COMPOSER_EMPTY": "YES",
+      "FRESH_CHAT": "YES",
+      "AUTH_HINTS": {
+        "loginButton": false,
+        "accountMenu": true,
+        "sidebarNewChat": true,
+        "upgradeChip": false
+      },
+      "AUTHENTICATED_HINT": "YES"
+    },
+    {
+      "ts": "2026-09-12T16:45:56.852Z",
+      "stage": "PHASE_E",
+      "status": "SHADOW_ROUTE_SELECTED",
+      "mode": "SHADOW_ONLY"
+    },
+    {
+      "ts": "2026-09-12T16:45:56.853Z",
+      "stage": "ROUTE_CONTROL",
+      "effective_state": "CANDIDATE_ENABLED",
+      "candidate_flag": true
+    },
+    {
+      "ts": "2026-09-12T16:45:56.856Z",
+      "stage": "AUTH_INSPECT",
+      "ok": true,
+      "route_id": "hermes+chatgpt_web"
+    },
+    {
+      "ts": "2026-09-12T16:45:56.858Z",
+      "stage": "DUAL_GATE_ELIGIBILITY",
+      "status": "ELIGIBLE",
+      "classification": "READY_FOR_AUTHORIZED_DISPATCH",
+      "reasons": [
+        "ALL_DUAL_GATE_CONDITIONS_TRUE",
+        "ROUTE_CONTROL_CANDIDATE",
+        "PHASE_E_DEGRADED_SHADOW_ROUTE",
+        "RESOURCES_FRESH_ADMISSIBLE",
+        "AUTHORIZATION_ACTIVE_BOUND",
+        "COMMERCIAL_POOLS_DEGRADED_AS_EXPECTED"
+      ]
+    },
+    {
+      "ts": "2026-09-12T16:45:56.867Z",
+      "stage": "AUTH_CONSUMED",
+      "ledger_first": true,
+      "active_to_spent": true
+    },
+    {
+      "ts": "2026-09-12T16:45:59.466Z",
+      "stage": "BARRIER1_SCHEMAS",
+      "model_visible_count": 4
+    },
+    {
+      "ts": "2026-09-12T16:45:59.468Z",
+      "stage": "CONTROLLER_GENERATION",
+      "status": "START",
+      "generation": 1
+    },
+    {
+      "ts": "2026-09-12T16:46:07.701Z",
+      "stage": "CONTROLLER_GENERATION",
+      "status": "DONE",
+      "generation": 1,
+      "tool_call_count": 1
+    },
+    {
+      "ts": "2026-09-12T16:46:21.315Z",
+      "stage": "S0_RESULT",
+      "composer_ref_obtained": "YES"
+    },
+    {
+      "ts": "2026-09-12T16:46:21.316Z",
+      "stage": "CONTROLLER_GENERATION",
+      "status": "START",
+      "generation": 2
+    },
+    {
+      "ts": "2026-09-12T16:47:14.046Z",
+      "stage": "CONTROLLER_GENERATION",
+      "status": "DONE",
+      "generation": 2,
+      "tool_call_count": 1
+    },
+    {
+      "ts": "2026-09-12T16:47:14.223Z",
+      "stage": "S1_DOM_OBSERVE",
+      "COMPOSER_CONTAINS_CURRENT_NONCE": "NO",
+      "USER_TURNS": 0,
+      "ASSISTANT_TURNS": 0
+    },
+    {
+      "ts": "2026-09-12T16:47:27.942Z",
+      "stage": "PROMOTED_DISPATCH",
+      "status": "EXECUTED_CONFIRMED",
+      "verification_state": "CONFIRMED"
+    }
+  ]
+}

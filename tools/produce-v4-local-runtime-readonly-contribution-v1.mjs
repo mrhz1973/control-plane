@@ -32,7 +32,7 @@ function Get-Sample {
     $parentId = 0
     $cmd = ''
     $pname = [string]$_.ProcessName
-    if ($pname -match '^llama-server') {
+    if ($pname -match '^(llama-server|python)') {
       try {
         $w = Get-CimInstance -ClassName Win32_Process -Filter ("ProcessId=" + [int]$_.Id) -ErrorAction Stop
         if ($w) {
@@ -168,6 +168,16 @@ export function isCanonicalModelsManagerCommand(cmd, canonicalPort = 8080) {
   return hasPreset && hasAutoload && hasPort;
 }
 
+/** Bounded router-mode check: the documented canonical qwen topology is a
+ * python router (`qwen_runtime_router.py --config ...`) owning the canonical
+ * :8080 listen socket, with llama-server models-manager/worker children on
+ * sidecar ports. The python router itself performs no inference. */
+function isCanonicalRouterCommand(cmd) {
+  const text = String(cmd || "");
+  if (!text) return false;
+  return /qwen_runtime_router\.py\b/.test(text) && /--config\b/.test(text);
+}
+
 /**
  * Resolve canonical manager + direct child model workers for one sample.
  * Returns structural facts only — no pid/cmd/path emission.
@@ -187,7 +197,9 @@ export function resolveCanonicalManagerWorkerTopology(sample, canonicalPort = 80
   const managerPid = Number(canonicalConn.owningPid_ ?? canonicalConn.owningPid);
   const managerProc = procByPid(sample?.procs, managerPid);
   const managerName = managerProc?.name || canonicalConn.ownerName;
-  if (!isExpectedServer(managerName, {})) {
+  const managerCmd = managerProc?.cmd_ || "";
+  const isRouterManager = isCanonicalRouterCommand(managerCmd);
+  if (!isExpectedServer(managerName, {}) && !isRouterManager) {
     return {
       ok: false,
       canonical_manager: false,
@@ -197,11 +209,10 @@ export function resolveCanonicalManagerWorkerTopology(sample, canonicalPort = 80
       unexpected_canonical_owner: true,
     };
   }
-  const managerCmd = managerProc?.cmd_ || "";
   const canonicalManager =
     Number.isFinite(managerPid) &&
     managerPid > 0 &&
-    isCanonicalModelsManagerCommand(managerCmd, canonicalPort);
+    (isCanonicalModelsManagerCommand(managerCmd, canonicalPort) || isRouterManager);
   if (!canonicalManager) {
     return {
       ok: true,
@@ -218,10 +229,18 @@ export function resolveCanonicalManagerWorkerTopology(sample, canonicalPort = 80
 
   const workers = [];
   const conflicts = [];
+  const candidates = [];
   for (const c of sample?.conns || []) {
     if (String(c.state || "").toUpperCase() !== "LISTEN") continue;
     if (Number(c.localPort) === Number(canonicalPort)) continue;
     if (!isInferenceServerFamilyListenerOwner(c.ownerName)) continue;
+    candidates.push(c);
+  }
+  // Pass 1: direct children of the manager (order-independent).
+  // FAIL-CLOSED DEFAULT: any inference-family listener whose lineage is not
+  // the manager (and, in router mode, not a manager-child's child) is a
+  // conflict — never silently ignored.
+  for (const c of candidates) {
     const ownerPid = Number(c.owningPid_ ?? c.owningPid);
     const ownerProc = procByPid(sample?.procs, ownerPid);
     const ownerName = ownerProc?.name || c.ownerName;
@@ -239,6 +258,24 @@ export function resolveCanonicalManagerWorkerTopology(sample, canonicalPort = 80
       continue;
     }
     conflicts.push(c);
+  }
+  // Pass 2 (router topology only): rescue grandchildren — llama-server
+  // children of the models-manager child of the python router. The router
+  // architecture owns them; everything else stays a conflict.
+  if (isRouterManager) {
+    for (let i = conflicts.length - 1; i >= 0; i--) {
+      const c = conflicts[i];
+      const ownerPid = Number(c.owningPid_ ?? c.owningPid);
+      const ownerProc = procByPid(sample?.procs, ownerPid);
+      const parentPid = Number(ownerProc?.parentPid_);
+      if (
+        Number.isFinite(parentPid) &&
+        workers.some((w) => Number(w.owningPid_ ?? w.owningPid) === parentPid)
+      ) {
+        conflicts.splice(i, 1);
+        workers.push(c);
+      }
+    }
   }
 
   return {
@@ -373,11 +410,19 @@ function analyzeSample(sample, host, port) {
   const conflicting = sampleHasInferenceRunner(sample.procNames, true);
   const topology = resolveCanonicalManagerWorkerTopology(sample, port);
   const nonCanonicalListener = hasNonCanonicalInferenceListener(sample, port);
+  // Router-mode canonical port owner: the python router is the documented
+  // canonical owner of :8080 (qwen_runtime_router.py --config ...). Owner
+  // name alone is "python"; owner identity is proven by the resolved
+  // router-topology manager fact, not by process name.
+  const routerOwned = topology.canonical_manager === true && topology.ok === true;
   return {
     valid: true,
     listenerCount: listeners.length,
     listenerOwnerNames: ownerNames,
-    unexpectedOwner: ownerNames.length === 1 && !isExpectedServer(ownerNames[0], {}),
+    unexpectedOwner:
+      ownerNames.length === 1 &&
+      !isExpectedServer(ownerNames[0], {}) &&
+      !routerOwned,
     serverProcCount: serverProcs.length,
     hasBusyEstablishedClient: busyClients.length > 0,
     hasPassiveCanonicalWebUi: passiveWebUi.length > 0,

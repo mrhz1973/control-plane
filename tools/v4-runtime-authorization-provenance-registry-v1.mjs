@@ -65,7 +65,13 @@ export function validateRegistryObject(obj) {
     if (entry.state !== "ACTIVE" && entry.state !== "SPENT") {
       return { ok: false, reason: "AUTHORIZATION_REGISTRY_INVALID" };
     }
-    if (entry.route_id !== "opencode+qwen_local") {
+    // V4_HERMES_PHASE_F_BOUNDED_PRODUCTION_ACTIVATION_V1: exact-route
+    // extension of the v1 allow-list (human decision A). Historical
+    // opencode+qwen_local identity unchanged; foreign routes stay rejected.
+    if (
+      entry.route_id !== "opencode+qwen_local" &&
+      entry.route_id !== "hermes+chatgpt_web"
+    ) {
       return { ok: false, reason: "AUTHORIZATION_REGISTRY_INVALID" };
     }
     if (!validDate(entry.issued_at)) {
@@ -121,6 +127,9 @@ export function persistRegistry(registryPath, obj, options = {}) {
  * unexpired + route match. Does NOT spend. Used before in-memory binding.
  */
 export function inspectAuthorization(registryPath, authorizationId, options = {}) {
+  // Route-pinned lookup: the caller MUST declare the exact route it is
+  // admitting; there is no implicit default beyond the historical one kept
+  // for opencode+qwen_local compatibility.
   const routeId = options.routeId || "opencode+qwen_local";
   const load = options.loadRegistry || loadRegistry;
   const now = options.now || new Date();
@@ -227,7 +236,10 @@ export function issueActiveEntry(registryPath, entry, options = {}) {
   if (typeof id !== "string" || id.length === 0 || id.length > 200) {
     return reject("AUTHORIZATION_REGISTRY_INVALID");
   }
-  if (entry.route_id !== "opencode+qwen_local") {
+  if (
+    entry.route_id !== "opencode+qwen_local" &&
+    entry.route_id !== "hermes+chatgpt_web"
+  ) {
     return reject("AUTHORIZATION_REGISTRY_INVALID");
   }
 
@@ -263,7 +275,9 @@ export function issueActiveEntry(registryPath, entry, options = {}) {
       {
         authorization_id: id,
         state: "ACTIVE",
-        route_id: "opencode+qwen_local",
+        // Appended entry carries EXACTLY the admitted route — never a
+        // hardcoded identity. Route validity enforced by validateRegistryObject.
+        route_id: entry.route_id,
         issued_at: issuedAt,
         expires_at: expiresAt,
         spent_at: null,

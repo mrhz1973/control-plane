@@ -33,7 +33,9 @@ export const PENDING_TTL_SECONDS_DEFAULT = 900;
 export const PENDING_TTL_SECONDS_MAX = 900;
 export const AUTHORIZATION_TTL_SECONDS_DEFAULT = 3600;
 export const AUTHORIZATION_TTL_SECONDS_MAX = 3600;
-export const ALLOWED_ROUTES = ["opencode+qwen_local"];
+// V4_HERMES_PHASE_F_BOUNDED_PRODUCTION_ACTIVATION_V1: exact-route extension
+// (human decision A). Historical opencode+qwen_local identity unchanged.
+export const ALLOWED_ROUTES = ["opencode+qwen_local", "hermes+chatgpt_web"];
 export const CALLBACK_NAMESPACE = "ra";
 
 const RFC3339_RE =
@@ -189,7 +191,10 @@ export function validatePendingStoreObject(obj) {
     if (!validId(d.task_id) || !validId(d.execution_id)) {
       return { ok: false, reason: "ISSUANCE_PENDING_STORE_INVALID" };
     }
-    if (d.route_id !== "opencode+qwen_local") {
+    if (
+      d.route_id !== "opencode+qwen_local" &&
+      d.route_id !== "hermes+chatgpt_web"
+    ) {
       return { ok: false, reason: "ISSUANCE_PENDING_STORE_INVALID" };
     }
     if (typeof d.scope_digest !== "string" || !SCOPE_DIGEST_RE.test(d.scope_digest)) {

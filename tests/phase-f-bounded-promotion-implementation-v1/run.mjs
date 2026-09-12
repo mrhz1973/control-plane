@@ -331,11 +331,20 @@ await t("I04", "hard walls in module code: no production promotion execution pat
   assert.ok(!/promot\w*\s*[:=]\s*(true|"YES")/i.test(code.replace(/production_dispatch/g, "")));
 });
 
-await t("I05", "provenance registry route allow-list NOT widened by this task", async () => {
+await t("I05", "provenance registry allow-list bounded: historical task did not widen; activation extended EXACT-ROUTE only", async () => {
   const { readFileSync: rf } = await import("node:fs");
   const regSrc = rf(resolve(ROOT, "tools/v4-runtime-authorization-provenance-registry-v1.mjs"), "utf8");
   assert.equal((regSrc.match(/opencode\+qwen_local/g) || []).length >= 3, true);
-  assert.ok(!regSrc.includes(PROMOTED_ROUTE_ID), "issuance/spend ownership unchanged");
+  // SUPERSEDED-BY: V4_HERMES_PHASE_F_BOUNDED_PRODUCTION_ACTIVATION_V1 (human
+  // decision A) extended the allow-list by exactly ONE route. The historical
+  // implementation-task invariant ("no widening") remains true for that task's
+  // chronology; the CURRENT law is exact boundedness: exactly two routes, no
+  // wildcards, no third route.
+  const routeLiterals = new Set(regSrc.match(/"(?:opencode\+qwen_local|hermes\+chatgpt_web|opencode\+glm|qwen_local\+hermes\+chatgpt_web)"/g) ?? []);
+  assert.equal(routeLiterals.has('"opencode+qwen_local"'), true);
+  assert.equal(routeLiterals.has('"hermes+chatgpt_web"'), true);
+  assert.equal(routeLiterals.size, 2, `allow-list must be exactly the two canonical routes, found: ${[...routeLiterals].join(",")}`);
+  assert.ok(!/"(?:openclaw|glm|cursor)\+/.test(regSrc), "no legacy/foreign route accepted");
 });
 
 console.log(results.join("\n"));

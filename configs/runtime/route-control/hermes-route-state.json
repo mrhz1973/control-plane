@@ -3,8 +3,15 @@
   "route_id": "qwen_local+hermes+chatgpt_web",
   "state": "DISABLED",
   "restoration_state": "SHADOW_ONLY",
-  "disable_history": [],
-  "updated_at": "2026-09-12T12:00:00.000Z",
-  "updated_by": "V4_HERMES_PHASE_F_READINESS_GAP_CLOSURE_R2_R4_R5_V1",
+  "disable_history": [
+    {
+      "disabled_at": "2026-09-12T16:48:30.000Z",
+      "disabled_by": "V4_HERMES_PHASE_F_BOUNDED_PRODUCTION_ACTIVATION_V1",
+      "reason": "POST_CANARY_BOUNDED_RESTORE — one-shot canary RUN_ID 108690b6ad15430eb2f55c885b1eca9e EXECUTED_CONFIRMED (1 dispatch); CANDIDATE_ENABLED was canary-scoped only. Production re-enable requires a separate human promotion gate.",
+      "canary_result": "reports/runtime/phase-f/phase-f-activation-canary-result.json"
+    }
+  ],
+  "updated_at": "2026-09-12T16:48:30.000Z",
+  "updated_by": "V4_HERMES_PHASE_F_BOUNDED_PRODUCTION_ACTIVATION_V1",
   "note": "DEFAULT=DISABLED. Production-enabled state intentionally absent; activation requires a separate human promotion gate."
 }

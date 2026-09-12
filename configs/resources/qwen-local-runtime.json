@@ -36,7 +36,10 @@
   "profiles": {
     "qwen38-opus-q3-daily-16k": {
       "label": "DAILY_QUALITY_16K",
-      "roles": ["DAILY", "QUALITY"],
+      "roles": [
+        "DAILY",
+        "QUALITY"
+      ],
       "family": "OPUS_Q3",
       "context_tokens": 16384,
       "backend_lane": "normal_llama_cpp",
@@ -47,7 +50,12 @@
     },
     "qwen38-opus-q3-agent-24k": {
       "label": "QUALITY_AGENT_24K",
-      "roles": ["QUALITY_AGENT_24K", "FAST_AGENT", "FAST_INTERACTIVE", "FAST_AGENT_SHORT_TURN"],
+      "roles": [
+        "QUALITY_AGENT_24K",
+        "FAST_AGENT",
+        "FAST_INTERACTIVE",
+        "FAST_AGENT_SHORT_TURN"
+      ],
       "family": "OPUS_Q3",
       "context_tokens": 24576,
       "backend_lane": "normal_llama_cpp",
@@ -58,7 +66,9 @@
     },
     "qwen38-dcfr-iq3-fast-16k": {
       "label": "FAST_16K",
-      "roles": ["FAST"],
+      "roles": [
+        "FAST"
+      ],
       "family": "DCFR_IQ3",
       "context_tokens": 16384,
       "backend_lane": "dcfr_patched_llama_cpp",
@@ -68,14 +78,23 @@
       "selection": "auto_or_explicit",
       "may_not_silently_use_normal_runtime": true,
       "agg_2026_09_03": {
-        "qualified_roles": ["FAST"],
-        "unqualified_roles": ["FAST_INTERACTIVE", "FAST_AGENT_SHORT_TURN"],
+        "qualified_roles": [
+          "FAST"
+        ],
+        "unqualified_roles": [
+          "FAST_INTERACTIVE",
+          "FAST_AGENT_SHORT_TURN"
+        ],
         "note": "Identical short-turn behavior at ctx 16K and 8K: not suitable for short-turn interactive agent workloads. Do not delete or retire."
       }
     },
     "qwen38-dcfr-iq3-agent-24k": {
       "label": "FAST_AGENT_24K",
-      "roles": ["FAST_AGENT", "MCP", "BLENDER_FAST"],
+      "roles": [
+        "FAST_AGENT",
+        "MCP",
+        "BLENDER_FAST"
+      ],
       "family": "DCFR_IQ3",
       "context_tokens": 24576,
       "backend_lane": "dcfr_patched_llama_cpp",
@@ -86,14 +105,23 @@
       "may_not_silently_use_normal_runtime": true,
       "may_not_silently_fall_back_to": "qwen38-dcfr-iq3-fast-16k",
       "agg_2026_09_03": {
-        "qualified_roles": ["FAST_THROUGHPUT_LONG_TASK"],
-        "unqualified_roles": ["FAST_AGENT", "FAST_INTERACTIVE", "FAST_AGENT_SHORT_TURN", "MCP"],
+        "qualified_roles": [
+          "FAST_THROUGHPUT_LONG_TASK"
+        ],
+        "unqualified_roles": [
+          "FAST_AGENT",
+          "FAST_INTERACTIVE",
+          "FAST_AGENT_SHORT_TURN",
+          "MCP"
+        ],
         "note": "Short-turn interactive agent workloads unqualified: ~19-20s prefill for 34-token prompt, ~4.8-5.0 tok/s short decode. Long-workload benchmark remains valid (cold prefill ~87-90 tok/s at 2K-8K; long decode ~12.56 tok/s). Mapping FAST_AGENT -> this profile is STALE pending requalification comparison; must not govern next live execution proof."
       }
     },
     "qwen38-original-ar-16k": {
       "label": "REFERENCE_AR_16K",
-      "roles": ["REFERENCE"],
+      "roles": [
+        "REFERENCE"
+      ],
       "family": "ORIGINAL_AR",
       "context_tokens": 16384,
       "backend_lane": "normal_llama_cpp",
@@ -104,7 +132,10 @@
     },
     "qwen38-uncensored-ar-16k": {
       "label": "MANUAL_UNCENSORED_AR_16K",
-      "roles": ["MANUAL_UNCENSORED", "USER_OVERRIDE"],
+      "roles": [
+        "MANUAL_UNCENSORED",
+        "USER_OVERRIDE"
+      ],
       "family": "UNCENSORED_AR",
       "context_tokens": 16384,
       "backend_lane": "normal_llama_cpp",
@@ -151,7 +182,7 @@
     "QUALITY": "qwen38-opus-q3-daily-16k",
     "QUALITY_AGENT_24K": "qwen38-opus-q3-agent-24k",
     "FAST": "qwen38-dcfr-iq3-fast-16k",
-    "FAST_AGENT": "qwen38-dcfr-iq3-agent-24k",
+    "FAST_AGENT": "qwen38-opus-q3-agent-24k",
     "MCP": "qwen38-dcfr-iq3-agent-24k",
     "BLENDER_FAST": "qwen38-dcfr-iq3-agent-24k",
     "REFERENCE": "qwen38-original-ar-16k",
