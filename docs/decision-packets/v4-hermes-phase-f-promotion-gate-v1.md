@@ -221,3 +221,84 @@ tests/rt25-t05-freshness-enforcement                  8/8 PASS
 tests/rt25-t09-execution-selector                     5/5 PASS
 tests/registry-v2                                    76/76 PASS
 ```
+
+---
+
+## Update: operator decision A recorded + bounded promotion implementation result
+
+**FINAL_UPDATE_TASK_REF:** `V4_HERMES_PHASE_F_BOUNDED_PROMOTION_IMPLEMENTATION_V1`
+**FINAL_UPDATE_BASE_HEAD:** `51a652151aa845dc25715803f9dea9b0e2ad85e6`
+**FINAL_UPDATE_DATE:** 2026-09-12
+
+### Human decision A — RECORDED (chronology preserved)
+
+```text
+PHASE_F_FINAL_DECISION=A_AUTHORIZE_BOUNDED_PROMOTION_IMPLEMENTATION
+FINAL_DECISION_EVIDENCE=HUMAN_OPERATOR
+PROMOTION_IMPLEMENTATION_AUTHORIZED=YES
+PRODUCTION_ACTIVATION_AUTHORIZED=NO
+PRODUCTION_DISPATCH_AUTHORIZED=NO
+```
+
+Chronology (preserved, not rewritten): (1) earlier decision **B** = defer while readiness
+gaps were open — still recorded above; (2) gap closure R2/R4/R5/R14 PASS,
+`BLOCKING_UNKNOWN_COUNT=0`, `READINESS=READY`; (3) current decision **A** authorizes the
+bounded promotion-implementation stage ONLY. A did not authorize live production
+activation, production dispatch, or issue #73 closure, and none of those occurred.
+
+### Implementation result
+
+The minimum promotion-capable runtime path for the already-qualified
+`qwen_local → hermes → chatgpt_web` route is implemented by
+`tools/v4-phase-f-promotion-adapter-v1.mjs`, composed strictly from existing authorities:
+RT25 selection + Phase E shadow decision (consumed, not reimplemented), quota-state join
+with the central freshness TTL, the R4 route-control document (fail-closed law preserved),
+the existing `operator-runtime-authorization-v1` authorization representation (route-pinned;
+issuance/spend ownership and its `opencode+qwen_local` allow-list are NOT widened by this
+task), and the R5 observability envelope. The qualified Hermes send primitive
+(`chainSend`) is structurally bound but REFUSED at the execution edge until a future
+explicit activation confirmation.
+
+```text
+PROMOTION_PATH_IMPLEMENTED=PASS
+PROMOTION_PATH_DEFAULT_DISABLED=PASS
+ROUTE_CONTROL_CONSUMED=PASS
+RESOURCE_ADMISSION_CONSUMED=PASS
+AUTHORIZATION_CONSUMED=PASS
+QUALIFIED_HERMES_EXECUTION_REUSED=YES (structurally bound, never invoked)
+RESULT_VERIFICATION_REUSED=YES (independent DOM verifier law)
+OBSERVABILITY_ATTACHED=PASS
+ROLLBACK_PATH_REUSED=PASS
+CANONICAL_EXECUTION_BOUNDARY_REUSED=YES
+EXISTING_AUTHORIZATION_BOUNDARY_REUSED=YES
+```
+
+### Proofs (deterministic, offline)
+
+15 negative dual-gate proofs (P01–P14 + fallback rejection), the positive dry-run
+(`PROMOTION_CAPABLE_DRY_RUN=PASS`, `execution_performed=false`,
+`REAL_PRODUCTION_DISPATCH=NO`), and the rollback proof
+(`ROLLBACK_AFTER_CANDIDATE=PASS`, `POST_ROLLBACK_DISPATCH_BLOCKED=PASS`,
+`DISABLE_IDEMPOTENT=PASS`) are asserted by
+`tests/phase-f-bounded-promotion-implementation-v1/run.mjs` (24/24 PASS).
+Sanitized evidence: `reports/runtime/phase-f/phase-f-bounded-promotion-implementation-evidence.json`.
+Architecture report: `reports/architecture/v4_hermes_phase_f_bounded_promotion_implementation_v1.md`.
+
+```text
+ROUTE_CONTROL_STATE_FINAL=DISABLED
+CURRENT_MODE_FINAL=SHADOW_ONLY
+ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0
+PRODUCTION_DISPATCH=NO
+PROMOTION_ACTIVATED=NO
+ISSUE_73=OPEN
+```
+
+The TEST-ONLY synthetic authorization fixture used in proofs
+(`TEST-ONLY-SYNTHETIC-FIXTURE-0001`) is never persisted as active runtime authorization.
+
+### Production activation remains NOT authorized
+
+This update records implementation capability only. The FINAL production activation
+decision (A: activate under bounded production authorization / B: keep ready but disabled /
+C: reject activation) remains an explicit future HUMAN GATE, distinguishable and
+unexecuted.

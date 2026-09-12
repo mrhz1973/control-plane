@@ -1,0 +1,135 @@
+{
+  "schema_version": "v4-phase-f-bounded-promotion-implementation-evidence-v1",
+  "task_ref": "V4_HERMES_PHASE_F_BOUNDED_PROMOTION_IMPLEMENTATION_V1",
+  "base_head": "51a652151aa845dc25715803f9dea9b0e2ad85e6",
+  "generated_at": "2026-09-12T14:00:00.000Z",
+  "human_decision": {
+    "phase_f_final_decision": "A_AUTHORIZE_BOUNDED_PROMOTION_IMPLEMENTATION",
+    "final_decision_evidence": "HUMAN_OPERATOR",
+    "promotion_implementation_authorized": true,
+    "production_activation_authorized": false,
+    "production_dispatch_authorized": false,
+    "earlier_decision_b_preserved": "B = defer while readiness gaps were open (V4_HERMES_PHASE_F_READINESS_GAP_CLOSURE_R2_R4_R5_V1)"
+  },
+  "reuse": {
+    "route_selection_authority": "RT25 execution selector + evaluateHermesPhaseEShadowRoute (consumed, not reimplemented)",
+    "resource_admission_authority": "composeV4ResourceStatus + joinQuotaPoolState + STATUS_MAX_AGE_MS (TTL reused)",
+    "route_control": "v4-phase-f-route-control-v1 (fail-closed law preserved)",
+    "authorization_representation": "operator-runtime-authorization-v1 envelope (pinned to promoted route; issuance/spend ownership unchanged)",
+    "qualified_transport_binding": {
+      "module": "tools/hermes-per-invocation-browser-allowlist-v1.mjs",
+      "export_name": "chainSend",
+      "bound": true,
+      "model_visible_tools": [
+        "browser_navigate",
+        "browser_snapshot",
+        "browser_type",
+        "browser_press"
+      ],
+      "verification_boundary": "tools/chatgpt-web-dom-verifier-v1.mjs (independent DOM verification)"
+    },
+    "execution_adapter_registry_default_untouched": "exactly opencode+qwen_local"
+  },
+  "dry_run": {
+    "route_id": "hermes+chatgpt_web",
+    "controlled_route_id": "qwen_local+hermes+chatgpt_web",
+    "classification": "READY_FOR_AUTHORIZED_DISPATCH",
+    "eligible": true,
+    "execution_performed": false,
+    "production_dispatch": false,
+    "transport_stubbed": true,
+    "reason_codes": [
+      "ALL_DUAL_GATE_CONDITIONS_TRUE",
+      "ROUTE_CONTROL_CANDIDATE",
+      "PHASE_E_DEGRADED_SHADOW_ROUTE",
+      "RESOURCES_FRESH_ADMISSIBLE",
+      "AUTHORIZATION_ACTIVE_BOUND",
+      "COMMERCIAL_POOLS_DEGRADED_AS_EXPECTED"
+    ],
+    "dispatch_binding": {
+      "route_id": "hermes+chatgpt_web",
+      "controlled_route_id": "qwen_local+hermes+chatgpt_web",
+      "controller": "qwen_local",
+      "bridge": "hermes",
+      "target": "chatgpt_web",
+      "task_ref": "V4_HERMES_PHASE_F_BOUNDED_PROMOTION_IMPLEMENTATION_V1",
+      "run_id": "promo-dryrun-0001",
+      "authorization_id": "TEST-ONLY-SYNTHETIC-FIXTURE-0001",
+      "route_control_restoration_state": "SHADOW_ONLY"
+    },
+    "authorization_fixture_synthetic": true,
+    "authorization_fixture_persisted_as_active": false
+  },
+  "dual_gate_conditions": {
+    "RESOURCE_STATE_FRESH_AND_ADMISSIBLE": "YES",
+    "PHASE_E_ROUTE_SELECTED": "YES",
+    "LOCAL_CONTROLLER_AVAILABLE": "YES",
+    "WEB_SURFACE_AVAILABLE": "YES",
+    "ROUTE_CONTROL_ALLOWS_CANDIDATE": "YES",
+    "EXPLICIT_PRODUCTION_AUTHORIZATION": "YES (TEST-ONLY synthetic fixture; never persisted as active)",
+    "ALL_REQUIRED_HARD_WALLS_PASS": "YES"
+  },
+  "negative_proofs": {
+    "P01_disabled_blocks": "PASS (suite)",
+    "P02_shadow_only_blocks_production": "PASS (suite)",
+    "P03_auth_not_active_blocks": "PASS (suite)",
+    "P04_auth_missing_blocks": "PASS (suite)",
+    "P05_auth_malformed_blocks": "PASS (suite)",
+    "P06_stale_resources_block": "PASS (suite; composer fallback law)",
+    "P07_unknown_resources_block": "PASS (suite)",
+    "P08_controller_unavailable_blocks": "PASS (suite)",
+    "P09_web_unavailable_blocks": "PASS (suite)",
+    "P10_route_id_mismatch_blocks": "PASS (suite)",
+    "P11_provenance_mismatch_blocks": "PASS (suite)",
+    "P12_legacy_route_blocked": "PASS (suite)",
+    "P13_silent_fallback_rejected": "PASS (suite)",
+    "P14_auth_but_disabled_blocks": "PASS (suite)",
+    "P15_eligible_never_executed": "PASS (suite; qualified transport refused without activation confirmation)"
+  },
+  "rollback": {
+    "candidate_state": "CANDIDATE_ENABLED",
+    "disable_result_state": "DISABLED",
+    "restoration_state": "SHADOW_ONLY",
+    "disable_history_entry_0": {
+      "at": "2026-09-12T14:00:01.000Z",
+      "from_state": "CANDIDATE_ENABLED",
+      "to_state": "DISABLED",
+      "restored_to": "SHADOW_ONLY",
+      "by": "V4_HERMES_PHASE_F_BOUNDED_PROMOTION_IMPLEMENTATION_V1:rollback-proof"
+    },
+    "rollback_ready": true,
+    "post_rollback_classification": "ROUTE_CONTROL_DISABLED",
+    "post_rollback_blocked": true,
+    "disable_idempotent_proven": "PASS (route-control suite F08/F09 + suite P18)"
+  },
+  "final_persisted_state": {
+    "route_control_state": "DISABLED",
+    "current_mode": "SHADOW_ONLY",
+    "active_production_authorization": 0,
+    "production_dispatch": false,
+    "promotion_activated": false,
+    "issue_73": "OPEN"
+  },
+  "hard_walls": {
+    "PRODUCTION_DISPATCH": false,
+    "PROMOTION_ACTIVATION": false,
+    "ISSUE_73_CLOSE": false,
+    "CLOSED_RUNTIME_GATE_REOPEN": false,
+    "LEGACY_STAGED_COMPONENT_ACTIVATION": false,
+    "SILENT_FALLBACK": false,
+    "AUTHORIZATION_BYPASS": false,
+    "NEW_QUOTA_SYSTEM": false,
+    "SECOND_ROUTER": false,
+    "SECOND_AUTHORITY_LAYER": false,
+    "CHAIN_OF_THOUGHT_PERSISTENCE": false,
+    "CREDENTIAL_COOKIE_TOKEN_PERSISTENCE": false
+  },
+  "markers": {
+    "PROMOTION_PATH_IMPLEMENTED": "PASS",
+    "PROMOTION_CAPABLE_DRY_RUN": "PASS",
+    "REAL_PRODUCTION_DISPATCH": "NO",
+    "ROLLBACK_AFTER_CANDIDATE": "PASS",
+    "POST_ROLLBACK_DISPATCH_BLOCKED": "PASS",
+    "OBSERVABILITY_ATTACHED": "PASS"
+  }
+}
