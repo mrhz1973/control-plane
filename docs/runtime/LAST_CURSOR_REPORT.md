@@ -1,5 +1,45 @@
 # LAST CURSOR REPORT
 
+## ACP external human-gate architecture selection V1 — latest
+
+**TASK_REF:** `V4_CURSOR_ACP_EXTERNAL_HUMAN_GATE_ARCHITECTURE_SELECTION_V1`
+**Classification:** `PASS — ARCHITECTURE_SELECTED (A_PROJECT_OWNED_MCP_HUMAN_GATE_TOOL; selection only, no implementation)`
+**Date (Europe/Rome):** 2026-09-12
+**BASE_HEAD:** `a3fc8a5025e0c88c8ebc2e7c3c785f126e38d702`
+**Report:** `reports/architecture/v4_cursor_acp_external_human_gate_architecture_selection_v1.md`
+
+- Evaluated A (project-owned MCP human-gate tool), B (structured
+  turn-boundary envelope), C (existing canonical mechanisms) against the full
+  criteria set (dynamic gate, same-session semantics, callback binding,
+  fences, fail-closed, hallucination surface, lifetime, crash recovery,
+  session/load, Telegram reuse, authority, complexity, testability, vendor
+  dependency, secret exposure).
+- **Selected A**: session-scoped MCP is the vendor-supported tool-injection
+  surface (verified live: `initialize` `mcpCapabilities` + `session/new`
+  `mcpServers`); the MCP tool is an adapter only — the canonical Control Plane
+  gate remains the sole decision authority; no self-authorization, no default
+  answer, fail-closed `no_answer`.
+- SAME-SESSION LAW defined: exact ACP `sessionId` across the gate over one
+  uninterrupted stdio connection; `session/new` after gate = FAIL;
+  `session/load` = `LOGICAL_RECOVERY` only (crash path, labeled, never silent
+  substitution).
+- MCP question resolved YES: one project-owned localhost `human_gate` tool can
+  be exposed per-session without production-routing change or second
+  authority.
+- Rejected: B (trust anchor = model-authored envelope; documented emergency
+  fallback shape only), C (We/wf46 inactive + second inbound surface; Telegram
+  issuance service is production-route-scoped authority; checkpoint is
+  persistence).
+- Decision includes TRUST_BOUNDARIES, STATE_MACHINE, CALLBACK_BINDING,
+  SESSION_IDENTITY_RULE, FAIL_CLOSED_RULE, CRASH_RECOVERY_RULE,
+  MINIMAL_IMPLEMENTATION_SLICE, MINIMAL_E2E_PROOF.
+- No implementation performed. No walls touched. `PRODUCTION_CHANGED=NO`.
+- **NEXT = one bounded implementation task for the selected minimal slice
+  (MCP `human_gate` adapter + driver wiring + V2-law fences), then the
+  minimal E2E proof.**
+
+---
+
 ## Cursor Agent CLI accessibility remediation V1 — latest
 
 **TASK_REF:** `V4_CURSOR_AGENT_CLI_ACCESSIBILITY_REMEDIATION_V1`
