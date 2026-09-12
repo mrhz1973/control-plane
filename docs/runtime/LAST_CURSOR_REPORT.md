@@ -1,6 +1,30 @@
 # LAST CURSOR REPORT
 
-## Hermes Phase D context rollover + stale-generation fence V2 — latest
+## Hermes Phase F bounded production activation — latest
+
+**TASK_REF:** `V4_HERMES_PHASE_F_BOUNDED_PRODUCTION_ACTIVATION_V1`
+**Classification:** `PASS — BOUNDED_PRODUCTION_ACTIVATION_COMPLETE · LIVE_CANARY=PASS · LIVE_DISPATCH_COUNT=1 · ISSUE_73=CLOSED_COMPLETED`
+**Date (UTC):** 2026-09-12
+**BASE_HEAD:** `8323b2f91b91ba120a8fc142fe0313e7b8c31db8`
+**Commit:** `68691b0` (pushed + remote-verified, origin/main = 68691b0)
+**Report:** `reports/architecture/v4_hermes_phase_f_bounded_production_activation_v1.md`
+**Evidence:** `reports/runtime/phase-f/phase-f-bounded-production-activation-evidence.json`
+**Packet:** `docs/decision-packets/v4-hermes-phase-f-promotion-gate-v1.md` (final activation update appended)
+
+- Decision **A — ACTIVATE the qualified route under bounded production authorization** recorded and executed for the exact route `qwen_local -> hermes -> chatgpt_web` ONLY.
+- Exact-route authorization delta: 3 repo allow-list pins (provenance registry validator, appended-entry pin, issuance ALLOWED_ROUTES + pending-store validator) + user-local issuance config; allow-list = EXACTLY two canonical routes (`opencode+qwen_local`, `hermes+chatgpt_web`); I05 regression asserts the two-route law (anti-broadening intent preserved).
+- Route control `DISABLED -> CANDIDATE_ENABLED` for the canary window (candidate ≠ authorization; adapter dual gate still required ACTIVE route-pinned authorization), then restored **DISABLED** post-canary (restoration `SHADOW_ONLY`, `disable_history` recorded; adapter re-check `BLOCKED / ROUTE_CONTROL_DISABLED`).
+- Canonical Telegram issuance gate (operator APPROVE in-band): `AUTH-PROMO-ACT-4c15532ece9fcce4` route-pinned ACTIVE (1h TTL), scope-digest bound, ledger-first spend + ACTIVE→SPENT BEFORE transport.
+- ONE bounded live canary PASS: RUN_ID `108690b6ad15430eb2f55c885b1eca9e` — RT25 admission via canonical producer (`QWEN_READY_IDLE`), Phase E shadow selection live, dual-gate eligibility `READY_FOR_AUTHORIZED_DISPATCH`, 2 Qwen controller generations, EXACTLY 1 ChatGPT Web send via the qualified chain-send transport (snapshot→fill→press Enter, ONE agent-browser connection) routed through `executePromotedRoute` (`EXECUTED_CONFIRMED`), independent DOM verifier `REAL_USER_TURN_DOM_CONFIRMED=PASS` (1 user turn with canary payload + 1 assistant reply, composer empty).
+- Bounded repairs in-session (per `bounded-repair-continuation-policy-v1`, same task/objective/scope/authority): (1) S1 executes through the adapter-routed chain-send batch — agent-browser refs are connection-scoped, a standalone exec-tool type can never resolve them; (2) admission clock captured AFTER the producer (composer future-dated law); (3) producer recognizes the documented router-owned Qwen topology; (4) runtime doc FAST_AGENT mapping aligned to operator-selected `qwen38-opus-q3-agent-24k`; (5) expired-pending re-issuance through the same canonical gate.
+- Regressions all green: activation 13/13, promotion-implementation 24/24, issuance 60/60, spend-ledger 13/13, Phase E 10/10, readiness 30/30, local-runtime producer 57/57, T04 8/8, T09 5/5.
+- `SILENT_FALLBACK=NO`, `AUTHORIZATION_BYPASS=NO`, `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0`, `LIVE_DISPATCH_COUNT_TOTAL=1`, D-0025 `enabled=false` untouched, no OLD/OpenClaw/public-surface mutation.
+- **Issue #73 CLOSED (completed)** — umbrella acceptance A–F fully satisfied after activation.
+- **NEXT = none outstanding for this track; any further production enablement requires a NEW human promotion gate.**
+
+---
+
+## Hermes Phase D context rollover + stale-generation fence V2 — previous
 
 **TASK_REF:** `V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2`
 **Classification:** `PASS — ISSUE_73_PHASE_D=PASS · SAME_CANONICAL_NEXT=YES · CHATGPT_WEB_SENDS=2 · NEXT=PHASE_E`
