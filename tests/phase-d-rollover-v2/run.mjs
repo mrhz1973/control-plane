@@ -284,6 +284,126 @@ check("D43", "PASS gated on rollover proof", () => {
   assert.match(driverSrc, /ROLLOVER_PROOF/);
 });
 
+// ============ CHAIN-SEND GOVERNOR (user-mandated guardrails v2) ============
+// Bridge source is CRLF; helper reads function bodies boundary-agnostically.
+function pyFn(src, name) {
+  const start = src.indexOf(`def ${name}(`);
+  assert.ok(start >= 0, `def ${name} located`);
+  const next = src.indexOf("\ndef ", start + 1);
+  return next === -1 ? src.slice(start) : src.slice(start, next);
+}
+// 44. Full 73/73 regression invariants unchanged: EXACT_ALLOWLIST stays 4 and
+// chain-send never appears in the schemas handed to Qwen.
+check("D44", "allowlist stays 4; chain-send never in schemas action", () => {
+  assert.equal(w.EXACT_ALLOWLIST.length, 4);
+  const schemasFn = pyFn(bridgeSrc, "action_schemas");
+  assert.ok(!schemasFn.includes("chain-send") && !schemasFn.includes("chain_send"));
+  // the schemas envelope exposes only the 4 names + hermes-derived definitions
+  assert.match(bridgeSrc, /visible = \[f for f in functions if f\.get\("name"\) in EXACT_ALLOWLIST\]/);
+});
+// 45. chain-send internal-only: not gated, not a model-emittable name.
+check("D45", "chain-send internal-only (no gate, no model surface)", () => {
+  assert.equal(w.gateToolName("chain-send"), false);
+  assert.equal(w.gateToolName("chain_send"), false);
+  // wrapper's chainSend is a direct bridge call, NOT routed through gateToolName/dispatch
+  const chainFn = wrapperSrc.match(/export async function chainSend[\s\S]*?\n\}/);
+  assert.ok(chainFn, "chainSend wrapper located");
+  assert.ok(!chainFn[0].includes("gateToolName"), "chainSend must not impersonate a gated tool");
+  // driver invokes chainSend ONLY inside the browser_type / browser_press branches
+  const branch = driverSrc.match(/if \(call\.name === "browser_type"\)[\s\S]*?\} else \{/);
+  assert.ok(branch, "type/press dispatch branch located");
+  assert.ok(branch[0].includes('call.name === "browser_press"'), "press handled in same branch");
+  assert.ok((branch[0].match(/chainSend\(/g) || []).length === 2, "exactly two chainSend call sites (type+press)");
+  assert.ok(!chainFn[0].includes("exec-tool"), "chainSend must not reuse the gated exec-tool route");
+});
+// 46. Rigid sequence, not programmable: no arbitrary command arrays, no
+// browser_* names, no generic script/eval inside the chain-send batches.
+check("D46", "chain-send sequence is hard-coded (no arbitrary commands)", () => {
+  const body = pyFn(bridgeSrc, "action_chain_send");
+  assert.ok(!/commands\s*=/.test(body), "no caller-supplied command arrays");
+  assert.ok(!/\[\s*["']eval["']/.test(body), "no eval command in chain-send");
+  assert.ok(!/\[\s*["'](navigate|console|exec|scroll|vision|dialog|back)["']/.test(body),
+    "no non-send browser commands in chain-send");
+  const literalBatches = body.match(/\[\s*\[\s*"snapshot",\s*"-c"\s*\][\s\S]*?timeout=120/g);
+  assert.ok(literalBatches && literalBatches.length === 2, "exactly two hard-coded batches (S1+S2)");
+});
+// 47. Same real connection: snapshot and fill travel in ONE agent-browser
+// batch invocation (one client connection), not merely one Python process.
+check("D47", "snapshot+fill+press are ONE agent-browser invocation", () => {
+  // helper must build exactly one `batch` argv per call (one connection)
+  const helper = pyFn(bridgeSrc, "_batch_commands_via_session");
+  assert.ok(helper.includes('"batch"'), "single batch invocation");
+  assert.equal((helper.match(/subprocess\.Popen/g) || []).length, 1, "exactly ONE process/connection per batch");
+  // the SEND batch contains snapshot AND fill AND press together
+  const body = pyFn(bridgeSrc, "action_chain_send");
+  assert.match(body, /\[\s*"snapshot",\s*"-c"\s*\],\s*\r?\n\s*\[\s*"fill"[\s\S]*?\[\s*"press",\s*"Enter"\s*\]/);
+});
+// 48. No intermediate command between snapshot and fill (root cause guard):
+// the send batch is snapshot -> fill -> press with nothing interposed.
+check("D48", "no interposed command between snapshot and fill", () => {
+  const body = pyFn(bridgeSrc, "action_chain_send");
+  const sendBatch = body.match(/\[\s*\[\s*"snapshot",\s*"-c"\s*\],\s*\r?\n\s*\[\s*"fill"[\s\S]*?timeout=120/g);
+  assert.ok(sendBatch, "send batch located");
+  assert.ok(!sendBatch.some((b) => /\[\s*"eval"/.test(b)), "no eval interposed between snapshot and fill");
+  // and specifically: fill immediately follows snapshot in the S1 batch
+  assert.match(body, /"snapshot",\s*"-c"\s*\],\s*\r?\n\s*\[\s*"fill"/);
+});
+// 49. Composer identity still verified: ref resolved from a same-connection
+// snapshot with the qualified textbox-only extraction policy.
+check("D49", "composer identity verified per send", () => {
+  assert.match(bridgeSrc, /def _composer_ref_from_batch_results/);
+  assert.match(bridgeSrc, /role == "textbox" and not _SEND_BUTTON_RE\.search\(label\)/);
+  const body = pyFn(bridgeSrc, "action_chain_send");
+  assert.match(body, /meta = _composer_ref_from_batch_results/);
+  assert.match(body, /if not ref:/);
+  assert.match(body, /COMPOSER_REF_NOT_OBTAINED/);
+});
+// 50. Payload fence unchanged: the bridge types ONLY state-machine-approved
+// text; no free text generation or mutation inside the bridge.
+check("D50", "bridge cannot alter the approved payload", () => {
+  const body = pyFn(bridgeSrc, "action_chain_send");
+  assert.match(body, /\["fill", f"@\{ref\}", text\]/);
+  // the bridge only measures/hashes text; it never constructs payload content
+  assert.ok(!/text\s*=\s*f["']/.test(body), "no payload construction inside bridge");
+  assert.ok(!/text\s*=\s*str\((?!args\.get\("text"\))/m.test(body.replace('text = str(args.get("text") or "")', "")),
+    "text assignment only from approved args");
+  // driver keeps the exact-payload state-machine gates
+  assert.match(driverSrc, /GEN2_PAYLOAD_MISMATCH/);
+  assert.match(driverSrc, /EXACTLY the payload between PAYLOAD_BEGIN\/PAYLOAD_END/);
+});
+// 51. Submit exactly once: one press per send; no automatic retry.
+check("D51", "single submit, no retry", () => {
+  const body = pyFn(bridgeSrc, "action_chain_send");
+  assert.equal((body.match(/\[\s*"press",\s*"Enter"\s*\]/g) || []).length, 2, "one press per batch (S1+S2)");
+  assert.match(driverSrc, /Do not retry|MAX_SENDS_EXCEEDED/);
+  assert.doesNotMatch(driverSrc, /for\s*\(\s*(?:let|var|const)\s+attempt/);
+});
+// 52. Independent DOM verifier remains the only send authority: composer
+// clearing/ACK are diagnostics; structural turn detection stays authoritative.
+check("D52", "structural verifier remains the only send authority", () => {
+  assert.match(driverSrc, /runVerifier\(\["turn-verify"/);
+  assert.match(verifierSrc, /BODY_SUBSTRING_AUTHORITATIVE: false/);
+});
+// 53. No broadening of authority: chain-send path introduces no raw-CDP
+// exposure for the controller, no console/eval surface, and the only CDP
+// commands are the two delivery-class primitives (focus emulation + tab
+// activation), both control-plane-internal, never model-visible.
+check("D53", "no authority broadening (raw CDP stays NO)", () => {
+  assert.equal(w.EXACT_ALLOWLIST.includes("browser_cdp"), false);
+  assert.equal(w.gateToolName("browser_console"), false);
+  // focus guard: exactly one CDP command, one method, no evaluation
+  const guard = pyFn(bridgeSrc, "_focus_guard_set");
+  assert.equal((guard.match(/setFocusEmulationEnabled/g) || []).length, 1);
+  assert.ok(!guard.includes("Runtime.evaluate"), "no JS evaluation in guard");
+  // verifier focus-tab: activate only, no evaluate
+  const ft = verifierSrc.match(/mode === "focus-tab"[\s\S]*?return;\r?\n  \}/);
+  assert.ok(ft, "focus-tab mode located");
+  assert.ok(ft[0].includes("/json/activate/"));
+  assert.ok(!ft[0].includes("Runtime.evaluate"));
+  // driver never gains model-visible CDP tools; schema action stays Hermes-derived
+  assert.match(bridgeSrc, /schemas_sourced_from_hermes": True/);
+});
+
 console.log(results.join("\n"));
 console.log(`FOCUSED_CHECKS=${results.length}`);
 console.log(`PASSED=${passed}`);

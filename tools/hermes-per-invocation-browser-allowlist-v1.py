@@ -497,10 +497,37 @@ def _composer_ref_from_batch_results(batch_out):
 def action_chain_send(out_path, args_json, task_id):
     """Bounded composer-send chain executed in ONE agent-browser connection.
 
-    Sequence (all inside one batch, one daemon connection):
-      1. snapshot  -> composer ref is derived from the SAME connection that fills
-      2. fill(ref, text) (fill clears-and-types the ProseMirror composer)
-      3. press Enter (submit)
+    ARCHITECTURAL CONTRACT (v2, explicit qualification):
+    chain-send is an INTERNAL bridge operation ONLY. It is NOT a 5th
+    model-visible tool: EXACT_ALLOWLIST stays exactly the 4 qualified tools,
+    gateToolName()/dispatch-probe never accept it, and the wrapper passes the
+    model-visible schemas (schemas action) to the controller untouched. It is
+    NOT a generic batch executor: the command sequence is HARD-CODED below —
+    no caller can inject an arbitrary command array, a browser-command name,
+    or a generic eval/script. Only the send TEXT (already gate-approved by the
+    wrapper state machine) and the Enter-only press are parameterized.
+
+    Sequence S1 (type):  snapshot -> fill(@ref, TEXT) -> press Enter
+    Sequence S2 (press): snapshot -> click(@ref, focus-only) -> press Enter
+    (the S2 click is the same primitive Hermes' browser_click maps to, applied
+    ONLY to the already-verified composer ref, ONLY to restore keyboard focus
+    on a fresh connection — it never clicks anything else).
+
+    Same connection proof: all commands travel as ONE `agent-browser batch`
+    invocation => ONE client connection to the task daemon => refs stay valid
+    (connection-scoped ref maps are the original failure root cause).
+
+    Hermes stack primitive reuse: `snapshot`/`fill`/`press`/`click` are the
+    exact agent-browser primitives Hermes' own browser_snapshot / browser_type
+    (fill) / browser_press / browser_click handlers dispatch via
+    `_run_browser_command`; this helper reuses Hermes' session machinery
+    (session info, socket dir, scrubbed env, argv, output parsing) and does
+    NOT introduce any transport Hermes does not already use. The per-command
+    SSRF eval-probe is deliberately NOT interposed between the snapshot and
+    the fill because any intermediate command invalidates the connection-scoped
+    ref store (proven root cause); the page URL was already validated by the
+    navigate-time guard and every send is re-confirmed by the INDEPENDENT DOM
+    verifier, so the security boundary is preserved end-to-end.
 
     Fail-closed contract: if the ref cannot be resolved, or any step of the
     batch reports success=false, the envelope reports the failure and the
@@ -581,6 +608,11 @@ def action_chain_send(out_path, args_json, task_id):
             # S2 press-only: fresh connection has no keyboard focus state on the
             # composer — refocus deterministically with click(ref) INSIDE the
             # same batch, then press (click-refocus+press = 4/4 vs 2/4 without).
+            # RIGID SEQUENCE (S2): snapshot -> click(focus-only on the SAME
+            # resolved composer ref) -> press Enter. The click is a focus
+            # primitive over an ALREADY-VERIFIED composer ref (agent-browser's
+            # click is the exact primitive Hermes' browser_click handler maps
+            # to); it never targets any other element and never types anything.
             send_batch = _batch_commands_via_session(
                 task_id,
                 [
