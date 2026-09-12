@@ -1,0 +1,70 @@
+{
+  "schema": "cursor-stop-evidence-v1",
+  "task_ref": "V4_CURSOR_AGENT_ACP_TELEGRAM_SAME_SESSION_HUMAN_GATE_V1",
+  "starting_head": "47f8ba0a1c2b96b777081d679ce216d88bd7f023",
+  "branch": "main",
+  "repository": "mrhz1973/control-plane",
+  "stop_classification": "STOP_TERMINAL",
+  "stop_reason": "CURSOR_ACP_NOT_PROJECT_ACCESSIBLE",
+  "preflight": {
+    "head": "47f8ba0a1c2b96b777081d679ce216d88bd7f023",
+    "origin_main": "47f8ba0a1c2b96b777081d679ce216d88bd7f023",
+    "tracked_worktree": "CLEAN",
+    "issue_73_live": "CLOSED",
+    "issue_73_closed_at": "2026-09-12T16:56:13Z"
+  },
+  "frontier_reconciliation": {
+    "observed_stale_markers": ["#73 remains OPEN", "ISSUE_73=OPEN"],
+    "live_canonical_state": "ISSUE_73=CLOSED_COMPLETED",
+    "persisted": "NO_STOP_CONTRACT_PRESERVES_FRONTIER"
+  },
+  "cursor_capability_observation": {
+    "cursor_path": "C:\\Program Files\\cursor\\resources\\app\\bin\\cursor.cmd",
+    "cursor_version": "3.19.19",
+    "cursor_agent_command": "NOT_FOUND",
+    "agent_command": "NOT_FOUND",
+    "cursor_help_surface": "DESKTOP_CLI_ONLY; ACP_OR_ASK_PRIMITIVE_NOT_EXPOSED",
+    "cursor_list_extensions": "STOPPED_EPERM_CREATING_USER_DATA_DIRECTORY",
+    "historical_repo_evidence": "CURSOR_ACP=VENDOR_SUPPORTED_NOT_PROJECT_PROVEN; CURSOR_SAME_SESSION_HUMAN_GATE=PARTIALLY_PROVEN"
+  },
+  "telegram_observation": {
+    "template": "workflows/we-telegram-interactive-decision-buttons.template.json",
+    "documentation": "docs/workflow-we-telegram-interactive-decision-buttons.md",
+    "callback_data_contract": "dp:D-9998-T:1|2|3",
+    "duplicate_stale_guard": "DOCUMENTED_IN_TEMPLATE",
+    "activation_state": "TEMPLATE_INACTIVE_AND_UI_CONFIGURATION_REQUIRED",
+    "same_cursor_session_binding": "NOT_PROVEN"
+  },
+  "e2e_result": {
+    "CURSOR_AGENT_SESSION_IDENTITY": "NOT_RUN",
+    "ACP_OR_SUPPORTED_INTERACTION": "STOP",
+    "HUMAN_GATE_EMITTED": "NOT_RUN",
+    "TELEGRAM_NOTIFICATION": "NOT_RUN",
+    "CALLBACK_TASK_BINDING": "NOT_RUN",
+    "CALLBACK_SESSION_BINDING": "NOT_RUN",
+    "CALLBACK_GENERATION_FENCE": "NOT_RUN",
+    "SAME_SESSION_RESUME": "NOT_RUN",
+    "OPERATOR_ANSWER_CONSUMED": "NOT_RUN",
+    "TASK_CONTINUES_AFTER_GATE": "NOT_RUN"
+  },
+  "negative_tests": "NOT_RUN_BECAUSE_REQUIRED_CURSOR_PRIMITIVE_UNAVAILABLE",
+  "hard_walls": {
+    "production_dispatch": "NO",
+    "provider_execution": "NO",
+    "browser_send": "NO",
+    "workflow_mutation": "NO",
+    "vps_mutation": "NO",
+    "secrets_persisted": "NO",
+    "new_session_substitution": "NO"
+  },
+  "evidence_paths": [
+    "reports/architecture/v4_control_plane_capability_reconciliation_audit_v1.md",
+    "docs/contracts/execution-checkpoint-v1.md",
+    "docs/contracts/bounded-repair-continuation-policy-v1.md",
+    "docs/workflow-we-telegram-interactive-decision-buttons.md",
+    "workflows/we-telegram-interactive-decision-buttons.template.json",
+    "docs/runtime/LAST_CURSOR_REPORT.md"
+  ],
+  "credential_material": "NONE",
+  "raw_logs": "NONE"
+}
