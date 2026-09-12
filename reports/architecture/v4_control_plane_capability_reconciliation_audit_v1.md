@@ -139,11 +139,11 @@ documented target without sufficient execution evidence.
 | Execution checkpoint | execution-checkpoint-v1 | Safe resume across interruption | checkpoint contract | QUALIFIED / NOT AUTHORIZING | PROVEN_PROJECT | Cursor/local task | N/A | None | More harness proofs | QUALIFY | P1 |
 | Execution router | n8n V4 bridge + seams | Governed packet routing | n8n bridge contracts | LIVE STRUCTURAL / GATED | PROVEN_PROJECT | n8n bridge | Provider route | Production promotion gated | Finish promotion evidence | FINISH | P1 |
 | OpenCode implementer | opencode adapter + Qwen :8080 | Canonical local implementer | Qwen qualification; frontier | LIVE / QUALIFIED | PROVEN_PROJECT | Qwen -> OpenCode | Local compute | None | Role-specific limits | REUSE | P0 |
-| Cursor Agent CLI | agent/cursor-agent | Bounded alternate executor | local safe probe; handoff standard | PARTIALLY_PROVEN | MIXED_PROJECT_VENDOR | Cursor | Cursor allowance | No stable quota source | Full project qualification | QUALIFY | P1 |
-| Cursor ACP | agent acp | ACP execution integration | `agent acp --help` only | VENDOR_SUPPORTED_NOT_PROJECT_PROVEN | VENDOR_CURRENT_CAPABILITY | Cursor | Cursor allowance | None | E2E ACP evidence | QUALIFY | P2 |
+| Cursor Agent CLI | agent | Bounded alternate executor | V4 CLI accessibility remediation V1; local `agent --version`; sanitized authenticated operator status | PROJECT_ACCESSIBLE_INTERFACE_QUALIFIED | MIXED_PROJECT_VENDOR | Cursor | Cursor allowance | No stable quota source | Full project qualification | QUALIFY | P1 |
+| Cursor ACP | agent acp | ACP execution integration | local `agent acp --help`; official stdio protocol documentation | PROJECT_ACCESSIBLE_INTERFACE_QUALIFIED | MIXED_PROJECT_VENDOR | Cursor | Cursor allowance | None | E2E ACP evidence | QUALIFY | P2 |
 | Cursor headless | `--print`/headless help surface | Noninteractive bounded run | help surface; no E2E proof | VENDOR_SUPPORTED_NOT_PROJECT_PROVEN | VENDOR_CURRENT_CAPABILITY | Cursor | Cursor allowance | None | Project qualification | QUALIFY | P2 |
-| Cursor ask question | vendor question/interaction primitive | Human gate inside session | No normalized project evidence | VENDOR_SUPPORTED_NOT_PROJECT_PROVEN | VENDOR_CURRENT_CAPABILITY | Cursor | Cursor allowance | Telegram gate is separate | Shared gate contract | QUALIFY | P1 |
-| Cursor live steering | resume/continue/session controls | Bounded operator steering | `--resume`/`--continue` help | VENDOR_SUPPORTED_NOT_PROJECT_PROVEN | VENDOR_CURRENT_CAPABILITY | Cursor | Cursor allowance | None | Prove identity/fence behavior | QUALIFY | P2 |
+| Cursor ask question | `cursor/ask_question` ACP extension | Human gate inside session | official ACP protocol; Agent CLI project-accessible; no live event | PROJECT_ACCESSIBLE_PROTOCOL_DOCUMENTED | VENDOR_CURRENT_CAPABILITY | Cursor | Cursor allowance | Telegram gate is separate | Shared gate contract | QUALIFY | P1 |
+| Cursor live steering | resume/continue/session controls | Bounded operator steering | local `--resume`/`--continue` help; no session exchange | PROJECT_ACCESSIBLE_INTERFACE_QUALIFIED | VENDOR_CURRENT_CAPABILITY | Cursor | Cursor allowance | None | Prove identity/fence behavior | QUALIFY | P2 |
 | Cursor same-session gate | checkpoint + operator handoff concepts | Resume after gate/provider pause | checkpoint contract, not Cursor E2E | PARTIALLY_PROVEN | MIXED_PROJECT_VENDOR | Cursor | Cursor allowance | None | Harness-specific proof | QUALIFY | P1 |
 | Cursor quota source | native quota/bucket observatory | Machine-readable Cursor Models/Other Models | quota source probe report | NOT_PROVEN | PROVEN_PROJECT_NEGATIVE | None | Cursor allowance | Manual observations not stable | Collector/source | FINISH | P1 |
 | Codex App | Desktop/app coding surface | Subscription alternate surface | app/IDE reports and foundation | QUALIFIED_NOT_ACTIVE | PROVEN_PROJECT | Codex App | chatgpt_codex_subscription | Qualification scope limited | Active route decision | DEFER | P1 |
@@ -332,11 +332,11 @@ config mutation, or UI scraping was performed.
 Therefore:
 
 ```text
-CURSOR_AGENT_CLI=PARTIALLY_PROVEN
-CURSOR_ACP=VENDOR_SUPPORTED_NOT_PROJECT_PROVEN
+CURSOR_AGENT_CLI=PROJECT_ACCESSIBLE_INTERFACE_QUALIFIED
+CURSOR_ACP=PROJECT_ACCESSIBLE_INTERFACE_QUALIFIED
 CURSOR_HEADLESS=VENDOR_SUPPORTED_NOT_PROJECT_PROVEN
-CURSOR_ASK_QUESTION=VENDOR_SUPPORTED_NOT_PROJECT_PROVEN
-CURSOR_LIVE_STEERING=VENDOR_SUPPORTED_NOT_PROJECT_PROVEN
+CURSOR_ASK_QUESTION=PROJECT_ACCESSIBLE_PROTOCOL_DOCUMENTED
+CURSOR_LIVE_STEERING=PROJECT_ACCESSIBLE_INTERFACE_QUALIFIED
 CURSOR_SAME_SESSION_HUMAN_GATE=PARTIALLY_PROVEN
 CURSOR_QUOTA_MACHINE_SOURCE=NOT_PROVEN
 ```
@@ -500,11 +500,11 @@ OPENCLAW_ACTIVE_BROKER=NO
 OPENCLAW_ACTIVE_QUOTA_SOURCE=NO
 OPENCLAW_RUNTIME_REQUIRED=NO
 OPENCODE_CURRENT_STATUS=LIVE_QUALIFIED_CANONICAL_QWEN_EXECUTION_ADAPTER
-CURSOR_AGENT_CLI=PARTIALLY_PROVEN
-CURSOR_ACP=VENDOR_SUPPORTED_NOT_PROJECT_PROVEN
+CURSOR_AGENT_CLI=PROJECT_ACCESSIBLE_INTERFACE_QUALIFIED
+CURSOR_ACP=PROJECT_ACCESSIBLE_INTERFACE_QUALIFIED
 CURSOR_HEADLESS=VENDOR_SUPPORTED_NOT_PROJECT_PROVEN
-CURSOR_ASK_QUESTION=VENDOR_SUPPORTED_NOT_PROJECT_PROVEN
-CURSOR_LIVE_STEERING=VENDOR_SUPPORTED_NOT_PROJECT_PROVEN
+CURSOR_ASK_QUESTION=PROJECT_ACCESSIBLE_PROTOCOL_DOCUMENTED
+CURSOR_LIVE_STEERING=PROJECT_ACCESSIBLE_INTERFACE_QUALIFIED
 CURSOR_SAME_SESSION_HUMAN_GATE=PARTIALLY_PROVEN
 CURSOR_QUOTA_MACHINE_SOURCE=NOT_PROVEN
 CODEX_APP=QUALIFIED_NOT_ACTIVE

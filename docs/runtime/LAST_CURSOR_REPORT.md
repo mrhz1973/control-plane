@@ -1,5 +1,28 @@
 # LAST CURSOR REPORT
 
+## Cursor Agent CLI accessibility remediation V1 — latest
+
+**TASK_REF:** `V4_CURSOR_AGENT_CLI_ACCESSIBILITY_REMEDIATION_V1`
+**Classification:** `PASS — CURSOR_ACP_NOT_PROJECT_ACCESSIBLE=RESOLVED`
+**Date (Europe/Rome):** 2026-09-12
+**BASE_HEAD:** `d2bd6b4110531622d487aac742db7103aa1081fc`
+**Report:** `reports/architecture/v4_cursor_agent_cli_accessibility_remediation_v1.md`
+
+- Official native-Windows Cursor Agent CLI installation completed; `agent`
+  command available, version `2026.09.10-fd3934a` observed.
+- Authentication was directly confirmed by the operator through `agent status`;
+  account identity, login URL, challenge, tokens, and credential material were
+  not persisted.
+- Local help plus official ACP documentation prove the project-accessible ACP
+  command/stdin-stdout protocol, `session/new`, `session/load`, and blocking
+  `cursor/ask_question` support.
+- No Agent model/provider request, ACP session, Telegram integration,
+  browser/runtime/VPS/n8n action, or production mutation was performed.
+- **NEXT = `V4_CURSOR_AGENT_ACP_TELEGRAM_SAME_SESSION_HUMAN_GATE_V2`**: prove
+  an actual bounded same-session Telegram gate and its callback fences.
+
+---
+
 ## Hermes Phase F bounded production activation — latest
 
 **TASK_REF:** `V4_HERMES_PHASE_F_BOUNDED_PRODUCTION_ACTIVATION_V1`
