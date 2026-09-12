@@ -2,8 +2,8 @@
 
 **Repository:** `mrhz1973/control-plane`  
 **Documento:** `docs/foundation/OPERATOR_ACTION_HANDOFF_STANDARD.md`  
-**Versione:** 1.2 — 2026-08-31  
-**Ruolo:** standard canonico user-facing per ogni istruzione operativa che richiede azioni manuali dell'operatore in UI, terminale, browser, n8n, GitHub, Cursor o altri tool.
+**Versione:** 1.3 — 2026-09-12  
+**Ruolo:** standard canonico user-facing per ogni istruzione operativa che richiede azioni manuali dell'operatore in UI, terminale, browser, n8n, GitHub o altri tool.
 
 ---
 
@@ -22,145 +22,69 @@ Questo vale in tutte le chat future del progetto.
 Per ogni azione manuale dell'operatore:
 
 1. indicare chiaramente **dove cliccare** e in quale ordine;
-2. fornire in un blocco copiabile separato ogni valore esatto da inserire/incollare, ad esempio:
-   - URL;
-   - comando shell/PowerShell;
-   - nome credenziale;
-   - nome header;
-   - hostname/domain;
-   - path;
-   - workflow/node/field name;
-   - testo da incollare;
-   - identificatore o selector;
+2. fornire in un blocco copiabile separato ogni valore esatto da inserire/incollare, ad esempio URL, comando, path, hostname, workflow/node/field name, testo o identificatore;
 3. usare **un valore/azione per blocco** quando più valori diversi potrebbero essere confusi;
-4. evitare istruzioni tipo “scrivi X” lasciando X solo in prosa non copiabile;
-5. per sequenze UI, indicare il percorso esatto con etichette visibili, per esempio:
-   `Credentials → Create Credential → Header Auth`;
-6. se un campo contiene un secret, **non** mettere il secret in chat/GitHub: fornire soltanto il nome del campo, il formato sicuro e il metodo per trasferirlo direttamente tra secret store/UI senza esposizione;
+4. evitare istruzioni che obbligano l'operatore a trascrivere stringhe dalla prosa;
+5. per sequenze UI, indicare il percorso esatto con etichette visibili;
+6. se un campo contiene un secret, non mettere il secret in chat/GitHub: fornire soltanto il metodo secret-safe;
 7. se un valore è già noto e non sensibile, non chiedere all'operatore di ridigitarlo da memoria;
-8. se un link/URL diretto è noto e sicuro, fornire il link diretto invece di descrivere una lunga navigazione manuale;
+8. se un link diretto è noto e sicuro, fornire il link diretto;
 9. se esiste AUTO-VIA e l'azione può essere eseguita dall'agente senza gate umano, non scaricarla sull'operatore.
 
 ---
 
-## 2. Regola di compattezza — OBBLIGATORIA
+## 2. Regola di compattezza
 
-Per evitare blocchi enormi nella UI ChatGPT:
-
-- per **valori brevi** (nomi campo, header, hostname, ID, path corto, URL corto, singolo comando) usare un normale **code block compatto**, che mantiene il pulsante copia;
-- **non usare writing block/document block** per valori brevi;
-- usare writing block/document block solo per contenuti realmente lunghi o strutturati: prompt Cursor, script multi-linea, artefatti, payload complessi, testi lunghi da copiare integralmente;
-- preferire sempre la superficie copiabile più piccola disponibile;
-- un singolo valore breve deve occupare idealmente 1–3 righe visive.
-
-Esempio corretto per un valore breve:
-
-**Name**
-```text
-Authorization
-```
-
-Esempio da evitare per un valore breve:
-
-`writing/document block` contenente soltanto `Authorization`.
+- valori brevi: normale code block compatto;
+- contenuti lunghi/strutturati: un solo blocco copiabile;
+- preferire sempre la superficie copiabile più piccola disponibile.
 
 ---
 
-## 3. Pattern canonico
+## 3. Prompt operativi — recipient-neutral default
 
-Esempio:
+Quando l'operatore non ha già fissato il destinatario del prompt, si applica:
 
-**Clicca:** `Credentials → Create Credential → Header Auth`
+`docs/foundation/EXECUTOR_PROMPT_USER_HANDOFF_STANDARD.md`
 
-Poi compilare:
-
-**Name**
-```text
-Authorization
-```
-
-**Credential display name**
-```text
-CONTROL PLANE - OpenClaw Windows Gateway
-```
-
-**Allowed domain**
-```text
-asusdesktop.tailc01234.ts.net
-```
-
-Per un comando breve:
-
-```powershell
-ssh -N -L 5678:127.0.0.1:5678 ionos-n8n
-```
-
-Per un URL breve:
+Il prompt copiabile deve essere neutro rispetto a modello/provider/harness e deve usare:
 
 ```text
-http://127.0.0.1:5678/home/credentials
+=== INIZIO PROMPT ===
+...
+=== FINE PROMPT ===
 ```
+
+Non inserire nel prompt un modello, provider, IDE, app, CLI o agent come destinatario presunto.
+
+`docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` resta applicabile solo quando Cursor è stato esplicitamente scelto come destinazione.
+
+La scelta della superficie di esecuzione è routing metadata e resta fuori dal semantic task prompt finché non è fissata.
 
 ---
 
 ## 4. Secrets / credential boundary
 
-- Mai stampare, copiare in GitHub, riportare in chat, hashare, misurare o mostrare token/password/API key quando il task richiede secret-safe handling.
-- Se l'operatore deve trasferire un secret, guidarlo con un metodo che mantenga il valore fuori da chat/GitHub/log.
-- I blocchi one-click devono contenere solo parti non sensibili (`Authorization`, `Bearer `, hostname, credential name, ecc.) oppure comandi che non stampano il secret.
-- Se anche il comando potrebbe esporre il secret, STOP e scegliere un metodo più sicuro o richiedere il gate pertinente.
+Mai stampare, copiare in GitHub, riportare in chat o mostrare token/password/API key quando il task richiede secret-safe handling.
 
 ---
 
-## 5. Relazione con Cursor
+## 5. Anti-frizione
 
-Per i prompt Cursor resta vigente `docs/foundation/CURSOR_PROMPT_USER_HANDOFF_STANDARD.md`.
-
-Prima del singolo blocco TASK DELTA devono essere mostrate sempre, nell'ordine, le tre righe:
-
-```text
-MODELLO CURSOR: <modello esatto raccomandato>
-BUGBOT: <NO | SÌ>
-MODALITÀ CURSOR: <AGENT | PLAN>
-```
-
-Poi:
-
-- prompt = TASK DELTA;
-- un solo blocco copiabile;
-- `agg` separato;
-- nessun modello `AUTO` o non verificato;
-- BugBot segue esclusivamente il valore dichiarato nell'header;
-- il default esecutivo one-pass è definito dallo standard Cursor e dal `CURSOR_PROMPT_TEMPLATE.md`.
-
-**Eccezione intenzionale alla regola di compattezza:** i prompt Cursor sono contenuti lunghi/strutturati e possono usare la superficie copiabile lunga appropriata.
-
-Questo documento estende la stessa ergonomia **a tutte le altre istruzioni operative**, non solo a Cursor.
+- non chiedere trascrizioni manuali inutili;
+- non inventare URL, path, SHA, ID o nomi di campi;
+- non chiedere screenshot se lo stato è verificabile direttamente;
+- dopo ogni gate manuale, indicare il prossimo step concreto;
+- non chiedere un ulteriore `vai` quando AUTO-VIA determina già il passo successivo.
 
 ---
 
-## 6. Anti-frizione
-
-- Non chiedere all'operatore di trascrivere manualmente stringhe tecniche.
-- Non presentare più valori simili nello stesso paragrafo quando possono essere confusi.
-- Non usare superfici UI grandi quando un code block compatto con copy è sufficiente.
-- Non inventare URL, path, SHA, ID o nomi di campi: usare solo valori verificati o dichiarare il valore sconosciuto.
-- Non chiedere screenshot se l'agente può verificare direttamente via tool; usarli solo quando la UI umana è il gate reale o la UI non è osservabile dall'agente.
-- Dopo ogni step manuale, indicare soltanto il prossimo step concreto; niente catene lunghe se l'esito del passo corrente condiziona quello successivo.
-
----
-
-## 7. Precedenza
-
-Questo standard governa la **presentazione delle azioni manuali all'operatore**.
-
-Non amplia mai scope o autorizzazioni. In caso di conflitto:
+## 6. Precedenza
 
 1. `CURRENT_FRONTIER.md` per live state/gate;
 2. foundation/contracts del task;
-3. `CURSOR_PROMPT_USER_HANDOFF_STANDARD.md` per la forma specifica dei prompt Cursor;
-4. questo standard per l'ergonomia user-facing generale.
-
----
+3. `EXECUTOR_PROMPT_USER_HANDOFF_STANDARD.md` quando il destinatario non è fissato;
+4. standard executor-specifico solo dopo selezione esplicita della superficie;
+5. questo standard per ergonomia user-facing generale.
 
 **Fine documento.**
