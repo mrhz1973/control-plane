@@ -65,6 +65,22 @@ export async function bridge(action, extra = []) {
   return payload;
 }
 
+/**
+ * Phase D repair: bounded composer-send chain (snapshot -> fill -> press Enter)
+ * executed in ONE agent-browser client connection via the bridge's chain-send
+ * action. Fixes the live root cause: agent-browser 0.26.0 keeps snapshot refs
+ * per CLIENT CONNECTION, so the native type/press handlers (separate CLI
+ * invocations, separate connections) could not resolve the snapshot ref.
+ * Same qualified tool semantics; the model-visible surface is unchanged.
+ */
+export async function chainSend({ text, pressOnly, taskId, cdpUrl }) {
+  return bridge("chain-send", [
+    "--args-json", JSON.stringify({ text: text ?? "", press_only: pressOnly ?? null }),
+    "--task-id", taskId,
+    "--cdp-url", cdpUrl,
+  ]);
+}
+
 /** Barrier 2: EXACT-name gate. No prefix, no wildcard, no fallback. */
 export function gateToolName(name) {
   return typeof name === "string" && EXACT_ALLOWLIST.includes(name);

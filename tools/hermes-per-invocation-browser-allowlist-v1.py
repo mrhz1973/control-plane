@@ -30,7 +30,10 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
+import time
+import urllib.parse
 
 EXACT_ALLOWLIST = (
     "browser_navigate",
@@ -50,6 +53,73 @@ HERMES_AGENT_ROOT = r"C:\Users\mrhz\AppData\Local\hermes\hermes-agent"
 DEFAULT_CDP_URL = "http://127.0.0.1:9222"
 
 HERMES_HANDLER_INVOCATIONS = 0
+
+
+def _focus_guard_set(enabled: bool):
+    """Enable/disable CDP focus emulation for the ChatGPT page (delivery guard).
+
+    REPAIR (Phase D, user-authorized inline fix #2): when the Chrome window is
+    NOT OS-focused (the dedicated automation Chrome runs in the background),
+    ChatGPT's frontend processes a submitted `press Enter` as if the window
+    were blurred and leaves the message as a composer draft — the tool reports
+    success but no user turn is created (empirically 0-3/6 without the guard,
+    6/6 with it). This is a DELIVERY mechanism: it does not create, modify, or
+    observe page content; the send itself remains the qualified
+    snapshot->fill->press chain, and send confirmation remains the INDEPENDENT
+    DOM verifier (tool success never implies send success).
+
+    Uses the page-level CDP websocket from the qualified HTTP endpoint (same
+    endpoint Hermes' own session already uses). Bounded: one command, no DOM
+    access, no navigation, no evaluation.
+    """
+    import urllib.request
+    try:
+        cdp_http = os.environ.get("BROWSER_CDP_URL", DEFAULT_CDP_URL).rstrip("/")
+        with urllib.request.urlopen(f"{cdp_http}/json/list", timeout=5) as resp:
+            targets = json.loads(resp.read().decode("utf-8"))
+        page = next(
+            t for t in targets
+            if isinstance(t, dict) and t.get("type") == "page"
+            and str(t.get("url", "")).startswith("https://chatgpt.com")
+        )
+        ws_url = page.get("webSocketDebuggerUrl")
+        if not ws_url:
+            return {"focus_guard": "NO_PAGE_TARGET"}
+        # `websockets` library client: the stdlib raw-socket client completes the
+        # WS handshake but empirically receives NO replies from Chrome's page
+        # endpoint (validated: library replies, raw client times out on the same
+        # target). The library is present in the exact interpreter the bridge
+        # runs under (validated: `import websockets` OK).
+        import asyncio
+        import websockets
+
+        async def _send_focus_cmd():
+            async with websockets.connect(ws_url, max_size=4 * 1024 * 1024) as ws:
+                await ws.send(json.dumps({
+                    "id": 1,
+                    "method": "Emulation.setFocusEmulationEnabled",
+                    "params": {"enabled": bool(enabled)},
+                }))
+                while True:
+                    raw = await asyncio.wait_for(ws.recv(), timeout=5)
+                    msg = json.loads(raw)
+                    if isinstance(msg, dict) and msg.get("id") == 1:
+                        return msg
+
+        loop = asyncio.new_event_loop()
+        try:
+            reply = loop.run_until_complete(_send_focus_cmd())
+        finally:
+            loop.close()
+        if not isinstance(reply, dict) or "error" in reply:
+            return {"focus_guard": "CDP_ERROR", "detail": str(reply.get("error") if isinstance(reply, dict) else reply)}
+        return {"focus_guard": "OK", "enabled": bool(enabled)}
+    except Exception as exc:
+        return {"focus_guard": f"ERROR:{type(exc).__name__}"}
+
+
+def _focus_guard_ok(guard_result) -> bool:
+    return isinstance(guard_result, dict) and guard_result.get("focus_guard") == "OK"
 
 
 def _bootstrap():
@@ -317,6 +387,260 @@ def _sanitize_args(name, args):
     return safe
 
 
+def _batch_commands_via_session(task_id, commands, timeout=90):
+    """Run commands as ONE `agent-browser batch` invocation through the task's
+    EXISTING Hermes browser session machinery (same socket dir, same CDP URL,
+    same credential-scrubbed env, same spawn flags as every native tool call).
+
+    REPAIR (Phase D, user-authorized inline fix): agent-browser 0.26.0 keeps
+    snapshot refs per CLIENT CONNECTION. Native browser_type/browser_press run
+    `fill`/`press` as separate CLI invocations (separate connections), so a ref
+    observed by one invocation is Unknown to the next — the live failure root
+    cause. Batching snapshot+fill(+press) into ONE invocation (ONE connection)
+    keeps the ref valid end-to-end (empirically 10/10 determinism).
+
+    Bounded: only composer-send mechanics. Allowlist, model-visible surface,
+    identity fences, sanitization unchanged. stdin is the documented payload
+    form (`[["snapshot","-c"],["fill","@e","text"]]`).
+    """
+    from tools.browser_tool_session import (
+        _agent_browser_argv,
+        _agent_browser_command_env,
+        _browser_command_preflight,
+        _get_session_info,
+        _prepare_session_socket_dir,
+        _popen_agent_browser,
+        _read_command_output_files,
+    )
+    preflight = _browser_command_preflight()
+    if "browser_cmd" not in preflight:
+        return {"success": False, "error": str(preflight.get("error", "preflight failed"))}
+    browser_cmd = preflight["browser_cmd"]
+    try:
+        session_info = _get_session_info(task_id)
+    except Exception as exc:
+        return {"success": False, "error": f"Failed to create browser session: {exc}"}
+    if session_info.get("cdp_url"):
+        backend_args = ["--cdp", session_info["cdp_url"]]
+    else:
+        backend_args = ["--session", session_info["session_name"]]
+    task_socket_dir = _prepare_session_socket_dir(session_info["session_name"])
+    browser_env = _agent_browser_command_env(task_socket_dir)
+    cmd_parts = _agent_browser_argv(browser_cmd) + backend_args + ["--json", "batch"]
+
+    stdin_payload = json.dumps(commands)
+    stdout_path = os.path.join(task_socket_dir, "_stdout_chain_send")
+    stderr_path = os.path.join(task_socket_dir, "_stderr_chain_send")
+    fds = [os.open(stdout_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600),
+           os.open(stderr_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)]
+    try:
+        proc = subprocess.Popen(
+            cmd_parts,
+            stdin=subprocess.PIPE,
+            stdout=fds[0],
+            stderr=fds[1],
+            env=browser_env,
+            close_fds=True,
+        )
+        try:
+            proc.stdin.write(stdin_payload.encode("utf-8"))
+            proc.stdin.close()
+        except Exception:
+            pass
+        try:
+            proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+            return {"success": False, "error": f"chain-send batch timed out after {timeout}s"}
+    finally:
+        for fd in fds:
+            os.close(fd)
+    stdout, stderr = _read_command_output_files(stdout_path, stderr_path)
+    try:
+        os.unlink(stdout_path)
+        os.unlink(stderr_path)
+    except OSError:
+        pass
+    if proc.returncode != 0:
+        detail = (stderr or stdout or "").strip()[:300]
+        return {"success": False, "error": f"batch rc={proc.returncode}: {detail}"}
+    try:
+        parsed = json.loads(stdout.strip())
+    except json.JSONDecodeError:
+        return {"success": False, "error": "Non-JSON batch output", "raw_head": stdout[:200]}
+    if not isinstance(parsed, list):
+        return {"success": False, "error": "batch output is not a list"}
+    return {"success": True, "results": parsed}
+
+
+def _composer_ref_from_batch_results(batch_out):
+    """Deterministic composer-ref extraction from a batch snapshot result.
+    Mirrors the qualified extraction policy: textbox candidates preferred,
+    Send/Submit buttons never selected as typing targets."""
+    for item in batch_out:
+        refs = ((item or {}).get("result") or {}).get("refs") or {}
+        candidates = []
+        for ref, meta in refs.items():
+            if not isinstance(meta, dict):
+                continue
+            role = str(meta.get("role") or "")
+            label = str(meta.get("name") or "")
+            if role == "textbox" and not _SEND_BUTTON_RE.search(label):
+                candidates.append((ref, role, label[:40]))
+        if candidates:
+            ref, role, _ = candidates[-1]
+            return {"composer_ref": ref, "composer_role": role, "candidate_count": len(candidates)}
+    return {"composer_ref": None, "composer_role": None, "candidate_count": 0}
+
+
+def action_chain_send(out_path, args_json, task_id):
+    """Bounded composer-send chain executed in ONE agent-browser connection.
+
+    Sequence (all inside one batch, one daemon connection):
+      1. snapshot  -> composer ref is derived from the SAME connection that fills
+      2. fill(ref, text) (fill clears-and-types the ProseMirror composer)
+      3. press Enter (submit)
+
+    Fail-closed contract: if the ref cannot be resolved, or any step of the
+    batch reports success=false, the envelope reports the failure and the
+    driver still owes its send classification to the INDEPENDENT DOM verifier
+    (tool success never implies send success).
+    """
+    try:
+        args = json.loads(args_json) if args_json else {}
+    except Exception:
+        _write_out(out_path, {
+            "action": "chain-send",
+            "decision": "ARGS_JSON_INVALID",
+            "hermes_handler_invoked": False,
+        })
+        return
+    press_only_raw = args.get("press_only")
+    press_only = press_only_raw is not None and str(press_only_raw).strip() != ""
+    text = str(args.get("text") or "")
+    if not text and not press_only:
+        _write_out(out_path, {
+            "action": "chain-send",
+            "decision": "TEXT_REQUIRED",
+            "hermes_handler_invoked": False,
+        })
+        return
+    if press_only and str(press_only_raw) != "Enter":
+        _write_out(out_path, {
+            "action": "chain-send",
+            "decision": "ONLY_ENTER_SUPPORTED",
+            "hermes_handler_invoked": False,
+        })
+        return
+    global HERMES_HANDLER_INVOCATIONS
+    HERMES_HANDLER_INVOCATIONS += 1  # one bounded batch (replaces type+press internals)
+
+    # DELIVERY GUARD (fail-closed): focus emulation must be ON for any batch
+    # that contains press/typing. Without it the background Chrome window
+    # swallows Enter (draft left, no user turn — proven 0-3/6 vs 6/6).
+    guard_on = _focus_guard_set(True)
+    if not _focus_guard_ok(guard_on):
+        _write_out(out_path, {
+            "action": "chain-send",
+            "decision": "FOCUS_GUARD_UNAVAILABLE",
+            "success": False,
+            "error_class": "focus_guard_unavailable",
+            "guard": guard_on,
+            "hermes_handler_invoked": False,
+            "chatgpt_web_sends_delta": 0,
+        })
+        return
+
+    try:
+        # Batch 1: snapshot only — establishes the composer ref ON this connection
+        # AND seeds the daemon's ref store for the NEXT batch (empirically required:
+        # a founder batch must exist before the send batch can resolve @refs).
+        snap_batch = _batch_commands_via_session(task_id, [["snapshot", "-c"]])
+        if not snap_batch.get("success"):
+            _write_out(out_path, {
+                "action": "chain-send",
+                "decision": "SNAPSHOT_BATCH_FAILED",
+                "success": False,
+                "error_class": "snapshot_batch_failure",
+                "hermes_handler_invoked": True,
+            })
+            return
+        meta = _composer_ref_from_batch_results(snap_batch.get("results") or [])
+        ref = meta.get("composer_ref")
+        if not ref:
+            _write_out(out_path, {
+                "action": "chain-send",
+                "decision": "COMPOSER_REF_NOT_OBTAINED",
+                "success": False,
+                "hermes_handler_invoked": True,
+            })
+            return
+
+        if press_only:
+            # S2 press-only: fresh connection has no keyboard focus state on the
+            # composer — refocus deterministically with click(ref) INSIDE the
+            # same batch, then press (click-refocus+press = 4/4 vs 2/4 without).
+            send_batch = _batch_commands_via_session(
+                task_id,
+                [
+                    ["snapshot", "-c"],
+                    ["click", f"@{ref}"],
+                    ["press", "Enter"],
+                ],
+                timeout=120,
+            )
+        else:
+            # Batch 2: THE SEND — snapshot+fill+press on one connection
+            # (single connection: fill+press same batch guarded = 6/6).
+            send_batch = _batch_commands_via_session(
+                task_id,
+                [
+                    ["snapshot", "-c"],
+                    ["fill", f"@{ref}", text],
+                    ["press", "Enter"],
+                ],
+                timeout=120,
+            )
+        if not send_batch.get("success"):
+            _write_out(out_path, {
+                "action": "chain-send",
+                "decision": "SEND_BATCH_FAILED",
+                "success": False,
+                "error_class": "send_batch_failure",
+                "composer_ref": ref,
+                "hermes_handler_invoked": True,
+            })
+            return
+        results = send_batch.get("results") or []
+        per_cmd = []
+        for item in results:
+            per_cmd.append({
+                "command": (item or {}).get("command", [None])[0] if isinstance(item.get("command"), list) else None,
+                "success": bool((item or {}).get("success")),
+                "error_class": type(item.get("error")).__name__ if (item or {}).get("error") else None,
+            })
+        fill_ok = any((c or {}).get("command") == "fill" and (c or {}).get("success") for c in per_cmd)
+        press_ok = any((c or {}).get("command") == "press" and (c or {}).get("success") for c in per_cmd)
+        envelope = {
+            "action": "chain-send",
+            "decision": "DISPATCHED",
+            "success": bool((fill_ok or press_only) and press_ok),
+            "composer_ref": ref,
+            "composer_role": meta.get("composer_role"),
+            "text_chars": len(text),
+            "text_sha256_12": hashlib.sha256(text.encode("utf-8")).hexdigest()[:12] if text else None,
+            "press_only": press_only,
+            "per_command": per_cmd,
+            "hermes_handler_invoked": True,
+            "single_connection": True,
+        }
+    finally:
+        # Guard is DELIVERY-SCOPED: always restored, on every exit path.
+        _focus_guard_set(False)
+    _write_out(out_path, envelope)
+
+
 def action_exec_tool(out_path, name, args_json, task_id, extract_composer):
     """Live dispatch: gate FIRST, Hermes handler only for allowlisted names.
 
@@ -412,7 +736,7 @@ def action_exec_tool(out_path, name, args_json, task_id, extract_composer):
 def main():
     ap = argparse.ArgumentParser(description="Control Plane per-invocation Hermes browser allowlist bridge")
     ap.add_argument("--action", required=True,
-                    choices=["schemas", "dispatch-probe", "exec-tool", "config-meta"])
+                    choices=["schemas", "dispatch-probe", "exec-tool", "chain-send", "config-meta"])
     ap.add_argument("--out", required=True)
     ap.add_argument("--name", default=None)
     ap.add_argument("--args-json", default=None)
@@ -433,6 +757,8 @@ def main():
         action_dispatch_probe(ns.out)
     elif ns.action == "exec-tool":
         action_exec_tool(ns.out, ns.name, ns.args_json, ns.task_id, ns.extract_composer_ref)
+    elif ns.action == "chain-send":
+        action_chain_send(ns.out, ns.args_json, ns.task_id)
     elif ns.action == "config-meta":
         _write_out(ns.out, _config_meta())
 
