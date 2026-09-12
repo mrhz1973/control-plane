@@ -1,0 +1,10 @@
+{
+  "schema_version": "v4-phase-f-route-control-state-v1",
+  "route_id": "qwen_local+hermes+chatgpt_web",
+  "state": "DISABLED",
+  "restoration_state": "SHADOW_ONLY",
+  "disable_history": [],
+  "updated_at": "2026-09-12T12:00:00.000Z",
+  "updated_by": "V4_HERMES_PHASE_F_READINESS_GAP_CLOSURE_R2_R4_R5_V1",
+  "note": "DEFAULT=DISABLED. Production-enabled state intentionally absent; activation requires a separate human promotion gate."
+}

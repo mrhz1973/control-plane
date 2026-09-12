@@ -5,6 +5,16 @@
 **ISSUE_STATE:** `#73 OPEN` (read-only verified)
 **Packet status:** `PREPARED — PROMOTION_DECISION=PENDING`
 
+> **SUPERSEDED READINESS MATRIX — UPDATE 2026-09-12.** The original matrix
+> below recorded `READINESS=NOT_READY` with three blocking unknowns
+> (R2/R4+R14/R5). It is preserved verbatim as history. The task
+> `V4_HERMES_PHASE_F_READINESS_GAP_CLOSURE_R2_R4_R5_V1` (base
+> `a1f74fd0c4d5d452b353d3b03c0dc795d6c6411b`) subsequently closed those gaps
+> with bounded implementation + deterministic evidence; the superseding
+> matrix is in [Update: readiness re-evaluation after gap closure](#update-readiness-re-evaluation-after-gap-closure).
+> The historical UNKNOWN entries were true at their time and were not
+> rewritten.
+
 ## Scope and current state
 
 **PROMOTION_TARGET:** a future, separately bounded implementation that could make the qualified `QWEN_LOCAL -> HERMES -> CHATGPT_WEB` continuity route available for a later human promotion decision. No such implementation or decision exists in this packet.
@@ -115,3 +125,99 @@ Recommendation B follows the packet rule: `ALL_CRITICAL_READINESS_ITEMS=PASS` is
 | **C — REJECT / KEEP NON-PRODUCTION** | Do not promote this route in the current track; retain the qualification as valid historical evidence. |
 
 Only the human operator can select A, B, or C. This packet records no selection.
+
+---
+
+## Update: operator decision B recorded + readiness re-evaluation after gap closure
+
+**UPDATE_TASK_REF:** `V4_HERMES_PHASE_F_READINESS_GAP_CLOSURE_R2_R4_R5_V1`
+**UPDATE_BASE_HEAD:** `a1f74fd0c4d5d452b353d3b03c0dc795d6c6411b`
+**UPDATE_DATE:** 2026-09-12
+
+### Operator decision B (DEFER) — RECORDED
+
+```text
+PHASE_F_DECISION=B
+PROMOTION_DECISION=DEFER
+KEEP_MODE=SHADOW_ONLY
+OPERATOR_PHASE_F_DECISION=B_DEFER_RECORDED
+```
+
+Decision B authorized a bounded readiness-gap closure task only. It did NOT
+authorize promotion, production dispatch, or issue #73 closure, and none of
+those occurred.
+
+### Superseding readiness matrix (R1–R14, same criteria)
+
+| ID | Criterion | Critical | Historical status | Superseding status | Superseding evidence |
+|---|---|---:|---|---|---|
+| R1 | Route safety | yes | `PASS` | `PASS` | unchanged — `reports/architecture/v4_hermes_phase_e_quota_degraded_shadow_route_v1.md` |
+| R2 | Source freshness / fail-closed | yes | `UNKNOWN` | **`PASS`** | `tools/v4-phase-f-r2-source-freshness-v1.mjs` matrix; route dependencies (qwen_local, chatgpt_web) have proven machine-readable collectors + fail-closed admission (F23–F27); commercial pools fail-closed by construction (T02–T06); manual bounded paths preserved |
+| R3 | Quota / resource attribution | yes | `PASS` | `PASS` | unchanged |
+| R4 | Rollback / disable mechanism | yes | `UNKNOWN` | **`PASS`** | `tools/v4-phase-f-route-control-v1.mjs` + tracked state `configs/runtime/route-control/hermes-route-state.json`; DEFAULT=DISABLED, MISSING/UNKNOWN/INVALID fail-closed, idempotent disable, no legacy dependency (F01–F14) |
+| R5 | Observability | yes | `UNKNOWN` | **`PASS`** | `tools/v4-phase-f-route-observability-v1.mjs` — all 13 required fields observable across normal/shadow/defer/resource-unknown/authorization-denied/disabled/rollback cases (F15–F22) |
+| R6 | Context recovery | yes | `PASS` | `PASS` | unchanged — Phase D V2 |
+| R7 | Authorization boundaries | yes | `PASS` | `PASS` | unchanged; R4 control emits no production authority (`production_dispatch_permitted=false` invariant) |
+| R8 | Provenance / auditability | yes | `PASS` | `PASS` | unchanged; R5 envelope is additive, read-only, authorization-neutral |
+| R9 | No silent fallback | yes | `PASS` | `PASS` | unchanged; defer reasons now explicitly observable |
+| R10 | Local controller / Web failure | yes | `PASS` | `PASS` | unchanged — Phase E E6/E7 |
+| R11 | Operator policy preservation | yes | `PASS` | `PASS` | unchanged |
+| R12 | Legacy/staged components inactive | yes | `PASS` | `PASS` | unchanged; R4 control has zero legacy dependency |
+| R13 | Closed runtime gates remain closed | yes | `PASS` | `PASS` | unchanged — D-0025 `enabled=false` untouched |
+| R14 | Promotion reversible / explicitly disableable | yes | `UNKNOWN` | **`PASS`** | restoration to `SHADOW_ONLY` proven exact; rollback observation bounded; restart representation cannot enable (F08–F12, F14) |
+
+```text
+BLOCKING_UNKNOWN_COUNT=0
+ALL_CRITICAL_READINESS_ITEMS=PASS=YES
+ROLLBACK_DISABLE_READY=YES
+OBSERVABILITY_READY=YES
+READINESS=READY
+```
+
+`READINESS=READY` is a criteria-level result only. It is NOT a promotion and
+NOT an authorization. `PROMOTION_EXECUTED=NO`, `PRODUCTION_DISPATCH=NO`,
+`CURRENT_MODE=SHADOW_ONLY`, `ISSUE_73=OPEN`.
+
+### Remaining blockers
+
+```text
+REMAINING_BLOCKING_READINESS_GAPS=NONE
+```
+
+No readiness criterion remains UNKNOWN or FAIL. The remaining blocker for
+promotion is purely the HUMAN DECISION itself, which this update does not make.
+
+### Updated recommendation
+
+The packet's original recommendation (`B`) was evidence-driven at a time when
+three critical unknowns existed. That evidence condition no longer holds:
+
+```text
+READINESS=READY
+RECOMMENDED=<human decision, now evidence-complete>
+```
+
+The recommendation function is unchanged: because
+`ALL_CRITICAL_READINESS_ITEMS=PASS` is now true, `BLOCKING_UNKNOWN_COUNT=0`,
+`ROLLBACK_DISABLE_READY=YES`, and `OBSERVABILITY_READY=YES`, the mechanical
+rule that forced option B no longer binds. The choice among A (authorize a
+bounded promotion implementation task), B (continue deferral), and C (reject /
+keep non-production) is now fully the human operator's, with complete evidence:
+
+- Gap-closure report: `reports/architecture/v4_hermes_phase_f_readiness_gap_closure_r2_r4_r5_v1.md`
+- Persisted evidence: `reports/runtime/phase-f/phase-f-gap-closure-evidence.json`
+- Focused qualification: `tests/phase-f-readiness-gap-closure-v1/run.mjs` (30/30 PASS)
+
+### Focused regression evidence (update)
+
+```text
+tests/phase-f-readiness-gap-closure-v1               30/30 PASS
+tests/hermes-phase-e-quota-degraded-shadow-route-v1  10/10 PASS
+tests/rt25-canonical-closed-gate-e2e                 19/19 PASS
+tests/rt25-t02-codex-quota-ingest                    13/13 PASS
+tests/rt25-t03-glm-quota-ingest                      13/13 PASS
+tests/rt25-t04-quota-state-join                       8/8 PASS
+tests/rt25-t05-freshness-enforcement                  8/8 PASS
+tests/rt25-t09-execution-selector                     5/5 PASS
+tests/registry-v2                                    76/76 PASS
+```

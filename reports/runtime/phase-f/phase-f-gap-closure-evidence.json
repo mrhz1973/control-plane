@@ -1,0 +1,305 @@
+{
+  "schema_version": "v4-phase-f-readiness-gap-closure-evidence-v1",
+  "task_ref": "V4_HERMES_PHASE_F_READINESS_GAP_CLOSURE_R2_R4_R5_V1",
+  "base_head": "a1f74fd0c4d5d452b353d3b03c0dc795d6c6411b",
+  "recorded_at": "2026-09-12T12:29:59.670Z",
+  "r2": {
+    "schema_version": "v4-phase-f-r2-source-freshness-matrix-v1",
+    "evaluated_at": "2026-09-12T12:00:00.000Z",
+    "no_parallel_schema": true,
+    "no_scraping": true,
+    "no_private_undocumented_endpoints": true,
+    "domains": {
+      "codex": {
+        "quota_pool_id": "chatgpt_codex_subscription",
+        "source_law": "MANUAL_DASHBOARD_ONLY",
+        "implemented_by": "tools/rt25-quota-ingest-codex-v1.mjs",
+        "source_implemented": true,
+        "source_machine_readable": false,
+        "machine_readable_gap": "automatic collector absent; operator dashboard snapshot consumed through deterministic translator",
+        "freshness_proven": true,
+        "freshness_evidence": "tests/rt25-t04 + tests/rt25-t05 + tests/rt25-t02 (stale snapshot -> INGEST_FAIL_CLOSED_STALE; TTL 300s enforced at join)",
+        "ttl_proven": true,
+        "ttl_evidence": "STATUS_MAX_AGE_MS=300000 enforced by compose/rt25-quota-state-join (classifyResourceQuota ageOk)",
+        "reset_semantics_proven": true,
+        "reset_evidence": "window reset_at carried from snapshot when sourced from evidence; never invented (translate-quota-pool-snapshot-v1 law)",
+        "fail_closed_when_unavailable": true,
+        "fail_closed_evidence": "missing -> CONSERVE_UNKNOWN_MISSING; stale -> CONSERVE_UNKNOWN_STALE; invalid -> INGEST_REJECTED_* (all block admission via T05/T06)",
+        "dependency_of_future_promoted_route": false,
+        "dependency_note": "codex gates DIRECT commercial preference only; the degraded route selected by Phase E does not rely on codex freshness"
+      },
+      "glm": {
+        "quota_pool_id": "glm_coding_plan",
+        "source_law": "MACHINE_STATUS_SOURCE_CONFIRMED_CREDENTIAL_PENDING",
+        "implemented_by": "tools/rt25-quota-ingest-glm-v1.mjs",
+        "source_implemented": true,
+        "source_machine_readable": true,
+        "machine_readable_gap": "documented read-only monitor endpoint implemented; automation inactive because operator credential is not provisioned (by policy, not by defect)",
+        "freshness_proven": true,
+        "freshness_evidence": "tests/rt25-t03 (monitor normalization -> fresh windows; absent credential -> fail-closed UNKNOWN ingest)",
+        "ttl_proven": true,
+        "ttl_evidence": "same central TTL law (STATUS_MAX_AGE_MS) enforced at join for all pools",
+        "reset_semantics_proven": true,
+        "reset_evidence": "monitor payload nextResetTime -> window reset_at (5h rolling + weekly); unknown units skipped, never invented",
+        "fail_closed_when_unavailable": true,
+        "fail_closed_evidence": "CREDENTIAL_ABSENT_FAIL_CLOSED / INGEST_FAIL_CLOSED_UNKNOWN_NO_EVIDENCE (valid fail-closed runtime outcome)",
+        "dependency_of_future_promoted_route": false,
+        "dependency_note": "glm is not a Phase E candidate surface; INELIGIBLE_BY_OPERATOR_POLICY window consumed deterministically"
+      },
+      "qwen_local": {
+        "quota_pool_id": null,
+        "source_law": "LOCAL_UNMETERED_LOCAL_PROBE",
+        "implemented_by": "tools/collect-qwen-local-resource-status-v1.mjs",
+        "source_implemented": true,
+        "source_machine_readable": true,
+        "machine_readable_gap": null,
+        "freshness_proven": true,
+        "freshness_evidence": "local_probe source class with observed_at; freshness classification at join (same TTL law)",
+        "ttl_proven": true,
+        "ttl_evidence": "central STATUS_MAX_AGE_MS law applies to every composer entry including local_probe",
+        "reset_semantics_proven": true,
+        "reset_evidence": "no commercial window: quota_remaining unit=unlimited with local compute availability semantics; reset_at null by contract (not an invented value)",
+        "fail_closed_when_unavailable": true,
+        "fail_closed_evidence": "probe failure -> available=false -> Phase E QWEN_LOCAL_UNAVAILABLE_OR_INADEQUATE defer (E7)",
+        "dependency_of_future_promoted_route": true,
+        "dependency_note": "controller of the future promoted route; coverage proven via local probe collector (machine-readable)"
+      },
+      "chatgpt_web": {
+        "quota_pool_id": null,
+        "source_law": "SEPARATE_AVAILABILITY_DOMAIN",
+        "implemented_by": "tools/local-dev-resource-observatory-v1.mjs (collectChatgptWebObservation)",
+        "source_implemented": true,
+        "source_machine_readable": true,
+        "machine_readable_gap": null,
+        "freshness_proven": true,
+        "freshness_evidence": "observation carries observed_at + freshness classification; Phase E requires freshness=fresh for admission (E6/E5 law)",
+        "ttl_proven": true,
+        "ttl_evidence": "QUOTA_DISPLAY_FRESH_MS classification in observatory; stale observation -> admission refused",
+        "reset_semantics_proven": true,
+        "reset_evidence": "no quota pool exists (registry quota_pool_id=null): no reset semantics are claimed or needed; availability-only domain",
+        "fail_closed_when_unavailable": true,
+        "fail_closed_evidence": "unavailable/unauthenticated/throttled -> CHATGPT_WEB_UNAVAILABLE_OR_STALE defer (E6); never unlimited/free claims",
+        "dependency_of_future_promoted_route": true,
+        "dependency_note": "target surface of the future promoted route; coverage proven via observatory observation contract"
+      },
+      "cursor": {
+        "quota_pool_id": null,
+        "source_law": "NO_POOL_BINDING_ALLOWANCE_UNVERIFIED",
+        "implemented_by": "configs/resources/registry.json (cursor_native_model_route)",
+        "source_implemented": false,
+        "source_machine_readable": false,
+        "machine_readable_gap": "no stable pool identity / model-to-bucket mapping; manual observation is bounded and preserved; mapping must not be invented",
+        "freshness_proven": false,
+        "freshness_evidence": "manual operator observation only (CURSOR_USAGE_SOURCE=OPERATOR_MANUAL_OBSERVATION)",
+        "ttl_proven": false,
+        "ttl_evidence": "reset date observed manually (DATE_ONLY precision); no machine TTL",
+        "reset_semantics_proven": false,
+        "reset_evidence": "plan reset date manual; time-of-day NOT_OBSERVED — explicitly not invented",
+        "fail_closed_when_unavailable": true,
+        "fail_closed_evidence": "registry pool binding null -> NO_POOL_/no commercial admission path at all; cannot silently enable any route",
+        "dependency_of_future_promoted_route": false,
+        "dependency_note": "cursor is a harness surface, not part of the future promoted route"
+      }
+    },
+    "route_dependencies": [
+      "qwen_local",
+      "chatgpt_web"
+    ],
+    "route_dependencies_proven": true,
+    "commercial_pools_fail_closed": true,
+    "manual_bounded_observation_preserved": [
+      "codex",
+      "glm",
+      "cursor"
+    ],
+    "r2_source_freshness_readiness": "PASS",
+    "basis": "The future promoted route depends only on qwen_local (proven machine-readable local probe) and chatgpt_web (proven availability observation); commercial pools gate direct routes through proven fail-closed freshness enforcement (T04/T05/T06). Every unautomatable source (codex manual snapshot, glm credential-gated monitor, cursor manual observation) fails closed to UNKNOWN and never becomes capacity."
+  },
+  "r4": {
+    "controlled_route_id": "qwen_local+hermes+chatgpt_web",
+    "tracked_state_document": "configs/runtime/route-control/hermes-route-state.json",
+    "tracked_state_evaluation": {
+      "schema_version": "v4-phase-f-route-control-evaluation-v1",
+      "route_id": "qwen_local+hermes+chatgpt_web",
+      "evaluated_at": "2026-09-12T12:00:00.000Z",
+      "effective_state": "DISABLED",
+      "state_class": "SAFE",
+      "fail_closed": false,
+      "candidate_flag": false,
+      "shadow_only_canonical": false,
+      "production_dispatch_permitted": false,
+      "production_state_present": false,
+      "restoration_state": "SHADOW_ONLY",
+      "reason_codes": [
+        "ROUTE_DISABLED_FAIL_CLOSED_DEFAULT"
+      ]
+    },
+    "default_state": "DISABLED",
+    "restoration_state": "SHADOW_ONLY",
+    "candidate_enable_then_disable_proof": {
+      "candidate_evaluation": {
+        "schema_version": "v4-phase-f-route-control-evaluation-v1",
+        "route_id": "qwen_local+hermes+chatgpt_web",
+        "evaluated_at": "2026-09-12T12:00:00.000Z",
+        "effective_state": "CANDIDATE_ENABLED",
+        "state_class": "CANDIDATE",
+        "fail_closed": false,
+        "candidate_flag": true,
+        "shadow_only_canonical": false,
+        "production_dispatch_permitted": false,
+        "production_state_present": false,
+        "restoration_state": "SHADOW_ONLY",
+        "reason_codes": [
+          "ROUTE_CANDIDATE_FLAG_NO_PRODUCTION_AUTHORIZATION"
+        ]
+      },
+      "after_disable_evaluation": {
+        "schema_version": "v4-phase-f-route-control-evaluation-v1",
+        "route_id": "qwen_local+hermes+chatgpt_web",
+        "evaluated_at": "2026-09-12T12:00:01.000Z",
+        "effective_state": "DISABLED",
+        "state_class": "SAFE",
+        "fail_closed": false,
+        "candidate_flag": false,
+        "shadow_only_canonical": false,
+        "production_dispatch_permitted": false,
+        "production_state_present": false,
+        "restoration_state": "SHADOW_ONLY",
+        "reason_codes": [
+          "ROUTE_DISABLED_FAIL_CLOSED_DEFAULT"
+        ]
+      },
+      "rollback_observation": {
+        "schema_version": "v4-phase-f-route-control-evaluation-v1",
+        "rollback_ready": true,
+        "effective_state": "DISABLED",
+        "fail_closed": false,
+        "restoration_state": "SHADOW_ONLY",
+        "disable_count": 1,
+        "last_disable": {
+          "at": "2026-09-12T12:00:01.000Z",
+          "from_state": "CANDIDATE_ENABLED",
+          "to_state": "DISABLED",
+          "restored_to": "SHADOW_ONLY",
+          "by": "evidence"
+        },
+        "reason_codes": []
+      }
+    },
+    "production_dispatch_permitted_invariant": true
+  },
+  "r5": {
+    "schema_version": "v4-phase-f-route-observability-v1",
+    "authorization_neutral": true,
+    "observed_at": "2026-09-12T12:00:00.000Z",
+    "observability_complete": true,
+    "missing_fields": [],
+    "fields": {
+      "observed_at": {
+        "state": "OBSERVED",
+        "value": "2026-09-12T12:00:00.000Z"
+      },
+      "task_ref": {
+        "state": "OBSERVED",
+        "value": "V4_HERMES_PHASE_F_READINESS_GAP_CLOSURE_R2_R4_R5_V1"
+      },
+      "route_selected": {
+        "state": "OBSERVED",
+        "value": "SELECTED"
+      },
+      "mode": {
+        "state": "OBSERVED",
+        "value": "SHADOW_ONLY"
+      },
+      "fallback_or_defer_reason": {
+        "state": "OBSERVED",
+        "value": [
+          "COMMERCIAL_ROUTE_FAIL_CLOSED",
+          "CONSERVE_UNKNOWN_MISSING",
+          "QWEN_LOCAL_ADMITTED",
+          "CHATGPT_WEB_SEPARATE_AVAILABILITY_DOMAIN_ADMITTED",
+          "SHADOW_ONLY_NO_PRODUCTION_DISPATCH"
+        ]
+      },
+      "authorization_result": {
+        "state": "OBSERVED",
+        "value": {
+          "production_dispatch": false,
+          "hidden_fallback": false,
+          "authorization_bypass": false,
+          "shadow_only": true
+        }
+      },
+      "resource_admission_result": {
+        "state": "OBSERVED",
+        "value": {
+          "ok": true,
+          "pool_evaluations": {
+            "chatgpt_codex_subscription": "CONSERVE_UNKNOWN_MISSING"
+          }
+        }
+      },
+      "resource_freshness_state": {
+        "state": "OBSERVED",
+        "value": {
+          "chatgpt_codex_subscription": "stale"
+        }
+      },
+      "local_controller_availability": {
+        "state": "OBSERVED",
+        "value": {
+          "available": true,
+          "adequate": true
+        }
+      },
+      "web_surface_availability": {
+        "state": "OBSERVED",
+        "value": {
+          "availability_domain": "SEPARATE_AVAILABILITY_DOMAIN",
+          "state": "AVAILABLE",
+          "reachable": true,
+          "authenticated": true,
+          "freshness": "fresh"
+        }
+      },
+      "failure_class": {
+        "state": "OBSERVED",
+        "value": "NONE_SHADOW_ROUTE_HEALTHY"
+      },
+      "route_enable_disable_state": {
+        "state": "OBSERVED",
+        "value": {
+          "route_id": "qwen_local+hermes+chatgpt_web",
+          "effective_state": "DISABLED",
+          "state_class": "SAFE",
+          "fail_closed": false,
+          "reason_codes": [
+            "ROUTE_DISABLED_FAIL_CLOSED_DEFAULT"
+          ]
+        }
+      },
+      "rollback_state": {
+        "state": "OBSERVED",
+        "value": {
+          "rollback_ready": true,
+          "restoration_state": "SHADOW_ONLY",
+          "disable_count": 0,
+          "last_disable": null
+        }
+      }
+    },
+    "rt25_visibility": {
+      "state": "OBSERVED",
+      "visibility": "NONE",
+      "ok": false
+    }
+  },
+  "hard_walls": {
+    "production_dispatch": false,
+    "promotion_executed": false,
+    "issue_73": "OPEN",
+    "silent_fallback": false,
+    "authorization_bypass": false,
+    "legacy_component_activated": false
+  }
+}
