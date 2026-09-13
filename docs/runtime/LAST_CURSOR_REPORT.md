@@ -1,5 +1,24 @@
 # LAST CURSOR REPORT
 
+## Issue #79 closure persistence (latest)
+
+**TASK_REF:** `LOCAL_DEV_HERMES_QWEN_ACTIVITY_OBSERVABILITY_V1_ISSUE_79_CLOSURE_PERSISTENCE`
+**Classification:** `PASS — issue #79 CLOSED_COMPLETED, capability complete`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `7d24f61b2cd019d33ae0f6c9178ee4fc70362663`
+**Report:** `reports/architecture/local_dev_hermes_qwen_activity_observability_v1_issue_79_closure_persistence.md`
+
+- Issue #79 closed via `gh` (state=CLOSED, stateReason=COMPLETED) after the
+  closure-eligible verdict of the previous task. Closure comment posted
+  (comment id 5656285693): MINIMUM_CAPABILITY_COMPLETE=YES,
+  READ_ONLY_OBSERVABILITY=PASS, DISPATCHER_IDLE_WITH_EXTERNAL_ACTIVE=PASS,
+  AUTHORITY_EXPANSION=NO, PRODUCTION_CHANGED=NO, realized architecture and
+  confirmed semantics. Historical backlog body preserved (verified marker).
+- Repo persistence: frontier + last-cursor updated, minimal report added.
+- `NEXT_AFTER_CLOSURE`: NONE for #79; reopen only on future evidence of a
+  real observability gap.
+
+
 ## Issue #79 closure evaluation (latest)
 
 **TASK_REF:** `LOCAL_DEV_HERMES_QWEN_ACTIVITY_OBSERVABILITY_V1_ISSUE_79_CLOSURE_EVALUATION`

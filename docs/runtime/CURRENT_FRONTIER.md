@@ -332,3 +332,22 @@ labelled outside the claim loop). `VISUAL_INSPECTION` (#78) verified as
 additive stage only. Issue itself NOT mutated. Report:
 `reports/architecture/local_dev_hermes_qwen_activity_observability_v1_issue_79_closure_evaluation.md`.
 `NEXT=bounded issue #79 closure persistence only`.
+
+---
+
+## Issue #79 closed — agent/browser observability lane complete
+
+`LOCAL_DEV_HERMES_QWEN_ACTIVITY_OBSERVABILITY_V1_ISSUE_79_CLOSURE_PERSISTENCE`
+= **PASS** → issue #79 formally CLOSED (stateReason=COMPLETED). Closure
+comment posted
+([#79 comment](https://github.com/mrhz1973/control-plane/issues/79#issuecomment-5656285693))
+recording MINIMUM_CAPABILITY_COMPLETE=YES, READ_ONLY_OBSERVABILITY=PASS,
+DISPATCHER_IDLE_WITH_EXTERNAL_ACTIVE=PASS, AUTHORITY_EXPANSION=NO,
+PRODUCTION_CHANGED=NO; the realized chain (runner → bounded sanitized
+local activity registry → existing dispatcher diagnostics → separate
+AGENT/browser dashboard section); confirmed semantics (freshness ⇒ STALE,
+missing ⇒ UNKNOWN, PASS/STOP terminal, HUMAN_GATE observable-only,
+VISUAL_INSPECTION additive). Historical body preserved untouched.
+Report: `reports/architecture/local_dev_hermes_qwen_activity_observability_v1_issue_79_closure_persistence.md`.
+`NEXT_AFTER_CLOSURE=NONE for issue #79; reopen only on future evidence of a
+real observability gap`.
