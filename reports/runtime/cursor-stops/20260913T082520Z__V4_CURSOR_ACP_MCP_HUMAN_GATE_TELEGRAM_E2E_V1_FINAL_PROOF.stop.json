@@ -1,0 +1,94 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1",
+  "execution_surface": "CODEX_DESKTOP",
+  "result_cursor": "STOP",
+  "result": "STOP",
+  "starting_head": "6f5ae4cbd1f354dc2a1521b0dc82cf81cc728462",
+  "stop_evidence_commit": "PENDING_SELF_REFERENCE",
+  "required_commit_subject": "codex-stop: V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1_FINAL_PROOF",
+  "failure_stage": "PRECHECK",
+  "failure_substage": "PRE_SEND_RESTORE_AND_SINGLE_SEND_GUARDS",
+  "finding": "Persisted READY state contradicts the shipped driver: PASS exits the process before finally restores issuance; the MCP server does not enforce a one-send budget. Final live proof was not launched because the mandatory restore and single-gate laws cannot be guaranteed by this implementation.",
+  "findings": [
+    {
+      "code": "PASS_EXIT_BYPASSES_ISSUANCE_RESTORE",
+      "path": "tools/v4-cursor-acp-mcp-gate-telegram-e2e-v1.mjs",
+      "lines": [198, 201, 376],
+      "evidence": "runE2E calls process.exit(0); the caller's finally containing restoreIssuance cannot execute. A standalone synthetic child-process counterexample exited 0 with BODY observed and RESTORE absent. No actual service was stopped for this check."
+    },
+    {
+      "code": "SINGLE_SEND_BUDGET_NOT_ENFORCED",
+      "path": "tools/v4-cursor-acp-mcp-human-gate-server-v1.mjs",
+      "lines": [95, 107, 222],
+      "evidence": "Each tools/call human_gate invokes humanGate again, registers a decision and calls transport.send. No one-shot reservation, already-in-flight rejection or consumed send budget is checked before sending. Asking the model to call exactly once is not an enforcement mechanism."
+    },
+    {
+      "code": "OPERATOR_A_CONSUMPTION_FALSE_POSITIVE",
+      "path": "tools/v4-cursor-acp-mcp-gate-telegram-e2e-v1.mjs",
+      "lines": [308, 310],
+      "evidence": "For verified option A the predicate accepts any transcript containing the letter a and continued_in_same_session=true. A synthetic transcript GATE_ANSWER=B CONTINUED_IN_SAME_SESSION=true passes the current predicate. It cannot independently prove option A consumption."
+    },
+    {
+      "code": "CROSS_RUN_STALE_KEYBOARDS_NOT_DISCOVERED",
+      "path": "tools/v4-cursor-acp-gate-transport-telegram-v1.mjs",
+      "lines": [120, 123],
+      "evidence": "Deactivation searches only the current run's spool gate-store.json. The driver creates a fresh per-run spool, so prior runs' keyboards are not discovered by this path. No Telegram edit was attempted in this pre-send STOP."
+    }
+  ],
+  "target_result": "NOT_RUN_PRE_SEND_STOP",
+  "regressions_status": "NOT_RERUN",
+  "bugbot_status": "NOT_RERUN",
+  "runtime_apply_status": "NOT_RUN",
+  "deterministic_checks": {
+    "process_exit_skips_finally": "CONFIRMED",
+    "option_A_false_positive": "CONFIRMED",
+    "real_provider_or_transport_used": false
+  },
+  "process_observation": {
+    "canonical_issuance_count": 1,
+    "canonical_issuance_pid": 59408,
+    "mcp_gate_server_count": 0,
+    "e2e_driver_count": 0,
+    "issuance_quiesced_by_this_task": false,
+    "issuance_restored": "NOT_REQUIRED_NOT_QUIESCED",
+    "process_leaks": 0,
+    "scope": "Local CIM inventory of canonical issuance and project MCP gate/driver node processes; not a claim about remote Telegram consumers."
+  },
+  "markers": {
+    "MCP_TOOL_INVOCATION": "NOT_RUN",
+    "TELEGRAM_NOTIFICATION": "NOT_SENT",
+    "REAL_OPERATOR_CALLBACK": "NOT_REQUESTED",
+    "CALLBACK_VERIFIED": "NOT_RUN",
+    "CALLBACK_BINDING": "NOT_RUN",
+    "SAME_SESSION_IDENTITY": "NOT_RUN",
+    "ZERO_SESSION_NEW_AFTER_GATE": "NOT_RUN",
+    "SESSION_LOAD_LIVE_PATH": "NO",
+    "TOOL_RESULT_RETURNED": "NOT_RUN",
+    "OPERATOR_DECISION_CONSUMED": "NOT_RUN",
+    "POST_GATE_CONTINUATION": "NOT_RUN",
+    "SINGLE_CONSUMER_LAW": "PROOF_WINDOW_NOT_OPENED",
+    "ISSUANCE_RESTORED": "NOT_REQUIRED_NOT_QUIESCED",
+    "PROCESS_LEAKS": 0,
+    "CONTROL_PLANE_AUTHORITY_PRESERVED": "YES",
+    "PRODUCTION_CHANGED": "NO"
+  },
+  "execution_route_contained": true,
+  "telegram_send_calls": 0,
+  "telegram_get_updates_calls": 0,
+  "acp_sessions_created": 0,
+  "http_execution_endpoint_requests": 0,
+  "opencode_calls": 0,
+  "qwen_generations": 0,
+  "provider_calls": 0,
+  "dirty_paths_summary": [
+    "Pre-existing: reports/runtime/cursor-acp/mcp-gate-suite-results.json",
+    "Pre-existing: reports/runtime/cursor-acp/mcp-gate-wiring-result.json"
+  ],
+  "preexisting_dirty_sha256": {
+    "mcp-gate-suite-results.json": "ff8bef49b3a0d2e974d625d7b73395e9817d61c7643e01a2ac1c772bcc779f97",
+    "mcp-gate-wiring-result.json": "1a8c830df0361b280d9fff6630cbfa1964b77069dcec9edcb0499b0cde7f3af3"
+  },
+  "next": "Repair the evidenced restore/send/consumption guards and cross-run stale-keyboard handling, then obtain a subsequent decision before another real gate. Integration closure is not eligible.",
+  "next_owner": "GPT_WEB"
+}
