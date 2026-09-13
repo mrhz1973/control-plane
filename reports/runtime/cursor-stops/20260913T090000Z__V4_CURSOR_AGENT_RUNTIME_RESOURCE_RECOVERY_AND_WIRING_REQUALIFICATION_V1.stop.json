@@ -1,0 +1,39 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_CURSOR_AGENT_RUNTIME_RESOURCE_RECOVERY_AND_WIRING_REQUALIFICATION_V1",
+  "execution_surface": "CODEX_DESKTOP",
+  "result": "STOP_OPERATOR_RESOURCE_RELIEF_REQUIRED",
+  "starting_head": "cda3877427f46d1fb68f38d96079a38ba181600e",
+  "required_commit_subject": "codex-stop: V4_CURSOR_AGENT_RUNTIME_RESOURCE_RECOVERY_AND_WIRING_REQUALIFICATION_V1",
+  "root_cause_class": "B_SYSTEM_COMMIT_PRESSURE",
+  "resource_snapshot_sanitized": {
+    "physical_ram_total_mb": 32682,
+    "physical_ram_available_mb": 5618,
+    "commit_current_mb": 55578,
+    "commit_limit_mb": 67498,
+    "pagefile_configured_mb": 34816,
+    "pagefile_in_use_mb": 5463,
+    "process_count": 471,
+    "handle_count": 262925,
+    "top_project_owned_stale_processes": 0
+  },
+  "classification_evidence": "The official CLI lightweight version command succeeds. The earlier five ACP launches all stopped before initialize with uv_os_get_passwd returned ENOMEM. Current committed memory is approximately 82% of configured commit limit. No project ACP/MCP/gate probe process matched the project argv/spool markers, so no safe project-owned process was eligible for termination.",
+  "safe_recovery": {
+    "stale_project_processes_found": 0,
+    "stale_project_processes_reaped": 0,
+    "arbitrary_user_processes_terminated": false,
+    "system_configuration_changed": false
+  },
+  "validation": {
+    "acp_cli_start": "PASS",
+    "acp_initialize": "NOT_RETRIED_AFTER_FIVE_PRIOR_ENOMEM_FAILURES",
+    "acp_session_new": "NOT_REACHED",
+    "mcp_server_wiring": "NOT_REACHED",
+    "final_proof_guards": "PASS",
+    "real_telegram_sends": 0,
+    "production_changed": false
+  },
+  "required_operator_action": "Free sufficient local commit capacity by closing or stopping a user-chosen nonessential workload, then rerun this task. Do not change pagefile configuration or reboot solely for this task.",
+  "ready_for_final_real_e2e": false,
+  "next": "OPERATOR_RESOURCE_RELIEF_WITH_EXACT_REQUIRED_ACTION"
+}
