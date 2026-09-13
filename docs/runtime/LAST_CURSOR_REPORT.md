@@ -1,5 +1,24 @@
 # LAST CURSOR REPORT
 
+## Issue #79 closure evaluation (latest)
+
+**TASK_REF:** `LOCAL_DEV_HERMES_QWEN_ACTIVITY_OBSERVABILITY_V1_ISSUE_79_CLOSURE_EVALUATION`
+**Classification:** `PASS — ISSUE_79_CLOSURE_ELIGIBLE=YES / MINIMUM_CAPABILITY_COMPLETE=YES`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `585e415a315dba979fdc74ef251e1da348e6839c`
+**Report:** `reports/architecture/local_dev_hermes_qwen_activity_observability_v1_issue_79_closure_evaluation.md`
+
+- All 18 acceptance points of issue #79 verified SATISFIED against real
+  code (dispatcher `agent_activity` additive section + `/v1/agent-activity`,
+  dashboard `agentops` distinct section) and persisted evidence. Lane suite
+  re-run on this tree: 23/23 PASS. `VISUAL_INSPECTION` verified additive
+  stage only (no authority law touched).
+- `READ_ONLY_OBSERVABILITY=PASS`, `DISPATCHER_IDLE_WITH_EXTERNAL_ACTIVE=PASS`,
+  `AUTHORITY_EXPANSION=NO`, `PRODUCTION_CHANGED=NO`.
+- Issue #79 NOT mutated in this task. NEXT: bounded issue #79 closure
+  persistence only.
+
+
 ## Issue #78 closure persistence (latest)
 
 **TASK_REF:** `QWEN_BROWSER_VISUAL_SIDECAR_V1_ISSUE_78_CLOSURE_PERSISTENCE`

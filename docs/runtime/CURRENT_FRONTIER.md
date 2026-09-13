@@ -314,3 +314,21 @@ resource-gated). Historical body preserved untouched. Verification:
 `reports/architecture/qwen_browser_visual_sidecar_v1_issue_78_closure_persistence.md`.
 `NEXT_AFTER_CLOSURE=NONE for issue #78; reopen only on future evidence of a
 real capability gap`.
+
+---
+
+## Issue #79 closure evaluation — ELIGIBLE
+
+`LOCAL_DEV_HERMES_QWEN_ACTIVITY_OBSERVABILITY_V1_ISSUE_79_CLOSURE_EVALUATION`
+= **PASS** → `ISSUE_79_CLOSURE_ELIGIBLE=YES`,
+`MINIMUM_CAPABILITY_COMPLETE=YES`, `READ_ONLY_OBSERVABILITY=PASS`,
+`DISPATCHER_IDLE_WITH_EXTERNAL_ACTIVE=PASS`, `AUTHORITY_EXPANSION=NO`,
+`PRODUCTION_CHANGED=NO`. All 18 acceptance points verified against real
+code + persisted evidence on this tree; lane suite re-run NOW: 23/23 PASS.
+Shape matches the issue's preferred architecture (local JSON ephemeral
+registry consumed by the EXISTING dispatcher — no new service; additive
+`agent_activity` in diagnostics; distinct dashboard section `agentops`
+labelled outside the claim loop). `VISUAL_INSPECTION` (#78) verified as
+additive stage only. Issue itself NOT mutated. Report:
+`reports/architecture/local_dev_hermes_qwen_activity_observability_v1_issue_79_closure_evaluation.md`.
+`NEXT=bounded issue #79 closure persistence only`.
