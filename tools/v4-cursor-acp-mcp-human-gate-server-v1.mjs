@@ -31,6 +31,8 @@ import {
   markNoAnswer,
   loadGateStore,
   persistGateStore,
+  reserveFinalProofSendBudget,
+  settleFinalProofSendBudget,
   gateStorePath,
   MAX_TTL_MS,
   DEFAULT_TTL_MS,
@@ -92,6 +94,19 @@ async function humanGate(args) {
   const ttlMs = Math.min(Math.max(Number(process.env.ACP_GATE_TTL_MS) || DEFAULT_TTL_MS, 1000), MAX_TTL_MS);
 
   let store = loadGateStore(storePath);
+  // This is opt-in and is set only by the final-real-proof driver. Reserve
+  // before registering/sending so concurrent/repeated tool calls cannot emit
+  // more than one keyboard for that proof run.
+  const proofScope = process.env.ACP_GATE_FINAL_PROOF_SCOPE || null;
+  let sendBudgetKey = null;
+  if (proofScope) {
+    const reservation = reserveFinalProofSendBudget(store, {
+      taskRef: args.task_ref, runId: args.run_id, scopeId: proofScope,
+    });
+    persistGateStore(store, storePath);
+    if (!reservation.ok) return { status: "error", reason: reservation.reason };
+    sendBudgetKey = reservation.key;
+  }
   const decision = registerGateDecision(store, {
     taskRef: args.task_ref,
     runId: args.run_id,
@@ -107,12 +122,14 @@ async function humanGate(args) {
     sent = await transport.send({ decision, spoolDir: SPOOL_DIR });
   } catch (e) {
     store = loadGateStore(storePath);
+    if (sendBudgetKey) settleFinalProofSendBudget(store, sendBudgetKey, "SEND_FAILED");
     markNoAnswer(store, decision.decision_id);
     persistGateStore(store, storePath);
     return { status: "error", reason: "TRANSPORT_SEND_FAILED", detail: String(e.message || e).slice(0, 120), decision_id: decision.decision_id };
   }
 
   store = loadGateStore(storePath);
+  if (sendBudgetKey) settleFinalProofSendBudget(store, sendBudgetKey, "SENT");
   const notified = markNotified(store, decision.decision_id, { transport: transport.name, messageId: sent?.messageId ?? null });
   if (!notified.ok) {
     persistGateStore(store, storePath);

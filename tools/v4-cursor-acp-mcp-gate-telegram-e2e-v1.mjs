@@ -24,6 +24,7 @@ import { spawn, execFileSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { verifyExactGateConsumption } from "./v4-cursor-acp-mcp-gate-final-proof-guards-v1.mjs";
 
 const TASK_REF = "V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1";
 const RUN_ID = randomUUID().replace(/-/g, "").slice(0, 16);
@@ -40,18 +41,12 @@ const push = (stage, rec = {}) => {
   fs.mkdirSync(SPOOL, { recursive: true });
   fs.writeFileSync(path.join(SPOOL, "e2e-trace.json"), JSON.stringify({ task_ref: TASK_REF, run_id: RUN_ID, trace }, null, 2));
 };
+class ProofStopError extends Error {
+  constructor(stage, reason, extra = {}) { super(reason); this.stage = stage; this.extra = extra; }
+}
 function stop(stage, reason, extra = {}) {
   push(stage, { status: "STOP", reason, ...extra });
-  console.error(JSON.stringify({ RESULT: "STOP", stage, reason, ...extra }, null, 2));
-  try { acp?.kill(); } catch { /* noop */ }
-  // Structural restore guard: STOP must never leave the canonical issuance
-  // service quiesced nor MCP orphans polling (the finally in main() cannot
-  // run across process.exit).
-  try { reapOrphanMcpServers(`acp-mcp-gate-e2e-${RUN_ID}`); reapOrphanMcpServers(); } catch { /* best effort */ }
-  restoreIssuance()
-    .then((r) => { console.log(`ISSUANCE_RESTORE: ${JSON.stringify(r)}`); })
-    .catch(() => { console.log("ISSUANCE_RESTORE: {\"restored\":false}"); })
-    .finally(() => process.exit(1));
+  throw new ProofStopError(stage, reason, extra);
 }
 
 let acp = null, seq = 0, stopping = false;
@@ -188,20 +183,23 @@ async function main() {
   push("MCP_ORPHAN_REAP", orphans);
   const q = await quiesceIssuance();
   push("ISSUANCE_QUIESCE", q);
-  if (!q.verified) {
-    // fail closed: a competing consumer would eat the callback silently.
-    console.error(JSON.stringify({ RESULT: "STOP", stage: "ISSUANCE_QUIESCE", reason: "QUIESCE_NOT_VERIFIED", ...q }));
-    process.exit(1);
-  }
+  let outcome = null;
   try {
-    await runE2E();
+    if (!q.verified) stop("ISSUANCE_QUIESCE", "QUIESCE_NOT_VERIFIED", q);
+    outcome = await runE2E();
+  } catch (e) {
+    outcome = { RESULT: "STOP", stage: e instanceof ProofStopError ? e.stage : "UNCAUGHT", reason: String(e.message || e).slice(0, 300), ...(e.extra ?? {}) };
   } finally {
+    try { acp?.kill(); } catch { /* noop */ }
     await sleep(1500); // let the ACP child tear down its MCP children
     reapOrphanMcpServers(`acp-mcp-gate-e2e-${RUN_ID}`);
     const r = await restoreIssuance();
     push("ISSUANCE_RESTORE", r);
     console.log(`ISSUANCE_RESTORE: ${JSON.stringify(r)}`);
+    if (!r.verified) outcome = { RESULT: "STOP", stage: "ISSUANCE_RESTORE", reason: "RESTORE_NOT_VERIFIED", ...r };
   }
+  console.log(JSON.stringify(outcome ?? { RESULT: "STOP", stage: "OUTCOME", reason: "OUTCOME_MISSING" }, null, 2));
+  process.exitCode = outcome?.RESULT === "PASS" ? 0 : 1;
 }
 
 async function runE2E() {
@@ -226,6 +224,7 @@ async function runE2E() {
         { name: "ACP_GATE_STORE_PATH", value: GATE_STORE },
         { name: "ACP_GATE_TRANSPORT_MODULE", value: TRANSPORT },
         { name: "ACP_GATE_TTL_MS", value: String(TTL_MS) },
+        { name: "ACP_GATE_FINAL_PROOF_SCOPE", value: RUN_ID },
       ],
     }],
   });
@@ -258,7 +257,7 @@ async function runE2E() {
       `question.prompt=<the exact multi-line question between the markers>, question.options=["A","B","C"]. ` +
       `Question text:\n<<<Q_BEGIN>>>\n${questionText}\n<<<Q_END>>>\n` +
       `The tool BLOCKS until the human operator answers via Telegram (or times out). ` +
-      `When it returns, state the received option and what it means, then write exactly: GATE_ANSWER=<letter> CONTINUED_IN_SAME_SESSION=true and stop. ` +
+      `When it returns, state the received option and what it means, then write exactly one terminal line: GATE_CONSUMPTION_JSON:{\"operator_decision_consumed\":\"<received letter>\",\"continued_in_same_session\":true} and stop. ` +
       `If the tool returns an error or no_answer, reply exactly GATE_FAILED and stop.` }],
   });
 
@@ -305,16 +304,15 @@ async function runE2E() {
   const promptResult = await promptPromise;
   const stopReason = promptResult?.stopReason ?? "unknown";
   const texts = trace.filter((t) => t.stage === "AGENT_TEXT").map((t) => t.text).join("");
-  const letterWords = { A: ["a", "approve"], B: ["b", "stop"], C: ["c", "defer"] }[resolved.selected_option] ?? [resolved.selected_option.toLowerCase()];
-  const lower = texts.toLowerCase();
-  const consumed = letterWords.some((w) => lower.includes(w)) && lower.includes("continued_in_same_session=true");
-  push("POST_GATE_CONTINUATION", { stop_reason: stopReason, consumed, transcript_preview: texts.slice(0, 300) });
+  const consumption = verifyExactGateConsumption({ expectedOption: resolved.selected_option, transcript: texts });
+  const consumed = consumption.ok;
+  push("POST_GATE_CONTINUATION", { stop_reason: stopReason, consumed, consumption_reason: consumption.reason ?? null, transcript_preview: texts.slice(0, 300) });
 
   // ---- 6. same-session law checks ----
   const zeroNew = agentSideSessionNew === 0;
   push("SAME_SESSION_CHECKS", { session_id_sha: sessionIdSha, agent_side_session_new: agentSideSessionNew, zero_new_ok: zeroNew, session_load_used: false });
   if (!zeroNew) stop("SAME_SESSION_LAW", "AGENT_SIDE_SESSION_NEW_OBSERVED");
-  if (!consumed) stop("OPERATOR_DECISION_CONSUMED", "ANSWER_NOT_REFLECTED_IN_CONTINUATION", { transcript_preview: texts.slice(0, 300) });
+  if (!consumed) stop("OPERATOR_DECISION_CONSUMED", consumption.reason, { transcript_preview: texts.slice(0, 300) });
 
   // ---- 7. negative fences locally (no extra Telegram sends) ----
   // Reuse the canonical gate-core law directly against the persisted store.
@@ -371,9 +369,7 @@ async function runE2E() {
   fs.writeFileSync(path.join(SPOOL, "e2e-result.json"), JSON.stringify(final, null, 2));
   fs.mkdirSync(path.join(HERE, "..", "reports", "runtime", "cursor-acp"), { recursive: true });
   fs.writeFileSync(path.join(HERE, "..", "reports", "runtime", "cursor-acp", "mcp-gate-telegram-e2e-result.json"), JSON.stringify(final, null, 2));
-  console.log(JSON.stringify(final, null, 2));
-  try { acp.kill(); } catch { /* noop */ }
-  process.exit(0);
+  return final;
 }
 
-main().catch((e) => stop("UNCAUGHT", String(e.message || e).slice(0, 300)));
+main().catch((e) => { console.error(JSON.stringify({ RESULT: "STOP", stage: "UNCAUGHT", reason: String(e.message || e).slice(0, 300) })); process.exitCode = 1; });

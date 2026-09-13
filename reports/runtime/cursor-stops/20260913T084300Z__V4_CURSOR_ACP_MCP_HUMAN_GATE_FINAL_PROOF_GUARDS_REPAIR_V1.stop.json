@@ -1,0 +1,26 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_FINAL_PROOF_GUARDS_REPAIR_V1",
+  "execution_surface": "CODEX_DESKTOP",
+  "result": "STOP",
+  "starting_head": "46b182bf8b4e3a1bcefe5b0d82594e3e8e54e195",
+  "required_commit_subject": "codex-stop: V4_CURSOR_ACP_MCP_HUMAN_GATE_FINAL_PROOF_GUARDS_REPAIR_V1",
+  "failure_stage": "VALIDATION",
+  "failure_substage": "ACP_MCP_WIRING",
+  "finding": "All four pre-send guard regressions pass deterministically without network use. The existing MCP suite remains non-green because its real agent ACP wiring probe exited without a session response in this execution environment (31/32 PASS); a standalone earlier invocation recorded PASS, so the remaining blocker is an unstable project-accessible ACP session probe, not a Telegram path.",
+  "repairs_verified": {
+    "cleanup_finally_on_terminal_paths": "PASS",
+    "final_proof_single_send_budget": "PASS",
+    "exact_operator_option_consumption": "PASS",
+    "cross_run_active_keyboard_registry": "PASS"
+  },
+  "validation": {
+    "focused_final_proof_guards": "PASS",
+    "mcp_gate_core_transport_suite": "31/32 PASS; ACP_MCP_WIRING=FAIL",
+    "git_diff_check": "PASS"
+  },
+  "real_telegram_send": false,
+  "real_telegram_callback": false,
+  "production_changed": false,
+  "next": "Stabilize and re-run the project-accessible agent ACP wiring probe, then perform a separate operator-authorized final real Telegram E2E proof."
+}

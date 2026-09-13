@@ -54,6 +54,34 @@ export function persistGateStore(store, storePath = gateStorePath()) {
 }
 
 /**
+ * Final-real-proof only: reserve the single outbound notification before any
+ * transport I/O.  The reservation is durable so a failed send cannot be
+ * retried indefinitely, and synchronous mutation makes concurrent requests in
+ * one MCP server deterministic.  Generic gates never call this function.
+ */
+export function reserveFinalProofSendBudget(store, { taskRef, runId, scopeId, nowMs = Date.now() }) {
+  if (!scopeId || runId !== scopeId) return { ok: false, reason: "FINAL_PROOF_RUN_ID_MISMATCH" };
+  if (!store.final_proof_send_budgets || typeof store.final_proof_send_budgets !== "object") {
+    store.final_proof_send_budgets = {};
+  }
+  const key = `${taskRef}|${scopeId}`;
+  if (store.final_proof_send_budgets[key]) return { ok: false, reason: "FINAL_PROOF_SEND_BUDGET_EXHAUSTED" };
+  store.final_proof_send_budgets[key] = {
+    task_ref: taskRef, run_id: runId, scope_id: scopeId,
+    state: "RESERVED", reserved_at: new Date(nowMs).toISOString(),
+  };
+  return { ok: true, key, budget: store.final_proof_send_budgets[key] };
+}
+
+export function settleFinalProofSendBudget(store, key, state, nowMs = Date.now()) {
+  const budget = store.final_proof_send_budgets?.[key];
+  if (!budget) return { ok: false, reason: "FINAL_PROOF_SEND_BUDGET_UNKNOWN" };
+  budget.state = state;
+  budget.settled_at = new Date(nowMs).toISOString();
+  return { ok: true, budget };
+}
+
+/**
  * decision_id binds task_ref, run_id, session identity (sha12 of the exact
  * ACP sessionId) and generation. Raw session id never enters the id.
  */

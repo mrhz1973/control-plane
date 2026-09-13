@@ -47,6 +47,30 @@ function loadConfig() {
   return cfg;
 }
 
+export function activeKeyboardRegistryPath() {
+  return process.env.ACP_GATE_ACTIVE_KEYBOARD_REGISTRY_PATH
+    || path.join(process.env.LOCALAPPDATA, "control-plane", "v4-cursor-acp-active-telegram-keyboard-v1.json");
+}
+
+export function loadActiveKeyboardRegistry(registryPath = activeKeyboardRegistryPath()) {
+  try {
+    const value = JSON.parse(fs.readFileSync(registryPath, "utf8"));
+    if (value.schema_version !== "v4-cursor-acp-active-keyboard-v1") throw new Error("schema");
+    if (value.active !== null && (!value.active || typeof value.active.decision_id !== "string" || !value.active.decision_id || value.active.message_id === undefined)) throw new Error("shape");
+    return { ok: true, registry: value };
+  } catch (e) {
+    if (e?.code === "ENOENT") return { ok: true, registry: { schema_version: "v4-cursor-acp-active-keyboard-v1", active: null } };
+    return { ok: false, reason: "ACTIVE_KEYBOARD_REGISTRY_INVALID" };
+  }
+}
+
+export function persistActiveKeyboardRegistry(registry, registryPath = activeKeyboardRegistryPath()) {
+  fs.mkdirSync(path.dirname(registryPath), { recursive: true });
+  const tmp = `${registryPath}.tmp-${process.pid}`;
+  fs.writeFileSync(tmp, JSON.stringify(registry, null, 2));
+  fs.renameSync(tmp, registryPath);
+}
+
 function tgCall(token, method, body, timeoutMs = 35000) {
   return new Promise((resolve, reject) => {
     const data = JSON.stringify(body);
@@ -110,31 +134,24 @@ function maskTail(v) {
   return s.length > 4 ? "***" + s.slice(-4) : "***";
 }
 
-export async function send({ decision, spoolDir }) {
-  const cfg = loadConfig();
-  // Deactivate inline keyboards of previous gate messages recorded in the
-  // store (bounded, best-effort) so exactly ONE message ever shows live
-  // buttons — stale-button taps become impossible.
+export async function send({ decision, spoolDir, config, telegramCall, registryPath }) {
+  const cfg = config ?? loadConfig();
+  const call = telegramCall ?? tgCall;
+  const resolvedRegistryPath = registryPath ?? activeKeyboardRegistryPath();
+  const prior = loadActiveKeyboardRegistry(resolvedRegistryPath);
+  // A malformed registry is not authority to edit or send around an unknown
+  // keyboard; fail closed so a second active keyboard cannot be created.
+  if (!prior.ok) throw new Error(prior.reason);
   let deactivatedStale = 0;
-  try {
-    const storePath = spoolDir ? path.join(spoolDir, "gate-store.json") : null;
-    if (storePath && fs.existsSync(storePath)) {
-      const store = JSON.parse(fs.readFileSync(storePath, "utf8"));
-      const stale = (store.decisions ?? [])
-        .filter((d) => d.state === "NOTIFIED" && d.telegram_message_id && d.decision_id !== decision.decision_id)
-        .slice(-10);
-      for (const d of stale) {
-        try {
-          await tgCall(cfg.telegram_bot_token, "editMessageReplyMarkup", {
-            chat_id: cfg.operator_telegram_chat_id,
-            message_id: d.telegram_message_id,
-            reply_markup: { inline_keyboard: [] },
-          }, 10000);
-          deactivatedStale++;
-        } catch { /* best effort per-message */ }
-      }
-    }
-  } catch { /* best effort overall */ }
+  if (prior.registry.active) {
+    const old = prior.registry.active;
+    const oldResult = await call(cfg.telegram_bot_token, "editMessageReplyMarkup", {
+      chat_id: cfg.operator_telegram_chat_id, message_id: old.message_id,
+      reply_markup: { inline_keyboard: [] },
+    }, 10000);
+    if (oldResult?.ok !== true) throw new Error("ACTIVE_KEYBOARD_DEACTIVATION_FAILED");
+    deactivatedStale = 1;
+  }
   const text = [
     `🟢 ACTIVE GATE — ${decision.decision_id}`,
     `(i messaggi precedenti sono SCADUTI${deactivatedStale ? ` — ${deactivatedStale} disattivati` : ""}: premi SOLO qui)`,
@@ -156,7 +173,7 @@ export async function send({ decision, spoolDir }) {
       ],
     ],
   };
-  const res = await tgCall(cfg.telegram_bot_token, "sendMessage", {
+  const res = await call(cfg.telegram_bot_token, "sendMessage", {
     chat_id: cfg.operator_telegram_chat_id,
     text,
     reply_markup: keyboard,
@@ -165,7 +182,27 @@ export async function send({ decision, spoolDir }) {
   if (res?.ok !== true || !res.result?.message_id) {
     throw new Error("TG_SEND_FAILED: " + String(res?.description ?? "unknown").slice(0, 80));
   }
+  persistActiveKeyboardRegistry({ schema_version: "v4-cursor-acp-active-keyboard-v1", active: {
+    decision_id: decision.decision_id, message_id: res.result.message_id,
+  } }, resolvedRegistryPath);
   return { messageId: res.result.message_id };
+}
+
+/** Deactivate only the currently registered decision; never scan/edit unrelated messages. */
+export async function deactivateCurrentKeyboard({ decision, config, telegramCall, registryPath }) {
+  const cfg = config ?? loadConfig();
+  const call = telegramCall ?? tgCall;
+  const resolvedRegistryPath = registryPath ?? activeKeyboardRegistryPath();
+  const current = loadActiveKeyboardRegistry(resolvedRegistryPath);
+  if (!current.ok) return { ok: false, reason: current.reason };
+  if (!current.registry.active || current.registry.active.decision_id !== decision.decision_id) return { ok: true, deactivated: false };
+  const res = await call(cfg.telegram_bot_token, "editMessageReplyMarkup", {
+    chat_id: cfg.operator_telegram_chat_id, message_id: current.registry.active.message_id,
+    reply_markup: { inline_keyboard: [] },
+  }, 10000);
+  if (res?.ok !== true) return { ok: false, reason: "ACTIVE_KEYBOARD_DEACTIVATION_FAILED" };
+  persistActiveKeyboardRegistry({ schema_version: "v4-cursor-acp-active-keyboard-v1", active: null }, resolvedRegistryPath);
+  return { ok: true, deactivated: true };
 }
 
 /**
