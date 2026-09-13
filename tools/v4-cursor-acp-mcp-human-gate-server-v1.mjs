@@ -143,26 +143,36 @@ async function humanGate(args) {
   persistGateStore(store, storePath);
 
   // Watchdog-safe: return PENDING (non-decision) instead of blocking. The
-  // MCP server itself keeps polling getUpdates in the background so the
-  // canonical callback admission happens even if the model polls late;
-  // verified results are consumed via human_gate_status.
-  startBackgroundWait(notified.decision, { ttlMs, taskRef: args.task_ref, sessionId: binding.session_id, generation: args.generation });
+  // MCP server itself keeps polling getUpdates in the background (persistent
+  // operator wait: re-armed bounded waits, NO wall-clock auto-termination)
+  // so the canonical callback admission happens even if the model polls
+  // late; verified results are consumed via human_gate_status.
+  startBackgroundWait(notified.decision, { taskRef: args.task_ref, sessionId: binding.session_id, generation: args.generation });
   return {
     status: "PENDING",
     decision_id: decision.decision_id,
-    expires_at: notified.decision.expires_at,
-    note: "Human gate is pending the operator's Telegram decision. Poll human_gate_status with this decision_id. PENDING is NOT a decision.",
+    lifetime_mode: notified.decision.lifetime_mode,
+    note: "Human gate is pending the operator's Telegram decision. Poll human_gate_status with this decision_id. PENDING is NOT a decision. The gate does NOT auto-expire while waiting for the operator.",
   };
 }
 
 const STATUS_POLL_SLICE_MS = Math.min(Number(process.env.ACP_GATE_STATUS_POLL_SLICE_MS) || 8000, 20000); // bounded slice << watchdog
+// PERSISTENT OPERATOR WAIT: bounded re-arm window for each transport wait
+// (long-poll server-side); the human wait lives across many re-arms, never
+// inside a single tool call. 10 minutes default, capped at 1h.
+const OPERATOR_WAIT_REARM_MS = Math.min(Number(process.env.ACP_GATE_OPERATOR_WAIT_REARM_MS) || 10 * 60 * 1000, 60 * 60 * 1000);
+const OPERATOR_WAIT = "operator_wait"; // mirrors gate-core OPERATOR_WAIT_MODE
 
 /**
  * Watchdog-safe read-only status poll: ONE bounded short slice (< watchdog)
  * that NEVER authorizes, never invents an answer, never creates gates, never
  * sends. It reads only canonical gate-store state (already admitted by the
- * gate law) and reports PENDING or the VERIFIED/RETURNED option. Expired
- * decisions are terminal NO_ANSWER (fail closed).
+ * gate law) and reports PENDING or the VERIFIED/RETURNED option.
+ *
+ * Lifetime law (PERSISTENT_OPERATOR_WAIT): on lifetime_mode="operator_wait"
+ * the elapsed time is NEVER reported as terminal — no NO_ANSWER/EXPIRED from
+ * wall-clock alone. Terminal statuses are only CANCELLED / SUPERSEDED
+ * (explicit, persisted events) or legacy bounded_ttl expiry.
  */
 async function humanGateStatus(args) {
   if (!args || typeof args !== "object" || typeof args.decision_id !== "string" || !args.decision_id) {
@@ -183,8 +193,16 @@ async function humanGateStatus(args) {
     if (d.state === "RETURNED" || d.state === "VERIFIED") {
       return { status: "answered", option: d.selected_option, decision_id: d.decision_id };
     }
-    if (d.state === "NO_ANSWER" || d.state === "EXPIRED" || Date.parse(d.expires_at) <= Date.now()) {
+    // EXPLICIT terminal events only. Elapsed wall-clock time alone is NOT a
+    // terminal condition on the operator-wait path (expires_at is null there).
+    if (d.state === "CANCELLED") return { status: "no_answer", decision_id: d.decision_id, reason: "GATE_CANCELLED" };
+    if (d.state === "SUPERSEDED") return { status: "no_answer", decision_id: d.decision_id, reason: "GATE_SUPERSEDED" };
+    if (d.state === "NO_ANSWER" || d.state === "EXPIRED") {
       return { status: "no_answer", decision_id: d.decision_id, reason: `GATE_${d.state}` };
+    }
+    if (d.lifetime_mode !== OPERATOR_WAIT && d.expires_at && Date.parse(d.expires_at) <= Date.now()) {
+      // legacy bounded_ttl only — operator-wait never reaches this branch
+      return { status: "no_answer", decision_id: d.decision_id, reason: "GATE_EXPIRED" };
     }
     await new Promise((r) => setTimeout(r, 400));
   }
@@ -193,47 +211,77 @@ async function humanGateStatus(args) {
 
 /**
  * Background waiter inside the MCP server (single getUpdates consumer stays
- * HERE — never in the driver, never duplicated). Runs the transport wait +
- * canonical admission for the decision, marking VERIFIED/RETURNED/NO_ANSWER
- * in the canonical store even if the model polls status late or never.
+ * HERE — never in the driver, never duplicated).
+ *
+ * PERSISTENT OPERATOR WAIT lifetime law: the waiter NEVER terminates because
+ * of elapsed wall-clock time. It loops over bounded transport waits (each
+ * well under the watchdog; the transport long-polls Telegram server-side),
+ * re-arming until: ANSWERED (canonical admission → VERIFIED→RETURNED),
+ * an explicit CANCELLED/SUPERSEDED transition in the store, a FATAL
+ * transport class (CONFLICT/AUTH), or process exit. If the MCP process dies,
+ * the PENDING decision remains in the persistent store; a restarted server
+ * resumes waiting on first status-poll re-arm — elapsed time alone never
+ * invalidates the persisted decision.
  */
-function startBackgroundWait(decision, { ttlMs, taskRef, sessionId, generation }) {
+const OPERATOR_WAIT_POLL_MS = 1000; // gap between re-armed waits (no busy loop)
+
+function startBackgroundWait(decision, { taskRef, sessionId, generation }) {
   const storePath = gateStorePath();
-  const deadline = Date.now() + ttlMs;
   (async () => {
-    let wait = null;
-    try {
-      wait = await getTransport().then((t) => t.waitAnswer({ decision, deadlineMs: deadline, spoolDir: SPOOL_DIR }));
-    } catch (e) {
-      const store = loadGateStore(storePath);
-      markNoAnswer(store, decision.decision_id);
-      persistGateStore(store, storePath);
-      return;
+    for (;;) {
+      // explicit termination check before (re)arming a wait
+      const pre = loadGateStore(storePath).decisions.find((x) => x.decision_id === decision.decision_id);
+      if (pre && ["CANCELLED", "SUPERSEDED", "RETURNED", "VERIFIED", "CONSUMED"].includes(pre.state)) return;
+
+      let wait = null;
+      try {
+        const transport = await getTransport();
+        wait = await transport.waitAnswer({ decision, deadlineMs: Date.now() + OPERATOR_WAIT_REARM_MS, spoolDir: SPOOL_DIR });
+      } catch (e) {
+        // Transport exception: fail closed ONLY for real irrecoverable errors.
+        // Transient network failures are retried by the re-arm loop.
+        const kind = String(e?.message ?? e).toUpperCase();
+        if (kind.includes("CONFIG") || kind.includes("AUTH")) {
+          const store = loadGateStore(storePath);
+          markNoAnswer(store, decision.decision_id); // legacy mode: NO_ANSWER; operator_wait: rejected (no auto-terminal)
+          persistGateStore(store, storePath);
+          return;
+        }
+        await new Promise((r) => setTimeout(r, OPERATOR_WAIT_POLL_MS * 5));
+        continue;
+      }
+
+      if (wait?.status === "ANSWERED" && wait.update_id !== undefined) {
+        const store = loadGateStore(storePath);
+        const admitted = admitGateCallback(store, { decision_id: decision.decision_id, option: wait.option, update_id: wait.update_id }, { taskRef, sessionId, generation });
+        persistGateStore(store, storePath);
+        if (!admitted.ok) {
+          // Already-admitted elsewhere through the same gate law (e.g. driver
+          // synthetic admission): still perform the canonical hand-back.
+          if (admitted.reason !== "GATE_DECISION_ALREADY_CONSUMED") return;
+          const s = loadGateStore(storePath);
+          const d = s.decisions.find((x) => x.decision_id === decision.decision_id);
+          if (d?.state === "VERIFIED" && d?.selected_option) markReturned(s, decision.decision_id);
+          persistGateStore(s, storePath);
+          return;
+        }
+        const store2 = loadGateStore(storePath);
+        markReturned(store2, decision.decision_id);
+        persistGateStore(store2, storePath);
+        return;
+      }
+      if (wait?.status === "ABORTED") {
+        // FATAL classes (CONFLICT=competing consumer, AUTH=credentials) end the
+        // wait explicitly; the decision stays PENDING in the persistent store
+        // (fail closed: NOT auto-answered, NOT auto-expired).
+        return;
+      }
+      // TIMEOUT of this bounded slice: re-arm (the human wait continues).
+      // Check explicit cancellation/supersession each cycle.
+      const post = loadGateStore(storePath).decisions.find((x) => x.decision_id === decision.decision_id);
+      if (post && ["CANCELLED", "SUPERSEDED"].includes(post.state)) return;
+      await new Promise((r) => setTimeout(r, OPERATOR_WAIT_POLL_MS));
     }
-    if (!wait || wait.status !== "ANSWERED" || wait.update_id === undefined) {
-      const store = loadGateStore(storePath);
-      markNoAnswer(store, decision.decision_id);
-      persistGateStore(store, storePath);
-      return;
-    }
-    const store = loadGateStore(storePath);
-    const admitted = admitGateCallback(store, { decision_id: decision.decision_id, option: wait.option, update_id: wait.update_id }, { taskRef, sessionId, generation });
-    persistGateStore(store, storePath);
-    if (!admitted.ok) {
-      // Already-admitted (e.g. canonical callback admitted through the same
-      // gate law by the driver/qualification): hand back is still required —
-      // VERIFIED with a selected option MUST become RETURNED (watchdog-safe
-      // contract: status polls consume only VERIFIED/RETURNED).
-      if (admitted.reason !== "GATE_DECISION_ALREADY_CONSUMED") return;
-      const s = loadGateStore(storePath);
-      const d = s.decisions.find((x) => x.decision_id === decision.decision_id);
-      if (d?.state === "VERIFIED" && d?.selected_option) markReturned(s, decision.decision_id);
-      persistGateStore(s, storePath);
-      return;
-    }
-    const store2 = loadGateStore(storePath);
-    markReturned(store2, decision.decision_id);
-    persistGateStore(store2, storePath);
   })();
 }
 

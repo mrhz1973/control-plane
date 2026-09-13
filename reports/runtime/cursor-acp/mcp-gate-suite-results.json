@@ -1,9 +1,9 @@
 {
   "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_MINIMAL_SLICE_IMPLEMENTATION_V1",
-  "ran_at": "2026-09-13T11:59:54.980Z",
-  "duration_ms": 5922,
+  "ran_at": "2026-09-13T13:02:21.380Z",
+  "duration_ms": 8558,
   "totals": {
-    "pass": 35,
+    "pass": 37,
     "fail": 0
   },
   "results": [
@@ -143,6 +143,11 @@
       "detail": "NO_ANSWER"
     },
     {
+      "name": "OPERATOR_WAIT_NO_AUTO_EXPIRY",
+      "ok": true,
+      "detail": "GATE_OPERATOR_WAIT_NO_AUTO_EXPIRY"
+    },
+    {
       "name": "ADAPTER_PENDING_NON_DECISION",
       "ok": true,
       "detail": "status=PENDING"
@@ -165,7 +170,12 @@
     {
       "name": "ADAPTER_SILENT_NO_ANSWER",
       "ok": true,
-      "detail": "status=no_answer"
+      "detail": "status=PENDING"
+    },
+    {
+      "name": "SILENT_GATE_STAYS_PENDING_PERSISTED",
+      "ok": true,
+      "detail": "NOTIFIED"
     },
     {
       "name": "ADAPTER_UNKNOWN_TOOL_REJECTED",
@@ -180,7 +190,7 @@
     {
       "name": "ACP_MCP_WIRING",
       "ok": true,
-      "detail": "session_sha=bef69bb05581"
+      "detail": "session_sha=6a0d03cd1c17"
     }
   ],
   "claims": {

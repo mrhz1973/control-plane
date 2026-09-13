@@ -1,0 +1,147 @@
+{
+  "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_PERSISTENT_OPERATOR_WAIT_V1",
+  "ran_at": "2026-09-13T13:07:26.058Z",
+  "lifetime_mode": "operator_wait",
+  "simulated_waits": [
+    "15m",
+    "1h",
+    "2h",
+    "8h"
+  ],
+  "totals": {
+    "pass": 25,
+    "fail": 0
+  },
+  "results": [
+    {
+      "name": "PW1_NO_AUTO_EXPIRY_FIELDS",
+      "ok": true,
+      "detail": "mode=operator_wait expires=null"
+    },
+    {
+      "name": "PW2_PENDING_AT_15M",
+      "ok": true,
+      "detail": "NOTIFIED"
+    },
+    {
+      "name": "PW2_PENDING_AT_1H",
+      "ok": true,
+      "detail": "NOTIFIED"
+    },
+    {
+      "name": "PW2_PENDING_AT_2H",
+      "ok": true,
+      "detail": "NOTIFIED"
+    },
+    {
+      "name": "PW2_PENDING_AT_8H",
+      "ok": true,
+      "detail": "NOTIFIED"
+    },
+    {
+      "name": "PW3_ELAPSED_ALONE_NOT_NO_ANSWER",
+      "ok": true,
+      "detail": "GATE_OPERATOR_WAIT_NO_AUTO_EXPIRY"
+    },
+    {
+      "name": "PW3_ELAPSED_ALONE_NOT_EXPIRED",
+      "ok": true,
+      "detail": "VERIFIED"
+    },
+    {
+      "name": "PW7_EXACT_CONSUMPTION_AFTER_LONG_WAIT",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "PW13_DUPLICATE_AFTER_LONG_WAIT_REJECTED",
+      "ok": true,
+      "detail": "GATE_DECISION_ALREADY_CONSUMED"
+    },
+    {
+      "name": "PW4_CALLBACK_A_AFTER_2H",
+      "ok": true,
+      "detail": "RETURNED/A"
+    },
+    {
+      "name": "PW4_CALLBACK_B_AFTER_2H",
+      "ok": true,
+      "detail": "RETURNED/B"
+    },
+    {
+      "name": "PW4_CALLBACK_C_AFTER_2H",
+      "ok": true,
+      "detail": "RETURNED/C"
+    },
+    {
+      "name": "PW8_PENDING_NON_DECISION",
+      "ok": true,
+      "detail": "NOTIFIED"
+    },
+    {
+      "name": "PW9_EXPLICIT_CANCELLED_TERMINAL",
+      "ok": true,
+      "detail": "CANCELLED by=driver"
+    },
+    {
+      "name": "PW11_CALLBACK_ON_CANCELLED_REJECTED",
+      "ok": true,
+      "detail": "GATE_DECISION_ALREADY_CONSUMED"
+    },
+    {
+      "name": "PW10_EXPLICIT_SUPERSEDED_TERMINAL",
+      "ok": true,
+      "detail": "SUPERSEDED"
+    },
+    {
+      "name": "PW12_CALLBACK_ON_SUPERSEDED_REJECTED",
+      "ok": true,
+      "detail": "GATE_DECISION_ALREADY_CONSUMED"
+    },
+    {
+      "name": "PW12_NEW_GENERATION_STILL_ADMITS",
+      "ok": true,
+      "detail": "VERIFIED"
+    },
+    {
+      "name": "PW14_WRONG_BINDINGS_REJECTED_AFTER_2H",
+      "ok": true,
+      "detail": "GATE_TASK_MISMATCH/GATE_SESSION_MISMATCH/GATE_GENERATION_MISMATCH"
+    },
+    {
+      "name": "PW15_NO_DEFAULT_ANSWER",
+      "ok": true,
+      "detail": "NOTIFIED"
+    },
+    {
+      "name": "PW16_SINGLE_SEND_BUDGET_INTACT",
+      "ok": true,
+      "detail": "FINAL_PROOF_SEND_BUDGET_EXHAUSTED"
+    },
+    {
+      "name": "PW17_STATUS_POLL_BOUNDED",
+      "ok": true,
+      "detail": "slice=8000ms polls8h=3600"
+    },
+    {
+      "name": "PW18_NO_BUSY_POLLING",
+      "ok": true,
+      "detail": "waiter re-arms in 8h=48 (1 per 10m)"
+    },
+    {
+      "name": "PW19_STORE_PERSISTS_ACROSS_RELOAD",
+      "ok": true,
+      "detail": "NOTIFIED"
+    },
+    {
+      "name": "PW20_LEGACY_EXPIRED_FENCE_PRESERVED",
+      "ok": true,
+      "detail": "GATE_DECISION_EXPIRED"
+    }
+  ],
+  "claims": {
+    "REAL_TELEGRAM_SENDS": 0,
+    "REAL_OPERATOR_CALLBACK": "NOT_CLAIMED",
+    "INJECTED_CLOCK": true
+  }
+}

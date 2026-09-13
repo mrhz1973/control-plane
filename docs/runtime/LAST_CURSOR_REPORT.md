@@ -1,6 +1,49 @@
 # LAST CURSOR REPORT
 
-## Cursor ACP MCP human gate Telegram E2E final real proof RETRY4 — latest
+## Cursor ACP MCP human gate persistent operator wait V1 — latest
+
+**TASK_REF:** `V4_CURSOR_ACP_MCP_HUMAN_GATE_PERSISTENT_OPERATOR_WAIT_V1`
+**Classification:** `PASS — OPERATOR_WAIT_LONG_LIVED=PASS; UTF8_INTEGRITY_RESTORED; REAL_TELEGRAM_SENDS=0`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `76920a352adbeffe2dba8da0f4b9ee73f513f40a`
+**Report:** `reports/architecture/v4_cursor_acp_mcp_human_gate_persistent_operator_wait_v1.md`
+
+- **PART 1 (UTF-8):** `CURRENT_FRONTIER.md` restored from the pristine parent
+  blob (`2dc213f`) + RETRY4 semantic delta re-applied via Node (native UTF-8,
+  LF, no BOM). Verified: mojibake=0, replacement chars=0, exactly one row
+  differs from parent (row 23, the RETRY4 append). First repair attempt
+  (latin-1 roundtrip) degraded CP1252 bytes → discarded before commit.
+- **PART 2 (lifetime law):** new `lifetime_mode` on every decision.
+  `operator_wait` (new default): `expires_at=null`, `ttl_ms=null` — NO
+  auto-expiry; a valid human callback is admittable at +15m/+1h/+2h/+8h and
+  beyond. `bounded_ttl` (legacy, explicit): unchanged law, EXPIRED fence kept
+  (old fixtures valid). `markNoAnswer` forbidden on operator_wait.
+  Explicit persisted terminal events added: CANCELLED (with by/reason,
+  auditable history) and SUPERSEDED (canonical supersession via new
+  generation; callback on superseded rejected; new generation admits).
+- Background waiter now re-arms bounded transport waits (default 10m, cap 1h;
+  1s gap — no busy loop) and NEVER terminates on wall-clock time; terminal
+  only on ANSWERED, explicit CANCELLED/SUPERSEDED, or fatal transport class
+  (CONFLICT/AUTH — decision stays PENDING, fail-closed). Status poll slice
+  unchanged (8s default, 20s cap ≪ 45s watchdog budget); elapsed time alone
+  always reports PENDING.
+- Crash/restart: PENDING survives in the persistent store; waiter resumes at
+  first re-arm; no session/load on the live path; never falsely "actively
+  polled" when no server is alive (documented limit, fail-closed).
+- Tests: persistent-wait fixture **25/25 PASS** (injected clock: 15m/1h/2h/8h,
+  A/B/C callbacks at +2h, explicit terminals, fences post-long-wait, no busy
+  polling, persistence across reload, legacy compat); MCP suite **37/37**;
+  watchdog fixture 13/13 (W7 updated to the new law); guards PASS;
+  prompt-timeout 19/19; soak 0 failures; leaks 0.
+- `REAL_TELEGRAM_SENDS=0`, `PRODUCTION_CHANGED=NO`. NEXT: deterministic
+  evidence suffices for the ≥2h requirement (RETRY4 remains semantically
+  valid for the rest of the chain); an optional live long-wait proof would be
+  `ONE_LONG_WAIT_REAL_TELEGRAM_E2E_AFTER_NEW_OPERATOR_DECISION` (operator
+  decision required, not executed).
+
+---
+
+## Cursor ACP MCP human gate Telegram E2E final real proof RETRY4 — previous
 
 **TASK_REF:** `V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1_FINAL_REAL_PROOF_RETRY4`
 **Classification:** `PASS — REAL E2E PROVEN END-TO-END (watchdog-safe two-step contract)`

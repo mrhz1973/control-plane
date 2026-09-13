@@ -157,9 +157,10 @@ async function scenarioNoDefaultAndFences() {
       await rpc(child, "initialize", { protocolVersion: "2024-11-05" });
       const out = parse(await rpc(child, "tools/call", { name: "human_gate", arguments: { task_ref: TASK_REF, run_id: "wdg-silent", generation: 1, question: { prompt: "No answer path.", options: ["A", "B", "C"] } } }));
       check("W7_PENDING_NOT_DEFAULT", out.status === "PENDING" && out.option === undefined, `status=${out.status}`);
-      await new Promise((r) => setTimeout(r, 2200)); // TTL elapses, background waiter marks NO_ANSWER
+      await new Promise((r) => setTimeout(r, 2200)); // silent transport TIMEOUT: persistent operator wait does NOT auto-terminate
       const stOut = parse(await rpc(child, "tools/call", { name: "human_gate_status", arguments: { decision_id: out.decision_id, task_ref: TASK_REF, generation: 1 } }));
-      check("W7_NO_DEFAULT_ANSWER", stOut.status === "no_answer" && stOut.option === undefined, `status=${stOut.status}`);
+      // Lifetime law: NO operator-answer and NO explicit termination => still PENDING (never a default, never clock-made failure)
+      check("W7_NO_DEFAULT_ANSWER", stOut.status === "PENDING" && stOut.option === undefined, `status=${stOut.status}`);
     } finally { child.kill(); }
   }
 
