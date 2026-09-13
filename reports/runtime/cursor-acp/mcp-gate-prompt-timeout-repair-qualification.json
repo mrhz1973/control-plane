@@ -1,0 +1,28 @@
+{
+  "schema_version": "v4-prompt-timeout-cleanup-repair-qualification-v1",
+  "total": 19,
+  "passed": 19,
+  "failed": 0,
+  "real_telegram_sends": 0,
+  "results": {
+    "T1_session_prompt_not_default_30s": "PASS",
+    "T2_prompt_timeout_derived_from_lifecycle": "PASS",
+    "T3_prompt_tracker_immediate_ownership": "PASS",
+    "T4_early_reject_before_registration": "PASS",
+    "T5_reject_during_registration_wait": "PASS",
+    "T6_reject_during_operator_wait": "PASS",
+    "T6b_reject_during_operator_wait_with_gate_keyboard_deactivated": "PASS",
+    "T7_prompt_timeout_bounded_stop": "PASS",
+    "T8_acp_exit_rejects_prompt": "PASS",
+    "T9_unhandled_rejection_guard": "PASS",
+    "T10_exception_during_callback_wait": "PASS",
+    "T11_keyboard_deactivation_attempted_with_gate": "PASS",
+    "T12_no_gate_cleanup_idempotent": "PASS",
+    "T13_issuance_restore_always_attempted": "PASS",
+    "T14_restore_verification_fail_closed": "PASS",
+    "T15_cleanup_failure_fail_closed": "PASS",
+    "T16_single_send_budget_guard_unchanged": "PASS",
+    "T17_exact_option_consumption_guard_unchanged": "PASS",
+    "T18_cross_run_stale_keyboard_guard_unchanged": "PASS"
+  }
+}

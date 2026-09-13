@@ -1,7 +1,7 @@
 {
   "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_MINIMAL_SLICE_IMPLEMENTATION_V1",
-  "ran_at": "2026-09-12T22:05:50.487Z",
-  "duration_ms": 5590,
+  "ran_at": "2026-09-13T10:55:16.343Z",
+  "duration_ms": 305272,
   "totals": {
     "pass": 32,
     "fail": 0
@@ -165,7 +165,7 @@
     {
       "name": "ACP_MCP_WIRING",
       "ok": true,
-      "detail": "session_sha=9a6c0dfe335f"
+      "detail": "session_sha=2dcdb0b56533"
     }
   ],
   "claims": {

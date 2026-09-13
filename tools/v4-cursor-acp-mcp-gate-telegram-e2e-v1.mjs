@@ -28,6 +28,7 @@ import { verifyExactGateConsumption } from "./v4-cursor-acp-mcp-gate-final-proof
 import { officialAcpLaunch } from "./v4-cursor-acp-launch-v1.mjs";
 import { deactivateFinalGateKeyboard } from "./v4-cursor-acp-final-e2e-cleanup-v1.mjs";
 import { deactivateCurrentKeyboard } from "./v4-cursor-acp-gate-transport-telegram-v1.mjs";
+import { derivePromptTimeoutMs, createPromptTracker, installUnhandledRejectionGuard } from "./v4-cursor-acp-prompt-lifecycle-v1.mjs";
 
 const TASK_REF = "V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1";
 const RUN_ID = randomUUID().replace(/-/g, "").slice(0, 16);
@@ -37,6 +38,19 @@ const TRANSPORT = path.join(HERE, "v4-cursor-acp-gate-transport-telegram-v1.mjs"
 const SPOOL = path.join(process.env.TEMP || ".", `acp-mcp-gate-e2e-${RUN_ID}`);
 const GATE_STORE = path.join(SPOOL, "gate-store.json");
 const TTL_MS = 15 * 60 * 1000;
+// Gate lifecycle windows (canonical, mirrored here for prompt-timeout
+// derivation; single source of truth remains runE2E's loops).
+const GATE_REGISTRATION_WINDOW_MS = 120000;   // gate registration bounded wait
+const GATE_RESOLUTION_MARGIN_MS = 60000;      // callback-resolution bounded margin
+const TERMINAL_MARGIN_MS = 60000;             // terminal cleanup margin
+// session/prompt legitimately blocks while the human operator holds the gate:
+// its RPC timeout must cover the WHOLE gate lifecycle — derived, not opaque.
+const PROMPT_TIMEOUT_MS = derivePromptTimeoutMs({
+  registrationWindowMs: GATE_REGISTRATION_WINDOW_MS,
+  ttlMs: TTL_MS,
+  resolutionMarginMs: GATE_RESOLUTION_MARGIN_MS,
+  terminalMarginMs: TERMINAL_MARGIN_MS,
+});
 
 const trace = [];
 const push = (stage, rec = {}) => {
@@ -53,11 +67,18 @@ function stop(stage, reason, extra = {}) {
 }
 
 let acp = null, seq = 0, stopping = false, currentGate = null;
+let promptTracker = null; // immediate rejection ownership for session/prompt
 const pending = new Map();
 let agentSideSessionNew = 0;
 let buf = "";
 const RPC_TIMEOUT_MS = 30000;
 const acpStderr = [];
+// Safety net: no rejection may terminate the process outside main's
+// try/finally (terminal cleanup must always run). Observable so bounded
+// polling loops can fail fast when it triggers.
+const unhandledGuard = installUnhandledRejectionGuard((reason) => {
+  push("UNHANDLED_REJECTION_CAUGHT", { preview: String(reason?.message ?? reason).slice(0, 140) });
+});
 
 function send(method, params, timeoutMs = RPC_TIMEOUT_MS) {
   const id = ++seq;
@@ -211,6 +232,10 @@ async function main() {
     push("ISSUANCE_RESTORE", r);
     console.log(`ISSUANCE_RESTORE: ${JSON.stringify(r)}`);
     if (!r.verified) outcome = { RESULT: "STOP", stage: "ISSUANCE_RESTORE", reason: "RESTORE_NOT_VERIFIED", ...r };
+    if (unhandledGuard.triggered && outcome?.RESULT !== "PASS") {
+      outcome = { ...(outcome ?? {}), RESULT: "STOP", stage: "UNHANDLED_REJECTION", reason: "GUARD_TRIGGERED_TERMINAL", reasons: unhandledGuard.reasons.slice(0, 3) };
+    }
+    unhandledGuard.uninstall();
   }
   console.log(JSON.stringify(outcome ?? { RESULT: "STOP", stage: "OUTCOME", reason: "OUTCOME_MISSING" }, null, 2));
   process.exitCode = outcome?.RESULT === "PASS" ? 0 : 1;
@@ -273,7 +298,14 @@ async function runE2E() {
     "C — DEFER (continue but record DEFERRED in the final evidence).",
   ].join("\n");
 
-  const promptPromise = send("session/prompt", {
+  // IMMEDIATE REJECTION OWNERSHIP: the handler is attached at creation, so a
+  // rejection during the long bounded waits below is captured here and can
+  // never surface as an unhandled rejection. The tracker state is observed
+  // by every polling loop so the proof fails closed without waiting out the
+  // full TTL. The human-wait-compatible timeout (derived from the gate
+  // lifecycle: registration + TTL + resolution margin + terminal margin)
+  // replaces the generic 30s RPC default for THIS call only.
+  const promptTrackerLocal = createPromptTracker(send("session/prompt", {
     sessionId,
     prompt: [{ type: "text", text:
       `${TASK_REF} — bounded proof. Do NOT read files, do NOT run commands, do NOT touch git, do NOT create any plan. ` +
@@ -281,15 +313,21 @@ async function runE2E() {
       `question.prompt=<the exact multi-line question between the markers>, question.options=["A","B","C"]. ` +
       `Question text:\n<<<Q_BEGIN>>>\n${questionText}\n<<<Q_END>>>\n` +
       `The tool BLOCKS until the human operator answers via Telegram (or times out). ` +
-      `When it returns, state the received option and what it means, then write exactly one terminal line: GATE_CONSUMPTION_JSON:{\"operator_decision_consumed\":\"<received letter>\",\"continued_in_same_session\":true} and stop. ` +
+      `When it returns, state the received option and what it means, then write exactly one terminal line: GATE_CONSUMPTION_JSON:{"operator_decision_consumed":"<received letter>","continued_in_same_session":true} and stop. ` +
       `If the tool returns an error or no_answer, reply exactly GATE_FAILED and stop.` }],
-  });
+  }, PROMPT_TIMEOUT_MS));
+  promptTracker = promptTrackerLocal;
+  const promptPromise = promptTrackerLocal.promise;
 
   // ---- 3. wait for the real gate registration (REGISTERED→NOTIFIED) ----
   // The server writes gate state into GATE_STORE; poll it (driver-side read).
-  const deadline = Date.now() + 120000;
+  // The bounded loop also observes prompt failure and the unhandled-rejection
+  // guard so an early rejection interrupts the proof fail-closed.
+  const deadline = Date.now() + GATE_REGISTRATION_WINDOW_MS;
   let decisionId = null;
   while (Date.now() < deadline) {
+    if (promptTrackerLocal.failed()) stop("PROMPT_FAILED", `EARLY_PROMPT_REJECTION_${String(promptTrackerLocal.getError()?.message ?? "UNKNOWN").slice(0, 80)}`);
+    if (unhandledGuard.triggered) stop("UNHANDLED_REJECTION", "GUARD_TRIGGERED_DURING_REGISTRATION_WAIT");
     await sleep(1500);
     try {
       const store = JSON.parse(fs.readFileSync(GATE_STORE, "utf8"));
@@ -310,9 +348,14 @@ async function runE2E() {
   console.log("HUMAN_GATE_REQUIRED — premi UNA volta il bottone A/B/C sul messaggio Telegram appena ricevuto.");
 
   // ---- 4. wait for gate resolution (VERIFIED→RETURNED via tool result) ----
-  const resolveDeadline = Date.now() + TTL_MS + 60000;
+  // Bounded polling; observes prompt failure and the rejection guard so a
+  // dead prompt interrupts the operator wait fail-closed instead of burning
+  // the whole TTL.
+  const resolveDeadline = Date.now() + TTL_MS + GATE_RESOLUTION_MARGIN_MS;
   let resolved = null;
   while (Date.now() < resolveDeadline) {
+    if (promptTrackerLocal.failed()) stop("PROMPT_FAILED", `EARLY_PROMPT_REJECTION_${String(promptTrackerLocal.getError()?.message ?? "UNKNOWN").slice(0, 80)}`);
+    if (unhandledGuard.triggered) stop("UNHANDLED_REJECTION", "GUARD_TRIGGERED_DURING_OPERATOR_WAIT");
     await sleep(2000);
     try {
       const s2 = JSON.parse(fs.readFileSync(GATE_STORE, "utf8"));
@@ -326,7 +369,15 @@ async function runE2E() {
   console.log(`OPERATOR_CALLBACK_ACCEPTED option=${resolved.selected_option}`);
 
   // ---- 5. same-session resume: await the prompt turn in the SAME session ----
-  const promptResult = await promptPromise;
+  // The tracker already owns rejection; this await cannot become unhandled.
+  // A timeout/rpc rejection here is a CONTROLLED STOP through main's
+  // try/finally (terminal cleanup preserved), never a process kill.
+  let promptResult;
+  try {
+    promptResult = await promptPromise;
+  } catch (e) {
+    stop("PROMPT_FAILED", `PROMPT_AWAIT_REJECTED_${String(e?.message ?? e).slice(0, 120)}`);
+  }
   const stopReason = promptResult?.stopReason ?? "unknown";
   const texts = trace.filter((t) => t.stage === "AGENT_TEXT").map((t) => t.text).join("");
   const consumption = verifyExactGateConsumption({ expectedOption: resolved.selected_option, transcript: texts });

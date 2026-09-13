@@ -1,6 +1,43 @@
 # LAST CURSOR REPORT
 
-## Cursor ACP MCP final E2E driver precondition repair V1 — latest
+## Cursor ACP MCP final E2E prompt timeout cleanup repair V1 — latest
+
+**TASK_REF:** `V4_CURSOR_ACP_MCP_FINAL_E2E_PROMPT_TIMEOUT_CLEANUP_REPAIR_V1`
+**Classification:** `PASS — UNHANDLED_PROMPT_TIMEOUT_BYPASS=ELIMINATED; REAL_E2E=NOT_RUN`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `0b04ecefb46a0b206631d9314edb6c67d4d00353`
+**Report:** `reports/architecture/v4_cursor_acp_mcp_final_e2e_prompt_timeout_cleanup_repair_v1.md`
+
+- Repaired the RETRY2 STOP finding: `session/prompt` now carries an explicit
+  human-wait-compatible timeout DERIVED from the gate lifecycle
+  (`registration 120s + TTL 900s + resolution 60s + terminal 60s`), not the
+  generic 30s RPC default (other RPCs keep 30s).
+- New pure helper `tools/v4-cursor-acp-prompt-lifecycle-v1.mjs`:
+  `derivePromptTimeoutMs` (bounded, lifecycle-derived, input-validated),
+  `createPromptTracker` (IMMEDIATE rejection ownership; observable
+  PENDING/FULFILLED/REJECTED), `installUnhandledRejectionGuard` (safety net
+  that records sanitized reasons and never kills the process outside the
+  lifecycle).
+- Both bounded polling loops (registration wait; operator wait) observe
+  prompt failure and the guard → controlled STOP fail-closed without burning
+  the TTL; the final prompt await wraps rejection into
+  `stop("PROMPT_FAILED")` through main try/finally; terminal finally flips
+  non-PASS to STOP when the guard fired.
+- Focused qualification **19/19 PASS** (timeout derivation, ownership,
+  early/during/timeout/ACP-exit rejections → controlled STOP with finally
+  reached, keyboard deactivation attempted iff currentGate, no-gate cleanup
+  idempotent, restore always attempted + verified fail-closed, no semantic
+  regression).
+- Regressions: MCP gate suite **32/32 PASS**; soak 319 iters
+  (`VALID_CALLBACK_LOST=0`, `PROCESS_LEAKS=0`); final-proof guards PASS;
+  0 orphan MCP servers; 1 canonical issuance instance.
+- `REAL_TELEGRAM_SENDS=0`, `ACTIVE_GATE_MESSAGES=0`, `PRODUCTION_CHANGED=NO`.
+- `READY_FOR_FINAL_REAL_E2E=true`; **NEXT =
+  `ONE_FINAL_REAL_TELEGRAM_E2E_AFTER_NEW_OPERATOR_DECISION`.**
+
+---
+
+## Cursor ACP MCP final E2E driver precondition repair V1 — previous
 
 **TASK_REF:** `V4_CURSOR_ACP_MCP_FINAL_E2E_DRIVER_PRECONDITION_REPAIR_V1`
 **Classification:** `PASS — FINAL_DRIVER_PRECONDITIONS_QUALIFIED; TELEGRAM_E2E=NOT_CLAIMED`
