@@ -1,5 +1,25 @@
 # LAST CURSOR REPORT
 
+## Cursor Agent runtime resource recovery and wiring requalification V1 — latest
+
+**TASK_REF:** `V4_CURSOR_AGENT_RUNTIME_RESOURCE_RECOVERY_AND_WIRING_REQUALIFICATION_V1`
+**Classification:** `PASS — ACP_MCP_WIRING_REQUALIFIED; TELEGRAM_E2E=NOT_CLAIMED`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `4b3f798a2b7bcd015c4034e25b7e50b26fbf3246`
+**Report:** `reports/architecture/v4_cursor_agent_runtime_resource_recovery_and_wiring_requalification_v1.md`
+
+- Operator resource relief reduced commit use to 40,625/67,498 MB; no
+  project-owned stale ACP/MCP process was found or terminated.
+- Official CLI startup, real ACP initialize, real `session/new` with the
+  project MCP server, and three consecutive wiring probes all passed.
+- Full MCP gate suite **32/32 PASS**; final-proof guard regressions PASS;
+  `PROCESS_LEAKS=0`, `REAL_TELEGRAM_SENDS=0`, `PRODUCTION_CHANGED=NO`.
+- `READY_FOR_FINAL_REAL_E2E=true`; no Telegram E2E, real callback, or live
+  post-gate same-session claim was made.
+- **NEXT = `ONE_FINAL_REAL_TELEGRAM_E2E_AFTER_OPERATOR_DECISION`.**
+
+---
+
 ## ACP MCP human-gate minimal slice implementation V1 — latest
 
 **TASK_REF:** `V4_CURSOR_ACP_MCP_HUMAN_GATE_MINIMAL_SLICE_IMPLEMENTATION_V1`
