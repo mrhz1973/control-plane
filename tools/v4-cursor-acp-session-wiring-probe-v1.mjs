@@ -32,12 +32,33 @@ const push = (stage, rec = {}) => trace.push({ ts: new Date().toISOString(), sta
 let acp, seq = 0;
 const pending = new Map();
 let serverNewCalls = 0; // guard: agent-side session/new must never occur
+const stderr = [];
+const RPC_TIMEOUT_MS = 30000;
 
-function send(method, params) {
+function agentLaunch() {
+  // Windows installs the official CLI as agent.ps1.  Node's generic shell
+  // path can exit before ACP is started; invoke the supported wrapper through
+  // PowerShell with shell:false so pipes and process identity stay intact.
+  const script = process.env.CURSOR_AGENT_CLI_PATH
+    || path.join(process.env.LOCALAPPDATA || "", "cursor-agent", "agent.ps1");
+  if (!fs.existsSync(script)) throw new Error("AGENT_CLI_SCRIPT_NOT_FOUND");
+  return { command: "powershell.exe", args: ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script, "acp"] };
+}
+
+function send(method, params, timeoutMs = RPC_TIMEOUT_MS) {
   const id = ++seq;
   return new Promise((resolve, reject) => {
-    pending.set(id, { resolve, reject, method });
-    acp.stdin.write(JSON.stringify({ jsonrpc: "2.0", method, params, id }) + "\n");
+    const timer = setTimeout(() => {
+      pending.delete(id);
+      reject(new Error(`ACP_RPC_TIMEOUT_${method}`));
+    }, timeoutMs);
+    pending.set(id, { resolve, reject, method, timer });
+    if (!acp?.stdin?.writable) {
+      clearTimeout(timer); pending.delete(id); reject(new Error(`ACP_STDIN_NOT_WRITABLE_${method}`)); return;
+    }
+    acp.stdin.write(JSON.stringify({ jsonrpc: "2.0", method, params, id }) + "\n", (err) => {
+      if (err && pending.has(id)) { clearTimeout(timer); pending.delete(id); reject(new Error(`ACP_STDIN_WRITE_FAILED_${method}`)); }
+    });
   });
 }
 
@@ -46,7 +67,7 @@ function pump(line) {
   if (!line.trim()) return;
   let m; try { m = JSON.parse(line); } catch { return; }
   if (m.id !== undefined && m.method === undefined && pending.has(m.id)) {
-    const p = pending.get(m.id); pending.delete(m.id);
+    const p = pending.get(m.id); pending.delete(m.id); clearTimeout(p.timer);
     if (m.error) p.reject(new Error(`${p.method}: ${JSON.stringify(m.error).slice(0, 160)}`));
     else p.resolve(m.result);
     return;
@@ -68,11 +89,21 @@ function pump(line) {
 
 async function main() {
   fs.mkdirSync(SPOOL, { recursive: true });
-  acp = spawn("agent", ["acp"], { shell: true, stdio: ["pipe", "pipe", "pipe"] });
+  const launch = agentLaunch();
+  acp = spawn(launch.command, launch.args, { shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
+  push("ACP_PROCESS_START", { command: "powershell.exe", wrapper: "agent.ps1" });
+  acp.once("error", (e) => {
+    push("ACP_PROCESS_ERROR", { class: String(e?.code ?? "START_ERROR").slice(0, 60) });
+    for (const [id, p] of pending) { clearTimeout(p.timer); pending.delete(id); p.reject(new Error("ACP_PROCESS_START_FAILED")); }
+  });
+  acp.once("exit", (code, signal) => {
+    push("ACP_PROCESS_EXIT", { code, signal: signal ?? null, pending: pending.size, stderr_tail: stderr.join(" ").slice(-160) });
+    for (const [id, p] of pending) { clearTimeout(p.timer); pending.delete(id); p.reject(new Error(`ACP_PROCESS_EXIT_BEFORE_RESPONSE_${p.method}`)); }
+  });
   acp.stdout.setEncoding("utf8");
   acp.stdout.on("data", (d) => { buf += d; let i; while ((i = buf.indexOf("\n")) >= 0) { const l = buf.slice(0, i); buf = buf.slice(i + 1); pump(l); } });
   acp.stderr.setEncoding("utf8");
-  acp.stderr.on("data", (d) => push("ACP_STDERR", { preview: String(d).slice(0, 160) }));
+  acp.stderr.on("data", (d) => { const preview = String(d).replace(/[\r\n]+/g, " ").slice(0, 160); stderr.push(preview); push("ACP_STDERR", { preview }); });
 
   await send("initialize", { protocolVersion: 1, clientCapabilities: { fs: { readTextFile: false, writeTextFile: false } } });
   push("ACP_INITIALIZED", {});
@@ -125,7 +156,7 @@ async function main() {
   // Orphan hygiene: killing the ACP child does not kill detached MCP stdio
   // children; reap any marked server of THIS probe run before exiting.
   await reapProbeMcp();
-  process.exit(guardSameSession ? 0 : 1);
+  process.exitCode = guardSameSession ? 0 : 1;
 }
 
 async function reapProbeMcp() {
@@ -146,5 +177,5 @@ main().catch((e) => {
   console.error("PROBE_ERR:", reason);
   try { fs.mkdirSync(SPOOL, { recursive: true }); fs.writeFileSync(path.join(SPOOL, "wiring-trace.json"), JSON.stringify(trace, null, 2)); } catch { /* noop */ }
   try { acp?.kill(); } catch { /* noop */ }
-  reapProbeMcp().finally(() => process.exit(1));
+  reapProbeMcp().finally(() => { process.exitCode = 1; });
 });

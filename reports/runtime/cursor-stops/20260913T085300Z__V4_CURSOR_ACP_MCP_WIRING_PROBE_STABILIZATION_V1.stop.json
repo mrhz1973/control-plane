@@ -1,0 +1,26 @@
+{
+  "schema_version": "cursor-stop-evidence-v1",
+  "task_ref": "V4_CURSOR_ACP_MCP_WIRING_PROBE_STABILIZATION_V1",
+  "execution_surface": "CODEX_DESKTOP",
+  "result": "STOP",
+  "starting_head": "d8d50e85b627e649f67f082c2c019de0144ed445",
+  "required_commit_subject": "codex-stop: V4_CURSOR_ACP_MCP_WIRING_PROBE_STABILIZATION_V1",
+  "failure_stage": "ACP_PROCESS_START",
+  "failure_substage": "OFFICIAL_CURSOR_AGENT_RUNTIME",
+  "root_cause": "The official Cursor Agent CLI exits before the ACP initialize response with the sanitized runtime error uv_os_get_passwd returned ENOMEM (not enough memory). This was observed on five bounded real ACP launches.",
+  "probe_repair": {
+    "official_windows_wrapper_invocation": "powershell.exe -File agent.ps1 acp with shell:false",
+    "rpc_timeout": "EXPLICIT",
+    "premature_exit_reporting": "EXPLICIT",
+    "stdio_identity": "PRESERVED",
+    "vendor_binary_modified": false
+  },
+  "validation": {
+    "repeated_real_wiring_probe": "5/5 STOP_AT_INITIALIZE_ENOMEM",
+    "mcp_gate_suite": "31/32 PASS; ACP_MCP_WIRING blocked by same ENOMEM",
+    "final_proof_guards": "PASS",
+    "real_telegram_sends": 0,
+    "production_changed": false
+  },
+  "next": "Recover sufficient local runtime resources for the official Cursor Agent CLI, then rerun this same wiring qualification before any real Telegram E2E."
+}
