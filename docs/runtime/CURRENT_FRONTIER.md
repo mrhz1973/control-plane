@@ -296,3 +296,21 @@ reliable than pixel OCR); OCR/VLM remain future enhancements, evidence-gated.
 Issue itself NOT mutated in this task. Report:
 `reports/architecture/qwen_browser_visual_sidecar_v1_issue_78_closure_evaluation.md`.
 `NEXT=bounded issue #78 closure persistence only`.
+
+---
+
+## Issue #78 closed — visual sidecar capability complete
+
+`QWEN_BROWSER_VISUAL_SIDECAR_V1_ISSUE_78_CLOSURE_PERSISTENCE` = **PASS** →
+issue #78 formally CLOSED (stateReason=COMPLETED). Closure comment posted
+([#78 comment](https://github.com/mrhz1973/control-plane/issues/78#issuecomment-5656169973))
+recording `MINIMUM_CAPABILITY_COMPLETE=YES`, the completed chain (DOM
+default → `--annotate` fallback → structured `@eN` observation → Qwen
+controller), real runtime wiring PASS, Autovia read-only PASS, safety
+laws, and OCR/VLM = NOT REQUIRED NOW (future enhancements, evidence/
+resource-gated). Historical body preserved untouched. Verification:
+`ISSUE_78_STATE=CLOSED`, `ISSUE_78_STATE_REASON=COMPLETED`,
+`CLOSURE_COMMENT_PRESENT=YES`. Report:
+`reports/architecture/qwen_browser_visual_sidecar_v1_issue_78_closure_persistence.md`.
+`NEXT_AFTER_CLOSURE=NONE for issue #78; reopen only on future evidence of a
+real capability gap`.

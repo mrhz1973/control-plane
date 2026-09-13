@@ -1,5 +1,24 @@
 # LAST CURSOR REPORT
 
+## Issue #78 closure persistence (latest)
+
+**TASK_REF:** `QWEN_BROWSER_VISUAL_SIDECAR_V1_ISSUE_78_CLOSURE_PERSISTENCE`
+**Classification:** `PASS — issue #78 CLOSED_COMPLETED, capability complete`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `ec0a02228b9c0bdd82ff38bcfc909f241a1c62b0`
+**Report:** `reports/architecture/qwen_browser_visual_sidecar_v1_issue_78_closure_persistence.md`
+
+- Issue #78 closed via `gh` (state=CLOSED, stateReason=COMPLETED) after the
+  closure-eligible verdict of the previous task. Closure comment posted
+  (comment id 5656169973): MINIMUM_CAPABILITY_COMPLETE=YES, completed chain,
+  wiring PASS, Autovia PASS read-only, safety laws, OCR/VLM NOT REQUIRED
+  NOW. Historical backlog body preserved (verified marker + length).
+- Repo persistence: frontier + last-cursor updated, minimal report added.
+  `OCR_ESCALATION_REQUIRED_NOW=NO`, `VLM_ESCALATION_REQUIRED_NOW=NO`.
+- `NEXT_AFTER_CLOSURE`: NONE for #78; reopen only on future evidence of a
+  real capability gap.
+
+
 ## Issue #78 closure evaluation (latest)
 
 **TASK_REF:** `QWEN_BROWSER_VISUAL_SIDECAR_V1_ISSUE_78_CLOSURE_EVALUATION`
