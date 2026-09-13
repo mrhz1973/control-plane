@@ -1,5 +1,28 @@
 # LAST CURSOR REPORT
 
+## Issue #78 closure evaluation (latest)
+
+**TASK_REF:** `QWEN_BROWSER_VISUAL_SIDECAR_V1_ISSUE_78_CLOSURE_EVALUATION`
+**Classification:** `PASS — ISSUE_78_CLOSURE_ELIGIBLE=YES / MINIMUM_CAPABILITY_COMPLETE=YES`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `c4ad487bc5cc7bb0bea7f0ec2922a71e7ea3d3e2`
+**Report:** `reports/architecture/qwen_browser_visual_sidecar_v1_issue_78_closure_evaluation.md`
+
+- All 14 acceptance points of issue #78 verified SATISFIED against real
+  evidence on this tree (benchmark 15/15 + repair suite 28/28 + runtime
+  wiring 23/23). `screenshot --annotate` satisfies the MINIMUM UI-detection
+  capability (element identity from the accessibility tree — the reliable
+  source — not pixel OCR); canvas/pixel-only pages are covered by the
+  deterministic fail-closed `EMPTY_ANNOTATIONS` law (zero invented targets).
+- `OCR_ESCALATION_REQUIRED_NOW=NO`, `VLM_ESCALATION_REQUIRED_NOW=NO` — both
+  stay future enhancements, evidence-gated (OCR only if pixel-only text
+  becomes a proven blocker; VLM remains VRAM-gated by the issue's own
+  resource law).
+- Recommendation: close #78 as minimum capability complete, noting OCR/VLM
+  as evidence-gated future enhancements. The issue itself was NOT mutated
+  in this task (closure persistence is the explicit NEXT).
+
+
 ## Qwen browser visual sidecar V1 — runtime wiring (latest)
 
 **TASK_REF:** `QWEN_BROWSER_VISUAL_SIDECAR_V1_RUNTIME_WIRING`

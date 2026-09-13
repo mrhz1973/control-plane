@@ -276,3 +276,23 @@ observation path usable by future allowed autonomous tasks (no activation).
 Report: `reports/architecture/qwen_browser_visual_sidecar_v1_runtime_wiring.md`.
 `NEXT=evaluate issue #78 closure (min capability complete); OCR only on
 evidence of --annotate insufficiency`.
+
+---
+
+## Issue #78 closure evaluation — ELIGIBLE
+
+`QWEN_BROWSER_VISUAL_SIDECAR_V1_ISSUE_78_CLOSURE_EVALUATION` = **PASS** →
+`ISSUE_78_CLOSURE_ELIGIBLE=YES`, `MINIMUM_CAPABILITY_COMPLETE=YES`,
+`OCR_ESCALATION_REQUIRED_NOW=NO`, `VLM_ESCALATION_REQUIRED_NOW=NO`.
+All 14 issue acceptance points verified satisfied against the three PASS
+reports (evaluation benchmark 15/15, repair suite 28/28, runtime wiring
+23/23 on this tree): DOM default, visual fallback opt-in, real screenshot
+path, annotate/ref UI detection, structured result to Qwen, Qwen controller,
+Hermes bridge, no browser-path regression, no secret persistence, no public
+CDP, no authority expansion, deterministic fail-closed, zero-GPU resource
+compatibility, Autovia-compatible read-only. Annotate route satisfies the
+MINIMUM UI-detection capability (identity from accessibility tree, more
+reliable than pixel OCR); OCR/VLM remain future enhancements, evidence-gated.
+Issue itself NOT mutated in this task. Report:
+`reports/architecture/qwen_browser_visual_sidecar_v1_issue_78_closure_evaluation.md`.
+`NEXT=bounded issue #78 closure persistence only`.
