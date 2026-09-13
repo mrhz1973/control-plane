@@ -169,3 +169,31 @@ distinct from the later Phase D V2 PASS; Phase E remains not started.
 `reports/architecture/v4_hermes_native_codex_browser_cdp_ephemeral_exposure_v6.md`.
 Hermes was restored byte-for-byte; permanent exposure is not authorized.
 `NEXT=CODEX_HERMES_GOVERNED_BROWSER_CDP_EXPOSURE_AND_VPS_08_12_QUALIFICATION`.
+
+---
+
+## Live dashboard observability — Hermes/Qwen browser operations
+
+`LOCAL_DEV_HERMES_QWEN_ACTIVITY_OBSERVABILITY_V1` = **PASS** →
+`EXTERNAL_ACTIVITY_TELEMETRY_CONTRACT=PASS` →
+`READ_ONLY_OBSERVABILITY=PASS` →
+`DISPATCHER_IDLE_WITH_EXTERNAL_ACTIVE=PASS` →
+`HUMAN_GATE_WAIT_VISIBLE=PASS` → `STALE_SEMANTICS=PASS` →
+`SANITIZATION=PASS` → `NO_EXECUTION_AUTHORITY_EXPANSION=PASS` →
+`NO_CLAIM_RECEIPT_MUTATION=PASS` → `DASHBOARD_SECTION=PASS` →
+`BACKWARD_COMPATIBILITY=PASS` → `REGRESSIONS=PASS` →
+`PRODUCTION_CHANGED=NO` → report:
+`reports/architecture/local_dev_hermes_qwen_activity_observability_v1.md`.
+A local JSON ephemeral registry
+(`%LOCALAPPDATA%\control-plane\agent-activity-registry-v1.json`, bounded to
+20 activities) is written by the Hermes/Qwen runner and read by the existing
+dispatcher via GET-only `/v1/agent-activity` plus an additive `agent_activity`
+field in `/v1/diagnostics`; the dashboard gains a distinct AGENT section
+(agentops) showing QWEN_LOCAL → HERMES → Chrome/CDP → CHATGPT_WEB
+operations (ACTIVE / WAITING+HUMAN_GATE / PASS / STOP / STALE / UNKNOWN)
+concurrently with `DISPATCHER=IDLE_CLEAN`. Freshness is computed at read
+time (90 s threshold; terminals never reinterpreted). Sanitization is
+allow-list-only, `auth_state` boolean-sanitized, no raw session identity.
+The lane exports no execution authority surface. MCP human-gate persistent
+operator-wait law unchanged.
+`NEXT=#78 QWEN_BROWSER_VISUAL_SIDECAR_V1 (evaluation only, not started)`.

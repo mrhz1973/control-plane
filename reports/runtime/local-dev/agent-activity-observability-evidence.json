@@ -1,0 +1,43 @@
+{
+  "task_ref": "LOCAL_DEV_HERMES_QWEN_ACTIVITY_OBSERVABILITY_V1",
+  "issue": 79,
+  "result": "PASS",
+  "base_head": "b325d72eff18d3c1058f2b3d7705b9593598d02c",
+  "selected_telemetry_pattern": "LOCAL_JSON_EPHEMERAL_REGISTRY_VIA_EXISTING_DISPATCHER",
+  "registry_schema": "local-dev-agent-activity-v1",
+  "registry_path": "%LOCALAPPDATA%\\control-plane\\agent-activity-registry-v1.json",
+  "endpoint": "/v1/agent-activity (GET-only, read-only, no tick lock)",
+  "diagnostics_additive_field": "agent_activity",
+  "dashboard_section": "agentops 'Operazioni agente / browser' (canonical order: resources, ops, agentops, queue)",
+  "freshness": {
+    "default_threshold_ms": 90000,
+    "stale_rule": "ACTIVE/WAITING progress older than threshold => STALE (PROGRESS_TOO_OLD)",
+    "unknown_rule": "missing timestamps => UNKNOWN (NO_PROGRESS_TIMESTAMP)",
+    "terminal_rule": "PASS/STOP never reinterpreted",
+    "side_effects": "NONE (freshness computed at read time only)"
+  },
+  "sanitization": {
+    "allowlist_fields_only": true,
+    "auth_state": "boolean-sanitized (true/false/UNKNOWN/null)",
+    "raw_session_identity_stored": false,
+    "secrets_hostile_payload_trace_on_disk": 0
+  },
+  "writer_integration": {
+    "file": "tools/hermes-allowlist-live-send-v1.mjs",
+    "mode": "best-effort publish, failures swallowed to stderr",
+    "upsert": "merge-on-upsert by activity_id (field persistence proven)",
+    "real_send_performed_in_this_task": false,
+    "stages_proven_synthetic": ["PREFLIGHT", "QWEN_READY", "HERMES_ATTACHED", "BROWSER_READY", "REQUEST_SENDING", "WAITING_WEB_RESPONSE", "WEB_RESPONSE_OBSERVED", "RESULT_CAPTURE", "VALIDATION", "PASS", "STOP"]
+  },
+  "human_gate_observability": "state=WAITING + stage=HUMAN_GATE visible; no Telegram polling; no decision read; persistent operator-wait law untouched",
+  "tests": {
+    "observability_fixture": "23/23 PASS (tests/agent-activity-observability/run.mjs)",
+    "dispatcher_service_suite": "69/69 PASS (S71 updated to 4-section canonical layout)",
+    "mcp_gate_suite": "37/37 PASS",
+    "dashboard_inline_script_syntax": "PASS",
+    "runtime_docs_utf8": "BOM=false, U+FFFD=0, mojibake=0 (both files, pre and post update)"
+  },
+  "regressions": "PASS",
+  "production_changed": "NO",
+  "authority_law": "registry exports no tick/claim/authorize/execute surface; lane cannot create tasks, claim, mutate receipts, authorize execution, invoke providers, control browsers, or mutate routes"
+}

@@ -1381,7 +1381,7 @@ async function dashboardHarness(initial = {}) {
   const localStore = new Map();
   let timerId = 0;
   let scenario = initial;
-  let sectionOrder = ["resources", "ops", "queue"];
+  let sectionOrder = ["resources", "ops", "agentops", "queue"];
   function element(id) {
     if (elements.has(id)) return elements.get(id);
     const listeners = new Map();
@@ -2833,16 +2833,16 @@ await test("S71 D-9408-A dashboard compact health: qwen no fake 100%; cursor no 
     assert.doesNotMatch(visible, /\b(?:OK|ATTENZIONE|ELEVATO|CRITICO|HEALTHY|WARNING|DANGER)\b/);
   }
   // Layout persistence (browser-local only)
-  dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['queue','resources','ops']))");
+  dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['queue','resources','ops','agentops']))");
   dashboard.evaluate("applySectionOrder(readSavedOrder())");
-  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["queue", "resources", "ops"]));
-  assert.equal(dashboard.localStore.get("local-dev-dispatcher-dashboard-v1:section-order"), JSON.stringify(["queue", "resources", "ops"]));
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["queue", "resources", "ops", "agentops"]));
+  assert.equal(dashboard.localStore.get("local-dev-dispatcher-dashboard-v1:section-order"), JSON.stringify(["queue", "resources", "ops", "agentops"]));
   dashboard.evaluate("resetLayout()");
-  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["resources", "ops", "queue"]));
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["resources", "ops", "agentops", "queue"]));
   assert.equal(dashboard.localStore.has("local-dev-dispatcher-dashboard-v1:section-order"), false);
   // Invalid saved IDs fall back safely
   dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['legacy','bogus']))");
-  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["resources", "ops", "queue"]));
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["resources", "ops", "agentops", "queue"]));
 });
 
 await test("S72 D-9408-B disk free derived from used percent and free/total bytes", async () => {

@@ -56,6 +56,7 @@ import { admitMicroTaskDelta, extractMicroTaskAdmissionInput } from "./admit-mic
 import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
 import { selectNextQueueItem, parseBacklogFile, isAdmissible } from "./select-local-dev-queue-item-v1.mjs";
 import { buildResourceObservatory, createCanonicalVpsSshRunner, QWEN_OBSERVATION_TIMEOUT_MS, RESOURCES_PATH, RESOURCES_SCHEMA } from "./local-dev-resource-observatory-v1.mjs";
+import { AGENT_ACTIVITY_SCHEMA, applyFreshness as defaultApplyFreshness, readActivities as defaultReadActivities } from "./agent-activity-registry-v1.mjs";
 
 export const RESULT_SCHEMA = "local-dev-dispatch-tick-result-v1";
 export const REQUEST_SCHEMA = "local-dev-dispatch-tick-v1";
@@ -68,6 +69,7 @@ export const DEFAULT_PORT = 18793;
 export const TICK_PATH = "/v1/tick";
 export const STATUS_PATH = "/v1/status";
 export const DIAGNOSTICS_PATH = "/v1/diagnostics";
+export const AGENT_ACTIVITY_PATH = "/v1/agent-activity";
 export const ARCHITECTURE_PATH = "/architecture";
 export const DASHBOARD_PATHS = Object.freeze(["/", "/dashboard", "/dashboard/"]);
 export const QWEN_OBSERVE_BASE_URL = "http://127.0.0.1:8080";
@@ -726,7 +728,43 @@ export async function buildDiagnostics(deps = {}) {
     },
     explanation,
     operator_visibility,
+    // Read-only agent/browser activity observatory (issue #79). Additive
+    // field only — existing diagnostics fields unchanged (backward compat).
+    agent_activity: buildAgentActivitySection(deps),
   };
+}
+
+/**
+ * Read-only aggregation of the external agent activity registry
+ * (LOCAL_DEV_HERMES_QWEN_ACTIVITY_OBSERVABILITY_V1). Applies the freshness
+ * law at read time. No heartbeat side effects: pure read + compute.
+ */
+export function buildAgentActivitySection(deps = {}) {
+  const readActivities = deps.readActivities || defaultReadActivities;
+  const applyFreshness = deps.applyFreshness || defaultApplyFreshness;
+  try {
+    const reg = readActivities();
+    const activities = applyFreshness(reg.activities || [], { nowMs: Date.now() });
+    return {
+      schema_version: AGENT_ACTIVITY_SCHEMA,
+      read_only: true,
+      generated_at: new Date().toISOString(),
+      registry_updated_at: reg.updated_at || null,
+      registry_available: reg.activities !== undefined,
+      activity_count: activities.length,
+      active_count: activities.filter((a) => a && a.state === "ACTIVE").length,
+      waiting_count: activities.filter((a) => a && a.state === "WAITING").length,
+      activities,
+      note: "Attività esterne (Hermes/Qwen/browser) osservate sola lettura. Non è autorità di execution e non muta task/receipt.",
+    };
+  } catch (err) {
+    // Fail-closed: unknown, never invented state.
+    return {
+      schema_version: AGENT_ACTIVITY_SCHEMA, read_only: true, generated_at: new Date().toISOString(),
+      registry_available: false, activity_count: 0, active_count: 0, waiting_count: 0, activities: [],
+      reason_codes: ["AGENT_ACTIVITY_READ_FAILED", boundStr(err?.message || err, 80)],
+    };
+  }
 }
 
 function loadDashboardHtml() {
@@ -1479,6 +1517,17 @@ export async function handleTickRequest(req, res, deps = {}) {
     return;
   }
 
+  // Read-only external agent/browser activity lane (issue #79). GET only,
+  // no tick lock, no mutations: reads the local registry, applies freshness.
+  if (path === AGENT_ACTIVITY_PATH) {
+    if (req.method !== "GET") {
+      send(405, wrapTickResult({ ok: false, classification: "SERVICE_ERROR", reason_codes: ["GET_ONLY"] }));
+      return;
+    }
+    send(200, buildAgentActivitySection(deps));
+    return;
+  }
+
   // Read-only resource + quota observatory (no tick lock, no mutations).
   if (path === RESOURCES_PATH) {
     if (req.method !== "GET") {
@@ -1606,6 +1655,7 @@ async function main() {
     tick_path: TICK_PATH,
     status_path: STATUS_PATH,
     diagnostics_path: DIAGNOSTICS_PATH,
+    agent_activity_path: AGENT_ACTIVITY_PATH,
     resources_path: RESOURCES_PATH,
     dashboard_path: "/dashboard",
     architecture_path: ARCHITECTURE_PATH,

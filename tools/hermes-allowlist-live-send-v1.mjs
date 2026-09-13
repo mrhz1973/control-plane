@@ -26,6 +26,8 @@ import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
+import { publishActivity } from "./agent-activity-registry-v1.mjs";
+
 import {
   EXACT_ALLOWLIST,
   CHAIN_STATES,
@@ -50,10 +52,37 @@ function runVerifierJson(args) {
 }
 
 const trace = [];
+let startedAtMs = 0;
 const push = (stage, record) => trace.push({ ts: new Date().toISOString(), stage, ...record });
+
+// ---------- READ-ONLY OBSERVABILITY WRITER (issue #79) ----------
+// Publishes sanitized activity state to the local registry consumed by the
+// dispatcher dashboard. Observability only: a publish failure is logged and
+// swallowed — it can never alter the send path, gates, or budgets.
+const ACTIVITY_BASE = {
+  activity_id: null, // set in main() once runId exists
+  task_ref: TASK_REF,
+  activity_type: "HERMES_QWEN_BROWSER_SEND",
+  controller: "QWEN_LOCAL",
+  bridge: "HERMES",
+  browser_surface: "CHROME_CDP_PERSISTENT",
+  answer_surface: "CHATGPT_WEB",
+  model_profile: PROFILE,
+  timeout_total_seconds: 900,
+};
+function observe(patch) {
+  const r = publishActivity({ ...ACTIVITY_BASE, ...patch, activity_id: ACTIVITY_BASE.activity_id });
+  if (!r.ok) console.error(JSON.stringify({ OBSERVABILITY_PUBLISH_FAILED: r.reason }));
+}
+const OBS_STAGES = Object.freeze({
+  LIVE_PRECHECK: "PREFLIGHT", LIVE_PRECHECK_PASS: "QWEN_READY", BARRIER1_SCHEMAS: "HERMES_ATTACHED",
+  S0_SNAPSHOT: "BROWSER_READY", S1_TYPE: "REQUEST_SENDING", S2_PRESS: "WAITING_WEB_RESPONSE",
+  INDEPENDENT_DOM_VERIFY: "RESULT_CAPTURE", HERMES_GLOBAL_CONFIG: "VALIDATION",
+});
 
 function stop(stage, reason, extra = {}) {
   push(stage, { status: "STOP", reason, ...extra });
+  observe({ state: "STOP", stage: OBS_STAGES[stage] || "PREFLIGHT", stop_reason: String(reason).slice(0, 80), last_progress_at: new Date().toISOString(), elapsed_seconds: ACTIVITY_BASE.activity_id ? Math.round((Date.now() - startedAtMs) / 1000) : null });
   console.error(JSON.stringify({ RESULT: "STOP", stage, reason, trace }, null, 2));
   process.exit(1);
 }
@@ -73,6 +102,9 @@ async function qwenTurn({ messages, maxTokens }) {
 
 async function main() {
   const runId = randomUUID().replace(/-/g, "").slice(0, 32);
+  startedAtMs = Date.now();
+  ACTIVITY_BASE.activity_id = `hermes-send-${runId.slice(0, 16)}`;
+  observe({ state: "ACTIVE", stage: "PREFLIGHT", started_at: new Date().toISOString(), last_progress_at: new Date().toISOString(), elapsed_seconds: 0, generation_state: null, capture_state: null, cdp_state: "OBSERVED", auth_state: "UNKNOWN", qwen_occupancy: "DEDICATED" });
   const nonce = `CP_MT_CHAIN_20260911T${Date.now().toString(36).toUpperCase()}_${randomUUID().slice(0, 8)}`;
   const payloadText = buildProofPayload({
     taskRef: TASK_REF,
@@ -92,7 +124,7 @@ async function main() {
     ["CDP_9222", `${CDP_URL}/json/version`],
     ["HERMES_16080", "http://127.0.0.1:16080/vnc.html"],
   ]) {
-    try { await (await fetch(url, { signal: AbortSignal.timeout(8000) })).arrayBuffer(); push("LIVE_PRECHECK", { status: "PASS", surface: label }); }
+    try { await (await fetch(url, { signal: AbortSignal.timeout(8000) })).arrayBuffer(); push("LIVE_PRECHECK", { status: "PASS", surface: label }); observe({ state: "ACTIVE", stage: label === "CDP_9222" ? "BROWSER_READY" : "HERMES_ATTACHED", cdp_state: label === "CDP_9222" ? "OBSERVED" : undefined, last_progress_at: new Date().toISOString(), elapsed_seconds: Math.round((Date.now() - startedAtMs) / 1000) }); }
     catch { stop("LIVE_PRECHECK", `${label}_UNREACHABLE`); }
   }
   // target + fresh + authenticated (independent, read-only)
@@ -111,6 +143,7 @@ async function main() {
     stop("BARRIER1_SCHEMAS", "MODEL_VISIBLE_SET_NOT_EXACT");
   }
   push("BARRIER1_SCHEMAS", { status: "PASS", model_visible_count: schemas.model_visible_count, model_visible_names: schemas.model_visible_names });
+  observe({ state: "ACTIVE", stage: "HERMES_ATTACHED", last_progress_at: new Date().toISOString(), elapsed_seconds: Math.round((Date.now() - startedAtMs) / 1000) });
 
   // ---------- shared controller surface ----------
   const systemPrompt =
@@ -187,6 +220,7 @@ async function main() {
   if (!res1.composer_ref) stop("S0_SNAPSHOT", "COMPOSER_REF_NOT_OBTAINED");
   composerRef = res1.composer_ref;
   push("S0_RESULT", { composer_ref_obtained: "YES", composer_ref: composerRef, composer_role: res1.composer_role ?? null });
+  observe({ state: "ACTIVE", stage: "BROWSER_READY", generation_state: "GEN1_DONE", last_progress_at: new Date().toISOString(), elapsed_seconds: Math.round((Date.now() - startedAtMs) / 1000) });
   // bounded sanitized tool result ONLY (no page transcript)
   messages.push(gen1.msg);
   messages.push({
@@ -220,6 +254,7 @@ async function main() {
     ASSISTANT_TURNS: afterType.ASSISTANT_TURNS,
   });
   if (afterType.USER_TURNS !== 0 || afterType.ASSISTANT_TURNS !== 0) stop("S1_TYPE", "UNEXPECTED_TURN_BEFORE_PRESS");
+  observe({ state: "ACTIVE", stage: "REQUEST_SENDING", generation_state: "GEN2_DONE", last_progress_at: new Date().toISOString(), elapsed_seconds: Math.round((Date.now() - startedAtMs) / 1000) });
   messages.push(gen2.msg);
   messages.push({
     role: "tool",
@@ -237,6 +272,7 @@ async function main() {
   if (String(call3.args?.key ?? "Enter") !== "Enter") stop("S2_PRESS", "GEN3_INVALID_KEY", { key: call3.args?.key ?? null });
   const res3 = await dispatchGuarded("S2_PRESS", call3);
   if (res3.success !== true) stop("S2_PRESS", "HERMES_PRESS_EXECUTION_FAILED", res3);
+  observe({ state: "WAITING", stage: "WAITING_WEB_RESPONSE", generation_state: "GEN3_DONE", last_progress_at: new Date().toISOString(), elapsed_seconds: Math.round((Date.now() - startedAtMs) / 1000) });
 
   // NO FOURTH GENERATION — budget fence already enforced in callGeneration.
 
@@ -247,6 +283,7 @@ async function main() {
     stop("INDEPENDENT_DOM_VERIFY", "BROWSER_PRESS_EXECUTED_NO_USER_TURN");
   }
   sendConfirmed = true;
+  observe({ state: "ACTIVE", stage: "WEB_RESPONSE_OBSERVED", capture_state: "OBSERVED", last_progress_at: new Date().toISOString(), elapsed_seconds: Math.round((Date.now() - startedAtMs) / 1000) });
 
   // config unchanged final probe (metadata only)
   const configMetaAfter = await bridge("config-meta");
@@ -256,9 +293,9 @@ async function main() {
     configMetaBefore.size === configMetaAfter.size;
   push("HERMES_GLOBAL_CONFIG", { unchanged: configUnchanged, sha256: configMetaAfter.sha256, size: configMetaAfter.size });
 
+  observe({ state: "PASS", stage: "PASS", stop_reason: null, last_progress_at: new Date().toISOString(), elapsed_seconds: Math.round((Date.now() - startedAtMs) / 1000), generation_state: `GEN${genCount}_DONE`, capture_state: "VERIFIED", cdp_state: "OBSERVED", auth_state: true });
   const final = {
-    RESULT: "PASS",
-    TASK_REF: TASK_REF,
+    RESULT: "PASS",    TASK_REF: TASK_REF,
     BASE_HEAD: BASE_HEAD,
     RUN_ID: runId,
     NONCE: nonce,
@@ -282,4 +319,4 @@ async function main() {
   console.log(JSON.stringify(final, null, 2));
 }
 
-main().catch((e) => { console.error(JSON.stringify({ RESULT: "STOP", reason: String(e.message || e) }, null, 2)); process.exit(1); });
+main().catch((e) => { console.error(JSON.stringify({ RESULT: "STOP", reason: String(e.message || e) }, null, 2)); try { observe({ state: "STOP", stage: "PREFLIGHT", stop_reason: String(e.message || e).slice(0, 80), last_progress_at: new Date().toISOString(), elapsed_seconds: ACTIVITY_BASE.activity_id ? Math.round((Date.now() - startedAtMs) / 1000) : null }); } catch { /* observability must never mask the real failure */ } process.exit(1); });

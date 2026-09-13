@@ -69,6 +69,13 @@
           </article>
         </div>
       </section>
+      <section class="dash-section" data-section="agentops" id="sec-agentops" aria-labelledby="agentops-title">
+        <div class="sec-chrome" data-chrome="agentops"><span class="sec-label">Sezione</span></div>
+        <div class="panel">
+          <div class="panel-head"><div><div class="heading"><span class="section-index">AGENT</span><h2 id="agentops-title">Operazioni agente / browser</h2></div><p>Attività esterne al dispatcher (QWEN → Hermes → Chrome/CDP → web) · sola lettura</p></div><span class="pill subtle" id="agentops-scope">Fuori dal ciclo di selezione/claim</span></div>
+          <div class="panel-body" id="agent-activities" aria-live="polite"></div>
+        </div>
+      </section>
       <section class="dash-section" data-section="queue" id="sec-queue">
         <div class="sec-chrome" data-chrome="queue"><span class="sec-label">Sezione</span></div>
         <details class="panel queue-panel" id="queue-panel" aria-labelledby="queue-title">
@@ -85,7 +92,7 @@
       </section>
     </div>
     <details class="panel technical-panel" id="status-technical"><summary>Mostra dettagli tecnici del dispatcher</summary><dl class="facts" id="status-details"></dl></details>
-    <footer class="footer"><span>Osservazione locale · Nessuna azione di esecuzione disponibile in questa console.</span><span>Fonti: <code>GET /v1/status</code> · <code>GET /v1/diagnostics</code> · <code>GET /v1/resources</code></span></footer>
+    <footer class="footer"><span>Osservazione locale · Nessuna azione di esecuzione disponibile in questa console.</span><span>Fonti: <code>GET /v1/status</code> · <code>GET /v1/diagnostics</code> · <code>GET /v1/resources</code> · <code>GET /v1/agent-activity</code></span></footer>
   </main>
   <script>
     'use strict';
@@ -148,7 +155,7 @@
     const REASONS = Object.freeze({CLAIM_ALREADY_EXISTS:'Bloccato da claim',NO_ELIGIBLE_READY:'Nessun task eseguibile',CLAIM_SKIPPED_PRESENT:'Selezione fermata dal claim',NOT_READY:'Backlog non pronto',STATE_NOT_READY:'Backlog non pronto',NOT_LOCAL_DEV:'Destinazione non locale',HUMAN_GATE_REQUIRED:'Intervento umano richiesto',READ_FAILED:'Lettura del file non riuscita',EMPTY_FILE:'File vuoto',PARSE_FAILED:'Formato del backlog non valido',INVALID_ENTRY:'Elemento non valido',DIAGNOSTICS_QUEUE_SCAN_FAILED:'Scansione non disponibile',QWEN_SESSION_NOT_READY:'Runtime Qwen non pronto',MICRO_TASK_ADMISSION_REJECTED:'Ammissione del task rifiutata',TRACKED_DIRTY_CONFLICT:'Modifiche locali da verificare'});
     const STAGES = Object.freeze({queue_selection:'Selezione della coda','claim/bridge':'Registrazione del claim',qwen_preflight:'Verifica del runtime Qwen',admission:'Ammissione del task',repo_hygiene:'Verifica del repository',human_gate:'Verifica umana',executor:'Esecutore',service:'Servizio',single_flight:'Ciclo già in corso',diagnostics:'Diagnostica'});
     const LAYOUT_KEY = 'local-dev-dispatcher-dashboard-v1:section-order';
-    const CANONICAL_SECTIONS = Object.freeze(['resources','ops','queue']);
+    const CANONICAL_SECTIONS = Object.freeze(['resources','ops','agentops','queue']);
     const RESOURCE_LAYOUT_KEY = 'local-dev-dispatcher-dashboard-v1:resource-order';
     const CANONICAL_RESOURCES = Object.freeze(['workstation','vps','qwen','glm','codex','cursor']);
     const obj = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -657,6 +664,32 @@
       put('queue-metrics',`<span><strong>${count(q.scanned_file_count)}</strong>file ${help('scanned_file_count')}</span><span><strong class="ok">${count(q.eligible_count)}</strong>eseguibili ${help('eligible_count')}</span><span><strong class="warn">${count(q.claim_present_count)}</strong>claim ${help('claim_present_count')}</span>`);currentQueue=q;renderQueue();
       put('status-details',fact('Fase',label(s.phase),'phase')+fact('Classificazione',label(s.classification),'classification')+fact('Identificativo ciclo',s.request_id,'request_id',true)+fact('Identificativo task',s.task_ref,'task_ref',true)+fact('Durata osservata',duration(s.elapsed_ms),'elapsed_ms')+fact('Processo',s.executor_pid,'executor_pid')+fact('Test',label(s.tests_state),'tests_state')+fact('Ultimo evento',s.last_event,'last_event',true)+fact('File coinvolti',list(s.files_touched).filter(v=>typeof v==='string').join(', ')||'Nessun file riportato','files_touched',true));
       renderResources(resources,s,{usage,models,qwenDiag:w});
+      renderAgentActivities(obj(d.agent_activity));
+    }
+    const AGENT_STATE_TONE=Object.freeze({ACTIVE:'info',WAITING:'warn',PASS:'ok',STOP:'danger',STALE:'caution',UNKNOWN:'muted'});
+    const AGENT_STATE_LABEL=Object.freeze({ACTIVE:'Attiva',WAITING:'In attesa (decisione umana)',PASS:'Completata',STOP:'Fermata',STALE:'Non aggiornata',UNKNOWN:'Sconosciuta'});
+    function agentLine(label,value,mono){return value?`<span class="ops-line${mono?' mono':''}" style="display:block"><span style="color:var(--muted)">${escapeHtml(label)}:</span> ${escapeHtml(String(value))}</span>`:'';}
+    function renderAgentActivities(aa){
+      const host=el('agent-activities');if(!host)return;aa=obj(aa);
+      const acts=list(aa.activities).map(obj).slice(0,8);
+      if(!acts.length){host.innerHTML='<p class="ops-line" style="color:var(--muted)">Nessuna operazione esterna osservata. Il dispatcher resta l’unica autorità di esecuzione.</p>';return;}
+      host.innerHTML=acts.map(a=>{
+        const st=AGENT_STATE_LABEL[a.state]?a.state:'UNKNOWN';
+        const tone=AGENT_STATE_TONE[st]||'muted';
+        const progressed=a.last_progress_at?`Ultimo progresso: ${date(a.last_progress_at)}`:'Ultimo progresso: n/d';
+        return `<article class="ops-card ${tone}" style="margin-bottom:10px"><div class="ops-title">${escapeHtml(text(a.activity_type,'OPERAZIONE ESTERNA'))} · ${escapeHtml(text(a.activity_id,'?'))}</div>`+
+          `<div class="ops-main">${escapeHtml(AGENT_STATE_LABEL[st]||st)} <span class="pill subtle">${escapeHtml(text(a.stage,'—'))}</span></div>`+
+          agentLine('Task',a.task_ref,true)+agentLine('Controller',a.controller)+agentLine('Bridge',a.bridge)+
+          agentLine('Superficie browser',a.browser_surface)+agentLine('Superficie risposta',a.answer_surface)+
+          agentLine('Profilo modello',a.model_profile)+agentLine('Stato generazione',a.generation_state)+
+          agentLine('Stato cattura',a.capture_state)+agentLine('CDP',a.cdp_state)+
+          agentLine('Auth',a.auth_state===true?'OK (sanitizzato)':a.auth_state===false?'Non disponibile (sanitizzato)':a.auth_state?'Sconosciuto (sanitizzato)':null)+
+          agentLine('Occupazione Qwen',a.qwen_occupancy)+
+          agentLine('Timeout',a.timeout_total_seconds!=null?`${a.timeout_remaining_seconds!=null?`${a.timeout_remaining_seconds}s rimasti`:''} su ${a.timeout_total_seconds}s totali`:null)+
+          agentLine('Stop reason',a.stop_reason)+
+          `<span class="ops-line" style="display:block"><span style="color:var(--muted)">Avviata:</span> ${escapeHtml(date(a.started_at,true)||'n/d')} · <span style="color:var(--muted)">${escapeHtml(progressed)}${a.elapsed_seconds!=null?` · ${escapeHtml(String(a.elapsed_seconds))}s`:''}</span></span>`+
+          `</article>`;
+      }).join('');
     }
     let refreshing=false,lastSuccess=null;
     async function readJson(path){const response=await fetch(path,{method:'GET',cache:'no-store',signal:AbortSignal.timeout(7000)});if(!response.ok)throw new Error(`HTTP ${response.status}`);const body=await response.json();if(!body||typeof body!=='object'||Array.isArray(body))throw new Error('Risposta non valida');return body;}

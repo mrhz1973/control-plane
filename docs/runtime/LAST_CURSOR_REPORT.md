@@ -1,5 +1,40 @@
 # LAST CURSOR REPORT
 
+## Local dev Hermes/Qwen activity observability V1 — latest
+
+**TASK_REF:** `LOCAL_DEV_HERMES_QWEN_ACTIVITY_OBSERVABILITY_V1`
+**Classification:** `PASS — READ_ONLY_OBSERVABILITY_LIVE; DISPATCHER_IDLE_WITH_EXTERNAL_ACTIVE=PASS; PRODUCTION_CHANGED=NO`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `b325d72eff18d3c1058f2b3d7705b9593598d02c`
+**Report:** `reports/architecture/local_dev_hermes_qwen_activity_observability_v1.md`
+**Evidence:** `reports/runtime/local-dev/agent-activity-observability-evidence.json`
+
+- **Pattern:** local JSON ephemeral registry (`agent-activity-registry-v1.mjs`,
+  `%LOCALAPPDATA%\control-plane\agent-activity-registry-v1.json`, bounded 20,
+  merge-on-upsert, atomic write) + GET-only `/v1/agent-activity` and additive
+  `agent_activity` field in `/v1/diagnostics` served by the EXISTING dispatcher
+  process. No new service.
+- **Schema:** exactly the mission fields; states ACTIVE/WAITING/PASS/STOP/UNKNOWN/STALE;
+  all 12 mission stages; freshness computed at read time (90 s threshold ⇒ STALE,
+  missing ⇒ UNKNOWN, PASS/STOP never reinterpreted, zero heartbeat side effects).
+- **Sanitization:** allow-list-only persistence (hostile payloads with cookies/
+  tokens/credentials/session ids leave zero trace — T8/T9); `auth_state` boolean-
+  sanitized; no raw session identity.
+- **Dashboard:** distinct `AGENT` section (agentops, canonical order resources →
+  ops → agentops → queue) labelled "Fuori dal ciclo di selezione/claim"; proves
+  DISPATCHER=IDLE_CLEAN concurrently with an ACTIVE Hermes/Qwen browser operation
+  (T2); WAITING+HUMAN_GATE visible (T3) without any Telegram polling.
+- **Writer integration:** `hermes-allowlist-live-send-v1.mjs` publishes the full
+  stage lifecycle + STOP reasons, best-effort (publish failure can never affect
+  gates/budgets/send path). Synthetic lifecycle + STOP proven; NO real send.
+- **Authority law:** module exports no tick/claim/authorize/execute surface;
+  endpoint acquires no tick lock; task/receipt/queue untouched (T10–T12).
+- **Tests:** observability fixture 23/23 PASS; dispatcher suite 69/69 PASS
+  (S71 updated to the new 4-section canonical layout — additive); MCP gate suite
+  37/37 PASS (operator-wait law untouched); runtime docs UTF-8 integrity
+  re-verified (BOM=false, U+FFFD=0).
+
+
 ## Cursor ACP MCP human gate persistent operator wait V1 — latest
 
 **TASK_REF:** `V4_CURSOR_ACP_MCP_HUMAN_GATE_PERSISTENT_OPERATOR_WAIT_V1`
