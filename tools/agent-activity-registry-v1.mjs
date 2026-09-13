@@ -28,6 +28,7 @@ export const ACTIVITY_STAGES = Object.freeze([
   "PREFLIGHT", "QWEN_READY", "HERMES_ATTACHED", "BROWSER_READY", "REQUEST_SENDING",
   "WAITING_WEB_RESPONSE", "WEB_RESPONSE_OBSERVED", "RESULT_CAPTURE", "VALIDATION",
   "HUMAN_GATE", "PASS", "STOP",
+  "VISUAL_INSPECTION", // QWEN_BROWSER_VISUAL_SIDECAR_V1 (issue #78): read-only visual observation stage
 ]);
 export const MAX_ACTIVITIES = 20; // bounded: most recent operations only
 export const DEFAULT_FRESHNESS_MS = 90_000; // ACTIVE/WAITING older than this => STALE

@@ -235,3 +235,23 @@ worktree per operator order; STOP report + evidence persisted:
 `reports/runtime/qwen-browser-visual-sidecar/STOP_MINIMAL_IMPLEMENTATION.md`.
 `NEXT=bounded failure-path remediation (process-tree timeout / pinned
 daemon endpoint) BEFORE any retry`.
+
+---
+
+## Visual sidecar failure-path bounding repair — PASS
+
+`QWEN_BROWSER_VISUAL_SIDECAR_V1_FAILURE_PATH_BOUNDING_REPAIR` = **PASS** →
+repairs the STOP blocker `T5_FAILURE_PATH_PROBE_NOT_BOUNDED`. Root causes
+proven: per-call `--cdp` deadlocks a live daemon (the 33 min / 1.7 h hangs);
+`npx --yes` cold-start unbounded; Node `close` never fires when the CLI's
+grandchild daemon inherits stdout (false timeouts on SUCCESS). Repair is
+project-owned only: direct pinned vendor exe from npx cache (no npx/network),
+bounded process-tree runner (absolute deadline ⇒ `taskkill /T /F`), and a
+three-step pinned flow `connect` → `snapshot` → `screenshot --annotate`
+(annotations require a prior snapshot). T5 now deterministic: bounded tree-kill
+→ UNAVAILABLE, zero targets, **960 ms** total (was 33 min–1.7 h). Full suite
+**28/28 PASS** incl. #79 23/23, MCP gate 37/37, dispatcher 69/69; orphan
+audit clean; Qwen READY throughout; OCR=NO, VLM=NO. Implementation + tests
+(preserved uncommitted by the STOP) committed with this repair. Report:
+`reports/architecture/qwen_browser_visual_sidecar_v1_failure_path_bounding_repair.md`.
+`NEXT=OCR escalation only if evidence shows --annotate insufficient`.

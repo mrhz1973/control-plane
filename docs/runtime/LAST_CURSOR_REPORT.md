@@ -1,5 +1,34 @@
 # LAST CURSOR REPORT
 
+## Qwen browser visual sidecar V1 — failure-path bounding repair (latest)
+
+**TASK_REF:** `QWEN_BROWSER_VISUAL_SIDECAR_V1_FAILURE_PATH_BOUNDING_REPAIR`
+**Classification:** `PASS — T5 blocker repaired; MINIMAL_IMPLEMENTATION materially complete/superseded`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `7faf6f9372582a5fb0162bdef58988c2e8573240`
+**Report:** `reports/architecture/qwen_browser_visual_sidecar_v1_failure_path_bounding_repair.md`
+
+- **Root causes proven (bounded probes):** (1) per-call `--cdp` deadlocks a
+  live daemon — the original 33 min / 1.7 h hangs; (2) `npx --yes` cold-start
+  unbounded; (3) Node `close` never fires when the vendor CLI's grandchild
+  daemon inherits stdout — success was misread as timeout (`✓ Done` captured);
+  (4) `--annotate` returns no annotations without a prior `snapshot`;
+  (5) daemon cold-start connect ~20 s.
+- **Repair (project-owned):** pinned direct vendor exe from npx cache
+  (v0.26.0, no npx/network/vendor mutation); `runBoundedTree` — absolute
+  deadline ⇒ `taskkill /PID /T /F`, completion on process `exit`; three-step
+  pinned flow `connect` → `snapshot` → `screenshot --annotate`.
+- **Proof:** suite single-run **28/28 PASS** (~28 s): T5 bounded tree-kill →
+  UNAVAILABLE in **960 ms**, zero invented targets, no probe orphans;
+  `@e1,@e2,@e3` mapping restored; ephemeral screenshots; fail-closed
+  ambiguity/malformed/Qwen-unhealthy; OCR=NO, VLM=NO; loopback-only CDP;
+  temp profile; VISUAL_INSPECTION in #79 lane (no image data); Qwen READY
+  (VRAM 9144/2972 MiB). Regressions: #79 23/23, MCP gate 37/37, dispatcher
+  69/69. REAL_CHATGPT_WEB_SENDS=0, PRODUCTION_CHANGED=NO.
+- **NEXT:** OCR escalation evaluation only if evidence shows `--annotate`
+  insufficient — no automatic OCR install.
+
+
 ## Qwen browser visual sidecar V1 minimal implementation — latest
 
 **TASK_REF:** `QWEN_BROWSER_VISUAL_SIDECAR_V1_MINIMAL_IMPLEMENTATION`
