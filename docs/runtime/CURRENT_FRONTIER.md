@@ -351,3 +351,17 @@ VISUAL_INSPECTION additive). Historical body preserved untouched.
 Report: `reports/architecture/local_dev_hermes_qwen_activity_observability_v1_issue_79_closure_persistence.md`.
 `NEXT_AFTER_CLOSURE=NONE for issue #79; reopen only on future evidence of a
 real observability gap`.
+
+---
+
+`V4_HERMES_CONSOLIDATION_ARCHITECTURE_AUDIT_V1` = **PASS** (audit only — no
+implementation) → 27 components mapped AS-IS; dispositions KEEP=21 · MERGE=3 ·
+REPLACE_WITH_HERMES=1 (governed-CDP composer glue → Hermes native, V7-
+qualified) · RETIRE=1 (OpenClaw, dormant, `OPENCLAW_DISPOSITION=RETIRE`;
+`LITELLM_DISPOSITION=KEEP`). TO-BE: one governed browser path, one scheduler
+per runtime, routing policy single-sourced in registry v2, human gate stays
+SOLE authority. First bounded slice: PHASE_1 OpenClaw paper retirement
+(HUMAN_GATE required). Report:
+`reports/architecture/v4_hermes_consolidation_component_retirement_audit_v1.md`.
+`NEXT=PHASE_1 OpenClaw paper retirement (bounded), pending
+orchestrator/human authorization`.
