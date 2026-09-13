@@ -121,17 +121,27 @@ async function humanGate(args) {
   persistGateStore(store, storePath);
 
   const deadline = Date.now() + ttlMs;
-  let answer = null;
+  let wait = null;
   try {
-    answer = await transport.waitAnswer({ decision: notified.decision, deadlineMs: deadline, spoolDir: SPOOL_DIR });
-  } catch { answer = null; }
-
-  if (!answer || answer.decision_id !== decision.decision_id) {
+    wait = await transport.waitAnswer({ decision: notified.decision, deadlineMs: deadline, spoolDir: SPOOL_DIR });
+  } catch (e) {
+    // never swallow: an exception in the wait path is an explicit no_answer
+    // with sanitized reason, not a silent continue.
     store = loadGateStore(storePath);
     markNoAnswer(store, decision.decision_id);
     persistGateStore(store, storePath);
-    return { status: "no_answer", decision_id: decision.decision_id };
+    return { status: "no_answer", decision_id: decision.decision_id, reason: "TRANSPORT_WAIT_EXCEPTION", detail: String(e?.message ?? e).slice(0, 80) };
   }
+
+  // Hardened contract: {status: ANSWERED|TIMEOUT|ABORTED, ...}
+  if (!wait || wait.status !== "ANSWERED" || wait.update_id === undefined) {
+    const reason = !wait ? "TRANSPORT_WAIT_NULL" : wait.status === "ABORTED" ? `TRANSPORT_ABORTED_${wait.class}` : "TRANSPORT_TIMEOUT";
+    store = loadGateStore(storePath);
+    markNoAnswer(store, decision.decision_id);
+    persistGateStore(store, storePath);
+    return { status: "no_answer", decision_id: decision.decision_id, reason };
+  }
+  const answer = { decision_id: decision.decision_id, option: wait.option, update_id: wait.update_id };
 
   store = loadGateStore(storePath);
   const admitted = admitGateCallback(store, answer, {

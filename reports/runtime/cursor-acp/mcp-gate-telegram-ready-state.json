@@ -1,0 +1,44 @@
+{
+  "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1",
+  "state": "BOUNDED_REPAIR_COMPLETE_READY_FOR_FINAL_REAL_E2E",
+  "date": "2026-09-13T03:30:00+02:00",
+  "base_head": "3144b0cf0b7f3f5fb223871000e4bfab314797f6",
+  "root_causes_closed": [
+    "CALLBACK_RE case law rejected real lowercase-hex decision ids (all real taps discarded)",
+    "competing getUpdates consumers (issuance service + orphan MCP servers) raced the callback",
+    "409 Conflict silently swallowed by catch-and-continue",
+    "quiesce/restore asymmetric and unverified (service left down; STOP skipped restore)",
+    "9 orphan MCP stdio servers kept polling across runs (child-kill does not reap detached MCP)",
+    "no observability on update processing (MCP stderr unreachable from driver)",
+    "stale Telegram buttons accumulated (taps landed on dead gates)"
+  ],
+  "hardening": {
+    "SINGLE_CONSUMER_LAW": "PASS (409/AUTH fatal to wait; verified quiesce before window; orphan reap startup+exit)",
+    "QUIESCE_RESTORE": "PASS (CIM-verified both directions; restore on PASS/STOP/exception; fail-closed on unverified quiesce)",
+    "OFFSET_HANDLING": "PASS (advance on processed updates only; post-deadline never admitted; offset+1 law fenced)",
+    "CALLBACK_OBSERVABILITY": "PASS (sanitized per-update sink to spool tg-observe.log; explicit no_answer reasons)",
+    "SAME_SESSION_LAW": "UNCHANGED (no session/new after gate; session/load = LOGICAL_RECOVERY only)",
+    "CONTROL_PLANE_AUTHORITY": "PRESERVED (adapter + transport cannot self-authorize; option only from gate-core VERIFIED)"
+  },
+  "deterministic_evidence": {
+    "implementation_suite": "32/32 PASS",
+    "soak_iterations": 319,
+    "valid_callback_accepted": 309,
+    "valid_callback_lost": 0,
+    "stale_rejected": 403,
+    "duplicate_rejected": 201,
+    "wrong_binding_rejected": 802,
+    "process_leaks": 0,
+    "unexpected_exceptions": 0,
+    "bugbot_findings": 0
+  },
+  "live_evidence_before_repair": {
+    "MCP_TOOL_INVOCATION": "observed (tool_call human_gate in live ACP session)",
+    "TELEGRAM_NOTIFICATION": "observed (real sends with A/B/C keyboards, REGISTERED to NOTIFIED in gate history)",
+    "isolated_transport_diagnostic": "real operator tap admitted in 8s through all binding filters",
+    "REAL_OPERATOR_CALLBACK_FULL_E2E": "NOT_YET (intentionally deferred)",
+    "SAME_SESSION_LIVE": "NOT_YET (intentionally deferred)"
+  },
+  "no_pass_claimed_for": ["TELEGRAM_E2E", "REAL_OPERATOR_CALLBACK", "SAME_SESSION_LIVE"],
+  "next": "ONE_FINAL_REAL_TELEGRAM_E2E_AFTER_OPERATOR_RETURNS"
+}

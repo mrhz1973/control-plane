@@ -84,7 +84,7 @@ async function main() {
     mcpServers: [{
       name: "v4-cursor-acp-human-gate",
       command: process.execPath,
-      args: [SERVER],
+      args: [SERVER, "--spool-marker", `acp-wiring-${path.basename(SPOOL)}`],
       env: [{ name: "ACP_GATE_SPOOL_DIR", value: SPOOL }],
     }],
   });
@@ -122,7 +122,22 @@ async function main() {
   console.log(JSON.stringify(result, null, 2));
 
   acp.kill();
+  // Orphan hygiene: killing the ACP child does not kill detached MCP stdio
+  // children; reap any marked server of THIS probe run before exiting.
+  await reapProbeMcp();
   process.exit(guardSameSession ? 0 : 1);
+}
+
+async function reapProbeMcp() {
+  try {
+    const { execFileSync } = await import("node:child_process");
+    const out = execFileSync("powershell", ["-NoProfile", "-Command",
+      `Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { $_.CommandLine -match 'acp-wiring-${path.basename(SPOOL)}' } | ForEach-Object { $_.ProcessId }`],
+      { encoding: "utf8", timeout: 20000 });
+    for (const pid of String(out).split(/\s+/).map((s) => parseInt(s, 10)).filter(Number.isInteger)) {
+      try { process.kill(pid); } catch { /* gone */ }
+    }
+  } catch { /* best effort */ }
 }
 
 main().catch((e) => {
@@ -131,5 +146,5 @@ main().catch((e) => {
   console.error("PROBE_ERR:", reason);
   try { fs.mkdirSync(SPOOL, { recursive: true }); fs.writeFileSync(path.join(SPOOL, "wiring-trace.json"), JSON.stringify(trace, null, 2)); } catch { /* noop */ }
   try { acp?.kill(); } catch { /* noop */ }
-  process.exit(1);
+  reapProbeMcp().finally(() => process.exit(1));
 });
