@@ -1,5 +1,47 @@
 # LAST CURSOR REPORT
 
+## Qwen browser visual sidecar V1 evaluation — latest
+
+**TASK_REF:** `QWEN_BROWSER_VISUAL_SIDECAR_V1_EVALUATION`
+**Classification:** `PASS — SELECTED_ARCHITECTURE=B OCR_FIRST_WITH_VLM_ESCALATION_ON_DEMAND; VLM_LIVE_BENCHMARK=DEFERRED_RESOURCE_SAFETY; IMPLEMENTATION_AUTHORIZED=NO`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `be0a2daea2456ef17d0fdc8cdbfb40a5a12b3849`
+**Report:** `reports/architecture/qwen_browser_visual_sidecar_v1_evaluation.md`
+**Evidence:** `reports/runtime/qwen-browser-visual-sidecar/evaluation-evidence.json`
+**Benchmark:** `tests/qwen-browser-visual-sidecar-evaluation/run.mjs` — 15/15 PASS (controlled local fixture, no ChatGPT Web)
+
+- **Capture surface QUALIFIED:** installed Hermes already owns a native
+  `screenshot` primitive (`browser_tool_session.py`, incl. Chrome fallback);
+  agent-browser 0.26.0 `screenshot --annotate` maps numbered labels to
+  snapshot refs (visual→actionable bridge without OCR); CDP
+  `Page.captureScreenshot` verified (valid PNG, median 27 ms). No public
+  CDP (loopback bind proof T10), no profile mutation (throwaway temp
+  profile, real one never referenced — T11), no production route mutation
+  (T12).
+- **Measured:** DOM baseline median 13 ms / p95 14 ms (n=20, 4/4
+  elements); capture median 27 ms; VRAM delta across benchmark 29 MiB;
+  Qwen primary READY at every pressure checkpoint (10–41 ms) with
+  byte-identical command line (T8); no orphan processes; temp artifacts
+  removed (T9).
+- **OCR stage:** no engine installed on workstation (no tesseract/OpenCV;
+  Pillow only). Structured-result contract + confidence gating +
+  fail-closed paths proven with a deterministic stand-in (T3/T3B/T6/T7).
+  Implementation-task candidates: RapidOCR (ONNX CPU) or the annotate
+  route (no OCR at all).
+- **VLM tier:** DEFERRED_RESOURCE_SAFETY — live free VRAM ~0.4 GiB against
+  the resident 27B Qwen primary; zero local vision models (no mmproj,
+  empty clip_vision, no ollama vision tags); mtmd.dll present but
+  co-residency impossible; on-demand load/unload (5–15 s cold start) or
+  CPU-only are the only compatible modes.
+- **Selection law:** DOM default → screenshot+OCR/UI on DOM insufficiency →
+  small VLM on-demand only on measured ambiguity → fail-closed structured
+  UNKNOWN (targets never invented). Sidecar observes only — no clicks/
+  typing from the visual path, no second authority; future implementation
+  maps to #79 observability as a read-only stage.
+- **Hard walls:** evaluation only; no implementation/live activation; no
+  new API/BYOK; no permanent VLM resident; screenshots ephemeral (T5).
+
+
 ## Local dev Hermes/Qwen activity observability V1 — latest
 
 **TASK_REF:** `LOCAL_DEV_HERMES_QWEN_ACTIVITY_OBSERVABILITY_V1`

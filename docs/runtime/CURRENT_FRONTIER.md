@@ -197,3 +197,22 @@ allow-list-only, `auth_state` boolean-sanitized, no raw session identity.
 The lane exports no execution authority surface. MCP human-gate persistent
 operator-wait law unchanged.
 `NEXT=#78 QWEN_BROWSER_VISUAL_SIDECAR_V1 (evaluation only, not started)`.
+
+---
+
+## Visual sidecar evaluation — Qwen browser observation lane
+
+`QWEN_BROWSER_VISUAL_SIDECAR_V1_EVALUATION` = **PASS** →
+`CURRENT_BROWSER_CAPTURE_SURFACE=QUALIFIED` (Hermes native `screenshot`
+primitive + agent-browser `--annotate` ref mapping + CDP capture verified,
+loopback-only) → `DOM_BASELINE=MEASURED` (median 13 ms, 4/4 elements) →
+`OCR_UI_PATH=EVALUATED` (no engine installed; contract proven; candidates
+RapidOCR-CPU / annotate route) → `LOCAL_VLM_PATH=DEFERRED_RESOURCE_SAFETY`
+(free VRAM ~0.4 GiB with Qwen primary resident; 0 local vision models;
+mtmd.dll present but co-residency impossible) →
+`RESOURCE_PRESSURE=MEASURED` (delta 29 MiB, Qwen READY ≤41 ms at every
+checkpoint, cmdline unchanged) → `FAIL_CLOSED_VISUAL_AMBIGUITY=PASS` →
+`SELECTED_ARCHITECTURE=B OCR_FIRST_WITH_VLM_ESCALATION_ON_DEMAND` →
+`IMPLEMENTATION_AUTHORIZED=NO` → report:
+`reports/architecture/qwen_browser_visual_sidecar_v1_evaluation.md`.
+`NEXT=QWEN_BROWSER_VISUAL_SIDECAR_V1_MINIMAL_IMPLEMENTATION (not started)`.

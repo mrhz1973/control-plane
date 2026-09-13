@@ -1,0 +1,49 @@
+{
+  "task_ref": "QWEN_BROWSER_VISUAL_SIDECAR_V1_EVALUATION",
+  "issue": 78,
+  "result": "PASS",
+  "base_head": "be0a2daea2456ef17d0fdc8cdbfb40a5a12b3849",
+  "selected_architecture": "B — OCR_FIRST_WITH_VLM_ESCALATION_ON_DEMAND",
+  "implementation_authorized": false,
+  "capture_surface": {
+    "hermes_native_screenshot_command": true,
+    "hermes_transport_reuse": "browser_tool_session.py screenshot primitive (same session machinery, no new transport)",
+    "agent_browser_annotate": "numbered labels mapped to snapshot refs @eN — bridges visual boxes to actionable refs without OCR",
+    "cdp_page_capture_screenshot": "verified: valid PNG 30323 bytes, median 27ms",
+    "public_cdp": "NO (loopback bind proven)"
+  },
+  "dom_baseline": { "median_ms": 13, "p95_ms": 14, "n": 20, "elements_identified": "4/4" },
+  "screenshot_capture": { "median_ms": 27, "p95_ms": 30, "n": 10, "first_call_ms": 33 },
+  "ocr_ui_candidate": {
+    "engine_installed": false,
+    "stand_in_contract_proof": "PASS (deterministic geometry mapping, confidence gating, fail-closed)",
+    "candidates_for_implementation": ["RapidOCR onnxruntime CPU", "agent-browser --annotate route (no OCR needed)"]
+  },
+  "vlm_candidate": {
+    "status": "DEFERRED_RESOURCE_SAFETY",
+    "vram_free_live_mib": 418,
+    "qwen_primary_gpu_mib": "~11300 of 12288",
+    "local_vision_models_found": 0,
+    "mtmd_dll_present": true,
+    "reason": "no co-resident capacity; on-demand load/unload or CPU only; loading on busy primary risks resource-pressure rejection"
+  },
+  "resource_pressure": {
+    "vram_free_before_mib": 418,
+    "vram_free_after_mib": 389,
+    "vram_free_after_cleanup_mib": 469,
+    "delta_mib": 29,
+    "qwen_health": "READY at every checkpoint (10-41ms), cmdline byte-identical"
+  },
+  "fail_closed": {
+    "low_confidence": "zero candidate_targets + LOW_CONFIDENCE_ELEMENT",
+    "empty_observation": "EMPTY_OBSERVATION envelope",
+    "malformed_png": "signature+IEND gate rejects (PNG_TRUNCATED)",
+    "capture_failure": "CAPTURE_UNAVAILABLE envelope",
+    "invented_targets": "NEVER"
+  },
+  "sanitization": { "screenshots_persisted": false, "fixture_png_deleted": true, "raw_screenshots_in_evidence": 0 },
+  "cleanup": { "orphan_processes": 0, "temp_removed": true, "cdp_unresponsive_after_kill": true },
+  "tests": { "evaluation_benchmark": "15/15 PASS (tests/qwen-browser-visual-sidecar-evaluation/run.mjs)" },
+  "production_changed": "NO",
+  "dispatch_executor_selector_files_touched": 0
+}
