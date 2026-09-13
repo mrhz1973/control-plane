@@ -1,0 +1,493 @@
+{
+  "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1",
+  "run_id": "b00978c05fae4813",
+  "trace": [
+    {
+      "ts": "2026-09-13T12:12:42.217Z",
+      "stage": "RUN_IDENTITY",
+      "run_id": "b00978c05fae4813",
+      "spool": "acp-mcp-gate-e2e-b00978c05fae4813"
+    },
+    {
+      "ts": "2026-09-13T12:12:42.927Z",
+      "stage": "MCP_ORPHAN_REAP",
+      "reaped": 0,
+      "pids": []
+    },
+    {
+      "ts": "2026-09-13T12:12:44.347Z",
+      "stage": "ISSUANCE_QUIESCE",
+      "quiesced": true,
+      "pid": 28440,
+      "verified": true
+    },
+    {
+      "ts": "2026-09-13T12:12:44.361Z",
+      "stage": "ACP_PROCESS_START",
+      "command": "powershell.exe",
+      "wrapper": "agent.ps1",
+      "shell": false
+    },
+    {
+      "ts": "2026-09-13T12:12:45.531Z",
+      "stage": "ACP_INITIALIZED"
+    },
+    {
+      "ts": "2026-09-13T12:12:48.562Z",
+      "stage": "ACP_SESSION_NEW",
+      "session_id_sha": "e224dd9722a4"
+    },
+    {
+      "ts": "2026-09-13T12:12:49.386Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"session_info_update\",\"title\":\"Human Gate Proof\"}}"
+    },
+    {
+      "ts": "2026-09-13T12:12:49.509Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"available_commands_update\",\"availableCommands\":[{\"name\":\"copy"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.057Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"Executi"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.058Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" E2E pr"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.062Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"\\n\\nCal"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.063Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" exactl"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.064Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" specif"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.065Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" Will p"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.066Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" answer"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.067Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" the op"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.069Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" the re"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.070Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"tool_call\",\"toolCallId\":\"tool_0b3d4ba4-d06a-4ffc-bcd5-3956253"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.071Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"tool_call_update\",\"toolCallId\":\"tool_0b3d4ba4-d06a-4ffc-bcd5-"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.072Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"tool_call_update\",\"toolCallId\":\"tool_0b3d4ba4-d06a-4ffc-bcd5-"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.073Z",
+      "stage": "PERMISSION_ALLOWED_HUMAN_GATE"
+    },
+    {
+      "ts": "2026-09-13T12:12:53.379Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"tool_call_update\",\"toolCallId\":\"tool_0b3d4ba4-d06a-4ffc-bcd5-"
+    },
+    {
+      "ts": "2026-09-13T12:12:54.589Z",
+      "stage": "HUMAN_GATE_EMITTED",
+      "decision_id": "ACP-GATE-5491671d78b7",
+      "transport": "telegram-canonical-v2",
+      "message_id_present": true
+    },
+    {
+      "ts": "2026-09-13T12:12:54.711Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"human_g"
+    },
+    {
+      "ts": "2026-09-13T12:12:54.896Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"PENDING"
+    },
+    {
+      "ts": "2026-09-13T12:12:55.071Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" ACP-GA"
+    },
+    {
+      "ts": "2026-09-13T12:12:55.380Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"\\n\\nI w"
+    },
+    {
+      "ts": "2026-09-13T12:12:55.481Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" for 12"
+    },
+    {
+      "ts": "2026-09-13T12:12:55.586Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" pollin"
+    },
+    {
+      "ts": "2026-09-13T12:12:55.680Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" since "
+    },
+    {
+      "ts": "2026-09-13T12:12:56.738Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" tool c"
+    },
+    {
+      "ts": "2026-09-13T12:12:56.739Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" interv"
+    },
+    {
+      "ts": "2026-09-13T12:12:56.740Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"\\n\\nAwa"
+    },
+    {
+      "ts": "2026-09-13T12:12:56.742Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" via th"
+    },
+    {
+      "ts": "2026-09-13T12:12:56.743Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"seems u"
+    },
+    {
+      "ts": "2026-09-13T12:12:56.745Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" the si"
+    },
+    {
+      "ts": "2026-09-13T12:12:56.746Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" despit"
+    },
+    {
+      "ts": "2026-09-13T12:12:56.747Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"prohibi"
+    },
+    {
+      "ts": "2026-09-13T12:12:56.748Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"calls d"
+    },
+    {
+      "ts": "2026-09-13T12:12:56.749Z",
+      "stage": "AGENT_TEXT",
+      "text": "WAITING_FOR"
+    },
+    {
+      "ts": "2026-09-13T12:12:56.750Z",
+      "stage": "AGENT_TEXT",
+      "text": "_OPERATOR\n"
+    },
+    {
+      "ts": "2026-09-13T12:13:46.829Z",
+      "stage": "OPERATOR_RESPONSE_RECEIVED",
+      "option": "A",
+      "update_id_present": true
+    },
+    {
+      "ts": "2026-09-13T12:14:58.258Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"One hun"
+    },
+    {
+      "ts": "2026-09-13T12:14:58.259Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" have e"
+    },
+    {
+      "ts": "2026-09-13T12:14:58.260Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" now ca"
+    },
+    {
+      "ts": "2026-09-13T12:14:58.262Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" with d"
+    },
+    {
+      "ts": "2026-09-13T12:14:58.264Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"tool_call\",\"toolCallId\":\"tool_b55820b3-3b67-48f4-b13a-1757001"
+    },
+    {
+      "ts": "2026-09-13T12:14:58.265Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"tool_call_update\",\"toolCallId\":\"tool_b55820b3-3b67-48f4-b13a-"
+    },
+    {
+      "ts": "2026-09-13T12:14:58.267Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"tool_call_update\",\"toolCallId\":\"tool_b55820b3-3b67-48f4-b13a-"
+    },
+    {
+      "ts": "2026-09-13T12:14:58.268Z",
+      "stage": "PERMISSION_ALLOWED_HUMAN_GATE"
+    },
+    {
+      "ts": "2026-09-13T12:14:58.312Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"tool_call_update\",\"toolCallId\":\"tool_b55820b3-3b67-48f4-b13a-"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.910Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"human_g"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.911Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" status"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.913Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" option"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.914Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\"\\n\\nOpt"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.916Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" and co"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.917Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" write "
+    },
+    {
+      "ts": "2026-09-13T12:14:59.918Z",
+      "stage": "ACP_NOTIFICATION",
+      "method": "session/update",
+      "preview": "{\"sessionId\":\"f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e\",\"update\":{\"sessionUpdate\":\"agent_thought_chunk\",\"content\":{\"type\":\"text\",\"text\":\" line a"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.920Z",
+      "stage": "AGENT_TEXT",
+      "text": "**"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.922Z",
+      "stage": "AGENT_TEXT",
+      "text": "Received option:"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.923Z",
+      "stage": "AGENT_TEXT",
+      "text": " A** — APP"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.924Z",
+      "stage": "AGENT_TEXT",
+      "text": "ROVE_AND_CONTINUE"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.926Z",
+      "stage": "AGENT_TEXT",
+      "text": ": approve this bounded"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.927Z",
+      "stage": "AGENT_TEXT",
+      "text": " same-session human-g"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.930Z",
+      "stage": "AGENT_TEXT",
+      "text": "ate proof and continue"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.931Z",
+      "stage": "AGENT_TEXT",
+      "text": " in-session.\n\nG"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.932Z",
+      "stage": "AGENT_TEXT",
+      "text": "ATE_CONSUMPTION"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.938Z",
+      "stage": "AGENT_TEXT",
+      "text": "_JSON:{\"operator"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.941Z",
+      "stage": "AGENT_TEXT",
+      "text": "_decision_consumed"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.943Z",
+      "stage": "AGENT_TEXT",
+      "text": "\":\"A\",\"contin"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.944Z",
+      "stage": "AGENT_TEXT",
+      "text": "ued_in_same_session"
+    },
+    {
+      "ts": "2026-09-13T12:14:59.946Z",
+      "stage": "AGENT_TEXT",
+      "text": "\":true}"
+    },
+    {
+      "ts": "2026-09-13T12:15:00.729Z",
+      "stage": "POST_GATE_CONTINUATION",
+      "stop_reason": "end_turn",
+      "consumed": true,
+      "consumption_reason": null,
+      "transcript_preview": "WAITING_FOR_OPERATOR\n**Received option: A** — APPROVE_AND_CONTINUE: approve this bounded same-session human-gate proof and continue in-session.\n\nGATE_CONSUMPTION_JSON:{\"operator_decision_consumed\":\"A\",\"continued_in_same_session\":true}"
+    },
+    {
+      "ts": "2026-09-13T12:15:00.730Z",
+      "stage": "SAME_SESSION_CHECKS",
+      "session_id_sha": "e224dd9722a4",
+      "agent_side_session_new": 0,
+      "zero_new_ok": true,
+      "session_load_used": false
+    },
+    {
+      "ts": "2026-09-13T12:15:00.734Z",
+      "stage": "NEGATIVE_FENCE",
+      "name": "DUPLICATE_CALLBACK_REJECTED",
+      "ok": true,
+      "reason": "GATE_DECISION_ALREADY_CONSUMED"
+    },
+    {
+      "ts": "2026-09-13T12:15:00.735Z",
+      "stage": "NEGATIVE_FENCE",
+      "name": "WRONG_BINDING_UNKNOWN_DECISION",
+      "ok": true,
+      "reason": "GATE_DECISION_UNKNOWN"
+    },
+    {
+      "ts": "2026-09-13T12:15:00.737Z",
+      "stage": "NEGATIVE_FENCE",
+      "name": "WRONG_BINDING_SESSION",
+      "ok": true,
+      "reason": "GATE_DECISION_ALREADY_CONSUMED"
+    },
+    {
+      "ts": "2026-09-13T12:15:00.739Z",
+      "stage": "NEGATIVE_FENCE",
+      "name": "WRONG_BINDING_GENERATION",
+      "ok": true,
+      "reason": "GATE_DECISION_ALREADY_CONSUMED"
+    },
+    {
+      "ts": "2026-09-13T12:15:00.740Z",
+      "stage": "NEGATIVE_FENCE",
+      "name": "WRONG_BINDING_INVALID_OPTION",
+      "ok": true,
+      "reason": "GATE_DECISION_ALREADY_CONSUMED"
+    },
+    {
+      "ts": "2026-09-13T12:15:00.756Z",
+      "stage": "ACP_PROCESS_EXIT",
+      "code": null,
+      "signal": "SIGTERM",
+      "pending": 0,
+      "stderr_tail": ""
+    },
+    {
+      "ts": "2026-09-13T12:15:03.341Z",
+      "stage": "KEYBOARD_DEACTIVATION",
+      "decision_id": "ACP-GATE-5491671d78b7",
+      "ok": true,
+      "deactivated": true,
+      "reason": null
+    },
+    {
+      "ts": "2026-09-13T12:15:05.216Z",
+      "stage": "ISSUANCE_RESTORE",
+      "restored": true,
+      "pid": 50352,
+      "verified": true,
+      "already": false
+    }
+  ]
+}

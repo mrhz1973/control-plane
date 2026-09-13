@@ -1,0 +1,61 @@
+{
+  "schema_version": "v4-cursor-acp-gate-store-v1",
+  "decisions": [
+    {
+      "schema_version": "v4-cursor-acp-gate-store-v1",
+      "decision_id": "ACP-GATE-5491671d78b7",
+      "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1",
+      "run_id": "b00978c05fae4813",
+      "session_id": "f8d1ccb3-65ff-4bbe-bb5a-297ba3677b3e",
+      "session_id_sha": "e224dd9722a4",
+      "generation": 1,
+      "question": {
+        "prompt": "GATE-PROOF QUESTION (harmless, test-only) — choose ONE option for this bounded E2E proof:\nA — APPROVE_AND_CONTINUE (approve this bounded same-session human-gate proof and continue in-session);\nB — STOP (end the proof, no continuation);\nC — DEFER (continue but record DEFERRED in the final evidence).",
+        "options": [
+          "A",
+          "B",
+          "C"
+        ]
+      },
+      "state": "RETURNED",
+      "created_at": "2026-09-13T12:12:53.082Z",
+      "expires_at": "2026-09-13T12:27:53.082Z",
+      "ttl_ms": 900000,
+      "transport": "telegram-canonical-v2",
+      "telegram_message_id": 19,
+      "consumed_update_ids": [
+        "607749317"
+      ],
+      "selected_option": "A",
+      "decided_at": "2026-09-13T12:13:46.496Z",
+      "history": [
+        {
+          "state": "REGISTERED",
+          "at": "2026-09-13T12:12:53.082Z"
+        },
+        {
+          "state": "NOTIFIED",
+          "at": "2026-09-13T12:12:53.333Z"
+        },
+        {
+          "state": "VERIFIED",
+          "at": "2026-09-13T12:13:46.496Z"
+        },
+        {
+          "state": "RETURNED",
+          "at": "2026-09-13T12:13:46.498Z"
+        }
+      ]
+    }
+  ],
+  "final_proof_send_budgets": {
+    "V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1|b00978c05fae4813": {
+      "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1",
+      "run_id": "b00978c05fae4813",
+      "scope_id": "b00978c05fae4813",
+      "state": "SENT",
+      "reserved_at": "2026-09-13T12:12:53.081Z",
+      "settled_at": "2026-09-13T12:12:53.333Z"
+    }
+  }
+}

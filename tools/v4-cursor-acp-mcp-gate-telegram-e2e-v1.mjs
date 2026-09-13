@@ -68,6 +68,7 @@ function stop(stage, reason, extra = {}) {
 
 let acp = null, seq = 0, stopping = false, currentGate = null;
 let promptTracker = null; // immediate rejection ownership for session/prompt
+const toolCalls = new Map(); // MCP tool-call lifecycle (watchdog-law evidence)
 const pending = new Map();
 let agentSideSessionNew = 0;
 let buf = "";
@@ -124,8 +125,24 @@ function pump(line) {
   }
   if (m.method) {
     const u = m.params?.update ?? {};
-    if (u.sessionUpdate === "agent_message_chunk" && u.content?.text) push("AGENT_TEXT", { text: u.content.text });
-    else push("ACP_NOTIFICATION", { method: m.method, preview: JSON.stringify(m.params ?? {}).slice(0, 140) });
+    if (u.sessionUpdate === "agent_message_chunk" && u.content?.text) {
+      push("AGENT_TEXT", { text: u.content.text });
+    } else if (u.toolCall) {
+      // Watchdog-law observation: record every MCP tool-call lifecycle so the
+      // proof can attest MAX_TOOL_CALL_DURATION_MS << 45s safe budget.
+      const raw = JSON.stringify(u);
+      const name = u.toolCall?.title ?? u.toolCall?.rawInput?.name ?? "";
+      const which = raw.includes("human_gate_status") ? "status" : raw.includes("human_gate") ? "gate" : null;
+      if (which) {
+        const id = u.toolCall.toolCallId;
+        toolCalls.set(id, toolCalls.get(id) ?? { kind: which, start: Date.now(), end: null });
+        const rec = toolCalls.get(id);
+        if (u.toolCall.status === "completed" || u.sessionUpdate === "tool_call_update" && u.toolCall.status === "completed") rec.end = Date.now();
+        if (rec.start && rec.end) push("GATE_TOOL_CALL_DURATION", { kind: rec.kind, duration_ms: rec.end - rec.start });
+      } else push("ACP_NOTIFICATION", { method: m.method, preview: raw.slice(0, 140) });
+    } else {
+      push("ACP_NOTIFICATION", { method: m.method, preview: JSON.stringify(m.params ?? {}).slice(0, 140) });
+    }
   }
 }
 
@@ -305,6 +322,12 @@ async function runE2E() {
   // full TTL. The human-wait-compatible timeout (derived from the gate
   // lifecycle: registration + TTL + resolution margin + terminal margin)
   // replaces the generic 30s RPC default for THIS call only.
+  //
+  // WATCHDOG-SAFE TWO-STEP CONTRACT (V4_CURSOR_ACP_MCP_HUMAN_GATE_60S_WATCHDOG_REMEDIATION_V1):
+  // human_gate returns PENDING (never blocks on the operator); the model must
+  // treat PENDING ONLY as WAITING_FOR_OPERATOR, wait WITHOUT any tool call,
+  // then poll human_gate_status (bounded slices) and consume EXACTLY the
+  // verified option. PENDING is NOT a decision and is never mapped to A/B/C.
   const promptTrackerLocal = createPromptTracker(send("session/prompt", {
     sessionId,
     prompt: [{ type: "text", text:
@@ -312,9 +335,14 @@ async function runE2E() {
       `You have a tool named human_gate. Call it EXACTLY ONCE with: task_ref="${TASK_REF}", run_id="${RUN_ID}", generation=1, ` +
       `question.prompt=<the exact multi-line question between the markers>, question.options=["A","B","C"]. ` +
       `Question text:\n<<<Q_BEGIN>>>\n${questionText}\n<<<Q_END>>>\n` +
-      `The tool BLOCKS until the human operator answers via Telegram (or times out). ` +
-      `When it returns, state the received option and what it means, then write exactly one terminal line: GATE_CONSUMPTION_JSON:{"operator_decision_consumed":"<received letter>","continued_in_same_session":true} and stop. ` +
-      `If the tool returns an error or no_answer, reply exactly GATE_FAILED and stop.` }],
+      `It returns status=PENDING with a decision_id. PENDING means WAITING_FOR_OPERATOR. ` +
+      `PENDING is NOT a decision: it does NOT authorize continuation and must NEVER be mapped to A, B or C. ` +
+      `After receiving PENDING, state "WAITING_FOR_OPERATOR", then WAIT silently in this same turn WITHOUT calling any tool and WITHOUT ending your turn for at least 120 seconds of wall-clock time (think silently; no tool calls). ` +
+      `Then call human_gate_status with: decision_id=<the decision_id from the PENDING result>, task_ref="${TASK_REF}", generation=1. ` +
+      `If human_gate_status returns PENDING again, keep waiting silently (no other tools, no session changes) and poll human_gate_status again — bounded polling only, never create another gate, never send anything. ` +
+      `ONLY when human_gate_status returns status=answered with a valid option letter, consume EXACTLY that option: ` +
+      `state the received option and what it means, then write exactly one terminal line: GATE_CONSUMPTION_JSON:{"operator_decision_consumed":"<received letter>","continued_in_same_session":true} and stop. ` +
+      `If human_gate returns an error, or human_gate_status returns error or no_answer, reply exactly GATE_FAILED and stop.` }],
   }, PROMPT_TIMEOUT_MS));
   promptTracker = promptTrackerLocal;
   const promptPromise = promptTrackerLocal.promise;

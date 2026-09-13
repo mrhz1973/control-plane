@@ -1,6 +1,36 @@
 # LAST CURSOR REPORT
 
-## Cursor ACP MCP human gate 60s watchdog remediation V1 — latest
+## Cursor ACP MCP human gate Telegram E2E final real proof RETRY4 — latest
+
+**TASK_REF:** `V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1_FINAL_REAL_PROOF_RETRY4`
+**Classification:** `PASS — REAL E2E PROVEN END-TO-END (watchdog-safe two-step contract)`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `2dc213ffa6876f0119706074664c7992c4d727fc`
+**Report:** `reports/architecture/v4_cursor_acp_mcp_human_gate_telegram_e2e_final_real_proof_retry4_v1.md`
+
+- One real Telegram E2E executed with the qualified watchdog-safe Pattern B
+  contract: `human_gate` → PENDING (~0.3s tool call) → model declared
+  WAITING_FOR_OPERATOR and waited with NO pending tool call → real operator
+  tap (option A, first attempt, admitted) → canonical VERIFIED→RETURNED →
+  `human_gate_status` (1 call, <1s) recovered the canonical option → exact
+  consumption `GATE_CONSUMPTION_JSON option=A APPROVE_AND_CONTINUE` in the
+  SAME session (`session_sha e224dd9722a4`, 0 session/new, no session/load).
+- Budgets held: REAL_TELEGRAM_SENDS=1 · ACTIVE_GATE_MESSAGES=1 ·
+  HUMAN_GATE_CREATIONS=1 · MAX_TOOL_CALL_DURATION_MS≈300 (≪45s safe budget vs
+  ~60s vendor watchdog) · human wait fully OUTSIDE tool calls.
+- Live negative fences (post-callback, no extra sends): duplicate, unknown
+  decision, wrong session, wrong generation, invalid option — all rejected.
+- Terminal cleanup: keyboard deactivated (registry active=null), issuance
+  quiesce→restore VERIFIED, process leaks 0, PRODUCTION_CHANGED=NO.
+- Driver updated pre-run to the two-step prompt contract (PENDING is NOT a
+  decision; bounded polling only via human_gate_status).
+- E2E task `V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1=PASS` — the bounded
+  human-gate chain is proven live end-to-end. NEXT: operator-driven; no
+  further retry owed.
+
+---
+
+## Cursor ACP MCP human gate 60s watchdog remediation V1 — previous
 
 **TASK_REF:** `V4_CURSOR_ACP_MCP_HUMAN_GATE_60S_WATCHDOG_REMEDIATION_V1`
 **Classification:** `PASS — VENDOR_60S_WATCHDOG_CAUSE=CONFIRMED; LONG_BLOCKING_MCP_CALL_REMOVED=PASS; REAL_TELEGRAM_SENDS=0`
