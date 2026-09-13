@@ -25,6 +25,9 @@ import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { verifyExactGateConsumption } from "./v4-cursor-acp-mcp-gate-final-proof-guards-v1.mjs";
+import { officialAcpLaunch } from "./v4-cursor-acp-launch-v1.mjs";
+import { deactivateFinalGateKeyboard } from "./v4-cursor-acp-final-e2e-cleanup-v1.mjs";
+import { deactivateCurrentKeyboard } from "./v4-cursor-acp-gate-transport-telegram-v1.mjs";
 
 const TASK_REF = "V4_CURSOR_ACP_MCP_HUMAN_GATE_TELEGRAM_E2E_V1";
 const RUN_ID = randomUUID().replace(/-/g, "").slice(0, 16);
@@ -49,16 +52,22 @@ function stop(stage, reason, extra = {}) {
   throw new ProofStopError(stage, reason, extra);
 }
 
-let acp = null, seq = 0, stopping = false;
+let acp = null, seq = 0, stopping = false, currentGate = null;
 const pending = new Map();
 let agentSideSessionNew = 0;
 let buf = "";
+const RPC_TIMEOUT_MS = 30000;
+const acpStderr = [];
 
-function send(method, params) {
+function send(method, params, timeoutMs = RPC_TIMEOUT_MS) {
   const id = ++seq;
   return new Promise((resolve, reject) => {
-    pending.set(id, { resolve, reject, method });
-    acp.stdin.write(JSON.stringify({ jsonrpc: "2.0", method, params, id }) + "\n");
+    const timer = setTimeout(() => { pending.delete(id); reject(new Error(`ACP_RPC_TIMEOUT_${method}`)); }, timeoutMs);
+    pending.set(id, { resolve, reject, method, timer });
+    if (!acp?.stdin?.writable) { clearTimeout(timer); pending.delete(id); reject(new Error(`ACP_STDIN_NOT_WRITABLE_${method}`)); return; }
+    acp.stdin.write(JSON.stringify({ jsonrpc: "2.0", method, params, id }) + "\n", (err) => {
+      if (err && pending.has(id)) { clearTimeout(timer); pending.delete(id); reject(new Error(`ACP_STDIN_WRITE_FAILED_${method}`)); }
+    });
   });
 }
 
@@ -66,7 +75,7 @@ function pump(line) {
   if (!line.trim()) return;
   let m; try { m = JSON.parse(line); } catch { return; }
   if (m.id !== undefined && m.method === undefined && pending.has(m.id)) {
-    const p = pending.get(m.id); pending.delete(m.id);
+    const p = pending.get(m.id); pending.delete(m.id); clearTimeout(p.timer);
     if (m.error) p.reject(new Error(`${p.method}: ${JSON.stringify(m.error).slice(0, 200)}`));
     else p.resolve(m.result);
     return;
@@ -193,6 +202,11 @@ async function main() {
     try { acp?.kill(); } catch { /* noop */ }
     await sleep(1500); // let the ACP child tear down its MCP children
     reapOrphanMcpServers(`acp-mcp-gate-e2e-${RUN_ID}`);
+    try {
+      await deactivateFinalGateKeyboard({ decision: currentGate, deactivate: deactivateCurrentKeyboard, observe: (e) => push(e.stage, e) });
+    } catch (e) {
+      outcome = { RESULT: "STOP", stage: "KEYBOARD_DEACTIVATION", reason: String(e?.message ?? e).slice(0, 160) };
+    }
     const r = await restoreIssuance();
     push("ISSUANCE_RESTORE", r);
     console.log(`ISSUANCE_RESTORE: ${JSON.stringify(r)}`);
@@ -204,11 +218,21 @@ async function main() {
 
 async function runE2E() {
   // ---- 1. live ACP child + session with MCP human-gate server ----
-  acp = spawn("agent", ["acp"], { shell: true, stdio: ["pipe", "pipe", "pipe"] });
+  const launch = officialAcpLaunch();
+  acp = spawn(launch.command, launch.args, launch.options);
+  push("ACP_PROCESS_START", { command: "powershell.exe", wrapper: "agent.ps1", shell: false });
+  acp.once("error", (e) => {
+    push("ACP_PROCESS_ERROR", { class: String(e?.code ?? "START_ERROR").slice(0, 60) });
+    for (const [id, p] of pending) { clearTimeout(p.timer); pending.delete(id); p.reject(new Error("ACP_PROCESS_START_FAILED")); }
+  });
+  acp.once("exit", (code, signal) => {
+    push("ACP_PROCESS_EXIT", { code, signal: signal ?? null, pending: pending.size, stderr_tail: acpStderr.join(" ").slice(-160) });
+    for (const [id, p] of pending) { clearTimeout(p.timer); pending.delete(id); p.reject(new Error(`ACP_PROCESS_EXIT_BEFORE_RESPONSE_${p.method}`)); }
+  });
   acp.stdout.setEncoding("utf8");
   acp.stdout.on("data", (d) => { buf += d; let i; while ((i = buf.indexOf("\n")) >= 0) { const l = buf.slice(0, i); buf = buf.slice(i + 1); pump(l); } });
   acp.stderr.setEncoding("utf8");
-  acp.stderr.on("data", (d) => push("ACP_STDERR", { preview: String(d).slice(0, 140) }));
+  acp.stderr.on("data", (d) => { const preview = String(d).replace(/[\r\n]+/g, " ").slice(0, 140); acpStderr.push(preview); push("ACP_STDERR", { preview }); });
 
   await send("initialize", { protocolVersion: 1, clientCapabilities: { fs: { readTextFile: false, writeTextFile: false } } });
   push("ACP_INITIALIZED", {});
@@ -278,6 +302,7 @@ async function runE2E() {
   const storeNow = JSON.parse(fs.readFileSync(GATE_STORE, "utf8"));
   const gate = storeNow.decisions.find((x) => x.decision_id === decisionId);
   if (gate.state !== "NOTIFIED") stop("TELEGRAM_NOTIFICATION", `GATE_STATE_${gate.state}`);
+  currentGate = gate;
   push("HUMAN_GATE_EMITTED", { decision_id: decisionId, transport: gate.transport, message_id_present: !!gate.telegram_message_id });
   console.log(`HUMAN_GATE_EMITTED=${decisionId} — attendi la callback Telegram (TTL 15m)...`);
 

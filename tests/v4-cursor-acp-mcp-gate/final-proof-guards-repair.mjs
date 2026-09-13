@@ -7,6 +7,7 @@ import path from "node:path";
 import { verifyExactGateConsumption } from "../../tools/v4-cursor-acp-mcp-gate-final-proof-guards-v1.mjs";
 import { send, deactivateCurrentKeyboard, loadActiveKeyboardRegistry } from "../../tools/v4-cursor-acp-gate-transport-telegram-v1.mjs";
 import { reserveFinalProofSendBudget, settleFinalProofSendBudget } from "../../tools/v4-cursor-acp-gate-core-v1.mjs";
+import { deactivateFinalGateKeyboard } from "../../tools/v4-cursor-acp-final-e2e-cleanup-v1.mjs";
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "acp-final-guards-"));
 const registry = path.join(tmp, "active.json");
@@ -20,6 +21,15 @@ const fixture = async (_token, method, body) => {
   return { ok: false };
 };
 const d = (id) => ({ decision_id: id, task_ref: "T", run_id: "R", session_id_sha: "abc", generation: 1, question: { prompt: "x", options: ["A", "B", "C"] } });
+
+// Live driver statically uses the one qualified launcher and has explicit
+// fail-closed start/exit/RPC paths; no generic shell launch remains.
+const driver = fs.readFileSync(path.join(process.cwd(), "tools", "v4-cursor-acp-mcp-gate-telegram-e2e-v1.mjs"), "utf8");
+assert.match(driver, /officialAcpLaunch\(\)/);
+assert.doesNotMatch(driver, /spawn\("agent", \["acp"\], \{ shell: true/);
+assert.match(driver, /ACP_PROCESS_START_FAILED/);
+assert.match(driver, /ACP_PROCESS_EXIT_BEFORE_RESPONSE/);
+assert.match(driver, /ACP_RPC_TIMEOUT_/);
 
 // Reservation happens before I/O and is never reopened after a failed send.
 const budgetStore = { schema_version: "v4-cursor-acp-gate-store-v1", decisions: [] };
@@ -47,6 +57,20 @@ assert.equal(loadActiveKeyboardRegistry(registry).registry.active.decision_id, "
 assert.equal((await deactivateCurrentKeyboard({ decision: d("new"), config: cfg, telegramCall: fixture, registryPath: registry })).deactivated, true);
 assert.equal(loadActiveKeyboardRegistry(registry).registry.active, null);
 
+// Every terminal branch delegates only the current gate to the canonical
+// deactivator. No gate is safe/idempotent; stale gates are not touched; a real
+// deactivation failure is observable and throws fail-closed.
+for (const terminal of ["PASS", "STOP", "EXCEPTION", "TIMEOUT"]) {
+  let callsForTerminal = 0;
+  const result = await deactivateFinalGateKeyboard({ decision: d(`current-${terminal}`), deactivate: async ({ decision }) => {
+    callsForTerminal++; assert.equal(decision.decision_id, `current-${terminal}`); return { ok: true, deactivated: true };
+  } });
+  assert.equal(result.deactivated, true); assert.equal(callsForTerminal, 1);
+}
+assert.equal((await deactivateFinalGateKeyboard({ decision: null, deactivate: async () => { throw new Error("must not call"); } })).skipped, true);
+assert.equal((await deactivateFinalGateKeyboard({ decision: d("stale"), deactivate: async () => ({ ok: true, deactivated: false }) })).deactivated, false);
+await assert.rejects(() => deactivateFinalGateKeyboard({ decision: d("current-failure"), deactivate: async () => ({ ok: false, reason: "ACTIVE_KEYBOARD_DEACTIVATION_FAILED" }) }), /ACTIVE_KEYBOARD_DEACTIVATION_FAILED/);
+
 // Malformed registry authorizes neither an edit nor a new send.
 fs.writeFileSync(registry, "{");
 const before = calls.length;
@@ -57,3 +81,4 @@ console.log("FINAL_PROOF_GUARDS=PASS");
 console.log("ONE_REAL_GATE_SEND_BUDGET=PASS");
 console.log("EXACT_CONSUMPTION_FENCES=PASS");
 console.log("CROSS_RUN_KEYBOARD_REGISTRY=PASS");
+console.log("FINAL_DRIVER_ACP_WRAPPER_AND_CLEANUP=PASS");

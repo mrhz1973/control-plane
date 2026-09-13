@@ -1,5 +1,26 @@
 # LAST CURSOR REPORT
 
+## Cursor ACP MCP final E2E driver precondition repair V1 — latest
+
+**TASK_REF:** `V4_CURSOR_ACP_MCP_FINAL_E2E_DRIVER_PRECONDITION_REPAIR_V1`
+**Classification:** `PASS — FINAL_DRIVER_PRECONDITIONS_QUALIFIED; TELEGRAM_E2E=NOT_CLAIMED`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `371d94be15f855a54701e9163542094b0b0e1c02`
+**Report:** `reports/architecture/v4_cursor_acp_mcp_final_e2e_driver_precondition_repair_v1.md`
+
+- Final E2E driver now shares the qualified official `agent.ps1` PowerShell
+  launcher (`shell:false`) and its startup, premature-exit, and RPC failures
+  fail closed.
+- Every terminal path delegates the current keyboard only to canonical
+  `deactivateCurrentKeyboard`; a cleanup failure stops the run but issuance
+  restore remains verified.
+- Focused final guards PASS; real ACP wiring PASS; MCP suite **32/32 PASS**.
+  `PROCESS_LEAKS=0`, `REAL_TELEGRAM_SENDS=0`, `PRODUCTION_CHANGED=NO`.
+- `READY_FOR_FINAL_REAL_E2E=true`; **NEXT =
+  `ONE_FINAL_REAL_TELEGRAM_E2E_AFTER_NEW_OPERATOR_DECISION`.**
+
+---
+
 ## Cursor Agent runtime resource recovery and wiring requalification V1 — latest
 
 **TASK_REF:** `V4_CURSOR_AGENT_RUNTIME_RESOURCE_RECOVERY_AND_WIRING_REQUALIFICATION_V1`

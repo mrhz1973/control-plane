@@ -19,6 +19,7 @@ import { spawn } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { officialAcpLaunch } from "./v4-cursor-acp-launch-v1.mjs";
 
 const TASK_REF = "V4_CURSOR_ACP_MCP_HUMAN_GATE_MINIMAL_SLICE_IMPLEMENTATION_V1";
 const RUN_ID = randomUUID().replace(/-/g, "").slice(0, 16);
@@ -34,16 +35,6 @@ const pending = new Map();
 let serverNewCalls = 0; // guard: agent-side session/new must never occur
 const stderr = [];
 const RPC_TIMEOUT_MS = 30000;
-
-function agentLaunch() {
-  // Windows installs the official CLI as agent.ps1.  Node's generic shell
-  // path can exit before ACP is started; invoke the supported wrapper through
-  // PowerShell with shell:false so pipes and process identity stay intact.
-  const script = process.env.CURSOR_AGENT_CLI_PATH
-    || path.join(process.env.LOCALAPPDATA || "", "cursor-agent", "agent.ps1");
-  if (!fs.existsSync(script)) throw new Error("AGENT_CLI_SCRIPT_NOT_FOUND");
-  return { command: "powershell.exe", args: ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script, "acp"] };
-}
 
 function send(method, params, timeoutMs = RPC_TIMEOUT_MS) {
   const id = ++seq;
@@ -89,8 +80,8 @@ function pump(line) {
 
 async function main() {
   fs.mkdirSync(SPOOL, { recursive: true });
-  const launch = agentLaunch();
-  acp = spawn(launch.command, launch.args, { shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
+  const launch = officialAcpLaunch();
+  acp = spawn(launch.command, launch.args, launch.options);
   push("ACP_PROCESS_START", { command: "powershell.exe", wrapper: "agent.ps1" });
   acp.once("error", (e) => {
     push("ACP_PROCESS_ERROR", { class: String(e?.code ?? "START_ERROR").slice(0, 60) });
