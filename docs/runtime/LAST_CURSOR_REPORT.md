@@ -1,5 +1,33 @@
 # LAST CURSOR REPORT
 
+## Qwen browser visual sidecar V1 — runtime wiring (latest)
+
+**TASK_REF:** `QWEN_BROWSER_VISUAL_SIDECAR_V1_RUNTIME_WIRING`
+**Classification:** `PASS — sidecar wired into the real Hermes browser path`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `a121c9c613dc8556b255a54df4eb1f992b630602`
+**Report:** `reports/architecture/qwen_browser_visual_sidecar_v1_runtime_wiring.md`
+
+- **New surface (one project-owned file):**
+  `tools/hermes-visual-observation-adapter-v1.mjs` — real bridge
+  `exec-tool browser_snapshot` under the bounded tree-kill runner,
+  deterministic DOM gate (code-owned, never model-hallucinated), at most
+  ONE `observeVisually()` per cycle, fail-closed envelopes, zero invented
+  targets, no action authority. Bridge env per-process: `BROWSER_CDP_URL`
+  pinned + ephemeral `HERMES_HOME` (loopback-only `allow_private_urls`;
+  production config never touched).
+- **Proof (23/23, single run):** rich page gate SUFFICIENT calls=0;
+  policy-gated rich cycle → real `@e1,@e2,@e3` to the controller layer;
+  canvas-only → EMPTY_ANNOTATIONS zero targets; bounded failure 10.5 s;
+  ephemeral screenshots; #79 VISUAL_INSPECTION telemetry; 1 call/cycle;
+  Qwen READY before/after; OCR=NO; VLM=NO; loopback-only CDP; temp profile;
+  zero leaks; prior sidecar suite 28/28 re-run inside. AUTOVIA:
+`AUTOVIA_CAN_USE_REAL_BROWSER_OBSERVATION_PATH=YES` demonstrated,
+  no autonomous task activated.
+- **NEXT:** evaluate issue #78 closure (minimum capability complete);
+  OCR escalation only on real evidence of `--annotate` insufficiency.
+
+
 ## Qwen browser visual sidecar V1 — failure-path bounding repair (latest)
 
 **TASK_REF:** `QWEN_BROWSER_VISUAL_SIDECAR_V1_FAILURE_PATH_BOUNDING_REPAIR`

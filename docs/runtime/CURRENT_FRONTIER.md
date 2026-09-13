@@ -255,3 +255,24 @@ audit clean; Qwen READY throughout; OCR=NO, VLM=NO. Implementation + tests
 (preserved uncommitted by the STOP) committed with this repair. Report:
 `reports/architecture/qwen_browser_visual_sidecar_v1_failure_path_bounding_repair.md`.
 `NEXT=OCR escalation only if evidence shows --annotate insufficient`.
+
+---
+
+## Visual sidecar runtime wiring — PASS
+
+`QWEN_BROWSER_VISUAL_SIDECAR_V1_RUNTIME_WIRING` = **PASS** → the sidecar
+is now reachable from the REAL project-owned Hermes browser path via
+`tools/hermes-visual-observation-adapter-v1.mjs`: real bridge
+`exec-tool browser_snapshot` (Barrier-2 allowlisted) → deterministic
+code-owned DOM gate → at most ONE `observeVisually()` per cycle →
+structured `@eN` observation back to the Qwen controller layer.
+Bridge runs per-process with `BROWSER_CDP_URL` pinned and an EPHEMERAL
+`HERMES_HOME` (allow_private_urls for loopback fixtures only; production
+config untouched). Wiring suite **23/23 PASS** incl. `@e1,@e2,@e3` on the
+rich page, EMPTY_ANNOTATIONS fail-closed on canvas-only, bounded failure
+(10.5 s), 1 call/cycle, #79 telemetry, Qwen READY, zero leaks; prior
+sidecar suite re-run inside: **28/28 PASS**. AUTOVIA marker: real browser
+observation path usable by future allowed autonomous tasks (no activation).
+Report: `reports/architecture/qwen_browser_visual_sidecar_v1_runtime_wiring.md`.
+`NEXT=evaluate issue #78 closure (min capability complete); OCR only on
+evidence of --annotate insufficiency`.

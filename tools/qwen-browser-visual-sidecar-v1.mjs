@@ -166,11 +166,11 @@ export function resolveAgentBrowserExe({ version = "0.26.0" } = {}) {
  * Promise.race/AbortSignal do NOT). Returns { code, stdout, stderr, timed_out,
  * killed_tree } or { error } when spawn itself failed.
  */
-export function runBoundedTree(exe, args, timeoutMs) {
+export function runBoundedTree(exe, args, timeoutMs, env = undefined) {
   return new Promise((resolveRun) => {
     let child;
     try {
-      child = spawn(exe, args, { stdio: ["ignore", "pipe", "pipe"], windowsHide: true });
+      child = spawn(exe, args, { stdio: ["ignore", "pipe", "pipe"], windowsHide: true, env });
     } catch (e) {
       resolveRun({ error: `SPAWN_ERROR:${String(e?.message ?? e).slice(0, 60)}` });
       return;
