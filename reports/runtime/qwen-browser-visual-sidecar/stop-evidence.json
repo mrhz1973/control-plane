@@ -5,7 +5,7 @@
   "first_actionable_blocker": "T5_FAILURE_PATH_PROBE_NOT_BOUNDED",
   "blocker_detail": {
     "symptom": "agent-browser daemon caches first --cdp endpoint; fresh npx invocation after daemon kill can cold-hang without emitting any JSON envelope, outliving exec timeouts",
-    "probes": { "task_544809": "killed after ~22min no output", "task_544810": "running ~4.7h then killed (PID 65392)" },
+    "probes": { "task_544809": "killed no output, elapsed_ms=1987974 (~33min)", "task_544810": "killed no output PID 65392, elapsed_ms=6133176 (~1.7h)" },
     "impact": "FAIL-CLOSED law requires bounded deterministic proof that capture failure => UNAVAILABLE (T5); cannot be honestly claimed while the transport failure path is unbounded"
   },
   "best_suite_run_before_stop": { "passed": 24, "failed": 1, "failing_check": "T5_CAPTURE_FAILURE_UNAVAILABLE" },

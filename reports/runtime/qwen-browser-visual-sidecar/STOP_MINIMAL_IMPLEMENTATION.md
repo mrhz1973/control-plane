@@ -19,14 +19,19 @@
    proven (T2B/T3) and the #79 `VISUAL_INSPECTION` telemetry visible (T16).
 2. **Failure-path probes hang unbounded.** Three separate background probes
    (`task 544809`, `task 544810`) attempting a deterministic capture-failure
-   against a non-CDP / invalid endpoint never completed:
-   - `544809`: killed by operator/agent after ~22 min (no output);
-   - `544810`: still running after **~4.7 h** — killed (PID 65392).
+   against a non-CDP / invalid endpoint never completed (authoritative
+   elapsed times from terminal metadata):
+   - `544809`: killed with no output — elapsed `1,987,974 ms` (~33 min);
+   - `544810`: killed with no output (PID 65392) — elapsed `6,133,176 ms`
+     (~1.7 h).
    The `agent-browser` CLI daemon caches the FIRST `--cdp` endpoint it
    receives and ignores subsequent ones; after a daemon kill, a fresh
    `npx --yes` invocation can cold-hang (network/resolution) without
    returning any JSON envelope, defeating per-call `timeoutMs` (the CLI
    itself spawns an unresolved child that outlives the exec timeout).
+   Note: an earlier wall-clock estimate said "~22 min / ~4.7 h"; terminal
+   metadata later showed the authoritative hangs were ~33 min / ~1.7 h —
+   unbounded either way.
 3. **Cascade into the suite:** T5 attempts (bad port / listening non-CDP port)
    turned into multi-minute waits; the last full run aborted at spawn
    (operator interrupted the run manually).
