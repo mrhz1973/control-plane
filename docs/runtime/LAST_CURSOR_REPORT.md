@@ -1,6 +1,45 @@
 # LAST CURSOR REPORT
 
-## Cursor ACP MCP final E2E prompt timeout cleanup repair V1 — latest
+## Cursor ACP MCP human gate 60s watchdog remediation V1 — latest
+
+**TASK_REF:** `V4_CURSOR_ACP_MCP_HUMAN_GATE_60S_WATCHDOG_REMEDIATION_V1`
+**Classification:** `PASS — VENDOR_60S_WATCHDOG_CAUSE=CONFIRMED; LONG_BLOCKING_MCP_CALL_REMOVED=PASS; REAL_TELEGRAM_SENDS=0`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `1f4def31ac5bfab38ab7e045f3c74ad954a0f85d`
+**Report:** `reports/architecture/v4_cursor_acp_mcp_human_gate_60s_watchdog_remediation_v1.md`
+
+- Root cause (RETRY3): vendor Cursor Agent ACP runtime errors a single blocking
+  MCP tool call at ~60.1s; the model got a tool error and closed the turn with
+  `GATE_FAILED` before the real operator callback was admitted.
+- Primitive qualification: vendor async-MCP primitive NOT supported (A/C
+  excluded without assumption); **Pattern B selected (project-owned PENDING +
+  bounded status/poll contract, same ACP session)**; Pattern D not needed.
+- `human_gate` now returns `status=PENDING` immediately (no operator wait
+  inside any tool call); a background waiter INSIDE the MCP server (single
+  getUpdates consumer) performs canonical admission VERIFIED→RETURNED;
+  new `human_gate_status` performs read-only bounded poll slices (default 8s,
+  cap 20s ≪ 45s safe budget vs 60s observed watchdog), never authorizes,
+  never invents, never sends, never creates gates; PENDING is not a decision.
+- REAL ACP harmless qualification (null transport, zero Telegram): gate tool
+  call 3.0s ≪ 45s budget; real 70s human delay with NO pending tool call;
+  canonical recovery RETURNED option B exact-consumed in the SAME session
+  (`session_sha 2173bc362554`, 0 session/new, no session/load).
+  Evidence: `reports/runtime/cursor-acp/watchdog-remediation-acp-qualification.json`.
+- Deterministic tests: adapter suite **35/35 PASS** (updated to the watchdog-
+  safe contract); new watchdog fixture **13/13 PASS** (fast PENDING, budget,
+  >60s synthetic delay, post-delay canonical recovery, exact A/B/C, no
+  default, fences, single gate/send); soak 0 failures; final-proof guards PASS;
+  process leaks 0.
+- Repaired pre-existing exit hang (project-owned):
+  `v4-cursor-acp-session-wiring-probe-v1.mjs` now tree-kills the ACP wrapper
+  (taskkill /T /F) and exits explicitly on win32.
+- `READY_FOR_FINAL_REAL_E2E=true`; **NEXT =
+  `ONE_FINAL_REAL_TELEGRAM_E2E_AFTER_NEW_OPERATOR_DECISION`** (the E2E prompt
+  must instruct the two-step PENDING→status consumption contract).
+
+---
+
+## Cursor ACP MCP final E2E prompt timeout cleanup repair V1 — previous
 
 **TASK_REF:** `V4_CURSOR_ACP_MCP_FINAL_E2E_PROMPT_TIMEOUT_CLEANUP_REPAIR_V1`
 **Classification:** `PASS — UNHANDLED_PROMPT_TIMEOUT_BYPASS=ELIMINATED; REAL_E2E=NOT_RUN`

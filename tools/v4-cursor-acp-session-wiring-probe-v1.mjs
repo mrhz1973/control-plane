@@ -143,11 +143,21 @@ async function main() {
   fs.writeFileSync(path.join(SPOOL, "wiring-result.json"), JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result, null, 2));
 
-  acp.kill();
+  killTree(acp);
   // Orphan hygiene: killing the ACP child does not kill detached MCP stdio
   // children; reap any marked server of THIS probe run before exiting.
   await reapProbeMcp();
-  process.exitCode = guardSameSession ? 0 : 1;
+  process.exit(guardSameSession ? 0 : 1); // explicit: win32 pipes can stay open via surviving tree children
+}
+
+/** Windows-safe tree kill: acp is a powershell wrapper whose children survive kill(). */
+function killTree(proc) {
+  try {
+    if (process.platform === "win32" && proc?.pid) {
+      const { execFileSync } = require("node:child_process");
+      execFileSync("taskkill", ["/PID", String(proc.pid), "/T", "/F"], { stdio: "ignore", timeout: 15000 });
+    } else proc?.kill();
+  } catch { try { proc?.kill(); } catch { /* gone */ } }
 }
 
 async function reapProbeMcp() {

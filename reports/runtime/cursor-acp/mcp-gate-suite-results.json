@@ -1,9 +1,9 @@
 {
   "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_MINIMAL_SLICE_IMPLEMENTATION_V1",
-  "ran_at": "2026-09-13T10:55:16.343Z",
-  "duration_ms": 305272,
+  "ran_at": "2026-09-13T11:59:54.980Z",
+  "duration_ms": 5922,
   "totals": {
-    "pass": 32,
+    "pass": 35,
     "fail": 0
   },
   "results": [
@@ -15,12 +15,17 @@
     {
       "name": "HUMAN_GATE_TOOL_DISCOVERABLE",
       "ok": true,
-      "detail": "1 tool(s)"
+      "detail": "2 tool(s)"
     },
     {
       "name": "HUMAN_GATE_SCHEMA_VALIDATION",
       "ok": true,
       "detail": "inputSchema enforces A/B/C + required fields"
+    },
+    {
+      "name": "GATE_STATUS_SCHEMA_VALIDATION",
+      "ok": true,
+      "detail": "status poll requires decision_id+task_ref+generation"
     },
     {
       "name": "SCHEMA_OK_ACCEPTS_VALID",
@@ -138,6 +143,11 @@
       "detail": "NO_ANSWER"
     },
     {
+      "name": "ADAPTER_PENDING_NON_DECISION",
+      "ok": true,
+      "detail": "status=PENDING"
+    },
+    {
       "name": "ADAPTER_SYNTHETIC_ANSWERED",
       "ok": true,
       "detail": "status=answered option=C"
@@ -146,6 +156,11 @@
       "name": "ADAPTER_NO_BINDING_FAILS_CLOSED",
       "ok": true,
       "detail": "SESSION_BINDING_MISSING"
+    },
+    {
+      "name": "ADAPTER_SILENT_PENDING_NON_DECISION",
+      "ok": true,
+      "detail": "status=PENDING"
     },
     {
       "name": "ADAPTER_SILENT_NO_ANSWER",
@@ -165,7 +180,7 @@
     {
       "name": "ACP_MCP_WIRING",
       "ok": true,
-      "detail": "session_sha=2dcdb0b56533"
+      "detail": "session_sha=bef69bb05581"
     }
   ],
   "claims": {

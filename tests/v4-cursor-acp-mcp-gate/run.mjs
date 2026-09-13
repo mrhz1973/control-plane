@@ -80,11 +80,14 @@ async function testMcpServerStart() {
     const list = await rpc(child, "tools/list", {});
     const tools = list.result?.tools ?? [];
     const gate = tools.find((t) => t.name === "human_gate");
-    const onlyOne = tools.length === 1;
+    const status = tools.find((t) => t.name === "human_gate_status");
+    const exactPair = tools.length === 2; // watchdog-safe pattern: gate + bounded status poll
     const schemaOk = gate?.inputSchema?.properties?.question?.properties?.options?.items?.enum?.join("") === "ABC"
       && gate.inputSchema.required.includes("task_ref") && gate.inputSchema.required.includes("generation");
-    check("HUMAN_GATE_TOOL_DISCOVERABLE", !!gate && onlyOne, `${tools.length} tool(s)`);
+    const statusSchemaOk = status?.inputSchema?.required?.includes("decision_id") && status?.inputSchema?.required?.includes("task_ref") && status?.inputSchema?.required?.includes("generation");
+    check("HUMAN_GATE_TOOL_DISCOVERABLE", !!gate && !!status && exactPair, `${tools.length} tool(s)`);
     check("HUMAN_GATE_SCHEMA_VALIDATION", !!schemaOk, "inputSchema enforces A/B/C + required fields");
+    check("GATE_STATUS_SCHEMA_VALIDATION", !!statusSchemaOk, "status poll requires decision_id+task_ref+generation");
   } finally { child.kill(); }
 }
 
@@ -180,7 +183,13 @@ async function testAdapterEndToEndSynthetic() {
     await rpc(child, "initialize", { protocolVersion: "2024-11-05" });
     const call = await rpc(child, "tools/call", { name: "human_gate", arguments: { task_ref: TASK_REF, run_id: "synth-1", generation: 1, question: { prompt: "Pick one.", options: ["A", "B", "C"] } } });
     const out = JSON.parse(call.result?.content?.[0]?.text ?? "{}");
-    check("ADAPTER_SYNTHETIC_ANSWERED", out.status === "answered" && out.option === "C", `status=${out.status} option=${out.option}`);
+    // Watchdog-safe contract (60S_WATCHDOG_REMEDIATION): the gate tool returns
+    // PENDING immediately — NEVER a decision, NEVER blocking on the operator.
+    check("ADAPTER_PENDING_NON_DECISION", out.status === "PENDING" && out.option === undefined && typeof out.decision_id === "string", `status=${out.status}`);
+    // Status poll consumes the verified option ONLY from canonical state.
+    const st = await rpc(child, "tools/call", { name: "human_gate_status", arguments: { decision_id: out.decision_id, task_ref: TASK_REF, generation: 1 } });
+    const stOut = JSON.parse(st.result?.content?.[0]?.text ?? "{}");
+    check("ADAPTER_SYNTHETIC_ANSWERED", stOut.status === "answered" && stOut.option === "C", `status=${stOut.status} option=${stOut.option}`);
     // adapter cannot self-authorize: without binding or transport it errors
     const spool2 = tmpdir(); // no binding.json
     const child2 = startServer({ ACP_GATE_STORE_PATH: path.join(tmpdir(), "gs2.json"), ACP_GATE_SPOOL_DIR: spool2, ACP_GATE_TRANSPORT_MODULE: T_VALID });
@@ -191,13 +200,18 @@ async function testAdapterEndToEndSynthetic() {
       check("ADAPTER_NO_BINDING_FAILS_CLOSED", out2.status === "error" && out2.reason === "SESSION_BINDING_MISSING", out2.reason ?? "?");
     } finally { child2.kill(); }
 
-    // silent transport -> no_answer (never a default)
-    const child3 = startServer({ ACP_GATE_STORE_PATH: path.join(tmpdir(), "gs3.json"), ACP_GATE_SPOOL_DIR: spool, ACP_GATE_TRANSPORT_MODULE: T_SILENT, ACP_GATE_TTL_MS: "15000" });
+    // silent transport -> background wait terminates NO_ANSWER (never a
+    // default); status poll then reports terminal fail-closed.
+    const child3 = startServer({ ACP_GATE_STORE_PATH: path.join(tmpdir(), "gs3.json"), ACP_GATE_SPOOL_DIR: spool, ACP_GATE_TRANSPORT_MODULE: T_SILENT, ACP_GATE_TTL_MS: "15000", ACP_GATE_STATUS_POLL_SLICE_MS: "1000" });
     try {
       await rpc(child3, "initialize", { protocolVersion: "2024-11-05" });
       const call3 = await rpc(child3, "tools/call", { name: "human_gate", arguments: { task_ref: TASK_REF, run_id: "synth-3", generation: 1, question: { prompt: "x", options: ["A", "B", "C"] } } });
       const out3 = JSON.parse(call3.result?.content?.[0]?.text ?? "{}");
-      check("ADAPTER_SILENT_NO_ANSWER", out3.status === "no_answer" && out3.option === undefined, `status=${out3.status}`);
+      check("ADAPTER_SILENT_PENDING_NON_DECISION", out3.status === "PENDING" && out3.option === undefined, `status=${out3.status}`);
+      await new Promise((r) => setTimeout(r, 400)); // let the background waiter mark NO_ANSWER
+      const st3 = await rpc(child3, "tools/call", { name: "human_gate_status", arguments: { decision_id: out3.decision_id, task_ref: TASK_REF, generation: 1 } });
+      const st3Out = JSON.parse(st3.result?.content?.[0]?.text ?? "{}");
+      check("ADAPTER_SILENT_NO_ANSWER", st3Out.status === "no_answer" && st3Out.option === undefined, `status=${st3Out.status}`);
     } finally { child3.kill(); }
 
     // unknown tool rejected

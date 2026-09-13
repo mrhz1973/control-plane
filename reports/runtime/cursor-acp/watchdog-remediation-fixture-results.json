@@ -1,0 +1,85 @@
+{
+  "task_ref": "V4_CURSOR_ACP_MCP_HUMAN_GATE_60S_WATCHDOG_REMEDIATION_V1",
+  "ran_at": "2026-09-13T12:00:05.321Z",
+  "duration_ms": 10252,
+  "watchdog": {
+    "observed_ms": 60000,
+    "safe_budget_ms": 45000,
+    "synthetic_operator_delay_ms": 3000
+  },
+  "totals": {
+    "pass": 13,
+    "fail": 0
+  },
+  "results": [
+    {
+      "name": "W1_GATE_RETURNS_PENDING_FAST",
+      "ok": true,
+      "detail": "status=PENDING elapsed=7ms budget=45000ms"
+    },
+    {
+      "name": "W2_STATUS_POLL_UNDER_BUDGET",
+      "ok": true,
+      "detail": "elapsed=1ms"
+    },
+    {
+      "name": "W5_POST_DELAY_CANONICAL_RESULT",
+      "ok": true,
+      "detail": "status=answered option=B"
+    },
+    {
+      "name": "W6_EXACT_OPTION_A",
+      "ok": true,
+      "detail": "status=answered option=A"
+    },
+    {
+      "name": "W6_EXACT_OPTION_B",
+      "ok": true,
+      "detail": "status=answered option=B"
+    },
+    {
+      "name": "W6_EXACT_OPTION_C",
+      "ok": true,
+      "detail": "status=answered option=C"
+    },
+    {
+      "name": "W7_PENDING_NOT_DEFAULT",
+      "ok": true,
+      "detail": "status=PENDING"
+    },
+    {
+      "name": "W7_NO_DEFAULT_ANSWER",
+      "ok": true,
+      "detail": "status=no_answer"
+    },
+    {
+      "name": "W8_UNKNOWN_DECISION_FAILS",
+      "ok": true,
+      "detail": "status=error"
+    },
+    {
+      "name": "W8_WRONG_TASK_FAILS",
+      "ok": true,
+      "detail": "status=error"
+    },
+    {
+      "name": "W8_WRONG_GENERATION_FAILS",
+      "ok": true,
+      "detail": "status=error"
+    },
+    {
+      "name": "W8_PENDING_IS_NON_DECISION",
+      "ok": true,
+      "detail": "status=PENDING"
+    },
+    {
+      "name": "W9_SECOND_GATE_REJECTED",
+      "ok": true,
+      "detail": "first=PENDING second=error/FINAL_PROOF_SEND_BUDGET_EXHAUSTED"
+    }
+  ],
+  "claims": {
+    "REAL_TELEGRAM_SENDS": 0,
+    "REAL_OPERATOR_CALLBACK": "NOT_CLAIMED"
+  }
+}

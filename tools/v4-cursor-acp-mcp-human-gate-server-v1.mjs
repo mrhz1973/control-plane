@@ -77,8 +77,13 @@ async function getTransport() {
 }
 
 /**
- * The one tool. Adapter-only flow; every state mutation goes through the
- * canonical gate-core law. Store is reloaded before each mutation.
+ * The one GATE-CREATING tool — watchdog-safe (V4_CURSOR_ACP_MCP_HUMAN_GATE_60S_WATCHDOG_REMEDIATION_V1):
+ * registers the decision, sends the ONE Telegram ACTIVE GATE and returns
+ * PENDING immediately. NO long wait happens inside this tool invocation
+ * (vendor ACP runtime erroring tool calls at ~60s — RETRY3 evidence). The
+ * canonical gate store remains the sole authority; the decision is retrieved
+ * later via human_gate_status short bounded polls (each well under the
+ * watchdog budget). PENDING is NOT a decision — never consumable as one.
  */
 async function humanGate(args) {
   const v = validateHumanGateInput(args);
@@ -137,45 +142,99 @@ async function humanGate(args) {
   }
   persistGateStore(store, storePath);
 
+  // Watchdog-safe: return PENDING (non-decision) instead of blocking. The
+  // MCP server itself keeps polling getUpdates in the background so the
+  // canonical callback admission happens even if the model polls late;
+  // verified results are consumed via human_gate_status.
+  startBackgroundWait(notified.decision, { ttlMs, taskRef: args.task_ref, sessionId: binding.session_id, generation: args.generation });
+  return {
+    status: "PENDING",
+    decision_id: decision.decision_id,
+    expires_at: notified.decision.expires_at,
+    note: "Human gate is pending the operator's Telegram decision. Poll human_gate_status with this decision_id. PENDING is NOT a decision.",
+  };
+}
+
+const STATUS_POLL_SLICE_MS = Math.min(Number(process.env.ACP_GATE_STATUS_POLL_SLICE_MS) || 8000, 20000); // bounded slice << watchdog
+
+/**
+ * Watchdog-safe read-only status poll: ONE bounded short slice (< watchdog)
+ * that NEVER authorizes, never invents an answer, never creates gates, never
+ * sends. It reads only canonical gate-store state (already admitted by the
+ * gate law) and reports PENDING or the VERIFIED/RETURNED option. Expired
+ * decisions are terminal NO_ANSWER (fail closed).
+ */
+async function humanGateStatus(args) {
+  if (!args || typeof args !== "object" || typeof args.decision_id !== "string" || !args.decision_id) {
+    return { status: "error", reason: "SCHEMA_INVALID", fields: ["decision_id"] };
+  }
+  const binding = readBinding();
+  if (!binding) return { status: "error", reason: "SESSION_BINDING_MISSING" };
+
+  const storePath = gateStorePath();
+  const sliceDeadline = Date.now() + STATUS_POLL_SLICE_MS;
+  while (Date.now() < sliceDeadline) {
+    const store = loadGateStore(storePath);
+    const d = store.decisions.find((x) => x.decision_id === args.decision_id);
+    if (!d) return { status: "error", reason: "DECISION_UNKNOWN", decision_id: args.decision_id };
+    if (d.task_ref !== args.task_ref || d.generation !== Number(args.generation)) {
+      return { status: "error", reason: "DECISION_BINDING_MISMATCH", decision_id: args.decision_id };
+    }
+    if (d.state === "RETURNED" || d.state === "VERIFIED") {
+      return { status: "answered", option: d.selected_option, decision_id: d.decision_id };
+    }
+    if (d.state === "NO_ANSWER" || d.state === "EXPIRED" || Date.parse(d.expires_at) <= Date.now()) {
+      return { status: "no_answer", decision_id: d.decision_id, reason: `GATE_${d.state}` };
+    }
+    await new Promise((r) => setTimeout(r, 400));
+  }
+  return { status: "PENDING", decision_id: args.decision_id };
+}
+
+/**
+ * Background waiter inside the MCP server (single getUpdates consumer stays
+ * HERE — never in the driver, never duplicated). Runs the transport wait +
+ * canonical admission for the decision, marking VERIFIED/RETURNED/NO_ANSWER
+ * in the canonical store even if the model polls status late or never.
+ */
+function startBackgroundWait(decision, { ttlMs, taskRef, sessionId, generation }) {
+  const storePath = gateStorePath();
   const deadline = Date.now() + ttlMs;
-  let wait = null;
-  try {
-    wait = await transport.waitAnswer({ decision: notified.decision, deadlineMs: deadline, spoolDir: SPOOL_DIR });
-  } catch (e) {
-    // never swallow: an exception in the wait path is an explicit no_answer
-    // with sanitized reason, not a silent continue.
-    store = loadGateStore(storePath);
-    markNoAnswer(store, decision.decision_id);
+  (async () => {
+    let wait = null;
+    try {
+      wait = await getTransport().then((t) => t.waitAnswer({ decision, deadlineMs: deadline, spoolDir: SPOOL_DIR }));
+    } catch (e) {
+      const store = loadGateStore(storePath);
+      markNoAnswer(store, decision.decision_id);
+      persistGateStore(store, storePath);
+      return;
+    }
+    if (!wait || wait.status !== "ANSWERED" || wait.update_id === undefined) {
+      const store = loadGateStore(storePath);
+      markNoAnswer(store, decision.decision_id);
+      persistGateStore(store, storePath);
+      return;
+    }
+    const store = loadGateStore(storePath);
+    const admitted = admitGateCallback(store, { decision_id: decision.decision_id, option: wait.option, update_id: wait.update_id }, { taskRef, sessionId, generation });
     persistGateStore(store, storePath);
-    return { status: "no_answer", decision_id: decision.decision_id, reason: "TRANSPORT_WAIT_EXCEPTION", detail: String(e?.message ?? e).slice(0, 80) };
-  }
-
-  // Hardened contract: {status: ANSWERED|TIMEOUT|ABORTED, ...}
-  if (!wait || wait.status !== "ANSWERED" || wait.update_id === undefined) {
-    const reason = !wait ? "TRANSPORT_WAIT_NULL" : wait.status === "ABORTED" ? `TRANSPORT_ABORTED_${wait.class}` : "TRANSPORT_TIMEOUT";
-    store = loadGateStore(storePath);
-    markNoAnswer(store, decision.decision_id);
-    persistGateStore(store, storePath);
-    return { status: "no_answer", decision_id: decision.decision_id, reason };
-  }
-  const answer = { decision_id: decision.decision_id, option: wait.option, update_id: wait.update_id };
-
-  store = loadGateStore(storePath);
-  const admitted = admitGateCallback(store, answer, {
-    taskRef: args.task_ref,
-    sessionId: binding.session_id,
-    generation: args.generation,
-  });
-  persistGateStore(store, storePath);
-  if (!admitted.ok) return { status: "error", reason: admitted.reason, decision_id: decision.decision_id };
-
-  store = loadGateStore(storePath);
-  const returned = markReturned(store, decision.decision_id);
-  persistGateStore(store, storePath);
-  if (!returned.ok) return { status: "error", reason: returned.reason, decision_id: decision.decision_id };
-
-  // Option ONLY from the verified decision — never invented, never defaulted.
-  return { status: "answered", option: admitted.decision.selected_option, decision_id: decision.decision_id };
+    if (!admitted.ok) {
+      // Already-admitted (e.g. canonical callback admitted through the same
+      // gate law by the driver/qualification): hand back is still required —
+      // VERIFIED with a selected option MUST become RETURNED (watchdog-safe
+      // contract: status polls consume only VERIFIED/RETURNED).
+      if (admitted.reason !== "GATE_DECISION_ALREADY_CONSUMED") return;
+      const s = loadGateStore(storePath);
+      const d = s.decisions.find((x) => x.decision_id === decision.decision_id);
+      if (d?.state === "VERIFIED" && d?.selected_option) markReturned(s, decision.decision_id);
+      persistGateStore(s, storePath);
+      return;
+    }
+    const store2 = loadGateStore(storePath);
+    markReturned(store2, decision.decision_id);
+    persistGateStore(store2, storePath);
+  })();
 }
 
 const INPUT_SCHEMA = {
@@ -229,19 +288,37 @@ async function handleLine(line) {
   }
   if (method === "ping") { write({ jsonrpc: "2.0", id, result: {} }); return; }
   if (method === "tools/list") {
-    write({ jsonrpc: "2.0", id, result: { tools: [{
-      name: TOOL_NAME,
-      description: "Ask the human operator a material A/B/C decision through the canonical Control Plane gate (Telegram). Blocks until the verified operator callback or TTL. No default answer.",
-      inputSchema: INPUT_SCHEMA,
-    }] } });
+    write({ jsonrpc: "2.0", id, result: { tools: [
+      {
+        name: "human_gate",
+        description: "Ask the human operator a material A/B/C decision through the canonical Control Plane gate (Telegram). Registers the gate, sends ONE Telegram ACTIVE GATE and returns PENDING immediately (watchdog-safe). Then poll human_gate_status with the returned decision_id. PENDING is NOT a decision; the only consumable result is the verified option from human_gate_status.",
+        inputSchema: INPUT_SCHEMA,
+      },
+      {
+        name: "human_gate_status",
+        description: "Read-only bounded status poll for a pending human gate: ONE short slice (well under the runtime tool watchdog). Returns PENDING, the verified option (only when the canonical gate state is VERIFIED/RETURNED), no_answer (TTL/expired), or error. Never creates gates, never sends, never invents answers.",
+        inputSchema: {
+          type: "object",
+          additionalProperties: false,
+          required: ["decision_id", "task_ref", "generation"],
+          properties: {
+            decision_id: { type: "string", minLength: 1, maxLength: 64 },
+            task_ref: { type: "string", minLength: 1, maxLength: 128 },
+            generation: { type: "integer", minimum: 1 },
+          },
+        },
+      },
+    ] } });
     return;
   }
   if (method === "tools/call") {
-    if (params?.name !== TOOL_NAME) {
+    if (params?.name !== TOOL_NAME && params?.name !== "human_gate_status") {
       write({ jsonrpc: "2.0", id, result: { content: [{ type: "text", text: JSON.stringify({ status: "error", reason: "UNKNOWN_TOOL" }) }], isError: true } });
       return;
     }
-    const out = await humanGate(params?.arguments ?? {});
+    const out = params?.name === "human_gate_status"
+      ? await humanGateStatus(params?.arguments ?? {})
+      : await humanGate(params?.arguments ?? {});
     const isError = out.status === "error";
     write({ jsonrpc: "2.0", id, result: { content: [{ type: "text", text: JSON.stringify(out) }], isError } });
     return;
