@@ -1,0 +1,39 @@
+{
+  "task_ref": "QWEN_BROWSER_VISUAL_SIDECAR_V1_MINIMAL_IMPLEMENTATION",
+  "result": "STOP",
+  "base_head": "57f6555c86affe5db3169925845ec04426899825",
+  "first_actionable_blocker": "T5_FAILURE_PATH_PROBE_NOT_BOUNDED",
+  "blocker_detail": {
+    "symptom": "agent-browser daemon caches first --cdp endpoint; fresh npx invocation after daemon kill can cold-hang without emitting any JSON envelope, outliving exec timeouts",
+    "probes": { "task_544809": "killed after ~22min no output", "task_544810": "running ~4.7h then killed (PID 65392)" },
+    "impact": "FAIL-CLOSED law requires bounded deterministic proof that capture failure => UNAVAILABLE (T5); cannot be honestly claimed while the transport failure path is unbounded"
+  },
+  "best_suite_run_before_stop": { "passed": 24, "failed": 1, "failing_check": "T5_CAPTURE_FAILURE_UNAVAILABLE" },
+  "proven_green_in_suite": {
+    "annotated_screenshot_live_path": "PASS (T2B: ambiguity=NONE refs=@e1,@e2,@e3)",
+    "annotation_ref_mapping": "PASS (T3)",
+    "screenshot_ephemeral": "PASS (T4: default_dir_pngs=0, deleted_flag=1)",
+    "fail_closed_ambiguous": "PASS (T6/T7)",
+    "qwen_unhealthy_blocked": "PASS (T8/T8B)",
+    "qwen_primary_stability": "PASS (T9: READY 12-23ms)",
+    "no_ocr": "PASS (T10)", "no_vlm": "PASS (T11)",
+    "no_public_cdp": "PASS (T12)", "no_profile_mutation": "PASS (T13)",
+    "observability_lane79": "PASS (T16/T16B/T16C: stage=VISUAL_INSPECTION, no image data)",
+    "lane79_regressions": "23/23 PASS (T17)",
+    "mcp_gate_regressions": "37/37 PASS (T18A)",
+    "dispatcher_regressions": "69 passed 0 failed (T18B)"
+  },
+  "worktree_preserved_uncommitted": [
+    "tools/qwen-browser-visual-sidecar-v1.mjs",
+    "tools/agent-activity-registry-v1.mjs (additive: VISUAL_INSPECTION stage)",
+    "tests/qwen-browser-visual-sidecar-implementation/run.mjs"
+  ],
+  "operator_orders": ["do not resume tests", "do not modify implementation further", "do not discard worktree"],
+  "candidate_remediations_next": [
+    "project-owned process-tree timeout (taskkill /T /F) around annotate call",
+    "pin single long-lived daemon endpoint per session (no per-call --cdp switching)",
+    "check AGENT_BROWSER_* env/config for disabling daemon caching"
+  ],
+  "production_changed": "NO",
+  "real_chatgpt_web_send": 0
+}

@@ -1,5 +1,38 @@
 # LAST CURSOR REPORT
 
+## Qwen browser visual sidecar V1 minimal implementation — latest
+
+**TASK_REF:** `QWEN_BROWSER_VISUAL_SIDECAR_V1_MINIMAL_IMPLEMENTATION`
+**Classification:** `STOP — T5_FAILURE_PATH_PROBE_NOT_BOUNDED (operator interrupted; worktree preserved uncommitted)`
+**Date (Europe/Rome):** 2026-09-13
+**BASE_HEAD:** `57f6555c86affe5db3169925845ec04426899825`
+**STOP report:** `reports/runtime/qwen-browser-visual-sidecar/STOP_MINIMAL_IMPLEMENTATION.md`
+**STOP evidence:** `reports/runtime/qwen-browser-visual-sidecar/stop-evidence.json`
+
+- **Blocker:** the vendor `agent-browser` daemon caches the first `--cdp`
+  endpoint and ignores later ones; after a daemon kill a fresh `npx --yes`
+  invocation can cold-hang without emitting any JSON envelope, outliving
+  exec timeouts. Failure-path probes hung 22 min and ~4.7 h before being
+  killed. T5 (`capture failure ⇒ UNAVAILABLE`) therefore cannot be proven
+  bounded ⇒ STOP at the first real blocker, no live workaround.
+- **Already proven before STOP (24/25 suite):** live annotated path works —
+  `--annotate` returned `@e1,@e2,@e3` with boxes; screenshots ephemeral
+  (own temp + CLI default dir cleaned); fail-closed envelopes for empty/
+  malformed/ambiguous annotations; Qwen-unhealthy ⇒ blocked; Qwen primary
+  READY (12–23 ms) throughout; no OCR, no VLM, no public CDP, no profile
+  mutation; `VISUAL_INSPECTION` visible in the #79 lane with zero image
+  data. Regressions inside the suite: #79 23/23, MCP gate 37/37,
+  dispatcher 69/69.
+- **Preserved uncommitted (operator order — do not discard):**
+  `tools/qwen-browser-visual-sidecar-v1.mjs` (annotate-tier helper,
+  `OCR_ENABLED=NO`, `VLM_ENABLED=NO`, observation-only), additive
+  `VISUAL_INSPECTION` stage in `agent-activity-registry-v1.mjs`, and the
+  `tests/qwen-browser-visual-sidecar-implementation/run.mjs` harness.
+- **NEXT:** bounded failure-path remediation (project-owned process-tree
+  timeout, pinned daemon endpoint, or daemon-caching off via env/config)
+  BEFORE any retry. No OCR/VLM installation.
+
+
 ## Qwen browser visual sidecar V1 evaluation — latest
 
 **TASK_REF:** `QWEN_BROWSER_VISUAL_SIDECAR_V1_EVALUATION`

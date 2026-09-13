@@ -216,3 +216,22 @@ checkpoint, cmdline unchanged) → `FAIL_CLOSED_VISUAL_AMBIGUITY=PASS` →
 `IMPLEMENTATION_AUTHORIZED=NO` → report:
 `reports/architecture/qwen_browser_visual_sidecar_v1_evaluation.md`.
 `NEXT=QWEN_BROWSER_VISUAL_SIDECAR_V1_MINIMAL_IMPLEMENTATION (not started)`.
+
+---
+
+## Visual sidecar minimal implementation — STOP
+
+`QWEN_BROWSER_VISUAL_SIDECAR_V1_MINIMAL_IMPLEMENTATION` = **STOP** →
+`FIRST_ACTIONABLE_BLOCKER=T5_FAILURE_PATH_PROBE_NOT_BOUNDED` — the
+agent-browser daemon caches the first `--cdp` endpoint and ignores later
+ones; a fresh `npx` invocation after a daemon kill can cold-hang without
+emitting any JSON envelope (probes hung 22 min and ~4.7 h before kill),
+so the FAIL-CLOSED proof `capture failure ⇒ UNAVAILABLE` (T5) cannot be
+bounded. Pre-STOP suite reached 24/25 PASS with the live annotated path
+PROVEN (`@e1,@e2,@e3` ref mapping, ephemeral screenshots, Qwen READY,
+#79 `VISUAL_INSPECTION` telemetry visible; #79 23/23, MCP gate 37/37,
+dispatcher 69/69). Implementation + tests preserved UNCOMMITTED in the
+worktree per operator order; STOP report + evidence persisted:
+`reports/runtime/qwen-browser-visual-sidecar/STOP_MINIMAL_IMPLEMENTATION.md`.
+`NEXT=bounded failure-path remediation (process-tree timeout / pinned
+daemon endpoint) BEFORE any retry`.
