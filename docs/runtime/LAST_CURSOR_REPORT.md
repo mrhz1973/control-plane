@@ -1,5 +1,27 @@
 # LAST CURSOR REPORT
 
+## Astra-negative parent frontier reconciliation — #32 resumed (latest)
+
+**TASK_REF:** `V4_ASTRA_NEGATIVE_PARENT_FRONTIER_RECONCILIATION_V1`
+**Classification:** `PASS — PARENT_32_FRONTIER_RESUMED=YES`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `4f65001d35aa41f4586e8dd352efdc9032535eca` (verified PASS at start)
+**Report:** `reports/architecture/v4_astra_negative_parent_frontier_reconciliation_v1.md`
+
+- The global NEXT previously carried the #35 child wait; it is now
+  CHILD-LOCAL (`ASTRA_CHILD_NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE`),
+  leaving parent #32 free to continue (`ASTRA_BLOCKS_PARENT_32=NO`,
+  `GLOBAL_WAIT_ON_ASTRA=NO`).
+- #35 stays OPEN_PARKED (QUALIFIED_NEGATIVE preserved; not closed; no
+  polling scheduled; re-armable on any new live-catalog evidence).
+- Selection law 5/5 verified for the next independent slice:
+  `CURRENT_NEXT=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1`
+  (`NEXT_HUMAN_GATE_REQUIRED=NO`) — generic near-reset allowance
+  preference policy, part of #32 acceptance, not Astra-dependent.
+- Documentation-only task: no runtime/production change; #32/#35 both
+  re-verified OPEN and untouched.
+
+---
 ## GPT-6 Astra subscription qualification — QUALIFIED_NEGATIVE (latest)
 
 **TASK_REF:** `V4_GPT6_ASTRA_SUBSCRIPTION_SURFACE_QUALIFICATION_V1`
