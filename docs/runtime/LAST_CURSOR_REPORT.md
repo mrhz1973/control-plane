@@ -1,5 +1,26 @@
 # LAST CURSOR REPORT
 
+## OpenClaw retirement scope reconciliation — PASS (latest)
+
+**TASK_REF:** `V4_OPENCLAW_RETIREMENT_SCOPE_RECONCILIATION_V1`
+**Classification:** `PASS`
+**BASE_HEAD:** `a07269694ac700f763b43c49fb62894b823e3d3a`
+**Report:** `reports/architecture/v4_openclaw_retirement_scope_reconciliation_v1.md`
+
+- Original OpenClaw retirement assumed zero live qualified callers; the Phase 1
+  audit later proved the live GLM quota observation lane.
+- Value comparison: `GLM_OPENCLAW_VALUE=UNIQUE` and
+  `CODEX_OPENCLAW_VALUE=INFERIOR`; Phase 0.5 moved Codex authority to the
+  app-server and retained OpenClaw only for `glm_coding_plan` observation.
+- `OPENCLAW_FINAL_DISPOSITION=SCOPED_RETENTION`;
+  broker/fallback/agent-runtime roles are `RETIRED`.
+- `ISSUE_73_PHASE_C=PASS`; `PHASE_D=OPEN`; NEXT is
+  `V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1`.
+- Runtime/production unchanged; no OpenClaw, GLM, Codex app-server, provider,
+  browser, Telegram, n8n, VPS, or dispatcher execution occurred.
+
+---
+
 ## OpenClaw quota lane retirement Phase 0.5 — PASS (latest)
 
 **TASK_REF:** `V4_OPENCLAW_QUOTA_LANE_RETIREMENT_PHASE_0_5_V1`

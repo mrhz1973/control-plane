@@ -139,9 +139,12 @@ required 5h and weekly binding windows.
 
 > **SUPERSEDED (PHASE_0_5, 2026-09-14):** for `chatgpt_codex_subscription` the routing authority is now `CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ` (V4_OPENCLAW_QUOTA_LANE_RETIREMENT_PHASE_0_5_V1). OpenClaw codex observations are diagnostic-only (`CODEX_OPENCLAW_AUTHORITY=NO`, `CODEX_OPENCLAW_FALLBACK=NO`); without a fresh app-server observation the pool stays UNKNOWN/STALE. The OpenClaw observation lane remains the authority for `glm_coding_plan` only (`OPENCLAW_QUOTA_SCOPE=glm_coding_plan`).
 
-OpenClaw remains routing authority. A secondary mismatch is diagnostic only;
-stale or missing observations do not promote the secondary into routing
-authority. Banked reset credits are advisory and do not change effective
-capacity. No reset-credit consumption operation is part of this contract.
+For `glm_coding_plan`, OpenClaw remains the scoped quota observation authority.
+For `chatgpt_codex_subscription`, `CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ`
+is authoritative and OpenClaw observations are diagnostic-only; stale or
+missing app-server observations keep that pool UNKNOWN/STALE and never promote
+the diagnostic source. Banked reset credits are advisory and do not change
+effective capacity. No reset-credit consumption operation is part of this
+contract.
 
 **End of contract.**

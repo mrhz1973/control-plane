@@ -1,7 +1,14 @@
 # OPENCLAW VPS BROKER PLACEMENT — Foundation Addendum
 
+> **SUPERSEDED (2026-09-14):** this document preserves the historical target
+> placement only. The current operator decision is
+> `OPENCLAW_DISPOSITION=SCOPED_RETENTION`: broker, fallback and agent-runtime
+> roles are retired; only the read-only `glm_coding_plan` quota observation
+> lane is retained. It must not be used to infer a current OpenClaw broker or
+> VPS runtime.
+
 **Repository:** `mrhz1973/control-plane`  
-**Stato:** `ACCEPTED_TARGET_DESIGN — PLANNING/DOCS ONLY`  
+**Stato:** `HISTORICAL TARGET DESIGN — SUPERSEDED; PLANNING/DOCS ONLY`
 **Decisione operatore:** 2026-08-26  
 **Runtime autorizzato da questo documento:** **NO**  
 

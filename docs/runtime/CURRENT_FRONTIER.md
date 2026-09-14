@@ -2,6 +2,11 @@
 
 > **Unica fonte canonica dello stato operativo vivo.**
 
+> **CURRENT OPENCLAW RECONCILIATION**: `OPENCLAW_FINAL_DISPOSITION=SCOPED_RETENTION` · broker/fallback/agent runtime `RETIRED` · `OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED` · `OPENCLAW_QUOTA_SCOPE=glm_coding_plan` · `GLM_QUOTA_AUTHORITY=OPENCLAW` · `CODEX_QUOTA_AUTHORITY=CODEX_APP_SERVER` · `CODEX_OPENCLAW_AUTHORITY=NO` · `CODEX_OPENCLAW_FALLBACK=NO` · `CURRENT_NEXT=V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1` · `PHASE_D=OPEN`
+
+> Legacy `KEEP_STAGED_PENDING` and `OPENCLAW_BROKER_RUNTIME=RETIRE` wording
+> in historical rows below is superseded and is not current state.
+
 | Campo | Valore |
 |---|---|
 | **FOUNDATION** | v3.5 — LiteLLM primary remote gateway — CANONICAL |
@@ -406,5 +411,16 @@ observatory PASS, dispatcher 69/69. `MODEL_INFERENCE=0`; dispatch/production
 untouched. Report:
 `reports/architecture/v4_openclaw_quota_lane_retirement_phase_0_5_v1.md`.
 `NEXT=bounded reconciliation of OpenClaw retirement scope: broker/fallback
-retired, GLM quota collector retained` (deferred GLM follow-ups: null→100
-fail-open wrinkle; OpenClaw updatedAt future-dating).
+retired, GLM quota collector retained` is superseded by
+`V4_OPENCLAW_RETIREMENT_SCOPE_RECONCILIATION_V1=PASS`:
+`OPENCLAW_FINAL_DISPOSITION=SCOPED_RETENTION`,
+`OPENCLAW_BROKER_RUNTIME=RETIRED`, `OPENCLAW_FALLBACK_ROLE=RETIRED`,
+`OPENCLAW_AGENT_RUNTIME=RETIRED`,
+`OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED`,
+`OPENCLAW_QUOTA_SCOPE=glm_coding_plan`, `GLM_QUOTA_AUTHORITY=OPENCLAW`,
+`CODEX_QUOTA_AUTHORITY=CODEX_APP_SERVER`, `CODEX_OPENCLAW_AUTHORITY=NO`,
+`CODEX_OPENCLAW_FALLBACK=NO`, `CODEX_OPENCLAW_DEPENDENCY=RETIRED`,
+`GLM_OPENCLAW_DEPENDENCY=KEPT`, `ISSUE_73_PHASE_C=PASS`, `PHASE_D=OPEN`.
+`CURRENT_NEXT=V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1`.
+Deferred GLM follow-ups remain: null→100 fail-open wrinkle and OpenClaw
+updatedAt future-dating.

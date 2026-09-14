@@ -221,3 +221,61 @@ Constraint notes: OFFLINE ⇒ Qwen-only tier · 24/7 ⇒ VPS-hosted roles only �
 ## 12. NON-GO / DO-NOT-CHANGE ITEMS
 
 GitHub as canon · Qwen as LOCAL_CONTROLLER · Hermes as bridge (not controller) · ChatGPT Web as answer surface only · DOM/accessibility as default observation · sidecar #78 and lane #79 as read-only · Telegram/MCP human gate as sole human authority (no Hermes/Cursor/Autovia second authority; HUMAN_WAIT ≠ TOOL_CALL_TIMEOUT; no automatic/default human answers) · LOCAL_DEV/Autovia qualified path · LiteLLM canonical gateway (this audit) · production n8n/PostgreSQL semantics (gates, ledger, idempotency stay deterministic) · OLD VPS rollback retention · D-0025 stays `enabled=false` · no public CDP/noVNC/Funnel · no credential/cookie/token persistence · no automatic provider fallback · no route activation/production dispatch from this audit · issue #61 stays OPEN (this audit did not mutate it).
+
+---
+
+## 13. POST-AUDIT RECONCILIATION / SUPERSEDING NOTE
+
+**TASK_REF:** `V4_OPENCLAW_RETIREMENT_SCOPE_RECONCILIATION_V1`
+**Date (Europe/Rome):** 2026-09-14
+**Status:** `SUPERSEDES_OPENCLAW_ROLE_SCOPE_ONLY`
+
+This note preserves the historical audit above and supersedes only its
+OpenClaw role/quota classification. The original audit assumed that OpenClaw
+had zero live qualified callers and therefore classified it as a dormant
+broker/fallback component. The Phase 1 caller audit then found one real live
+dependency: the #73 quota observation lane invoked
+`openclaw status --usage --json` through the LOCAL_DEV resource observatory.
+
+The subsequent value comparison proved a mixed result: OpenClaw is the only
+currently qualified machine-readable source for `glm_coding_plan`
+(`GLM_OPENCLAW_VALUE=UNIQUE`), while its Codex view is inferior to the direct
+Codex app-server source (`CODEX_OPENCLAW_VALUE=INFERIOR`). Phase 0.5 therefore
+moved `chatgpt_codex_subscription` authority to
+`CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ`, with OpenClaw Codex data
+diagnostic-only and no fallback. This is the authoritative current
+interpretation; the original audit and Phase 1 STOP remain historical evidence.
+
+### Current canonical disposition
+
+```text
+OPENCLAW_FINAL_DISPOSITION=SCOPED_RETENTION
+OPENCLAW_BROKER_RUNTIME=RETIRED
+OPENCLAW_FALLBACK_ROLE=RETIRED
+OPENCLAW_AGENT_RUNTIME=RETIRED
+OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED
+OPENCLAW_QUOTA_SCOPE=glm_coding_plan
+GLM_QUOTA_AUTHORITY=OPENCLAW
+CODEX_QUOTA_AUTHORITY=CODEX_APP_SERVER
+CODEX_OPENCLAW_AUTHORITY=NO
+CODEX_OPENCLAW_FALLBACK=NO
+CODEX_OPENCLAW_DEPENDENCY=RETIRED
+GLM_OPENCLAW_DEPENDENCY=KEPT
+RUNTIME_CHANGED=NO
+PRODUCTION_CHANGED=NO
+HISTORICAL_EVIDENCE_PRESERVED=YES
+CANONICAL_AMBIGUITY_RESOLVED=YES
+```
+
+No OpenClaw selector is reintroduced: the resource registry remains
+OpenClaw-free for selectable runtimes. The retained lane is observation-only
+and scoped to GLM quota; it does not restore a broker, fallback, agent runtime,
+or Codex quota authority. The known GLM follow-ups remain deferred: the
+`usedToRemainingPercent(null) -> 100` mapper wrinkle and the future-dated
+`usage.updatedAt` anomaly.
+
+The normal roadmap resumes at
+`V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1`, with
+`ISSUE_73_PHASE_C=PASS` and `PHASE_D=OPEN`. No provider, dispatcher, browser,
+Telegram, n8n, VPS, or OpenClaw runtime action was performed by this
+reconciliation.

@@ -21,7 +21,7 @@ The planner pool is:
 
 There is no mandatory fourth LLM dedicated only to routing.
 
-GPT Web provides the **semantic preference** in the Backlog Item. Provider/access-surface state is supplied where available; OpenClaw is a staged, non-active broker path and is not current authority. n8n applies deterministic policy to choose the effective planner or escalate.
+GPT Web provides the **semantic preference** in the Backlog Item. Provider/access-surface state is supplied where available; OpenClaw is a staged, non-active broker path and is not current runtime authority. It remains a read-only quota observation source for `glm_coding_plan` only; it is not the authority or fallback for the Codex pool. n8n applies deterministic policy to choose the effective planner or escalate.
 
 ---
 
@@ -39,9 +39,10 @@ n8n deterministic policy
     or whether a Telegram gate is required
 ```
 
-OpenClaw is a preserved staged broker capability, not the current Control Plane
-authority, active broker, scheduler, state owner, or quota source. It is not the
-strategic project planner.
+OpenClaw is a preserved scoped observation capability, not the current Control
+Plane authority, active broker, fallback, scheduler, or state owner. Its only
+retained quota role is read-only observation for `glm_coding_plan`; it is not
+the Codex quota authority or the strategic project planner.
 
 The terms remain separate: the deterministic backlog selector chooses an item;
 the planner semantic preference describes intended cognition; planner

@@ -27,7 +27,7 @@ NEW Tailscale identity and the full GOI private stack are LIVE and proven functi
 | n8n filesystem binds | Control Plane | `/root/local-files`, `/srv/cp-verifier-inbox`, control-plane checkout bind | same bind names present on NEW | do not drop binds; no secret values in git |
 | schema-engine local dependency | Control Plane | `/root/local-files/handoff-runtime/schema-engine` | `MIGRATED_VALIDATED`; Ajv isolated tree via `/files` bind; env at validator invocation | no network dependency; no compose env persistence |
 | dev-method reference tree | dev-method / Control Plane | `/root/local-files/handoff-runtime/dev-method` | copied/validated | no shared network dependency |
-| OpenClaw preserved fallback | Control Plane | preserved fallback | copied/staged inactive, no listener | `KEEP_STAGED_PENDING` role qualified; future activation separately gated |
+| OpenClaw GLM quota observation | Control Plane | historical trees retained | scoped read-only `glm_coding_plan` collector; no listener | `SCOPED_RETENTION`; broker/fallback/agent runtime retired; no activation |
 | Hermes private ports | Control Plane/Hermes | loopback | loopback qualified | remain private |
 | Docker common runtime | Control Plane | live | live | shared namespace centralized |
 | Cutover | Control Plane + human operator | OLD writer frozen | PASS; NEW LIVE | no reverse/secondary cutover without human gate |

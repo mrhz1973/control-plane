@@ -8,7 +8,7 @@
 
 ## 0. Visione in una frase
 
-`control-plane` è un sistema personale di sviluppo AI-assisted in cui **GPT Web governa strategia/backlog, GitHub conserva la verità, n8n applica workflow/policy/gate, LiteLLM è il primary remote gateway strutturale per GLM/Codex, OpenClaw resta preserved fallback/existing broker staged, Qwen locale è qualificato soltanto per ruolo/profilo provato, Cursor implementa in loop task-bounded, Bugbot verifica e Telegram interviene sui gate umani reali**.
+`control-plane` è un sistema personale di sviluppo AI-assisted in cui **GPT Web governa strategia/backlog, GitHub conserva la verità, n8n applica workflow/policy/gate, LiteLLM è il primary remote gateway strutturale per GLM/Codex, OpenClaw conserva solo una quota observation lane scoped a `glm_coding_plan` mentre broker/fallback/agent runtime sono ritirati, Qwen locale è qualificato soltanto per ruolo/profilo provato, Cursor implementa in loop task-bounded, Bugbot verifica e Telegram interviene sui gate umani reali**.
 
 Obiettivo: aumentare autonomia e throughput usando più pool/modelli senza perdere auditabilità, controllo del rischio o memoria persistente.
 
@@ -75,11 +75,11 @@ n8n gate
                     ├─ PASS → GitHub
                     └─ ISSUE → bounded fix loop
 
-OpenClaw — preserved fallback/existing broker path
-   (explicit selection / authorized fallback only)
+OpenClaw — scoped read-only quota observation lane
+   (`glm_coding_plan` only; no broker/fallback/agent runtime)
 ```
 
-**Tailscale** resta trasporto privato VPS ↔ nodo locale quando richiesto dal runtime (OpenClaw fallback path, n8n host reachability).
+**Tailscale** resta trasporto privato VPS ↔ nodo locale quando richiesto dal runtime e dalla reachability n8n; non abilita un OpenClaw broker/fallback path.
 
 Questa architettura è **target accettato**, non prova che ogni capability sia già operativa. Capability reali: frontier + issue/evidence corrente.
 
@@ -93,7 +93,7 @@ Questa architettura è **target accettato**, non prova che ogni capability sia g
 | **GitHub** | memoria, audit, contratti, evidence, stato persistente | runtime engine |
 | **n8n** | workflow, dedupe, policy deterministica, gate, coordinamento | planner LLM |
 | **LiteLLM** | primary remote gateway/auth transport per GLM 5.3 + Codex OAuth quando verificato | strategic orchestrator; sostituto dei gate canonici |
-| **OpenClaw** | preserved fallback/existing broker provider/auth/quota/failover consentito | primary remote gateway; strategic orchestrator |
+| **OpenClaw** | scoped read-only quota observation for `glm_coding_plan` | broker, fallback, agent runtime, Codex quota authority |
 | **Codex OAuth** | planner/reasoner senior/advisor via LiteLLM primary remote path quando verificato | modello Cursor nativo assunto; OpenAI Platform API key path |
 | **GLM 5.3** | Advisor / Planner / Cursor Executor via LiteLLM primary remote path secondo mode verificato | autorità derivata dal nome modello |
 | **Qwen 3.8 37B** | planner/advisor/implementer locale per-job, soltanto per ruolo/profilo qualificato | router daemon obbligatorio; primary remote gateway |
@@ -126,10 +126,10 @@ n8n → LiteLLM primary remote gateway → chatgpt/gpt-5.6-sol (OAuth token stor
 
 Nessuna assunzione di OpenAI Platform API key billing o native Cursor picker senza evidence reale.
 
-Preserved fallback/existing path:
+Scoped quota observation path (not a runtime or fallback path):
 
 ```text
-n8n → OpenClaw (explicit selection / authorized fallback) → Codex OAuth
+dispatcher → OpenClaw `status --usage --json` → `glm_coding_plan` observation
 ```
 
 Track separato D-0016-W resta valido e parallel where separately authorized.
@@ -280,8 +280,8 @@ Target provider boundary:
 primary remote:
   n8n → LiteLLM → selected GLM/Codex
 
-fallback/existing:
-  n8n → OpenClaw where explicitly selected/authorized
+quota observation:
+  OpenClaw quota observation only for `glm_coding_plan`; no runtime route/fallback
 ```
 
 Non chiamate provider arbitrarie inline fuori broker/policy salvo gate esplicito.
@@ -361,8 +361,8 @@ Checkpoint/handoff ≠ PASS e non auto-certificano il commit che li contiene.
 Un componente fallito deve degradare a una modalità supervisionata senza perdere stato:
 
 - planner unavailable → fallback consentito oppure gate;
-- LiteLLM unavailable → OpenClaw/manual/gated path secondo policy; **mai** silent fallback non equivalente;
-- OpenClaw unavailable → path manuale/gated;
+- LiteLLM unavailable → manual/gated path secondo policy; **mai** silent fallback non equivalente;
+- OpenClaw unavailable → `glm_coding_plan` quota UNKNOWN/STALE, fail-closed; no runtime fallback;
 - Qwen unavailable o resource pressure → altro planner consentito solo se esplicitamente autorizzato;
 - Cursor non converge → checkpoint + gate;
 - Bugbot non converge → gate;
@@ -433,7 +433,7 @@ AUTO-VIA elimina i `vai` ridondanti quando NEXT è già tecnicamente determinato
 - GPT Web strategic orchestrator/backlog owner;
 - GitHub source of truth;
 - **LiteLLM primary remote gateway for GLM+Codex (architecture decision 2026-08-28; D-0024 runtime qualification PASS)**;
-- OpenClaw preserved fallback/existing broker;
+- OpenClaw scoped `glm_coding_plan` quota observation only; broker/fallback/agent runtime retired;
 - planner pool GLM 5.3 / Codex OAuth on primary remote path; Qwen locale qualificato per ruolo/profilo, senza router daemon obbligatorio;
 - planner → Execution Packet;
 - n8n deterministic gate;
@@ -446,7 +446,7 @@ AUTO-VIA elimina i `vai` ridondanti quando NEXT è già tecnicamente determinato
 
 - permanent LiteLLM service/deploy on production path;
 - n8n live routing already switched to LiteLLM primary;
-- OpenClaw v3 provider wiring already verified/current for all paths;
+- OpenClaw v3 provider wiring current for all paths;
 - quota thresholds calibrated;
 - planner smokes PASS on all paths;
 - GLM BYOK Cursor PASS;

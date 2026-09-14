@@ -72,7 +72,7 @@ Per ogni stadio principale: funzione, componente reale, programma/servizio, dove
 - **GitHub** — source of truth (backlog, decisioni, evidenza, handoff).
 - **Core deterministico** — selector, admission, quota compose, hygiene, receipts.
 - **n8n** — workflow engine / policy seams (non LLM planner).
-- **OpenClaw** — **non** è authority del Control Plane attuale; vedi §12 (`KEEP_STAGED_PENDING`).
+- **OpenClaw** — non è runtime authority, broker o fallback del Control Plane attuale; conserva solo la quota observation lane scoped a `glm_coding_plan`.
 
 ### Observatory operatore (visibilità risorse/quote)
 
@@ -365,11 +365,15 @@ stronger Codex route = difficult-case escalation
 
 ## 12. OpenClaw
 
-**Non** è l’authority / broker attivo del Control Plane corrente.
+Non è l’authority runtime, broker, fallback o agent runtime del Control Plane
+corrente. La sola eccezione conservata è la quota observation lane read-only
+per `glm_coding_plan` (`GLM_QUOTA_AUTHORITY=OPENCLAW`).
 
-Stato accurato dove applicabile: **`KEEP_STAGED_PENDING`** (staged/inactive; future activation separately gated).
+Stato accurato: **`SCOPED_RETENTION`** — collector GLM mantenuto; ruolo Codex
+retired e nessuna attivazione futura del broker implicita.
 
-Trattarlo solo secondo ruolo staged/proven — **non** come scheduler o state owner per assunzione.
+Trattarlo solo secondo questo ruolo scoped — **non** come scheduler, state
+owner, broker, fallback o agent runtime.
 
 ---
 
@@ -381,7 +385,7 @@ Trattarlo solo secondo ruolo staged/proven — **non** come scheduler o state ow
 | SoT | GitHub | LIVE |
 | Workflow / policy | n8n | LIVE structural; promotion GATED |
 | LOCAL_DEV autonomous lane | dispatcher + selector + admission + OpenCode | LIVE / QUALIFIED (bounded) |
-| Provider broker legacy | OpenClaw | KEEP_STAGED_PENDING |
+| GLM quota observation lane | OpenClaw | SCOPED_RETENTION (`glm_coding_plan` only; broker/fallback/agent runtime retired) |
 | Human gate | Telegram | LIVE pattern |
 | Cognitive web bridge | Hermes | role canonical; path proofs may be GATED |
 | Review | Bugbot | LIVE capability; selective |

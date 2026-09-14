@@ -20,7 +20,7 @@ Current projection after authorized production cutover PASS. NEW is LIVE with th
 | `/root/local-files` | n8n `/files` bind; contains handoff-runtime | present on NEW | n8n, LiteLLM, GOI GIS/Nav | MIGRATED_VALIDATED | umbrella persistent application root |
 | dev-method | tree `/root/local-files/handoff-runtime/dev-method` | copied/validated | local-files | MIGRATED_VALIDATED | reference-only |
 | schema-engine | tree `/root/local-files/handoff-runtime/schema-engine` | isolated Ajv 8.20.0 + ajv-formats 3.0.1; validator valid PASS / invalid FAIL_CLOSED; bind `/files` persistent | n8n/control-plane only | MIGRATED_VALIDATED | non-network; F03 reconciled |
-| OpenClaw app/node | preserved fallback trees | copied/staged, inactive, no listener | future fallback transport only | MIGRATED_VALIDATED | `KEEP_STAGED_PENDING` role satisfied; do not activate |
+| OpenClaw quota observation lane | retained historical trees | scoped read-only GLM collector; no broker/agent listener | `glm_coding_plan` observation only | MIGRATED_VALIDATED | `SCOPED_RETENTION`; broker/fallback/agent runtime retired; do not activate |
 | `n8n-compose.service` | OLD n8n stopped by cutover; PostgreSQL retained | enabled/active; restarted through canonical boundary after restore | n8n core | MIGRATED_VALIDATED | cutover PASS; rollback retention open |
 | GOI service users | OLD live service accounts | NEW nologin accounts present | shared Linux identity | MIGRATED_VALIDATED | no further identity mutation required |
 | Tailscale node identity | OLD `ubuntu` / `100.114.7.53` | unique `ionos-n8n-new` / `100.99.54.93`; exact NEW MagicDNS, private reachability, no routes/exit-node/Serve/Funnel | all TS-bound GOI services | MIGRATED_VALIDATED | parallel validation PASS |
@@ -113,6 +113,6 @@ Canonical evidence:
 - `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`
 - `reports/architecture/v4_vps_new_tls_recovery_v1.md`
 
-F03 census is reconciled; GOI rows and Tailscale identity are `MIGRATED_VALIDATED`. OpenClaw remains intentionally staged under its qualified `KEEP_STAGED_PENDING` role. Historical volumes are classified obsolete-confirmed but retained.
+F03 census is reconciled; GOI rows and Tailscale identity are `MIGRATED_VALIDATED`. OpenClaw is retained only as the scoped read-only `glm_coding_plan` quota collector; broker/fallback/agent-runtime roles are retired and no listener is to be activated. Historical volumes are classified obsolete-confirmed but retained.
 
 Current next: HUMAN CUTOVER GATE — final OLD write freeze, proven DB/state sync, fresh publication map, authorized NEW publication/routing, rollback retention.
