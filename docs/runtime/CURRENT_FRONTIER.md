@@ -647,3 +647,32 @@ dependency, no higher-precedence canonical task):
 `NEXT_HUMAN_GATE_REQUIRED=NO`. #32/#35 both remain OPEN/untouched;
 no polling automation created. Report:
 `reports/architecture/v4_astra_negative_parent_frontier_reconciliation_v1.md`.
+---
+
+`V4_EXPIRING_ALLOWANCE_USE_POLICY_V1` = **PASS** →
+`EXPIRING_ALLOWANCE_USE_IMPLEMENTED=YES` ·
+`EXPIRING_ALLOWANCE_USE_PROVEN=YES` ·
+`EXPIRING_ALLOWANCE_POLICY=GENERIC_PROVIDER_NEUTRAL` ·
+`USEFUL_READY_WORK_REQUIRED=YES` ·
+`WORK_MANUFACTURE_FOR_QUOTA_BURN=FORBIDDEN` (no work-creation API surface)
+· `ALLOWANCE_VERIFICATION_REQUIRED=YES` ·
+`RESET_OR_EXPIRY_VERIFICATION_REQUIRED=YES` ·
+`RESERVE_FLOOR_PRESERVED=YES` ·
+`QUALITY_DEGRADATION_FOR_EXPIRING_ALLOWANCE=NO` ·
+`EXPIRING_ALLOWANCE_IS_AUTHORIZATION=NO` · `NO_SILENT_FALLBACK=PASS` ·
+`ASTRA_DEPENDENCY=NO` ·
+`ASTRA_CHILD_STATE=OPEN_PARKED_EXTERNAL_AVAILABILITY` ·
+`ASTRA_BLOCKS_PARENT_32=NO` · `MODEL_INFERENCE=0` ·
+`PRODUCTION_DISPATCH=0` ·
+`ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0` ·
+`PRODUCTION_CHANGED=NO` · `RUNTIME_CHANGED=NO`.
+Generic preference module `tools/expiring-allowance-policy-v1.mjs` +
+opt-in integration in the RT25 planner core (execution/reviewer/retry
+inherit via the same core); focused suite 49/49; 19 regression suites
+green (selector, join, admission, audit, provenance, registry 76/76,
+translators, quota authorities). Canon:
+`docs/contracts/planner-routing-policy-v1.md` §10a. Report:
+`reports/architecture/v4_expiring_allowance_use_policy_v1.md`.
+`NEXT=V4_PARENT_32_CLOSURE_EVALUATION_V1` (all #32 acceptance axes now
+implemented/qualified: pools joined once, collectors+translators live,
+reserve+economics+expiring-allowance canonical).

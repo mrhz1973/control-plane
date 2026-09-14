@@ -1,5 +1,28 @@
 # LAST CURSOR REPORT
 
+## Expiring-allowance preference policy — IMPLEMENTED+PROVEN (latest)
+
+**TASK_REF:** `V4_EXPIRING_ALLOWANCE_USE_POLICY_V1`
+**Classification:** `PASS — EXPIRING_ALLOWANCE_USE_IMPLEMENTED=YES/PROVEN=YES`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `fc43bf27adccde8381ebcd8a9c25eb564132647d` (verified PASS at start)
+**Report:** `reports/architecture/v4_expiring_allowance_use_policy_v1.md`
+
+- Generic provider-neutral preference module (strict future ISO-8601
+  reset law, configurable neutral 1800s window, allowance
+  unknown/stale fail-closed, reserve floor, quality, policy-block) +
+  opt-in integration in the RT25 planner core; execution/reviewer/retry
+  inherit unchanged. Preference-only: cannot authorize, cannot create
+  work, cannot revive denied routes (structurally forbidden).
+- Focused suite 49/49 (T1–T4 positive, N1–N15 negative/fail-closed,
+  determinism, provider-neutral N15); 19 regression suites green incl.
+  registry 76/76, T24 closed-gate E2E 23/23.
+- Parent #32 remaining axes now all implemented/qualified →
+  `NEXT=V4_PARENT_32_CLOSURE_EVALUATION_V1` (closure evaluated in a
+  separate task per law; #32 NOT closed here; Astra child #35 stays
+  parked).
+
+---
 ## Astra-negative parent frontier reconciliation — #32 resumed (latest)
 
 **TASK_REF:** `V4_ASTRA_NEGATIVE_PARENT_FRONTIER_RECONCILIATION_V1`

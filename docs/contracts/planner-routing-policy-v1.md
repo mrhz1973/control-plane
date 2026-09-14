@@ -260,6 +260,49 @@ GLM may be used inside Cursor via BYOK where verified. Codex OAuth as a native C
 
 ---
 
+## 10a. Expiring-allowance preference (V4_EXPIRING_ALLOWANCE_USE_POLICY_V1)
+
+Generic, provider-neutral PREFERENCE modifier (issue #32; module
+`tools/expiring-allowance-policy-v1.mjs`, consumed by the RT25 planner core
+and therefore by the execution/reviewer/retry boundaries that reuse it). It
+MAY reorder already-admitted eligible candidates to prefer one whose quota
+pool's included allowance is verifiably near reset — it can never make an
+ineligible route eligible, never bypass human gates, production
+authorization, reserve floors or quality requirements, and it has no API to
+create, schedule, or dispatch work (`WORK_MANUFACTURE_FOR_QUOTA_BURN`
+structurally forbidden). It is NOT execution authorization and NOT a
+fallback.
+
+Activation requires ALL of (deterministic, auditable):
+
+- caller asserts useful READY work exists (`workReady`) — no READY work,
+  no activation (`NOT_READY_WORK`);
+- candidate already admitted (role/capability/quality/availability/
+  authorization/reserve/freshness gates ran first);
+- pool allowance fresh+verified (`ALLOWANCE_UNKNOWN`/`ALLOWANCE_STALE`
+  otherwise — never treated as healthy or expiring);
+- trustworthy future reset/expiry timestamp (strict ISO-8601 Z;
+  `RESET_UNKNOWN` on anything uninterpretable — the PREFERENCE fails
+  closed, the route itself stays selectable through normal law);
+- within the generic configured window
+  (`expiring_allowance_window_seconds`, default 1800s bounded neutral
+  policy constant; provider-neutral, never provider-derived, never
+  model-mutable) — `OUTSIDE_EXPIRING_WINDOW` otherwise;
+- reserve floor still preserved; quality not degraded
+  (`RESERVE_FLOOR_BLOCKED`/`QUALITY_REQUIREMENT_BLOCKED`);
+- current policy permits (`POLICY_BLOCKED` — mandatory restrictions
+  always win).
+
+Positive activation emits the auditable reason `EXPIRING_ALLOWANCE_USE`
+with deterministic metadata: quota pool id, reset_at, time_remaining_ms,
+remaining/reserve percents. Feature default is OFF (opt-in per decision via
+`options.expiringAllowance`); same inputs + same clock => same result.
+Provider coverage is by generic pool state only (e.g. glm and codex
+subscription pool concepts in deterministic fixtures) — no
+provider-specific branch, no Astra dependency.
+
+---
+
 ## 11. Hard boundaries
 
 This policy does not activate OpenClaw provider routing, n8n changes, Cursor loops, Bugbot, PM-34, L5, schedules or any permanent runtime.

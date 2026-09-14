@@ -24,6 +24,7 @@
 
 import { admitRouteWithReserve } from "./rt25-reserve-admission-v1.mjs";
 import { attachEconomicsMetadata } from "./rt25-economics-metadata-v1.mjs";
+import { classifyExpiringAllowance } from "./expiring-allowance-policy-v1.mjs";
 
 export const PLANNER_DECISION_SCHEMA = "v4-rt25-planner-quota-aware-decision-v1";
 
@@ -33,9 +34,9 @@ export const PLANNER_DECISION_SCHEMA = "v4-rt25-planner-quota-aware-decision-v1"
  * @param {object} [options]   { decision_id, nowMs }
  */
 export function selectQuotaAwarePlannerRoute(joined, candidates, options = {}) {
-  const nowIso = new Date(
-    typeof options.nowMs === "number" && Number.isFinite(options.nowMs) ? options.nowMs : Date.now(),
-  ).toISOString();
+  const nowMs =
+    typeof options.nowMs === "number" && Number.isFinite(options.nowMs) ? options.nowMs : Date.now();
+  const nowIso = new Date(nowMs).toISOString();
   const base = {
     schema_version: PLANNER_DECISION_SCHEMA,
     decision_id: options.decision_id || `planner-${nowIso}`,
@@ -125,10 +126,82 @@ export function selectQuotaAwarePlannerRoute(joined, candidates, options = {}) {
   base.admitted_candidates.sort((a, b) =>
     a.select_rank !== b.select_rank ? a.select_rank - b.select_rank : String(a.route_id).localeCompare(String(b.route_id)),
   );
+
+  // EXPIRING_ALLOWANCE_USE — generic PREFERENCE modifier (issue #32), applied
+  // AFTER all hard eligibility/safety/reserve/authorization rules: it may only
+  // REORDER already-admitted candidates whose pool's included allowance is
+  // verifiably near reset. Opt-in via options.expiringAllowance = {
+  // enabled, workReady, nowMs?, windowSeconds?, qualityRequirementMet?,
+  // policyPermitted? }. It can never make an ineligible route eligible, never
+  // bypasses gates/floors (admission already ran), never creates work, and
+  // fails closed to "no preference" (RESET_UNKNOWN/ALLOWANCE_STALE/...) on any
+  // uninterpretable input — the route itself remains selectable normally.
+  let expiringPreference = null;
+  const ea = options.expiringAllowance;
+  if (ea && ea.enabled === true) {
+    if (ea.workReady !== true) {
+      // USEFUL_READY_WORK gate: no READY work -> preference never activates
+      // (structurally prevents manufactured work for quota burn).
+      expiringPreference = { active: false, reason_code: "NOT_READY_WORK", candidates: [] };
+    } else {
+      const poolCache = new Map();
+      const classified = base.admitted_candidates.map((rec) => {
+        const poolId = rec.quota_pool_id;
+        let classification;
+        if (!poolId || !joined.pools[poolId]) {
+          classification = { active: false, reason_code: "ALLOWANCE_UNKNOWN" };
+        } else {
+          if (!poolCache.has(poolId)) {
+            poolCache.set(
+              poolId,
+              classifyExpiringAllowance(joined.pools[poolId], {
+                nowMs,
+                windowSeconds: ea.windowSeconds,
+                adequate: true, // candidates here are already admission-verified
+                qualityOk: ea.qualityRequirementMet !== false,
+                policyPermitted: ea.policyPermitted !== false,
+              }),
+            );
+          }
+          classification = poolCache.get(poolId);
+        }
+        return { candidate: rec, classification };
+      });
+      const active = classified.filter((x) => x.classification.active === true);
+      const inactiveReasons = [...new Set(classified.filter((x) => x.classification.active !== true).map((x) => x.classification.reason_code))];
+      expiringPreference = {
+        active: active.length > 0,
+        reason_code:
+          active.length > 0
+            ? "EXPIRING_ALLOWANCE_USE"
+            : classified[0]?.classification?.reason_code || "ALLOWANCE_UNKNOWN",
+        ...(active.length === 0 && inactiveReasons.length > 0 ? { reason_codes: inactiveReasons } : {}),
+        candidates: active.map((x) => ({
+          route_id: x.candidate.route_id,
+          quota_pool_id: x.candidate.quota_pool_id,
+          reset_at: x.classification.metadata.reset_at,
+          time_remaining_ms: x.classification.metadata.time_remaining_ms,
+          remaining_percent: x.classification.metadata.remaining_percent,
+          reserve_floor_percent: x.classification.metadata.reserve_floor_percent,
+        })),
+      };
+      // Deterministic reorder: expiring-active candidates first, caller order
+      // (select_rank/route_id) preserved within each group.
+      classified.sort((x, y) => {
+        const ax = x.classification.active === true ? 0 : 1;
+        const bx = y.classification.active === true ? 0 : 1;
+        return ax - bx;
+      });
+      base.admitted_candidates = classified.map((x) => x.candidate);
+    }
+  }
+  if (expiringPreference) base.expiring_allowance = expiringPreference;
+
   const winner = base.admitted_candidates[0];
   base.selected = winner;
   base.status = "ROUTE_SELECTED";
   base.reason_codes = ["QUOTA_AWARE_SELECTION", `SELECTED_${String(winner.admission).toUpperCase()}`];
+  if (expiringPreference?.active === true) base.reason_codes.push("EXPIRING_ALLOWANCE_USE");
 
   // pool_evaluations: one entry per pool actually touched by ANY candidate's
   // admission outcome (shared pools appear once; denied pools carry the exact
