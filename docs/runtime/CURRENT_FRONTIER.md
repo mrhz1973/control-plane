@@ -2,7 +2,7 @@
 
 > **Unica fonte canonica dello stato operativo vivo.**
 
-> **CURRENT OPENCLAW RECONCILIATION**: `OPENCLAW_FINAL_DISPOSITION=SCOPED_RETENTION` · broker/fallback/agent runtime `RETIRED` · `OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED` · `OPENCLAW_QUOTA_SCOPE=glm_coding_plan` · `GLM_QUOTA_AUTHORITY=OPENCLAW` · `CODEX_QUOTA_AUTHORITY=CODEX_APP_SERVER` · `CODEX_OPENCLAW_AUTHORITY=NO` · `CODEX_OPENCLAW_FALLBACK=NO` · `V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2=PASS` · `PHASE_D=PASS` · `ISSUE_73=CLOSED_COMPLETED` · `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0` · `CURRENT_NEXT=V4_HERMES_CONSOLIDATION_AUDIT_CLOSURE_EVALUATION_V1`
+> **CURRENT OPENCLAW RECONCILIATION**: `OPENCLAW_FINAL_DISPOSITION=SCOPED_RETENTION` · broker/fallback/agent runtime `RETIRED` · `OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED` · `OPENCLAW_QUOTA_SCOPE=glm_coding_plan` · `GLM_QUOTA_AUTHORITY=OPENCLAW` · `CODEX_QUOTA_AUTHORITY=CODEX_APP_SERVER` · `CODEX_OPENCLAW_AUTHORITY=NO` · `CODEX_OPENCLAW_FALLBACK=NO` · `V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2=PASS` · `PHASE_D=PASS` · `ISSUE_73=CLOSED_COMPLETED` · `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0` · `CURRENT_NEXT=V4_HERMES_CONSOLIDATION_AUDIT_ISSUE_61_CLOSURE_PERSISTENCE_V1`
 
 > Legacy `KEEP_STAGED_PENDING` and `OPENCLAW_BROKER_RUNTIME=RETIRE` wording
 > in historical rows below is superseded and is not current state.
@@ -562,8 +562,8 @@ RUNTIME_CHANGED=NO
 PHASE_5_OPTIONAL=CLOSED_NO_EXPANSION
 ISSUE_73_PHASE_C=PASS
 ISSUE_73=CLOSED_COMPLETED
-CURRENT_NEXT=V4_HERMES_CONSOLIDATION_AUDIT_CLOSURE_EVALUATION_V1
-NEXT=V4_HERMES_CONSOLIDATION_AUDIT_CLOSURE_EVALUATION_V1
+CURRENT_NEXT=V4_HERMES_CONSOLIDATION_AUDIT_ISSUE_61_CLOSURE_PERSISTENCE_V1
+NEXT=V4_HERMES_CONSOLIDATION_AUDIT_ISSUE_61_CLOSURE_PERSISTENCE_V1
 NEXT_HUMAN_GATE_REQUIRED=NO
 ```
 
@@ -573,3 +573,19 @@ adapter registry `19/19`, and execution adapter router `15/15`. No provider,
 browser, Telegram, dispatcher, n8n, VPS, route, authorization, or production
 action occurred in this decision task. Evidence:
 `reports/architecture/v4_hermes_implementer_expansion_phase_5_decision_v1.md`.
+---
+
+`V4_HERMES_CONSOLIDATION_AUDIT_CLOSURE_EVALUATION_V1` = **PASS** →
+`ISSUE_61_CLOSURE_READY=YES`: audit required outputs 8/8 COMPLETE;
+migration Phases 1–5 all PASS or explicit decision-closure (OpenClaw
+SCOPED_RETENTION reconciliation, CDP governance unification, scheduler
+role separation, routing policy single-source registry adapter, Phase 5
+CLOSED_NO_EXPANSION); `REQUIRED_BLOCKERS_REMAINING=0`; historical
+contradictions carry explicit supersession notes; frontier coherent;
+no issue mutation performed (#61 still OPEN — closure persists in the
+next gated task). Nonblocking future work excluded: Hermes implementer
+expansion, OLD VPS decommission, GLM mapper null→100 wrinkle, OpenClaw
+updatedAt anomaly, OCR/VLM. Report:
+`reports/architecture/v4_hermes_consolidation_audit_closure_evaluation_v1.md`.
+`NEXT=V4_HERMES_CONSOLIDATION_AUDIT_ISSUE_61_CLOSURE_PERSISTENCE_V1`
+`NEXT_HUMAN_GATE_REQUIRED=NO`.

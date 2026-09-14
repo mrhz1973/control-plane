@@ -1,5 +1,29 @@
 # LAST CURSOR REPORT
 
+## Hermes consolidation audit closure evaluation — READY (latest)
+
+**TASK_REF:** `V4_HERMES_CONSOLIDATION_AUDIT_CLOSURE_EVALUATION_V1`
+**Classification:** `PASS — ISSUE_61_CLOSURE_READY=YES`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `cc35d1a0efff636efa5e66a78aaa158474238c75` (verified PASS at start)
+**Report:** `reports/architecture/v4_hermes_consolidation_audit_closure_evaluation_v1.md`
+
+- Issue #61 original outputs 8/8 COMPLETE (AS-IS map, overlap matrix,
+  dispositions, TO-BE, route policy, security, migration plan, quantified
+  maintenance reduction).
+- All five migration phases reconciled: Phase 1 OpenClaw SCOPED_RETENTION
+  (valid supersession of full-RETIRE), Phase 2 CDP governance PASS,
+  Phase 3 scheduler role-separation PASS, Phase 4 routing single-source
+  PASS, Phase 5 CLOSED_NO_EXPANSION by explicit decision.
+- REQUIRED_BLOCKERS_REMAINING=0; security invariants verified (no public
+  CDP/noVNC/Funnel, no fallback, D-0025 disabled, 0 production
+  authorizations, route control DISABLED, SHADOW_ONLY).
+- NO issue mutation: #61 remains OPEN; closure persistence is the next
+  bounded task.
+- NEXT: `V4_HERMES_CONSOLIDATION_AUDIT_ISSUE_61_CLOSURE_PERSISTENCE_V1`
+  (NEXT_HUMAN_GATE_REQUIRED=NO).
+
+---
 ## Hermes implementer expansion Phase 5 decision — PASS (latest)
 
 **TASK_REF:** `V4_HERMES_IMPLEMENTER_EXPANSION_PHASE_5_DECISION_V1`
