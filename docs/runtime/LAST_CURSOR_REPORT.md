@@ -1,5 +1,33 @@
 # LAST CURSOR REPORT
 
+## Hermes implementer expansion Phase 5 decision — PASS (latest)
+
+**TASK_REF:** `V4_HERMES_IMPLEMENTER_EXPANSION_PHASE_5_DECISION_V1`
+**Classification:** `PASS`
+**BASE_HEAD:** `67a2ff9074f65228757dfb5c772084d2e67247ad`
+**Report:** `reports/architecture/v4_hermes_implementer_expansion_phase_5_decision_v1.md`
+
+- Operator-authorized decision: `PHASE_5_DECISION=KEEP_CURRENT_SCOPE_NO_EXPANSION`;
+  `EXPANSION_VALUE=NOT_MATERIAL_OR_NOT_PROVEN`;
+  `CURRENT_SCOPE_SUFFICIENT=YES`; `SELECTED_CLASS=NONE`.
+- Existing Hermes/browser and bounded Phase F evidence is preserved, while
+  general unattended VPS implementer work remains `NOT_QUALIFIED` and
+  `PRODUCTION_AUTHORIZED=NO`. `ROUTE_CONTROL_STATE_FINAL=DISABLED`;
+  `CURRENT_MODE=SHADOW_ONLY`; `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0`.
+- `DRY_POLICY_PROOF=NOT_APPLICABLE` because the B decision does not authorize
+  an A-branch class proof. `LIVE_CANARY_REQUIRED=NO`;
+  `LIVE_CANARY_EXECUTED=NO`; `PRODUCTION_AUTHORIZATION_CREATED=NO`.
+- Targeted deterministic regressions: registry `76/76`, Phase F readiness
+  `30/30`, promotion `24/24`, activation guards `13/13`, execution adapter
+  registry `19/19`, execution adapter router `15/15`.
+- `MODEL_INFERENCE=0`; `CHATGPT_WEB_SENDS=0`; `PRODUCTION_CHANGED=NO`;
+  `RUNTIME_CHANGED=NO`; `ISSUE_73_PHASE_C=PASS`;
+  `ISSUE_73=CLOSED_COMPLETED`.
+- `NEXT=V4_HERMES_CONSOLIDATION_AUDIT_CLOSURE_EVALUATION_V1`;
+  `PHASE_5_OPTIONAL=CLOSED_NO_EXPANSION`.
+
+---
+
 ## Routing policy single source Phase 4 — PASS (latest)
 
 **TASK_REF:** `V4_ROUTING_POLICY_SINGLE_SOURCE_PHASE_4_V1`

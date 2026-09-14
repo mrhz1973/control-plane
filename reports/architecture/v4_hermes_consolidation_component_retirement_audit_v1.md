@@ -429,3 +429,49 @@ PHASE_5_HUMAN_GATE_REQUIRED=YES
 CURRENT_NEXT=PHASE_5_OPTIONAL_HERMES_IMPLEMENTER_EXPANSION_DECISION
 NEXT=PHASE_5_OPTIONAL_HERMES_IMPLEMENTER_EXPANSION_DECISION
 ```
+
+## 17. HERMES IMPLEMENTER EXPANSION PHASE 5 — CURRENT RESULT
+
+**TASK_REF:** `V4_HERMES_IMPLEMENTER_EXPANSION_PHASE_5_DECISION_V1`
+**BASE_HEAD:** `67a2ff9074f65228757dfb5c772084d2e67247ad`
+**STATUS:** `PASS`
+
+The operator-authorized Phase 5 decision is **B — keep the current scope; no
+Hermes implementer expansion on the VPS**. The current evidence proves the
+bounded Hermes/browser bridge and one bounded Phase F canary, but not a
+materially better unattended VPS implementation class. The existing qualified
+LOCAL_DEV/OpenCode + Qwen path remains the implementation alternative.
+
+```text
+PHASE_5_DECISION=KEEP_CURRENT_SCOPE_NO_EXPANSION
+EXPANSION_VALUE=NOT_MATERIAL_OR_NOT_PROVEN
+CURRENT_SCOPE_SUFFICIENT=YES
+SELECTED_CLASS=NONE
+HERMES_GENERAL_VPS_IMPLEMENTER=NOT_QUALIFIED
+VPS_GOVERNED_CODEX_SURFACE=PREFILL_ONLY
+LIVE_CANARY_REQUIRED=NO
+LIVE_CANARY_EXECUTED=NO
+PRODUCTION_AUTHORIZATION_CREATED=NO
+ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0
+ROUTE_CONTROL_STATE_FINAL=DISABLED
+CURRENT_MODE=SHADOW_ONLY
+PHASE_5_OPTIONAL=CLOSED_NO_EXPANSION
+PRODUCTION_CHANGED=NO
+RUNTIME_CHANGED=NO
+NEXT=V4_HERMES_CONSOLIDATION_AUDIT_CLOSURE_EVALUATION_V1
+```
+
+The candidate census covered bounded local repository repair, the already
+qualified ChatGPT Web canary class, unattended VPS repository maintenance, and
+read-only operator inspection. No candidate supplied proven incremental value
+that justified widening the Hermes implementer boundary. The decision keeps
+the dispatcher as claim/selection authority, n8n as deterministic control and
+persistence, the human gate as sole decision authority, and the existing
+fail-closed route/quota/rollback laws.
+
+Deterministic evidence remained green: registry `76/76`, Phase F readiness
+`30/30`, promotion `24/24`, activation guards `13/13`, execution adapter
+registry `19/19`, and execution adapter router `15/15`. No provider, browser,
+Telegram, dispatcher, n8n, VPS, route, authorization, or production action was
+performed. Detailed evidence is in
+`reports/architecture/v4_hermes_implementer_expansion_phase_5_decision_v1.md`.

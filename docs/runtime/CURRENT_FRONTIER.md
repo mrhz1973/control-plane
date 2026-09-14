@@ -2,7 +2,7 @@
 
 > **Unica fonte canonica dello stato operativo vivo.**
 
-> **CURRENT OPENCLAW RECONCILIATION**: `OPENCLAW_FINAL_DISPOSITION=SCOPED_RETENTION` · broker/fallback/agent runtime `RETIRED` · `OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED` · `OPENCLAW_QUOTA_SCOPE=glm_coding_plan` · `GLM_QUOTA_AUTHORITY=OPENCLAW` · `CODEX_QUOTA_AUTHORITY=CODEX_APP_SERVER` · `CODEX_OPENCLAW_AUTHORITY=NO` · `CODEX_OPENCLAW_FALLBACK=NO` · `V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2=PASS` · `PHASE_D=PASS` · `ISSUE_73=CLOSED_COMPLETED` · `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0` · `CURRENT_NEXT=PHASE_5_OPTIONAL_HERMES_IMPLEMENTER_EXPANSION_DECISION`
+> **CURRENT OPENCLAW RECONCILIATION**: `OPENCLAW_FINAL_DISPOSITION=SCOPED_RETENTION` · broker/fallback/agent runtime `RETIRED` · `OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED` · `OPENCLAW_QUOTA_SCOPE=glm_coding_plan` · `GLM_QUOTA_AUTHORITY=OPENCLAW` · `CODEX_QUOTA_AUTHORITY=CODEX_APP_SERVER` · `CODEX_OPENCLAW_AUTHORITY=NO` · `CODEX_OPENCLAW_FALLBACK=NO` · `V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2=PASS` · `PHASE_D=PASS` · `ISSUE_73=CLOSED_COMPLETED` · `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0` · `CURRENT_NEXT=V4_HERMES_CONSOLIDATION_AUDIT_CLOSURE_EVALUATION_V1`
 
 > Legacy `KEEP_STAGED_PENDING` and `OPENCLAW_BROKER_RUNTIME=RETIRE` wording
 > in historical rows below is superseded and is not current state.
@@ -532,3 +532,44 @@ PHASE_5_HUMAN_GATE_REQUIRED=YES
 Phase 5 is not executed by this task and remains a separately gated optional
 decision. No provider, browser, Hermes, LiteLLM, dispatcher, n8n, VPS, quota,
 credential, or production action occurred.
+
+---
+
+## Current latest — Hermes implementer expansion Phase 5 decision
+
+`V4_HERMES_IMPLEMENTER_EXPANSION_PHASE_5_DECISION_V1` = **PASS**. The
+operator-authorized decision is to keep the current scope and perform no Hermes
+implementer expansion on the VPS. Existing Hermes/browser and bounded Phase F
+evidence is preserved; it is not generalized into an unattended implementer
+qualification or authorization.
+
+```text
+PHASE_5_DECISION=KEEP_CURRENT_SCOPE_NO_EXPANSION
+EXPANSION_VALUE=NOT_MATERIAL_OR_NOT_PROVEN
+CURRENT_SCOPE_SUFFICIENT=YES
+SELECTED_CLASS=NONE
+DRY_POLICY_PROOF=NOT_APPLICABLE
+LIVE_CANARY_REQUIRED=NO
+LIVE_CANARY_EXECUTED=NO
+PRODUCTION_AUTHORIZATION_CREATED=NO
+ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0
+ROUTE_CONTROL_STATE_FINAL=DISABLED
+CURRENT_MODE=SHADOW_ONLY
+MODEL_INFERENCE=0
+CHATGPT_WEB_SENDS=0
+PRODUCTION_CHANGED=NO
+RUNTIME_CHANGED=NO
+PHASE_5_OPTIONAL=CLOSED_NO_EXPANSION
+ISSUE_73_PHASE_C=PASS
+ISSUE_73=CLOSED_COMPLETED
+CURRENT_NEXT=V4_HERMES_CONSOLIDATION_AUDIT_CLOSURE_EVALUATION_V1
+NEXT=V4_HERMES_CONSOLIDATION_AUDIT_CLOSURE_EVALUATION_V1
+NEXT_HUMAN_GATE_REQUIRED=NO
+```
+
+Targeted deterministic regressions remained green: registry `76/76`, Phase F
+readiness `30/30`, promotion `24/24`, activation guards `13/13`, execution
+adapter registry `19/19`, and execution adapter router `15/15`. No provider,
+browser, Telegram, dispatcher, n8n, VPS, route, authorization, or production
+action occurred in this decision task. Evidence:
+`reports/architecture/v4_hermes_implementer_expansion_phase_5_decision_v1.md`.
