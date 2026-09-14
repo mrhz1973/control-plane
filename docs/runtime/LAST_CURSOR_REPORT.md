@@ -1,5 +1,31 @@
 # LAST CURSOR REPORT
 
+## OpenClaw Phase 1 paper retirement — STOP (latest)
+
+**TASK_REF:** `V4_OPENCLAW_PAPER_RETIREMENT_PHASE_1_V1`
+**Classification:** `STOP — OPENCLAW_PAPER_RETIREMENT_BLOCKED_BY_LIVE_REFERENCE`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `eca01ad147289b422cdec4f3bbd66fbff4d0e395` (verified PASS at start)
+**Report:** `reports/runtime/openclaw-retirement/STOP_PAPER_RETIREMENT_PHASE_1_V1.md`
+
+- Caller audit found ONE live runtime caller: the #73 OpenClaw quota observation
+  lane wired into the LIVE LOCAL_DEV dispatcher
+  (`serve-local-dev-autonomous-dispatcher-v1.mjs` → `buildResourceObservatory` →
+  `collectQuotaObservatory` → `getOpenClawQuotaObservation` → CLI
+  `openclaw status --usage --json`). Live proof during audit: dispatcher PID 27964
+  with child PID 5088 executing the OpenClaw CLI; GET /v1/resources returned
+  `quotas.openclaw.refresh_in_progress=true`.
+- `tools/collect-codex-appserver-quota-v1.mjs` declares
+  `routing_authority=OPENCLAW_PRIMARY` consuming the same lane → real data-plane
+  dependency, not dormant code. No disable switch exists.
+- Therefore PAPER retirement would be a REAL runtime behavior change (forbidden
+  by task law). Registry v2 already OpenClaw-free; historical evidence untouched;
+  zero files modified besides this STOP persistence.
+- NEXT (pending operator decision): PHASE_0.5 gated task to retire the quota
+  observation lane, OR amend audit disposition to broker-only retirement keeping
+  the qualified #73 quota lane.
+
+---
 ## Issue #79 closure persistence (latest)
 
 **TASK_REF:** `LOCAL_DEV_HERMES_QWEN_ACTIVITY_OBSERVABILITY_V1_ISSUE_79_CLOSURE_PERSISTENCE`

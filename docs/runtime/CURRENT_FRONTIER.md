@@ -365,3 +365,7 @@ SOLE authority. First bounded slice: PHASE_1 OpenClaw paper retirement
 `reports/architecture/v4_hermes_consolidation_component_retirement_audit_v1.md`.
 `NEXT=PHASE_1 OpenClaw paper retirement (bounded), pending
 orchestrator/human authorization`.
+
+---
+
+V4_OPENCLAW_PAPER_RETIREMENT_PHASE_1_V1 = **STOP** → OPENCLAW_PAPER_RETIREMENT_BLOCKED_BY_LIVE_REFERENCE — caller audit found the OpenClaw quota observation lane LIVE in the production dispatcher (collect-openclaw-quota-v1.mjs via local-dev-resource-observatory-v1.mjs → serve-local-dev-autonomous-dispatcher-v1.mjs GET /v1/resources; live proof: dispatcher PID 27964 spawning openclaw.mjs status --usage --json PID 5088; endpoint quotas.openclaw.refresh_in_progress=true). No disable switch; codex quota reconciliation declares outing_authority=OPENCLAW_PRIMARY. Gate: LIVE_RUNTIME_CALLERS=1 → STOP per task law, no repair, no doc-only workaround. Registry already clean; historical evidence untouched. Report: eports/runtime/openclaw-retirement/STOP_PAPER_RETIREMENT_PHASE_1_V1.md. NEXT=operator decision: gate a separate PHASE_0.5 to retire the OpenClaw quota observation lane (runtime change) OR amend audit RETIRE scope to broker-only and keep the qualified #73 quota lane.
