@@ -1,5 +1,36 @@
 # LAST CURSOR REPORT
 
+## Issue #69 VPS operating model closed COMPLETED — reconciliation PASS (latest)
+
+**TASK_REF:** `V4_VPS_ISSUE_69_OPERATING_MODEL_CLOSURE_RECONCILIATION_V1`
+**Classification:** `PASS`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `b58dde5e6f1070419d5879dc18329d476b339208` (verified PASS at start)
+**Report:** `reports/architecture/v4_vps_issue_69_operating_model_closure_reconciliation_v1.md`
+
+- Documentation / issue closure reconciliation only; no tests, no VPS
+  access, no runtime change (`MODEL_INFERENCE=0`).
+- Issue #69 CLOSED `COMPLETED` (issuecomment-5667507470; body/title/labels
+  untouched; post-close state re-verified). Canonical `docs/vps/` area
+  verified class-by-class against acceptance A–O: all seven required
+  information classes represented — README entry point/`agg vps` read
+  order, CURRENT_VPS_STATE, MIGRATION_OPERATING_LAW,
+  PROJECT_VPS_HANDOFF_STANDARD (`VPS_AS_IS_COMPONENT_MAP`,
+  LOCAL_TO_COMPONENT/SHARED_INFRASTRUCTURE, `SHARED_RESOURCE_COLLISIONS`,
+  bounded `PROJECT_VPS_HANDOFF` return, secret-safe rules),
+  PROJECT_VPS_REGISTRY, SHARED_INFRASTRUCTURE_REGISTRY (authoritative
+  per-resource ownership), DECOMMISSION_CHECKLIST
+  (`OLD_DECOMMISSION_ELIGIBLE` hard invariant).
+- Documentation hygiene: two objectively stale pre-decommission
+  current-state sentences (PROJECT_VPS_REGISTRY + SHARED_INFRASTRUCTURE_
+  REGISTRY intros) minimally corrected to recorded facts; no historical
+  rewrite. `PROJECT_VPS_HANDOFF_STANDARD=CANONICAL` ·
+  `SHARED_INFRASTRUCTURE_OWNERSHIP=CANONICAL` · `DECOMMISSION_LAW=CANONICAL`.
+- #68 untouched, remains `OPEN_PENDING_PROVIDER_TERMINATION`.
+- **NEXT:** `V4_ISSUE_65_NOVNC_VIEW_ONLY_DEFAULT_V1` (only remaining OPEN
+  engineering issue; not executed here).
+
+---
 ## VPS parents #60/#67 closed COMPLETED — reconciliation PASS (latest)
 
 **TASK_REF:** `V4_VPS_PARENT_60_67_CLOSURE_RECONCILIATION_V1`

@@ -2,7 +2,7 @@
 
 This file records authoritative ownership/state for VPS resources that specialist projects must not configure independently.
 
-NEW Tailscale identity and the full GOI private stack are LIVE and proven functional, enabled, cold-start persistent, and TLS renewal with nginx active is proven with weekly timer. Authorized cutover is PASS; OLD is frozen rollback standby with open retention and no decommission authorization.
+NEW Tailscale identity and the full GOI private stack are LIVE and proven functional, enabled, cold-start persistent, and TLS renewal with nginx active is proven with weekly timer. Authorized cutover is PASS; OLD rollback retention was served through observation and closed by operator authorization; OLD decommission was authorized and executed as OS shutdown 2026-09-14 with IONOS provider termination pending as a separate manual operator action (#68).
 
 | Shared resource | Owner | OLD current state | NEW current state | Mutation rule / gate |
 |---|---|---|---|---|

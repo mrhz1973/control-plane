@@ -846,6 +846,34 @@ commercial tail belongs only to #68 (`OPEN_PENDING_PROVIDER_TERMINATION`,
 PASS). No OLD/NEW access or mutation; no tests run. Report:
 `reports/architecture/v4_vps_parent_60_67_closure_reconciliation_v1.md`.
 ```text
-CURRENT_NEXT=V4_VPS_ISSUE_69_OPERATING_MODEL_CLOSURE_RECONCILIATION_V1
-NEXT=V4_VPS_ISSUE_69_OPERATING_MODEL_CLOSURE_RECONCILIATION_V1
+CURRENT_NEXT_then=V4_VPS_ISSUE_69_OPERATING_MODEL_CLOSURE_RECONCILIATION_V1 (historical record — consumed 2026-09-14 by the PASS below)
+NEXT_then=V4_VPS_ISSUE_69_OPERATING_MODEL_CLOSURE_RECONCILIATION_V1 (historical record)
+```
+
+---
+
+## Current latest — Issue #69 VPS operating model closed
+
+`V4_VPS_ISSUE_69_OPERATING_MODEL_CLOSURE_RECONCILIATION_V1` = **PASS**
+(documentation / issue closure reconciliation only): issue #69 ("VPS
+operating model — migration registry, project handoff format and
+cross-project topology") CLOSED `COMPLETED` (comment
+issuecomment-5667507470; body/title/labels untouched). Canonical
+`docs/vps/` area verified class-by-class: all seven required information
+classes represented (README entry point/read order, CURRENT_VPS_STATE,
+MIGRATION_OPERATING_LAW, PROJECT_VPS_HANDOFF_STANDARD with
+`VPS_AS_IS_COMPONENT_MAP` + LOCAL_TO_COMPONENT/SHARED_INFRASTRUCTURE +
+`SHARED_RESOURCE_COLLISIONS` + bounded `PROJECT_VPS_HANDOFF` return,
+PROJECT_VPS_REGISTRY, SHARED_INFRASTRUCTURE_REGISTRY, DECOMMISSION_CHECKLIST
+with the `OLD_DECOMMISSION_ELIGIBLE` hard invariant). Two objectively stale
+pre-decommission current-state sentences in the two registry intros were
+minimally corrected to the recorded facts; no historical rewrite.
+`PROJECT_VPS_HANDOFF_STANDARD=CANONICAL` ·
+`SHARED_INFRASTRUCTURE_OWNERSHIP=CANONICAL` · `DECOMMISSION_LAW=CANONICAL`.
+#68 remains separately `OPEN_PENDING_PROVIDER_TERMINATION` (untouched).
+No tests, no VPS access, no runtime change.
+Report: `reports/architecture/v4_vps_issue_69_operating_model_closure_reconciliation_v1.md`.
+```text
+CURRENT_NEXT=V4_ISSUE_65_NOVNC_VIEW_ONLY_DEFAULT_V1
+NEXT=V4_ISSUE_65_NOVNC_VIEW_ONLY_DEFAULT_V1
 ```
