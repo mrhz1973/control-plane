@@ -1,5 +1,31 @@
 # LAST CURSOR REPORT
 
+## Authorized OLD VPS decommission — OS SHUTDOWN COMPLETE (latest)
+
+**TASK_REF:** `V4_VPS_68_AUTHORIZED_OLD_DECOMMISSION_EXECUTION_V1`
+**Classification:** `PASS — PARTIAL: OS shutdown complete, provider termination manual`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `90731dcab7f1a9990b84d76b4b9de8e320c53dd5` (verified PASS at start)
+**Report:** `reports/architecture/v4_vps_68_authorized_old_decommission_execution_v1.md`
+
+- Human authorization recorded (#68 issuecomment-5665517718); identity
+  fence PASS (OLD = ubuntu / 217.160.71.145 / 100.114.7.53 verified
+  twice incl. immediately pre-shutdown; NEW never touched).
+- Final backup law: satisfied by existing canonical cutover evidence;
+  no duplicate dump.
+- OLD clean shutdown executed (`systemctl poweroff`); OLD now externally
+  unreachable (SSH timeout, 22/443 closed). OLD_ROLE=DECOMMISSIONED_OS_
+  SHUTDOWN_COMPLETE_PROVIDER_TERMINATION_PENDING.
+- NEW sanity PASS (one read-only check: egress 31.70.139.73, Tailscale
+  100.99.54.93, docker root-n8n-1/root-postgres-1 healthy, n8n healthz
+  `{"status":"ok"}`) — NEW_ROLE=LIVE, PRODUCTION_CHANGED=NO_ON_NEW.
+- No already-authenticated IONOS provider surface exists → provider
+  termination = MANUAL_OPERATOR_ACTION_REQUIRED (nothing improvised);
+  Tailscale OLD node cleanup = nonblocking manual hygiene.
+- `ISSUE_68=OPEN_PENDING_PROVIDER_TERMINATION`; NEXT=
+  `IONOS_OLD_VPS_PROVIDER_TERMINATION_OPERATOR_ACTION`.
+
+---
 ## VPS #68 decommission technical readiness — READY (latest)
 
 **TASK_REF:** `V4_VPS_68_ROLLBACK_EXIT_DECOMMISSION_READINESS_V1`

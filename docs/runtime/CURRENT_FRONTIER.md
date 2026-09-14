@@ -747,3 +747,24 @@ persisted evidence; zero live checks. `PRODUCTION_CHANGED=NO` ·
 `CURRENT_NEXT=HUMAN_OLD_DECOMMISSION_AUTHORIZATION_GATE`
 `NEXT=HUMAN_OLD_DECOMMISSION_AUTHORIZATION_GATE` (OPERATOR gate — not an
 agent task; do not execute autonomously).
+---
+
+`V4_VPS_68_AUTHORIZED_OLD_DECOMMISSION_EXECUTION_V1` = **PASS (partial
+provider-termination path)**: human authorization recorded → identity
+fence PASS (OLD triple-verified, TARGET_IS_NEW=NO) → final backup law
+satisfied by existing canonical evidence → clean `systemctl poweroff` on
+OLD → OLD externally unreachable (SSH/22/443) → NEW sanity PASS
+(31.70.139.73; docker n8n+postgres healthy; healthz ok; zero NEW
+mutation). `OLD_OS_SHUTDOWN=PASS` · `OLD_ROLE=DECOMMISSIONED_OS_SHUTDOWN_
+COMPLETE_PROVIDER_TERMINATION_PENDING` ·
+`OLD_PROVIDER_TERMINATION=MANUAL_OPERATOR_ACTION_REQUIRED` (no already-
+authenticated IONOS control surface exists — none improvised) ·
+`OLD_DECOMMISSION_EXECUTED=PARTIAL_OS_SHUTDOWN_COMPLETE` ·
+`ROLLBACK_RETENTION=CLOSED_BY_OPERATOR_AUTHORIZATION` ·
+`NEW_ROLE=LIVE` · `PRODUCTION_CHANGED=NO_ON_NEW` · `ISSUE_68=OPEN_
+PENDING_PROVIDER_TERMINATION`. Tailscale OLD node cleanup = nonblocking
+manual hygiene. Report:
+`reports/architecture/v4_vps_68_authorized_old_decommission_execution_v1.md`.
+`CURRENT_NEXT=IONOS_OLD_VPS_PROVIDER_TERMINATION_OPERATOR_ACTION`
+`NEXT=IONOS_OLD_VPS_PROVIDER_TERMINATION_OPERATOR_ACTION` (operator,
+IONOS panel; then #68 closure persistence).

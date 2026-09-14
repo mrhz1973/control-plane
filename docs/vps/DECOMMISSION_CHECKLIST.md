@@ -99,10 +99,10 @@ The checklist boxes below remain the canonical gate. Rollback retention is open 
 
 ## Final decommission gate
 
-- [ ] `OLD_DECOMMISSION_ELIGIBLE=YES` recorded by Control Plane
-- [ ] explicit final human authorization to decommission OLD recorded
-- [ ] final backup/evidence requirements satisfied
-- [ ] OLD deletion/shutdown action separately bounded and logged
+- [x] `OLD_DECOMMISSION_ELIGIBLE=YES` recorded by Control Plane — 2026-09-14 (technically ready; eligible pending human gate → gate satisfied)
+- [x] explicit final human authorization to decommission OLD recorded — 2026-09-14 (#68 issuecomment-5665517718)
+- [x] final backup/evidence requirements satisfied — by existing canonical cutover evidence (no duplicate dump)
+- [x] OLD shutdown action separately bounded and logged — 2026-09-14 (clean `systemctl poweroff`; OS shutdown PASS; **provider deletion still pending manual operator action — do not mark provider deletion complete**)
 
 Technical readiness update 2026-09-14 (`V4_VPS_68_ROLLBACK_EXIT_DECOMMISSION_READINESS_V1`): all technical conditions satisfied (`OLD_DECOMMISSION_TECHNICALLY_READY=YES`, 0 technical blockers); the remaining gate is the explicit human decommission authorization. Final-gate boxes below stay unchecked until that authorization.
 
