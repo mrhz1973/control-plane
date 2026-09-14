@@ -1,5 +1,32 @@
 # LAST CURSOR REPORT
 
+## Issue #65 noVNC view-only default — implemented + CLOSED COMPLETED (latest)
+
+**TASK_REF:** `V4_ISSUE_65_NOVNC_VIEW_ONLY_DEFAULT_V1`
+**Classification:** `PASS — PRODUCTION_CHANGED=YES_BOUNDED_OPERATOR_SURFACE_HARDENING`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `a74d7481cf60b5e5e95d16a2a88004c69e26d56c` (verified PASS at start; identity fence PASS `ubuntu`/`31.70.139.73`/`100.99.54.93`)
+**Report:** `reports/architecture/v4_issue_65_novnc_view_only_default_v1.md`
+
+- Smallest robust change on NEW: systemd drop-in makes x11vnc default
+  `-viewonly` (original args byte-identical otherwise); root helper
+  `hermes-vnc-mode {view|interactive|status}` toggles via tmpfs marker —
+  `BOOT_DEFAULT=VIEW_ONLY` structural (marker never survives reboot).
+- One bounded A→B→C cycle verified: default view-only invocation,
+  interactive invocation without `-viewonly`, deterministic return;
+  listeners strictly `127.0.0.1:5900/6080/9222` at every stage
+  (`NO_PUBLIC_LISTENERS` in interactive); noVNC localhost HTTP 200;
+  Chromium PID `4095558` + persistent profile unchanged; only
+  `hermes-x11vnc` restarted; no second listener/daemon; no secret material
+  touched. No inference/ChatGPT action/campaign/reboot.
+- Issue #65 CLOSED COMPLETED (issuecomment-5667627731); states re-verified.
+  Rollback: unit backup on VPS + canonical repo copies. #68 remains
+  `OPEN_PENDING_PROVIDER_TERMINATION` (untouched); #35 untouched.
+- **NEXT:** `GLOBAL_FRONTIER_RESELECTION_REQUIRED` (remaining OPEN: #68
+  operator-side IONOS tail, #35 parked, #18 deferred research — no
+  mechanically READY engineering slice without inventing work).
+
+---
 ## Issue #69 VPS operating model closed COMPLETED — reconciliation PASS (latest)
 
 **TASK_REF:** `V4_VPS_ISSUE_69_OPERATING_MODEL_CLOSURE_RECONCILIATION_V1`

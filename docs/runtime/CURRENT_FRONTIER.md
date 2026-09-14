@@ -874,6 +874,33 @@ minimally corrected to the recorded facts; no historical rewrite.
 No tests, no VPS access, no runtime change.
 Report: `reports/architecture/v4_vps_issue_69_operating_model_closure_reconciliation_v1.md`.
 ```text
-CURRENT_NEXT=V4_ISSUE_65_NOVNC_VIEW_ONLY_DEFAULT_V1
-NEXT=V4_ISSUE_65_NOVNC_VIEW_ONLY_DEFAULT_V1
+CURRENT_NEXT_then=V4_ISSUE_65_NOVNC_VIEW_ONLY_DEFAULT_V1 (historical record — consumed 2026-09-14 by the PASS below)
+NEXT_then=V4_ISSUE_65_NOVNC_VIEW_ONLY_DEFAULT_V1 (historical record)
+```
+
+---
+
+## Current latest — Issue #65 noVNC view-only default implemented
+
+`V4_ISSUE_65_NOVNC_VIEW_ONLY_DEFAULT_V1` = **PASS** (bounded NEW-VPS
+operator-surface hardening on `ionos-n8n-new`, one A→B→C mode cycle):
+`hermes-x11vnc` now runs with `-viewonly` by default via systemd drop-in
+(`tools/hermes-x11vnc-viewonly-default-drop-in-v1.conf`); interactive human
+assist only via explicit root helper `hermes-vnc-mode interactive`
+(`tools/hermes-vnc-mode-v1.sh`; `view` restores deterministically; `status`
+reports mode). `BOOT_DEFAULT=VIEW_ONLY` structural (marker in tmpfs `/run`,
+cannot survive reboot). Verified: effective invocation toggles `-viewonly`
+exactly with the mode; listeners strictly loopback `127.0.0.1:5900/6080/9222`
+before/during/after (`NO_PUBLIC_LISTENERS`); noVNC localhost HTTP 200;
+Chromium PID `4095558` + persistent profile unchanged across the whole
+cycle; only x11vnc restarted (never Chromium/Xvfb/noVNC/Hermes/n8n/
+PostgreSQL); no second listener/port/daemon; no secret material touched.
+Rollback: unit backup `hermes-x11vnc.service.bak-issue65` on VPS + canonical
+repo copies. Issue #65 CLOSED COMPLETED (issuecomment-5667627731).
+`PRODUCTION_CHANGED=YES_BOUNDED_OPERATOR_SURFACE_HARDENING` ·
+`MODEL_INFERENCE=0`. Report:
+`reports/architecture/v4_issue_65_novnc_view_only_default_v1.md`.
+```text
+CURRENT_NEXT=GLOBAL_FRONTIER_RESELECTION_REQUIRED
+NEXT=GLOBAL_FRONTIER_RESELECTION_REQUIRED
 ```

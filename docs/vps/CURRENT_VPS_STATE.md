@@ -365,3 +365,20 @@ ISSUE_68=OPEN_PENDING_PROVIDER_TERMINATION (unchanged; not claimed complete)
 ```
 
 Report: `reports/architecture/v4_vps_parent_60_67_closure_reconciliation_v1.md`.
+
+## Hermes VNC operator surface view-only default — 2026-09-14 (`V4_ISSUE_65_NOVNC_VIEW_ONLY_DEFAULT_V1`)
+
+Bounded operator-surface hardening on NEW (issue #65 CLOSED COMPLETED):
+x11vnc now runs `-viewonly` by default (systemd drop-in
+`/etc/systemd/system/hermes-x11vnc.service.d/viewonly-default.conf`;
+canonical copy `tools/hermes-x11vnc-viewonly-default-drop-in-v1.conf`).
+Interactive human assist ONLY via explicit root helper
+`hermes-vnc-mode interactive` (`tools/hermes-vnc-mode-v1.sh`);
+`hermes-vnc-mode view` restores VIEW_ONLY deterministically; marker in
+tmpfs `/run` ⇒ boot/restart default is always VIEW_ONLY. Verified with one
+bounded A→B→C cycle: `-viewonly` toggles exactly with mode; listeners
+strictly loopback `127.0.0.1:5900/6080/9222` throughout; noVNC localhost
+HTTP 200; Chromium PID + persistent profile unchanged; only
+`hermes-x11vnc` restarted. Rollback: `hermes-x11vnc.service.bak-issue65`
+on VPS + canonical repo copies. Report:
+`reports/architecture/v4_issue_65_novnc_view_only_default_v1.md`.
