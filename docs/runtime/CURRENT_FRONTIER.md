@@ -815,6 +815,37 @@ experiment, or runtime change. #68 remains independently
 `OPEN_PENDING_PROVIDER_TERMINATION` (operator-side IONOS action).
 Report: `reports/architecture/v4_issue_19_quota_policy_reconciliation_v1.md`.
 ```text
-CURRENT_NEXT=V4_VPS_PARENT_60_67_CLOSURE_RECONCILIATION_V1
-NEXT=V4_VPS_PARENT_60_67_CLOSURE_RECONCILIATION_V1
+CURRENT_NEXT_then=V4_VPS_PARENT_60_67_CLOSURE_RECONCILIATION_V1 (historical record — consumed 2026-09-14 by the PASS below)
+NEXT_then=V4_VPS_PARENT_60_67_CLOSURE_RECONCILIATION_V1 (historical record)
+```
+
+---
+
+## Current latest — VPS parent issues #60/#67 closed
+
+`V4_VPS_PARENT_60_67_CLOSURE_RECONCILIATION_V1` = **PASS** (documentation /
+issue closure reconciliation only — existing evidence, no test campaign):
+VPS migration parent tracks closed from persisted evidence. **#67 CLOSED
+COMPLETED** (issuecomment-5667435002): all 8 completion-path requirements
+satisfied — NEW 8 GB baseline, core replica healthy, Hermes/Chromium/CDP/
+noVNC deployed, fresh manual ChatGPT auth, sentinel/long-chat-recall/auth-
+persistence/resource-GREEN/short-soak+post-soak PASS, parallel validation
+PASS, human cutover gate authorized+executed, OLD rollback retention served
+through observation then closed by operator authorization (retention-through-
+observation interpretation, not forever). **#60 CLOSED COMPLETED**
+(issuecomment-5667435544): original 16 GB target superseded by the valid 8 GB
+replacement path #67 (objective achieved; only intermediate hardware changed
+with recorded operator authorization); all 7 functional criteria satisfied
+(alias/key SSH, OLD inventory+backups, core stack replicated healthy,
+E2E validation, authorized cutover with rollback intact, Hermes 24/7
+qualification with measured resources, OLD retirement as separate explicit
+decision — readiness-proven, authorized, OS shutdown executed).
+`PROVIDER_TERMINATION_BLOCKS_ISSUE_60/67=NO` — the IONOS provider/
+commercial tail belongs only to #68 (`OPEN_PENDING_PROVIDER_TERMINATION`,
+`OLD_PROVIDER_TERMINATION=MANUAL_OPERATOR_ACTION_REQUIRED` — NOT claimed
+PASS). No OLD/NEW access or mutation; no tests run. Report:
+`reports/architecture/v4_vps_parent_60_67_closure_reconciliation_v1.md`.
+```text
+CURRENT_NEXT=V4_VPS_ISSUE_69_OPERATING_MODEL_CLOSURE_RECONCILIATION_V1
+NEXT=V4_VPS_ISSUE_69_OPERATING_MODEL_CLOSURE_RECONCILIATION_V1
 ```

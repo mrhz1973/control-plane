@@ -1,5 +1,36 @@
 # LAST CURSOR REPORT
 
+## VPS parents #60/#67 closed COMPLETED — reconciliation PASS (latest)
+
+**TASK_REF:** `V4_VPS_PARENT_60_67_CLOSURE_RECONCILIATION_V1`
+**Classification:** `PASS`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `1c46987553deb9d3d51315b4851023745fd5913d` (verified PASS at start)
+**Report:** `reports/architecture/v4_vps_parent_60_67_closure_reconciliation_v1.md`
+
+- Documentation / issue closure reconciliation only — existing persisted
+  evidence, zero tests, zero OLD/NEW access or mutation.
+- **#67 CLOSED COMPLETED** (issuecomment-5667435002): 8/8 completion-path
+  requirements satisfied (NEW 8 GB baseline; core replica healthy; Hermes +
+  Chromium/Xvfb/CDP/noVNC; fresh manual ChatGPT auth on NEW; sentinel +
+  long-chat recall + auth persistence + RESOURCE_BASELINE=GREEN + 30-min
+  soak + post-soak PASS; parallel validation PASS; human cutover gate
+  authorized+executed; OLD retained through rollback observation then
+  closed by operator authorization — not forever).
+- **#60 CLOSED COMPLETED** (issuecomment-5667435544): original 16 GB target
+  validly superseded by the 8 GB replacement path #67; all 7 functional
+  criteria satisfied; OLD retirement happened as a separate explicit
+  decision (readiness-proven → operator-authorized → OS shutdown PASS).
+- `PROVIDER_TERMINATION_BLOCKS_ISSUE_60/67=NO`; #68 untouched and remains
+  `OPEN_PENDING_PROVIDER_TERMINATION` (`OLD_PROVIDER_TERMINATION=
+  MANUAL_OPERATOR_ACTION_REQUIRED` — not claimed PASS). NEW_ROLE=LIVE
+  (31.70.139.73). Bodies/titles/labels untouched; post-close states
+  re-verified COMPLETED.
+- `MODEL_INFERENCE=0` · `PRODUCTION_CHANGED=NO` · `RUNTIME_CHANGED=NO`.
+- **NEXT:** `V4_VPS_ISSUE_69_OPERATING_MODEL_CLOSURE_RECONCILIATION_V1`
+  (not executed here).
+
+---
 ## Issue #19 quota policy reconciled — CLOSED NOT_PLANNED, superseded (latest)
 
 **TASK_REF:** `V4_ISSUE_19_QUOTA_POLICY_RECONCILIATION_V1`

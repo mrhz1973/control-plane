@@ -348,3 +348,20 @@ PRODUCTION_CHANGED=NO_ON_NEW
 ```
 
 Report: `reports/architecture/v4_vps_68_authorized_old_decommission_execution_v1.md`.
+
+## VPS parent issues #60/#67 closure — 2026-09-14 (`V4_VPS_PARENT_60_67_CLOSURE_RECONCILIATION_V1`)
+
+Documentation/issue reconciliation only from persisted evidence; no test
+campaign, no OLD/NEW access or mutation.
+
+```text
+VPS_PARENT_60_CLOSURE=PASS
+VPS_PARENT_67_CLOSURE=PASS
+ISSUE_60=CLOSED_COMPLETED (16 GB target validly superseded by 8 GB replacement path #67; all 7 functional criteria satisfied)
+ISSUE_67=CLOSED_COMPLETED (all 8 completion-path requirements satisfied; OLD rollback retention served through observation, then closed by operator authorization)
+PROVIDER_TERMINATION_BLOCKS_ISSUE_60=NO
+PROVIDER_TERMINATION_BLOCKS_ISSUE_67=NO
+ISSUE_68=OPEN_PENDING_PROVIDER_TERMINATION (unchanged; not claimed complete)
+```
+
+Report: `reports/architecture/v4_vps_parent_60_67_closure_reconciliation_v1.md`.
