@@ -1,5 +1,28 @@
 # LAST CURSOR REPORT
 
+## Hermes CDP governance unification Phase 2 — PASS (latest)
+
+**TASK_REF:** `V4_HERMES_CDP_GOVERNANCE_UNIFICATION_PHASE_2_V1`
+**Classification:** `PASS`
+**BASE_HEAD:** `47fbd800238af9f91aa49c12135d6cf0dd8afe8b`
+**Report:** `reports/architecture/v4_hermes_cdp_governance_unification_phase_2_v1.md`
+
+- `PHASE_2_CDP_GOVERNANCE_UNIFICATION=PASS`;
+  `HERMES_NATIVE_GOVERNED_CDP=CANONICAL`.
+- Census result: `LEGACY_LIVE_CALLERS=0`,
+  `LEGACY_GOVERNED_CDP_GLUE_ACTIVE_CALLERS=0`, `UNKNOWN=0`; legacy files are
+  preserved for rollback and are not active runtime dependencies.
+- Native parity and the prefill-only qualification evidence are PASS;
+  `RAW_CDP_CONTROLLER_EXPOSURE=NO` and `PUBLIC_EXPOSURE=NO`.
+- Focused deterministic regressions PASS: legacy adapter checks and native
+  per-invocation allowlist `73/73`.
+- Visual sidecar unchanged; no browser/provider/production action occurred;
+  `RUNTIME_AUTHORITY_CHANGED=NO` and `PRODUCTION_CHANGED=NO`.
+- `ISSUE_73_PHASE_C=PASS`. `NEXT=PHASE_3 scheduler dedup LOCAL_DEV` and
+  `PHASE_3_HUMAN_GATE_REQUIRED=YES`; Phase 3 was not executed.
+
+---
+
 ## Canonical next repair after OpenClaw reconciliation — PASS (latest)
 
 **TASK_REF:** `V4_CANONICAL_NEXT_REPAIR_AFTER_OPENCLAW_RECONCILIATION_V1`

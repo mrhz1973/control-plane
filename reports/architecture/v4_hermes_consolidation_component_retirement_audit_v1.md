@@ -279,3 +279,62 @@ The normal roadmap resumes at
 `ISSUE_73_PHASE_C=PASS` and `PHASE_D=OPEN`. No provider, dispatcher, browser,
 Telegram, n8n, VPS, or OpenClaw runtime action was performed by this
 reconciliation.
+
+## 14. PHASE 2 CDP GOVERNANCE UNIFICATION — CURRENT RESULT
+
+**TASK_REF:** `V4_HERMES_CDP_GOVERNANCE_UNIFICATION_PHASE_2_V1`
+**BASE_HEAD:** `47fbd800238af9f91aa49c12135d6cf0dd8afe8b`
+**STATUS:** `PASS`
+
+The Phase 2 census supersedes the old planned-state wording for active use of
+the governed-CDP composer glue. The repository contains no active runtime or
+qualification caller for either legacy Python file:
+
+```text
+LIVE_RUNTIME_CALLER=0
+ACTIVE_QUALIFICATION_CALLER=0
+LEGACY_GOVERNED_CDP_GLUE_ACTIVE_CALLERS=0
+UNKNOWN=0
+```
+
+The legacy composer and apply helper therefore remain intact as rollback-only
+tooling. The static adapter test retains its references intentionally as a
+security and rollback regression, not as an active execution dependency. No
+code import swap was necessary because the current qualified proof surfaces
+already use the Hermes-native per-invocation path.
+
+### Current Phase 2 markers
+
+```text
+PHASE_2_CDP_GOVERNANCE_UNIFICATION=PASS
+HERMES_NATIVE_GOVERNED_CDP=CANONICAL
+LEGACY_GOVERNED_CDP_GLUE=RETIRED_ACTIVE_USE
+LEGACY_GOVERNED_CDP_GLUE_ACTIVE=NO
+LEGACY_GOVERNED_CDP_GLUE_FILES_PRESERVED_FOR_ROLLBACK=YES
+HERMES_NATIVE_PARITY=PASS
+PREFILL_ONLY_PROOF=PASS
+RAW_CDP_CONTROLLER_EXPOSURE=NO
+PUBLIC_EXPOSURE=NO
+VISUAL_SIDECAR_UNCHANGED=YES
+RUNTIME_AUTHORITY_CHANGED=NO
+PRODUCTION_CHANGED=NO
+```
+
+The native model-visible surface remains exactly
+`browser_navigate`, `browser_snapshot`, `browser_type`, and `browser_press`.
+`browser_cdp`, `browser_console`, and `browser_exec` remain outside the
+controller surface. Existing V7 evidence supplies the bounded prefill-only
+browser qualification; this task performed no browser interaction, Enter
+action, ChatGPT send, provider call, or production dispatch.
+
+Deterministic regressions passed:
+
+```text
+tests/hermes-governed-cdp-adapter-v1/run.mjs = FOCUSED_TESTS=PASS
+tests/hermes-per-invocation-browser-allowlist-v1/run.mjs = 73/73 PASS
+```
+
+The visual sidecar #78 and observability lane #79 were not modified. No file
+under `tools/`, `tests/`, or `workflows/` changed in this Phase 2 task. The
+next bounded architecture slice is `PHASE_3 scheduler dedup LOCAL_DEV`, with
+`PHASE_3_HUMAN_GATE_REQUIRED=YES`; Phase 3 was not executed.

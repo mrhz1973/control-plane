@@ -425,3 +425,35 @@ retired, GLM quota collector retained` is superseded by
 `CURRENT_NEXT=V4_HERMES_CDP_GOVERNANCE_UNIFICATION_PHASE_2_V1`.
 Deferred GLM follow-ups remain: null→100 fail-open wrinkle and OpenClaw
 updatedAt future-dating.
+
+---
+
+## Current latest — Hermes CDP governance unification Phase 2
+
+`V4_HERMES_CDP_GOVERNANCE_UNIFICATION_PHASE_2_V1` = **PASS** (bounded
+consolidation / proof-tooling migration). The repository census found no active
+legacy composer/apply caller: `LEGACY_LIVE_CALLERS=0`,
+`LEGACY_GOVERNED_CDP_GLUE_ACTIVE_CALLERS=0`, `UNKNOWN=0`. The qualified
+Hermes-native governed browser path is canonical; the legacy files are
+preserved only for rollback. Native parity, prefill-only evidence, raw-CDP
+controller exclusion, and the focused deterministic regressions are PASS.
+
+```text
+PHASE_2_CDP_GOVERNANCE_UNIFICATION=PASS
+HERMES_NATIVE_GOVERNED_CDP=CANONICAL
+LEGACY_GOVERNED_CDP_GLUE=RETIRED_ACTIVE_USE
+LEGACY_GOVERNED_CDP_GLUE_ACTIVE=NO
+LEGACY_GOVERNED_CDP_GLUE_FILES_PRESERVED_FOR_ROLLBACK=YES
+PREFILL_ONLY_PROOF=PASS
+RAW_CDP_CONTROLLER_EXPOSURE=NO
+PUBLIC_EXPOSURE=NO
+VISUAL_SIDECAR_CHANGED=NO
+ISSUE_73_PHASE_C=PASS
+RUNTIME_AUTHORITY_CHANGED=NO
+PRODUCTION_CHANGED=NO
+CURRENT_NEXT=PHASE_3 scheduler dedup LOCAL_DEV
+NEXT=PHASE_3 scheduler dedup LOCAL_DEV
+PHASE_3_HUMAN_GATE_REQUIRED=YES
+```
+
+Phase 3 is the next bounded slice and was not executed here.
