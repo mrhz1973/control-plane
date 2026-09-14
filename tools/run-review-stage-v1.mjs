@@ -39,6 +39,11 @@
 import { buildReviewerBoundaryState } from "./rt25-canonical-quota-state-v1.mjs";
 import { selectQuotaAwareReviewerRoute, REVIEWER_DECISION_SCHEMA } from "./rt25-reviewer-quota-aware-selector-v1.mjs";
 import { guardQualityDowngrade } from "./rt25-quality-downgrade-guard-v1.mjs";
+import {
+  DEFAULT_FORBIDDEN_SURFACE_IDS,
+  deriveForbiddenSurfaceIds,
+  deriveModelResourceBindings,
+} from "./resource-registry-v2-policy-adapter-v1.mjs";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -69,11 +74,23 @@ export const RUNTIME_MODEL_IDS = Object.freeze({
  * select_rank: deterministic registry order (insertion order), never invented.
  * The caller may restrict (options.reviewCandidateModels) but never widen.
  */
-export const FORBIDDEN_SURFACES = Object.freeze(["openai_api_route"]);
+export const FORBIDDEN_SURFACES = DEFAULT_FORBIDDEN_SURFACE_IDS;
 
 export function buildReviewerCandidates(registry, options = {}) {
   if (!registry || registry.schema_version !== "resource-registry-v2" || !registry.models || !registry.resources) {
     return { ok: false, candidates: [], reason_codes: ["REGISTRY_INVALID_FOR_REVIEW_CANDIDATES"] };
+  }
+  let forbiddenSurfaces;
+  let modelResourceBindings;
+  try {
+    forbiddenSurfaces = deriveForbiddenSurfaceIds(registry);
+    modelResourceBindings = deriveModelResourceBindings(registry);
+  } catch (error) {
+    return {
+      ok: false,
+      candidates: [],
+      reason_codes: ["REGISTRY_INVALID_FOR_REVIEW_CANDIDATES", "REGISTRY_POLICY_INVALID", String(error?.message || error).slice(0, 120)],
+    };
   }
   const allowed = Array.isArray(options.reviewCandidateModels) && options.reviewCandidateModels.length > 0
     ? new Set(options.reviewCandidateModels)
@@ -86,12 +103,11 @@ export function buildReviewerCandidates(registry, options = {}) {
     if (allowed && !allowed.has(modelId)) continue;
     const surfaceId = model.default_access_surface;
     const surface = surfaceFor(surfaceId);
-    if (surface && FORBIDDEN_SURFACES.includes(surfaceId)) continue; // structurally forbidden (OpenAI API/BYOK)
+    if (surface && forbiddenSurfaces.includes(surfaceId)) continue; // structurally forbidden (representational/API route)
     // Resolve the v1-projection resource that carries this model for the join.
     const rid = options.modelResourceBinding?.[modelId]
-      ?? (modelId === "codex_subscription_models" ? "codex"
-        : modelId === "qwen_local" ? "qwen_local"
-          : modelId);
+      ?? modelResourceBindings[modelId]
+      ?? modelId;
     if (!registry.resources[rid]) continue;
     candidates.push({
       route_id: `review-${modelId}`,

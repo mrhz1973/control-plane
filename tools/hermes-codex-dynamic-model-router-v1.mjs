@@ -6,9 +6,15 @@
  * from an explicitly requested model.
  */
 
+import {
+  DEFAULT_CODEX_ROUTE_POLICY,
+  deriveCodexRoutePolicy,
+  loadCanonicalRegistryV2,
+} from "./resource-registry-v2-policy-adapter-v1.mjs";
+
 export const ROUTE = Object.freeze({
   controller_lane: "CODEX_SUBSCRIPTION",
-  quota_pool: "chatgpt_codex_subscription",
+  quota_pool: DEFAULT_CODEX_ROUTE_POLICY.quota_pool_id,
   catalog_source: "codex_app_server:model/list",
 });
 
@@ -178,6 +184,7 @@ export function makeReceipt({
   reasoningSelected = null,
   reasoningSupported = null,
   codexAuthState = "UNKNOWN",
+  routePolicy = null,
 }) {
   const explicit = selectionMode === MODEL_SELECTION_MODE.EXPLICIT;
   const exact = explicit && requestedModel === selectedModel;
@@ -195,7 +202,7 @@ export function makeReceipt({
     reasoning_effort_selected: reasoningSelected,
     reasoning_effort_supported: reasoningSupported,
     codex_auth_state: codexAuthState,
-    quota_pool: ROUTE.quota_pool,
+    quota_pool: routePolicy?.quota_pool_id ?? ROUTE.quota_pool,
     fallback_used: false,
     openai_api_used: false,
     byok_used: false,
@@ -209,8 +216,20 @@ export class DynamicCodexModelRouter {
     now = () => new Date().toISOString(),
     retireCurrentSession = null,
     threadDefaults = {},
+    registry = null,
+    registryPath = null,
   } = {}) {
     requireRpc(rpc);
+    const canonicalRegistry = registry ?? loadCanonicalRegistryV2(registryPath || undefined);
+    try {
+      this.routePolicy = deriveCodexRoutePolicy(canonicalRegistry);
+    } catch (error) {
+      throw new DynamicModelRouterError(
+        "REGISTRY_POLICY_INVALID",
+        `Codex registry routing policy is invalid: ${error.message}`,
+        { cause: error.message },
+      );
+    }
     this.rpc = rpc;
     this.codexAuthState = codexAuthState;
     this.now = now;
@@ -348,6 +367,7 @@ export class DynamicCodexModelRouter {
       reasoningSelected: this.requestedEffort,
       reasoningSupported: reasoningEfforts(candidate).state === "ADVERTISED",
       codexAuthState: this.codexAuthState,
+      routePolicy: this.routePolicy,
     });
   }
 
@@ -384,6 +404,7 @@ export class DynamicCodexModelRouter {
       catalog,
       reasoningSupported: reasoningEfforts(candidate).state === "ADVERTISED",
       codexAuthState: this.codexAuthState,
+      routePolicy: this.routePolicy,
     });
   }
 

@@ -379,3 +379,53 @@ No scheduler, workflow, service, model, queue, receipt, n8n, VPS, or
 production mutation occurred. The next bounded slice is
 `V4_ROUTING_POLICY_SINGLE_SOURCE_PHASE_4_V1`; `PHASE_4_HUMAN_GATE_REQUIRED=NO`.
 Phase 4 was not executed.
+
+## 16. ROUTING POLICY SINGLE SOURCE PHASE 4 — CURRENT RESULT
+
+**TASK_REF:** `V4_ROUTING_POLICY_SINGLE_SOURCE_PHASE_4_V1`
+**BASE_HEAD:** `32c3702c46313b75014c903b610d11a0ba2b6239`
+**STATUS:** `PASS`
+
+The Phase 4 census found narrow caller-local copies of registry relationships
+in the Hermes Codex router, GLM selector, Codex eligibility gate, quota join,
+and review/retry candidate boundaries. They are now derived through the single
+fail-closed adapter `tools/resource-registry-v2-policy-adapter-v1.mjs`.
+The registry file itself was not changed.
+
+```text
+PHASE_4_ROUTING_POLICY_SINGLE_SOURCE=PASS
+PHASE_4_DECISION=MINIMAL_SHARED_REGISTRY_ADAPTER
+PHASE_4_HUMAN_GATE_REQUIRED=NO
+RESOURCE_REGISTRY_V2=SOLE_CANONICAL_ROUTING_POLICY_SOURCE
+HERMES_ROUTER_POLICY=REGISTRY_DERIVED
+LITELLM_POLICY=REGISTRY_DERIVED_OR_TRANSPORT_ONLY
+DUPLICATE_POLICY_SOURCES=0
+UNKNOWN_POLICY_SOURCES=0
+ROUTER_BEHAVIOR_EQUIVALENCE=PASS
+V1_COMPATIBILITY_PRESERVED=YES
+DYNAMIC_MODEL_DISCOVERY_PRESERVED=YES
+DYNAMIC_QUOTA_STATE_NOT_FROZEN=YES
+NO_SILENT_FALLBACK=PASS
+MODEL_INFERENCE=0
+PRODUCTION_CHANGED=NO
+```
+
+The adapter derives static model/surface/pool and V1-projection relationships;
+it never collects quota, freezes Codex or Qwen concrete model ids, invokes a
+provider, or selects a route. LiteLLM aliases remain transport configuration;
+the planner fallback algorithm remains its canonical generic contract; live
+quota and observability remain separate observations. The V1 projection stays
+compatible and Phase 5 is not executed.
+
+Deterministic evidence: registry `76/76`, RT25 `136/136`, isolated CLI wiring
+`31/31`, review `15/15`, retry `14/14`, LiteLLM `18/18` plus `7/7`, execution
+adapter suites `19/19` plus `15/15`, n8n bridge suites `18/18` plus `23/23`,
+and all 30 targeted regression suites PASS. No runtime, provider, dispatcher,
+n8n, VPS, browser, quota, or production mutation occurred.
+
+```text
+PHASE_5_OPTIONAL=YES
+PHASE_5_HUMAN_GATE_REQUIRED=YES
+CURRENT_NEXT=PHASE_5_OPTIONAL_HERMES_IMPLEMENTER_EXPANSION_DECISION
+NEXT=PHASE_5_OPTIONAL_HERMES_IMPLEMENTER_EXPANSION_DECISION
+```

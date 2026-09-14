@@ -8,7 +8,7 @@
  * MODEL/ROLE -> ACCESS SURFACE -> QUOTA_POOL -> CURRENT QUOTA-POOL STATUS view.
  *
  * - pool identity validated against registry-v2 `quota_pools`;
- * - v1-projection resource -> pool binding is EXPLICIT (no invention);
+ * - v1-projection resource -> pool binding is derived from registry-v2 (no invention);
  * - freshness reuses the composer's own STATUS_MAX_AGE_MS law;
  * - one shared pool is evaluated ONCE even when several resources/surfaces
  *   reference it;
@@ -18,33 +18,24 @@
  * Library module (imported by runtime guards/selectors and the T24 E2E proof).
  */
 import { STATUS_MAX_AGE_MS } from "./compose-v4-resource-status-control-plane-v1.mjs";
-import { POOL_IDS } from "./translate-quota-pool-snapshot-v1.mjs";
+import {
+  DEFAULT_RESOURCE_NO_POOL_SEMANTICS,
+  DEFAULT_RESOURCE_POOL_BINDINGS,
+  deriveResourceNoPoolSemantics,
+  deriveResourcePoolBindings,
+} from "./resource-registry-v2-policy-adapter-v1.mjs";
 
 export const JOIN_SCHEMA = "v4-rt25-quota-state-join-v1";
 
 /**
- * Explicit binding: v1 projection resource id -> registry-v2 quota pool id.
+ * Derived compatibility view: v1 projection resource id -> registry-v2 quota pool id.
  * null = no commercial pool (local unmetered / harness / unverified allowance).
  * Only pools that exist in registry-v2 quota_pools are accepted at join time.
  */
-export const RESOURCE_POOL_BINDINGS = Object.freeze({
-  codex: POOL_IDS.codex,
-  glm: POOL_IDS.glm,
-  cursor: null,
-  composer: null,
-  qwen_local: null,
-  opencode: null,
-  grok_bot: null,
-});
+export const RESOURCE_POOL_BINDINGS = DEFAULT_RESOURCE_POOL_BINDINGS;
 
-/** Explicit no-pool semantics (static registry-v2 knowledge, not runtime inference). */
-export const RESOURCE_NO_POOL_SEMANTICS = Object.freeze({
-  qwen_local: "local_unmetered",
-  opencode: "local_unmetered",
-  cursor: "no_pool_binding",
-  composer: "no_pool_binding",
-  grok_bot: "no_pool_binding",
-});
+/** Derived no-pool semantics (static registry-v2 knowledge, not runtime inference). */
+export const RESOURCE_NO_POOL_SEMANTICS = DEFAULT_RESOURCE_NO_POOL_SEMANTICS;
 
 function ageOk(updatedAt, nowMs) {
   const t = Date.parse(updatedAt);
@@ -103,19 +94,32 @@ export function joinQuotaPoolState(composerResult, registry, options = {}) {
     return { ...base, classification: "JOIN_REJECTED_REGISTRY_INVALID", reason_codes: ["REGISTRY_INVALID"] };
   }
 
+  let bindings;
+  let noPoolSemantics;
+  try {
+    bindings = deriveResourcePoolBindings(registry);
+    noPoolSemantics = deriveResourceNoPoolSemantics(registry);
+  } catch (error) {
+    return {
+      ...base,
+      classification: "JOIN_REJECTED_REGISTRY_INVALID",
+      reason_codes: ["REGISTRY_INVALID", String(error?.message || error).slice(0, 120)],
+    };
+  }
+
   const status = composerResult.resource_status;
   const reservePolicy = options.reservePolicy || {};
 
   // one evaluation per pool
   const pools = {};
   const resources = {};
-  for (const [resourceId, poolId] of Object.entries(RESOURCE_POOL_BINDINGS)) {
+  for (const [resourceId, poolId] of Object.entries(bindings)) {
     const rStatus = status.resources[resourceId];
     if (!rStatus) continue; // resource not present in this composer output — skip silently (composer law)
     if (poolId === null) {
       resources[resourceId] = {
         quota_pool_id: null,
-        pool_semantics: RESOURCE_NO_POOL_SEMANTICS[resourceId] || "no_pool_binding",
+        pool_semantics: noPoolSemantics[resourceId] || "no_pool_binding",
         resource_available: rStatus.available === true,
       };
       continue;

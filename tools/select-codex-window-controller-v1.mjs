@@ -1,7 +1,9 @@
+import { DEFAULT_CODEX_ROUTE_POLICY } from "./resource-registry-v2-policy-adapter-v1.mjs";
+
 const TIME_ZONE = "Europe/Rome";
 const WINDOW_START_MINUTE = 8 * 60;
 const WINDOW_END_MINUTE = 12 * 60;
-const CODEX_POOL = "chatgpt_codex_subscription";
+const CODEX_POOL = DEFAULT_CODEX_ROUTE_POLICY.quota_pool_id;
 
 function localParts(date) {
   if (!(date instanceof Date) || Number.isNaN(date.valueOf())) throw new Error("invalid date");

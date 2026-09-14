@@ -27,9 +27,10 @@
  * section (diagnostics) but no longer enters the codex pool authority path.
  */
 import { normalizeCodexAppServerQuota } from "./collect-codex-appserver-quota-v1.mjs";
+import { DEFAULT_CODEX_ROUTE_POLICY } from "./resource-registry-v2-policy-adapter-v1.mjs";
 
 /** Pool whose OpenClaw authority is retired by this module. */
-export const CODEX_POOL_ID = "chatgpt_codex_subscription";
+export const CODEX_POOL_ID = DEFAULT_CODEX_ROUTE_POLICY.quota_pool_id;
 export const CODEX_PRIMARY_SOURCE = "CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ";
 export const OPENCLAW_DEMOTED_TO_DIAGNOSTIC = true;
 

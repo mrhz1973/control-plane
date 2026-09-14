@@ -19,17 +19,15 @@
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { DEFAULT_QUOTA_POOL_IDS } from "./resource-registry-v2-policy-adapter-v1.mjs";
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const RESULT_SCHEMA = "quota-pool-status-translate-result-v1";
 export const STATUS_SCHEMA = "quota-pool-status-v1";
 export const QUOTA_POOL_STATUS_MAX_AGE_MS = 300_000;
 
-/** Registry-v2 pool ids (binding law §1 of quota-pool-status-v1). */
-export const POOL_IDS = Object.freeze({
-  codex: "chatgpt_codex_subscription",
-  glm: "glm_coding_plan",
-});
+/** Registry-v2 pool ids, derived from the canonical registry route groups. */
+export const POOL_IDS = DEFAULT_QUOTA_POOL_IDS;
 
 const WINDOW_TYPES = new Set(["rolling", "weekly", "monthly"]);
 

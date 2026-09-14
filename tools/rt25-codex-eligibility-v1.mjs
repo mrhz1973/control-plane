@@ -18,9 +18,13 @@
  */
 
 import { admitRouteWithReserve } from "./rt25-reserve-admission-v1.mjs";
+import {
+  DEFAULT_CODEX_ROUTE_POLICY,
+  deriveCodexRoutePolicy,
+} from "./resource-registry-v2-policy-adapter-v1.mjs";
 
 export const CODEX_ELIGIBILITY_SCHEMA = "v4-rt25-codex-eligibility-v1";
-export const CODEX_POOL_ID = "chatgpt_codex_subscription";
+export const CODEX_POOL_ID = DEFAULT_CODEX_ROUTE_POLICY.quota_pool_id;
 
 /**
  * @param {object} registry  registry-v2 object (models/access_surfaces/quota_pools)
@@ -44,6 +48,16 @@ export function evaluateCodexRouteEligibility(registry, joined, route) {
   if (!joined || joined.schema_version !== "v4-rt25-quota-state-join-v1" || joined.ok !== true) {
     return { ...base, eligibility: "INELIGIBLE_JOIN_STATE_INVALID", reason_codes: ["JOIN_STATE_INVALID"] };
   }
+  let codexPolicy;
+  try {
+    codexPolicy = deriveCodexRoutePolicy(registry);
+  } catch (error) {
+    return {
+      ...base,
+      eligibility: "INELIGIBLE_REGISTRY_POLICY_INVALID",
+      reason_codes: ["REGISTRY_POLICY_INVALID", String(error?.message || error).slice(0, 120)],
+    };
+  }
   const surfaceId = route?.access_surface;
   if (typeof surfaceId !== "string" || !registry.access_surfaces[surfaceId]) {
     return { ...base, eligibility: "INELIGIBLE_SURFACE_UNKNOWN", reason_codes: ["ACCESS_SURFACE_UNKNOWN"] };
@@ -51,7 +65,7 @@ export function evaluateCodexRouteEligibility(registry, joined, route) {
   const surface = registry.access_surfaces[surfaceId];
 
   // 1. surface must belong to the codex subscription pool
-  if (surface.quota_pool_id !== CODEX_POOL_ID) {
+  if (surface.quota_pool_id !== codexPolicy.quota_pool_id) {
     return { ...base, eligibility: "INELIGIBLE_NOT_CODEX_SUBSCRIPTION_SURFACE", reason_codes: ["WRONG_QUOTA_POOL_BINDING"] };
   }
 

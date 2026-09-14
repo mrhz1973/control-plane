@@ -9,9 +9,11 @@
  * secondary cross-check and is never additive.
  */
 
+import { DEFAULT_CODEX_ROUTE_POLICY } from "./resource-registry-v2-policy-adapter-v1.mjs";
+
 export const CODEX_APPSERVER_QUOTA_SCHEMA = "codex-appserver-quota-observation-v1";
 export const CODEX_APPSERVER_METHOD = "account/rateLimits/read";
-export const CODEX_QUOTA_POOL_ID = "chatgpt_codex_subscription";
+export const CODEX_QUOTA_POOL_ID = DEFAULT_CODEX_ROUTE_POLICY.quota_pool_id;
 export const CODEX_SECONDARY_SOURCE = "CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ";
 export const DEFAULT_RECONCILIATION_TOLERANCE_PERCENT = 5;
 export const QUOTA_OBSERVATION_MAX_AGE_MS = 300_000;

@@ -2,10 +2,10 @@
 /**
  * V4_RT25_T11 — GLM 5.3 vs Flash runtime selection (shared pool, no double count).
  *
- * Campaign #41 task 11. Runtime law for choosing between glm-5.3 and
- * glm-5.3-flash on the SHARED glm_coding_plan pool:
- *   - both models must exist in registry-v2 models and be bound to
- *     glm_coding_plan_client (same surface, same pool);
+ * Campaign #41 task 11. Runtime law for choosing among the registry-declared
+ * supported-plan model classes on one shared pool:
+ *   - planner/implementation model classes must exist in registry-v2 and be
+ *     bound to one supported-plan surface (same surface, same pool);
  *   - pool admission evaluated ONCE (T06) — never per-model;
  *   - selection between the two by caller-supplied suitability/quality/speed
  *     metadata (inventory supplied at runtime; selector never invents ranks);
@@ -15,10 +15,14 @@
  */
 
 import { admitRouteWithReserve } from "./rt25-reserve-admission-v1.mjs";
+import {
+  DEFAULT_GLM_ROUTE_POLICY,
+  deriveGlmRoutePolicy,
+} from "./resource-registry-v2-policy-adapter-v1.mjs";
 
 export const GLM_SELECTION_SCHEMA = "v4-rt25-glm-model-selection-v1";
-export const GLM_POOL_ID = "glm_coding_plan";
-export const GLM_SURFACE_ID = "glm_coding_plan_client";
+export const GLM_POOL_ID = DEFAULT_GLM_ROUTE_POLICY.quota_pool_id;
+export const GLM_SURFACE_ID = DEFAULT_GLM_ROUTE_POLICY.access_surface_id;
 
 /**
  * @param {object} registry  registry-v2
@@ -43,36 +47,47 @@ export function selectGlmModel(registry, joined, demand = {}) {
     return { ...base, selection: "SELECTION_JOIN_STATE_INVALID", reason_codes: ["JOIN_STATE_INVALID"] };
   }
 
-  const surface = registry.access_surfaces[GLM_SURFACE_ID];
-  if (!surface || surface.quota_pool_id !== GLM_POOL_ID) {
-    return { ...base, selection: "SELECTION_SURFACE_POOL_MISCONFIGURED", reason_codes: ["SURFACE_POOL_MISMATCH"] };
+  let policy;
+  try {
+    policy = deriveGlmRoutePolicy(registry);
+  } catch (error) {
+    return {
+      ...base,
+      selection: "SELECTION_REGISTRY_POLICY_INVALID",
+      reason_codes: ["REGISTRY_POLICY_INVALID", String(error?.message || error).slice(0, 120)],
+    };
+  }
+  const policyBase = { ...base, quota_pool_id: policy.quota_pool_id };
+  const surface = registry.access_surfaces[policy.access_surface_id];
+  if (!surface || surface.quota_pool_id !== policy.quota_pool_id) {
+    return { ...policyBase, selection: "SELECTION_SURFACE_POOL_MISCONFIGURED", reason_codes: ["SURFACE_POOL_MISMATCH"] };
   }
 
   // Pool admission ONCE for the whole shared pool (both models together).
-  const admission = admitRouteWithReserve(joined, "glm");
-  base.pool_admission = { admitted: admission.admitted, admission: admission.admission, provenance: admission.provenance };
+  const admission = admitRouteWithReserve(joined, policy.projection_resource_id);
+  policyBase.pool_admission = { admitted: admission.admitted, admission: admission.admission, provenance: admission.provenance };
   if (admission.admitted !== true) {
-    return { ...base, selection: `SELECTION_BLOCKED_${admission.admission}`, reason_codes: [...(admission.reason_codes || [])] };
+    return { ...policyBase, selection: `SELECTION_BLOCKED_${admission.admission}`, reason_codes: [...(admission.reason_codes || [])] };
   }
 
   const required = Array.isArray(demand.required_capabilities) ? demand.required_capabilities : [];
   const prefer = demand.prefer === "speed" ? "speed" : demand.prefer === "quality" ? "quality" : null;
 
   const eligible = [];
-  for (const modelId of ["glm-5.3", "glm-5.3-flash"]) {
+  for (const modelId of policy.model_class_ids) {
     const m = registry.models[modelId];
     if (!m) {
-      base.rejected_models.push({ model_id: modelId, reason_codes: ["MODEL_NOT_IN_REGISTRY"] });
+      policyBase.rejected_models.push({ model_id: modelId, reason_codes: ["MODEL_NOT_IN_REGISTRY"] });
       continue;
     }
-    if (m.default_access_surface !== GLM_SURFACE_ID) {
-      base.rejected_models.push({ model_id: modelId, reason_codes: ["MODEL_SURFACE_MISMATCH"] });
+    if (m.default_access_surface !== policy.access_surface_id) {
+      policyBase.rejected_models.push({ model_id: modelId, reason_codes: ["MODEL_SURFACE_MISMATCH"] });
       continue;
     }
     const caps = Array.isArray(m.capabilities) ? m.capabilities : [];
     const missing = required.filter((r) => !caps.includes(r));
     if (missing.length > 0) {
-      base.rejected_models.push({ model_id: modelId, reason_codes: missing.map((x) => `CAPABILITY_MISSING_${String(x).toUpperCase()}`) });
+      policyBase.rejected_models.push({ model_id: modelId, reason_codes: missing.map((x) => `CAPABILITY_MISSING_${String(x).toUpperCase()}`) });
       continue;
     }
     // suitability metadata: caller-supplied inventory only; absence = rank 50
@@ -86,13 +101,13 @@ export function selectGlmModel(registry, joined, demand = {}) {
   }
 
   if (eligible.length === 0) {
-    return { ...base, selection: "SELECTION_NO_MODEL_ELIGIBLE", reason_codes: ["NO_MODEL_ELIGIBLE", ...base.rejected_models.flatMap((r) => r.reason_codes)] };
+    return { ...policyBase, selection: "SELECTION_NO_MODEL_ELIGIBLE", reason_codes: ["NO_MODEL_ELIGIBLE", ...policyBase.rejected_models.flatMap((r) => r.reason_codes)] };
   }
 
   eligible.sort((a, b) => (a.select_rank !== b.select_rank ? a.select_rank - b.select_rank : a.model_id.localeCompare(b.model_id)));
   const winner = eligible[0];
   return {
-    ...base,
+    ...policyBase,
     selected_model: winner.model_id,
     selection: "GLM_MODEL_SELECTED_SHARED_POOL_SINGLE_ADMISSION",
     selected_select_rank: winner.select_rank,

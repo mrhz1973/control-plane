@@ -13,6 +13,8 @@
  * reasoning_level: null + explicit not_applicable code.
  */
 
+import { DEFAULT_CODEX_ROUTE_POLICY } from "./resource-registry-v2-policy-adapter-v1.mjs";
+
 export const REASONING_METADATA_SCHEMA = "v4-rt25-reasoning-speed-metadata-v1";
 const SUPPORTED_REASONING = new Set(["none", "low", "medium", "high"]);
 const SUPPORTED_SPEED = new Set(["quality", "balanced", "fast"]);
@@ -41,7 +43,7 @@ export function attachReasoningSpeedMetadata(decision, demand = {}, options = {}
   const supReasoning = Array.isArray(inv.supported_reasoning) ? inv.supported_reasoning.filter((r) => SUPPORTED_REASONING.has(r)) : [];
   const supSpeed = Array.isArray(inv.supported_speed) ? inv.supported_speed.filter((s) => SUPPORTED_SPEED.has(s)) : [];
 
-  const isCodexPool = decision.selected.quota_pool_id === "chatgpt_codex_subscription";
+  const isCodexPool = decision.selected.quota_pool_id === DEFAULT_CODEX_ROUTE_POLICY.quota_pool_id;
 
   // Reasoning
   if (!isCodexPool) {

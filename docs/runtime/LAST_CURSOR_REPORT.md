@@ -1,5 +1,36 @@
 # LAST CURSOR REPORT
 
+## Routing policy single source Phase 4 — PASS (latest)
+
+**TASK_REF:** `V4_ROUTING_POLICY_SINGLE_SOURCE_PHASE_4_V1`
+**Classification:** `PASS`
+**BASE_HEAD:** `32c3702c46313b75014c903b610d11a0ba2b6239`
+**Report:** `reports/architecture/v4_routing_policy_single_source_phase_4_v1.md`
+
+- `PHASE_4_ROUTING_POLICY_SINGLE_SOURCE=PASS`;
+  `PHASE_4_DECISION=MINIMAL_SHARED_REGISTRY_ADAPTER`;
+  `PHASE_4_HUMAN_GATE_REQUIRED=NO`;
+  `RESOURCE_REGISTRY_V2=SOLE_CANONICAL_ROUTING_POLICY_SOURCE`;
+  `DUPLICATE_POLICY_SOURCES=0`; `UNKNOWN_POLICY_SOURCES=0`.
+- Hermes Codex, GLM/Codex eligibility, quota join, and review/retry bindings
+  now derive static route relationships through the shared registry-v2
+  adapter. LiteLLM remains transport-only/registry-derived; live quota and
+  provider-managed model catalogs remain dynamic and external.
+- `ROUTER_BEHAVIOR_EQUIVALENCE=PASS`; `V1_COMPATIBILITY_PRESERVED=YES`;
+  `DYNAMIC_MODEL_DISCOVERY_PRESERVED=YES`;
+  `DYNAMIC_QUOTA_STATE_NOT_FROZEN=YES`; `NO_SILENT_FALLBACK=PASS`.
+- Deterministic targeted regressions: `30/30` suites PASS, including registry
+  `76/76`, RT25 `136/136`, review `15/15`, retry `14/14`, LiteLLM `18/18` +
+  `7/7`, isolated CLI wiring `31/31`; `git diff --check=PASS`.
+- No Qwen/GLM/Codex/provider inference, ChatGPT Web/Hermes browser action,
+  LiteLLM reload, dispatcher/n8n/VPS/production action, or credential access.
+- `ISSUE_73_PHASE_C=PASS`; `ISSUE_73=CLOSED_COMPLETED`;
+  `NEXT=PHASE_5_OPTIONAL_HERMES_IMPLEMENTER_EXPANSION_DECISION`;
+  `PHASE_5_OPTIONAL=YES`; `PHASE_5_HUMAN_GATE_REQUIRED=YES`. Phase 5 was not
+  executed.
+
+---
+
 ## LOCAL_DEV scheduler Phase 3 role separation — PASS (latest)
 
 **TASK_REF:** `V4_LOCAL_DEV_SCHEDULER_DEDUP_PHASE_3_V1`

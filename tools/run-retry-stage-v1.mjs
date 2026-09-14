@@ -40,6 +40,12 @@ import { buildRetryBoundaryState } from "./rt25-canonical-quota-state-v1.mjs";
 import { selectQuotaAwareRetryRoute, RETRY_DECISION_SCHEMA } from "./rt25-retry-quota-aware-selector-v1.mjs";
 import { guardQualityDowngrade } from "./rt25-quality-downgrade-guard-v1.mjs";
 import { guardUrgencyDeferral } from "./rt25-urgency-defer-guard-v1.mjs";
+import {
+  DEFAULT_FORBIDDEN_SURFACE_IDS,
+  DEFAULT_MODEL_RESOURCE_BINDINGS,
+  deriveForbiddenSurfaceIds,
+  deriveModelResourceBindings,
+} from "./resource-registry-v2-policy-adapter-v1.mjs";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -53,17 +59,11 @@ export const RUNTIME_MODEL_IDS = Object.freeze({
   codex_subscription_models: "codex-ide",
   qwen_local: "qwen-local",
 });
-export const FORBIDDEN_SURFACES = Object.freeze(["openai_api_route"]);
+export const FORBIDDEN_SURFACES = DEFAULT_FORBIDDEN_SURFACE_IDS;
 
 /** Registry MODEL CLASS -> v1-projection RESOURCE binding (registry truth:
  * both GLM model classes execute through the single `glm` resource). */
-export const MODEL_RESOURCE_BINDING = Object.freeze({
-  codex_subscription_models: "codex",
-  qwen_local: "qwen_local",
-  "glm-5.3": "glm",
-  "glm-5.3-flash": "glm",
-  composer: "composer",
-});
+export const MODEL_RESOURCE_BINDING = DEFAULT_MODEL_RESOURCE_BINDINGS;
 
 /**
  * Derive retry candidates FROM REGISTRY-V2 metadata only.
@@ -77,6 +77,18 @@ export function buildRetryCandidates(registry, options = {}) {
   if (!registry || registry.schema_version !== "resource-registry-v2" || !registry.models || !registry.resources) {
     return { ok: false, candidates: [], reason_codes: ["REGISTRY_INVALID_FOR_RETRY_CANDIDATES"] };
   }
+  let forbiddenSurfaces;
+  let modelResourceBindings;
+  try {
+    forbiddenSurfaces = deriveForbiddenSurfaceIds(registry);
+    modelResourceBindings = deriveModelResourceBindings(registry);
+  } catch (error) {
+    return {
+      ok: false,
+      candidates: [],
+      reason_codes: ["REGISTRY_INVALID_FOR_RETRY_CANDIDATES", "REGISTRY_POLICY_INVALID", String(error?.message || error).slice(0, 120)],
+    };
+  }
   const allowed = Array.isArray(options.retryCandidateModels) && options.retryCandidateModels.length > 0
     ? new Set(options.retryCandidateModels)
     : null;
@@ -87,8 +99,8 @@ export function buildRetryCandidates(registry, options = {}) {
     if (!model.roles.includes("implementation_model") && !model.roles.includes("reviewer")) continue;
     if (allowed && !allowed.has(modelId)) continue;
     const surfaceId = model.default_access_surface;
-    if (surfaceId && FORBIDDEN_SURFACES.includes(surfaceId)) continue; // OpenAI API/BYOK never emitted
-    const rid = options.modelResourceBinding?.[modelId] ?? MODEL_RESOURCE_BINDING[modelId] ?? modelId;
+    if (surfaceId && forbiddenSurfaces.includes(surfaceId)) continue; // representational/API route never emitted
+    const rid = options.modelResourceBinding?.[modelId] ?? modelResourceBindings[modelId] ?? modelId;
     if (!registry.resources[rid]) continue;
     candidates.push({
       route_id: `retry-${modelId}`,
