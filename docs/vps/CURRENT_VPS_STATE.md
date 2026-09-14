@@ -302,3 +302,23 @@ Evidence anchors:
 - `reports/architecture/v4_vps_cross_project_consumer_mini_audit_v1.md`
 - `reports/architecture/v4_vps_goi_graphhopper_activation_v1.md`
 - `reports/architecture/v4_vps_new_tls_recovery_v1.md`
+
+## Technical decommission readiness — 2026-09-14 (`V4_VPS_68_ROLLBACK_EXIT_DECOMMISSION_READINESS_V1`)
+
+Evidence reconciliation only; OLD untouched (frozen standby); no live
+check required — every deciding fact already canonical.
+
+```text
+VPS_68_DECOMMISSION_READINESS=PASS
+ROLLBACK_EXIT_TECHNICALLY_READY=YES
+OLD_DECOMMISSION_TECHNICALLY_READY=YES
+OLD_DECOMMISSION_ELIGIBLE_PENDING_HUMAN_GATE=YES
+OLD_DECOMMISSION_AUTHORIZED=NO
+OLD_DECOMMISSION_EXECUTED=NO
+REQUIRED_TECHNICAL_BLOCKERS_REMAINING=0
+OLD_TLS_RENEWAL_HELPER=DEGRADED_NONBLOCKING_ACCEPTED (current rollback TLS valid to 2026-11-15T23:56:47Z)
+ROLLBACK_RETENTION_OBSERVATION_PURPOSE=SERVED (soak PASS, zero triggers, NEW stable)
+NEXT=HUMAN_OLD_DECOMMISSION_AUTHORIZATION_GATE (operator; not executed)
+```
+
+Report: `reports/architecture/v4_vps_68_rollback_exit_decommission_readiness_v1.md`.

@@ -92,10 +92,10 @@ The checklist boxes below remain the canonical gate. Rollback retention is open 
 
 ## Rollback retention
 
-- [ ] OLD retained intact for the agreed short rollback window
+- [x] OLD retained intact for the agreed short rollback window — TECHNICALLY SATISFIED (retention observation purpose served; OLD still intact/frozen 2026-09-14)
 - [ ] rollback trigger criteria documented
-- [ ] no rollback trigger fired during the retention window
-- [ ] rollback exit criteria satisfied
+- [x] no rollback trigger fired during the retention window — CONFIRMED (soak PASS, zero triggers, no NEW production incident)
+- [x] rollback exit criteria satisfied — TECHNICALLY (HUMAN_ROLLBACK_EXIT decision still required; no automatic expiry)
 
 ## Final decommission gate
 
@@ -103,6 +103,8 @@ The checklist boxes below remain the canonical gate. Rollback retention is open 
 - [ ] explicit final human authorization to decommission OLD recorded
 - [ ] final backup/evidence requirements satisfied
 - [ ] OLD deletion/shutdown action separately bounded and logged
+
+Technical readiness update 2026-09-14 (`V4_VPS_68_ROLLBACK_EXIT_DECOMMISSION_READINESS_V1`): all technical conditions satisfied (`OLD_DECOMMISSION_TECHNICALLY_READY=YES`, 0 technical blockers); the remaining gate is the explicit human decommission authorization. Final-gate boxes below stay unchecked until that authorization.
 
 Until every applicable item is green:
 

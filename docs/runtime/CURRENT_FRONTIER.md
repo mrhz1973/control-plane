@@ -730,3 +730,20 @@ global, no polling).
 `NEXT=NO_READY_GLOBAL_TASK_PARKED_35_ONLY`
 (new READY work requires a new operator-authorized slice). Report:
 `reports/architecture/v4_parent_32_issue_32_closure_persistence_v1.md`.
+---
+
+`V4_VPS_68_ROLLBACK_EXIT_DECOMMISSION_READINESS_V1` = **PASS** →
+`OLD_DECOMMISSION_TECHNICALLY_READY=YES` ·
+`ROLLBACK_EXIT_TECHNICALLY_READY=YES` ·
+`OLD_DECOMMISSION_ELIGIBLE_PENDING_HUMAN_GATE=YES` ·
+`OLD_DECOMMISSION_AUTHORIZED=NO` · `OLD_DECOMMISSION_EXECUTED=NO` ·
+`REQUIRED_TECHNICAL_BLOCKERS_REMAINING=0` · `NEW_ROLE=LIVE` ·
+`OLD_ROLE=ROLLBACK_STANDBY_FROZEN` (untouched). TLS degradation
+(OLD renewal helper 203/EXEC) classified NONBLOCKING — current rollback
+TLS valid to 2026-11-15. 10/10 readiness conditions satisfied from
+persisted evidence; zero live checks. `PRODUCTION_CHANGED=NO` ·
+`RUNTIME_CHANGED=NO`. Report:
+`reports/architecture/v4_vps_68_rollback_exit_decommission_readiness_v1.md`.
+`CURRENT_NEXT=HUMAN_OLD_DECOMMISSION_AUTHORIZATION_GATE`
+`NEXT=HUMAN_OLD_DECOMMISSION_AUTHORIZATION_GATE` (OPERATOR gate — not an
+agent task; do not execute autonomously).

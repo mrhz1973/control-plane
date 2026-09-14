@@ -1,5 +1,25 @@
 # LAST CURSOR REPORT
 
+## VPS #68 decommission technical readiness — READY (latest)
+
+**TASK_REF:** `V4_VPS_68_ROLLBACK_EXIT_DECOMMISSION_READINESS_V1`
+**Classification:** `PASS — OLD_DECOMMISSION_TECHNICALLY_READY=YES`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `70a9231d30355940de40cff721161aae0a041680` (verified PASS at start)
+**Report:** `reports/architecture/v4_vps_68_rollback_exit_decommission_readiness_v1.md`
+
+- 10/10 technical readiness conditions satisfied from persisted evidence
+  (cutover/soak/persistence/parity/accounting/consumer-audit); 0
+  technical blockers; zero live checks executed; OLD untouched frozen.
+- OLD TLS renewal degradation (203/EXEC) classified
+  NONBLOCKING_ACCEPTED (current rollback TLS valid to 2026-11-15);
+  recorded as human-gate input, no repair performed.
+- `OLD_DECOMMISSION_ELIGIBLE_PENDING_HUMAN_GATE=YES`;
+  `OLD_DECOMMISSION_AUTHORIZED=NO`; EXECUTED=NO. One factual comment
+  added to #68 (not closed).
+- NEXT: `HUMAN_OLD_DECOMMISSION_AUTHORIZATION_GATE` (operator gate).
+
+---
 ## Parent #32 closure persistence — CLOSED_COMPLETED (latest)
 
 **TASK_REF:** `V4_PARENT_32_ISSUE_32_CLOSURE_PERSISTENCE_V1`
