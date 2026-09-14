@@ -92,3 +92,36 @@ send, n8n/VPS mutation, issue mutation, uninstall, or deletion occurred.
 Revert the single reconciliation commit to restore the pre-reconciliation
 document projections. This does not alter runtime behavior, the registry, or
 the historical source reports.
+
+---
+
+## Current-state repair note (superseding only stale phase markers)
+
+The OpenClaw reconciliation and all of its scoped-retention markers remain
+unchanged. Its original `PHASE_D=OPEN` and
+`NEXT=V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V1` reflected
+the state known when that report was written and are superseded by later
+qualification evidence.
+
+The directly referenced Phase D V2 report is classified
+`PASS — ISSUE_73_PHASE_D=PASS`. The later Phase E/Phase F evidence records
+Phase F complete and the issue closed; the current frontier records
+`V4_HERMES_PHASE_F_BOUNDED_PRODUCTION_ACTIVATION_V1=PASS`,
+`ISSUE_73=CLOSED_COMPLETED`, and
+`ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0`.
+
+```text
+PHASE_D_CURRENT_STATE=PASS
+ISSUE_73_CURRENT_STATE=CLOSED_COMPLETED
+PHASE_F_CURRENT_STATE=PASS
+STALE_PHASE_D_NEXT_REMOVED=YES
+OPENCLAW_RECONCILIATION_UNCHANGED=YES
+CURRENT_NEXT=V4_HERMES_CDP_GOVERNANCE_UNIFICATION_PHASE_2_V1
+RUNTIME_CHANGED=NO
+PRODUCTION_CHANGED=NO
+```
+
+The corrected next bounded slice is the architecture audit's Phase 2:
+CDP governance unification between the Hermes-native path and legacy
+composer/apply glue. Phase 2 is not executed by this repair. Historical rows
+that accurately recorded their earlier state remain preserved.

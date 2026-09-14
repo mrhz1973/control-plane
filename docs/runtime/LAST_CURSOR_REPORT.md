@@ -1,6 +1,26 @@
 # LAST CURSOR REPORT
 
-## OpenClaw retirement scope reconciliation — PASS (latest)
+## Canonical next repair after OpenClaw reconciliation — PASS (latest)
+
+**TASK_REF:** `V4_CANONICAL_NEXT_REPAIR_AFTER_OPENCLAW_RECONCILIATION_V1`
+**Classification:** `PASS`
+**BASE_HEAD:** `f5e4122b8479c5444f05e700bcdbdaac2c174297`
+**Report:** `reports/architecture/v4_canonical_next_repair_after_openclaw_reconciliation_v1.md`
+
+- The previous reconciliation's current `PHASE_D=OPEN` / Phase D V1 NEXT
+  markers were stale; historical rows remain unchanged.
+- `V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2=PASS` and
+  `ISSUE_73_PHASE_D=PASS` are current evidence.
+- `V4_HERMES_PHASE_F_BOUNDED_PRODUCTION_ACTIVATION_V1=PASS`,
+  `ISSUE_73=CLOSED_COMPLETED`, and
+  `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0` remain current.
+- `STALE_PHASE_D_NEXT_REMOVED=YES`; `OPENCLAW_RECONCILIATION_UNCHANGED=YES`.
+- `CURRENT_NEXT=V4_HERMES_CDP_GOVERNANCE_UNIFICATION_PHASE_2_V1`.
+  Phase 2 is not executed here; runtime and production are unchanged.
+
+---
+
+## OpenClaw retirement scope reconciliation — PASS (historical snapshot; current markers superseded)
 
 **TASK_REF:** `V4_OPENCLAW_RETIREMENT_SCOPE_RECONCILIATION_V1`
 **Classification:** `PASS`
