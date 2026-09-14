@@ -790,6 +790,31 @@ global blocker; #19 verified OPEN/untouched (as were #35/#60/#67/#68/#69).
 Report: `reports/architecture/v4_legacy_openclaw_issue_reconciliation_v1.md`.
 IONOS OLD VPS provider termination remains a parallel operator action.
 ```text
-CURRENT_NEXT=V4_ISSUE_19_QUOTA_POLICY_RECONCILIATION_V1
-NEXT=V4_ISSUE_19_QUOTA_POLICY_RECONCILIATION_V1
+CURRENT_NEXT_then=V4_ISSUE_19_QUOTA_POLICY_RECONCILIATION_V1 (historical record — consumed 2026-09-14 by the PASS below)
+NEXT_then=V4_ISSUE_19_QUOTA_POLICY_RECONCILIATION_V1 (historical record)
+```
+
+---
+
+## Current latest — Issue #19 quota policy reconciliation
+
+`V4_ISSUE_19_QUOTA_POLICY_RECONCILIATION_V1` = **PASS** (documentation /
+issue reconciliation only): issue #19 ("Future policy — quota-aware GLM
+model switching 5.3/5.2/5.1/5") reconciled against the completed generic
+quota/time-aware routing architecture and CLOSED `NOT_PLANNED` as
+`ISSUE_19_DISPOSITION=SUPERSEDED_BY_GENERIC_POLICY` (one concise comment,
+issuecomment-5667090762; body/title/labels untouched). The core need —
+conserve quota without silent quality degradation — is covered generically
+by the #32 architecture (reserve floors, T13 quality guard, fail-closed
+conserve states, `NO_SILENT_FALLBACK=PASS`, time-aware economics, §10a
+expiring allowance). No provider-specific GLM ladder implemented; future
+GLM versions enter only via dynamic discovery + registry qualification.
+`HISTORICAL_MORNING_USAGE_OBSERVATION=UNPROVEN_NONCANONICAL` (preserved,
+never converted to policy). No inference, benchmark, time-of-day
+experiment, or runtime change. #68 remains independently
+`OPEN_PENDING_PROVIDER_TERMINATION` (operator-side IONOS action).
+Report: `reports/architecture/v4_issue_19_quota_policy_reconciliation_v1.md`.
+```text
+CURRENT_NEXT=V4_VPS_PARENT_60_67_CLOSURE_RECONCILIATION_V1
+NEXT=V4_VPS_PARENT_60_67_CLOSURE_RECONCILIATION_V1
 ```

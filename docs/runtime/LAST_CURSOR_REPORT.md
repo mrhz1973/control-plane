@@ -1,5 +1,34 @@
 # LAST CURSOR REPORT
 
+## Issue #19 quota policy reconciled — CLOSED NOT_PLANNED, superseded (latest)
+
+**TASK_REF:** `V4_ISSUE_19_QUOTA_POLICY_RECONCILIATION_V1`
+**Classification:** `PASS`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `99689ad84a8589849e08de86062581a7b9683a13` (verified PASS at start)
+**Report:** `reports/architecture/v4_issue_19_quota_policy_reconciliation_v1.md`
+
+- Documentation / issue reconciliation only; no GLM inference, benchmark,
+  time-of-day experiment, provider probe, routing smoke, or runtime change.
+- Issue #19 CLOSED `NOT_PLANNED` with disposition
+  `SUPERSEDED_BY_GENERIC_POLICY`: core need (conserve quota without silent
+  quality degradation) fully covered by the completed #32 generic
+  architecture; every item of #19's own key-rules list maps onto existing
+  generic capability; a fixed 5.3→5.2→5.1→5 ladder would duplicate/weaken
+  the provider-neutral routing law (`PROVIDER_SPECIFIC_GLM_LADDER_
+  IMPLEMENTED=NO`). Future GLM versions enter only via dynamic discovery +
+  registry qualification. `HISTORICAL_MORNING_USAGE_OBSERVATION=
+  UNPROVEN_NONCANONICAL` (preserved, never converted to policy).
+- One concise reconciliation comment persisted (issuecomment-5667090762);
+  body/title/labels untouched; post-close state re-verified
+  `CLOSED/NOT_PLANNED`. OpenClaw scoped-retention law untouched; #68
+  remains independently `OPEN_PENDING_PROVIDER_TERMINATION` (operator-side
+  IONOS action, not blocking).
+- `MODEL_INFERENCE=0` · `PRODUCTION_CHANGED=NO` · `RUNTIME_CHANGED=NO`.
+- **NEXT:** `V4_VPS_PARENT_60_67_CLOSURE_RECONCILIATION_V1` (not executed
+  here).
+
+---
 ## Legacy OpenClaw issue chain reconciled — #8/#20/#22 CLOSED (latest)
 
 **TASK_REF:** `V4_LEGACY_OPENCLAW_ISSUE_RECONCILIATION_V1`
