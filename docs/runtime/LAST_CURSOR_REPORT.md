@@ -1,5 +1,32 @@
 # LAST CURSOR REPORT
 
+## OpenClaw quota lane value comparison — KEEP_SCOPED (latest)
+
+**TASK_REF:** `V4_OPENCLAW_QUOTA_LANE_VALUE_COMPARISON_V1`
+**Classification:** `PASS — OPENCLAW_QUOTA_DECISION=KEEP_SCOPED (POOL=glm_coding_plan)`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `e55d6d7d1e2516b172b074d57cd765e83c5ed150` (verified PASS at start)
+**Report:** `reports/architecture/v4_openclaw_quota_lane_value_comparison_v1.md`
+
+- Live bounded probes (≤3/source, read-only): OpenClaw `status --usage --json`
+  3/3 at 130–133 s/invocation (~150 s historical cost CONFIRMED); codex
+  app-server `account/rateLimits/read` direct stdio 0.46–0.73 s with full
+  authoritative snapshot (5h usedPercent=100 rate_limit_reached, week 31%,
+  planType=plus, base_model_inference gpt-reserve weekly 3%, banked credits 0);
+  GLM monitor NOT probed — ZAI/ZHIPUAI credential absent in all scopes
+  (fail-closed, values never read).
+- GLM_OPENCLAW_VALUE=UNIQUE (only live machine-readable GLM source today);
+  CODEX_OPENCLAW_VALUE=INFERIOR (direct source ~200× faster, strictly richer,
+  authoritative; live 5h divergence proven vs OpenClaw materialized remaining=100).
+- New findings recorded unfixed: `usedToRemainingPercent(null)→100` marginal
+  fail-open; OpenClaw `usage.updatedAt` future-dated ~+5 h anomaly.
+- `OPENCLAW_BROKER_RUNTIME=RETIRE` unchanged; quota lane becomes KEEP_SCOPED.
+- NEXT: `V4_OPENCLAW_QUOTA_LANE_RETIREMENT_PHASE_0_5_V1` scoped to
+  `chatgpt_codex_subscription` only (promote codex app-server collector to pool
+  authority); OPERATOR_PREAUTHORIZED=YES. GLM scope stays on OpenClaw until a
+  credentialed direct source exists.
+
+---
 ## OpenClaw Phase 1 paper retirement — STOP (latest)
 
 **TASK_REF:** `V4_OPENCLAW_PAPER_RETIREMENT_PHASE_1_V1`

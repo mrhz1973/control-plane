@@ -369,3 +369,24 @@ orchestrator/human authorization`.
 ---
 
 V4_OPENCLAW_PAPER_RETIREMENT_PHASE_1_V1 = **STOP** → OPENCLAW_PAPER_RETIREMENT_BLOCKED_BY_LIVE_REFERENCE — caller audit found the OpenClaw quota observation lane LIVE in the production dispatcher (collect-openclaw-quota-v1.mjs via local-dev-resource-observatory-v1.mjs → serve-local-dev-autonomous-dispatcher-v1.mjs GET /v1/resources; live proof: dispatcher PID 27964 spawning openclaw.mjs status --usage --json PID 5088; endpoint quotas.openclaw.refresh_in_progress=true). No disable switch; codex quota reconciliation declares outing_authority=OPENCLAW_PRIMARY. Gate: LIVE_RUNTIME_CALLERS=1 → STOP per task law, no repair, no doc-only workaround. Registry already clean; historical evidence untouched. Report: eports/runtime/openclaw-retirement/STOP_PAPER_RETIREMENT_PHASE_1_V1.md. NEXT=operator decision: gate a separate PHASE_0.5 to retire the OpenClaw quota observation lane (runtime change) OR amend audit RETIRE scope to broker-only and keep the qualified #73 quota lane.
+
+---
+
+`V4_OPENCLAW_QUOTA_LANE_VALUE_COMPARISON_V1` = **PASS** (read-only comparative qualification) →
+`OPENCLAW_QUOTA_DECISION=KEEP_SCOPED` (`POOL=glm_coding_plan`,
+`OPENCLAW_SCOPED_RETENTION_REQUIRED=YES`): `GLM_OPENCLAW_VALUE=UNIQUE` (no live
+alternative; ZAI credential absent → monitor adapter fail-closed) vs
+`CODEX_OPENCLAW_VALUE=INFERIOR` (codex app-server `account/rateLimits/read` direct:
+~0.5 s vs ~132 s, richer per-limit inventory + banked credits + authoritative
+rate-limit state; live 5h divergence proven — OpenClaw lane materialized rolling
+remaining=100 while app-server showed usedPercent=100 rate_limit_reached). Live
+probe evidence: OpenClaw latency 130–133 s per invocation (150 s cost CONFIRMED;
+3/3 bounded probes); endpoint materialization fresh both pools at 00:26 UTC.
+Recorded unfixed defects for follow-up: `usedToRemainingPercent(null)→100`
+marginal fail-open; OpenClaw `usage.updatedAt` future-dated ~+5 h anomaly.
+`OPENCLAW_BROKER_RUNTIME=RETIRE` unchanged;
+`OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED`. Report:
+`reports/architecture/v4_openclaw_quota_lane_value_comparison_v1.md`.
+`NEXT=bounded per-pool authority cleanup → V4_OPENCLAW_QUOTA_LANE_RETIREMENT_PHASE_0_5_V1
+scoped to chatgpt_codex_subscription only (promote codex app-server collector to
+authority), OPERATOR_PREAUTHORIZED=YES`.
