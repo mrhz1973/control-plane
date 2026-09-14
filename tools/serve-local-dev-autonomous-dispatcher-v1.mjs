@@ -56,6 +56,7 @@ import { admitMicroTaskDelta, extractMicroTaskAdmissionInput } from "./admit-mic
 import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
 import { selectNextQueueItem, parseBacklogFile, isAdmissible } from "./select-local-dev-queue-item-v1.mjs";
 import { buildResourceObservatory, createCanonicalVpsSshRunner, QWEN_OBSERVATION_TIMEOUT_MS, RESOURCES_PATH, RESOURCES_SCHEMA } from "./local-dev-resource-observatory-v1.mjs";
+import { fetchCodexAppServerRateLimits } from "./codex-appserver-rate-limit-reader-v1.mjs";
 import { AGENT_ACTIVITY_SCHEMA, applyFreshness as defaultApplyFreshness, readActivities as defaultReadActivities } from "./agent-activity-registry-v1.mjs";
 
 export const RESULT_SCHEMA = "local-dev-dispatch-tick-result-v1";
@@ -1535,6 +1536,12 @@ export async function handleTickRequest(req, res, deps = {}) {
       return;
     }
     try {
+      // PHASE_0_5: live read-only codex authority observation (bounded, injected;
+      // null on any failure -> codex pool stays UNKNOWN/STALE, never an OpenClaw
+      // fallback). GLM law untouched: OpenClaw collector keeps serving glm.
+      const codexAppServerObservation = deps.codexAppServerObservation
+        ? await deps.codexAppServerObservation
+        : await fetchCodexAppServerRateLimits();
       const resources = await (deps.buildResources || buildResourceObservatory)({
         probeQwen: deps.probeQwen || probeQwenEndpointReadOnly,
         collectWorkstation: deps.collectWorkstation,
@@ -1544,6 +1551,7 @@ export async function handleTickRequest(req, res, deps = {}) {
         collectChatgptWeb: deps.collectChatgptWeb,
         sshRunner: deps.sshRunner || createCanonicalVpsSshRunner(),
         nowMs: deps.nowMs,
+        codexAppServerObservation,
       });
       send(200, resources);
     } catch (err) {

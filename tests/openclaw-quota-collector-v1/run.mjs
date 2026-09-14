@@ -93,26 +93,26 @@ await test("C1 zai usedPercent 75 => remaining 25 (direction fixed)", async () =
   assert.equal(five.used_percent, 75);
 });
 
-await test("C2 codex Week usedPercent 16 => remaining 84; C3 5h usedPercent 0 => remaining 100", async () => {
+await test("C2 codex authority retired => codex pool UNKNOWN diagnostic-only (PHASE_0_5)", async () => {
   const nowMs = Date.parse("2026-09-09T05:00:00.000Z");
   const obs = await collectOpenClawQuotaObservation({
     nowMs,
     execFn: liveExec(realFixture(nowMs)),
   });
-  const windows = obs.pools.chatgpt_codex_subscription.windows;
-  const week = windows.find((w) => w.window_type === "weekly");
-  assert.equal(week.remaining_percent, 84);
-  const five = windows.find((w) => w.window_type === "rolling");
-  assert.equal(five.remaining_percent, 100);
+  // Codex authority is now CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ: OpenClaw
+  // codex data is diagnostic-only, never emitted as a contribution.
+  const codexPool = obs.pools.chatgpt_codex_subscription;
+  assert.equal(codexPool.state, "unknown");
+  assert.equal(codexPool.reason_code, "OPENCLAW_CODEX_AUTHORITY_RETIRED");
+  assert.deepEqual(codexPool.windows, []);
+  assert.equal(obs.contributions.filter((c) => c.resources.codex).length, 0);
 });
 
-await test("C4 epoch resetAt => ISO-8601 reset_at", async () => {
+await test("C4 epoch resetAt => ISO-8601 reset_at (GLM scope retained under PHASE_0_5)", async () => {
   const nowMs = Date.parse("2026-09-09T05:00:00.000Z");
   const obs = await collectOpenClawQuotaObservation({ nowMs, execFn: liveExec(realFixture(nowMs)) });
-  const five = obs.pools.chatgpt_codex_subscription.windows.find((w) => w.window_type === "rolling");
-  assert.equal(five.reset_at, new Date(1788948978000).toISOString());
-  const week = obs.pools.chatgpt_codex_subscription.windows.find((w) => w.window_type === "weekly");
-  assert.equal(week.reset_at, new Date(1789515761000).toISOString());
+  const glmRolling = obs.pools.glm_coding_plan.windows.find((w) => w.window_type === "rolling");
+  assert.equal(glmRolling.reset_at, new Date(1788948221662).toISOString());
   const glmWeek = obs.pools.glm_coding_plan.windows.find((w) => w.window_type === "weekly");
   assert.equal(glmWeek.reset_at, new Date(1789166105998).toISOString());
   const mcp = obs.pools.glm_coding_plan.auxiliary_windows.find((w) => w.kind === "mcp");
@@ -130,12 +130,12 @@ await test("C5/C6 GLM shared pool appears once; glm-5.3 + flash reference the sa
   assert.equal(glmContribs[0].resources.glm.quota_remaining.unit, "percent");
 });
 
-await test("C7 codex pool appears once with both surfaces as consumers", async () => {
+await test("C7 codex pool exists once, zero contributions under retired authority (PHASE_0_5)", async () => {
   const nowMs = Date.parse("2026-09-09T05:00:00.000Z");
   const obs = await collectOpenClawQuotaObservation({ nowMs, execFn: liveExec(realFixture(nowMs)) });
   assert.equal(Object.keys(obs.pools).filter((id) => id === "chatgpt_codex_subscription").length, 1);
   const codexContribs = obs.contributions.filter((c) => c.resources.codex);
-  assert.equal(codexContribs.length, 1);
+  assert.equal(codexContribs.length, 0); // authority moved to codex app-server
   // consumers are not frozen as a model list: surfaces remain access surfaces
   assert.ok(!("codex_models" in obs.pools.chatgpt_codex_subscription));
 });
@@ -149,7 +149,8 @@ await test("C8 missing provider => UNKNOWN pool, endpoint unaffected", async () 
   assert.equal(obs.pools.glm_coding_plan.state, "unknown");
   assert.equal(obs.pools.glm_coding_plan.reason_code, "OPENCLAW_PROVIDER_MISSING");
   assert.ok(obs.reason_codes.some((r) => r.startsWith("OPENCLAW_PROVIDER_MISSING")));
-  assert.equal(obs.pools.chatgpt_codex_subscription.state, "available"); // other pool unaffected
+  // PHASE_0_5: codex pool is unknown regardless (retired authority)
+  assert.equal(obs.pools.chatgpt_codex_subscription.state, "unknown");
 });
 
 await test("C9 invalid JSON => UNKNOWN, no crash", async () => {
@@ -294,8 +295,8 @@ await test("C16 suspicious auth-like fields in provider object are ignored", asy
   const flat = JSON.stringify(obs);
   assert.doesNotMatch(flat, /eyJhbGciOi\.VERYLONGSECRET/);
   assert.doesNotMatch(flat, /sk-abcdefghijklmnopqrst/);
-  // quota fields survive:
-  assert.equal(obs.pools.chatgpt_codex_subscription.state, "available");
+  // PHASE_0_5: codex pool stays unknown (retired authority); secrets still never surface
+  assert.equal(obs.pools.chatgpt_codex_subscription.state, "unknown");
 });
 
 await test("C17 usedPercent direction cannot be inverted (0/100 and bounds)", () => {
@@ -400,7 +401,7 @@ await test("C18b GLM weekly zero exhausts despite healthy 5h; MCP zero does not"
   assert.equal(mcpZeroModelOk.pools.glm_coding_plan.auxiliary_windows[0].remaining_percent, 0);
 });
 
-await test("C18c Codex effective = MIN(5h, weekly); either zero exhausts", async () => {
+await test("C18c codex authority retired => no codex effective value from OpenClaw (PHASE_0_5)", async () => {
   const nowMs = Date.parse("2026-09-09T05:00:00.000Z");
   const live = await collectOpenClawQuotaObservation({
     nowMs,
@@ -419,40 +420,11 @@ await test("C18c Codex effective = MIN(5h, weekly); either zero exhausts", async
       ],
     })),
   });
-  assert.equal(live.pools.chatgpt_codex_subscription.effective_remaining_percent, 84);
-  assert.equal(live.pools.chatgpt_codex_subscription.primary.remaining_percent, 84);
-  assert.equal(live.pools.chatgpt_codex_subscription.primary.window_type, "weekly");
-
-  const weekZero = await collectOpenClawQuotaObservation({
-    nowMs,
-    execFn: liveExec(usagePayload({
-      updatedAt: nowMs - 1000,
-      providers: [{
-        provider: "openai-codex",
-        windows: [
-          { label: "5h", usedPercent: 0, resetAt: nowMs + 3_600_000 },
-          { label: "Week", usedPercent: 100, resetAt: nowMs + 86_400_000 },
-        ],
-      }, zaiProvider()],
-    })),
-  });
-  assert.equal(weekZero.pools.chatgpt_codex_subscription.state, "exhausted");
-  assert.equal(weekZero.pools.chatgpt_codex_subscription.effective_remaining_percent, 0);
-
-  const fiveZero = await collectOpenClawQuotaObservation({
-    nowMs,
-    execFn: liveExec(usagePayload({
-      updatedAt: nowMs - 1000,
-      providers: [{
-        provider: "openai-codex",
-        windows: [
-          { label: "5h", usedPercent: 100, resetAt: nowMs + 3_600_000 },
-          { label: "Week", usedPercent: 16, resetAt: nowMs + 86_400_000 },
-        ],
-      }, zaiProvider()],
-    })),
-  });
-  assert.equal(fiveZero.pools.chatgpt_codex_subscription.state, "exhausted");
+  // Codex effective capacity is NO LONGER computed by OpenClaw (authority =
+  // codex app-server). GLM MIN-window exhaustion law is covered by C18b.
+  assert.equal(live.pools.chatgpt_codex_subscription.state, "unknown");
+  assert.equal(live.pools.chatgpt_codex_subscription.effective_remaining_percent, null);
+  assert.equal(live.pools.glm_coding_plan.state, "available");
 });
 
 await test("C19/C20 GET-side law: collector performs no writes; no receipt/envelope/config artifacts", async () => {
@@ -463,7 +435,7 @@ await test("C19/C20 GET-side law: collector performs no writes; no receipt/envel
   const obs = await collectOpenClawQuotaObservation({ nowMs, execFn: liveExec(realFixture(nowMs)) });
   assert.equal(obs.schema_version, "openclaw-quota-observation-v1");
   assert.ok(Array.isArray(obs.contributions));
-  assert.equal(obs.contributions.length, 2);
+  assert.equal(obs.contributions.length, 1); // GLM only (codex authority retired)
   assert.equal(writes.length, 0);
   // contributions stay IN MEMORY — the observatory merges them into the
   // canonical compose call; no envelope file path exists in the result:
@@ -507,8 +479,9 @@ await test("C23 auth-profile caveat: expired-looking profile metadata does not r
       ],
     })),
   });
-  assert.equal(obs.pools.chatgpt_codex_subscription.state, "available");
-  assert.equal(obs.pools.chatgpt_codex_subscription.freshness, "fresh");
+  // PHASE_0_5: codex pool is unknown via OpenClaw (retired authority); plan is
+  // still bounded tier-only metadata, no token material surfaces.
+  assert.equal(obs.pools.chatgpt_codex_subscription.state, "unknown");
   assert.equal(obs.pools.chatgpt_codex_subscription.plan, "plus");
   assert.doesNotMatch(JSON.stringify(obs), /tokenExpiredAt/);
 });
@@ -538,11 +511,12 @@ await test("C25 zero remaining everywhere => exhausted, available=false projecte
       ],
     })),
   });
-  assert.equal(obs.pools.chatgpt_codex_subscription.state, "exhausted");
   assert.equal(obs.pools.glm_coding_plan.state, "exhausted");
-  const codexContrib = obs.contributions.find((c) => c.resources.codex);
-  assert.equal(codexContrib.resources.codex.available, false);
-  assert.equal(codexContrib.resources.codex.quota_remaining.value, 0);
+  // PHASE_0_5: no codex contribution exists anymore (authority retired)
+  assert.equal(obs.contributions.find((c) => c.resources.codex) ?? null, null);
+  const glmContrib = obs.contributions.find((c) => c.resources.glm);
+  assert.equal(glmContrib.resources.glm.available, false);
+  assert.equal(glmContrib.resources.glm.quota_remaining.value, 0);
 });
 
 await test("C26 default TTL constant is 60s and timeout stays above observed CLI runtime", () => {

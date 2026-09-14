@@ -390,3 +390,21 @@ marginal fail-open; OpenClaw `usage.updatedAt` future-dated ~+5 h anomaly.
 `NEXT=bounded per-pool authority cleanup → V4_OPENCLAW_QUOTA_LANE_RETIREMENT_PHASE_0_5_V1
 scoped to chatgpt_codex_subscription only (promote codex app-server collector to
 authority), OPERATOR_PREAUTHORIZED=YES`.
+---
+
+`V4_OPENCLAW_QUOTA_LANE_RETIREMENT_PHASE_0_5_V1` = **PASS** → codex pool
+authority migrated: `CODEX_PRIMARY_SOURCE=CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ`,
+`CODEX_OPENCLAW_AUTHORITY=NO`, `CODEX_OPENCLAW_FALLBACK=NO` (app-server
+unavailable/stale/malformed → codex pool UNKNOWN/STALE, never OpenClaw),
+`GLM_QUOTA_AUTHORITY=OPENCLAW` unchanged (`OPENCLAW_QUOTA_SCOPE=glm_coding_plan`,
+`OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED`, `OPENCLAW_BROKER_RUNTIME=RETIRE`).
+Live reader: bounded read-only `codex app-server` RPC (rateLimits/read, 20 s
+deadline, tree-kill, consume never called); live validation AVAILABLE/fresh
+from authority; mandatory fail-closed test PASS (fresh OpenClaw codex data
+cannot govern). Regressions: focused 8/8, appserver PASS, collector 26/26,
+observatory PASS, dispatcher 69/69. `MODEL_INFERENCE=0`; dispatch/production
+untouched. Report:
+`reports/architecture/v4_openclaw_quota_lane_retirement_phase_0_5_v1.md`.
+`NEXT=bounded reconciliation of OpenClaw retirement scope: broker/fallback
+retired, GLM quota collector retained` (deferred GLM follow-ups: null→100
+fail-open wrinkle; OpenClaw updatedAt future-dating).

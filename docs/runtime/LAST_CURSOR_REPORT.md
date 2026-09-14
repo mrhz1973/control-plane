@@ -1,5 +1,31 @@
 # LAST CURSOR REPORT
 
+## OpenClaw quota lane retirement Phase 0.5 — PASS (latest)
+
+**TASK_REF:** `V4_OPENCLAW_QUOTA_LANE_RETIREMENT_PHASE_0_5_V1`
+**Classification:** `PASS — CODEX_QUOTA_AUTHORITY=CODEX_APP_SERVER`
+**Date (Europe/Rome):** 2026-09-14 (implementation 06:51–07:16; persisted before 07:50 cutoff)
+**BASE_HEAD:** `48092420d7c8b11e5cc4e2d21ef45483dd3c78f8` (verified PASS at start)
+**Report:** `reports/architecture/v4_openclaw_quota_lane_retirement_phase_0_5_v1.md`
+
+- Codex pool authority migrated to `CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ`:
+  OpenClaw codex contributions suppressed at source, reconciliation flipped to
+  `CODEX_APPSERVER_PRIMARY` with OpenClaw `DIAGNOSTIC_ONLY`, observatory card
+  rebuilt from authority or vetoed fail-closed (UNKNOWN/STALE, never OpenClaw
+  fallback). GLM scope untouched on the OpenClaw collector.
+- New bounded read-only live reader (`codex app-server` stdio RPC, 20 s
+  deadline, tree-kill, consume never called) wired into GET /v1/resources;
+  live validation: codex AVAILABLE/fresh from authority; GLM unchanged.
+- Mandatory fail-closed test PASS (fresh OpenClaw codex data present +
+  app-server absent → codex UNKNOWN, OpenClaw values stripped).
+- Regressions: focused 8/8; appserver PASS; collector 26/26; observatory PASS;
+  dispatcher 69/69. MODEL_INFERENCE=0; production dispatch unchanged.
+- Deferred GLM follow-ups: `usedToRemainingPercent(null)→100` wrinkle;
+  OpenClaw `usage.updatedAt` future-dating.
+- NEXT: bounded reconciliation of OpenClaw retirement scope (broker/fallback
+  retired, GLM quota collector retained). No automatic further retirement.
+
+---
 ## OpenClaw quota lane value comparison — KEEP_SCOPED (latest)
 
 **TASK_REF:** `V4_OPENCLAW_QUOTA_LANE_VALUE_COMPARISON_V1`

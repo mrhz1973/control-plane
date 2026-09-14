@@ -119,7 +119,10 @@ const mismatch = reconcileCodexQuotaObservations(primary(84), normalizeCodexAppS
 }), { nowMs: NOW }));
 assert.equal(mismatch.classification, "MISMATCH");
 assert.equal(mismatch.effective_remaining_percent, 84);
-assert.equal(mismatch.routing_authority, "OPENCLAW_PRIMARY");
+// PHASE_0_5: app-server is the AUTHORITY (first arg); OpenClaw is diagnostic.
+assert.equal(mismatch.primary_source, "CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ");
+assert.equal(mismatch.routing_authority, "CODEX_APPSERVER_PRIMARY");
+assert.equal(mismatch.openclaw_codex_role, "DIAGNOSTIC_ONLY");
 assert.equal(mismatch.secondary_mismatch_overwrites_primary, false);
 assert.equal(mismatch.observations_are_additive, false);
 assert.equal(
@@ -132,7 +135,7 @@ assert.equal(
 );
 assert.equal(
   reconcileCodexQuotaObservations(primary(84, "stale"), normalized).routing_authority,
-  "OPENCLAW_PRIMARY",
+  "CODEX_APPSERVER_PRIMARY",
 );
 assert.equal(DEFAULT_RECONCILIATION_TOLERANCE_PERCENT, 5);
 

@@ -18,6 +18,10 @@ import {
   normalizeCodexAppServerQuota,
   reconcileCodexQuotaObservations,
 } from "./collect-codex-appserver-quota-v1.mjs";
+import {
+  codexAuthorityObservation,
+  CODEX_PRIMARY_SOURCE,
+} from "./v4-codex-pool-authority-v1.mjs";
 
 const execFileAsync = promisify(execFile);
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -900,21 +904,63 @@ export async function collectQuotaObservatory(options = {}) {
   );
   // Optional offline fixture/adapter input only. This branch never performs
   // an app-server RPC and never changes the canonical OpenClaw projection.
-  const codexSecondaryInput =
-    options.codexAppServerObservation ??
-    options.codexAppServerResponse ??
-    null;
-  const codexSecondary = codexSecondaryInput
-    ? normalizeCodexAppServerQuota(codexSecondaryInput, { nowMs })
+  // PHASE_0_5 AUTHORITY LAW: the app-server observation (when ok+fresh) is the
+  // SOLE authority for the codex pool card; when absent/stale/malformed the
+  // codex pool stays at its canonical (now OpenClaw-free) UNKNOWN/STALE state.
+  // OpenClaw is NEVER consulted for codex (no fallback, no override).
+  const codexAuthority = codexAuthorityObservation({ ...options, nowMs });
+  const codexRawInput = options.codexAppServerObservation ?? options.codexAppServerResponse ?? null;
+  const codexRawNormalized = codexRawInput
+    ? normalizeCodexAppServerQuota(codexRawInput, { nowMs })
     : null;
-  const codexPrimary = openclaw?.pools?.chatgpt_codex_subscription || null;
+  const codexAuthorityUnavailableReason =
+    codexAuthority
+      ? null
+      : codexRawNormalized
+        ? ((codexRawNormalized.reason_codes || []).some((r) => r === "OBSERVATION_STALE" || r === "OBSERVED_AT_FUTURE")
+          ? "CODEX_APPSERVER_STALE"
+          : "CODEX_APPSERVER_MALFORMED")
+        : "CODEX_APPSERVER_UNAVAILABLE";
+  const codexSecondary = codexAuthority ?? codexRawNormalized;
+  const codexDiagnosticOpenClaw = openclaw?.pools?.chatgpt_codex_subscription || null;
   const codexReconciliation = codexSecondary
-    ? reconcileCodexQuotaObservations(codexPrimary, codexSecondary)
+    ? reconcileCodexQuotaObservations(codexSecondary, codexDiagnosticOpenClaw)
     : null;
   if (codexSecondary) {
     codex.secondary_observation = codexSecondary;
     codex.reconciliation = codexReconciliation;
   }
+  // Authority rebuild: replaces any canonical codex projection (which can no
+  // longer contain OpenClaw data since the collector stopped emitting codex
+  // contributions) with the authoritative app-server windows when available.
+  if (codexAuthority) {
+    const windows = codexAuthority.windows.map((w) => ({
+      window_type: w.window_type,
+      label: w.window_type,
+      remaining_percent: w.remaining_percent,
+      reset_at: w.resets_at_iso ?? w.resets_at ?? null,
+    }));
+    codex.windows = windows;
+    codex.remaining_percent = codexAuthority.effective_remaining_percent;
+    codex.reset_at = codexAuthority.primary?.resets_at_iso ?? null;
+    codex.observed_at = codexAuthority.observed_at;
+    codex.freshness = "fresh";
+    codex.state = codexAuthority.state === "exhausted" ? "EXHAUSTED" : "AVAILABLE";
+    codex.observation_state = "OBSERVED";
+    codex.quota_observation_state = "OBSERVED";
+  } else {
+    // Fail-closed: explicitly veto any OpenClaw-derived codex values.
+    codex.state = "UNKNOWN";
+    codex.freshness = "stale";
+    codex.reason_code = codexAuthorityUnavailableReason;
+    codex.remaining_percent = null;
+    codex.reset_at = null;
+    codex.windows = [];
+    codex.observed_at = null;
+    codex.observation_state = "NOT_OBSERVED";
+    codex.quota_observation_state = "NOT_OBSERVED";
+  }
+  codex.authority_source = CODEX_PRIMARY_SOURCE;
 
   const cursorManual = loadCursorManualObservation(options);
   const cursor = {
@@ -977,6 +1023,8 @@ export async function collectQuotaObservatory(options = {}) {
       glm_coding_plan: glm,
       chatgpt_codex_subscription: codex,
     },
+    codex_quota_authority: CODEX_PRIMARY_SOURCE,
+    glm_quota_authority: "OPENCLAW_STATUS_USAGE_JSON",
     codex_appserver_secondary: codexSecondary,
     codex_reconciliation: codexReconciliation,
     cursor,

@@ -296,37 +296,43 @@ function primaryFresh(primary) {
 }
 
 /**
- * Compare two observations of the one shared pool.  The returned effective
- * value is always sourced from OpenClaw; the secondary value is diagnostic.
+ * Compare two observations of the one shared pool.
+ * PHASE_0_5 AUTHORITY LAW (V4_OPENCLAW_QUOTA_LANE_RETIREMENT_PHASE_0_5_V1):
+ * the app-server observation (first arg) is the PRIMARY AUTHORITY; the
+ * OpenClaw codex pool (second arg) is DEMOTED to diagnostic-only and can
+ * never supply the effective value or override the authority. The returned
+ * effective value is always sourced from the app-server observation.
  */
-export function reconcileCodexQuotaObservations(primary, secondary, options = {}) {
+export function reconcileCodexQuotaObservations(authority, legacyDiagnostic, options = {}) {
   const tolerance = typeof options.tolerance_percent === "number" && Number.isFinite(options.tolerance_percent)
     && options.tolerance_percent >= 0 ? options.tolerance_percent : DEFAULT_RECONCILIATION_TOLERANCE_PERCENT;
-  const primaryRemaining = primaryValue(primary);
-  const secondaryRemaining = primaryValue(secondary);
-  const comparable = primaryFresh(primary) && isRecord(secondary) && secondary.freshness === "fresh" && secondaryRemaining !== null;
+  const authorityRemaining = primaryValue(authority);
+  const diagnosticRemaining = primaryValue(legacyDiagnostic);
+  const comparable = primaryFresh(authority) && isRecord(legacyDiagnostic) && legacyDiagnostic.freshness === "fresh" && diagnosticRemaining !== null;
   let classification = "UNKNOWN";
   let difference = null;
   if (comparable) {
-    difference = Math.abs(primaryRemaining - secondaryRemaining);
+    difference = Math.abs(authorityRemaining - diagnosticRemaining);
     classification = difference === 0 ? "MATCH" : difference <= tolerance ? "WITHIN_TOLERANCE" : "MISMATCH";
   }
   return {
     schema_version: "codex-quota-reconciliation-v1",
     quota_pool_id: CODEX_QUOTA_POOL_ID,
-    primary_source: "OPENCLAW_STATUS_USAGE_JSON",
-    secondary_source: CODEX_SECONDARY_SOURCE,
+    primary_source: CODEX_SECONDARY_SOURCE,
+    primary_source_law: "PHASE_0_5_APPSERVER_AUTHORITY",
+    secondary_source: "OPENCLAW_STATUS_USAGE_JSON",
     classification,
     tolerance_percent: tolerance,
     absolute_difference_percent: difference,
-    primary_effective_remaining_percent: primaryRemaining,
-    secondary_effective_remaining_percent: secondaryRemaining,
-    effective_remaining_percent: primaryFresh(primary) ? primaryRemaining : null,
-    routing_authority: "OPENCLAW_PRIMARY",
+    primary_effective_remaining_percent: authorityRemaining,
+    secondary_effective_remaining_percent: diagnosticRemaining,
+    effective_remaining_percent: primaryFresh(authority) ? authorityRemaining : null,
+    routing_authority: "CODEX_APPSERVER_PRIMARY",
+    openclaw_codex_role: "DIAGNOSTIC_ONLY",
     secondary_mismatch_overwrites_primary: false,
     observations_are_additive: false,
-    secondary_freshness: secondary?.freshness ?? "missing",
-    primary_freshness: primary?.freshness ?? "missing",
+    secondary_freshness: legacyDiagnostic?.freshness ?? "missing",
+    primary_freshness: authority?.freshness ?? "missing",
     reason_codes: comparable ? [] : ["COMPARISON_NOT_FRESH_AND_COMPARABLE"],
   };
 }

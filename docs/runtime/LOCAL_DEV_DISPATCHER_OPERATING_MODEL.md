@@ -233,7 +233,17 @@ Current primary live observation path:
 
 ```text
 OpenClaw status --usage --json
-  → collect-openclaw-quota-v1
+  → 
+
+> **PHASE_0_5 AUTHORITY LAW (V4_OPENCLAW_QUOTA_LANE_RETIREMENT_PHASE_0_5_V1):**
+> OpenClaw quota observation is scoped to `glm_coding_plan` ONLY
+> (`OPENCLAW_QUOTA_SCOPE=glm_coding_plan`). The `chatgpt_codex_subscription`
+> pool authority is `CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ`
+> (bounded read-only `codex app-server` RPC). `CODEX_OPENCLAW_AUTHORITY=NO`,
+> `CODEX_OPENCLAW_FALLBACK=NO`: without a fresh app-server observation the
+> codex pool renders UNKNOWN/STALE — OpenClaw codex data is diagnostic-only
+> and can never govern or restore the pool.
+collect-openclaw-quota-v1
   → canonical quota state
   → /v1/resources
 ```

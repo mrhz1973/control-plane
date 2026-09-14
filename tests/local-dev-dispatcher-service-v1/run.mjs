@@ -2420,10 +2420,15 @@ await test("S58 #73 observatory consumes live OpenClaw observation: pools, windo
   assert.equal(glm.collector_id, "openclaw_usage_live");
   assert.equal(glm.observed_at, observedAt);
   assert.deepEqual(glm.consumers, ["glm-5.3", "glm-5.3-flash"]); // one shared pool entry, both models
+  // PHASE_0_5: codex authority = CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ.
+  // OpenClaw codex data above is present + fresh but MUST NOT govern the pool:
   const codex = quotas.pools.chatgpt_codex_subscription;
-  assert.equal(codex.plan, "plus");
-  assert.equal(codex.remaining_percent, 84); // MIN(100,84)
-  assert.equal(codex.windows.find((w) => w.window_type === "weekly").remaining_percent, 84);
+  assert.equal(quotas.codex_quota_authority, "CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ");
+  assert.equal(codex.authority_source, "CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ");
+  assert.equal(codex.state, "UNKNOWN"); // no app-server observation -> fail closed
+  assert.equal(codex.reason_code, "CODEX_APPSERVER_UNAVAILABLE");
+  assert.equal(codex.remaining_percent ?? null, null); // never the OpenClaw 84
+  assert.equal(codex.windows.length, 0);
   assert.equal(quotas.openclaw.collector, "openclaw_usage_live");
   assert.ok(!JSON.stringify(quotas).includes("[object Object]"));
 
@@ -2452,6 +2457,8 @@ await test("S58 #73 observatory consumes live OpenClaw observation: pools, windo
   assert.equal(degraded.pools.glm_coding_plan.state, "UNKNOWN");
   assert.equal(degraded.pools.glm_coding_plan.collector_id, "rt25_quota_ingest");
   assert.equal(degraded.openclaw.reason_codes[0], "OPENCLAW_NOT_FOUND");
+  assert.equal(degraded.pools.chatgpt_codex_subscription.state, "UNKNOWN");
+  assert.equal(degraded.pools.chatgpt_codex_subscription.reason_code, "CODEX_APPSERVER_UNAVAILABLE");
 
   // Collector exception never breaks /v1/resources:
   const resilient = await collectQuotaObservatory({

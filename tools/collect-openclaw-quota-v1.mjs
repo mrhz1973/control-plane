@@ -513,15 +513,30 @@ export async function collectOpenClawQuotaObservation(options = {}) {
     const normalized = normalizeProviderPool(binding, provider, observedAtMs, collectedAtMs, reasonCodes);
     const pool = normalized.pool;
     if (poolId === "chatgpt_codex_subscription") {
+      // PHASE_0_5 AUTHORITY LAW (V4_OPENCLAW_QUOTA_LANE_RETIREMENT_PHASE_0_5_V1):
+      // the codex pool authority is now CODEX_APP_SERVER_ACCOUNT_RATE_LIMITS_READ
+      // (tools/v4-codex-pool-authority-v1.mjs). OpenClaw codex data is
+      // DIAGNOSTIC-ONLY: no contribution is emitted for it, so it can never
+      // enter canonical composition, and the pool is reported unknown here so
+      // downstream merge law can never promote it. NO fallback exists.
+      reasonCodes.push("OPENCLAW_CODEX_AUTHORITY_RETIRED");
+      pool.state = "unknown";
+      pool.freshness = "stale";
+      pool.reason_code = "OPENCLAW_CODEX_AUTHORITY_RETIRED";
+      pool.windows = [];
+      pool.auxiliary_windows = [];
+      pool.unmapped_windows = [];
+      pool.primary = null;
+      pool.effective_remaining_percent = null;
       // Plan label is bounded NON-SENSITIVE metadata only (tier, e.g. "plus");
       // economics like "$0.00" are dropped and never displayed.
       const plan = normalizePlanLabel(provider.plan);
       if (plan) pool.plan = plan;
     }
-    if (normalized.ok && docFresh) {
+    if (normalized.ok && docFresh && pool.state !== "unknown") {
       contributions.push(buildContribution(poolId, binding, pool, observedAtMs, collectedAtMs));
     } else {
-      if (normalized.ok && !docFresh) {
+      if (normalized.ok && !docFresh && pool.state !== "unknown") {
         pool.state = "unknown";
         pool.freshness = "stale";
         pool.reason_code = docStaleReason;
