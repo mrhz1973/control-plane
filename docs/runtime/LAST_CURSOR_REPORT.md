@@ -1,5 +1,29 @@
 # LAST CURSOR REPORT
 
+## GPT-6 Astra subscription qualification — QUALIFIED_NEGATIVE (latest)
+
+**TASK_REF:** `V4_GPT6_ASTRA_SUBSCRIPTION_SURFACE_QUALIFICATION_V1`
+**Classification:** `PASS — QUALIFIED_NEGATIVE_NOT_CURRENTLY_EXPOSED`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `e8d874b771af53d14d01c108080dd2524ba21e7c` (verified PASS at start)
+**Report:** `reports/architecture/v4_gpt6_astra_subscription_surface_qualification_v1.md`
+
+- Live read-only model/list on both subscription surfaces (Cursor IDE
+  extension binary + PATH CLI 0.133.0): gpt-6-astra exposed by NEITHER
+  (IDE: gpt-5.6-sol/terra/luna, gpt-5.5; CLI: gpt-5.5/5.4/5.4-mini/
+  5.3-codex/5.2). config.toml hint is preference only, not exposure.
+- Zero model invocations; no API/BYOK surface; quota pools codex +
+  base_model_inference only (canonical chatgpt_codex_subscription).
+  Reasoning ladders recorded for exposed models (low→max, ultra on
+  5.6-sol/terra); Astra-specific levels UNKNOWN (not exposed).
+- Router/registry untouched: dynamic discovery canonical, no silent
+  fallback (19/19), pool identity fail-closed (8/8), metadata parsing PASS.
+- EXPIRING_ALLOWANCE_USE not implemented/proven → separate task;
+  ISSUE_35_CLOSURE_READY=NO, issue #35 left OPEN/untouched.
+- NEXT: `WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE`
+  (re-arm on any new live-catalog Astra evidence).
+
+---
 ## Issue #61 closure persistence — CLOSED_COMPLETED (latest)
 
 **TASK_REF:** `V4_HERMES_CONSOLIDATION_AUDIT_ISSUE_61_CLOSURE_PERSISTENCE_V1`
