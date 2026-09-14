@@ -1,5 +1,26 @@
 # LAST CURSOR REPORT
 
+## Issue #61 closure persistence — CLOSED_COMPLETED (latest)
+
+**TASK_REF:** `V4_HERMES_CONSOLIDATION_AUDIT_ISSUE_61_CLOSURE_PERSISTENCE_V1`
+**Classification:** `PASS — ISSUE_61_CLOSURE_PERSISTENCE=PASS`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `b50a7e568360a0d0eb4156bbee7b35477b49fd61` (verified PASS at start)
+**Report:** `reports/architecture/v4_hermes_consolidation_audit_issue_61_closure_persistence_v1.md`
+
+- GitHub issue #61 closed as COMPLETED after marker re-verification of the
+  persisted closure evidence (`b50a7e5`); one concise closure comment
+  added (issuecomment-5663692856); title/body/labels/milestone/assignees
+  untouched; state re-read from GitHub: CLOSED / COMPLETED.
+- `HERMES_CONSOLIDATION_AUDIT=COMPLETED`; final architecture markers
+  persisted unchanged (OpenClaw SCOPED_RETENTION, Hermes native CDP
+  canonical, WF90 tick owner, registry-v2 routing canon, Phase 5 closed
+  no-expansion, 0 production authorizations, route control DISABLED,
+  SHADOW_ONLY, production/runtime unchanged).
+- NEXT: `RETURN_TO_PARENT_ISSUE_32_FRONTIER` (parent #32 OPEN; no #32
+  work or mutation performed in this task).
+
+---
 ## Hermes consolidation audit closure evaluation — READY (latest)
 
 **TASK_REF:** `V4_HERMES_CONSOLIDATION_AUDIT_CLOSURE_EVALUATION_V1`
