@@ -901,6 +901,44 @@ repo copies. Issue #65 CLOSED COMPLETED (issuecomment-5667627731).
 `MODEL_INFERENCE=0`. Report:
 `reports/architecture/v4_issue_65_novnc_view_only_default_v1.md`.
 ```text
-CURRENT_NEXT=GLOBAL_FRONTIER_RESELECTION_REQUIRED
-NEXT=GLOBAL_FRONTIER_RESELECTION_REQUIRED
+CURRENT_NEXT_then=GLOBAL_FRONTIER_RESELECTION_REQUIRED (historical record — resolved 2026-09-14 by the operator-confirmed provider gate below)
+NEXT_then=GLOBAL_FRONTIER_RESELECTION_REQUIRED (historical record)
+```
+
+---
+
+## Current latest — #68 closed: OLD VPS decommission complete (operator-confirmed provider closure)
+
+`V4_VPS_68_PROVIDER_TERMINATION_CLOSURE_PERSISTENCE_V1` = **PASS** (final
+closure persistence only — zero validation, zero runtime change): the
+operator reported IONOS confirmation of the OLD VPS/contract closure
+("IONOS mi ha confermato la chiusura"). Evidence grade exactly preserved:
+`OLD_PROVIDER_TERMINATION=PASS_OPERATOR_CONFIRMED` ·
+`IONOS_PROVIDER_CLOSURE_CONFIRMED_BY_OPERATOR=YES` ·
+`IONOS_PROVIDER_API_VERIFIED=NO_NOT_AVAILABLE` (never silently upgraded to
+API verification). Full 12-step lifecycle reconciled COMPLETE (census →
+parity → replica → persistence → parallel validation → human cutover →
+production PASS → rollback observation → retention closed by authorization
+→ decommission authorization → OS shutdown PASS → provider closure
+operator-confirmed). **`ISSUE_68=CLOSED_COMPLETED`** (comment
+issuecomment-5667828416; post-close re-verified).
+
+```text
+OLD_ROLE=DECOMMISSIONED
+OLD_OS_SHUTDOWN=PASS
+OLD_DECOMMISSION_EXECUTED=YES
+OLD_DECOMMISSION_COMPLETE=YES
+OLD_DECOMMISSION_ELIGIBLE=YES
+ROLLBACK_RETENTION=CLOSED_BY_OPERATOR_AUTHORIZATION
+NEW_ROLE=LIVE
+NEW_CANONICAL_VPS=31.70.139.73
+```
+
+`MODEL_INFERENCE=0` · `PRODUCTION_CHANGED=NO` · `RUNTIME_CHANGED=NO`.
+Remaining OPEN: #35 (parked, new-evidence-only) · #18 (deferred research).
+Report:
+`reports/architecture/v4_vps_68_provider_termination_closure_persistence_v1.md`.
+```text
+CURRENT_NEXT=NO_READY_ENGINEERING_TASKS
+NEXT=NO_READY_ENGINEERING_TASKS
 ```

@@ -1,5 +1,41 @@
 # LAST CURSOR REPORT
 
+## Issue #68 CLOSED COMPLETED — OLD VPS decommission final gate (operator-confirmed provider closure) (latest)
+
+**TASK_REF:** `V4_VPS_68_PROVIDER_TERMINATION_CLOSURE_PERSISTENCE_V1`
+**Classification:** `PASS — FINAL CLOSURE PERSISTENCE ONLY`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `8192e5f8eaedffd560e4c414d22f6422f7cd427e` (verified PASS at start)
+**Report:** `reports/architecture/v4_vps_68_provider_termination_closure_persistence_v1.md`
+
+- Final administrative/provider gate persisted; zero validation, zero
+  runtime change (`MODEL_INFERENCE=0` · `PRODUCTION_CHANGED=NO` ·
+  `RUNTIME_CHANGED=NO`). No OLD access, no NEW mutation, no provider API.
+- Operator evidence: "IONOS mi ha confermato la chiusura" →
+  `IONOS_PROVIDER_CLOSURE_CONFIRMED_BY_OPERATOR=YES`; evidence grade
+  exactly `OLD_PROVIDER_TERMINATION=PASS_OPERATOR_CONFIRMED`, explicitly
+  NOT API-verified (`IONOS_PROVIDER_API_VERIFIED=NO_NOT_AVAILABLE`); no
+  invented provider API response/ID/refund/timestamp/economics.
+- 12-step #68 lifecycle reconciled COMPLETE from persisted evidence
+  (census → parity → replica → restart persistence → parallel validation →
+  human cutover → production PASS → rollback observation → retention
+  closed by authorization → decommission authorization → OS shutdown PASS
+  → operator-confirmed provider closure); 0 blockers.
+- **ISSUE_68=CLOSED_COMPLETED** (issuecomment-5667828416; post-close state
+  re-verified CLOSED/COMPLETED; body/title/labels untouched).
+  FINAL: `OLD_ROLE=DECOMMISSIONED` · `OLD_DECOMMISSION_COMPLETE=YES` ·
+  `OLD_DECOMMISSION_ELIGIBLE=YES` · `ROLLBACK_RETENTION=CLOSED_BY_
+  OPERATOR_AUTHORIZATION` · `NEW_ROLE=LIVE` ·
+  `NEW_CANONICAL_VPS=31.70.139.73`.
+- Canonical updates: `docs/vps/CURRENT_VPS_STATE.md` (FINAL VPS STATE
+  section), `DECOMMISSION_CHECKLIST.md` (all boxes green + final-state
+  block), registry intros/rows moved to final state; historical sections
+  untouched.
+- Remaining OPEN: #35 (parked, new-evidence-only), #18 (deferred research).
+- **NEXT:** `NO_READY_ENGINEERING_TASKS` (no engineering task manufactured;
+  new work requires a new operator-authorized slice).
+
+---
 ## Issue #65 noVNC view-only default — implemented + CLOSED COMPLETED (latest)
 
 **TASK_REF:** `V4_ISSUE_65_NOVNC_VIEW_ONLY_DEFAULT_V1`

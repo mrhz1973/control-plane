@@ -2,7 +2,7 @@
 
 This file records authoritative ownership/state for VPS resources that specialist projects must not configure independently.
 
-NEW Tailscale identity and the full GOI private stack are LIVE and proven functional, enabled, cold-start persistent, and TLS renewal with nginx active is proven with weekly timer. Authorized cutover is PASS; OLD rollback retention was served through observation and closed by operator authorization; OLD decommission was authorized and executed as OS shutdown 2026-09-14 with IONOS provider termination pending as a separate manual operator action (#68).
+NEW Tailscale identity and the full GOI private stack are LIVE and proven functional, enabled, cold-start persistent, and TLS renewal with nginx active is proven with weekly timer. Authorized cutover is PASS; OLD rollback retention was served through observation and closed by operator authorization; OLD decommission was authorized and executed as OS shutdown 2026-09-14, and IONOS provider closure was confirmed by the operator (OPERATOR_CONFIRMED evidence grade, not API-verified): OLD is DECOMMISSIONED (#68 CLOSED_COMPLETED).
 
 | Shared resource | Owner | OLD current state | NEW current state | Mutation rule / gate |
 |---|---|---|---|---|
@@ -31,8 +31,8 @@ NEW Tailscale identity and the full GOI private stack are LIVE and proven functi
 | Hermes private ports | Control Plane/Hermes | loopback | loopback qualified | remain private |
 | Docker common runtime | Control Plane | live | live | shared namespace centralized |
 | Cutover | Control Plane + human operator | OLD writer frozen | PASS; NEW LIVE | no reverse/secondary cutover without human gate |
-| Rollback retention | Control Plane + human operator | OLD intact/frozen standby | entered, no automatic expiry | separate human rollback-exit authorization |
-| Decommission | Human final authorization via Control Plane | forbidden now | n/a | only after checklist fully green |
+| Rollback retention | Control Plane + human operator | OLD intact/frozen standby | CLOSED_BY_OPERATOR_AUTHORIZATION (retention served through observation) | closed; no reopening |
+| Decommission | Human final authorization via Control Plane | DECOMMISSIONED (OS shutdown PASS 2026-09-14; IONOS provider closure confirmed by operator) | n/a | provider evidence grade OPERATOR_CONFIRMED, not API-verified |
 
 ## Current proof
 

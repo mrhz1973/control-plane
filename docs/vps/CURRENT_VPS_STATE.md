@@ -349,6 +349,45 @@ PRODUCTION_CHANGED=NO_ON_NEW
 
 Report: `reports/architecture/v4_vps_68_authorized_old_decommission_execution_v1.md`.
 
+## FINAL VPS STATE — 2026-09-14 (`V4_VPS_68_PROVIDER_TERMINATION_CLOSURE_PERSISTENCE_V1`)
+
+Operator reported IONOS confirmation of the OLD VPS/contract closure
+("IONOS mi ha confermato la chiusura"). Evidence grade:
+`OPERATOR_CONFIRMED` — explicitly NOT API-verified
+(`IONOS_PROVIDER_API_VERIFIED=NO_NOT_AVAILABLE`); no provider API,
+dashboard, or resource-ID claims are made.
+
+```text
+NEW_HOST=ionos-n8n-new
+NEW_PUBLIC_IP=31.70.139.73
+NEW_TAILSCALE_IP=100.99.54.93
+NEW_ROLE=LIVE
+NEW_CANONICAL_VPS=31.70.139.73
+OLD_HOST=ionos-n8n
+OLD_PUBLIC_IP=217.160.71.145
+OLD_OS_SHUTDOWN=PASS
+OLD_DECOMMISSION_AUTHORIZED=YES
+OLD_DECOMMISSION_TECHNICALLY_READY=YES
+OLD_DECOMMISSION_EXECUTED=YES
+OLD_PROVIDER_TERMINATION=PASS_OPERATOR_CONFIRMED
+IONOS_PROVIDER_CLOSURE_CONFIRMED_BY_OPERATOR=YES
+OLD_DECOMMISSION_COMPLETE=YES
+OLD_ROLE=DECOMMISSIONED
+ROLLBACK_RETENTION=CLOSED_BY_OPERATOR_AUTHORIZATION
+CUTOVER=PASS
+PRODUCTION_TRAFFIC_ON_NEW=PASS
+VPS_PARALLEL_VALIDATION=PASS
+NEW_CORE_RESTART_PERSISTENCE=PASS
+ISSUE_68=CLOSED_COMPLETED
+```
+
+The technical decommission chain (census → parity → replica → parallel
+validation → human cutover → soak → rollback retention served/closed →
+readiness proof → operator authorization → OS shutdown) was already
+complete; this final gate added only the operator-confirmed provider
+closure and issue #68 closure. Report:
+`reports/architecture/v4_vps_68_provider_termination_closure_persistence_v1.md`.
+
 ## VPS parent issues #60/#67 closure — 2026-09-14 (`V4_VPS_PARENT_60_67_CLOSURE_RECONCILIATION_V1`)
 
 Documentation/issue reconciliation only from persisted evidence; no test

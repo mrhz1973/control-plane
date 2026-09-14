@@ -1,6 +1,6 @@
 # Project VPS registry
 
-Current projection after authorized production cutover PASS. NEW is LIVE with the exact frozen four-workflow publication map. Rollback retention was served through observation and closed by recorded operator authorization; OLD decommission was authorized (#68 issuecomment-5665517718) and executed as clean OS shutdown 2026-09-14 (`OLD_DECOMMISSION_EXECUTED=PARTIAL_OS_SHUTDOWN_COMPLETE`); IONOS provider termination remains a separate manual operator action (`ISSUE_68=OPEN_PENDING_PROVIDER_TERMINATION`).
+Current projection after authorized production cutover PASS. NEW is LIVE with the exact frozen four-workflow publication map. Rollback retention was served through observation and closed by recorded operator authorization; OLD decommission was authorized (#68 issuecomment-5665517718) and executed as clean OS shutdown 2026-09-14; IONOS provider closure was confirmed by the operator the same day (evidence grade OPERATOR_CONFIRMED, not API-verified): `OLD_ROLE=DECOMMISSIONED`, `ISSUE_68=CLOSED_COMPLETED`.
 
 | Project / component | OLD footprint | NEW state | Shared dependencies | Migration status | Evidence / next |
 |---|---|---|---|---|---|

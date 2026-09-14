@@ -102,10 +102,35 @@ The checklist boxes below remain the canonical gate. Rollback retention is open 
 - [x] `OLD_DECOMMISSION_ELIGIBLE=YES` recorded by Control Plane — 2026-09-14 (technically ready; eligible pending human gate → gate satisfied)
 - [x] explicit final human authorization to decommission OLD recorded — 2026-09-14 (#68 issuecomment-5665517718)
 - [x] final backup/evidence requirements satisfied — by existing canonical cutover evidence (no duplicate dump)
-- [x] OLD shutdown action separately bounded and logged — 2026-09-14 (clean `systemctl poweroff`; OS shutdown PASS; **provider deletion still pending manual operator action — do not mark provider deletion complete**)
+- [x] OLD shutdown action separately bounded and logged — 2026-09-14 (clean `systemctl poweroff`; OS shutdown PASS)
+- [x] IONOS provider closure confirmed — 2026-09-14, evidence grade `OPERATOR_CONFIRMED` ("IONOS mi ha confermato la chiusura"); NOT API-verified (`IONOS_PROVIDER_API_VERIFIED=NO_NOT_AVAILABLE`)
 
-Technical readiness update 2026-09-14 (`V4_VPS_68_ROLLBACK_EXIT_DECOMMISSION_READINESS_V1`): all technical conditions satisfied (`OLD_DECOMMISSION_TECHNICALLY_READY=YES`, 0 technical blockers); the remaining gate is the explicit human decommission authorization. Final-gate boxes below stay unchecked until that authorization.
+Technical readiness update 2026-09-14 (`V4_VPS_68_ROLLBACK_EXIT_DECOMMISSION_READINESS_V1`): all technical conditions satisfied (`OLD_DECOMMISSION_TECHNICALLY_READY=YES`, 0 technical blockers); at the time of that update the remaining gate was the explicit human decommission authorization — superseded later the same day by the final state below.
 
-Until every applicable item is green:
+## Final state — 2026-09-14 (`V4_VPS_68_PROVIDER_TERMINATION_CLOSURE_PERSISTENCE_V1`)
 
-`OLD_DECOMMISSION_ELIGIBLE=NO`
+```text
+OLD_DECOMMISSION_ELIGIBLE=YES
+OLD_DECOMMISSION_AUTHORIZED=YES
+OLD_DECOMMISSION_EXECUTED=YES
+OLD_OS_SHUTDOWN=PASS
+OLD_PROVIDER_TERMINATION=PASS_OPERATOR_CONFIRMED
+IONOS_PROVIDER_CLOSURE_CONFIRMED_BY_OPERATOR=YES
+IONOS_PROVIDER_API_VERIFIED=NO_NOT_AVAILABLE
+OLD_DECOMMISSION_COMPLETE=YES
+OLD_ROLE=DECOMMISSIONED
+ROLLBACK_RETENTION=CLOSED_BY_OPERATOR_AUTHORIZATION
+NEW_ROLE=LIVE
+NEW_CANONICAL_VPS=31.70.139.73
+ISSUE_68=CLOSED_COMPLETED
+ISSUE_60=CLOSED_COMPLETED
+ISSUE_67=CLOSED_COMPLETED
+ISSUE_69=CLOSED_COMPLETED
+ISSUE_65=CLOSED_COMPLETED
+```
+
+Every checklist item is satisfied; the decommission is complete. The
+provider-closure evidence grade remains OPERATOR_CONFIRMED (explicit human
+statement) and is never silently upgraded to machine/API verification.
+
+Every applicable item is green — `OLD_DECOMMISSION_ELIGIBLE=YES` (2026-09-14).
