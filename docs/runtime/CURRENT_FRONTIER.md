@@ -457,3 +457,39 @@ PHASE_3_HUMAN_GATE_REQUIRED=YES
 ```
 
 Phase 3 is the next bounded slice and was not executed here.
+
+---
+
+## Current latest — LOCAL_DEV scheduler Phase 3 role separation
+
+`V4_LOCAL_DEV_SCHEDULER_DEDUP_PHASE_3_V1` = **PASS**. The role census
+disproved the old duplicate-scheduler assumption: WF90 is the sole periodic
+5-minute tick scheduler, while `ControlPlane-V4-LocalDevDispatcher` is the
+Windows service supervisor for `serve-local-dev-autonomous-dispatcher-v1.mjs`.
+No component was disabled or reconfigured.
+
+```text
+PHASE_3_SCHEDULER_DEDUP=PASS
+PHASE_3_DECISION=NO_DEDUP_REQUIRED_ROLE_SEPARATION
+CANONICAL_TICK_OWNER=WF90
+SERVICE_LIFECYCLE_OWNER=ControlPlane-V4-LocalDevDispatcher
+ACTIVE_TICK_GENERATORS=1
+WINDOWS_TASK_ROLE=SERVICE_SUPERVISOR
+WF90_ROLE=TICK_SCHEDULER
+DUPLICATE_SCHEDULER_ASSUMPTION=DISPROVEN
+SINGLE_FLIGHT_GUARD=PASS
+DOUBLE_EXECUTION_OBSERVED=NO
+SERVICE_RECOVERY=PASS
+TICK_RECOVERY=PASS
+MODEL_INFERENCE=0
+PRODUCTION_MODEL_DISPATCH_CHANGED=NO
+LIVE_MUTATION_REQUIRED=NO
+CURRENT_TOPOLOGY_UNAMBIGUOUS=YES
+NEXT=V4_ROUTING_POLICY_SINGLE_SOURCE_PHASE_4_V1
+PHASE_4_HUMAN_GATE_REQUIRED=NO
+```
+
+The current executor snapshot found no running local task/listener; this was
+observed read-only and not repaired. Existing sanitized restart and natural
+WF90 tick evidence supplies the bounded recovery proof. Phase 4 was not
+executed.

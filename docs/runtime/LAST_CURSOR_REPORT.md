@@ -1,5 +1,30 @@
 # LAST CURSOR REPORT
 
+## LOCAL_DEV scheduler Phase 3 role separation — PASS (latest)
+
+**TASK_REF:** `V4_LOCAL_DEV_SCHEDULER_DEDUP_PHASE_3_V1`
+**Classification:** `PASS`
+**BASE_HEAD:** `5f4906446f35c5a4380c3810bfe3363b00b396bc`
+**Report:** `reports/architecture/v4_local_dev_scheduler_dedup_phase_3_v1.md`
+
+- `PHASE_3_SCHEDULER_DEDUP=PASS`;
+  `PHASE_3_DECISION=NO_DEDUP_REQUIRED_ROLE_SEPARATION`.
+- WF90 is the sole periodic 5-minute tick scheduler; the Windows task is the
+  `ControlPlane-V4-LocalDevDispatcher` service supervisor.
+- `ACTIVE_TICK_GENERATORS=1`, `SINGLE_FLIGHT_GUARD=PASS`,
+  `DOUBLE_EXECUTION_OBSERVED=NO`, `SERVICE_RECOVERY=PASS`,
+  `TICK_RECOVERY=PASS`, and topology is unambiguous.
+- Deterministic regressions: dispatcher `69/69 PASS`; WF90 normalizer `18/18
+  PASS`. No live scheduler mutation, model inference, production dispatch,
+  or infrastructure change occurred.
+- The current executor snapshot had no running local task/listener; this was
+  observed read-only. Persisted sanitized restart and natural-tick evidence
+  remains the recovery proof.
+- `NEXT=V4_ROUTING_POLICY_SINGLE_SOURCE_PHASE_4_V1`;
+  `PHASE_4_HUMAN_GATE_REQUIRED=NO`. Phase 4 was not executed.
+
+---
+
 ## Hermes CDP governance unification Phase 2 — PASS (latest)
 
 **TASK_REF:** `V4_HERMES_CDP_GOVERNANCE_UNIFICATION_PHASE_2_V1`

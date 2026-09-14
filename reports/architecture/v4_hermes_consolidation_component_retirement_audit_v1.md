@@ -338,3 +338,44 @@ The visual sidecar #78 and observability lane #79 were not modified. No file
 under `tools/`, `tests/`, or `workflows/` changed in this Phase 2 task. The
 next bounded architecture slice is `PHASE_3 scheduler dedup LOCAL_DEV`, with
 `PHASE_3_HUMAN_GATE_REQUIRED=YES`; Phase 3 was not executed.
+
+## 15. PHASE 3 SCHEDULER ROLE SEPARATION — CURRENT RESULT
+
+**TASK_REF:** `V4_LOCAL_DEV_SCHEDULER_DEDUP_PHASE_3_V1`
+**BASE_HEAD:** `5f4906446f35c5a4380c3810bfe3363b00b396bc`
+**STATUS:** `PASS`
+
+The Phase 3 role census supersedes only the historical assumption that WF90
+and the Windows Scheduled Task are duplicate periodic schedulers. Evidence
+shows complementary roles:
+
+```text
+PHASE_3_SCHEDULER_DEDUP=PASS
+PHASE_3_DECISION=NO_DEDUP_REQUIRED_ROLE_SEPARATION
+CANONICAL_TICK_OWNER=WF90
+SERVICE_LIFECYCLE_OWNER=ControlPlane-V4-LocalDevDispatcher
+ACTIVE_TICK_GENERATORS=1
+WINDOWS_TASK_ROLE=SERVICE_SUPERVISOR
+WF90_ROLE=TICK_SCHEDULER
+DUPLICATE_SCHEDULER_ASSUMPTION=DISPROVEN
+SINGLE_FLIGHT_GUARD=PASS
+DOUBLE_EXECUTION_OBSERVED=NO
+SERVICE_RECOVERY=PASS
+TICK_RECOVERY=PASS
+LIVE_MUTATION_REQUIRED=NO
+MODEL_INFERENCE=0
+PRODUCTION_MODEL_DISPATCH_CHANGED=NO
+```
+
+WF90 owns the active 5-minute Schedule Trigger and private POST route to the
+dispatcher. The Windows task owns the logon/service lifecycle and starts the
+canonical Node listener; it does not create a periodic tick. The current
+executor snapshot found neither the task nor listener, but no repair was
+performed; existing sanitized task-restart and natural WF90 evidence supplies
+the bounded recovery proof. Deterministic tests passed: dispatcher `69/69`
+and WF90 normalizer `18/18`.
+
+No scheduler, workflow, service, model, queue, receipt, n8n, VPS, or
+production mutation occurred. The next bounded slice is
+`V4_ROUTING_POLICY_SINGLE_SOURCE_PHASE_4_V1`; `PHASE_4_HUMAN_GATE_REQUIRED=NO`.
+Phase 4 was not executed.
