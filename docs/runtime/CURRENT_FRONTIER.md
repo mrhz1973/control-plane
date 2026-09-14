@@ -2,7 +2,7 @@
 
 > **Unica fonte canonica dello stato operativo vivo.**
 
-> **CURRENT OPENCLAW RECONCILIATION**: `OPENCLAW_FINAL_DISPOSITION=SCOPED_RETENTION` · broker/fallback/agent runtime `RETIRED` · `OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED` · `OPENCLAW_QUOTA_SCOPE=glm_coding_plan` · `GLM_QUOTA_AUTHORITY=OPENCLAW` · `CODEX_QUOTA_AUTHORITY=CODEX_APP_SERVER` · `CODEX_OPENCLAW_AUTHORITY=NO` · `CODEX_OPENCLAW_FALLBACK=NO` · `V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2=PASS` · `PHASE_D=PASS` · `ISSUE_73=CLOSED_COMPLETED` · `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0` · `ISSUE_35_NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE (child-local; global NEXT resumed) · CURRENT_NEXT=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1`
+> **CURRENT OPENCLAW RECONCILIATION**: `OPENCLAW_FINAL_DISPOSITION=SCOPED_RETENTION` · broker/fallback/agent runtime `RETIRED` · `OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED` · `OPENCLAW_QUOTA_SCOPE=glm_coding_plan` · `GLM_QUOTA_AUTHORITY=OPENCLAW` · `CODEX_QUOTA_AUTHORITY=CODEX_APP_SERVER` · `CODEX_OPENCLAW_AUTHORITY=NO` · `CODEX_OPENCLAW_FALLBACK=NO` · `V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2=PASS` · `PHASE_D=PASS` · `ISSUE_73=CLOSED_COMPLETED` · `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0` · `ISSUE_35_NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE (child-local; global NEXT resumed) · CURRENT_NEXT_then=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1 [historical; PASS; consumed]`
 
 > Legacy `KEEP_STAGED_PENDING` and `OPENCLAW_BROKER_RUNTIME=RETIRE` wording
 > in historical rows below is superseded and is not current state.
@@ -562,8 +562,9 @@ RUNTIME_CHANGED=NO
 PHASE_5_OPTIONAL=CLOSED_NO_EXPANSION
 ISSUE_73_PHASE_C=PASS
 ISSUE_73=CLOSED_COMPLETED
-ISSUE_35_NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE (child-local; global NEXT resumed) · CURRENT_NEXT=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1
-NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE
+HISTORICAL_RECORD (consumed 2026-09-14 — superseded by the newer blocks below; ISSUE_35 child-local wait remains the only valid form)
+ISSUE_35_NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE (child-local) · CURRENT_NEXT_then=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1 [historical; PASS; consumed]
+NEXT_then=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE
 NEXT_HUMAN_GATE_REQUIRED=NO
 ```
 
@@ -587,7 +588,7 @@ next gated task). Nonblocking future work excluded: Hermes implementer
 expansion, OLD VPS decommission, GLM mapper null→100 wrinkle, OpenClaw
 updatedAt anomaly, OCR/VLM. Report:
 `reports/architecture/v4_hermes_consolidation_audit_closure_evaluation_v1.md`.
-`NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE`
+`NEXT_then=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE` (historical record; later made child-local to #35 — never a valid global wait)
 `NEXT_HUMAN_GATE_REQUIRED=NO`.
 ---
 
@@ -610,8 +611,8 @@ Final architecture markers stand:
 `PRODUCTION_CHANGED=NO` · `RUNTIME_CHANGED=NO`.
 Report:
 `reports/architecture/v4_hermes_consolidation_audit_issue_61_closure_persistence_v1.md`.
-Parent issue #32 is OPEN: `ISSUE_35_NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE (child-local; global NEXT resumed) · CURRENT_NEXT=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1`
-`NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE` (no new slice invented here).
+Parent issue #32 (record of 2026-09-14 morning; #32 CLOSED_COMPLETED later that day): `ISSUE_35_NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE (child-local; global NEXT resumed) · CURRENT_NEXT_then=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1 [historical; PASS; consumed]`
+`NEXT_then=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE` (child-local; no new slice invented here).
 ---
 
 `V4_GPT6_ASTRA_SUBSCRIPTION_SURFACE_QUALIFICATION_V1` = **QUALIFIED_NEGATIVE**:
@@ -627,10 +628,10 @@ PASS). `EXPIRING_ALLOWANCE_USE_IMPLEMENTED=NO` →
 `ISSUE_35_CLOSURE_READY=NO` (issue #35 untouched, OPEN).
 Report:
 `reports/architecture/v4_gpt6_astra_subscription_surface_qualification_v1.md`.
-`ISSUE_35_NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE (child-local; global NEXT resumed) · CURRENT_NEXT=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1`
+`ISSUE_35_NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE (child-local; global NEXT resumed) · CURRENT_NEXT_then=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1 [historical; PASS; consumed]`
 `ISSUE_35_NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE` (CHILD-LOCAL, not global).
-`CURRENT_NEXT=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1`
-`NEXT=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1`
+`CURRENT_NEXT_then=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1` (historical record — PASS, consumed 2026-09-14)
+`NEXT_then=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1` (historical record)
 `NEXT_HUMAN_GATE_REQUIRED=NO`.
 ---
 
@@ -642,8 +643,8 @@ longer occupies the global NEXT slot (`ASTRA_BLOCKS_PARENT_32=NO`,
 determined independent slice (selection law 5/5: unimplemented per
 qualification census, in #32/#35 scope, Astra-independent, no earlier
 dependency, no higher-precedence canonical task):
-`CURRENT_NEXT=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1`
-`NEXT=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1`
+`CURRENT_NEXT_then=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1` (historical record — PASS, consumed 2026-09-14)
+`NEXT_then=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1` (historical record)
 `NEXT_HUMAN_GATE_REQUIRED=NO`. #32/#35 both remain OPEN/untouched;
 no polling automation created. Report:
 `reports/architecture/v4_astra_negative_parent_frontier_reconciliation_v1.md`.
@@ -673,7 +674,7 @@ green (selector, join, admission, audit, provenance, registry 76/76,
 translators, quota authorities). Canon:
 `docs/contracts/planner-routing-policy-v1.md` §10a. Report:
 `reports/architecture/v4_expiring_allowance_use_policy_v1.md`.
-`NEXT=V4_PARENT_32_ISSUE_32_CLOSURE_PERSISTENCE_V1` (all #32 acceptance axes now
+`NEXT_then=V4_PARENT_32_ISSUE_32_CLOSURE_PERSISTENCE_V1` (historical record — consumed by this PASS task) (all #32 acceptance axes now
 implemented/qualified: pools joined once, collectors+translators live,
 reserve+economics+expiring-allowance canonical).
 ---
@@ -696,5 +697,36 @@ evidence — documentation-only). `MODEL_INFERENCE=0`,
 `PRODUCTION_DISPATCH=0`, `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0`.
 #32 and #35 both left OPEN/untouched. Report:
 `reports/architecture/v4_parent_32_closure_evaluation_v1.md`.
-`NEXT=V4_PARENT_32_ISSUE_32_CLOSURE_PERSISTENCE_V1`
+`NEXT_then=V4_PARENT_32_ISSUE_32_CLOSURE_PERSISTENCE_V1` (historical record — consumed by this PASS task)
 (NEXT_HUMAN_GATE_REQUIRED=NO).
+---
+
+`V4_PARENT_32_ISSUE_32_CLOSURE_PERSISTENCE_V1` = **PASS**: issue #32
+CLOSED as COMPLETED after re-verified closure evidence (`a912273`):
+`ISSUE_32=CLOSED_COMPLETED` · `PARENT_32_TRACK=COMPLETED` ·
+`PARENT_32_CLOSURE_EVALUATION=PASS` ·
+`PARENT_32_CLOSURE_PERSISTENCE=PASS` ·
+`ISSUE_32_REQUIRED_ACCEPTANCE_COMPLETE=YES` ·
+`ISSUE_32_REQUIRED_BLOCKERS_REMAINING=0` · one concise closure comment
+persisted (#issuecomment-5665014442); title/body/labels untouched.
+`MODEL_ACCESS_SURFACE_QUOTA_POOL_SEPARATION=CANONICAL` ·
+`RESOURCE_REGISTRY_V2=SOLE_CANONICAL_STATIC_ROUTING_POLICY_SOURCE` ·
+`EXPIRING_ALLOWANCE_USE_IMPLEMENTED=YES` ·
+`EXPIRING_ALLOWANCE_USE_PROVEN=YES` ·
+`ISSUE_35_STATE_VERIFIED=OPEN` ·
+`ASTRA_CHILD_STATE=OPEN_PARKED_EXTERNAL_AVAILABILITY` ·
+`ISSUE_35_NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE` (child-local, preserved) ·
+`PARKED_CHILD_35_BLOCKS_PARENT_CLOSURE=NO` ·
+`ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0` · `PRODUCTION_CHANGED=NO` ·
+`RUNTIME_CHANGED=NO`.
+**CURRENT pointer reconciliation**: stale global claims renamed to
+`*_then` historical forms (header banner, phase-5 residue, astra/recon
+task records); `STALE_GLOBAL_NEXT_POINTERS=0`; historical provenance
+not rewritten.
+**GLOBAL NEXT (selection law case C)**: every pointer outside closed
+#32 is consumed/PASS or human-gated-future; #35 is parked-wait (never
+global, no polling).
+`CURRENT_NEXT=NO_READY_GLOBAL_TASK_PARKED_35_ONLY`
+`NEXT=NO_READY_GLOBAL_TASK_PARKED_35_ONLY`
+(new READY work requires a new operator-authorized slice). Report:
+`reports/architecture/v4_parent_32_issue_32_closure_persistence_v1.md`.

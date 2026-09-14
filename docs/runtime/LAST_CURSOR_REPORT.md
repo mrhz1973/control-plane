@@ -1,5 +1,31 @@
 # LAST CURSOR REPORT
 
+## Parent #32 closure persistence — CLOSED_COMPLETED (latest)
+
+**TASK_REF:** `V4_PARENT_32_ISSUE_32_CLOSURE_PERSISTENCE_V1`
+**Classification:** `PASS — PARENT_32_CLOSURE_PERSISTENCE=PASS`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `a9122736cf3a3c64eb111e90fef6a59f9f9601f3` (verified PASS at start)
+**Report:** `reports/architecture/v4_parent_32_issue_32_closure_persistence_v1.md`
+
+- GitHub issue #32 closed as COMPLETED after evidence re-verification
+  (`a912273`); one concise closure comment added
+  (issuecomment-5665014442); title/body/labels untouched; state re-read:
+  CLOSED / COMPLETED. #35 re-read: OPEN (parked, child-local wait
+  preserved).
+- CURRENT pointer reconciliation: header banner + all stale global
+  claims renamed to `*_then` historical forms; STALE_GLOBAL_NEXT_POINTERS=0.
+- FINAL STATE: `ISSUE_32=CLOSED_COMPLETED` ·
+  `PARENT_32_TRACK=COMPLETED` · 0 blockers ·
+  `MODEL_ACCESS_SURFACE_QUOTA_POOL_SEPARATION=CANONICAL` ·
+  expiring-allowance implemented+proven ·
+  `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0`.
+- GLOBAL NEXT (selection law case C):
+  `NO_READY_GLOBAL_TASK_PARKED_35_ONLY` — no READY task exists outside
+  closed #32; #35 remains parked (never global, no polling); new work
+  requires a new operator-authorized slice.
+
+---
 ## Parent #32 closure evaluation — READY (latest)
 
 **TASK_REF:** `V4_PARENT_32_CLOSURE_EVALUATION_V1`
