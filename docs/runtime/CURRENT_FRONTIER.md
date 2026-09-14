@@ -939,6 +939,55 @@ Remaining OPEN: #35 (parked, new-evidence-only) · #18 (deferred research).
 Report:
 `reports/architecture/v4_vps_68_provider_termination_closure_persistence_v1.md`.
 ```text
+CURRENT_NEXT_then=NO_READY_ENGINEERING_TASKS (historical record — superseded 2026-09-14 by the governed production activation below)
+NEXT_then=NO_READY_ENGINEERING_TASKS (historical record)
+```
+
+---
+
+## Current latest — Control Plane governed production steady-state ACTIVE
+
+`V4_CONTROL_PLANE_GOVERNED_PRODUCTION_STEADY_STATE_ACTIVATION_V1` = **PASS**:
+operator human promotion authorization recorded ("AUTORIZZO L'ATTIVAZIONE
+DEL CONTROL PLANE IN PRODUZIONE NEL PERIMETRO GOVERNATO GIÀ QUALIFICATO").
+The already-qualified production perimeter moved from
+qualified-but-disabled to steady-state governed ACTIVE posture — **no new
+canary, no synthetic work, zero dispatch** (`PRODUCTION_DISPATCH_COUNT=0`,
+`MODEL_INFERENCE=0`, `CHATGPT_WEB_SENDS=0`).
+
+- `CONTROL_PLANE_PRODUCTION_MODE=GOVERNED_ACTIVE` ·
+  `CONTROL_PLANE_PRODUCTION_PROMOTION_AUTHORIZED=YES`
+- `HERMES_ROUTE_CONTROL=CANDIDATE_ENABLED` via the canonical route-control
+  CLI (provenance `updated_by` = this task + human authorization;
+  `restoration_state=SHADOW_ONLY` preserved; post-canary disable history
+  preserved; fail-closed law intact)
+- `HERMES_PRODUCTION_PATH=ARMED_GOVERNED` — new minimal composition-only
+  operational entrypoint `tools/v4-governed-production-dispatch-v1.mjs`
+  (reuses RT25 admission, Phase E, route control, provenance registry,
+  ledger-first spend, Phase-F adapter + qualified chainSend transport,
+  DOM verifier; MAX ONE task/invocation; exact task/run/auth binding;
+  fail-closed; no scheduler/queue/second authority)
+- `OPENCODE_QWEN_PRODUCTION_PATH=ARMED_GOVERNED` (existing WF40 → Windows
+  endpoint → ledger → provenance → adapter ingress requires only a valid
+  ACTIVE task/run authorization; LOCAL_DEV dispatcher remains
+  LOCAL_DEV_ONLY)
+- `RUNTIME_AUTHORIZATION_REQUIRED_PER_DISPATCH=YES` ·
+  `ACTIVE_PRODUCTION_AUTHORIZATION=0` (issuance law untouched; promotion
+  gate ≠ runtime authorization) · allow-list exactly
+  `opencode+qwen_local` + `hermes+chatgpt_web` (verified live) ·
+  `NO_SILENT_FALLBACK=PASS` · `D0025_ENABLED=false` · OpenClaw retired
+  roles untouched · NEW VPS not accessed
+- Structural fail-closed proof: invalid authorization → BLOCKED
+  (`AUTHORIZATION_ID_NOT_ISSUED`) BEFORE transport,
+  `execution_performed=false`
+- Rollback (emergency disable): `node tools/v4-phase-f-route-control-v1.mjs
+  --state-path configs/runtime/route-control/hermes-route-state.json
+  --action disable --updated-by <task-or-operator>` · `ROLLBACK_READY=YES`
+
+Production is ACTIVE/READY and IDLE until a real authorized task exists.
+Report:
+`reports/architecture/v4_control_plane_governed_production_steady_state_activation_v1.md`.
+```text
 CURRENT_NEXT=NO_READY_ENGINEERING_TASKS
 NEXT=NO_READY_ENGINEERING_TASKS
 ```

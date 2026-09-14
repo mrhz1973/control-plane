@@ -18,6 +18,8 @@
 - **`GLOBAL_NEXT=V4_ISSUE_65_NOVNC_VIEW_ONLY_DEFAULT_V1`** (historical record — consumed 2026-09-14)
 - Issue #65 — noVNC view-only default + on-demand interactive assist — **DONE 2026-09-14** (`ISSUE_65=CLOSED_COMPLETED`; x11vnc `-viewonly` boot default via drop-in + explicit `hermes-vnc-mode interactive/view` helper; evidence `reports/architecture/v4_issue_65_novnc_view_only_default_v1.md`)
 - Issue #68 — full service parity migration before OLD decommission — **DONE 2026-09-14** (`ISSUE_68=CLOSED_COMPLETED`; 12-step lifecycle complete; `OLD_ROLE=DECOMMISSIONED`; `OLD_PROVIDER_TERMINATION=PASS_OPERATOR_CONFIRMED`, `IONOS_PROVIDER_API_VERIFIED=NO_NOT_AVAILABLE`; evidence `reports/architecture/v4_vps_68_provider_termination_closure_persistence_v1.md`)
-- **`GLOBAL_NEXT=NO_READY_ENGINEERING_TASKS`** (only #35 OPEN_PARKED new-evidence-only + #18 DEFERRED research remain; new work requires a new operator-authorized slice)
+- **`GLOBAL_NEXT=NO_READY_ENGINEERING_TASKS`** (historical record — production perimeter activated 2026-09-14, see below)
+- **Governed production steady-state activation — DONE 2026-09-14** (`V4_CONTROL_PLANE_GOVERNED_PRODUCTION_STEADY_STATE_ACTIVATION_V1` PASS: `CONTROL_PLANE_PRODUCTION_MODE=GOVERNED_ACTIVE` under operator promotion authorization; `HERMES_ROUTE_CONTROL=CANDIDATE_ENABLED`; both qualified production paths ARMED_GOVERNED; per-dispatch authorization law unchanged; ACTIVE=0; zero dispatch/inference; operational entrypoint `tools/v4-governed-production-dispatch-v1.mjs`; evidence `reports/architecture/v4_control_plane_governed_production_steady_state_activation_v1.md`)
+- **`GLOBAL_NEXT=NO_READY_ENGINEERING_TASKS`** (production ACTIVE/READY and IDLE; next dispatch = future operator-authorized task with its own canonical runtime authorization; #35 parked; #18 deferred)
 
 This index is a pointer only. `docs/runtime/CURRENT_FRONTIER.md` remains the sole LIVE STATE authority.

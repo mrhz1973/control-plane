@@ -1,5 +1,40 @@
 # LAST CURSOR REPORT
 
+## Control Plane governed production steady-state ACTIVE — zero-dispatch activation PASS (latest)
+
+**TASK_REF:** `V4_CONTROL_PLANE_GOVERNED_PRODUCTION_STEADY_STATE_ACTIVATION_V1`
+**Classification:** `PASS — GOVERNED PRODUCTION STEADY-STATE ACTIVATION`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `8db85b7dd84660b32e46ae0af954a84b14154ea5` (verified PASS at start)
+**Report:** `reports/architecture/v4_control_plane_governed_production_steady_state_activation_v1.md`
+
+- Human promotion authorization recorded ("AUTORIZZO L'ATTIVAZIONE DEL
+  CONTROL PLANE IN PRODUZIONE NEL PERIMETRO GOVERNATO GIÀ QUALIFICATO");
+  no new routes/providers/model families/bypasses authorized.
+- `CONTROL_PLANE_PRODUCTION_MODE=GOVERNED_ACTIVE`; route control
+  `DISABLED → CANDIDATE_ENABLED` via canonical CLI (provenance recorded;
+  SHADOW_ONLY restoration target + canary disable history preserved);
+  `HERMES_PRODUCTION_PATH=ARMED_GOVERNED` via new composition-only
+  entrypoint `tools/v4-governed-production-dispatch-v1.mjs` (reuses every
+  existing authority: RT25, Phase E, route control, provenance,
+  ledger-first spend, Phase-F adapter, qualified chainSend, DOM verifier;
+  one task/invocation; fail-closed); `OPENCODE_QWEN_PRODUCTION_PATH=
+  ARMED_GOVERNED` (existing ingress needs only an ACTIVE task/run
+  authorization; LOCAL_DEV dispatcher unchanged).
+- Zero-dispatch proof: `PRODUCTION_DISPATCH_COUNT=0` · `MODEL_INFERENCE=0`
+  · `CHATGPT_WEB_SENDS=0` · `QWEN_GENERATIONS=0` · `OPENCODE_EXECUTIONS=0`;
+  structural fail-closed probe blocked an invalid authorization BEFORE
+  transport; `ACTIVE_PRODUCTION_AUTHORIZATION=0`; allow-list exactly
+  `opencode+qwen_local` + `hermes+chatgpt_web` (verified live);
+  `RUNTIME_AUTHORIZATION_REQUIRED_PER_DISPATCH=YES`; issuance law
+  untouched; D-0025 false; OpenClaw retired roles untouched.
+- Emergency rollback documented (route-control disable →
+  DISABLED/SHADOW_ONLY/ACTIVE=0) · `ROLLBACK_READY=YES`. #18/#35 untouched.
+- **NEXT:** `NO_READY_ENGINEERING_TASKS` (production ACTIVE/READY and IDLE;
+  next dispatch belongs to a future operator-authorized task issuing its
+  own canonical runtime authorization).
+
+---
 ## Issue #68 CLOSED COMPLETED — OLD VPS decommission final gate (operator-confirmed provider closure) (latest)
 
 **TASK_REF:** `V4_VPS_68_PROVIDER_TERMINATION_CLOSURE_PERSISTENCE_V1`
