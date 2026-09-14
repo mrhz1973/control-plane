@@ -1,5 +1,31 @@
 # LAST CURSOR REPORT
 
+## Parent #32 closure evaluation — READY (latest)
+
+**TASK_REF:** `V4_PARENT_32_CLOSURE_EVALUATION_V1`
+**Classification:** `PASS — ISSUE_32_CLOSURE_READY=YES`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `d165cb81f6e8ffafa38a3d023e929c47ec8afd99` (verified PASS at start)
+**Report:** `reports/architecture/v4_parent_32_closure_evaluation_v1.md`
+
+- Acceptance matrix A–J evaluated against persisted evidence: all
+  COMPLETE or COMPLETE-by-design; no REQUIRED blocker remains
+  (`ISSUE_32_REQUIRED_BLOCKERS_REMAINING=0`).
+- Core acceptance satisfied: the canonical selection core (join →
+  reserve admission → economics → rank → §10a expiring-allowance
+  preference) answers every dimension with an auditable reason at
+  planner/prompt-creator/advisor/implementer/reviewer/retry boundaries.
+- Parked child #35 proven NONBLOCKING (generic acceptance, dynamic
+  discovery re-entry, independently traceable) —
+  `PARKED_CHILD_35_BLOCKS_PARENT_CLOSURE=NO`; #35 stays OPEN.
+- Foundation reconciliation applied: PROJECT_VISION §3.3 now records
+  Codex-IDE-in-Cursor LIVE-QUALIFIED (#34 evidence) — documentation-only.
+- NO issue mutation (#32/#35 both OPEN); MODEL_INFERENCE=0;
+  PRODUCTION_DISPATCH=0.
+- NEXT: `V4_PARENT_32_ISSUE_32_CLOSURE_PERSISTENCE_V1`
+  (NEXT_HUMAN_GATE_REQUIRED=NO).
+
+---
 ## Expiring-allowance preference policy — IMPLEMENTED+PROVEN (latest)
 
 **TASK_REF:** `V4_EXPIRING_ALLOWANCE_USE_POLICY_V1`

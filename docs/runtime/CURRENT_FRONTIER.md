@@ -673,6 +673,28 @@ green (selector, join, admission, audit, provenance, registry 76/76,
 translators, quota authorities). Canon:
 `docs/contracts/planner-routing-policy-v1.md` §10a. Report:
 `reports/architecture/v4_expiring_allowance_use_policy_v1.md`.
-`NEXT=V4_PARENT_32_CLOSURE_EVALUATION_V1` (all #32 acceptance axes now
+`NEXT=V4_PARENT_32_ISSUE_32_CLOSURE_PERSISTENCE_V1` (all #32 acceptance axes now
 implemented/qualified: pools joined once, collectors+translators live,
 reserve+economics+expiring-allowance canonical).
+---
+
+`V4_PARENT_32_CLOSURE_EVALUATION_V1` = **PASS** →
+`ISSUE_32_CLOSURE_READY=YES`: original core acceptance (answer
+role/quality/harness/availability/quota/reserve/reset/economics/urgency
+at every AI selection boundary with auditable reason) satisfied via the
+canonical RT25 selection core + join + reserve + economics + §10a
+expiring-allowance; acceptance matrix A–J: A,B,D,E,F,G,H,I,J COMPLETE,
+C COMPLETE-by-design (unverified Cursor buckets fail-closed explicit),
+material comment extensions COMPLETE/superseded (#34 canon, #39/#41
+campaigns closed, operator policy hardening honored — API/BYOK out of
+scope); live collectors codex+glm green; #33/#34 children CLOSED
+COMPLETED; #35 OPEN_PARKED proven NONBLOCKING (5/5 conditions) →
+`PARKED_CHILD_35_BLOCKS_PARENT_CLOSURE=NO`;
+`ISSUE_32_REQUIRED_BLOCKERS_REMAINING=0`; foundation reconciliation
+applied (PROJECT_VISION §3.3 Codex-IDE-Cursor LIVE-QUALIFIED per #34
+evidence — documentation-only). `MODEL_INFERENCE=0`,
+`PRODUCTION_DISPATCH=0`, `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0`.
+#32 and #35 both left OPEN/untouched. Report:
+`reports/architecture/v4_parent_32_closure_evaluation_v1.md`.
+`NEXT=V4_PARENT_32_ISSUE_32_CLOSURE_PERSISTENCE_V1`
+(NEXT_HUMAN_GATE_REQUIRED=NO).

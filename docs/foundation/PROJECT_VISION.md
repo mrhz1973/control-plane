@@ -118,13 +118,18 @@ Lo scope viene dall'Execution Packet, non dal modello.
 
 ### 3.3 Codex path
 
-Canonical remote path (when runtime-qualified):
+Canonical remote path (runtime-qualified, LIVE since #34 closure 2026-09-05):
 
 ```text
 n8n → LiteLLM primary remote gateway → chatgpt/gpt-5.6-sol (OAuth token store local)
 ```
 
-Nessuna assunzione di OpenAI Platform API key billing o native Cursor picker senza evidence reale.
+Codex IDE extension inside Cursor via ChatGPT subscription: LIVE-QUALIFIED
+(#34 completed 2026-09-05 — model/reasoning inventory + repo-read + TASK
+DELTA generation + closed-gate execution proven; no longer hypothetical).
+Selected model + reasoning effort remain dynamic from the live Codex
+catalog; OpenAI Platform API-key billing and native Cursor BYOK picker
+remain excluded without explicit operator evidence.
 
 Scoped quota observation path (not a runtime or fallback path):
 
