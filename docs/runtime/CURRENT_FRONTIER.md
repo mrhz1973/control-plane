@@ -768,3 +768,28 @@ manual hygiene. Report:
 `CURRENT_NEXT=IONOS_OLD_VPS_PROVIDER_TERMINATION_OPERATOR_ACTION`
 `NEXT=IONOS_OLD_VPS_PROVIDER_TERMINATION_OPERATOR_ACTION` (operator,
 IONOS panel; then #68 closure persistence).
+
+---
+
+## Current latest — Legacy OpenClaw issue reconciliation
+
+`V4_LEGACY_OPENCLAW_ISSUE_RECONCILIATION_V1` = **PASS** (documentation /
+issue reconciliation only): stale Architecture-v3 / Windows-OpenClaw issue
+chain retired against canonical law. #8 CLOSED `NOT_PLANNED` (superseded:
+broker track retired, ZAI wait no longer frontier), #20 CLOSED `COMPLETED`
+(historical bounded acceptance fulfilled — D-0014-W `IMPLEMENTATION_PASS`,
+private-only transport, VPS reachability PASS; fallback NOT restarted),
+#22 CLOSED `NOT_PLANNED` (superseded before completion; no catch-up
+implementation). One concise reconciliation comment each; bodies/titles/
+labels untouched. Scoped retention preserved:
+`OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED` ·
+`OPENCLAW_QUOTA_SCOPE=glm_coding_plan` · `GLM_QUOTA_AUTHORITY=OPENCLAW`.
+No frontier pointer to #8/#20/#22; no `AWAITING_ZAI_SUPPORT_RESPONSE`
+global blocker; #19 verified OPEN/untouched (as were #35/#60/#67/#68/#69).
+`MODEL_INFERENCE=0` · `PRODUCTION_CHANGED=NO` · `RUNTIME_CHANGED=NO`.
+Report: `reports/architecture/v4_legacy_openclaw_issue_reconciliation_v1.md`.
+IONOS OLD VPS provider termination remains a parallel operator action.
+```text
+CURRENT_NEXT=V4_ISSUE_19_QUOTA_POLICY_RECONCILIATION_V1
+NEXT=V4_ISSUE_19_QUOTA_POLICY_RECONCILIATION_V1
+```

@@ -1,5 +1,30 @@
 # LAST CURSOR REPORT
 
+## Legacy OpenClaw issue chain reconciled — #8/#20/#22 CLOSED (latest)
+
+**TASK_REF:** `V4_LEGACY_OPENCLAW_ISSUE_RECONCILIATION_V1`
+**Classification:** `PASS`
+**Date (Europe/Rome):** 2026-09-14
+**BASE_HEAD:** `4c0b012fa15872f023ea1123b5af6d3933bea9f9` (verified PASS at start)
+**Report:** `reports/architecture/v4_legacy_openclaw_issue_reconciliation_v1.md`
+
+- Documentation / issue reconciliation only; no runtime work, no OpenClaw
+  invocation/test/reactivation. #8 CLOSED `NOT_PLANNED` (superseded broker
+  track; ZAI wait no longer frontier), #20 CLOSED `COMPLETED` (historical
+  bounded acceptance fulfilled per D-0014-W `IMPLEMENTATION_PASS`; fallback
+  NOT restarted, `OPENCLAW_FALLBACK_ROLE=RETIRED` stands), #22 CLOSED
+  `NOT_PLANNED` (superseded before completion; NO catch-up Phase A/B/C).
+  One concise reconciliation comment each (5665975545 / 5665976320 /
+  5665977062); bodies/titles/labels untouched; states re-verified post-close.
+- Scoped retention preserved: `OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED`
+  · `OPENCLAW_QUOTA_SCOPE=glm_coding_plan` · `GLM_QUOTA_AUTHORITY=OPENCLAW`.
+  No global frontier pointer to #8/#20/#22; no `AWAITING_ZAI_SUPPORT_RESPONSE`
+  global blocker; #19/#35/#60/#67/#68/#69 untouched (#19 verified OPEN).
+- `MODEL_INFERENCE=0` · `PRODUCTION_CHANGED=NO` · `RUNTIME_CHANGED=NO`.
+  IONOS OLD VPS provider termination remains a parallel operator action.
+- **NEXT:** `V4_ISSUE_19_QUOTA_POLICY_RECONCILIATION_V1` (not executed here).
+
+---
 ## Authorized OLD VPS decommission — OS SHUTDOWN COMPLETE (latest)
 
 **TASK_REF:** `V4_VPS_68_AUTHORIZED_OLD_DECOMMISSION_EXECUTION_V1`

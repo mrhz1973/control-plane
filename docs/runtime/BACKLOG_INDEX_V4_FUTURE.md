@@ -7,6 +7,8 @@
 
 - Parent #32 final slice `V4_EXPIRING_ALLOWANCE_USE_POLICY_V1` PASS and `V4_PARENT_32_CLOSURE_EVALUATION_V1` + `V4_PARENT_32_ISSUE_32_CLOSURE_PERSISTENCE_V1` PASS — track closed 2026-09-14
 
-- `GLOBAL_NEXT=NO_READY_GLOBAL_TASK_PARKED_35_ONLY` (no READY task outside closed #32; #35 stays OPEN_PARKED with child-local wait; new work needs a new operator-authorized slice)
+- `GLOBAL_NEXT=NO_READY_GLOBAL_TASK_PARKED_35_ONLY` (historical record — superseded 2026-09-14 by `V4_LEGACY_OPENCLAW_ISSUE_RECONCILIATION_V1`)
+- Legacy OpenClaw chain retired 2026-09-14: **#8 CLOSED NOT_PLANNED** (superseded Architecture-v3 broker track) · **#20 CLOSED COMPLETED** (D-0014-W historical acceptance fulfilled; fallback NOT restarted) · **#22 CLOSED NOT_PLANNED** (superseded before completion; no catch-up implementation) — see `reports/architecture/v4_legacy_openclaw_issue_reconciliation_v1.md`; scoped GLM quota lane preserved (`OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED`)
+- **`GLOBAL_NEXT=V4_ISSUE_19_QUOTA_POLICY_RECONCILIATION_V1`** (issue #19 OPEN, next independent READY slice; IONOS OLD provider termination remains a parallel operator action)
 
 This index is a pointer only. `docs/runtime/CURRENT_FRONTIER.md` remains the sole LIVE STATE authority.
