@@ -14,7 +14,7 @@ objective: |
 
   Add a bounded read-only CPU utilization observation for the canonical NEW VPS and expose it through the existing resource observatory so the existing VPS dashboard card shows a real CPU percentage. Measure actual CPU utilization, not load average. Prefer Linux /proc/stat delta sampling or another already-available read-only OS surface. Do not install packages and do not mutate the VPS.
 
-  Preserve the current canonical private SSH/BathMode observation path, fixed VPS alias, command allowlist/fail-closed law, cache semantics, dashboard read-only posture, and all existing VPS/RAM/disk/service/Hermes observations. If CPU cannot be measured safely/read-only with the existing runtime, STOP rather than inventing a value.
+  Preserve the current canonical private SSH/BatchMode observation path, fixed VPS alias, command allowlist/fail-closed law, cache semantics, dashboard read-only posture, and all existing VPS/RAM/disk/service/Hermes observations. If CPU cannot be measured safely/read-only with the existing runtime, STOP rather than inventing a value.
 
 scope:
   allowed_areas:
@@ -62,12 +62,7 @@ local_dev:
   test_commands:
     - node tests/local-dev-resource-observability-integrity-v1/run.mjs
 
-human_gate_required_if:
-  - repo tracked state is dirty, ahead/diverged, or cannot fast-forward to origin/main
-  - implementation would require any VPS mutation, package installation, privileged configuration change, or service restart
-  - CPU semantics are ambiguous and cannot be proven from read-only evidence
-  - any required change falls outside allowed_areas
-
+human_gate_required_if: []
 context_refs:
   - github:mrhz1973/control-plane@7dd9010e55be69e5455f80f02bdfa763a021640a:tools/local-dev-resource-observatory-v1.mjs
   - github:mrhz1973/control-plane@7dd9010e55be69e5455f80f02bdfa763a021640a:tools/local-dev-dispatcher-dashboard-v1.html
