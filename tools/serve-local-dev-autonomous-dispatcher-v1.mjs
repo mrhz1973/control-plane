@@ -71,6 +71,9 @@ export const TICK_PATH = "/v1/tick";
 export const STATUS_PATH = "/v1/status";
 export const DIAGNOSTICS_PATH = "/v1/diagnostics";
 export const AGENT_ACTIVITY_PATH = "/v1/agent-activity";
+/** WF90 (canonical n8n tick owner) live schedule since
+ * V4_WF90_2MIN_DASHBOARD_COUNTDOWN_AND_D9410A_UNBLOCK_V1 (2026-09-15). */
+export const WF90_INTERVAL_SECONDS = 120;
 export const ARCHITECTURE_PATH = "/architecture";
 export const DASHBOARD_PATHS = Object.freeze(["/", "/dashboard", "/dashboard/"]);
 export const QWEN_OBSERVE_BASE_URL = "http://127.0.0.1:8080";
@@ -715,6 +718,19 @@ export async function buildDiagnostics(deps = {}) {
     last_tick,
     queue,
     post_exec_integration,
+    // WF90 countdown law (V4_WF90_2MIN_DASHBOARD_COUNTDOWN_AND_D9410A_UNBLOCK_V1):
+    // anchor ONLY on the last REAL observed completed tick; the client derives
+    // next_expected_tick_at = last_observed + interval and NEVER restarts a
+    // synthetic countdown before a new real tick is observed.
+    tick_clock: {
+      schema_version: "local-dev-dispatch-tick-clock-v1",
+      wf90_interval_seconds: WF90_INTERVAL_SECONDS,
+      last_observed_tick_at: diagnosticText(last_tick?.recorded_at, 40) || null,
+      next_expected_tick_at: diagnosticText(last_tick?.recorded_at, 40)
+        ? new Date(Date.parse(last_tick.recorded_at) + WF90_INTERVAL_SECONDS * 1000).toISOString()
+        : null,
+      interval_source: "WF90_LIVE_N8N_SCHEDULE",
+    },
     qwen: {
       endpoint: QWEN_OBSERVE_BASE_URL,
       reachable: diagnosticBoolean(qwen.reachable),

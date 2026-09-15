@@ -27,6 +27,43 @@
   </style>
   <style>
     .architecture-link{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #3d6471;border-radius:8px;color:var(--cyan);font-size:11px;text-decoration:none;background:#10212a}.architecture-link:hover{border-color:var(--cyan);background:#152d36}
+    .opstrip{display:grid;grid-template-columns:auto 1.35fr 1.25fr 1.3fr;grid-template-areas:'brand countdown meta task' 'rail rail rail rail' 'gate gate gate gate';gap:10px 18px;align-items:center;border:1px solid #2c3a49;border-radius:14px;background:linear-gradient(135deg,#101c26,#0d141b 55%,#101a24);padding:16px 20px 14px;margin:0 0 16px;box-shadow:0 0 0 1px #1a2733,0 10px 30px -18px #000a}
+    .opstrip-brand{grid-area:brand;display:flex;flex-direction:column;gap:3px;min-width:132px}
+    .opstrip-title{font:650 15px/1.1 var(--sans);letter-spacing:2.4px;color:var(--text)}
+    .opstrip-sub{font:600 9px/1.2 var(--mono);letter-spacing:1.4px;color:var(--muted);text-transform:uppercase}
+    .opstrip-countdown{grid-area:countdown;display:flex;flex-direction:column;gap:2px;border-left:2px solid #2c3a49;padding-left:18px}
+    .opstrip-count-label{font-size:9px;font-weight:650;letter-spacing:1.6px;color:var(--muted);text-transform:uppercase}
+    .opstrip-count-value{font:650 34px/1.05 var(--mono);letter-spacing:1px;color:var(--cyan);font-variant-numeric:tabular-nums}
+    .opstrip-count-value.waiting{color:var(--amber);font-size:21px;letter-spacing:.4px}
+    .opstrip-count-sub{font:10px/1.3 var(--mono);color:var(--muted)}
+    .opstrip-meta{grid-area:meta;display:flex;flex-direction:column;gap:5px;min-width:0}
+    .opstrip-meta-item{display:flex;align-items:baseline;gap:10px;font-size:11px;min-width:0}
+    .opstrip-meta-item .k{flex:none;width:118px;font-size:9px;font-weight:650;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+    .opstrip-meta-item .v{font-size:11px;color:var(--text);overflow-wrap:anywhere}
+    .opstrip-task{grid-area:task;display:flex;flex-wrap:wrap;gap:6px 14px;min-width:0;align-content:center}
+    .opstrip-fact{display:flex;flex-direction:column;gap:2px;min-width:0}
+    .opstrip-fact .k{font-size:9px;font-weight:650;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase}
+    .opstrip-fact .v{font:11px var(--mono);color:var(--text);overflow-wrap:anywhere}
+    .opstrip-fact .v.idle{color:var(--muted)}
+    .opstrip-gate{grid-area:gate;border:1px solid #6d5426;background:#251d0e;border-radius:10px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+    .opstrip-gate .gate-title{font:650 12px/1.2 var(--sans);letter-spacing:1.6px;color:var(--amber)}
+    .opstrip-gate .gf{font-size:11px;color:#e8dcc0}
+    .opstrip-gate .gf b{color:var(--amber);font-weight:650}
+    .opstrip-gate .gf.mono{font-family:var(--mono);font-size:11px}
+    .opstrip-rail{grid-area:rail;display:flex;flex-wrap:wrap;align-items:center;gap:0;border-top:1px solid #22303d;padding-top:11px}
+    .rail-step{display:inline-flex;align-items:center;gap:7px;padding:4px 10px 4px 8px;border:1px solid transparent;border-radius:999px;font:600 9.5px/1.4 var(--mono);letter-spacing:.8px;color:#758295;text-transform:uppercase;white-space:nowrap}
+    .rail-step .rdot{width:7px;height:7px;border-radius:50%;background:#3a4656;flex:none}
+    .rail-step.done{color:#9fe8bf}.rail-step.done .rdot{background:var(--green);box-shadow:0 0 7px #73e3a455}
+    .rail-step.current{border-color:#3d6471;background:#12242e;color:var(--cyan)}.rail-step.current .rdot{background:var(--cyan);box-shadow:0 0 8px #65d6ee88}
+    .rail-step.current::after{content:'';margin-left:2px;width:5px;height:5px;border-right:1.5px solid var(--cyan);border-bottom:1.5px solid var(--cyan);transform:rotate(-45deg);animation:railBlink 1.1s steps(2) infinite}
+    .rail-step.terminal-stop.current{border-color:#6d5426;background:#251d0e;color:var(--amber)}.rail-step.terminal-stop.current .rdot{background:var(--amber);box-shadow:0 0 8px #f5c16b88}
+    .rail-step.terminal-stop.current::after{animation:none;border-color:var(--amber)}
+    .rail-step.terminal-pass.current{border-color:#2c6a49;background:#0e2318;color:var(--green)}.rail-step.terminal-pass.current .rdot{background:var(--green)}
+    .rail-step.terminal-pass.current::after{animation:none;border-color:var(--green)}
+    .rail-arrow{color:#3a4656;font-size:11px;padding:0 3px;flex:none}
+    @keyframes railBlink{50%{opacity:.25}}
+    @media(max-width:1200px){.opstrip{grid-template-columns:auto 1fr;grid-template-areas:'brand countdown' 'meta meta' 'task task' 'rail rail' 'gate gate'}}
+    @media(max-width:620px){.opstrip{padding:13px 14px 12px}.opstrip-count-value{font-size:27px}.opstrip-meta-item .k{width:104px}}
   </style>
 </head>
 <body>
@@ -39,6 +76,22 @@
     <div class="page-head"><div><div class="eyebrow">Console operativa</div><h1>Local Dev Dispatcher</h1><p>Attività, decisioni e disponibilità del runtime locale.</p></div>
       <div class="controls"><a class="architecture-link" href="/architecture">🗺 Mappa Control Plane</a><span class="freshness"><span id="poll-dot" class="dot off" aria-hidden="true"></span><span id="poll-age" role="status">Connessione in corso…</span></span><label class="auto"><input id="auto-refresh" type="checkbox" checked>Aggiorna ogni 3 s</label><button id="refresh-button" type="button"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M16 8a6 6 0 1 0 0 5M16 3v5h-5"/></svg>Aggiorna</button></div>
     </div>
+    <section class="opstrip" id="opstrip" aria-label="Stato operativo Control Plane">
+      <div class="opstrip-brand"><span class="opstrip-title">CONTROL PLANE</span><span class="opstrip-sub">Ciclo LOCAL_DEV · WF90</span></div>
+      <div class="opstrip-countdown">
+        <span class="opstrip-count-label">PROSSIMO CONTROLLO BACKLOG</span>
+        <span class="opstrip-count-value mono" id="op-countdown" role="timer">—:——</span>
+        <span class="opstrip-count-sub" id="op-countdown-sub">In attesa del primo tick reale…</span>
+      </div>
+      <div class="opstrip-meta">
+        <span class="opstrip-meta-item"><span class="k">Ultimo tick</span><span class="v mono" id="op-last-tick">Non disponibile</span></span>
+        <span class="opstrip-meta-item"><span class="k">Prossimo previsto</span><span class="v mono" id="op-next-tick">Non disponibile</span></span>
+        <span class="opstrip-meta-item"><span class="k">Cadenza</span><span class="v mono" id="op-interval">—</span></span>
+      </div>
+      <div class="opstrip-task" id="op-task" aria-live="polite"></div>
+      <div class="opstrip-gate" id="op-gate" hidden></div>
+      <div class="opstrip-rail" id="op-rail" role="list" aria-label="Fase del ciclo di vita"></div>
+    </section>
     <div id="data-alert" class="alert" role="alert" hidden></div>
     <section class="summary-grid" id="summary-cards" aria-label="Sintesi operativa"></section>
     <div class="layout-toolbar"><button id="reset-layout" type="button" title="Ripristina l’ordine predefinito delle sezioni (solo browser)">Ripristina layout</button></div>
@@ -197,6 +250,137 @@
       return `${day} ${ROME_MONTHS_IT[month-1]} ${year}`;
     }
     function shortTask(value){return text(value).replace(/^LOCAL_DEV_B_/,'');}
+    // === Operational strip (WF90 countdown law + lifecycle phase rail) ===
+    // Anchor ONLY on the last REAL observed tick: no synthetic restart of the
+    // countdown until a new real tick arrives (realigns from its timestamp).
+    const WF90_INTERVAL_FALLBACK_SECONDS = 120;
+    let opstripClock = { intervalSeconds: WF90_INTERVAL_FALLBACK_SECONDS, lastTickAt: null, nextAt: null, phaseKey: null };
+    function countdownClock(value){const n=number(value);if(n===null)return 'Non disponibile';const total=Math.max(0,Math.ceil(n/1000));const m=Math.floor(total/60);const s=total%60;const pad=x=>String(x).padStart(2,'0');return `${pad(m)}:${pad(s)}`;}
+    function renderOpstripCountdown(){
+      const valueEl=el('op-countdown');const subEl=el('op-countdown-sub');if(!valueEl||!subEl)return;
+      const {lastTickAt,nextAt}=opstripClock;
+      const lastEl=el('op-last-tick');if(lastEl)lastEl.textContent=lastTickAt?date(lastTickAt):'Non disponibile';
+      const nextEl=el('op-next-tick');if(nextEl)nextEl.textContent=nextAt?date(nextAt):'Non disponibile';
+      if(!lastTickAt||!nextAt){valueEl.textContent='—:——';valueEl.classList.add('waiting');subEl.textContent='In attesa del primo tick reale…';return;}
+      const remaining=Date.parse(nextAt)-Date.now();
+      if(remaining>0){valueEl.textContent=countdownClock(remaining);valueEl.classList.remove('waiting');subEl.textContent='Countdown al prossimo controllo pianificato';}
+      else{valueEl.textContent='ATTESA TICK N8N';valueEl.classList.add('waiting');const late=Math.floor((-remaining)/1000);subEl.textContent=`Tick previsto alle ${date(nextAt,true)} · attesa ${(Math.floor(late/60))}m ${late%60}s · nessun tick reale ancora osservato`;}
+    }
+    function renderOpstripMeta(diag){
+      const clock=obj(obj(diag).tick_clock);
+      const interval=number(clock.wf90_interval_seconds)??WF90_INTERVAL_FALLBACK_SECONDS;
+      const rawLast=scalar(clock.last_observed_tick_at)||scalar(obj(diag.last_tick).recorded_at)||null;
+      const lastMs=rawLast?Date.parse(rawLast):NaN;
+      const lastAt=rawLast&&Number.isFinite(lastMs)?rawLast:null;
+      const rawNext=scalar(clock.next_expected_tick_at);
+      const nextMs=rawNext?Date.parse(rawNext):NaN;
+      const nextAt=Number.isFinite(nextMs)?rawNext:(lastAt?new Date(lastMs+interval*1000).toISOString():null);
+      opstripClock={intervalSeconds:interval,lastTickAt:lastAt,nextAt:nextAt,phaseKey:opstripClock.phaseKey};
+      const iv=el('op-interval');if(iv)iv.textContent=interval%60===0?`ogni ${interval/60} minuti`:`ogni ${interval} s`;
+      renderOpstripCountdown();
+    }
+    const RAIL_STEPS=Object.freeze([
+      Object.freeze({key:'ATTESA',label:'ATTESA'}),
+      Object.freeze({key:'SCAN',label:'SCAN'}),
+      Object.freeze({key:'SELECT',label:'SELECT'}),
+      Object.freeze({key:'CLAIM',label:'CLAIM'}),
+      Object.freeze({key:'QWEN_PREFLIGHT',label:'QWEN PREFLIGHT'}),
+      Object.freeze({key:'ADMISSION',label:'ADMISSION'}),
+      Object.freeze({key:'EXECUTOR',label:'EXECUTOR'}),
+      Object.freeze({key:'TEST',label:'TEST'}),
+      Object.freeze({key:'PASS',label:'PASS'}),
+      Object.freeze({key:'STOP',label:'STOP'}),
+      Object.freeze({key:'HUMAN_GATE',label:'HUMAN GATE'}),
+    ]);
+    // Map REAL dispatcher fields only (status.phase/classification + last tick
+    // classification) to the closest rail phase. Never invents a phase.
+    function derivePhaseKey(status,lastTick){
+      const s=obj(status);const t=obj(lastTick);
+      const phase=text(s.phase,'');const cls=text(s.classification||t.classification,'');
+      if(s.active===true){
+        if(phase==='REPO_HYGIENE')return 'SCAN';
+        if(phase==='QUEUE_SCAN')return 'SCAN';
+        if(phase==='QWEN_PREFLIGHT')return 'QWEN_PREFLIGHT';
+        if(phase==='CLAIM')return 'CLAIM';
+        if(phase==='ADMISSION')return 'ADMISSION';
+        if(phase==='EXECUTING'||phase==='OPENCODE'||phase==='PERSISTENCE')return 'EXECUTOR';
+        if(phase==='TESTS')return 'TEST';
+        return phase?'SCAN':'ATTESA';
+      }
+      if(cls==='WORK_EXECUTED_PASS')return 'PASS';
+      if(cls==='WORK_EXECUTED_STOP')return 'STOP';
+      if(cls==='HUMAN_GATE_REQUIRED'||t.human_gate_required===true)return 'HUMAN_GATE';
+      return 'ATTESA';
+    }
+    function renderOpstripRail(diag,status){
+      const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);
+      const phaseKey=derivePhaseKey(s,d.last_tick);
+      opstripClock.phaseKey=phaseKey;
+      const order=['ATTESA','SCAN','SELECT','CLAIM','QWEN_PREFLIGHT','ADMISSION','EXECUTOR','TEST'];
+      const currentIdx=order.indexOf(phaseKey);
+      let html='';
+      for(const step of RAIL_STEPS){
+        const isTerminal=['PASS','STOP','HUMAN_GATE'].includes(step.key);
+        if(!isTerminal){
+          if(html)html+='<span class="rail-arrow" aria-hidden="true">→</span>';
+          const done=currentIdx>=0&&order.indexOf(step.key)<currentIdx;
+          const current=step.key===phaseKey;
+          html+=`<span class="rail-step ${current?'current':''} ${done?'done':''}" role="listitem"${current?' aria-current="step"':''}><span class="rdot" aria-hidden="true"></span>${escapeHtml(step.label)}</span>`;
+        }
+      }
+      html+='<span class="rail-arrow" aria-hidden="true">→</span>';
+      for(const term of ['PASS','STOP','HUMAN_GATE']){
+        const current=phaseKey===term;
+        const cls=current?`terminal-${term==='PASS'?'pass':'stop'} current`:'';
+        html+=`<span class="rail-step ${cls}" role="listitem"${current?' aria-current="step"':''}><span class="rdot" aria-hidden="true"></span>${escapeHtml(term==='HUMAN_GATE'?'HUMAN GATE':term)}</span>`;
+        if(term!=='HUMAN_GATE')html+='<span class="rail-arrow" aria-hidden="true">/</span>';
+      }
+      put('op-rail',html);
+    }
+    function renderOpstripTask(diag,status,resources){
+      const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);
+      const q=obj(d.queue);const active=s.active===true;
+      const phaseKey=opstripClock.phaseKey||derivePhaseKey(s,d.last_tick);
+      const facts=[];
+      const taskRef=scalar(s.task_ref)||(active?null:scalar(q.candidate_task_ref));
+      facts.push(['TASK',taskRef?shortTask(taskRef):'Nessun task',!taskRef]);
+      facts.push(['CONTROLLER',active?'Qwen Local':'—',!active]);
+      const profile=scalar(s.qwen_profile);
+      facts.push(['MODELLO',profile||(active?'Non osservato':'—'),!profile]);
+      const usage=deriveQwenUsage(s,Object.keys(obj(obj(resources).qwen)).length?obj(obj(resources).qwen):obj(d.qwen));
+      const harness=active?(usage.harness||(phaseKey==='EXECUTOR'?'OpenCode':phaseKey==='QWEN_PREFLIGHT'?'OpenCode (preflight)':'Dispatcher')):'—';
+      facts.push(['HARNESS',harness,!active]);
+      facts.push(['FASE',phaseKey||'ATTESA',false]);
+      facts.push(['ELAPSED',active?activityClock(s.elapsed_ms)||'—':'—',!active]);
+      put('op-task',facts.map(([k,v,idle])=>`<span class="opstrip-fact"><span class="k">${escapeHtml(k)}</span><span class="v${idle?' idle':''}">${escapeHtml(v)}</span></span>`).join(''));
+    }
+    function renderOpstripGate(diag,status){
+      const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);
+      const t=obj(d.last_tick);const e=obj(d.explanation);const q=obj(d.queue);
+      const gateEl=el('op-gate');
+      const cls=text(s.classification||t.classification,'');
+      const isGate=cls==='HUMAN_GATE_REQUIRED'||t.human_gate_required===true;
+      if(!gateEl){return;}
+      if(!isGate){gateEl.hidden=true;gateEl.innerHTML='';return;}
+      const codes=list(t.reason_codes).filter(v=>typeof v==='string');
+      const reason=codes[0]||cls;
+      const detail=scalar(t.gate_summary)||text(e.detail,'Dettaglio non disponibile');
+      const task=scalar(t.task_ref)||scalar(s.task_ref)||(scalar(q.candidate_task_ref)?`${shortTask(q.candidate_task_ref)} (candidato)`:'Non disponibile');
+      const blockedAt=text(e.blocked_at_label,'')||text(scalar(e.blocked_at)?STAGES[scalar(e.blocked_at)]:null,'')||'Fase non specificata';
+      const humanReadable=REASONS[reason]||label(reason);
+      gateEl.innerHTML=`<span class="gate-title">HUMAN GATE</span>`+
+        `<span class="gf">Blocked at: <b>${escapeHtml(blockedAt)}</b></span>`+
+        `<span class="gf mono">Reason: <b>${escapeHtml(reason)}</b> · ${escapeHtml(humanReadable)}</span>`+
+        `<span class="gf">Detail: <b>${escapeHtml(String(detail).slice(0,180))}</b></span>`+
+        `<span class="gf mono">Task: <b>${escapeHtml(task)}</b></span>`;
+      gateEl.hidden=false;
+    }
+    function renderOpstrip(diag,status,resources){
+      renderOpstripMeta(diag);
+      renderOpstripRail(diag,status);
+      renderOpstripTask(diag,status,resources);
+      renderOpstripGate(diag,status);
+    }
     function fact(name,value,key,mono=false){return `<div><dt>${escapeHtml(name)} ${help(key)}</dt><dd${mono?' class="mono"':''}>${escapeHtml(value)}</dd></div>`;}
     function metric(name,value,sub,key,color='info',identity=false){return `<article class="metric ${color}"><div class="metric-label">${escapeHtml(name)} ${help(key)}</div><div class="metric-value${identity?' identity':''}">${escapeHtml(value)}</div><p class="metric-sub">${escapeHtml(sub)}</p></article>`;}
     const el = id => document.getElementById(id);
@@ -382,11 +566,30 @@
     }
     let currentQueue = {};
     function receiptFields(r){return `<dl class="receipt-grid">${fact('Stato',label(r.state),'receipt')}${fact('Blocca ora',yn(r.currently_blocking),'currently_blocking')}${fact('Esecuzione avviata',yn(r.execution_started),'execution_started')}${fact('Ripetibile',yn(r.replayable),'replayable')}${fact('Registrato il',date(r.claimed_at),'claimed_at')}${fact('Età osservata',duration(r.age_ms),'claimed_at')}</dl><p class="receipt-note">${escapeHtml(r.interpretation || 'Interpretazione non disponibile. Fare riferimento alle regole canoniche dei receipt.')}</p><code class="raw-reason">${escapeHtml(r.state)} · ${escapeHtml(r.interpretation_code)}</code>`;}
-    function renderQueue(){const q=currentQueue;let items=list(q.items);const legacy=!Array.isArray(q.items);if(legacy)items=list(q.rejected_items).map(r=>({...obj(r),source_file:obj(r).source,blocking_reason:obj(r).reason,currently_blocking:obj(r).reason==='CLAIM_ALREADY_EXISTS'}));
+    // === Queue display law: separate CURRENT work from HISTORICAL terminal receipts ===
+    // A blocking receipt whose state is terminal (PASS, or STOP with
+    // execution_started=true) and whose task is NOT currently eligible is
+    // history: it must not be presented as work awaiting human action.
+    function classifyQueueHistory(items){
+      const rows=list(items).map(obj).filter(r=>r.ready_looking===true||r.admissible===true);
+      let readyTotal=0,eseguibili=0,bloccati=0,storici=0;
+      for(const r of rows){
+        readyTotal++;
+        if(r.eligible===true){eseguibili++;continue;}
+        if(r.currently_blocking===true){
+          const receipts=list(r.blocking_receipts).map(obj);
+          const terminal=receipts.length>0&&receipts.every(rc=>rc.state==='PASS'||(rc.state==='STOP'&&rc.execution_started===true));
+          if(terminal)storici++;else bloccati++;
+        }
+      }
+      return {readyTotal,eseguibili,bloccati,storici};
+    }
+    function renderQueue(){
+      const q=currentQueue;let items=list(q.items);const legacy=!Array.isArray(q.items);if(legacy)items=list(q.rejected_items).map(r=>({...obj(r),source_file:obj(r).source,blocking_reason:obj(r).reason,currently_blocking:obj(r).reason==='CLAIM_ALREADY_EXISTS'}));
       const rows=items.map(obj);const search=el('queue-search').value.trim().toLocaleLowerCase('it-IT');const filter=el('queue-filter').value;const sort=el('queue-sort').value;
       const filtered=rows.filter(r=>{if(filter==='blocked'&&r.currently_blocking!==true)return false;if(filter==='eligible'&&r.eligible!==true)return false;if(filter==='rejected'&&(r.eligible===true||r.currently_blocking===true))return false;return !search||[r.id,r.task_ref,r.source_file,r.backlog_state,r.blocking_reason,r.reason,REASONS[r.blocking_reason||r.reason]].some(v=>text(v,'').toLocaleLowerCase('it-IT').includes(search));});
       filtered.sort((a,b)=>{if(sort==='priority'){const rank=r=>r.currently_blocking===true?0:r.eligible===true?1:2;const delta=rank(a)-rank(b);if(delta)return delta;}const key=sort==='source'?'source_file':'task_ref';return text(a[key],text(a.source_file,'')).localeCompare(text(b[key],text(b.source_file,'')),'it-IT');});
-      put('queue-body',filtered.length?filtered.map(r=>{const reason=text(r.blocking_reason||r.reason,'');const blocked=r.currently_blocking===true;const rowTone=blocked?'warn':r.eligible===true?'ok':'neutral';const status=r.eligible===true?'Eseguibile':REASONS[reason]||(blocked?'Bloccato da claim':'Escluso dalla selezione');const receipt=obj(r.latest_receipt);const rid=`receipt-${encodeURIComponent(text(r.source_file,text(r.task_ref,'elemento')))}`;const prior=list(r.blocking_receipts).filter(v=>obj(v).currently_blocking===true);
+      put('queue-body',filtered.length?filtered.map(r=>{const reason=text(r.blocking_reason||r.reason,'');const blocked=r.currently_blocking===true;const blockingReceipts=list(r.blocking_receipts).map(obj);const isHistorical=blocked&&blockingReceipts.length>0&&blockingReceipts.every(rc=>rc.state==='PASS'||(rc.state==='STOP'&&rc.execution_started===true));const rowTone=isHistorical?'neutral':blocked?'warn':r.eligible===true?'ok':'neutral';const status=r.eligible===true?'READY · ELIGIBLE':isHistorical?'Storico · receipt terminale':REASONS[reason]||(blocked?'Bloccato da claim':'Escluso dalla selezione');const receipt=obj(r.latest_receipt);const rid=`receipt-${encodeURIComponent(text(r.source_file,text(r.task_ref,'elemento')))}`;const prior=list(r.blocking_receipts).filter(v=>obj(v).currently_blocking===true);
         const receiptHtml=r.matching_receipt_present===true?`<details class="receipt-details" id="${escapeHtml(rid)}"><summary id="${escapeHtml(rid)}-toggle">${escapeHtml(label(receipt.state))} · Dettagli</summary><p class="receipt-note">Ultimo receipt nel registro · ${count(r.matching_receipt_count)} corrispondenze ${help('receipt')}</p>${receiptFields(receipt)}${prior.length && receipt.currently_blocking!==true?`<p class="receipt-note warn">Un receipt precedente impedisce la selezione.</p>${prior.map(v=>receiptFields(obj(v))).join('')}`:''}<pre>${escapeHtml(json({task_ref:r.task_ref,admissible:r.admissible,latest_receipt:r.latest_receipt,blocking_receipts:r.blocking_receipts}))}</pre></details>`:r.matching_receipt_present===false?'<span class="neutral">Nessun receipt</span>':'<span class="neutral">Dettagli non disponibili</span>';
         return `<tr><td><span class="task-name">${escapeHtml(r.id||shortTask(r.task_ref))}</span><span class="source">${escapeHtml(r.source_file)}</span></td><td><span class="row-state">${escapeHtml(label(r.backlog_state))}</span><span class="source">Ammissibile: ${yn(r.admissible)} ${help('admissible')}</span></td><td><span class="${rowTone}">${blocked?'⚠ ':r.eligible===true?'✓ ':''}${escapeHtml(status)}</span>${reason?`<code class="raw-reason">${escapeHtml(reason)}</code>`:''}</td><td>${receiptHtml}</td></tr>`;
       }).join(''):`<tr><td colspan="4" class="empty">${search||filter!=='all'?'Nessun elemento corrisponde ai filtri locali.':q.error?'Scansione non disponibile. Nessuna conclusione sulla coda.':legacy?'Nessun elemento scartato disponibile.':'Nessun elemento nella scansione corrente.'}</td></tr>`);
@@ -651,6 +854,7 @@
     }
 
     function render(status,diag,resources){const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);const t=obj(d.last_tick),q=obj(d.queue),w=obj(d.qwen);const resQwen=obj(obj(resources).qwen);const qwenObs=Object.keys(resQwen).length?resQwen:w;const usage=deriveQwenUsage(s,qwenObs);const fallback=fallbackExplanation(s,t,q);const e=typeof obj(d.explanation).action_required==='boolean'||obj(d.explanation).action_required===null?{...fallback,...obj(d.explanation)}:fallback;const active=s.active===true;const c=text(s.classification||t.classification,'');const models=list(w.models).map(obj).filter(m=>scalar(m.id));const qwenMetric=qwenSummaryMetric(usage);
+      renderOpstrip(d,s,resources);
       put('summary-cards',[
         metric('Stato dispatcher',active?'Al lavoro':s.active===false?(c==='HUMAN_GATE_REQUIRED'?'Intervento umano':c==='SERVICE_ERROR'?'Errore servizio':'In attesa'):'Sconosciuto',active?label(s.phase):`Ultimo esito: ${label(c)}`,'active',active?'info':tone(c)),
         metric('Task',s.task_ref?shortTask(s.task_ref):q.candidate_task_ref?shortTask(q.candidate_task_ref):'Nessun task',s.task_ref?(active?'Task in elaborazione':'Ultimo task osservato'):q.candidate_task_ref?'Candidato · non ancora avviato':'Nessun task selezionato','task_ref','identity',true),
@@ -661,7 +865,8 @@
       ].join(''));
       renderOperatorVisibility(d.operator_visibility,resources);
       renderOpsCards(s,t,q,e,usage);
-      put('queue-metrics',`<span><strong>${count(q.scanned_file_count)}</strong>file ${help('scanned_file_count')}</span><span><strong class="ok">${count(q.eligible_count)}</strong>eseguibili ${help('eligible_count')}</span><span><strong class="warn">${count(q.claim_present_count)}</strong>claim ${help('claim_present_count')}</span>`);currentQueue=q;renderQueue();
+      const qc=classifyQueueHistory(q.items);
+      put('queue-metrics',`<span><strong>${count(q.scanned_file_count)}</strong>file ${help('scanned_file_count')}</span><span><strong>${count(qc.readyTotal)}</strong>READY totali ${help('eligible_count')}</span><span><strong class="ok">${count(qc.eseguibili)}</strong>READY eseguibili ${help('eligible_count')}</span><span><strong class="warn">${count(qc.bloccati)}</strong>READY bloccati ${help('claim_present_count')}</span><span><strong class="neutral">${count(qc.storici)}</strong>storici con receipt terminale ${help('claim_present_count')}</span>`);currentQueue=q;renderQueue();
       put('status-details',fact('Fase',label(s.phase),'phase')+fact('Classificazione',label(s.classification),'classification')+fact('Identificativo ciclo',s.request_id,'request_id',true)+fact('Identificativo task',s.task_ref,'task_ref',true)+fact('Durata osservata',duration(s.elapsed_ms),'elapsed_ms')+fact('Processo',s.executor_pid,'executor_pid')+fact('Test',label(s.tests_state),'tests_state')+fact('Ultimo evento',s.last_event,'last_event',true)+fact('File coinvolti',list(s.files_touched).filter(v=>typeof v==='string').join(', ')||'Nessun file riportato','files_touched',true));
       renderResources(resources,s,{usage,models,qwenDiag:w});
       renderAgentActivities(obj(d.agent_activity));
@@ -760,6 +965,8 @@
     el('reset-layout').addEventListener('click',resetLayout);
     applySectionOrder(readSavedOrder());
     render(null,null,null);refresh();setInterval(()=>{if(el('auto-refresh').checked&&!document.hidden)refresh();},3000);
+    // Countdown updates client-side every second; anchored ONLY on real ticks.
+    setInterval(renderOpstripCountdown,1000);
   </script>
 </body>
 </html>

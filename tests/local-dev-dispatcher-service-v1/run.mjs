@@ -37,6 +37,7 @@ import {
   normalizeQwenModel,
   probeQwenEndpointReadOnly,
   loadReceiptsLedger,
+  WF90_INTERVAL_SECONDS,
   DASHBOARD_PATHS,
   RESOURCES_PATH,
   RESOURCES_SCHEMA,
@@ -3098,6 +3099,154 @@ await test("S75 D-9408-E six resource cards on one wide-desktop row with canonic
     assert.doesNotMatch(visible, /\b(?:OK|ATTENZIONE|ELEVATO|CRITICO|HEALTHY|WARNING|DANGER|SCONOSCIUTO)\b/);
   }
   assert.doesNotMatch(out, /\[object Object\]/);
+});
+
+// S76–S81: V4_WF90_2MIN_DASHBOARD_COUNTDOWN_AND_D9410A_UNBLOCK_V1 —
+// WF90 tick_clock diagnostics law + dashboard operational strip laws.
+await test("S76 tick_clock: WF90 interval constant is 120s and diagnostics expose last/next tick anchored on the real last tick", async () => {
+  assert.equal(WF90_INTERVAL_SECONDS, 120, "WF90 live cadence must be 2 minutes");
+  const tracker = createExecutionStatusTracker();
+  const lastTick = createLastTickStore();
+  lastTick.record(
+    { ok: false, classification: "HUMAN_GATE_REQUIRED", request_id: "s76-req", task_ref: null, reason_codes: ["TRACKED_DIRTY_CONFLICT"], human_gate_required: true, gate_summary: "tracked dirty: 2 file(s)" },
+    { recorded_at: "2026-09-15T22:10:40.808Z", elapsed_ms: 906 },
+  );
+  const diag = await buildDiagnostics({
+    statusTracker: tracker,
+    lastTickStore: lastTick,
+    scanQueue: () => [],
+    loadReceipts: () => [],
+    probeQwen: async () => ({ reachable: null }),
+    nowIso: () => "2026-09-15T22:11:00.000Z",
+  });
+  assert.equal(diag.tick_clock.schema_version, "local-dev-dispatch-tick-clock-v1");
+  assert.equal(diag.tick_clock.wf90_interval_seconds, 120);
+  assert.equal(diag.tick_clock.last_observed_tick_at, "2026-09-15T22:10:40.808Z");
+  assert.equal(diag.tick_clock.next_expected_tick_at, "2026-09-15T22:12:40.808Z", "next = last real tick + 120000ms");
+  // No tick observed yet -> both anchors null (never invented).
+  const diagEmpty = await buildDiagnostics({
+    statusTracker: tracker,
+    lastTickStore: createLastTickStore(),
+    scanQueue: () => [],
+    loadReceipts: () => [],
+    probeQwen: async () => ({ reachable: null }),
+    nowIso: () => "2026-09-15T22:11:00.000Z",
+  });
+  assert.equal(diagEmpty.tick_clock.last_observed_tick_at, null);
+  assert.equal(diagEmpty.tick_clock.next_expected_tick_at, null);
+});
+
+await test("S77 dashboard countdown arithmetic: next = last + 120s; MM:SS while positive; ATTESA TICK N8N at zero without realign", async () => {
+  const dashboard = await dashboardHarness({ status: { active: false }, diag: {} });
+  const clockAt = (lastMs) => JSON.stringify({
+    tick_clock: { wf90_interval_seconds: 120, last_observed_tick_at: new Date(lastMs).toISOString(), next_expected_tick_at: new Date(lastMs + 120_000).toISOString() },
+    last_tick: { recorded_at: new Date(lastMs).toISOString() },
+  });
+  const last = Date.now() - 73_000;
+  dashboard.evaluate(`renderOpstripMeta(${clockAt(last)})`);
+  dashboard.evaluate("renderOpstripCountdown()");
+  const value = dashboard.element("op-countdown");
+  assert.match(value.textContent, /^0[0-2]:[0-5]\d$/, "positive remainder renders MM:SS (~00:47)");
+  assert.ok(value.textContent <= "02:00" && value.textContent > "00:30", "arithmetic inside expected window");
+  // Zero crossing without a new real tick: waits, never restarts synthetic countdown.
+  dashboard.evaluate(`renderOpstripMeta(${clockAt(Date.now() - 130_000)})`);
+  dashboard.evaluate("renderOpstripCountdown()");
+  assert.equal(dashboard.element("op-countdown").textContent, "ATTESA TICK N8N");
+  assert.match(dashboard.element("op-countdown-sub").textContent, /nessun tick reale ancora osservato/);
+  // Real tick realign: new timestamp resets the countdown from it.
+  dashboard.evaluate(`renderOpstripMeta(${clockAt(Date.now() - 5000)})`);
+  dashboard.evaluate("renderOpstripCountdown()");
+  assert.match(dashboard.element("op-countdown").textContent, /^01:5[0-9]$/, "realigned to ~01:55 from new real tick");
+  assert.notEqual(dashboard.element("op-last-tick").textContent, "Non disponibile");
+  assert.match(dashboard.element("op-interval").textContent, /2 minuti/);
+});
+
+await test("S78 phase rail maps real dispatcher fields only; HUMAN GATE terminal state visible with exact reason", async () => {
+  const dashboard = await dashboardHarness({ status: { active: false }, diag: {} });
+  // IDLE -> ATTESA
+  dashboard.render({ active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" }, { last_tick: { classification: "IDLE_CLEAN" }, queue: {} });
+  let rail = [...dashboard.htmlWrites].filter((w) => w.id === "op-rail").at(-1)?.value || "";
+  assert.match(rail, /rail-step current[^"]*"[^>]*>\s*<span class="rdot"[^>]*><\/span>ATTESA/);
+  // Active EXECUTING -> EXECUTOR
+  dashboard.render({ active: true, phase: "EXECUTING", task_ref: "LOCAL_DEV_B_D-9410-A", elapsed_ms: 92000 }, { last_tick: {}, queue: {} });
+  rail = [...dashboard.htmlWrites].filter((w) => w.id === "op-rail").at(-1)?.value || "";
+  assert.match(rail, /current[^>]*>\s*<span class="rdot"[^>]*><\/span>EXECUTOR/);
+  const taskHtml = [...dashboard.htmlWrites].filter((w) => w.id === "op-task").at(-1)?.value || "";
+  assert.match(taskHtml, /D-9410-A/);
+  assert.match(taskHtml, /EXECUTOR/);
+  assert.match(taskHtml, /01:32/, "elapsed 00:01:32 shown from real ms");
+  // HUMAN_GATE_REQUIRED -> HUMAN GATE with exact reason/detail/task
+  dashboard.render(
+    { active: false, classification: "HUMAN_GATE_REQUIRED", phase: "TERMINAL" },
+    { last_tick: { classification: "HUMAN_GATE_REQUIRED", human_gate_required: true, reason_codes: ["TRACKED_DIRTY_CONFLICT"], gate_summary: "tracked dirty: 2 file(s)", task_ref: null }, queue: { eligible_count: 1, candidate_task_ref: "LOCAL_DEV_B_D-9410-A" }, explanation: { blocked_at: "repo_hygiene", why_code: "TRACKED_DIRTY_CONFLICT" } },
+  );
+  rail = [...dashboard.htmlWrites].filter((w) => w.id === "op-rail").at(-1)?.value || "";
+  assert.match(rail, /terminal-stop current/);
+  assert.match(rail, /HUMAN GATE/);
+  const gate = dashboard.element("op-gate");
+  assert.equal(gate.hidden, false);
+  assert.match(gate.innerHTML, /HUMAN GATE/);
+  assert.match(gate.innerHTML, /TRACKED_DIRTY_CONFLICT/);
+  assert.match(gate.innerHTML, /tracked dirty: 2 file\(s\)/);
+  assert.match(gate.innerHTML, /D-9410-A/);
+  assert.match(gate.innerHTML, /Blocked at:/);
+});
+
+await test("S79 queue classification: READY totali / eseguibili / bloccati / storici con receipt terminale separated", async () => {
+  const dashboard = await dashboardHarness({ status: { active: false }, diag: {} });
+  const items = [
+    { id: "D-9410-A", task_ref: "LOCAL_DEV_B_D-9410-A", source_file: "READY_D9410A.md", backlog_state: "READY_FOR_PLANNING", ready_looking: true, admissible: true, eligible: true, matching_receipt_present: false, currently_blocking: false, blocking_reason: null, latest_receipt: null, blocking_receipts: [], matching_receipt_count: 0, blocking_receipt_count: 0 },
+    { id: "D-9301-C", task_ref: "LOCAL_DEV_B_D-9301-C", source_file: "READY_D9301C.md", backlog_state: "READY_FOR_PLANNING", ready_looking: true, admissible: true, eligible: false, matching_receipt_present: true, currently_blocking: true, blocking_reason: "CLAIM_ALREADY_EXISTS", latest_receipt: { state: "PASS" }, blocking_receipts: [{ state: "PASS", execution_started: true, currently_blocking: true }], matching_receipt_count: 1, blocking_receipt_count: 1 },
+    { id: "D-9403-A", task_ref: "LOCAL_DEV_B_D-9403-A", source_file: "READY_D9403A.md", backlog_state: "READY_FOR_PLANNING", ready_looking: true, admissible: true, eligible: false, matching_receipt_present: true, currently_blocking: true, blocking_reason: "CLAIM_ALREADY_EXISTS", latest_receipt: { state: "STOP" }, blocking_receipts: [{ state: "STOP", execution_started: true, currently_blocking: true }], matching_receipt_count: 1, blocking_receipt_count: 1 },
+    { id: "D-9409-A", task_ref: "LOCAL_DEV_B_D-9409-A", source_file: "READY_D9409A.md", backlog_state: "READY_FOR_PLANNING", ready_looking: true, admissible: false, eligible: false, matching_receipt_present: false, currently_blocking: false, blocking_reason: "INADMISSIBLE_STATE_OR_SCOPE", latest_receipt: null, blocking_receipts: [], matching_receipt_count: 0, blocking_receipt_count: 0 },
+  ];
+  const counts = JSON.parse(dashboard.evaluate(`JSON.stringify(classifyQueueHistory(${JSON.stringify(items)}))`));
+  assert.deepEqual(Object.keys(counts).sort(), ["bloccati", "eseguibili", "readyTotal", "storici"]);
+  assert.deepEqual(counts, { readyTotal: 4, eseguibili: 1, bloccati: 0, storici: 2 }, "PASS + terminal STOP are history, not current blocks");
+  dashboard.render(null, { queue: { items, eligible_count: 1, claim_present_count: 2, scanned_file_count: 33 } });
+  const metrics = [...dashboard.htmlWrites].filter((w) => w.id === "queue-metrics").at(-1)?.value || "";
+  assert.match(metrics, /READY totali/);
+  assert.match(metrics, /READY eseguibili/);
+  assert.match(metrics, /READY bloccati/);
+  assert.match(metrics, /storici con receipt terminale/);
+  const body = [...dashboard.htmlWrites].filter((w) => w.id === "queue-body").at(-1)?.value || "";
+  assert.match(body, /D-9410-A[\s\S]*?READY · ELIGIBLE/);
+  assert.match(body, /Storico · receipt terminale/);
+  // Fresh CLAIMED receipt stays CURRENT blocked, not history.
+  const counts2 = JSON.parse(dashboard.evaluate(`JSON.stringify(classifyQueueHistory(${JSON.stringify([{ ready_looking: true, admissible: true, eligible: false, currently_blocking: true, blocking_receipts: [{ state: "CLAIMED", execution_started: false, currently_blocking: true }] }])}))`));
+  assert.deepEqual(counts2, { readyTotal: 1, eseguibili: 0, bloccati: 1, storici: 0 });
+});
+
+await test("S80 opstrip renders safely with null/malformed diagnostics (no coercion, no invented anchors)", async () => {
+  const dashboard = await dashboardHarness();
+  for (const diag of [null, {}, { tick_clock: null }, { tick_clock: { wf90_interval_seconds: {} }, last_tick: { recorded_at: {} } }, { last_tick: { recorded_at: "not-a-date" } }]) {
+    assert.doesNotThrow(() => dashboard.render(null, diag));
+    const value = dashboard.element("op-countdown");
+    assert.ok(["—:——", "ATTESA TICK N8N"].includes(value.textContent) || /^\d\d:\d\d$/.test(value.textContent), value.textContent);
+  }
+  const out = dashboardText(dashboard);
+  assert.doesNotMatch(out, /\[object Object\]|\bundefined\b|\bNaN\b/);
+});
+
+await test("S81 live diagnostics endpoint shape: tick_clock present and read-only GET only", async () => {
+  const tracker = createExecutionStatusTracker();
+  const lastTick = createLastTickStore();
+  lastTick.record({ ok: true, classification: "IDLE_CLEAN", request_id: "s81" }, { recorded_at: "2026-09-15T22:20:41.000Z", elapsed_ms: 300 });
+  let diag = null;
+  const res = mockRes();
+  const originalEnd = res.end;
+  res.end = (b) => { diag = JSON.parse(b); originalEnd(b); };
+  await handleTickRequest(mockReq("GET", DIAGNOSTICS_PATH), res, {
+    statusTracker: tracker,
+    lastTickStore: lastTick,
+    diagnosticsScanQueue: () => [],
+    diagnosticsLoadReceipts: () => [],
+    probeQwen: async () => ({ reachable: null }),
+  });
+  assert.equal(res.status, 200);
+  assert.equal(diag.tick_clock.wf90_interval_seconds, 120);
+  assert.equal(diag.tick_clock.last_observed_tick_at, "2026-09-15T22:20:41.000Z");
+  assert.equal(diag.tick_clock.next_expected_tick_at, "2026-09-15T22:22:41.000Z");
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
