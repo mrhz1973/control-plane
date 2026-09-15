@@ -1,6 +1,55 @@
 # LAST CURSOR REPORT
 
-## Control Plane governed production steady-state ACTIVE — zero-dispatch activation PASS (latest)
+## WF90 2-min + dashboard countdown/phase/gate + D-9410-A unblock — PASS (latest)
+
+**TASK_REF:** `V4_WF90_2MIN_DASHBOARD_COUNTDOWN_AND_D9410A_UNBLOCK_V1`
+**Classification:** `PASS`
+**Date (Europe/Rome):** 2026-09-15/16
+**BASE_HEAD:** `77f147c437bc392038a616dc4243978ae7b8e578` (verified; one clean ff-only to align)
+**Report:** `reports/architecture/v4_wf90_2min_dashboard_countdown_and_d9410a_unblock_v1.md`
+
+- **D-9410-A diagnosis (evidence, not inference):** queue-side SELECTED +
+  eligible (receipt absent, admissible, `human_gate_required_if: []`); the
+  real blocker was dispatcher repo-hygiene `TRACKED_DIRTY_CONFLICT` from 2
+  pre-existing tracked-dirty telemetry files (ACP/MCP test-run churn).
+  Files restored to committed content (no receipt deleted/created); worktree
+  tracked-clean → gate passed.
+- **Dashboard `eligible=0` explained:** stale local HEAD pre-ff (queue file
+  not yet present). `blocked=29` = HISTORICAL terminal receipts (16 legacy
+  fail-closed, 11 PASS, 2 terminal STOP), not current work; dashboard now
+  separates READY TOTALI / READY ESEGUIBILI / READY BLOCCATI / STORICI CON
+  RECEIPT TERMINALE.
+- **WF90 LIVE 5 min → 2 min** on NEW VPS n8n (export→import→publish +
+  container restart; id/nodes/connections/credentials preserved; sole scope
+  authorized). `WF90_SCHEDULE_INTERVAL_SECONDS=120` verified LIVE with 5
+  consecutive natural ticks at exact Δ120s; workflow ACTIVE (version
+  `dccaff58-…`).
+- **Dashboard operational strip LIVE:** PROSSIMO CONTROLLO BACKLOG countdown
+  (client-side 1s, anchored ONLY on real ticks via new diagnostics
+  `tick_clock`; at zero → "ATTESA TICK N8N", no synthetic restart; realigns
+  on next real tick), Ultimo tick / Prossimo previsto / Cadenza, phase rail
+  ATTESA→SCAN→SELECT→CLAIM→QWEN PREFLIGHT→ADMISSION→EXECUTOR→TEST→
+  PASS/STOP/HUMAN GATE (real fields only), task visibility
+  (TASK/CONTROLLER/MODELLO/HARNESS/FASE/ELAPSED), HUMAN GATE panel with
+  exact Blocked at/Reason/Detail/Task (verified live: TRACKED_DIRTY_CONFLICT
+  · tracked dirty: 2 file(s)).
+- **Natural Control Plane test:** NO manual execution. Next natural WF90
+  2-min tick selected D-9410-A, full pipeline passed (hygiene → select →
+  Qwen preflight 64k → claim → admission → EXECUTOR/OPENCODE real ~29 min)
+  → terminal STOP (execution_started=true, replayable=false) leaving its
+  own uncommitted VPS-CPU work for human review — canonical handoff.
+- Dispatcher suite 75/75 PASS (new S76–S81). Observability suite 6/7 with
+  1 PRE-EXISTING failure at base HEAD (verified via clean stash; unchanged).
+- Commit `7d71b11ae1f37a4d4b771b6fbd6bc448e6967029` pushed; remote HEAD
+  verified; dispatcher service restarted via its scheduled task only;
+  /dashboard /v1/status /v1/diagnostics /v1/resources all 200.
+- **NEXT:** human review/commit (or discard) of D-9410-A executor leftover
+  (2 files: `cpu_percent` observatory implementation + test); then natural
+  backlog selection resumes.
+
+---
+
+## Control Plane governed production steady-state ACTIVE — zero-dispatch activation PASS
 
 **TASK_REF:** `V4_CONTROL_PLANE_GOVERNED_PRODUCTION_STEADY_STATE_ACTIVATION_V1`
 **Classification:** `PASS — GOVERNED PRODUCTION STEADY-STATE ACTIVATION`

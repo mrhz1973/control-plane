@@ -335,6 +335,8 @@ Remote access policy:
 
 WF90 can trigger the canonical local dispatch tick through the private Tailscale route, but WF90 does not override selector/admission/receipt authority.
 
+WF90 live schedule (since `V4_WF90_2MIN_DASHBOARD_COUNTDOWN_AND_D9410A_UNBLOCK_V1`, 2026-09-15): **every 2 minutes** (`WF90_SCHEDULE_INTERVAL_SECONDS=120`; historical 5-minute cadence before version `dccaff58-…`). WF90 remains the sole periodic tick owner. The dispatcher exposes the observed cadence through the read-only diagnostics `tick_clock` block (`wf90_interval_seconds`, `last_observed_tick_at`, `next_expected_tick_at = last real tick + 120000 ms`); the dashboard countdown anchors exclusively on real ticks and shows "ATTESA TICK N8N" past the expected time instead of restarting a synthetic countdown.
+
 Important separation:
 
 ```text
