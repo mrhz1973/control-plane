@@ -245,7 +245,13 @@ await test("pass-idle-busy-notification-policy-unchanged", () => {
 
 const telegramNode = artifact.nodes.find((n) => n.name === "Telegram - LOCAL_DEV gate notification");
 assert.ok(telegramNode, "workflow artifact must contain Telegram gate notification node");
-const telegramExpr = String(telegramNode.parameters?.jsonBody ?? "");
+// WF90_TELEGRAM_HUMAN_GATE_RELIABILITY_V1: the Telegram node consumes a plain-text
+// body prebuilt by the normalizer (telegram_text) — the proven WF40 shape. No raw
+// field interpolation in the Telegram text (unpaired underscores in
+// HUMAN_GATE_REQUIRED / WORK_EXECUTED_STOP previously triggered Telegram 400
+// "can't parse entities" under the default Markdown parse mode).
+const telegramExpr = String(telegramNode.parameters?.text ?? "");
+const telegramJsonBody = String(telegramNode.parameters?.jsonBody ?? "");
 
 const terminalNode = artifact.nodes.find((n) => n.name === "Code - LOCAL_DEV tick terminal");
 assert.ok(terminalNode, "workflow artifact must contain LOCAL_DEV tick terminal node");
@@ -258,9 +264,85 @@ const runTerminal = (itemJson) => {
 };
 
 await test("telegram-expression-includes-executor-classification-with-none-fallback", () => {
-  assert.match(telegramExpr, /executor_classification/);
-  assert.match(telegramExpr, /executor:\s*'\s*\+\s*\(\$json\.executor_classification\s*\|\|\s*'NONE'\)/);
-  assert.match(telegramExpr, /NONE/);
+  assert.match(telegramExpr, /\$json\.telegram_text/);
+  // executor classification with NONE fallback is built in the normalizer now
+  assert.match(normalizerNode.parameters.jsCode, /valid && body\.executor_classification\)\s*\?\s*esc\(body\.executor_classification\)\s*:\s*'NONE'/);
+});
+
+await test("telegram-node-plain-text-shape-no-markdown-parse-risk", () => {
+  // WF40-proven shape + explicit HTML parse mode: the n8n Telegram node
+  // FORCES parse_mode='Markdown' (legacy) when unset (GenericFunctions
+  // addAdditionalFields), which rejects unpaired underscores with 400
+  // "can't parse entities". HTML mode is underscore-safe.
+  assert.equal(telegramNode.parameters.operation, "sendMessage");
+  assert.equal(telegramNode.parameters.text, "={{ $json.telegram_text }}");
+  assert.equal(telegramNode.parameters.additionalFields?.appendAttribution, false);
+  assert.equal(telegramNode.parameters.additionalFields?.parse_mode, "HTML");
+  // No dead HTTP-style jsonBody param may return.
+  assert.equal(telegramJsonBody, "");
+});
+
+await test("normalizer-html-escapes-dynamic-telegram-values", () => {
+  assert.match(normalizerNode.parameters.jsCode, /const esc/);
+  const dispatcher = tickResult({
+    classification: "HUMAN_GATE_REQUIRED",
+    human_gate_required: true,
+    gate_summary: "tracked dirty: 2 <file> & 1 more",
+    reason_codes: [],
+  });
+  const envelope = { error: { status: 409, message: `409 - ${JSON.stringify(dispatcher)}` } };
+  const out = normalize(envelope);
+  assert.ok(out.telegram_text.includes("reason: tracked dirty: 2 &lt;file&gt; &amp; 1 more"));
+  // Header is pure ASCII (em-dash caused transport mojibake on live apply).
+  assert.ok(out.telegram_text.startsWith("CONTROL PLANE - HUMAN ACTION REQUIRED"));
+});
+
+await test("normalizer-builds-plain-telegram-text-for-human-gate", () => {
+  const dispatcher = tickResult({
+    classification: "HUMAN_GATE_REQUIRED",
+    human_gate_required: true,
+    gate_summary: "tracked dirty: 2 file(s)",
+    reason_codes: ["TRACKED_DIRTY_CONFLICT"],
+  });
+  const envelope = { error: { status: 409, message: `409 - ${JSON.stringify(dispatcher)}` } };
+  const out = normalize(envelope);
+  assert.equal(out.notify_required, true);
+  assert.ok(out.telegram_text.includes("CONTROL PLANE - HUMAN ACTION REQUIRED"));
+  assert.ok(out.telegram_text.includes("classification: HUMAN_GATE_REQUIRED"));
+  assert.ok(out.telegram_text.includes("reason: TRACKED_DIRTY_CONFLICT"));
+  assert.ok(out.telegram_text.includes("task: NONE"));
+  assert.ok(out.telegram_text.includes("origin: WF90"));
+});
+
+await test("telegram-text-no-unpaired-underscore-entity-risk-under-html", () => {
+  // Regression guard for the live defect: under the forced-legacy-Markdown
+  // default, an unpaired underscore at classification/reason offsets produced
+  // Telegram 400 "can't parse entities" on EVERY gate tick.
+  for (const cls of ["HUMAN_GATE_REQUIRED", "WORK_EXECUTED_STOP", "SERVICE_ERROR"]) {
+    const out = normalize(tickResult({ classification: cls }));
+    assert.match(telegramNode.parameters.additionalFields?.parse_mode ?? "", /^HTML$/);
+    assert.ok(typeof out.telegram_text === "string" && out.telegram_text.length > 0);
+  }
+});
+
+await test("telegram-text-hygiene-forbidden-fields", () => {
+  const body = tickResult({ classification: "WORK_EXECUTED_STOP", execution_performed: true, task_ref: "T-X", executor_classification: "STOP:TEST" });
+  const out = normalize(body);
+  assert.ok(out.telegram_text.includes("executor: STOP:TEST"));
+  assert.ok(!out.telegram_text.includes("stdout"));
+  assert.ok(!out.telegram_text.includes("stderr"));
+});
+
+await test("http-timeout-covers-canonical-3600s-executor", () => {
+  // Canonical LOCAL_DEV executor max timebox = 3600s; timeout must cover it
+  // with bounded margin (65 min), and must never be unlimited/absent.
+  const t = httpNode.parameters?.options?.timeout;
+  assert.equal(t, 3900000);
+});
+
+await test("schedule-remains-2-minutes", () => {
+  const sch = artifact.nodes.find((n) => n.name === "Schedule Trigger - LOCAL_DEV tick");
+  assert.equal(sch.parameters.rule.interval[0].minutesInterval, 2);
 });
 
 await test("terminal-preserves-executor-classification-and-reason-codes", () => {
@@ -290,6 +372,7 @@ await test("terminal-reason-codes-capped-to-16", () => {
 await test("telegram-and-terminal-exclude-stdout-stderr-task-delta-prompt", () => {
   for (const forbidden of ["stdout", "stderr", "task_delta", "prompt"]) {
     assert.equal(telegramExpr.includes(forbidden), false, `telegram must not contain ${forbidden}`);
+    assert.equal(normalizerNode.parameters.jsCode.includes(forbidden), false, `normalizer telegram_text must not contain ${forbidden}`);
     assert.equal(terminalCode.includes(forbidden), false, `terminal must not contain ${forbidden}`);
   }
 });

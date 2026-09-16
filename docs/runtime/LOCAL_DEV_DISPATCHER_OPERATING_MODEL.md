@@ -337,6 +337,8 @@ WF90 can trigger the canonical local dispatch tick through the private Tailscale
 
 WF90 live schedule (since `V4_WF90_2MIN_DASHBOARD_COUNTDOWN_AND_D9410A_UNBLOCK_V1`, 2026-09-15): **every 2 minutes** (`WF90_SCHEDULE_INTERVAL_SECONDS=120`; historical 5-minute cadence before version `dccaff58-…`). WF90 remains the sole periodic tick owner. The dispatcher exposes the observed cadence through the read-only diagnostics `tick_clock` block (`wf90_interval_seconds`, `last_observed_tick_at`, `next_expected_tick_at = last real tick + 120000 ms`); the dashboard countdown anchors exclusively on real ticks and shows "ATTESA TICK N8N" past the expected time instead of restarting a synthetic countdown.
 
+WF90 HTTP tick timeout (since `V4_WF90_TELEGRAM_HUMAN_GATE_RELIABILITY_V1`, 2026-09-16, live version `369b2fdd-…`): **3900000 ms** (65 min) to safely cover the canonical 3600 s LOCAL_DEV executor timebox plus transport/finalization margin (was 900000 ms, which timed out mid-execution on the ~29-min D-9410-A run). Telegram gate notifications are sent with explicit `parse_mode: HTML` and a normalizer-built plain text body (`telegram_text`, HTML-escaped dynamic values, ASCII header): the n8n Telegram node forces legacy Markdown parse mode when unset, which rejected underscore-bearing tokens like `HUMAN_GATE_REQUIRED` with HTTP 400 "can't parse entities". Notification policy is unchanged: HUMAN_GATE_REQUIRED / WORK_EXECUTED_STOP / SERVICE_ERROR only.
+
 Important separation:
 
 ```text
