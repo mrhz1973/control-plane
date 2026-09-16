@@ -21,7 +21,7 @@ const artifact = JSON.parse(readFileSync(ARTIFACT, "utf8").replace(/^\uFEFF/, ""
 const decideNode = artifact.nodes.find((n) => n.name === DECIDE_NODE);
 assert.ok(decideNode, "workflow artifact must contain node " + DECIDE_NODE);
 assert.equal(decideNode.type, "n8n-nodes-base.code");
-assert.equal(decideNode.parameters.mode, "runOnceForEachItem");
+assert.equal(decideNode.parameters.mode, "runOnceForAllItems");
 
 const decide = (normalized, rows = []) => {
   const refs = {
