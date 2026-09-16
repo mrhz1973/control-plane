@@ -750,6 +750,9 @@ export async function buildDiagnostics(deps = {}) {
     },
     explanation,
     operator_visibility,
+    // #86 additive read-only canonical human-gate view (V4_DASHBOARD_ACTIONABLE_HUMAN_GATE_V1).
+    // Present only when the last tick carries gate evidence; existing fields unchanged.
+    human_gate: buildHumanGateView({ status, last_tick }),
     // Read-only agent/browser activity observatory (issue #79). Additive
     // field only — existing diagnostics fields unchanged (backward compat).
     agent_activity: buildAgentActivitySection(deps),
@@ -957,7 +960,84 @@ export function wrapTickResult(partial) {
     gate_summary: partial.gate_summary ?? null,
     reason_codes: Array.isArray(partial.reason_codes) ? partial.reason_codes.slice(0, 16) : [],
     post_exec_integration: postExec,
+    // #86 ADDITIVE canonical actionable-gate pass-through (V4_DASHBOARD_ACTIONABLE_HUMAN_GATE_V1).
+    // Present ONLY when the runtime gate authority attached operator_action_*
+    // evidence; otherwise the bounded shape is byte-identical to before.
+    ...(partial.operator_action_gate_id ? { operator_action_gate_id: boundStr(partial.operator_action_gate_id, 120) } : {}),
+    ...(partial.operator_action_summary ? { operator_action_summary: boundStr(partial.operator_action_summary, 240) } : {}),
+    ...(partial.operator_action_detail ? { operator_action_detail: boundStr(partial.operator_action_detail, 2000) } : {}),
+    ...(Array.isArray(partial.operator_action_choices) && partial.operator_action_choices.length
+      ? { operator_action_choices: partial.operator_action_choices.slice(0, 8).map((c) => boundStr(c, 60)).filter(Boolean) }
+      : {}),
+    ...(partial.operator_action_requires_confirmation === true ? { operator_action_requires_confirmation: true } : {}),
+    ...(partial.operator_action_expires_at ? { operator_action_expires_at: boundStr(partial.operator_action_expires_at, 40) } : {}),
+    ...(Array.isArray(partial.operator_action_references) && partial.operator_action_references.length
+      ? { operator_action_references: partial.operator_action_references.slice(0, 5).map((r) => boundStr(r, 200)).filter(Boolean) }
+      : {}),
+    ...(partial.telegram_delivery_status ? { telegram_delivery_status: boundStr(partial.telegram_delivery_status, 40) } : {}),
+    ...(partial.telegram_notified_at ? { telegram_notified_at: boundStr(partial.telegram_notified_at, 40) } : {}),
+    ...(partial.telegram_message_id ? { telegram_message_id: boundStr(partial.telegram_message_id, 40) } : {}),
+    ...(typeof partial.telegram_url === "string" && /^https:\/\//i.test(partial.telegram_url) ? { telegram_url: partial.telegram_url } : {}),
   };
+}
+
+/**
+ * #86 — read-only canonical human-gate view for the dashboard.
+ * Derives NEW / UNCHANGED_NOTIFIED / RESOLVED from REAL persisted evidence
+ * only (status + last tick). NEVER invents choices, actions, Telegram state
+ * or links. The dashboard renders this shape as-is.
+ */
+export function buildHumanGateView({ status, last_tick } = {}) {
+  const s = diagnosticObject(status) ? status : {};
+  const tick = diagnosticObject(last_tick) ? last_tick : {};
+  const gateTick = tick.human_gate_required === true || tick.classification === "HUMAN_GATE_REQUIRED";
+  const sameTick = !s.request_id || !tick.request_id || s.request_id === tick.request_id;
+  const nowClassification = diagnosticText(s.classification, 120) || (sameTick ? diagnosticText(tick.classification, 120) : null);
+  const active = gateTick && nowClassification === "HUMAN_GATE_REQUIRED";
+  if (!gateTick) return null;
+
+  // Telegram evidence: rendered only when really present in the tick.
+  const delivery = diagnosticText(tick.telegram_delivery_status, 40);
+  const notifiedAt = diagnosticText(tick.telegram_notified_at, 40);
+  const notified = delivery === "sent" || delivery === "delivered";
+
+  let state;
+  if (active) state = notified ? "UNCHANGED_NOTIFIED_GATE" : "NEW_GATE";
+  else state = "RESOLVED_GATE";
+
+  const codes = Array.isArray(tick.reason_codes) ? tick.reason_codes.map((c) => diagnosticText(c, 80)).filter(Boolean) : [];
+  const view = {
+    schema_version: "local-dev-human-gate-view-v1",
+    read_only: true,
+    active,
+    state,
+    gate_id: diagnosticText(tick.operator_action_gate_id, 120),
+    task_ref: diagnosticText(tick.task_ref, 200),
+    classification: diagnosticText(tick.classification, 120),
+    reason_code: codes[0] || null,
+    reason_codes: codes,
+    gate_summary: diagnosticText(tick.gate_summary, 240),
+    operator_action_summary: diagnosticText(tick.operator_action_summary, 240),
+    operator_action_detail: diagnosticText(tick.operator_action_detail, 2000),
+    operator_action_choices: Array.isArray(tick.operator_action_choices)
+      ? tick.operator_action_choices.map((c) => diagnosticText(c, 60)).filter(Boolean)
+      : [],
+    origin: "LOCAL_DEV_DISPATCHER",
+    phase: diagnosticText(tick.human_gate_phase, 80) || (sameTick ? diagnosticText(s.phase, 80) : null),
+    executor: diagnosticText(tick.executor_classification, 120),
+    first_observed_at: diagnosticText(tick.recorded_at, 40),
+    last_observed_at: diagnosticText(tick.recorded_at, 40),
+    expires_at: diagnosticText(tick.operator_action_expires_at, 40),
+    requires_confirmation: tick.operator_action_requires_confirmation === true,
+    telegram_delivery_status: delivery || null,
+    telegram_notified_at: notifiedAt || null,
+    telegram_message_id: diagnosticText(tick.telegram_message_id, 40),
+    telegram_url: /^https:\/\//i.test(String(tick.telegram_url || "")) ? String(tick.telegram_url) : null,
+    references: Array.isArray(tick.operator_action_references)
+      ? tick.operator_action_references.map((r) => diagnosticText(r, 200)).filter(Boolean).slice(0, 5)
+      : [],
+  };
+  return view;
 }
 
 /**

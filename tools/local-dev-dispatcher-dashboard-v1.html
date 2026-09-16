@@ -50,6 +50,9 @@
     .opstrip-gate .gf{font-size:11px;color:#e8dcc0}
     .opstrip-gate .gf b{color:var(--amber);font-weight:650}
     .opstrip-gate .gf.mono{font-family:var(--mono);font-size:11px}
+    .opstrip-gate .gate-state{font:650 10px/1.4 var(--mono);letter-spacing:.8px;color:#e8dcc0;border:1px solid #6d5426;border-radius:999px;padding:1px 9px;text-transform:uppercase}
+    .opstrip-gate .gate-chip{display:inline-block;font:600 10px/1.5 var(--mono);color:var(--amber);border:1px dashed #6d5426;border-radius:6px;padding:0 7px;background:transparent;cursor:default;user-select:text}
+    .opstrip-gate a{color:#9ecbff;overflow-wrap:anywhere}
     .opstrip-rail{grid-area:rail;display:flex;flex-wrap:wrap;align-items:center;gap:0;border-top:1px solid #22303d;padding-top:11px}
     .rail-step{display:inline-flex;align-items:center;gap:7px;padding:4px 10px 4px 8px;border:1px solid transparent;border-radius:999px;font:600 9.5px/1.4 var(--mono);letter-spacing:.8px;color:#758295;text-transform:uppercase;white-space:nowrap}
     .rail-step .rdot{width:7px;height:7px;border-radius:50%;background:#3a4656;flex:none}
@@ -362,17 +365,51 @@
       const isGate=cls==='HUMAN_GATE_REQUIRED'||t.human_gate_required===true;
       if(!gateEl){return;}
       if(!isGate){gateEl.hidden=true;gateEl.innerHTML='';return;}
+      // #86 READ_ONLY_OPERATOR_VIEW: canonical human_gate metadata when present.
+      const hg=obj(d.human_gate);
+      const hgNew=Object.keys(hg).length>0&&hg.active===true;
+      const choices=hgNew?list(hg.operator_action_choices).filter(v=>typeof v==='string'):[];
+      const STATE_LABELS={NEW_GATE:'NUOVO INTERVENTO UMANO',UNCHANGED_NOTIFIED_GATE:'INTERVENTO UMANO GIÀ NOTIFICATO',RESOLVED_GATE:'INTERVENTO UMANO RISOLTO'};
+      const stateLabel=hgNew?(STATE_LABELS[hg.state]||'INTERVENTO UMANO'):'INTERVENTO UMANO';
+      const actionSummary=scalar(hg.operator_action_summary);
+      const TG_STATUS={sent:'Telegram: notificato',delivered:'Telegram: notificato',not_sent:'Telegram: non inviato',failed:'Telegram: invio fallito'};
+      const tgStatus=scalar(hg.telegram_delivery_status);
+      const tgLine=hgNew&&tgStatus?(TG_STATUS[tgStatus]||'Telegram: stato non disponibile')+(scalar(hg.telegram_notified_at)?` · ${escapeHtml(date(hg.telegram_notified_at,true))}`:''):null;
+      const refs=hgNew?list(hg.references).map(r=>String(r)).filter(Boolean).slice(0,5):[];
       const codes=list(t.reason_codes).filter(v=>typeof v==='string');
       const reason=codes[0]||cls;
       const detail=scalar(t.gate_summary)||text(e.detail,'Dettaglio non disponibile');
       const task=scalar(t.task_ref)||scalar(s.task_ref)||(scalar(q.candidate_task_ref)?`${shortTask(q.candidate_task_ref)} (candidato)`:'Non disponibile');
       const blockedAt=text(e.blocked_at_label,'')||text(scalar(e.blocked_at)?STAGES[scalar(e.blocked_at)]:null,'')||'Fase non specificata';
       const humanReadable=REASONS[reason]||label(reason);
+      // No-invention law: without canonical operator_action_summary the action is NOT derived.
+      const actionHtml=hgNew
+        ?`<span class="gf gate-action">Azione richiesta: <b>${escapeHtml(actionSummary||'Azione non determinata automaticamente — apri dettaglio gate')}</b></span>`+
+         (choices.length?`<span class="gf">Scelte disponibili su Telegram: ${choices.map(c=>`<span class="gate-chip mono">${escapeHtml(c)}</span>`).join(' ')}</span>`:'')
+        :'';
+      const tgHtml=tgLine?`<span class="gf">${tgLine}${scalar(hg.telegram_message_id)?` · msg <span class="mono">${escapeHtml(hg.telegram_message_id)}</span>`:''}</span>`:'';
+      const refsHtml=refs.length?`<span class="gf">Riferimenti: ${refs.map(r=>/^https:\/\//i.test(r)?`<a href="${escapeHtml(r)}" target="_blank" rel="noopener noreferrer" class="mono">${escapeHtml(r)}</a>`:`<span class="mono">${escapeHtml(r)}</span>`).join(' · ')}</span>`:'';
+      const hgDetail=hgNew?`<details class="res-more" id="gate-detail"><summary>Dettaglio gate</summary>`+
+        `<p class="ops-line"><b>Cosa è successo:</b> ${escapeHtml(text(hg.gate_summary,'Non disponibile'))}</p>`+
+        `<p class="ops-line"><b>Perché l’esecuzione si è fermata:</b> ${escapeHtml(text(e.detail,'—'))}</p>`+
+        `<p class="ops-line"><b>Azione richiesta:</b> ${escapeHtml(text(hg.operator_action_summary,'Azione non determinata automaticamente'))}</p>`+
+        (text(hg.operator_action_detail,null)?`<p class="ops-line"><b>Dettaglio azione:</b> ${escapeHtml(hg.operator_action_detail)}</p>`:'')+
+        (choices.length?`<p class="ops-line"><b>Scelte canoniche:</b> ${choices.map(c=>`<span class="gate-chip mono">${escapeHtml(c)}</span>`).join(' ')}</p>`:'')+
+        `<p class="ops-line"><b>Task / run / gate:</b> <span class="mono">${escapeHtml(text(hg.task_ref,'—'))} · ${escapeHtml(text(hg.gate_id,'—'))}</span></p>`+
+        `<p class="ops-line"><b>Origin:</b> ${escapeHtml(text(hg.origin,'Non disponibile'))} · <b>Fase:</b> ${escapeHtml(text(hg.phase,'—'))}</p>`+
+        `<p class="ops-line"><b>Reason code:</b> <span class="mono">${escapeHtml(text(hg.reason_code,'—'))}</span> · <b>Executor:</b> ${escapeHtml(text(hg.executor,'—'))}</p>`+
+        `<p class="ops-line"><b>Prima osservazione:</b> ${escapeHtml(scalar(hg.first_observed_at)?date(hg.first_observed_at,true):'—')} · <b>Ultima:</b> ${escapeHtml(scalar(hg.last_observed_at)?date(hg.last_observed_at,true):'—')}</p>`+
+        `<p class="ops-line"><b>Scadenza:</b> ${escapeHtml(scalar(hg.expires_at)?date(hg.expires_at,true):'—')} · <b>Conferma richiesta:</b> ${escapeHtml(hg.requires_confirmation===true?'Sì':'No')}</p>`+
+        `<p class="ops-line"><b>Telegram:</b> ${escapeHtml(tgLine||'Telegram: stato non disponibile')}${scalar(hg.telegram_url)?` · <a href="${escapeHtml(hg.telegram_url)}" target="_blank" rel="noopener noreferrer">Apri messaggio Telegram</a>`:''}</p>`+
+        (refs.length?`<p class="ops-line"><b>Riferimenti:</b> ${refs.map(r=>/^https:\/\//i.test(r)?`<a href="${escapeHtml(r)}" target="_blank" rel="noopener noreferrer" class="mono">${escapeHtml(r)}</a>`:`<span class="mono">${escapeHtml(r)}</span>`).join(' · ')}</p>`:'')+
+        `<p class="ops-line">Questo pannello è sola lettura: le decisioni passano dai canali governati (Telegram).</p></details>`:'';
       gateEl.innerHTML=`<span class="gate-title">HUMAN GATE</span>`+
+        `<span class="gf gate-state">${escapeHtml(stateLabel)}</span>`+
         `<span class="gf">Blocked at: <b>${escapeHtml(blockedAt)}</b></span>`+
         `<span class="gf mono">Reason: <b>${escapeHtml(reason)}</b> · ${escapeHtml(humanReadable)}</span>`+
         `<span class="gf">Detail: <b>${escapeHtml(String(detail).slice(0,180))}</b></span>`+
-        `<span class="gf mono">Task: <b>${escapeHtml(task)}</b></span>`;
+        `<span class="gf mono">Task: <b>${escapeHtml(task)}</b></span>`+
+        actionHtml+tgHtml+refsHtml+hgDetail;
       gateEl.hidden=false;
     }
     function renderOpstrip(diag,status,resources){
