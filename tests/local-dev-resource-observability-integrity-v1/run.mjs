@@ -75,10 +75,20 @@ await test("VPS success, timeout and all commands remain read-only", async () =>
 
 await test("canonical SSH runner parses bounded read-only observations", async () => {
   const calls = [];
+  // Two /proc/stat samples: the runner must issue the SAME canonical read-only
+  // command twice and derive LIVE cpu from the counter delta.
+  const statSamples = [
+    "cpu  1000 0 500 4000 100 0 50 0 0 0\ncpu0 500 0 250 2000 50 0 25 0 0 0\nintr 1000 0 0\ncctxt 0\nctxt 5000\nbtime 1700000000\nprocesses 100\nprocs_running 2\nprocs_blocked 0",
+    "cpu  1500 0 700 4100 200 0 90 0 0 0\ncpu0 750 0 350 2050 100 0 45 0 0 0\nintr 1100 0 0\ncctxt 0\nctxt 5100\nbtime 1700000000\nprocesses 102\nprocs_running 3\nprocs_blocked 0",
+  ];
+  let statReads = 0;
   const runner = createCanonicalVpsSshRunner({
     execFile: async (program, args) => {
       calls.push({ program, args });
       const command = args.at(-1);
+      if (command === "cat /proc/stat") {
+        return { stdout: statSamples[Math.min(statReads++, statSamples.length - 1)] };
+      }
       const stdout = {
         "uname -a": "Linux ionos-n8n-new 6.8.0-31-generic #31 SMP x86_64 GNU/Linux",
         "uptime": " 00:00:00 up 1 day",
@@ -109,11 +119,37 @@ await test("canonical SSH runner parses bounded read-only observations", async (
   assert.equal(observation.kernel, "6.8.0-31-generic");
   assert.equal(observation.architecture, "x86_64");
   assert.equal(observation.vcpu_count, 4);
+  // DELTA proof: sample1 busy=1550 total=5650, sample2 busy=2290 total=6590
+  // -> delta_busy=740, delta_total=940 -> 78.7%
+  assert.equal(observation.cpu_percent, 78.7);
+  assert.equal(statReads, 2); // exactly two canonical /proc/stat reads
   assert.equal(observation.tailscale_ip, "100.64.12.34");
   assert.deepEqual(observation.service_states, { n8n: "active", docker: "active", postgresql: "active" });
   assert.equal(observation.docker, "29.0");
   assert.equal(calls.every(({ program, args }) => program === "ssh" && args.includes("BatchMode=yes")), true);
   assert.equal(calls.some(({ args }) => args.includes("-X")), false);
+  // Both cpu samples use the SAME canonical read-only remote command.
+  const statCalls = calls.filter(({ args }) => args.at(-1) === "cat /proc/stat");
+  assert.equal(statCalls.length, 2);
+});
+
+await test("cpu_percent fails closed when the second /proc/stat sample is invalid", async () => {
+  let statReads = 0;
+  const runner = createCanonicalVpsSshRunner({
+    execFile: async (program, args) => {
+      const command = args.at(-1);
+      if (command === "cat /proc/stat") {
+        statReads += 1;
+        // malformed aggregate line in the SECOND sample
+        return { stdout: statReads === 1 ? "cpu  1000 0 500 4000 100 0 50 0 0 0" : "cpu  not-a-counter 0 500 4000 100 0 50 0 0 0" };
+      }
+      return { stdout: "" };
+    },
+  });
+  const observation = await runner({});
+  assert.equal(observation.reachable, true); // CPU failure must not mark VPS unreachable
+  assert.equal(observation.cpu_percent, null); // fail-closed
+  assert.equal(statReads, 2);
 });
 
 await test("quota, Codex capability and Cursor accounting are separate", async () => {

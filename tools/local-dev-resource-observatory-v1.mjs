@@ -45,6 +45,7 @@ export const VPS_SAFE_REMOTE_COMMANDS = Object.freeze([
   "uptime",
   "cat /proc/uptime",
   "cat /proc/loadavg",
+  "cat /proc/stat",
   "free -b",
   "df -B1 /",
   "nproc",
@@ -384,6 +385,49 @@ function parseFirstNumber(text) {
   return match ? boundNum(match[0]) : null;
 }
 
+/**
+ * Parse one aggregate `cpu ` sample from /proc/stat into per-field counters.
+ * Returns null on malformed/incomplete evidence (fail-closed).
+ */
+function parseCpuStatSample(statText) {
+  const line = String(statText || "").split(/\r?\n/).find((l) => /^cpu\s/.test(l.trim()));
+  if (!line) return null;
+  const fields = line.trim().split(/\s+/).slice(1).map((v) => Number(v));
+  if (fields.length < 8 || fields.some((v) => !Number.isFinite(v) || v < 0)) return null;
+  return {
+    user: fields[0],
+    nice: fields[1],
+    system: fields[2],
+    idle: fields[3],
+    iowait: fields[4],
+    irq: fields[5],
+    softirq: fields[6],
+    steal: fields[7],
+  };
+}
+
+/**
+ * Bounded LIVE CPU utilization from two /proc/stat samples (delta sampling):
+ * cpu_percent = delta_busy / delta_total * 100 over a short bounded interval.
+ * A real counter delta, not load average and not the cumulative-since-boot
+ * ratio. Fail-closed: any invalid sample, negative (non-monotonic) delta,
+ * delta_total <= 0 or out-of-range result returns null.
+ */
+function computeCpuPercentFromDeltaSamples(first, second) {
+  if (!first || !second) return null;
+  const fields = ["user", "nice", "system", "idle", "iowait", "irq", "softirq", "steal"];
+  const delta = {};
+  for (const field of fields) {
+    delta[field] = second[field] - first[field];
+    if (!Number.isFinite(delta[field]) || delta[field] < 0) return null;
+  }
+  const deltaBusy = delta.user + delta.nice + delta.system + delta.irq + delta.softirq + delta.steal;
+  const deltaTotal = deltaBusy + delta.idle + delta.iowait;
+  if (deltaTotal <= 0) return null;
+  const pct = (deltaBusy / deltaTotal) * 100;
+  return pct >= 0 && pct <= 100 ? Math.round(pct * 10) / 10 : null;
+}
+
 function parseVpsObservation(results, nowMs) {
   const output = (command) => results.get(command)?.stdout || "";
   const failedCore = ["uname -a", "cat /proc/uptime", "cat /proc/loadavg", "free -b", "df -B1 /"]
@@ -449,6 +493,10 @@ function parseVpsObservation(results, nowMs) {
     architecture: boundStr(architecture, 40),
     vcpu_count: parseFirstNumber(output("nproc")),
     uptime_seconds: uptimeSeconds,
+    cpu_percent: computeCpuPercentFromDeltaSamples(
+      parseCpuStatSample(results.get("cat /proc/stat")?.stdout || ""),
+      parseCpuStatSample(results.get("cat /proc/stat#2")?.stdout || ""),
+    ),
     load_average: loadParts.every((value) => value !== null) ? loadParts : null,
     load: loadParts.every((value) => value !== null) ? loadParts : null,
     ram_total_bytes: total,
@@ -597,24 +645,39 @@ export async function collectHermesNovncTunnel(options = {}) {
 /** Canonical private SSH transport. Fixed alias, BatchMode, fixed read-only commands only. */
 export function createCanonicalVpsSshRunner(options = {}) {
   const execFn = options.execFile || execFileAsync;
-  return async ({ host = VPS_SSH_ALIAS, commands = VPS_SAFE_REMOTE_COMMANDS, timeoutMs = 8000, batchMode = true } = {}) => {
+  return async ({ host = VPS_SSH_ALIAS, commands = VPS_SAFE_REMOTE_COMMANDS, timeoutMs = 8000, batchMode = true, cpuSampleIntervalMs } = {}) => {
     if (host !== VPS_SSH_ALIAS || batchMode !== true || !Array.isArray(commands) || commands.some((command) => !assertVpsCommandSafe(command).ok)) {
       return { reachable: false, reason_code: "VPS_SSH_TRANSPORT_ARGUMENTS_REJECTED" };
     }
     const nowMs = Date.now();
     const results = new Map();
     const perCommandTimeout = Math.max(500, Math.min(2500, Number(timeoutMs) || 2500));
-    for (const command of commands) {
+    const runSsh = async (command, resultKey = command) => {
       try {
         const { stdout } = await execFn("ssh", ["-o", "BatchMode=yes", "-o", "ConnectTimeout=5", host, command], {
           timeout: perCommandTimeout,
           windowsHide: true,
           maxBuffer: 128 * 1024,
         });
-        results.set(command, { ok: true, stdout: String(stdout || "").slice(0, 16_384) });
+        results.set(resultKey, { ok: true, stdout: String(stdout || "").slice(0, 16_384) });
       } catch (err) {
-        results.set(command, { ok: false, error: boundStr(err?.code || "SSH_COMMAND_FAILED", 80) });
+        results.set(resultKey, { ok: false, error: boundStr(err?.code || "SSH_COMMAND_FAILED", 80) });
       }
+    };
+    for (const command of commands) {
+      await runSsh(command);
+    }
+    // LIVE CPU delta sampling: a second read-only `cat /proc/stat` after a short
+    // bounded local delay (default 1000 ms, clamped 500..1500). Same canonical
+    // allowlisted command, same single sequential path; a failed second read
+    // stays fail-closed (cpu_percent=null) without affecting other fields.
+    if (commands.includes("cat /proc/stat")) {
+      const requested = Number(cpuSampleIntervalMs ?? options.cpuSampleIntervalMs ?? 1000);
+      const interval = Number.isFinite(requested) ? Math.min(1500, Math.max(500, requested)) : 1000;
+      await new Promise((resolveSleep) => setTimeout(resolveSleep, interval));
+      // The REMOTE command stays the canonical `cat /proc/stat`; only the local
+      // result key distinguishes the second delta sample.
+      await runSsh("cat /proc/stat", "cat /proc/stat#2");
     }
     return parseVpsObservation(results, nowMs);
   };
