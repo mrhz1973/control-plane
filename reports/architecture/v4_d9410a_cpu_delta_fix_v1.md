@@ -6,7 +6,7 @@ TASK_REF=V4_D9410A_CPU_DELTA_FIX_AND_CLOSE_V1
 OPERATOR_DECISION=FIX
 
 BASE_HEAD=b23627a89eefa6046f99e0e730365ae9dcffe48a
-FINAL_HEAD=38dfe456c7b45aa432adfc8478ff1c606d00a6e6
+FINAL_HEAD=20326ebee7676c436b1a8d33a71ace9395ef9cfb
 
 DIRTY_FILES_BEFORE=tools/local-dev-resource-observatory-v1.mjs; tests/local-dev-resource-observability-integrity-v1/run.mjs
 DIRTY_FILE_COUNT_BEFORE=2
@@ -44,7 +44,7 @@ LOCAL_SERVICE_RESTARTED=YES (canonical Scheduled Task `ControlPlane-V4-LocalDevD
 
 SECRETS_EXPOSED=0
 
-COMMIT=38dfe456c7b45aa432adfc8478ff1c606d00a6e6
+COMMIT=20326ebee7676c436b1a8d33a71ace9395ef9cfb
 REMOTE_HEAD_VERIFIED=YES
 
 ## Implementation notes
