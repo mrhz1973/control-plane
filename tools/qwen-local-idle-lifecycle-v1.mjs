@@ -164,7 +164,9 @@ export function createQwenIdleLifecycle(options = {}) {
   const onEvent = typeof options.onEvent === "function" ? options.onEvent : null;
 
   const idleResolved = options.idleShutdownMs
-    ? { ms: Number(options.idleShutdownMs), config_source: "explicit" }
+    ? (typeof options.idleShutdownMs === "object" && options.idleShutdownMs !== null
+      ? { ms: Number(options.idleShutdownMs.ms), config_source: String(options.idleShutdownMs.config_source || "explicit") }
+      : { ms: Number(options.idleShutdownMs), config_source: "explicit" })
     : null;
 
   const state = {
