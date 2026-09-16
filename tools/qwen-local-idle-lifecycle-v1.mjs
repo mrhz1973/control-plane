@@ -119,10 +119,13 @@ function isLoopbackAddress(addr) {
 /**
  * NO-ACTIVE-CLIENT test: does the canonical tree own an Established connection
  * with a FOREIGN endpoint (a client outside the tree)? Internal tree-to-tree
- * loopback pairs (manager<->worker) are not clients. Census failure => unknown
- * => fence (keep running) per the WHEN-UNCERTAIN law.
+ * loopback pairs (manager<->worker) are not clients. Connections whose peer is
+ * the OBSERVING process itself (selfPid; our own catalog probes / in-process
+ * guard proxy, already covered by the execution/request bookkeeping fences)
+ * are not foreign clients either. Census failure => unknown => fence
+ * (keep running) per the WHEN-UNCERTAIN law.
  */
-export function evaluateForeignClientActivity({ connections, treePids }) {
+export function evaluateForeignClientActivity({ connections, treePids, selfPid = null }) {
   const tree = new Set((treePids || []).map(Number).filter((n) => n > 0));
   if (!tree.size) return { active: false, foreign: [], census_ok: true, reason_code: "TREE_ABSENT" };
   if (!Array.isArray(connections)) {
@@ -132,9 +135,16 @@ export function evaluateForeignClientActivity({ connections, treePids }) {
   const treeServingPorts = new Set(
     connections.filter((c) => tree.has(c.owning_pid)).map((c) => c.local_port),
   );
+  // Local ports owned by the observing process itself (self-probes).
+  const selfPorts = new Set(
+    selfPid != null
+      ? connections.filter((c) => c.owning_pid === Number(selfPid)).map((c) => c.local_port)
+      : [],
+  );
   const foreign = [];
   for (const c of connections) {
     if (!tree.has(c.owning_pid)) continue;
+    if (isLoopbackAddress(c.remote_address) && selfPorts.has(c.remote_port)) continue;
     const remoteIsTreePort = isLoopbackAddress(c.remote_address)
       && treeServingPorts.has(c.remote_port);
     if (!remoteIsTreePort) foreign.push(c);
@@ -251,7 +261,11 @@ export function createQwenIdleLifecycle(options = {}) {
     const pids = treePids || state.router_pids;
     if (pids && pids.length) {
       const conn = await listConnections();
-      const client = evaluateForeignClientActivity({ connections: conn, treePids: pids });
+      const client = evaluateForeignClientActivity({
+        connections: conn,
+        treePids: pids,
+        selfPid: options.selfPid ?? process.pid,
+      });
       if (client.active) fences.push(client.reason_code);
       else if (!client.census_ok) fences.push(client.reason_code);
     } else {
