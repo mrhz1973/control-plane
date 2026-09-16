@@ -63,6 +63,8 @@ D9410A_REPLAYED=NO
 REAL_TELEGRAM_SENDS_BY_THIS_TASK=0
 SECRETS_EXPOSED=0
 PRODUCTION_CHANGED=NO
+COMMIT=f9ce01e31e5e0a545d824b372a5f54be63d88ef (STOP evidence commit)
+REMOTE_HEAD_VERIFIED=YES (origin/main matched this STOP commit after push)
 
 ## Required next action
 
