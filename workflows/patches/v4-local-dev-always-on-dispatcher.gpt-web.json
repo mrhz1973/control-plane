@@ -2,7 +2,7 @@
   "schema": "control-plane-gpt-web-n8n-new-workflow-v1",
   "task_ref": "V4_LOCAL_DEV_N8N_ALWAYS_ON_LIVE_FAST_TRACK_V1",
   "authority": "GPT_WEB",
-  "purpose": "NEW isolated always-on workflow that ticks the Windows LOCAL_DEV autonomous dispatcher every 2 minutes over Tailscale-private transport, normalizes the bounded tick result, and notifies Telegram ONLY for human-gate / executor-STOP / service-error outcomes. No WF40 node graph change. No production authorization. No D-0025 activation. Notification-only Telegram usage; credentials are cloned in memory at LIVE APPLY time and never persisted in this artifact.",
+  "purpose": "NEW isolated always-on workflow that ticks the Windows LOCAL_DEV autonomous dispatcher every 2 minutes over Tailscale-private transport, normalizes the bounded tick result, and deduplicates Telegram alerts by the active actionable state in the existing n8n Data Table control_plane_state (key wf90:active_alert_signature). A new or changed human-gate / executor-STOP / service-error state notifies once; an unchanged state is suppressed; a non-actionable result clears the episode. No WF40 node graph change. No production authorization. No D-0025 activation. Notification-only Telegram usage; credentials are cloned in memory at LIVE APPLY time and never persisted in this artifact.",
   "authority_note": "This workflow JSON is GPT-Web-authored per operator dispatch V4_LOCAL_DEV_N8N_ALWAYS_ON_LIVE_FAST_TRACK_V1 (GPT_WEB authoring override of GPT_WEB_N8N_AUTHORING_REQUIRED).",
   "target_workflow": {
     "name_exact": "90 - CP V4 LOCAL DEV ALWAYS-ON DISPATCHER - ACTIVE",
@@ -89,6 +89,43 @@
     },
     {
       "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "returnAll": true
+      },
+      "id": "90ld-0008-4008-8008-000000000008",
+      "name": "Data Table - Load WF90 active alert state",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        760,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true,
+      "notes": "WF90_TELEGRAM_ALERT_DEDUPE_V1: read existing control_plane_state only; read failure is fail-open for actionable alerts."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const STATE_KEY = 'wf90:active_alert_signature';\nconst rows = $input.all().map((entry) => entry.json ?? {});\nconst stateReadFailed = rows.some((row) => Boolean(row && (row.error || row.errorMessage || row.__error)));\nconst normalized = $('Code - Normalize LOCAL_DEV tick result').first().json ?? {};\nconst actionable = normalized.notify_required === true;\nconst firstReasonCode = actionable && Array.isArray(normalized.reason_codes) && normalized.reason_codes.length\n  ? String(normalized.reason_codes[0]).trim()\n  : null;\nconst field = (value) => value === null || value === undefined ? null : String(value).trim();\nconst signatureFields = {\n  classification: field(normalized.classification),\n  task_ref: field(normalized.task_ref),\n  phase: normalized.human_gate_required === true ? 'HUMAN_GATE' : 'NONE',\n  reason_code: firstReasonCode || null,\n  gate_summary: field(normalized.gate_summary),\n};\nconst alertSignature = actionable ? JSON.stringify(signatureFields) : null;\nconst stateRow = rows.find((row) => row && row.key === STATE_KEY);\nconst storedSignature = stateRow && typeof stateRow.value === 'string' ? stateRow.value : null;\nlet dedupeAction;\nlet dedupeReason;\nif (!actionable) {\n  dedupeAction = 'CLEAR';\n  dedupeReason = 'NON_ACTIONABLE_CLEARS_EPISODE';\n} else if (stateReadFailed) {\n  dedupeAction = 'SEND';\n  dedupeReason = 'STATE_READ_FAILED_FAIL_OPEN';\n} else if (storedSignature === alertSignature) {\n  dedupeAction = 'SUPPRESS';\n  dedupeReason = 'UNCHANGED_ACTIONABLE_STATE';\n} else {\n  dedupeAction = 'SEND';\n  dedupeReason = storedSignature ? 'CHANGED_ACTIONABLE_STATE' : 'NEW_ACTIONABLE_EPISODE';\n}\nreturn { json: {\n  ...normalized,\n  dedupe_state_key: STATE_KEY,\n  dedupe_action: dedupeAction,\n  dedupe_reason: dedupeReason,\n  dedupe_state_read_ok: !stateReadFailed,\n  prior_alert_signature_present: Boolean(storedSignature),\n  alert_signature: alertSignature,\n  alert_signature_fields: signatureFields,\n} };"
+      },
+      "id": "90ld-0009-4009-8009-000000000009",
+      "name": "Code - Decide WF90 alert dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        0
+      ],
+      "notes": "WF90_TELEGRAM_ALERT_DEDUPE_V1: signature excludes timestamps, execution/request IDs, tick counters and elapsed values."
+    },
+    {
+      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
@@ -97,13 +134,12 @@
           },
           "conditions": [
             {
-              "id": "90ld-cond-notify-required",
-              "leftValue": "={{ $json.notify_required }}",
-              "rightValue": true,
+              "id": "90ld-cond-send-dedupe",
+              "leftValue": "={{ $json.dedupe_action }}",
+              "rightValue": "SEND",
               "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
+                "type": "string",
+                "operation": "equals"
               }
             }
           ],
@@ -112,13 +148,78 @@
         "options": {}
       },
       "id": "90ld-0005-4005-8005-000000000005",
-      "name": "IF - LOCAL_DEV notification required?",
+      "name": "IF - WF90 send new actionable alert?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        760,
+        1240,
         0
       ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "90ld-cond-clear-episode",
+              "leftValue": "={{ $json.dedupe_action }}",
+              "rightValue": "CLEAR",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "90ld-0010-4010-8010-000000000010",
+      "name": "IF - WF90 clear inactive alert episode?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1480,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "condition": "eq",
+              "keyValue": "wf90:active_alert_signature"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "90ld-0011-4011-8011-000000000011",
+      "name": "Data Table - Clear WF90 active alert state",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1720,
+        120
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true,
+      "notes": "WF90_TELEGRAM_ALERT_DEDUPE_V1: a non-actionable dispatcher result ends the active alert episode."
     },
     {
       "parameters": {
@@ -140,12 +241,52 @@
         1000,
         -120
       ],
-      "notes": "WF90_TELEGRAM_HUMAN_GATE_RELIABILITY_V1: plain-text sendMessage shape copied from the working WF40 Telegram nodes (text expression, no Markdown parse mode, appendAttribution off). Notification text is built by 'Code - Normalize LOCAL_DEV tick result' as telegram_text so HUMAN_GATE_REQUIRED / WORK_EXECUTED_STOP underscores can no longer trigger Telegram 400 'can't parse entities'. LIVE APPLY ONLY: clone Telegram credential metadata (binding + real chatId) IN MEMORY from live WF40 node 'Telegram - Send PM21 bridge summary' (secret-safe; never persist credential id/chat id in repo artifacts). Notification only; no buttons; no decision semantics."
+      "notes": "WF90_TELEGRAM_HUMAN_GATE_RELIABILITY_V1: plain-text sendMessage shape copied from the working WF40 Telegram nodes (text expression, no Markdown parse mode, appendAttribution off). Notification text is built by 'Code - Normalize LOCAL_DEV tick result' as telegram_text so HUMAN_GATE_REQUIRED / WORK_EXECUTED_STOP underscores can no longer trigger Telegram 400 'can't parse entities'. WF90_TELEGRAM_ALERT_DEDUPE_V1 sends only for a new or changed actionable signature. LIVE APPLY ONLY: clone Telegram credential metadata (binding + real chatId) IN MEMORY from live WF40 node 'Telegram - Send PM21 bridge summary' (secret-safe; never persist credential id/chat id in repo artifacts). Notification only; no buttons; no decision semantics."
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ $('Code - Decide WF90 alert dedupe').first().json.dedupe_state_key }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ $('Code - Decide WF90 alert dedupe').first().json.dedupe_state_key }}",
+            "value": "={{ $('Code - Decide WF90 alert dedupe').first().json.alert_signature }}",
+            "updated_at": "={{ $now.toISO() }}",
+            "note": "WF90 active actionable alert signature"
+          }
+        },
+        "options": {}
+      },
+      "id": "90ld-0012-4012-8012-000000000012",
+      "name": "Data Table - Persist WF90 active alert state",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1720,
+        -120
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true,
+      "notes": "WF90_TELEGRAM_ALERT_DEDUPE_V1: persistence follows a successful notification; write failure never suppresses a future alert."
     },
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const j = $input.item.json ?? {};\nconst reason_codes = Array.isArray(j.reason_codes) ? j.reason_codes.slice(0, 16) : [];\nreturn { json: {\n  schema: 'local-dev-always-on-tick-terminal-v1',\n  classification: j.classification ?? null,\n  execution_performed: j.execution_performed === true,\n  task_ref: j.task_ref ?? null,\n  executor_classification: j.executor_classification ?? null,\n  reason_codes,\n  human_gate_required: j.human_gate_required === true,\n  notify_required: j.notify_required === true,\n  tick_completed_at: new Date().toISOString()\n} };"
+        "jsCode": "const direct = $input.item.json ?? {};\nlet decision = {};\ntry { decision = $('Code - Decide WF90 alert dedupe').first().json ?? {}; } catch {}\nconst j = Object.keys(decision).length ? decision : direct;\nconst reason_codes = Array.isArray(j.reason_codes) ? j.reason_codes.slice(0, 16) : [];\nreturn { json: {\n  schema: 'local-dev-always-on-tick-terminal-v1',\n  classification: j.classification ?? null,\n  execution_performed: j.execution_performed === true,\n  task_ref: j.task_ref ?? null,\n  executor_classification: j.executor_classification ?? null,\n  reason_codes,\n  human_gate_required: j.human_gate_required === true,\n  notify_required: j.notify_required === true,\n  dedupe_action: j.dedupe_action ?? null,\n  dedupe_reason: j.dedupe_reason ?? null,\n  dedupe_state_key: j.dedupe_state_key ?? null,\n  dedupe_state_read_ok: j.dedupe_state_read_ok !== false,\n  tick_completed_at: new Date().toISOString()\n} };"
       },
       "id": "90ld-0007-4007-8007-000000000007",
       "name": "Code - LOCAL_DEV tick terminal",
@@ -195,18 +336,58 @@
       "main": [
         [
           {
-            "node": "IF - LOCAL_DEV notification required?",
+            "node": "Data Table - Load WF90 active alert state",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "IF - LOCAL_DEV notification required?": {
+    "Data Table - Load WF90 active alert state": {
+      "main": [
+        [
+          {
+            "node": "Code - Decide WF90 alert dedupe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Decide WF90 alert dedupe": {
+      "main": [
+        [
+          {
+            "node": "IF - WF90 send new actionable alert?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - WF90 send new actionable alert?": {
       "main": [
         [
           {
             "node": "Telegram - LOCAL_DEV gate notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF - WF90 clear inactive alert episode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - WF90 clear inactive alert episode?": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Clear WF90 active alert state",
             "type": "main",
             "index": 0
           }
@@ -224,6 +405,28 @@
       "main": [
         [
           {
+            "node": "Data Table - Persist WF90 active alert state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Persist WF90 active alert state": {
+      "main": [
+        [
+          {
+            "node": "Code - LOCAL_DEV tick terminal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Table - Clear WF90 active alert state": {
+      "main": [
+        [
+          {
             "node": "Code - LOCAL_DEV tick terminal",
             "type": "main",
             "index": 0
@@ -237,6 +440,15 @@
     "credential_clone_source_node_name": "Telegram - Send PM21 bridge summary",
     "credential_handling": "in_memory_only",
     "secret_persistence_forbidden": true,
+    "dedupe_state_surface": "control_plane_state",
+    "dedupe_state_key": "wf90:active_alert_signature",
+    "dedupe_signature_fields": [
+      "classification",
+      "task_ref",
+      "phase",
+      "primary_reason_code",
+      "gate_summary"
+    ],
     "publish": true,
     "activate": true,
     "verify_active": true,
