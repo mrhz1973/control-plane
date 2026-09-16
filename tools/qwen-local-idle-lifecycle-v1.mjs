@@ -567,13 +567,15 @@ export function createQwenIdleLifecycle(options = {}) {
 /** Resolve config once and build the canonical lifecycle (real runtime). */
 export function createCanonicalQwenIdleLifecycle(options = {}) {
   const resolved = options.idleShutdownMs
-    ? { ms: Number(options.idleShutdownMs), config_source: "explicit" }
+    ? (typeof options.idleShutdownMs === "object" && options.idleShutdownMs !== null
+      ? options.idleShutdownMs
+      : { ms: Number(options.idleShutdownMs), config_source: "explicit" })
     : (() => {
       let runtime = null;
       try { runtime = loadQwenLocalRuntime(); } catch { runtime = null; }
       return resolveIdleShutdownMs(runtime, options);
     })();
-  return createQwenIdleLifecycle({ ...options, idleShutdownMs: resolved.ms });
+  return createQwenIdleLifecycle({ ...options, idleShutdownMs: resolved });
 }
 
 let sharedLifecycle = null;
