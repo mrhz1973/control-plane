@@ -71,3 +71,48 @@ REMOTE_HEAD_VERIFIED=YES (origin/main matched this STOP commit after push)
 Authorize a separate bounded live-application path for the prepared WF90
 candidate, then observe the existing real D-9410-A gate on three natural
 WF90 ticks. Do not treat this STOP as a successful live dedupe qualification.
+
+---
+
+## Live-apply continuation — V4_WF90_TELEGRAM_ALERT_DEDUPE_LIVE_APPLY_V1
+
+RESULT=STOP
+LIVE_APPLY_AUTHORIZED=YES
+AUTHORIZATION_SCOPE=WF90_DEDUPE_ONLY
+STOP_REASON=WORK_PLATFORM_BLOCKED_AUTHORIZED_LIVE_APPLY
+BASE_HEAD=cad90637fcff68b61369c0f3b7c77f86d0966d66
+FINAL_HEAD=see COMMIT
+
+The operator explicitly authorized the bounded WF90-only live mutation. The
+platform security review nevertheless rejected the required transfer of the
+already-qualified redacted candidate to ionos-n8n-new. Per instruction, no
+retry or alternate transfer mechanism was attempted.
+
+WF90_VERSION_BEFORE=369b2fdd-9e94-4660-8f8d-bf48a185f6f3
+WF90_VERSION_AFTER=369b2fdd-9e94-4660-8f8d-bf48a185f6f3 (LIVE_UNCHANGED)
+WF90_INTERVAL_SECONDS=120
+WF90_HTTP_TIMEOUT_MS=3900000
+DEDUPE_STATE_SURFACE=control_plane_state
+DEDUPE_STATE_KEY=wf90:active_alert_signature
+
+FIRST_REAL_GATE_NOTIFICATION=NOT_TESTED
+SECOND_IDENTICAL_GATE_TELEGRAM_RUNS=NOT_TESTED
+THIRD_IDENTICAL_GATE_TELEGRAM_RUNS=NOT_TESTED
+DUPLICATE_SUPPRESSION=NOT_APPLIED_LIVE
+RESET_REARM_TEST=PASS_LOCAL_ONLY
+NEW_SIGNATURE_NOTIFY_TEST=PASS_LOCAL_ONLY
+WF90_ACTIVE=YES_UNCHANGED
+
+D9410A_HANDOFF_PRESERVED=YES
+D9410A_RECEIPT_UNCHANGED=YES
+D9410A_REPLAYED=NO
+OTHER_WORKFLOWS_CHANGED=0
+OTHER_VPS_SERVICES_CHANGED=0
+SECRETS_EXPOSED=0
+ROLLBACK_READY=NO_APPLY_NOT_STARTED
+LIVE_WF90_CHANGED=NO
+PRODUCTION_CHANGED=NO
+COMMIT=see final pushed STOP commit
+REMOTE_HEAD_VERIFIED=YES after final push
+
+NEXT=separate platform-authorized live WF90-only apply path, then observe three natural D-9410-A ticks
