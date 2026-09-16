@@ -59,8 +59,9 @@ FOCUSED_TESTS=tests/v4-telegram-actionable-human-gate-v1/run.mjs 14/14 PASS; tes
 SECRETS_EXPOSED=0 (bot token and operator ids never printed; masked tails only in evidence; no credential values in Git/reports)
 
 ISSUE_87=CLOSED_COMPLETED
-COMMIT=see git log of this repo after push
-REMOTE_HEAD_VERIFIED=YES (origin/main == local HEAD after push)
+COMMIT=57b7977be872501e54bc69a7e9593a4f3da0e8b1
+REMOTE_HEAD_VERIFIED=YES (origin/main == 57b7977 == local HEAD; pushed)
+PRIMARY_WORKTREE_CLEAN=YES (0 tracked dirty files; only pre-existing untracked probe/report artifacts remain)
 
 ## What was changed
 
