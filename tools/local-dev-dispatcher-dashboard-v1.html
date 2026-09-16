@@ -771,11 +771,12 @@
     function activityClock(value){const n=number(value);if(n===null)return null;const total=Math.floor(n/1000);const h=Math.floor(total/3600);const m=Math.floor((total%3600)/60);const s=total%60;const pad=x=>String(x).padStart(2,'0');return h>0?`${pad(h)}:${pad(m)}:${pad(s)}`:`${pad(m)}:${pad(s)}`;}
     function contextShort(tokens){const n=number(tokens);if(n===null)return null;if(n>=1024&&n%1024===0)return `${n/1024}K`;return count(n);}
     function loadedModelsFrom(qwen){const q=obj(qwen);const fromLoaded=list(q.loaded_models).map(obj).filter(m=>scalar(m.id));if(fromLoaded.length)return fromLoaded.map(m=>({id:m.id,status:scalar(m.status)||'loaded',context_tokens:number(m.context_tokens),pid:number(m.pid),port:number(m.port)}));return list(q.models).map(obj).filter(m=>scalar(m.id)&&String(modelState(m)||'').toLowerCase()==='loaded').map(m=>({id:m.id,status:'loaded',context_tokens:number(m.context_tokens)??number(obj(m.meta).n_ctx),pid:number(m.pid)??number(obj(obj(m.status)).pid),port:number(m.port)??number(obj(obj(m.status)).port)}));}
-    function italianModelState(qwen,loaded){const q=obj(qwen);if(q.reachable===false)return {code:'OFFLINE',label:uiStateLabel('OFFLINE')};const raw=text(q.profile_status||q.occupancy,'').toLowerCase();if(raw==='loading'||raw==='caricamento')return {code:'LOADING',label:uiStateLabel('LOADING')};if(raw==='error'||raw==='unhealthy'||raw==='errore')return {code:'ERROR',label:uiStateLabel('ERROR')};if(loaded.length||raw==='loaded'||raw==='caricato')return {code:'LOADED',label:uiStateLabel('LOADED')};if(raw==='unloaded'||raw==='idle'||raw===''||q.reachable===true)return {code:'UNLOADED',label:uiStateLabel('UNLOADED')};return {code:'UNKNOWN',label:uiStateLabel('UNKNOWN')};}
+    function qwenLifecycleInfo(lc){const l=obj(lc);if(!Object.keys(l).length)return null;const st=scalar(l.state);const remain=number(l.ms_remaining);const map={STOPPED:'Fermato',STARTING:'Avvio',LOADED_IDLE:'Caricato · inattivo',SERVING:'In uso',IDLE_GRACE:'Stop automatico',AUTO_STOPPED:'Fermato automaticamente',SHUTDOWN_FAILED:'Errore arresto'};const label=map[st]||null;if(!label)return null;if(st==='IDLE_GRACE'&&remain!==null){const s=Math.max(0,Math.round(remain/1000));return {state:st,label:`Stop automatico tra ${s}s`,countdown_s:s};}return {state:st,label,countdown_s:null};}
+    function italianModelState(qwen,loaded){const q=obj(qwen);const lc=qwenLifecycleInfo(q.lifecycle);if(lc&&(q.reachable===false)&&(lc.state==='STOPPED'||lc.state==='AUTO_STOPPED'||lc.state==='STARTING'))return {code:lc.state==='STARTING'?'LOADING':'OFFLINE',label:lc.label,lifecycle_info:lc};if(lc&&lc.state==='SHUTDOWN_FAILED')return {code:'ERROR',label:'Errore arresto',lifecycle_info:lc};if(q.reachable===false)return {code:'OFFLINE',label:uiStateLabel('OFFLINE')};const raw=text(q.profile_status||q.occupancy,'').toLowerCase();if(raw==='loading'||raw==='caricamento')return {code:'LOADING',label:uiStateLabel('LOADING')};if(raw==='error'||raw==='unhealthy'||raw==='errore')return {code:'ERROR',label:uiStateLabel('ERROR')};if(loaded.length||raw==='loaded'||raw==='caricato')return {code:'LOADED',label:uiStateLabel('LOADED')};if(raw==='unloaded'||raw==='idle'||raw===''||q.reachable===true)return {code:'UNLOADED',label:uiStateLabel('UNLOADED')};return {code:'UNKNOWN',label:uiStateLabel('UNKNOWN')};}
     function deriveQwenUsage(status,qwenObs){
       const s=obj(status);const q=obj(qwenObs);const loaded=loadedModelsFrom(q);const modelStateInfo=italianModelState(q,loaded);const profile=scalar(s.qwen_profile);const phase=text(s.phase,'');const active=s.active===true;const matched=profile?loaded.find(m=>m.id===profile)||null:null;const primary=matched||(loaded.length===1?loaded[0]:null)||loaded[0]||null;
-      const base={model_state:modelStateInfo,loaded,primary,profile,phase,active,matched:!!matched,task_ref:scalar(s.task_ref),elapsed_ms:number(s.elapsed_ms),executor_pid:number(s.executor_pid),harness:null,usage_code:'NONE',usage_label:'Nessun uso dispatcher osservato',usage_tip:'qwen_no_dispatcher_use',usage_tone:'neutral',show_external_caution:false,inference:false};
-      if(q.reachable===false)return {...base,usage_code:'UNAVAILABLE',usage_label:'Endpoint non raggiungibile',usage_tip:'qwen_reachable',usage_tone:q.health_state==='REAL_FAILURE'&&q.observation_state==='OBSERVED'?'danger':'neutral',primary:null};
+      const base={model_state:modelStateInfo,loaded,primary,profile,phase,active,matched:!!matched,task_ref:scalar(s.task_ref),elapsed_ms:number(s.elapsed_ms),executor_pid:number(s.executor_pid),harness:null,usage_code:'NONE',usage_label:'Nessun uso dispatcher osservato',usage_tip:'qwen_no_dispatcher_use',usage_tone:'neutral',show_external_caution:false,inference:false,lifecycle_info:modelStateInfo.lifecycle_info};
+      if(q.reachable===false){const lcInfo=qwenLifecycleInfo(q.lifecycle);return {...base,usage_code:'UNAVAILABLE',usage_label:(lcInfo&&(lcInfo.state==='AUTO_STOPPED'||lcInfo.state==='STOPPED'))?lcInfo.label:'Endpoint non raggiungibile',usage_tip:'qwen_reachable',usage_tone:q.health_state==='REAL_FAILURE'&&q.observation_state==='OBSERVED'?'danger':'neutral',primary:null,lifecycle_info:lcInfo};}
       if(active&&phase==='OPENCODE'){
         if(!profile)return {...base,usage_code:'NO_PROFILE',usage_label:'Ciclo OpenCode senza profilo Qwen',usage_tip:'qwen_usage_mismatch',usage_tone:'warn',harness:null,inference:false};
         if(!matched)return {...base,usage_code:'MISMATCH',usage_label:'Uso dispatcher non correlato',usage_tip:'qwen_usage_mismatch',usage_tone:'warn',harness:null,inference:false};
@@ -784,8 +785,8 @@
       if(active&&phase==='QWEN_PREFLIGHT')return {...base,usage_code:'PREFLIGHT',usage_label:'Preparazione / verifica Qwen',usage_tip:'qwen_preflight_use',usage_tone:'warn',harness:null,inference:false};
       if(active&&phase==='ADMISSION'&&profile)return {...base,usage_code:'ADMISSION',usage_label:'Riservato per task / ammissione',usage_tip:'qwen_preflight_use',usage_tone:'warn',harness:null,inference:false};
       if(active&&(phase==='TESTS'||phase==='PERSISTENCE'))return {...base,usage_code:'POST_INFERENCE',usage_label:'Task in corso · Qwen non in inferenza',usage_tip:'qwen_task_not_inference',usage_tone:'info',harness:null,inference:false};
-      if(modelStateInfo.code==='LOADED')return {...base,usage_code:'LOADED_IDLE',usage_label:'Nessun uso dispatcher osservato',usage_tip:'qwen_no_dispatcher_use',usage_tone:'neutral',show_external_caution:true,inference:false};
-      return base;
+      if(modelStateInfo.code==='LOADED')return {...base,usage_code:'LOADED_IDLE',usage_label:'Nessun uso dispatcher osservato',usage_tip:'qwen_no_dispatcher_use',usage_tone:'neutral',show_external_caution:true,inference:false,lifecycle_info:modelStateInfo.lifecycle_info};
+      return {...base,lifecycle_info:modelStateInfo.lifecycle_info};
     }
     function qwenSummaryMetric(usage){
       if(usage.usage_code==='UNAVAILABLE')return {value:'Non raggiungibile',sub:'Sonda del catalogo locale',tone:usage.usage_tone==='danger'?'danger':'info'};
@@ -810,6 +811,8 @@
       return `<div class="qwen-runtime"><div class="qr-row"><span class="qr-k">Modello caricato</span><span class="qr-v mono">${escapeHtml(modelId)}</span></div><div class="qr-row"><span class="qr-k">Stato modello ${help('qwen_model_loaded')}</span><span class="qr-v">${escapeHtml(usage.model_state.label)}</span></div><div class="qr-row"><span class="qr-k">Uso ${help(tip)}</span><span class="qr-v ${usage.usage_tone}">${escapeHtml(usage.usage_label)}</span></div><div class="qr-row"><span class="qr-k">Harness</span><span class="qr-v">${escapeHtml(harness)}</span></div><div class="qr-row"><span class="qr-k">Task</span><span class="qr-v mono">${escapeHtml(task)}</span></div><div class="qr-row"><span class="qr-k">Tempo attività</span><span class="qr-v">${escapeHtml(clock)}</span></div></div>`;
     }
     function qwenResourceMain(usage){
+      const lc=usage.lifecycle_info;
+      if(lc&&usage.usage_code!=='IN_USE'&&usage.usage_code!=='PREFLIGHT')return lc.label;
       if(usage.usage_code==='IN_USE')return 'In uso dal dispatcher';
       if(usage.usage_code==='PREFLIGHT')return 'Preparazione / verifica Qwen';
       if(usage.usage_code==='ADMISSION')return 'Riservato per task / ammissione';
@@ -825,6 +828,9 @@
     }
     function qwenResourceLines(usage,q){
       const lines=[];
+      const lc=usage.lifecycle_info;
+      if(lc&&lc.state==='IDLE_GRACE'&&lc.countdown_s!==null)lines.push(lc.label);
+      if(lc&&(lc.state==='AUTO_STOPPED'||lc.state==='SHUTDOWN_FAILED'))lines.push(lc.label);
       const modelId=(usage.matched&&usage.primary)?usage.primary.id:(usage.loaded.map(m=>m.id).join(', ')||null);
       if(modelId)lines.push(modelId);
       if(usage.usage_code==='LOADED_IDLE'||usage.usage_code==='NONE')lines.push(usage.usage_label);

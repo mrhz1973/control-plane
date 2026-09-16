@@ -54,6 +54,7 @@ import { executeLocalDevTask } from "./local-dev-executor-v1.mjs";
 import { composeRunners } from "./run-local-dev-executor-v1.mjs";
 import { admitMicroTaskDelta, extractMicroTaskAdmissionInput } from "./admit-micro-task-delta-v1.mjs";
 import { ensureWorkstationDevQwenReady } from "./qwen-local-session-manager-v1.mjs";
+import { getSharedQwenIdleLifecycle } from "./qwen-local-idle-lifecycle-v1.mjs";
 import { selectNextQueueItem, parseBacklogFile, isAdmissible } from "./select-local-dev-queue-item-v1.mjs";
 import { buildResourceObservatory, createCanonicalVpsSshRunner, QWEN_OBSERVATION_TIMEOUT_MS, RESOURCES_PATH, RESOURCES_SCHEMA } from "./local-dev-resource-observatory-v1.mjs";
 import { fetchCodexAppServerRateLimits } from "./codex-appserver-rate-limit-reader-v1.mjs";
@@ -737,6 +738,10 @@ export async function buildDiagnostics(deps = {}) {
       health_summary: diagnosticText(qwen.health_summary, 80),
       profile_status,
       profile_status_label: profile_status ? (MODEL_STATUS_LABELS[profile_status] || "Sconosciuto") : "Non disponibile",
+      // #89 additive read-only lifecycle state (issue #89). Never starts Qwen.
+      lifecycle: deps.qwenLifecycle && typeof deps.qwenLifecycle.snapshot === "function"
+        ? deps.qwenLifecycle.snapshot()
+        : null,
       models,
       model_count: diagnosticNumber(qwen.model_count) ?? (qwen.reachable === true && !qwen.error ? models.length : null),
       loaded_count: diagnosticNumber(qwen.loaded_count) ?? (qwen.reachable === true && !qwen.error ? models.filter((model) => model.status === "loaded").length : null),
@@ -1069,6 +1074,9 @@ export function persistReceiptsAtomic(targetPath, receipts) {
  */
 export async function performTick(body, deps = {}) {
   const requestId = typeof body?.request_id === "string" ? body.request_id : null;
+  // #89 idle-lifecycle handle: only an EXPLICITLY injected lifecycle is used
+  // (real wiring happens in startServer). Declared before any hook usage.
+  const qwenLifecycle = deps.qwenLifecycle || null;
   const tracker = deps.statusTracker || null;
   const statusSafe = (fn, ...args) => {
     try { return tracker && typeof tracker[fn] === "function" ? tracker[fn](...args) : null; } catch { return null; }
@@ -1081,6 +1089,15 @@ export async function performTick(body, deps = {}) {
     return result.classification || "SERVICE_ERROR";
   };
   const done = (result) => {
+    // #89: after ANY terminal outcome (PASS, STOP, HUMAN_GATE, SERVICE_ERROR),
+    // no real use remains: enter bounded IDLE_GRACE via markExecutionEnd when
+    // an execution window was open. No injected lifecycle => no-op (never
+    // fabricates activity).
+    try {
+      if (qwenLifecycle && typeof qwenLifecycle.markExecutionEnd === "function") {
+        qwenLifecycle.markExecutionEnd({ taskRef: result?.task_ref ?? null });
+      }
+    } catch { /* observability only */ }
     const finished = statusSafe("finish", {
       request_id: requestId,
       task_ref: result?.task_ref ?? null,
@@ -1204,6 +1221,11 @@ export async function performTick(body, deps = {}) {
     queueDir: QUEUE_DIR,
   });
   if (!loop.claims.length) {
+    // #89: IDLE_CLEAN must never start Qwen. Reconcile is strictly read-only:
+    // it truths the lifecycle state and may arm/keep the idle timer, nothing else.
+    if (qwenLifecycle) {
+      try { await qwenLifecycle.onIdleCleanTick(); } catch { /* observability only */ }
+    }
     return done(wrapTickResult({
       ok: true,
       request_id: requestId,
@@ -1220,10 +1242,18 @@ export async function performTick(body, deps = {}) {
     last_event: "qwen_preflight",
   });
 
-  // 2b. Exact DEV profile readiness BEFORE any durable claim/envelope write.
-  // In-memory selection is not consumption; persistence is.
+  // #89 idle-lifecycle: execution requires Qwen -> cancel any pending idle
+  // stop and mark STARTING for the preflight window. Only an EXPLICITLY
+  // injected qwenLifecycle is used (real wiring happens in startServer);
+  // injected-deps tests without one never touch any lifecycle (isolation).
   const ensureDevQwenReady = deps.ensureDevQwenReady || ensureWorkstationDevQwenReady;
   const profileId = claim?.envelope?.profile_id;
+  if (qwenLifecycle) {
+    qwenLifecycle.markPreflightStart({ profileId });
+  }
+
+  // 2b. Exact DEV profile readiness BEFORE any durable claim/envelope write.
+  // In-memory selection is not consumption; persistence is.
   let readiness;
   try {
     readiness = await ensureDevQwenReady({
@@ -1232,6 +1262,7 @@ export async function performTick(body, deps = {}) {
     });
   } catch (err) {
     statusSafe("update", { runtime_ready: false, last_event: "qwen_preflight_threw" });
+    if (qwenLifecycle) qwenLifecycle.markPreflightEnd({ ready: false });
     return done(wrapTickResult({
       ok: false,
       request_id: requestId,
@@ -1249,6 +1280,7 @@ export async function performTick(body, deps = {}) {
   if (!readiness || readiness.ready !== true) {
     const status = readiness?.reason_code || readiness?.status || "QWEN_SESSION_NOT_READY";
     statusSafe("update", { runtime_ready: false, last_event: "qwen_not_ready" });
+    if (qwenLifecycle) qwenLifecycle.markPreflightEnd({ ready: false });
     return done(wrapTickResult({
       ok: false,
       request_id: requestId,
@@ -1261,6 +1293,7 @@ export async function performTick(body, deps = {}) {
     }));
   }
   statusSafe("update", { runtime_ready: true, last_event: "qwen_ready" });
+  if (qwenLifecycle) qwenLifecycle.markPreflightEnd({ ready: true });
 
   // 3. Persist claim receipts + envelope ONLY after exact profile READY.
   // Real runtime (zero injected deps) persists BOTH; ANY injected performTick
@@ -1335,6 +1368,9 @@ export async function performTick(body, deps = {}) {
     executor_pid: process.pid,
     last_event: "executor_start",
   });
+  if (qwenLifecycle) {
+    qwenLifecycle.markExecutionStart({ taskRef: claim.task_ref, profileId });
+  }
   let executorResult;
   try {
     const onStatus = (event = {}) => {
@@ -1521,6 +1557,7 @@ export async function handleTickRequest(req, res, deps = {}) {
         receiptsPath: deps.receiptsPath || deps.tickDeps?.receiptsPath,
         probeQwen: deps.probeQwen,
         nowIso: deps.nowIso || deps.tickDeps?.nowIso,
+        qwenLifecycle: deps.qwenLifecycle,
       });
       send(200, diag);
     } catch (err) {
@@ -1613,6 +1650,7 @@ export async function handleTickRequest(req, res, deps = {}) {
     const tickDeps = { ...(deps.tickDeps || {}) };
     if (deps.statusTracker && !tickDeps.statusTracker) tickDeps.statusTracker = deps.statusTracker;
     if (deps.lastTickStore && !tickDeps.lastTickStore) tickDeps.lastTickStore = deps.lastTickStore;
+    if (deps.qwenLifecycle && !tickDeps.qwenLifecycle) tickDeps.qwenLifecycle = deps.qwenLifecycle;
     const result = await performTick(body, tickDeps);
     if (deps.releaseLock) deps.releaseLock();
     // WORK_EXECUTED_STOP is a well-formed bounded contract result (executor
@@ -1648,9 +1686,17 @@ export function startServer(options = {}) {
   const releaseLock = () => { executing = false; };
   const statusTracker = options.statusTracker || createExecutionStatusTracker();
   const lastTickStore = options.lastTickStore || createLastTickStore();
+  // #89: ONE bounded idle lifecycle owned by the always-on dispatcher server
+  // (never created on import; tests inject their own or pass null explicitly).
+  const qwenLifecycle = options.qwenLifecycle !== undefined
+    ? options.qwenLifecycle
+    : getSharedQwenIdleLifecycle({
+      isDispatcherBusy: () => executing,
+    });
   const server = http.createServer((req, res) => {
     handleTickRequest(req, res, {
       ...(options.deps || {}),
+      qwenLifecycle,
       tryAcquireLock,
       releaseLock,
       statusTracker,

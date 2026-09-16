@@ -542,7 +542,7 @@ export async function defaultListWindowsProcesses(options = {}) {
   const ps = [
     "$ErrorActionPreference='SilentlyContinue';",
     "Get-CimInstance Win32_Process |",
-    " Select-Object ProcessId,Name,CommandLine |",
+    " Select-Object ProcessId,ParentProcessId,Name,CommandLine |",
     " ConvertTo-Json -Compress",
   ].join(" ");
   try {
@@ -558,6 +558,7 @@ export async function defaultListWindowsProcesses(options = {}) {
     return rows
       .map((r) => ({
         pid: Number(r.ProcessId) || 0,
+        parentProcessId: Number(r.ParentProcessId) || 0,
         name: String(r.Name || ""),
         commandLine: String(r.CommandLine || ""),
       }))
@@ -624,12 +625,19 @@ export function collectCanonicalRouterTreePids({
   const re = portRe
     ? new RegExp(`(?:--port|-p)\\s+(?:${portRe})\\b`, "i")
     : null;
-  for (const p of processes || []) {
+  // #89: llama.cpp manager/worker descendants. Port evidence first; then
+  // parent-child closure: managers/children spawned by an already-canonical
+  // PID are canonical even with a dynamic worker port (observed live tree:
+  // router python -> manager :18080 -> worker on dynamic :18xxx port).
+  const llama = (processes || []).filter(
+    (p) => /llama-server/i.test(String(p.name || "")) || /llama-server/i.test(String(p.commandLine || "")),
+  );
+  const llamaByPid = new Map(llama.map((p) => [p.pid, p]));
+  for (const p of llama) {
     const cmd = String(p.commandLine || "");
-    const name = String(p.name || "");
-    if (/llama-server/i.test(name) || /llama-server/i.test(cmd)) {
-      if (re && re.test(cmd)) kill.add(p.pid);
-    }
+    if (re && re.test(cmd)) { kill.add(p.pid); continue; }
+    const pm = /--ppid\s+(\d+)/i.exec(cmd);
+    if (pm && kill.has(Number(pm[1]))) { kill.add(p.pid); continue; }
   }
   return [...kill];
 }
@@ -706,6 +714,202 @@ export async function defaultRecycleCanonicalZombieRouter(options = {}) {
     recycled: false,
     reason_code: "CANONICAL_RECYCLE_PORT_STILL_OCCUPIED",
     killed_pids: tree,
+  };
+}
+
+/** Bounded exact-model unload via canonical router POST /models/unload (no fallback).
+ * The router proxies to the llama.cpp model manager, which terminates the exact
+ * loaded model worker and releases its VRAM. Lightweight and graceful. */
+export async function defaultUnloadExactDevModel({ baseUrl, modelId, timeoutMs = 30_000 }) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(`${String(baseUrl).replace(/\/$/, "")}/models/unload`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ model: modelId }),
+      signal: ctrl.signal,
+    });
+    if (!r.ok) {
+      return { ok: false, classification: "MODEL_UNLOAD_REJECTED", http_status: r.status };
+    }
+    return { ok: true, classification: "MODEL_UNLOAD_ACCEPTED", http_status: r.status };
+  } catch {
+    return { ok: false, classification: "MODEL_UNLOAD_FAILED" };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Enumerate every loaded model id on the canonical router (GET /v1/models).
+ * Read-only; used to unload exactly what is resident — never a guess.
+ */
+export async function defaultListLoadedDevModels({ baseUrl, timeoutMs = 4_000 }) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(`${String(baseUrl).replace(/\/$/, "")}/v1/models`, { signal: ctrl.signal });
+    if (!r.ok) return { ok: false, classification: "API_UNREACHABLE", http_status: r.status };
+    const data = await r.json();
+    const rows = Array.isArray(data?.data) ? data.data : [];
+    const loaded = rows
+      .map((row) => ({
+        id: row && typeof row.id === "string" ? row.id : null,
+        state: row?.status && typeof row.status.value === "string"
+          ? row.status.value.toLowerCase()
+          : null,
+        port: Number(row?.status?.port) || null,
+      }))
+      .filter((m) => m.id && (m.state === "loaded" || m.state === "loading"));
+    return { ok: true, classification: "READY", loaded };
+  } catch {
+    return { ok: false, classification: "API_UNREACHABLE" };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Prove canonical ownership from REAL process evidence (entrypoint + config +
+ * backend ports) and return the identified router tree PIDs. Never classifies
+ * foreign llama.cpp processes as ours. Read-only.
+ */
+export async function identifyCanonicalDevTree(options = {}) {
+  const listProcesses = options.listWindowsProcesses || defaultListWindowsProcesses;
+  const loadRuntime = options.loadRuntime || loadQwenLocalRuntime;
+  const existsPath = options.existsPath || existsSync;
+  let runtime;
+  try {
+    runtime = loadRuntime();
+  } catch {
+    return { ok: false, reason_code: "INVALID_RUNTIME_CONFIG" };
+  }
+  const paths = resolveDevRouterPaths(runtime, { ...options, existsPath });
+  if (!paths.ok) return { ok: false, reason_code: paths.reason_code };
+  const endpoint = parseCanonicalEndpoint(options.baseUrl, runtime);
+  const processes = await listProcesses(options);
+  const classified = classifyCanonicalRouterOccupant({
+    processes,
+    routerEntrypoint: paths.router_entrypoint,
+    routerConfig: paths.router_config,
+  });
+  if (!classified.is_canonical) {
+    return { ok: false, reason_code: classified.reason_code || "FOREIGN_OR_UNKNOWN_OCCUPANT", processes };
+  }
+  const routerPids = classified.router_pids;
+  const tree = collectCanonicalRouterTreePids({
+    processes,
+    routerPids,
+    routerConfig: paths.router_config,
+    existsPath,
+  });
+  // Parent-child closure across ALL processes (children of canonical PIDs are
+  // canonical): catches llama children whose port/entrypoint evidence differs.
+  const canonical = new Set(tree);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const p of processes) {
+      if (canonical.has(p.pid)) continue;
+      if (canonical.has(Number(p.parentProcessId))) {
+        canonical.add(p.pid);
+        grew = true;
+      }
+    }
+  }
+  const tree_pids = [...canonical];
+  const worker_pids = tree_pids.filter((p) => !routerPids.includes(p));
+  return {
+    ok: true,
+    reason_code: "CANONICAL_ROUTER",
+    router_pids: routerPids,
+    worker_pids,
+    tree_pids,
+    base_url: endpoint.base_url,
+    endpoint,
+    processes,
+  };
+}
+
+/** Graceful-then-forced bounded termination of positively identified PIDs only. */
+export async function defaultStopCanonicalTreePids(pids, options = {}) {
+  const run = options.execFileAsync || execFileAsync;
+  const sleepFn = options.sleepFn || ((ms) => new Promise((r) => setTimeout(r, ms)));
+  const gracefulGraceMs = options.gracefulGraceMs ?? 3_000;
+  const requested = (pids || []).map(Number).filter((n) => Number.isInteger(n) && n > 0);
+  const graceful = [];
+  for (const pid of requested) {
+    try {
+      await run("taskkill.exe", ["/PID", String(pid), "/T"], { windowsHide: true, timeout: 10_000 });
+      graceful.push(pid);
+    } catch { /* fall through to bounded force below */ }
+  }
+  if (graceful.length) await sleepFn(gracefulGraceMs);
+  // Re-verify live before any forced step; never force a PID that already exited.
+  const listProcesses = options.listWindowsProcesses || defaultListWindowsProcesses;
+  const stillAlive = new Set((await listProcesses(options)).map((p) => p.pid));
+  const forced = [];
+  for (const pid of requested) {
+    if (!stillAlive.has(pid)) continue;
+    try {
+      await run("taskkill.exe", ["/PID", String(pid), "/T", "/F"], { windowsHide: true, timeout: 10_000 });
+      forced.push(pid);
+    } catch { /* best-effort; verified below */ }
+  }
+  return { graceful, forced, requested };
+}
+
+/**
+ * Stop ONLY the positively identified canonical Qwen runtime tree.
+ * Foreign/ambiguous ownership => refuse without killing (fail closed).
+ */
+export async function stopCanonicalDevRouterTree(options = {}) {
+  const identify = options.identifyCanonicalTree || identifyCanonicalDevTree;
+  const stopPids = options.stopCanonicalTreePids || defaultStopCanonicalTreePids;
+  const checkEndpointOccupied = options.checkEndpointOccupied || defaultCheckEndpointOccupied;
+  const sleepFn = options.sleepFn || ((ms) => new Promise((r) => setTimeout(r, ms)));
+  const identified = await identify(options);
+  if (!identified.ok) {
+    return {
+      ok: false,
+      stopped: false,
+      reason_code: identified.reason_code || "FOREIGN_OR_UNKNOWN_OCCUPANT",
+    };
+  }
+  const tree = identified.tree_pids || [];
+  if (!tree.length) {
+    return { ok: true, stopped: false, already_stopped: true, reason_code: "CANONICAL_TREE_ABSENT" };
+  }
+  const stopResult = await stopPids(tree, options);
+  const host = identified.endpoint?.host || "127.0.0.1";
+  const port = identified.endpoint?.port || 8080;
+  const deadline = Date.now() + (options.portFreeTimeoutMs ?? 10_000);
+  let portFree = false;
+  while (Date.now() < deadline) {
+    if (!(await checkEndpointOccupied({ host, port, timeoutMs: 200 }))) { portFree = true; break; }
+    await sleepFn(250);
+  }
+  const after = await identify(options);
+  const gone = !after.ok || !(after.tree_pids || []).length;
+  if (!portFree && !gone) {
+    return {
+      ok: false,
+      stopped: false,
+      reason_code: "CANONICAL_STOP_INCOMPLETE",
+      requested_pids: tree,
+      ...stopResult,
+    };
+  }
+  return {
+    ok: true,
+    stopped: true,
+    reason_code: "CANONICAL_TREE_STOPPED",
+    requested_pids: tree,
+    graceful_pids: stopResult.graceful,
+    forced_pids: stopResult.forced,
+    port_free: portFree,
+    tree_gone: gone,
   };
 }
 

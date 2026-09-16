@@ -15,6 +15,7 @@
   "normal_llama_cpp_runtime_preserved": true,
   "sensitive_topic_auto_selects_uncensored": false,
   "reconstruct_llama_server_commands": false,
+  "qwen_local_idle_shutdown_ms": 90000,
   "launcher": {
     "script": "Documents/AI/QWEN/Start-Qwen-MultiModel-16K.ps1",
     "router_entrypoint": "Documents/AI/QWEN/qwen_runtime_router.py",
