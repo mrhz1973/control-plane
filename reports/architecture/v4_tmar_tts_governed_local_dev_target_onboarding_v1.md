@@ -16,7 +16,7 @@ TASK_REF=V4_TMAR_TTS_GOVERNED_LOCAL_DEV_TARGET_ONBOARDING_V1
 ISSUE_90=#90
 
 CONTROL_PLANE_BASE_HEAD=1b870e262df298584fc8dde5e47b56958b32e4b9
-CONTROL_PLANE_FINAL_HEAD=<see COMMIT below>
+CONTROL_PLANE_FINAL_HEAD=d204edd06832250f556a2db5de7c36bfb18a5344
 
 TARGET_REPO=mrhz1973/tmar-tts
 TARGET_CANONICAL_PATH=C:\Users\mrhz\Downloads\Documents\AI\Chatterbox-TTS
@@ -210,8 +210,8 @@ DESTRUCTIVE_GIT=0
 ## 10. Close-out (push time)
 
 ```
-COMMIT=<filled at commit>
-REMOTE_HEAD_VERIFIED=<filled after push>
+COMMIT=d204edd06832250f556a2db5de7c36bfb18a5344
+REMOTE_HEAD_VERIFIED=YES (origin/main == d204edd06832250f556a2db5de7c36bfb18a5344)
 ISSUE_90=CLOSED_COMPLETED
 NEXT=queue first real TMAR task: verify-fresh-install (from mrhz1973/tmar-tts/docs/roadmap.md NOW) — NOT queued in this pass
 ```
