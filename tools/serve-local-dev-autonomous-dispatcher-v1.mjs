@@ -45,6 +45,7 @@ import { fileURLToPath } from "node:url";
 import { runDispatchLoop } from "./dispatch-local-dev-queue-loop-v1.mjs";
 import {
   KNOWN_LOCAL_REPOS,
+  resolveKnownLocalRepo,
   buildReceiptLifecycle,
   transitionLatestReceipt,
   isReceiptBlocking,
@@ -78,8 +79,13 @@ export const WF90_INTERVAL_SECONDS = 120;
 export const ARCHITECTURE_PATH = "/architecture";
 export const DASHBOARD_PATHS = Object.freeze(["/", "/dashboard", "/dashboard/"]);
 export const QWEN_OBSERVE_BASE_URL = "http://127.0.0.1:8080";
-export const REPO = "mrhz1973/control-plane";
-export const CANONICAL_REPO_PATH = KNOWN_LOCAL_REPOS[REPO];
+/** QUEUE / CONTROL REPOSITORY (issue #90): owns queue, receipts, runtime
+ * artifacts and dispatcher code. NOT the execution target for non-
+ * control-plane backlog items; never simply replaced by a target repo. */
+export const QUEUE_REPO = "mrhz1973/control-plane";
+/** Backward-compatible alias (queue/control repo identity). */
+export const REPO = QUEUE_REPO;
+export const CANONICAL_REPO_PATH = KNOWN_LOCAL_REPOS[QUEUE_REPO];
 export const QUEUE_DIR = "reports/runtime/dev-queue/always-on";
 const DASHBOARD_HTML_PATH = join(dirname(fileURLToPath(import.meta.url)), "local-dev-dispatcher-dashboard-v1.html");
 const ARCHITECTURE_HTML_PATH = join(dirname(fileURLToPath(import.meta.url)), "local-dev-dispatcher-architecture-map-v1.html");
@@ -827,20 +833,21 @@ function gitExec(repoPath, args) {
 export async function verifyRepoState(deps = {}) {
   const run = deps.gitExec || gitExec;
   const repoPath = deps.repoPath || CANONICAL_REPO_PATH;
+  const repoLabel = typeof deps.repo === "string" && deps.repo ? deps.repo : QUEUE_REPO;
   if (!existsSync(repoPath)) {
-    return { ok: false, reason_codes: ["CANONICAL_REPO_PATH_MISSING"], human_gate_required: true };
+    return { ok: false, reason_codes: ["CANONICAL_REPO_PATH_MISSING", `REPO=${repoLabel}`], human_gate_required: true };
   }
   const inside = await run(repoPath, ["rev-parse", "--is-inside-work-tree"]);
   if (inside.status !== 0 || inside.stdout.trim() !== "true") {
-    return { ok: false, reason_codes: ["NOT_A_GIT_WORKTREE"], human_gate_required: true };
+    return { ok: false, reason_codes: ["NOT_A_GIT_WORKTREE", `REPO=${repoLabel}`], human_gate_required: true };
   }
   const branch = await run(repoPath, ["rev-parse", "--abbrev-ref", "HEAD"]);
   if (branch.status !== 0 || branch.stdout.trim() !== "main") {
-    return { ok: false, reason_codes: ["BRANCH_NOT_MAIN"], human_gate_required: true };
+    return { ok: false, reason_codes: ["BRANCH_NOT_MAIN", `REPO=${repoLabel}`], human_gate_required: true };
   }
   const fetch = await run(repoPath, ["fetch", "origin", "main"]);
   if (fetch.status !== 0) {
-    return { ok: false, reason_codes: ["FETCH_FAILED"], human_gate_required: true };
+    return { ok: false, reason_codes: ["FETCH_FAILED", `REPO=${repoLabel}`], human_gate_required: true };
   }
 
   // TRACKED dirty must block BEFORE any sync mutation (untracked preserved).
@@ -852,9 +859,9 @@ export async function verifyRepoState(deps = {}) {
   if (dirtyLines.length) {
     return {
       ok: false,
-      reason_codes: ["TRACKED_DIRTY_CONFLICT"],
+      reason_codes: ["TRACKED_DIRTY_CONFLICT", `REPO=${repoLabel}`],
       human_gate_required: true,
-      gate_summary: `tracked dirty: ${dirtyLines.length} file(s)`,
+      gate_summary: `tracked dirty: ${dirtyLines.length} file(s) [${repoLabel}]`,
     };
   }
 
@@ -883,24 +890,24 @@ export async function verifyRepoState(deps = {}) {
   // Ancestry: behind / ahead / diverged (fail closed on merge-base failure).
   const mb = await run(repoPath, ["merge-base", "HEAD", "origin/main"]);
   if (mb.status !== 0 || !/^[0-9a-f]{40}$/i.test(mb.stdout.trim())) {
-    return { ok: false, reason_codes: ["MERGE_BASE_FAILED"], human_gate_required: true };
+    return { ok: false, reason_codes: ["MERGE_BASE_FAILED", `REPO=${repoLabel}`], human_gate_required: true };
   }
   const baseSha = mb.stdout.trim();
   if (baseSha === originSha && headSha !== originSha) {
-    return { ok: false, reason_codes: ["LOCAL_AHEAD_OF_ORIGIN"], human_gate_required: true };
+    return { ok: false, reason_codes: ["LOCAL_AHEAD_OF_ORIGIN", `REPO=${repoLabel}`], human_gate_required: true };
   }
   if (baseSha !== headSha && baseSha !== originSha) {
-    return { ok: false, reason_codes: ["HEAD_ORIGIN_DIVERGED"], human_gate_required: true };
+    return { ok: false, reason_codes: ["HEAD_ORIGIN_DIVERGED", `REPO=${repoLabel}`], human_gate_required: true };
   }
   if (baseSha !== headSha) {
     // Not a strict ancestor relationship we recognize.
-    return { ok: false, reason_codes: ["HEAD_ORIGIN_MISMATCH"], human_gate_required: true };
+    return { ok: false, reason_codes: ["HEAD_ORIGIN_MISMATCH", `REPO=${repoLabel}`], human_gate_required: true };
   }
 
   // Strict ancestor: HEAD is behind origin/main → exactly one ff-only merge.
   const ff = await run(repoPath, ["merge", "--ff-only", "origin/main"]);
   if (ff.status !== 0) {
-    return { ok: false, reason_codes: ["FAST_FORWARD_FAILED"], human_gate_required: true };
+    return { ok: false, reason_codes: ["FAST_FORWARD_FAILED", `REPO=${repoLabel}`], human_gate_required: true };
   }
   const after = await run(repoPath, ["rev-parse", "HEAD"]);
   if (after.status !== 0) {
@@ -1282,6 +1289,10 @@ export async function performTick(body, deps = {}) {
   }
 
   // 2. Claim AT MOST ONE real READY item via the proven dispatcher primitive.
+  // Target-selection law (issue #90): the SELECTED item's repository field
+  // (already resolved by the bridge through the closed known-repo map)
+  // determines the envelope target repo. `claim.envelope.target_repo_path`
+  // is the canonical allowlisted path — never a caller-supplied path.
   statusSafe("update", { phase: "QUEUE_SCAN", last_event: "queue_scan" });
   const entries = scan(QUEUE_DIR).map((e) => {
     if (e.read_failed || !e.markdown) return { ok: false, source: e.source };
@@ -1292,10 +1303,64 @@ export async function performTick(body, deps = {}) {
       return { ok: false, source: e.source };
     }
   });
+
+  // Pre-claim deterministic target selection (single-selection authority):
+  // reuse the SAME selector decision the loop will use, only to resolve the
+  // target repo for the pre-claim hygiene pass. The loop re-derives the
+  // identical deterministic selection (same entries/ledger/clock); the
+  // envelope target path produced by the loop MUST match the verified
+  // target repo or the tick fails closed (TARGET_PATH_MISMATCH).
+  const preDecision = selectNextQueueItem(entries, receipts, nowIso);
+  let targetRepo = QUEUE_REPO;
+  if (preDecision.selected) {
+    const preEntry = entries.find((e) => e.source === preDecision.selected.source_file);
+    const declared = preEntry?.item?.repository;
+    if (typeof declared === "string" && declared.trim()) targetRepo = declared;
+  }
+  const targetPath = resolveKnownLocalRepo(targetRepo);
+  if (!targetPath) {
+    return done(wrapTickResult({
+      ok: false,
+      request_id: requestId,
+      classification: "HUMAN_GATE_REQUIRED",
+      execution_performed: false,
+      reason_codes: ["REPO_NOT_LOCAL_KNOWN", `REPO=${targetRepo}`],
+      gate_summary: `REPO_NOT_LOCAL_KNOWN:${targetRepo}`,
+    }));
+  }
+  // 2a. SELECTED TARGET REPOSITORY hygiene — same fail-closed law, run
+  // against the target repo when it differs from the queue control repo.
+  // Queue/repo control hygiene above stays independent (issue #90).
+  let targetHead = head;
+  let targetVerifyCalls = 0;
+  if (targetRepo !== QUEUE_REPO) {
+    statusSafe("update", { phase: "TARGET_REPO_HYGIENE", last_event: `target_repo_hygiene:${targetRepo}` });
+    const verifyTarget = deps.verifyTargetRepo || null;
+    let targetState;
+    if (verifyTarget) {
+      targetState = await verifyTarget({ repo: targetRepo, repoPath: targetPath });
+      targetVerifyCalls += 1;
+    } else {
+      targetState = await verifyRepoState({ repo: targetRepo, repoPath: targetPath });
+    }
+    if (!targetState.ok) {
+      return done(wrapTickResult({
+        ok: false,
+        request_id: requestId,
+        classification: "HUMAN_GATE_REQUIRED",
+        execution_performed: false,
+        reason_codes: ["TARGET_REPO_HYGIENE_FAILED", ...(targetState.reason_codes || [])].slice(0, 16),
+        gate_summary: targetState.gate_summary || `TARGET_REPO_HYGIENE_FAILED:${targetRepo}`,
+      }));
+    }
+    targetHead = targetState.head;
+  }
+
   const loop = dispatchLoop(entries, receipts, {
-    repo: REPO,
+    repo: QUEUE_REPO,
     commit: head,
     head,
+    headsByRepo: { [targetRepo]: targetHead },
     nowIso,
     maxClaims: 1,
     queueDir: QUEUE_DIR,
@@ -1315,6 +1380,24 @@ export async function performTick(body, deps = {}) {
     }));
   }
   const claim = loop.claims[0];
+  // Belt & braces: when the claim envelope carries a target path (real bridge
+  // envelopes always do), it must be the allowlisted canonical path of the
+  // verified target repo. Fail closed before Qwen/admission/executor/
+  // persistence. Envelope-shape authority itself stays in the bridge +
+  // executor validateEnvelope law (minimal test claims without the field are
+  // still fenced there before any execution).
+  const claimTargetPath = claim.envelope?.target_repo_path;
+  if (typeof claimTargetPath === "string" && claimTargetPath !== targetPath) {
+    return done(wrapTickResult({
+      ok: false,
+      request_id: requestId,
+      classification: "SERVICE_ERROR",
+      execution_performed: false,
+      task_ref: claim.task_ref,
+      reason_codes: ["TARGET_PATH_MISMATCH", `REPO=${targetRepo}`],
+      gate_summary: `TARGET_PATH_MISMATCH:${targetRepo}`,
+    }));
+  }
   statusSafe("update", {
     phase: "QWEN_PREFLIGHT",
     task_ref: claim.task_ref,

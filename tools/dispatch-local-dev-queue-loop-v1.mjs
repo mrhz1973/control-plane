@@ -22,7 +22,7 @@
 import { writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { parseBacklogFile, isAdmissible, selectNextQueueItem } from "./select-local-dev-queue-item-v1.mjs";
-import { buildLocalDevEnvelopeFromBacklog, KNOWN_LOCAL_REPOS } from "./bridge-backlog-to-local-dev-envelope-v1.mjs";
+import { buildLocalDevEnvelopeFromBacklog, resolveKnownLocalRepo } from "./bridge-backlog-to-local-dev-envelope-v1.mjs";
 import { readdirSync, readFileSync } from "node:fs";
 
 export const DISPATCH_LOOP_SCHEMA = "local-dev-dispatch-loop-v1";
@@ -40,8 +40,16 @@ function loadReceipts(path) {
 /**
  * Pure core: given queue markdown entries + receipts, claim up to maxClaims
  * items and produce envelopes. Deterministic; injectable now for clock.
+ *
+ * Target repo law (V4_TMAR_TTS_GOVERNED_LOCAL_DEV_TARGET_ONBOARDING_V1):
+ * the SELECTED backlog item's canonical `repository` field determines the
+ * envelope target repository (resolved only through the closed known-repo
+ * map). `options.repo` remains the queue-side control repo fallback when an
+ * item declares no repository; it never widens the closed map. Envelope
+ * dispatchBaseHead comes from `options.headsByRepo[targetRepo]` when the
+ * caller supplied verified target heads, else from `options.head`.
  */
-export function runDispatchLoop(entries, receipts, { repo, commit, head, nowIso, maxClaims = 1, queueDir }) {
+export function runDispatchLoop(entries, receipts, { repo, commit, head, headsByRepo, nowIso, maxClaims = 1, queueDir }) {
   const ledger = [...receipts];
   const claims = [];
   const skipped = [];
@@ -61,12 +69,20 @@ export function runDispatchLoop(entries, receipts, { repo, commit, head, nowIso,
     const file = decision.selected.source_file;
     const entry = remaining.find((e) => e.source === file);
     const backlogPath = entry.backlog_path || (queueDir ? `${queueDir}/${file}` : `tests/local-dev-backlog-envelope-bridge-v1/fixtures/${file}`);
+    // Target-selection law: the selected item's repository field is the
+    // authority; exact-match resolution through the closed map (fail closed
+    // REPO_NOT_LOCAL_KNOWN inside the bridge). Items without an explicit
+    // repository keep the queue control repo (backward compatible).
+    const entryRepo = entry.item?.repository;
+    const targetRepo = (typeof entryRepo === "string" && entryRepo.trim()) ? entryRepo : repo;
     const bridge = buildLocalDevEnvelopeFromBacklog({
       markdown: entry.markdown,
-      repo,
+      repo: targetRepo,
       commit,
       path: backlogPath,
-      dispatchBaseHead: head,
+      dispatchBaseHead: (headsByRepo && Object.prototype.hasOwnProperty.call(headsByRepo, targetRepo))
+        ? headsByRepo[targetRepo]
+        : head,
       now: nowIso,
       existingReceipts: ledger,
     });
@@ -108,7 +124,7 @@ async function main() {
     process.exit(2);
   }
   const repo = "mrhz1973/control-plane";
-  const canonical = KNOWN_LOCAL_REPOS[repo];
+  const canonical = resolveKnownLocalRepo(repo);
   const queueDir = resolve(opt["--queue"]);
   const files = readdirSync(queueDir).filter((f) => f.endsWith(".md")).sort();
   const entries = files.map((f) => {

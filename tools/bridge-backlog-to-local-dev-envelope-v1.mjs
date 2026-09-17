@@ -136,10 +136,28 @@ export function transitionLatestReceipt(receipts, taskRef, state, overrides = {}
   return list;
 }
 
-/** v1 supports exactly this canonical local clone. */
+/** v1 supports exactly this closed canonical local-clone map.
+ * (V4_TMAR_TTS_GOVERNED_LOCAL_DEV_TARGET_ONBOARDING_V1, issue #90):
+ * one additional governed LOCAL_DEV target repository. Closed map:
+ * no wildcards, no prefix matching, no caller/env-supplied paths,
+ * no auto-discovery, no auto-clone. Unknown repository must fail with
+ * REPO_NOT_LOCAL_KNOWN. Backlog item's canonical `repository` field is
+ * the target-selection authority; `input.repo` remains the queue-side
+ * owner fallback (backward compatibility for existing callers/tests). */
 export const KNOWN_LOCAL_REPOS = {
   "mrhz1973/control-plane": "C:\\Users\\mrhz\\Documents\\AI\\GitHub\\control-plane",
+  "mrhz1973/tmar-tts": "C:\\Users\\mrhz\\Downloads\\Documents\\AI\\Chatterbox-TTS",
 };
+
+/** Resolve a canonical repository identity (owner/repo) to its exact local
+ * path through the closed map. Exact-match only; anything else returns null
+ * (caller must fail closed with REPO_NOT_LOCAL_KNOWN). */
+export function resolveKnownLocalRepo(repo) {
+  if (typeof repo !== "string" || !repo) return null;
+  return Object.prototype.hasOwnProperty.call(KNOWN_LOCAL_REPOS, repo)
+    ? KNOWN_LOCAL_REPOS[repo]
+    : null;
+}
 
 const BACKLOG_SCHEMA = "backlog-item-v1";
 const CONSUMABLE_STATE = "READY_FOR_PLANNING";
@@ -222,8 +240,8 @@ export function buildLocalDevEnvelopeFromBacklog(input = {}) {
   if (typeof dispatchBaseHead !== "string" || !/^[0-9a-f]{40}$/i.test(dispatchBaseHead)) return fail("BACKLOG_CONTRACT_UNSUPPORTED");
   if (!(now instanceof Date || typeof now === "string")) return fail("BACKLOG_CONTRACT_UNSUPPORTED");
 
-  // Canonical local clone (v1: single known repo).
-  const canonical = KNOWN_LOCAL_REPOS[repo];
+  // Canonical local clone (closed map, exact match only).
+  const canonical = resolveKnownLocalRepo(repo);
   if (!canonical) return fail("REPO_NOT_LOCAL_KNOWN");
 
   // 1. exactly one fenced yaml block.

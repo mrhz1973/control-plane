@@ -1,0 +1,23 @@
+{
+  "schema_version": "local-dev-task-envelope-v1",
+  "task_ref": "LOCAL_DEV_B_D-9500-T",
+  "target_repo_path": "C:\\Users\\mrhz\\Downloads\\Documents\\AI\\Chatterbox-TTS",
+  "target_remote": "https://github.com/mrhz1973/tmar-tts.git",
+  "dispatch_base_head": "e22fff7f850dbe50e089a7329c89753aff556566",
+  "profile_id": "qwen38-opus-q3-opencode-24k",
+  "task_delta": "Objective: Read-only qualification: verify docs/current-state.md exists and is non-empty; no modification of any file.\nExecution mode: MODIFY — operate on the existing target using the permitted file edit tool.\nAcceptance criteria:\n1. docs/current-state.md read and reported unchanged\nForbidden (do not touch): tools/**, tests/**, reports/**\nPerform the change directly in the main agent; no subagents, no delegation; the executor owns tests and git persistence.\nWindows Node path law: in any new test under tests/**, resolve the repo root with fileURLToPath(import.meta.url) + path.dirname + path.resolve(here, '../..'). Never use new URL(...).pathname string replaces — they resolve to the test directory and falsely look for tools/ beside the test file.\nIf all exact allowed_paths already exist and the focused test_command already exits 0, do not rewrite them; exit promptly so the executor can persist git.",
+  "task_kind": "MODIFY",
+  "allowed_paths": [
+    "docs/current-state.md"
+  ],
+  "allowed_commands": [
+    "git status --short",
+    "git diff --check"
+  ],
+  "test_command": "git diff --check",
+  "network_policy": "localhost_only",
+  "timebox_seconds": 600,
+  "max_agent_turns": 8,
+  "max_test_cycles": 0,
+  "git_persistence_required": true
+}
