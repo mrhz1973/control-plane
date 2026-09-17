@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { composeCanonicalQuotaState, collectIngestContributions } from "./rt25-canonical-quota-state-v1.mjs";
 import { getOpenClawQuotaObservation } from "./collect-openclaw-quota-v1.mjs";
+import { getCursorCliQuotaObservation } from "./collect-cursor-cli-quota-v1.mjs";
 import {
   normalizeCodexAppServerQuota,
   reconcileCodexQuotaObservations,
@@ -1026,6 +1027,23 @@ export async function collectQuotaObservatory(options = {}) {
   codex.authority_source = CODEX_PRIMARY_SOURCE;
 
   const cursorManual = loadCursorManualObservation(options);
+  // #81 PARTIAL LIVE wiring: `plan` becomes LIVE from the qualified read-only
+  // `cursor-agent about --format json` surface when a fresh valid observation
+  // exists. Every other field keeps MANUAL provenance — never relabeled.
+  let cursorCli = null;
+  if (options.collectCursorCli !== null) {
+    const probeCursorCli = options.collectCursorCli || getCursorCliQuotaObservation;
+    try {
+      cursorCli = await probeCursorCli({
+        nowMs,
+        ...(options.cursorCliCacheTtlMs != null ? { cacheTtlMs: options.cursorCliCacheTtlMs } : {}),
+        ...(options.cursorCliTimeoutMs != null ? { timeoutMs: options.cursorCliTimeoutMs } : {}),
+      });
+    } catch {
+      cursorCli = null; // collector failures never break /v1/resources
+    }
+  }
+  const cursorPlanLive = cursorCli && cursorCli.ok === true && cursorCli.freshness === "fresh" && boundStr(cursorCli.plan, 40);
   const cursor = {
     accounting_mapping: "UNVERIFIED",
     health_state: "NOT_OBSERVED",
@@ -1035,17 +1053,33 @@ export async function collectQuotaObservatory(options = {}) {
       freshness: cursorManual ? freshnessFromAge(cursorManual.observed_at, nowMs, QUOTA_DISPLAY_FRESH_MS) : "stale",
       observed_at: cursorManual?.observed_at || null,
       source: cursorManual?.source || null,
-      plan: cursorManual?.plan || null,
+      plan: cursorPlanLive || cursorManual?.plan || null,
+      plan_provenance: cursorPlanLive ? "LIVE" : (cursorManual?.plan ? "MANUAL" : null),
+      plan_observed_at: cursorPlanLive ? cursorCli.observed_at : null,
       plan_reset_at: cursorManual?.plan_reset_at || null,
       plan_reset_date: cursorManual?.plan_reset_date || null,
       plan_reset_precision: cursorManual?.plan_reset_precision || null,
+      plan_reset_provenance: cursorManual?.plan_reset_date || cursorManual?.plan_reset_at ? "MANUAL" : null,
       usage_semantics: cursorManual?.usage_semantics || "labels_are_remaining_percent",
       labels: cursorManual?.labels || { cursor_models: null, other_models: null },
+      labels_provenance: cursorManual && (cursorManual.labels?.cursor_models != null || cursorManual.labels?.other_models != null) ? "MANUAL" : null,
       source_usage: cursorManual?.source_usage || { cursor_models_used_percent: null, other_models_used_percent: null },
       on_demand_spending: cursorManual?.on_demand_spending || null,
       monthly_limit: cursorManual?.monthly_limit || null,
-    note: "Cursor rimane un harness: nessun pool inventato. Solo osservazione manuale runtime se presente.",
-    ...collectorMeta("cursor_manual", "manual runtime observation until accounting is qualified"),
+      cli_live: cursorCli
+        ? {
+            collector: "cursor_cli_about",
+            ok: cursorCli.ok === true,
+            freshness: cursorCli.freshness,
+            observed_at: cursorCli.observed_at || null,
+            reason_code: cursorCli.reason_code || null,
+            cli_version: cursorCli.cli_version || null,
+            cache_hit: cursorCli.cache_hit === true,
+            scope: cursorCli.scope || null,
+          }
+        : null,
+    note: "Cursor rimane un harness: nessun pool inventato. Piano live (CLI about) quando disponibile; uso/reset restano osservazione manuale.",
+    ...collectorMeta("cursor_manual_plus_cli_about", "cursor-agent about --format json (plan) + manual runtime observation"),
   };
 
   const qwen = {
