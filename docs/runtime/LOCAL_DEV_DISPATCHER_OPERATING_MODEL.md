@@ -43,8 +43,12 @@ Canonical Windows service entry point:
 
 ```text
 Scheduled Task: ControlPlane-V4-LocalDevDispatcher
-  → tools/serve-local-dev-autonomous-dispatcher-v1.mjs
+  → powershell.exe
+  → tools/run-local-dev-dispatcher-supervisor-v1.ps1
+  → node tools/serve-local-dev-autonomous-dispatcher-v1.mjs
 ```
+
+The repository PowerShell supervisor is the canonical lifetime owner for the Node child. It keeps exactly one dispatcher child active, writes durable runtime logs outside the Git worktree under `%LOCALAPPDATA%\ControlPlane\logs\local-dev-dispatcher.log`, and restarts an unexpectedly exited Node child after a bounded 10-second backoff. This preserves the single Windows Scheduled Task authority; it does not introduce a second scheduler, daemon, tick source, or dispatch authority. Task Scheduler restart-on-failure is not relied upon as the primary child-recovery mechanism.
 
 Primary local bind:
 
