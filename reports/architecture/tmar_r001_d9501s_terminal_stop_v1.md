@@ -1,6 +1,6 @@
 # TMAR TTS R001 — D-9501-S terminal STOP
 
-Status: **STOP — persisted / root cause not yet proven**
+Status: **STOP — persisted / root cause proven**
 
 Date: 2026-09-18
 
@@ -38,7 +38,7 @@ Two isolated temporary venvs were created by the bounded R001 test:
 - `TMAR_R001_FRESH_V1_20260918091404195`
 - `TMAR_R001_FRESH_V1_20260918091916517`
 
-Both currently prove:
+Both prove:
 - Python 3.11.9
 - chatterbox-tts 0.1.7
 - torch 2.6.0+cu126
@@ -49,21 +49,46 @@ Both currently prove:
 - compute capability 8.6
 - `check_gpu.py` exit 0
 
-No newly generated R001 audio artifact was observed in the recent output listing.
+No newly generated R001 audio artifact was observed.
 
-## Bounded interpretation
+## Root cause — PROVEN
 
-The dependency installation and CUDA/GPU gate are proven green in both fresh environments.
+A bounded offline reproduction was then run in the newest R001 fresh venv with:
+- Qwen 64K worker absent;
+- RTX 3060 at ~769 MiB total usage;
+- ~10.98 GiB free VRAM before Chatterbox load;
+- `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1`;
+- no repository mutation and no audio-file persistence.
 
-The first failing stage is therefore later than `check_gpu.py` and no later than the real Chatterbox generation / subsequent completion of the test command.
+The reproduction failed immediately at the same model-construction call used by TMAR:
 
-Exact failure text is not preserved in the receipt and the later IDLE tick overwrote the in-memory last-tick result.
+```python
+ChatterboxMultilingualTTS.from_pretrained(device="cuda", t3_model="v3")
+```
 
-A resource-contention hypothesis is plausible because the Qwen 64K worker was observed active during the governed execution and the executor lifecycle keeps Qwen active until the task returns. On a 12 GB RTX 3060 this may conflict with Chatterbox model loading/generation. This is **not yet recorded as proven root cause**.
+Exact observed error:
+
+```text
+TypeError: ChatterboxMultilingualTTS.from_pretrained() got an unexpected keyword argument 't3_model'
+```
+
+Therefore the R001 STOP is **not caused by GPU/VRAM contention**. The failure happens before model loading.
+
+The concrete incompatibility is:
+- TMAR code calls the multilingual loader with `t3_model="v3"`;
+- TMAR `requirements.txt` pins released `chatterbox-tts==0.1.7`;
+- the installed 0.1.7 API does not accept that keyword.
+
+Upstream project evidence also records that `t3_model` was not accepted by the published API and caused this TypeError, while newer/unreleased source has changed again. TMAR must therefore bind its code to a dependency/API contract deliberately rather than assuming current upstream-master examples match PyPI 0.1.7.
+
+## Separate resource-routing observation
+
+During D-9501-S, Qwen 64K was observed resident while the target task was GPU-oriented. Avoiding two resident GPU models is still a valid architecture concern for future GPU-exclusive tasks, but it is **not the root cause of this R001 STOP** and must not be used to rewrite the historical diagnosis.
 
 ## Governance
 
 - Do not delete, rewrite, or replay the D-9501-S receipt.
-- Do not discard the three local TMAR modifications until diagnosis is complete.
+- Do not discard the three local TMAR modifications until repair disposition is decided.
 - Do not promote R002.
-- Next step is bounded diagnosis of the generation-stage STOP, preferably without network or repository mutation.
+- Repair must address the TMAR Chatterbox API/dependency mismatch first.
+- Any GPU-exclusive routing enhancement belongs to a separate Control Plane slice after R001 is repaired or explicitly re-planned.
