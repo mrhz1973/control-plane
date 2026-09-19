@@ -61,6 +61,15 @@ import { selectNextQueueItem, parseBacklogFile, isAdmissible } from "./select-lo
 import { buildResourceObservatory, createCanonicalVpsSshRunner, QWEN_OBSERVATION_TIMEOUT_MS, RESOURCES_PATH, RESOURCES_SCHEMA } from "./local-dev-resource-observatory-v1.mjs";
 import { fetchCodexAppServerRateLimits } from "./codex-appserver-rate-limit-reader-v1.mjs";
 import { AGENT_ACTIVITY_SCHEMA, applyFreshness as defaultApplyFreshness, readActivities as defaultReadActivities } from "./agent-activity-registry-v1.mjs";
+import {
+  reconcileTerminalPass, reconcileReconcilerTerminal, reconcileTerminalStop,
+  detectUnreconciledTerminalPass, isReconcilerTaskRef,
+  loadReconciliationStore, saveReconciliationStoreAtomic,
+} from "./local-dev-project-reconciliation-v1.mjs";
+import {
+  loadNotifyLedger, saveNotifyLedgerAtomic, dispatchNotifications,
+  loadTelegramTransportConfig, evaluateStall, alreadySent, markSent,
+} from "./local-dev-terminal-notifier-v1.mjs";
 
 export const RESULT_SCHEMA = "local-dev-dispatch-tick-result-v1";
 export const REQUEST_SCHEMA = "local-dev-dispatch-tick-v1";
@@ -1360,6 +1369,113 @@ export function persistReceiptsAtomic(targetPath, receipts) {
 }
 
 /**
+ * #110 — deterministic post-terminal continuation. Called (a) after ANY
+ * terminal executor outcome inside performTick (terminal persistence first:
+ * the caller persisted receipts + journal BEFORE this runs), and (b) on
+ * IDLE_CLEAN ticks to retro-detect unrecorded terminal PASS receipts
+ * (restart / pre-deployment / crash-after-terminal). All effects are
+ * idempotent (durable reconciliation store + durable notify ledger + on-disk
+ * queue state). Any failure here is contained: it journal-emits a truthful
+ * marker and NEVER fails the tick itself (notifications/reconciliation are
+ * best-effort continuation, not dispatch authority).
+ */
+async function runPostTerminalContinuation({ deps, receipts, nowIso, journalEmit, terminal = null }) {
+  const realRuntime = shouldPersistRuntimeArtifacts(deps);
+  const reasonCodes = [];
+  if (!realRuntime && !deps.reconciliationDeps) return { reason_codes: reasonCodes };
+  // Injectable seam for focused tests (real runtime uses real stores).
+  const rc = deps.reconciliationDeps || {};
+  const queueDir = resolve(CANONICAL_REPO_PATH, QUEUE_DIR);
+  const loadStoreFn = rc.loadStore || (realRuntime ? loadReconciliationStore : null);
+  const saveStoreFn = rc.saveStore || (realRuntime ? saveReconciliationStoreAtomic : null);
+  const readBacklogStateFn = rc.readBacklogState || (realRuntime
+    ? ((repo) => {
+      const targetPath = resolveKnownLocalRepo(repo);
+      if (!targetPath) return null;
+      const statePath = join(targetPath, "docs", "backlog-state.json");
+      return existsSync(statePath) ? readFileSync(statePath, "utf8") : null;
+    })
+    : null);
+  const loadLedgerFn = rc.loadNotifyLedger || (realRuntime ? loadNotifyLedger : null);
+  const saveLedgerFn = rc.saveNotifyLedger || (realRuntime ? saveNotifyLedgerAtomic : null);
+  const loadTransportFn = rc.loadTransport || (realRuntime
+    ? (() => loadTelegramTransportConfig(join(homedir(), "AppData", "Local", "control-plane", "v4-runtime-authorization-issuance-config-v1.json")))
+    : null);
+  const fetchImpl = rc.fetchImpl || null;
+  if (!loadStoreFn || !saveStoreFn) return { reason_codes: reasonCodes };
+  let store;
+  let notifications = [];
+  try {
+    store = loadStoreFn();
+  } catch (err) {
+    journalEmit({ event: "RECONCILIATION_SKIPPED", phase: "PROJECT_RECONCILIATION", component: "dispatcher", classification: "RECONCILIATION_STORE_INVALID", human_summary: `Store riconciliazione non leggibile: ${boundStr(err?.code || err?.message, 60)}.` });
+    return { reason_codes: ["RECONCILIATION_STORE_INVALID"] };
+  }
+  let handled = false;
+  if (terminal) {
+    handled = true;
+    const common = { store, queueDir, nowIso, journalEvents: [] };
+    if (terminal.outcome === "PASS" && isReconcilerTaskRef(terminal.taskRef)) {
+      const r = reconcileReconcilerTerminal({
+        store, queueDir, repo: terminal.repo, taskRef: terminal.taskRef, nowIso,
+        readBacklogState: readBacklogStateFn,
+      });
+      (r.journalEvents || []).forEach(journalEmit);
+      notifications = r.notifications || [];
+      if (r.action === "HUMAN_GATE" || r.action === "PROJECT_IDLE_COMPLETE" || r.action === "SUCCESSOR_QUEUED") {
+        reasonCodes.push(r.action === "SUCCESSOR_QUEUED" ? "RECONCILIATION_SUCCESSOR_QUEUED" : `RECONCILIATION_${r.action}`);
+      }
+    } else if (terminal.outcome === "PASS") {
+      const r = reconcileTerminalPass({
+        store, queueDir, repo: terminal.repo, taskRef: terminal.taskRef, taskId: terminal.taskId,
+        commitSha: terminal.commitSha, testsState: null, durationMs: terminal.durationMs, nowIso,
+      });
+      (r.journalEvents || []).forEach(journalEmit);
+      notifications = r.notifications || [];
+      if (r.action === "RECONCILER_QUEUED") reasonCodes.push("RECONCILIATION_QUEUED");
+    } else if (terminal.outcome === "STOP") {
+      const r = reconcileTerminalStop({ store, repo: terminal.repo, taskRef: terminal.taskRef, commitSha: terminal.commitSha, nowIso });
+      (r.journalEvents || []).forEach(journalEmit);
+      notifications = r.notifications || [];
+    }
+  } else {
+    // Retro-detection on idle ticks: latest unreconciled terminal PASS per
+    // canon repo (bounded, deterministic).
+    const pending = detectUnreconciledTerminalPass({ receipts, store, repoCanonMap: undefined });
+    for (const p of pending) {
+      handled = true;
+      const r = reconcileTerminalPass({
+        store, queueDir, repo: p.repo, taskRef: p.taskRef, taskId: p.taskId,
+        commitSha: p.commitSha, testsState: null, durationMs: null, nowIso,
+      });
+      (r.journalEvents || []).forEach(journalEmit);
+      notifications = notifications.concat(r.notifications || []);
+      if (r.action === "RECONCILER_QUEUED") reasonCodes.push("RECONCILIATION_QUEUED_RETRO");
+    }
+  }
+  if (!handled) return { reason_codes: reasonCodes };
+  try {
+    saveStoreFn(store);
+  } catch (err) {
+    journalEmit({ event: "RECONCILIATION_SKIPPED", phase: "PROJECT_RECONCILIATION", component: "dispatcher", classification: "RECONCILIATION_STORE_WRITE_FAILED", human_summary: `Persistenza store riconciliazione fallita: ${boundStr(err?.code || err?.message, 60)}.` });
+  }
+  // Notifications (dedup ledger; single bot; best-effort).
+  if (notifications.length && loadLedgerFn && saveLedgerFn && loadTransportFn) {
+    try {
+      const ledgerN = loadLedgerFn();
+      const transport = loadTransportFn();
+      await dispatchNotifications({
+        requests: notifications, ledger: ledgerN, transport, nowIso,
+        fetchImpl, saveLedger: saveLedgerFn,
+      });
+    } catch (err) {
+      journalEmit({ event: "NOTIFICATION_SKIPPED", phase: "PROJECT_RECONCILIATION", component: "dispatcher", classification: "NOTIFY_LEDGER_INVALID", human_summary: `Ledger notifiche non valido: ${boundStr(err?.code || err?.message, 60)}.` });
+    }
+  }
+  return { reason_codes: reasonCodes };
+}
+
+/**
  * One bounded tick. deps are injectable for offline tests:
  * verifyRepo, scanQueue, runDispatchLoop, runExecutor, nowIso, statusTracker.
  * scanQueue returns [{ ok, item, markdown, source, backlog_path }].
@@ -1588,12 +1704,18 @@ export async function performTick(body, deps = {}) {
     if (qwenLifecycle) {
       try { await qwenLifecycle.onIdleCleanTick(); } catch { /* observability only */ }
     }
+    // #110: post-terminal continuation — retro-detect terminal PASS
+    // receipts without a reconciliation record (restart / pre-deployment
+    // terminals / crash-after-terminal) and run the idempotent actions
+    // (ONE reconciler READY + dedup PASS notification). Never claims in the
+    // same tick as publication: the NEXT natural WF90 tick consumes it.
+    const idleRecon = await runPostTerminalContinuation({ deps, receipts, nowIso, journalEmit });
     return done(wrapTickResult({
       ok: true,
       request_id: requestId,
       classification: "IDLE_CLEAN",
       execution_performed: false,
-      reason_codes: loop.skipped?.length ? ["CLAIM_SKIPPED_PRESENT"] : ["NO_ELIGIBLE_READY"],
+      reason_codes: idleRecon.reason_codes?.length ? idleRecon.reason_codes : (loop.skipped?.length ? ["CLAIM_SKIPPED_PRESENT"] : ["NO_ELIGIBLE_READY"]),
     }));
   }
   const claim = loop.claims[0];
@@ -1843,6 +1965,24 @@ export async function performTick(body, deps = {}) {
     human_summary: terminalPass
       ? `Task ${String(claim.task_ref || "").replace(/^LOCAL_DEV_B_/, "")} completato con PASS.`
       : `Task ${String(claim.task_ref || "").replace(/^LOCAL_DEV_B_/, "")} fermato con STOP.`,
+  });
+  // #110: deterministic post-terminal continuation AFTER terminal
+  // persistence (receipts + journal above). PASS → ONE reconciler READY +
+  // dedup PASS notification; reconciler PASS → decide + publish successor /
+  // HUMAN_GATE / PROJECT_IDLE_COMPLETE; STOP → truthful marker only.
+  await runPostTerminalContinuation({
+    deps,
+    receipts: ledger,
+    nowIso,
+    journalEmit,
+    terminal: {
+      repo: targetRepo,
+      taskRef: claim.task_ref,
+      taskId: String(claim.task_ref || "").replace(/^LOCAL_DEV_B_/, ""),
+      outcome: terminalPass ? "PASS" : "STOP",
+      commitSha: typeof executorResult?.final_head === "string" ? executorResult.final_head : null,
+      durationMs: typeof executorResult?.timebox_used_s === "number" ? Math.round(executorResult.timebox_used_s * 1000) : null,
+    },
   });
   return done(classificationFromExecutorResult(executorResult, requestId));
 }
