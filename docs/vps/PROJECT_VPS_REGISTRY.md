@@ -24,6 +24,7 @@ Current projection after authorized production cutover PASS. NEW is LIVE with th
 | `n8n-compose.service` | OLD n8n stopped by cutover; PostgreSQL retained | enabled/active; restarted through canonical boundary after restore | n8n core | MIGRATED_VALIDATED | cutover PASS; rollback retention open |
 | GOI service users | OLD live service accounts | NEW nologin accounts present | shared Linux identity | MIGRATED_VALIDATED | no further identity mutation required |
 | Tailscale node identity | OLD `ubuntu` / `100.114.7.53` | unique `ionos-n8n-new` / `100.99.54.93`; exact NEW MagicDNS, private reachability, no routes/exit-node/Serve/Funnel | all TS-bound GOI services | MIGRATED_VALIDATED | parallel validation PASS |
+| Automazione Posta-Documenti-Gdrive | none | R002 bootstrap planned: dedicated DB `maildocs`, runtime role `maildocs_app`, runtime root `/root/local-files/handoff-runtime/automazione-posta-documenti-gdrive`; no listener/public port | PostgreSQL, n8n, `/root/local-files` | PLANNED_NOT_DEPLOYED | #107; app repo issue #2 |
 | historical OLD Docker volumes | OLD leftovers `root_n8n_postgres_data`, `_retry006`, `_seqresync_prod`; OLD `_quarantine` under local-files | not copied; no current container/compose consumer | none | OBSOLETE_CONFIRMED_NOT_REQUIRED | retain until decommission gate; no deletion in this task |
 
 ## Latest proof
