@@ -29,6 +29,8 @@ NEW Tailscale identity and the full GOI private stack are LIVE and proven functi
 | dev-method reference tree | dev-method / Control Plane | `/root/local-files/handoff-runtime/dev-method` | copied/validated | no shared network dependency |
 | OpenClaw GLM quota observation | Control Plane | historical trees retained | scoped read-only `glm_coding_plan` collector; no listener | `SCOPED_RETENTION`; broker/fallback/agent runtime retired; no activation |
 | Hermes private ports | Control Plane/Hermes | loopback | loopback qualified | remain private |
+| Maildocs PostgreSQL allocation | Automazione-Posta-Documenti-Gdrive / Control Plane gate | n/a | PLANNED_NOT_DEPLOYED: dedicated DB `maildocs`, role `maildocs_app`, schema `maildocs` on existing PostgreSQL 16.15 | #107 approval + bounded bootstrap; no shared DB replacement |
+| Maildocs persistent runtime root | Automazione-Posta-Documenti-Gdrive / Control Plane gate | n/a | PLANNED_NOT_DEPLOYED: `/root/local-files/handoff-runtime/automazione-posta-documenti-gdrive` | #107 collision check before create; no new bind/public surface |
 | Docker common runtime | Control Plane | live | live | shared namespace centralized |
 | Cutover | Control Plane + human operator | OLD writer frozen | PASS; NEW LIVE | no reverse/secondary cutover without human gate |
 | Rollback retention | Control Plane + human operator | OLD intact/frozen standby | CLOSED_BY_OPERATOR_AUTHORIZATION (retention served through observation) | closed; no reopening |
