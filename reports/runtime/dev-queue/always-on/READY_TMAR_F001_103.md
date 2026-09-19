@@ -4,7 +4,7 @@
 schema: backlog-item-v1
 id: TMAR-F001-103
 title: TMAR TTS F001 multi-engine architecture contract
-created_at: 2026-09-19T18:40:00Z
+created_at: 2026-09-19T18:30:00Z
 created_by: tmar-project-chat
 repository: mrhz1973/tmar-tts
 branch_target: main
