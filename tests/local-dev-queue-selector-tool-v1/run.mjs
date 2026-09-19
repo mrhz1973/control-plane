@@ -7,7 +7,7 @@
  */
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
@@ -212,6 +212,49 @@ await test("#105 normalized F001 shape (gpt-web / D-0103-F001) is eligible + bri
   assert.equal(br.ok, true, JSON.stringify(br.reason_codes));
   assert.equal(br.envelope.task_ref, "LOCAL_DEV_B_D-0103-F001");
   assert.equal(br.receipt.task_ref, "LOCAL_DEV_B_D-0103-F001");
+});
+
+// ---------------- #106: F001R recovery successor regression ----------------
+await test("#106 interrupted F001 stays claim-blocked while D-0103-F001R successor is eligible + bridge-consumable", async () => {
+  const succMd = readFileSync(join(ROOT, "reports/runtime/dev-queue/always-on/READY_D0103F001R.md"), "utf8").replace(/^\uFEFF/, "");
+  const succParsed = parseBacklogFile(succMd);
+  assert.equal(succParsed.ok, true, succParsed.reason);
+  assert.equal(succParsed.item.id, "D-0103-F001R");
+  assert.equal(succParsed.item.created_by, "gpt-web");
+  assert.equal(succParsed.item.repository, "mrhz1973/tmar-tts");
+  assert.equal(isAdmissible(succParsed.item), true);
+
+  // interrupted historical receipt (as persisted in the canonical ledger) keeps blocking F001 ...
+  const interrupted = { task_ref: "LOCAL_DEV_B_D-0103-F001", state: "EXECUTING", execution_started: true, replayable: false, claimed_at: "2026-09-19T20:54:40.502Z" };
+  const oldMd = readFileSync(join(ROOT, "reports/runtime/dev-queue/always-on/READY_TMAR_F001_103.md"), "utf8").replace(/^\uFEFF/, "");
+  const oldParsed = parseBacklogFile(oldMd);
+  assert.equal(oldParsed.ok, true);
+  const r = selectNextQueueItem(
+    [{ ...oldParsed, source: "READY_TMAR_F001_103.md" }, { ...succParsed, source: "READY_D0103F001R.md" }],
+    [interrupted],
+    "2026-09-19T22:00:00.000Z",
+  );
+  // ... while the successor is the one selected
+  assert.equal(r.reason_code, "SELECTED");
+  assert.equal(r.selected.task_ref, "LOCAL_DEV_B_D-0103-F001R");
+  assert.ok(r.excluded.some((e) => e.source === "READY_TMAR_F001_103.md" && e.reason === "CLAIM_ALREADY_EXISTS"));
+
+  // bridge consumes the successor shape end-to-end
+  const b = await import("../../tools/bridge-backlog-to-local-dev-envelope-v1.mjs");
+  const br = b.buildLocalDevEnvelopeFromBacklog({
+    markdown: succMd, repo: "mrhz1973/control-plane", commit: "a".repeat(40),
+    path: "reports/runtime/dev-queue/always-on/READY_D0103F001R.md",
+    dispatchBaseHead: "b".repeat(40), now: new Date("2026-09-19T22:00:00Z"),
+    existingReceipts: [interrupted],
+  });
+  assert.equal(br.ok, true, JSON.stringify(br.reason_codes));
+  assert.equal(br.envelope.task_ref, "LOCAL_DEV_B_D-0103-F001R");
+  assert.equal(br.receipt.task_ref, "LOCAL_DEV_B_D-0103-F001R");
+
+  // exactly ONE F001 successor file exists in the canonical queue
+  const queueDir = join(ROOT, "reports", "runtime", "dev-queue", "always-on");
+  const files = readdirSync(queueDir).filter((f) => f.endsWith(".md") && /F001/i.test(f));
+  assert.deepEqual(files.sort(), ["READY_D0103F001R.md", "READY_TMAR_F001_103.md"]);
 });
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
