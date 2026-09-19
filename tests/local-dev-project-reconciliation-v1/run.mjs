@@ -255,6 +255,38 @@ await test("F/G. crash boundaries: restart after decision stays decided; after p
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
+await test("recovery-successor reconciler terminal still resolves the pending record (lineage match)", () => {
+  const dir = tmp();
+  try {
+    const store = loadReconciliationStore(join(dir, "store.json"));
+    const pass = reconcileTerminalPass({ store, queueDir: dir, repo: REPO, taskRef: F001R_TASK, taskId: "D-0103-F001R", commitSha: F001R_COMMIT, durationMs: 1000, nowIso: NOW });
+    // the original reconciler execution was interrupted (never terminal);
+    // a recovery successor D-...-RECONR executed and PASSED with a DIFFERENT task_ref
+    const recoveryRef = `${pass.record.reconciler_task_ref}R`;
+    const r = reconcileReconcilerTerminal({
+      store, queueDir: dir, repo: REPO, taskRef: recoveryRef, nowIso: NOW,
+      readBacklogState: () => stateWithNext([
+        { id: "F001", status: "DONE", depends_on: [] },
+        { id: "F002", status: "NEXT", depends_on: ["F001"], payload: F002_PAYLOAD },
+      ]),
+    });
+    assert.equal(r.action, "SUCCESSOR_QUEUED");
+    assert.equal(r.successorId, "D-0103-F002");
+    assert.equal(r.record.reconciler_terminal_task_ref, recoveryRef);
+    // ambiguity guard: two pending records for the same repo → fail-closed gate
+    const store2 = loadReconciliationStore(join(dir, "store2.json"));
+    for (const t of ["LOCAL_DEV_B_D-0103-F001X", "LOCAL_DEV_B_D-0103-F001Y"]) {
+      reconcileTerminalPass({ store: store2, queueDir: dir, repo: REPO, taskRef: t, taskId: t, commitSha: null, durationMs: 1, nowIso: NOW });
+    }
+    const r2 = reconcileReconcilerTerminal({
+      store: store2, queueDir: dir, repo: REPO, taskRef: "LOCAL_DEV_B_D-999999-RECONZ", nowIso: NOW,
+      readBacklogState: () => stateWithNext([{ id: "F001", status: "DONE", depends_on: [] }]),
+    });
+    assert.equal(r2.action, "HUMAN_GATE");
+    assert.equal(r2.journalGate.reason, "RECONCILER_RECORD_MISSING");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
 await test("H. terminal STOP → reconciliation law: no auto successor, truthful marker, idempotent", () => {
   const dir = tmp();
   try {

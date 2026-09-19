@@ -452,7 +452,16 @@ export function reconcileTerminalPass({ store, queueDir, repo, taskRef, taskId, 
 export function reconcileReconcilerTerminal({ store, queueDir, repo, taskRef, nowIso, readBacklogState, writeQueueFile }) {
   const journalEvents = [];
   const notifications = [];
-  const record = store.records.find((r) => r && r.reconciler_task_ref === taskRef) || null;
+  // Exact lineage match first; else exactly ONE pending reconciliation for
+  // the repo (recovery-successor executions carry a different task_ref).
+  // Multiple pending records for the same repo → fail closed (rare; honest
+  // HUMAN_GATE instead of an arbitrary pick).
+  let record = store.records.find((r) => r && r.reconciler_task_ref === taskRef) || null;
+  if (!record) {
+    const pending = store.records.filter((r) => r && r.repo === repo && !r.decision
+      && r.reconciler_ready_id && r.terminal_outcome === TERMINAL_PASS);
+    if (pending.length === 1) record = pending[0];
+  }
   const finishGate = (reason, candidates, detail) => ({
     ok: true, action: "HUMAN_GATE", journalEvents, notifications,
     journalGate: { reason, candidates: candidates || [], detail: detail || null },
@@ -462,6 +471,7 @@ export function reconcileReconcilerTerminal({ store, queueDir, repo, taskRef, no
     journalEvents.push({ event: "RECONCILIATION_HUMAN_GATE", phase: "PROJECT_RECONCILIATION", component: "dispatcher", task_ref: taskRef, target_repo: repo, classification: "HUMAN_GATE_REQUIRED", human_summary: "Reconciler terminale senza record: richiesto intervento operatore." });
     return finishGate("RECONCILER_RECORD_MISSING", [String(taskRef).slice(0, 80)]);
   }
+  record.reconciler_terminal_task_ref = taskRef;
   record.reconciler_terminal_at = record.reconciler_terminal_at || nowIso;
   record.reconciler_outcome = TERMINAL_PASS;
   if (record.decision) {
