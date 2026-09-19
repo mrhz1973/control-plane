@@ -68,6 +68,42 @@
     @media(max-width:1200px){.opstrip{grid-template-columns:auto 1fr;grid-template-areas:'brand countdown' 'meta meta' 'task task' 'rail rail' 'gate gate'}}
     @media(max-width:620px){.opstrip{padding:13px 14px 12px}.opstrip-count-value{font-size:27px}.opstrip-meta-item .k{width:104px}}
   </style>
+  <style>
+    /* === #94 Mission Control V2: tab shell === */
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:0;list-style:none;border-bottom:1px solid var(--line)}
+    .tab-btn{border:1px solid var(--line);border-bottom:none;border-radius:10px 10px 0 0;background:var(--raised);color:var(--muted);padding:9px 16px;font:650 12px/1.3 var(--sans);letter-spacing:.4px;cursor:pointer}
+    .tab-btn:hover{color:var(--text);border-color:#52647b}
+    .tab-btn[aria-selected="true"]{color:var(--cyan);background:#12242e;border-color:#3d6471;position:relative}
+    .tab-btn[aria-selected="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--panel)}
+    .tab-panel{border:1px solid var(--line);border-radius:0 13px 13px 13px;background:var(--panel);padding:16px}
+    .tab-panel[hidden]{display:none}
+    /* PRIMA / ADESSO / DOPO */
+    .pad-row{display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:10px;margin-bottom:14px}
+    .pad-card{border:1px solid var(--line);border-radius:12px;background:linear-gradient(135deg,#171a20,#111317);padding:12px 14px;min-width:0;position:relative}
+    .pad-card:before{content:"";height:2px;width:28px;background:currentColor;position:absolute;left:14px;top:-1px;opacity:.55}
+    .pad-card .pad-k{color:var(--muted);font-size:10px;font-weight:650;letter-spacing:1.2px;text-transform:uppercase}
+    .pad-card .pad-title{font-size:14px;font-weight:650;margin:6px 0 4px;overflow-wrap:anywhere}
+    .pad-card .pad-sub{font-size:11px;color:#c3cad4;overflow-wrap:anywhere}
+    .pad-card.prima{color:var(--violet)}.pad-card.adesso{color:var(--cyan);border-color:#3d6471}.pad-card.dopo{color:var(--muted)}
+    /* Canonical phase rail (#94 seven-phase) */
+    .phase-rail{display:flex;flex-wrap:wrap;align-items:center;gap:0;border:1px solid #22303d;border-radius:11px;padding:11px 13px;margin-bottom:14px;background:#0d141b}
+    /* Storico task-centric table */
+    .hist-empty{text-align:center;color:var(--muted);padding:22px 10px;font-size:12px}
+    .hist-outcome{display:inline-flex;align-items:center;border-radius:6px;padding:2px 8px;font:650 10px/1.5 var(--sans);letter-spacing:.5px;border:1px solid currentColor}
+    .hist-outcome.PASS{color:var(--green)}.hist-outcome.STOP{color:var(--red)}.hist-outcome.HUMAN_GATE{color:var(--amber)}.hist-outcome.EXECUTING{color:var(--cyan)}.hist-outcome.UNKNOWN{color:var(--muted)}
+    /* Componenti cards */
+    .comp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .comp-card{border:1px solid var(--line);border-radius:12px;background:linear-gradient(135deg,#171a20,#111317);padding:12px 14px;min-width:0;position:relative;display:flex;flex-direction:column;gap:4px}
+    .comp-card:before{content:"";height:2px;width:28px;background:currentColor;position:absolute;left:14px;top:-1px;opacity:.55}
+    .comp-card .comp-name{font-size:14px;font-weight:650}
+    .comp-card .comp-role{font-size:11px;color:#c3cad4}
+    .comp-card .comp-row{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+    .comp-card .comp-row b{color:var(--text);font-weight:600}
+    .comp-card .comp-why{font-size:11px;color:#e8c9a0;border-top:1px solid #242830;padding-top:6px;margin-top:2px}
+    @media(max-width:1200px){.comp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pad-row{grid-template-columns:1fr}}
+    @media(max-width:900px){.comp-grid{grid-template-columns:1fr}}
+    @media(max-width:620px){.pad-row{grid-template-columns:1fr}.tab-btn{padding:8px 12px;font-size:11px}.tab-panel{padding:12px}}
+  </style>
 </head>
 <body>
   <a class="sr-only" href="#main">Vai alla console</a>
@@ -97,33 +133,50 @@
     </section>
     <div id="data-alert" class="alert" role="alert" hidden></div>
     <section class="summary-grid" id="summary-cards" aria-label="Sintesi operativa"></section>
+    <!-- === #94 Mission Control V2 tabs === -->
+    <nav class="tabs" role="tablist" aria-label="Viste Mission Control">
+      <button class="tab-btn" id="tab-operations" role="tab" aria-selected="true" aria-controls="tab-panel-operations" type="button">OPERAZIONI</button>
+      <button class="tab-btn" id="tab-history" role="tab" aria-selected="false" aria-controls="tab-panel-history" tabindex="-1" type="button">STORICO</button>
+      <button class="tab-btn" id="tab-components" role="tab" aria-selected="false" aria-controls="tab-panel-components" tabindex="-1" type="button">COMPONENTI</button>
+      <button class="tab-btn" id="tab-technical" role="tab" aria-selected="false" aria-controls="tab-panel-technical" tabindex="-1" type="button">TECNICO</button>
+    </nav>
+    <section class="tab-panel" id="tab-panel-operations" role="tabpanel" aria-labelledby="tab-operations">
+      <div id="ops-prima-adesso-dopo" class="pad-row"></div>
+      <div id="ops-phase-rail" class="phase-rail" role="list" aria-label="Fasi canoniche del task"></div>
+      <div class="ops-row" id="ops-row" style="margin-bottom:12px">
+        <article class="ops-card info" id="ops-task-card" aria-labelledby="candidate-title">
+          <div class="ops-title" id="candidate-title">Task attivo / ultimo terminato</div>
+          <div id="ops-task"></div>
+        </article>
+        <article class="ops-card warn" id="ops-state-card" aria-labelledby="state-title">
+          <div class="ops-title" id="state-title">Stato / motivo</div>
+          <div id="ops-state"></div>
+        </article>
+        <article class="ops-card info" id="ops-tick-card" aria-labelledby="tick-title">
+          <div class="ops-title" id="tick-title">Ultimo ciclo completato</div>
+          <div id="ops-tick"></div>
+        </article>
+      </div>
+      <details class="panel technical-panel" id="ops-terminal-detail" style="margin-top:0"><summary>Dettaglio ultimo task terminato</summary><div id="ops-terminal-body" class="panel-body" style="padding-top:10px"></div></details>
+    </section>
+    <section class="tab-panel" id="tab-panel-history" role="tabpanel" aria-labelledby="tab-history" hidden>
+      <div id="history-tasks"></div>
+    </section>
+    <section class="tab-panel" id="tab-panel-components" role="tabpanel" aria-labelledby="tab-components" hidden>
+      <div id="components-cards" class="comp-grid"></div>
+      <p class="queue-note">Topologia completa e autorità decisionali: <a class="architecture-link" href="/architecture" style="margin-left:6px;display:inline-flex">🗺 Mappa Control Plane</a></p>
+    </section>
+    <section class="tab-panel" id="tab-panel-technical" role="tabpanel" aria-labelledby="tab-technical" hidden>
+    <div class="panel operator-panel" id="operator-visibility-panel" aria-labelledby="operator-visibility-title">
+      <div class="panel-head"><div><div class="heading"><span class="section-index">02</span><h2 id="operator-visibility-title">Chi sta facendo cosa</h2></div><p>Visibilità operativa bounded · osservazione sola lettura</p></div><span class="pill subtle">Nessun CoT / nessun invio</span></div>
+      <div class="panel-body"><div id="operator-path" class="operator-path" aria-label="Percorso attivo"></div><div id="operator-components" class="operator-components"></div><div class="operator-legend" aria-label="Distinzione dei ruoli"><span>QWEN = MODELLO</span><span>CODEX SUBSCRIPTION = CONTROLLER</span><span>OPENCODE = HARNESS / LOCAL EXECUTOR</span><span>CURSOR = IDE / HARNESS / AGENT</span><span>HERMES = ORCHESTRATORE / BRIDGE</span><span>Nessuna esposizione pubblica</span><span>VPS / MACCHINA LOCALE = INFRASTRUTTURA</span></div></div>
+    </div>
     <div class="layout-toolbar"><button id="reset-layout" type="button" title="Ripristina l’ordine predefinito delle sezioni (solo browser)">Ripristina layout</button></div>
     <div id="layout-root">
       <section class="dash-section" data-section="resources" id="sec-resources" aria-labelledby="resources-title">
         <div class="sec-chrome" data-chrome="resources"><span class="sec-label">Sezione</span></div>
         <div class="panel"><div class="panel-head"><div class="heading"><span class="section-index">01</span><h2 id="resources-title">Risorse e quote</h2></div><span class="pill subtle">Osservatorio sola lettura</span></div>
           <div class="panel-body" style="padding-top:12px" id="resources-cards"></div></div>
-      </section>
-      <section class="dash-section" data-section="ops" id="sec-ops" aria-label="Chi sta facendo cosa">
-        <div class="sec-chrome" data-chrome="ops"><span class="sec-label">Sezione</span></div>
-        <div class="panel operator-panel" id="operator-visibility-panel" aria-labelledby="operator-visibility-title">
-          <div class="panel-head"><div><div class="heading"><span class="section-index">02</span><h2 id="operator-visibility-title">Chi sta facendo cosa</h2></div><p>Visibilità operativa bounded · osservazione sola lettura</p></div><span class="pill subtle">Nessun CoT / nessun invio</span></div>
-          <div class="panel-body"><div id="operator-path" class="operator-path" aria-label="Percorso attivo"></div><div id="operator-components" class="operator-components"></div><div class="operator-legend" aria-label="Distinzione dei ruoli"><span>QWEN = MODELLO</span><span>CODEX SUBSCRIPTION = CONTROLLER</span><span>OPENCODE = HARNESS / LOCAL EXECUTOR</span><span>CURSOR = IDE / HARNESS / AGENT</span><span>HERMES = ORCHESTRATORE / BRIDGE</span><span>Nessuna esposizione pubblica</span><span>VPS / MACCHINA LOCALE = INFRASTRUTTURA</span></div></div>
-        </div>
-        <div class="ops-row" id="ops-row">
-          <article class="ops-card info" id="ops-task-card" aria-labelledby="candidate-title">
-            <div class="ops-title" id="candidate-title">Task / candidato</div>
-            <div id="ops-task"></div>
-          </article>
-          <article class="ops-card warn" id="ops-state-card" aria-labelledby="state-title">
-            <div class="ops-title" id="state-title">Stato / motivo</div>
-            <div id="ops-state"></div>
-          </article>
-          <article class="ops-card info" id="ops-tick-card" aria-labelledby="tick-title">
-            <div class="ops-title" id="tick-title">Ultimo ciclo completato</div>
-            <div id="ops-tick"></div>
-          </article>
-        </div>
       </section>
       <section class="dash-section" data-section="agentops" id="sec-agentops" aria-labelledby="agentops-title">
         <div class="sec-chrome" data-chrome="agentops"><span class="sec-label">Sezione</span></div>
@@ -147,8 +200,9 @@
         </details>
       </section>
     </div>
+    </section>
     <details class="panel technical-panel" id="status-technical"><summary>Mostra dettagli tecnici del dispatcher</summary><dl class="facts" id="status-details"></dl></details>
-    <footer class="footer"><span>Osservazione locale · Nessuna azione di esecuzione disponibile in questa console.</span><span>Fonti: <code>GET /v1/status</code> · <code>GET /v1/diagnostics</code> · <code>GET /v1/resources</code> · <code>GET /v1/agent-activity</code></span></footer>
+    <footer class="footer"><span>Osservazione locale · Nessuna azione di esecuzione disponibile in questa console.</span><span>Fonti: <code>GET /v1/status</code> · <code>GET /v1/diagnostics</code> · <code>GET /v1/resources</code> · <code>GET /v1/history</code> · <code>GET /v1/agent-activity</code></span></footer>
   </main>
   <script>
     'use strict';
@@ -417,6 +471,191 @@
       renderOpstripRail(diag,status);
       renderOpstripTask(diag,status,resources);
       renderOpstripGate(diag,status);
+    }
+    // ==================== #94 Mission Control V2 renders ====================
+    // Canonical seven-phase rail: Selezione → Preflight → Runtime → Executor
+    // → Test → Persistenza → PASS/STOP. States only, never percentages; each
+    // phase is completed ONLY on real journal/authoritative evidence.
+    const MC_PHASES=Object.freeze([
+      Object.freeze({key:'SELEZIONE',label:'Selezione'}),
+      Object.freeze({key:'PREFLIGHT',label:'Preflight'}),
+      Object.freeze({key:'RUNTIME',label:'Runtime'}),
+      Object.freeze({key:'EXECUTOR',label:'Executor'}),
+      Object.freeze({key:'TEST',label:'Test'}),
+      Object.freeze({key:'PERSISTENZA',label:'Persistenza'}),
+    ]);
+    const MC_TERMINALS=Object.freeze(['PASS','STOP']);
+    function mcPhaseEvidence(status,diag,history){
+      // Derive the CURRENT task phase from authoritative fields only.
+      const s=obj(status);const d=obj(diag);const h=obj(history);
+      const t=obj(d.last_tick);
+      const activeTask=obj(h.active_task);
+      const events=list(h.recent_events).map(obj).filter(ev=>scalar(ev.task_ref)&&(activeTask.task_ref?ev.task_ref===activeTask.task_ref:true)||(s.task_ref&&ev.task_ref===s.task_ref));
+      const seen=new Set(events.map(ev=>text(ev.event,'')));
+      if(s.active===true){
+        const phase=text(s.phase,'');
+        if(phase==='REPO_HYGIENE'||phase==='QUEUE_SCAN'||phase==='SELECTING')return {mode:'active',current:'SELEZIONE',completed:['SELEZIONE'].filter(()=>false),failed:false};
+        if(phase==='CLAIM'||phase==='ADMISSION')return {mode:'active',current:'SELEZIONE',completed:new Set(['SELEZIONE']),failed:false};
+        if(phase==='QWEN_PREFLIGHT'){
+          const done=new Set(['SELEZIONE']);
+          if(seen.has('PREFLIGHT_PASS'))done.add('PREFLIGHT');
+          return {mode:'active',current:seen.has('PREFLIGHT_PASS')?'RUNTIME':'PREFLIGHT',completed:done,failed:false};
+        }
+        if(phase==='EXECUTING'||phase==='OPENCODE'){
+          const done=new Set(['SELEZIONE','PREFLIGHT','RUNTIME']);
+          if(seen.has('EXECUTOR_STARTED'))done.add('EXECUTOR');
+          return {mode:'active',current:seen.has('EXECUTOR_STARTED')?'EXECUTOR':'EXECUTOR',completed:done,failed:false};
+        }
+        if(phase==='TESTS'){return {mode:'active',current:'TEST',completed:new Set(['SELEZIONE','PREFLIGHT','RUNTIME','EXECUTOR']),failed:false};}
+        if(phase==='PERSISTENCE'){return {mode:'active',current:'PERSISTENZA',completed:new Set(['SELEZIONE','PREFLIGHT','RUNTIME','EXECUTOR','TEST']),failed:false};}
+        return {mode:'active',current:'SELEZIONE',completed:new Set(),failed:false};
+      }
+      const cls=text(s.classification||t.classification,'');
+      if(cls==='WORK_EXECUTED_PASS')return {mode:'terminal',current:'PASS',completed:new Set(MC_PHASES.map(p=>p.key)),failed:false};
+      if(cls==='WORK_EXECUTED_STOP'||cls==='STOP')return {mode:'terminal',current:'STOP',completed:mcStopCompleted(seen),failed:true};
+      if(cls==='HUMAN_GATE_REQUIRED'||t.human_gate_required===true)return {mode:'terminal',current:'HUMAN_GATE',completed:mcStopCompleted(seen),failed:true};
+      return {mode:'idle',current:null,completed:new Set(),failed:false};
+    }
+    function mcStopCompleted(seen){
+      // A STOP may arrive at any phase: completed = phases evidenced before it.
+      const order=['SELEZIONE','PREFLIGHT','RUNTIME','EXECUTOR','TEST'];
+      const done=new Set();
+      if(seen.has('TASK_SELECTED'))done.add('SELEZIONE');
+      if(seen.has('PREFLIGHT_PASS'))done.add('PREFLIGHT');
+      if(seen.has('RUNTIME_READY'))done.add('RUNTIME');
+      if(seen.has('EXECUTOR_STARTED'))done.add('EXECUTOR');
+      if(seen.has('TESTS_STARTED')||seen.has('TESTS_PASS')||seen.has('TESTS_FAIL'))done.add('TEST');
+      // Without journal evidence, no phase is claimed completed.
+      return done;
+    }
+    function renderOpsPhaseRail(status,diag,history){
+      const s=Object.keys(obj(obj(diag).status)).length?obj(obj(diag).status):obj(status);
+      const ev=mcPhaseEvidence(s,diag,history);
+      let html='';
+      for(const phase of MC_PHASES){
+        if(html)html+='<span class="rail-arrow" aria-hidden="true">→</span>';
+        const cls=ev.failed&&ev.completed.has(phase.key)?'done':(!ev.failed&&ev.completed.has(phase.key)?'done':'');
+        const current=ev.current===phase.key&&!ev.failed;
+        html+=`<span class="rail-step ${cls} ${current?'current':''}" role="listitem"${current?' aria-current="step"':''}><span class="rdot" aria-hidden="true"></span>${escapeHtml(phase.label)}</span>`;
+      }
+      const terminal=ev.mode==='terminal'?ev.current:null;
+      if(terminal){
+        html+='<span class="rail-arrow" aria-hidden="true">→</span>';
+        for(const term of MC_TERMINALS){
+          const current=terminal===term;
+          const cls=current?`terminal-${term==='PASS'?'pass':'stop'} current`:'';
+          html+=`<span class="rail-step ${cls}" role="listitem"${current?' aria-current="step"':''}><span class="rdot" aria-hidden="true"></span>${escapeHtml(term)}</span>`;
+          if(term!=='STOP')html+='<span class="rail-arrow" aria-hidden="true">/</span>';
+        }
+      }
+      if(ev.mode==='idle'&&!html)html='<span class="rail-step current" role="listitem"><span class="rdot" aria-hidden="true"></span>ATTESA</span>';
+      put('ops-phase-rail',html);
+    }
+    // PRIMA / ADESSO / DOPO — three distinct concepts, never overwritten.
+    function renderPrimaAdessoDopo(status,diag,history){
+      const s=Object.keys(obj(obj(diag).status)).length?obj(obj(diag).status):obj(status);
+      const h=obj(history);
+      const activeTask=obj(h.active_task);
+      const lastTerminal=obj(h.last_terminal_task);
+      const latestTick=obj(h.latest_tick);
+      // PRIMA: previous authoritative state (last terminal task when present).
+      const primaTitle=lastTerminal.task_ref?shortTask(lastTerminal.task_ref):'Nessun task precedente';
+      const primaSub=lastTerminal.outcome
+        ?`${label(lastTerminal.outcome==='HUMAN_GATE'?'HUMAN_GATE_REQUIRED':lastTerminal.outcome)}${lastTerminal.terminal_at?` · ${date(lastTerminal.terminal_at,true)}`:''}${lastTerminal.human_summary?` — ${text(lastTerminal.human_summary,'')}`:''}`
+        :'Nessuno storico autorizzato disponibile';
+      // ADESSO: the real active state, or explicit idle.
+      const active=s.active===true;
+      const adessoTitle=active?(s.task_ref?shortTask(s.task_ref):'Ciclo attivo'):'Nessun task in esecuzione';
+      const adessoBits=[];
+      if(active){adessoBits.push(label(s.phase));const clock=activityClock(s.elapsed_ms);if(clock)adessoBits.push(`attivo da ${clock}`);if(s.qwen_profile)adessoBits.push(s.qwen_profile);}
+      else if(s.active===false)adessoBits.push('Dispatcher in attesa del prossimo tick WF90');
+      else adessoBits.push('Stato non osservato');
+      const adessoSub=adessoBits.join(' · ');
+      // DOPO: only canonically-known next action; otherwise explicit unknown.
+      const gate=obj(obj(diag).human_gate);
+      const gateActive=gate.active===true;
+      const dopoTitle=gateActive?'Intervento umano richiesto':'Nessun prossimo task determinato';
+      const dopoSub=gateActive?(text(gate.operator_action_summary,'Apri il dettaglio gate per l’azione richiesta.')||'Apri il dettaglio gate per l’azione richiesta.'):latestTick.recorded_at?'Il prossimo tick WF90 è pianificato; nessun task pre-selezionato.':'In attesa del primo tick reale.';
+      put('ops-prima-adesso-dopo',
+        `<div class="pad-card prima"><div class="pad-k">Prima</div><div class="pad-title">${escapeHtml(primaTitle)}</div><div class="pad-sub">${escapeHtml(primaSub)}</div></div>`+
+        `<div class="pad-card adesso"><div class="pad-k">Adesso</div><div class="pad-title">${escapeHtml(adessoTitle)}</div><div class="pad-sub">${escapeHtml(adessoSub)}</div></div>`+
+        `<div class="pad-card dopo"><div class="pad-k">Dopo</div><div class="pad-title">${escapeHtml(dopoTitle)}</div><div class="pad-sub">${escapeHtml(dopoSub)}</div></div>`);
+    }
+    // Expandable detail of the LAST TERMINAL TASK (never overwritten by idle ticks).
+    function renderTerminalDetail(history){
+      const h=obj(history);
+      const lt=obj(h.last_terminal_task);
+      if(!lt.task_ref&&!lt.outcome){put('ops-terminal-body','<p class="ops-line">Nessun task terminato registrato nello storico autorizzato.</p>');return;}
+      const rows=[
+        ['Task',lt.task_ref?shortTask(lt.task_ref):'Non disponibile'],
+        ['Esito',lt.outcome?label(lt.outcome==='HUMAN_GATE'?'HUMAN_GATE_REQUIRED':lt.outcome):'Non disponibile'],
+        ['Repo',text(lt.target_repo,'non osservato')],
+        ['Avvio',lt.started_at?date(lt.started_at):'non osservato'],
+        ['Fine',lt.terminal_at?date(lt.terminal_at):'non osservato'],
+        ['Durata',lt.duration_ms!=null?duration(lt.duration_ms):'non osservata'],
+        ['Test',lt.tests_state?label(lt.tests_state):'non osservati'],
+        ['Commit',lt.commit_sha?String(lt.commit_sha).slice(0,10):'non osservato'],
+        ['Persistenza',lt.persistence_state==='COMPLETED'?'Completata':lt.persistence_state==='NOT_COMPLETED'?'Non completata':'non osservata'],
+        ['Bloccante',lt.blocker?text(lt.blocker,'—'):'nessuno osservato'],
+      ];
+      put('ops-terminal-body',rows.map(([k,v])=>`<p class="ops-line"><b>${escapeHtml(k)}:</b> ${escapeHtml(String(v))}</p>`).join('')+(lt.human_summary?`<p class="ops-line">${escapeHtml(text(lt.human_summary,''))}</p>`:''));
+    }
+    // STORICO: task-centric history from the authoritative /v1/history view.
+    // Ordinary IDLE ticks are never rendered as engineering tasks.
+    function renderHistoryTab(history){
+      const h=obj(history);
+      const tasks=list(h.recent_tasks).map(obj);
+      if(!tasks.length){put('history-tasks','<p class="hist-empty">Nessuno storico task autorizzato disponibile. I tick IDLE_CLEAN non sono task di ingegneria e non vengono mostrati come tali.</p>');return;}
+      const rows=tasks.map(task=>{
+        const outcome=text(task.outcome,'UNKNOWN').toUpperCase();
+        const state=text(task.state,'').toUpperCase();
+        const outcomeCls=MC_TERMINALS.includes(outcome)||outcome==='HUMAN_GATE'||outcome==='EXECUTING'?outcome:'UNKNOWN';
+        const outcomeLabel=outcome==='PASS'?'PASS':outcome==='STOP'?'STOP':outcome==='HUMAN_GATE'?'HUMAN GATE':outcome==='EXECUTING'?'IN ESECUZIONE':(state==='CLAIMED'?'CLAIM REGISTRATO':'NON TERMINALE');
+        return `<tr>`+
+          `<td><span class="task-name">${escapeHtml(task.task_ref?shortTask(task.task_ref):'—')}</span><span class="source">${escapeHtml(text(task.target_repo,'repo non osservata'))}</span></td>`+
+          `<td><span class="hist-outcome ${escapeHtml(outcomeCls)}">${escapeHtml(outcomeLabel)}</span></td>`+
+          `<td>${escapeHtml(task.claimed_at?date(task.claimed_at):'non osservato')}</td>`+
+          `<td>${escapeHtml(task.terminal_at?date(task.terminal_at):'—')}</td>`+
+          `<td>${escapeHtml(task.duration_ms!=null?duration(task.duration_ms):'—')}</td>`+
+          `<td>${escapeHtml(task.tests_state?label(task.tests_state):'—')}</td>`+
+          `<td><span class="mono">${escapeHtml(task.commit_sha?String(task.commit_sha).slice(0,10):'—')}</span></td>`+
+          `<td>${escapeHtml(task.persistence_state==='COMPLETED'?'Completata':task.persistence_state==='NOT_COMPLETED'?'No':'—')}</td>`+
+          `<td>${escapeHtml(task.blocker?text(task.blocker,'—').slice(0,60):'—')}</td>`+
+          `</tr>`;
+      }).join('');
+      put('history-tasks',
+        `<div class="table-wrap"><table><thead><tr>`+
+        `<th scope="col">Task / repo</th><th scope="col">Esito</th><th scope="col">Claim</th><th scope="col">Fine</th><th scope="col">Durata</th><th scope="col">Test</th><th scope="col">Commit</th><th scope="col">Persist.</th><th scope="col">Bloccante</th>`+
+        `</tr></thead><tbody>${rows}</tbody></table></div>`+
+        `<p class="queue-note">Storico derivato dal registro receipt autoritario e dal journal operativo (fuori dal worktree). I tick IDLE_CLEAN non compaiono come task. Nessuno stato storico viene modificato da questa vista.</p>`);
+    }
+    // COMPONENTI: human-readable role cards; PID/port only when really observed.
+    function renderComponentsTab(diag,resources){
+      const d=obj(diag);const res=obj(resources);
+      const q=obj(d.qwen);const resQ=obj(res.qwen);
+      const qwenObs=Object.keys(resQ).length?resQ:q;
+      const usage=deriveQwenUsage({active:false,phase:'TERMINAL'},qwenObs);
+      const lc=qwenLifecycleInfo(q.lifecycle);
+      const status=obj(d.status);
+      const activeTask=status.active===true&&status.task_ref?shortTask(status.task_ref):null;
+      const cards=[
+        {name:'WF90 · n8n',tone:'info',role:'Schedula il tick di controllo backlog ogni 2 minuti.',state:'Cadenza 120 s · osservata dal countdown',serve:activeTask?'Sta guidando il ciclo corrente':'Attende il prossimo tick',why:'È il cuore del ritmo: senza n8n nessun nuovo controllo backlog viene avviato (i task in corso non vengono interrotti).',obs:'Pianificazione esterna (VPS) · PID non osservabile localmente'},
+        {name:'Dispatcher',tone:status.active===true?'ok':'subtle',role:'Seleziona ed esegue i task LOCAL_DEV autorizzati.',state:status.active===true?`Attivo · ${label(status.phase)}`:'In attesa (idle)',serve:activeTask?`Esegue ${activeTask}`:'Non serve ora — nessun task selezionato',why:'Se lo chiudi, il Control Plane locale non può eseguire nuovi task finché il supervisor non lo riavvia (10 s).',obs:status.executor_pid?`PID ${status.executor_pid}`:'PID non osservato'},
+        {name:'Dispatcher Supervisor',tone:'subtle',role:'Mantiene in vita esattamente un dispatcher e lo riavvia se termina.',state:'Attivo (Scheduled Task · finestra nascosta)',serve:'Sempre — garantisce la resilienza del dispatcher',why:'Se lo chiudi, il dispatcher non verrà riavviato al prossimo arresto: il Control Plane locale si ferma.',obs:'Task pianificato · PID/porta non esposti in questa vista'},
+        {name:'Qwen Local',tone:usage.usage_tone==='danger'?'danger':usage.usage_tone==='ok'?'ok':'subtle',role:'Modello locale (llama.cpp) per l’esecuzione dei task.',state:usage.model_state.label+(lc?` · ${lc.label}`:''),serve:status.active===true?'Serve ora: inferenza per il task in corso':'Non serve ora — fermo o scarico automatico',why:'Se lo chiudi mentre un task è in esecuzione, l’esecuzione fallisce; a riposo si riavvia automaticamente al prossimo task.',obs:usage.primary&&usage.primary.pid?`PID ${usage.primary.pid}${usage.primary.port?` · porta ${usage.primary.port}`:''}`:'PID non osservato'},
+        {name:'OpenCode',tone:status.phase==='OPENCODE'?'ok':'subtle',role:'Harness di esecuzione locale guidato dal modello.',state:status.active===true&&['OPENCODE','EXECUTING'].includes(text(status.phase,''))?'Attivo':'Non osservato in questo ciclo',serve:status.phase==='OPENCODE'?'Serve ora: sta eseguendo il task':'Non necessario ora',why:'È l’esecutore: senza OpenCode nessun task può essere materialmente svolto.',obs:'Processo lanciato dal dispatcher · PID non osservato in questa vista'},
+        {name:'Receipt Ledger',tone:'subtle',role:'Registro durevole dei claim: impedisce esecuzioni duplicate.',state:'Attivo · scrittura atomica solo dal dispatcher',serve:'Sempre — ogni claim dipende da lui',why:'Non chiuderlo mai manualmente: ogni modifica invalida le garanzie anti-duplicazione della coda.',obs:'reports/runtime/dev-queue/always-on/receipts.json · sola lettura qui'},
+        {name:'GitHub Source of Truth',tone:'info',role:'Repository canonico: backlog, ricevute e codice vivono qui.',state:'Sincronizzato a ogni ciclo (fetch + ff-only)',serve:'Sempre — verifica igiene e claim',why:'Se il repository locale diverge (dirty/mismatch), il dispatcher si ferma con gate umano: nessuna azione distruttiva.',obs:'mrhz1973/control-plane · remoto'},
+        {name:'Hermes',tone:'violet',role:'Orchestratore/bridge per operazioni browser esterne (quando attivo).',state:'Non osservato in questo ciclo',serve:'Solo per attività browser governate',why:'La sua assenza non impatta il ciclo LOCAL_DEV; è un dominio separato.',obs:'Attività esterne visibili nella scheda TECNICO · PID non osservato'},
+      ];
+      put('components-cards',cards.map(c=>`<article class="comp-card" data-tone="${escapeHtml(c.tone)}" style="color:inherit">`+
+        `<div class="comp-name">${escapeHtml(c.name)}</div>`+
+        `<div class="comp-role">${escapeHtml(c.role)}</div>`+
+        `<div class="comp-row"><b>Stato:</b> ${escapeHtml(c.state)}</div>`+
+        `<div class="comp-row"><b>Serve adesso?</b> ${escapeHtml(c.serve)}</div>`+
+        `<div class="comp-row mono">${escapeHtml(c.obs)}</div>`+
+        `<div class="comp-why"><b>Se lo chiudi:</b> ${escapeHtml(c.why)}</div>`+
+        `</article>`).join(''));
     }
     function fact(name,value,key,mono=false){return `<div><dt>${escapeHtml(name)} ${help(key)}</dt><dd${mono?' class="mono"':''}>${escapeHtml(value)}</dd></div>`;}
     function metric(name,value,sub,key,color='info',identity=false){return `<article class="metric ${color}"><div class="metric-label">${escapeHtml(name)} ${help(key)}</div><div class="metric-value${identity?' identity':''}">${escapeHtml(value)}</div><p class="metric-sub">${escapeHtml(sub)}</p></article>`;}
@@ -902,8 +1141,15 @@
       return lines;
     }
 
-    function render(status,diag,resources,refreshMeta){const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);const t=obj(d.last_tick),q=obj(d.queue),w=obj(d.qwen);const resQwen=obj(obj(resources).qwen);const qwenObs=Object.keys(resQwen).length?resQwen:w;const usage=deriveQwenUsage(s,qwenObs);const fallback=fallbackExplanation(s,t,q);const e=typeof obj(d.explanation).action_required==='boolean'||obj(d.explanation).action_required===null?{...fallback,...obj(d.explanation)}:fallback;const active=s.active===true;const c=text(s.classification||t.classification,'');const models=list(w.models).map(obj).filter(m=>scalar(m.id));const qwenMetric=qwenSummaryMetric(usage);
+    function render(status,diag,resources,refreshMeta,history){const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);const t=obj(d.last_tick),q=obj(d.queue),w=obj(d.qwen);const resQwen=obj(obj(resources).qwen);const qwenObs=Object.keys(resQwen).length?resQwen:w;const usage=deriveQwenUsage(s,qwenObs);const fallback=fallbackExplanation(s,t,q);const e=typeof obj(d.explanation).action_required==='boolean'||obj(d.explanation).action_required===null?{...fallback,...obj(d.explanation)}:fallback;const active=s.active===true;const c=text(s.classification||t.classification,'');const models=list(w.models).map(obj).filter(m=>scalar(m.id));const qwenMetric=qwenSummaryMetric(usage);
       renderOpstrip(d,s,resources);
+      // === #94 Mission Control V2: OPERAZIONI (default human-first view) ===
+      renderPrimaAdessoDopo(s,d,history);
+      renderOpsPhaseRail(s,d,history);
+      renderTerminalDetail(history);
+      // === #94 STORICO + COMPONENTI (independent of the other sources) ===
+      renderHistoryTab(history);
+      renderComponentsTab(d,resources);
       put('summary-cards',[
         metric('Stato dispatcher',active?'Al lavoro':s.active===false?(c==='HUMAN_GATE_REQUIRED'?'Intervento umano':c==='SERVICE_ERROR'?'Errore servizio':'In attesa'):'Sconosciuto',active?label(s.phase):`Ultimo esito: ${label(c)}`,'active',active?'info':tone(c)),
         metric('Task',s.task_ref?shortTask(s.task_ref):q.candidate_task_ref?shortTask(q.candidate_task_ref):'Nessun task',s.task_ref?(active?'Task in elaborazione':'Ultimo task osservato'):q.candidate_task_ref?'Candidato · non ancora avviato':'Nessun task selezionato','task_ref','identity',true),
@@ -955,6 +1201,7 @@
       {key:'status',path:'/v1/status',alert:'/v1/status'},
       {key:'diagnostics',path:'/v1/diagnostics',alert:'/v1/diagnostics'},
       {key:'resources',path:'/v1/resources',alert:'/v1/resources'},
+      {key:'history',path:'/v1/history',alert:'/v1/history'},
     ];
     function readRefreshPref(){
       try{const raw=storageGet(REFRESH_PREF_KEY);if(!raw)return {...REFRESH_DEFAULTS};const parsed=JSON.parse(raw);const interval=typeof parsed==='object'&&parsed!==null?number(parsed.interval_ms):null;const auto=typeof parsed==='object'&&parsed!==null&&typeof parsed.auto_refresh_enabled==='boolean'?parsed.auto_refresh_enabled:null;
@@ -968,7 +1215,7 @@
     async function refresh(){if(refreshing)return;refreshing=true;el('refresh-button').disabled=true;try{
       const responses=await Promise.allSettled(REFRESH_SOURCES.map(src=>readJson(src.path)));
       if(!refreshState.sourceState)refreshState.sourceState=new Map();
-      const snapshot={status:null,diagnostics:null,resources:null};
+      const snapshot={status:null,diagnostics:null,resources:null,history:null};
       REFRESH_SOURCES.forEach((src,i)=>{
         const ok=responses[i].status==='fulfilled';
         if(ok){refreshState.sourceState.set(src.key,{freshness:'FRESH',at:new Date()});snapshot[src.key]=responses[i].value;}
@@ -980,8 +1227,9 @@
       const s=snapshot.status!==null?snapshot.status:(refreshState.sourceState.get('status').freshness==='STALE'?lastGood.status??null:null);
       const d=snapshot.diagnostics!==null?snapshot.diagnostics:(refreshState.sourceState.get('diagnostics').freshness==='STALE'?lastGood.diagnostics??null:null);
       const r=snapshot.resources!==null?snapshot.resources:(refreshState.sourceState.get('resources').freshness==='STALE'?lastGood.resources??null:null);
-      if(s!==null||d!==null||r!==null){refreshState.lastGood={...(lastGood),...(snapshot.status!==null?{status:snapshot.status}:{}),...(snapshot.diagnostics!==null?{diagnostics:snapshot.diagnostics}:{}),...(snapshot.resources!==null?{resources:snapshot.resources}:{})};lastSuccess=new Date();}
-      render(s,d,r,{source_freshness:{status:refreshState.sourceState.get('status').freshness,diagnostics:refreshState.sourceState.get('diagnostics').freshness,resources:refreshState.sourceState.get('resources').freshness},last_known_good_at:refreshState.sourceState.get('resources').at?.toISOString?.()??null});
+      const hh=snapshot.history!==null?snapshot.history:(refreshState.sourceState.get('history').freshness==='STALE'?lastGood.history??null:null);
+      if(s!==null||d!==null||r!==null||hh!==null){refreshState.lastGood={...(lastGood),...(snapshot.status!==null?{status:snapshot.status}:{}),...(snapshot.diagnostics!==null?{diagnostics:snapshot.diagnostics}:{}),...(snapshot.resources!==null?{resources:snapshot.resources}:{}),...(snapshot.history!==null?{history:snapshot.history}:{})};lastSuccess=new Date();}
+      render(s,d,r,{source_freshness:{status:refreshState.sourceState.get('status').freshness,diagnostics:refreshState.sourceState.get('diagnostics').freshness,resources:refreshState.sourceState.get('resources').freshness,history:refreshState.sourceState.get('history').freshness},last_known_good_at:refreshState.sourceState.get('resources').at?.toISOString?.()??null},hh);
       // Independent per-source freshness: STALE keeps values visible; a source
       // that never succeeded is UNAVAILABLE_NO_DATA (no invented values).
       const freshCount=REFRESH_SOURCES.filter(src=>refreshState.sourceState.get(src.key).freshness==='FRESH').length;
@@ -1069,6 +1317,21 @@
     el('refresh-interval').value=String(refreshState.interval_ms);
     el('auto-refresh').checked=refreshState.auto===true;
     applyRefreshSchedule();
+    // === #94 tabs: OPERAZIONI default; choice persisted trivially (localStorage) ===
+    const TAB_KEY='control-plane.dashboard.tab.v1';
+    const TAB_IDS=Object.freeze(['operations','history','components','technical']);
+    function applyTab(id){
+      if(!TAB_IDS.includes(id))id='operations';
+      for(const t of TAB_IDS){
+        const btn=el(`tab-${t}`);const panel=el(`tab-panel-${t}`);
+        if(btn){btn.setAttribute('aria-selected',t===id?'true':'false');btn.tabIndex=t===id?0:-1;}
+        if(panel)panel.hidden=t!==id;
+      }
+      try{storageSet(TAB_KEY,id);}catch{/* presentation preference only */}
+    }
+    for(const t of TAB_IDS){el(`tab-${t}`).addEventListener('click',()=>applyTab(t));}
+    let storedTab=null;try{storedTab=storageGet(TAB_KEY);}catch{storedTab=null;}
+    applyTab(TAB_IDS.includes(storedTab)?storedTab:'operations');
     render(null,null,null);refresh();
     // Countdown updates client-side every second; anchored ONLY on real ticks.
     setInterval(renderOpstripCountdown,1000);

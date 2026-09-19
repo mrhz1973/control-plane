@@ -65,10 +65,11 @@ GET  /dashboard
 GET  /v1/status
 GET  /v1/diagnostics
 GET  /v1/resources
+GET  /v1/history
 POST /v1/tick
 ```
 
-`/dashboard`, `/v1/status`, `/v1/diagnostics`, and `/v1/resources` are observability surfaces. `/v1/tick` is operational and must not be treated as part of the ordinary read-only dashboard surface.
+`/dashboard`, `/v1/status`, `/v1/diagnostics`, `/v1/resources`, and `/v1/history` are observability surfaces. `/v1/tick` is operational and must not be treated as part of the ordinary read-only dashboard surface.
 
 ---
 
@@ -162,7 +163,22 @@ Primary backing reads:
 GET /v1/status
 GET /v1/diagnostics
 GET /v1/resources
+GET /v1/history
 ```
+
+Mission Control V2 tabs (issue #94):
+- `OPERAZIONI` (default human-first view): PRIMA / ADESSO / DOPO cards, canonical seven-phase task rail (Selezione → Preflight → Runtime → Executor → Test → Persistenza → PASS/STOP, evidence-only completion), active/last-terminal/latest-tick as distinct concepts;
+- `STORICO`: task-centric history derived from the authoritative receipt ledger plus the durable journal — ordinary IDLE ticks are never engineering tasks;
+- `COMPONENTI`: human-readable role cards (WF90, Dispatcher, Supervisor, Qwen Local, OpenCode, Receipt Ledger, GitHub, Hermes) with "COSA SUCCEDE SE LO CHIUDI?";
+- `TECNICO`: previous technical sections (resources/observatory, operator visibility, queue, agent ops, dispatcher facts).
+
+Durable operational history (issue #94):
+
+```text
+%LOCALAPPDATA%\ControlPlane\runtime\mission-control-events.jsonl
+```
+
+Append-only JSONL journal outside the Git worktree. Strict field allow-list with bounded sizes; no secrets, no raw stdout, no full command lines, no environment variables. Only real dispatcher lifecycle transitions emit events (`TASK_SELECTED`, `PREFLIGHT_PASS`, `RUNTIME_READY`, `EXECUTOR_STARTED`, `TESTS_STARTED`/`TESTS_PASS`/`TESTS_FAIL`, `PERSISTENCE_STARTED`, `TASK_PASS`, `TASK_STOP`, `HUMAN_GATE_REQUIRED`); `IDLE_CLEAN` ticks emit nothing. Injected-deps ticks never write the real journal (isolation law). `GET /v1/history` exposes a bounded read-only recent view; it duplicates no execution authority and never mutates receipts.
 
 Current dashboard purpose:
 - dispatcher health/state;

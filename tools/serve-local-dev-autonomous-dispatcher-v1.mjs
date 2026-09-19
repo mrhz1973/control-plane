@@ -39,8 +39,9 @@
  */
 import http from "node:http";
 import { execFile } from "node:child_process";
-import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, unlinkSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, unlinkSync, appendFileSync, statSync } from "node:fs";
 import { resolve, join, dirname } from "node:path";
+import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { runDispatchLoop } from "./dispatch-local-dev-queue-loop-v1.mjs";
 import {
@@ -79,7 +80,211 @@ export const WF90_INTERVAL_SECONDS = 120;
 export const ARCHITECTURE_PATH = "/architecture";
 export const DASHBOARD_PATHS = Object.freeze(["/", "/dashboard", "/dashboard/"]);
 export const QWEN_OBSERVE_BASE_URL = "http://127.0.0.1:8080";
-/** QUEUE / CONTROL REPOSITORY (issue #90): owns queue, receipts, runtime
+
+// =========================== #94 MISSION CONTROL V2 ===========================
+// Durable operational history journal. Append-only JSONL OUTSIDE the Git
+// worktree (hard wall: no raw stdout / command lines / secrets persisted).
+export const HISTORY_PATH = "/v1/history";
+export const HISTORY_SCHEMA = "local-dev-mission-control-history-v1";
+export const MISSION_CONTROL_JOURNAL_SCHEMA = "mission-control-event-v1";
+/** %LOCALAPPDATA%\ControlPlane\runtime\mission-control-events.jsonl (equivalent
+ *  existing ControlPlane runtime dir outside Git — same root as the supervisor
+ *  log). Falls back to ~\.control-plane-runtime when LOCALAPPDATA is absent. */
+export function missionControlJournalPath(env = process.env, home = homedir()) {
+  const base = typeof env?.LOCALAPPDATA === "string" && env.LOCALAPPDATA.trim()
+    ? join(env.LOCALAPPDATA, "ControlPlane", "runtime")
+    : join(home || ".", ".control-plane-runtime");
+  return join(base, "mission-control-events.jsonl");
+}
+/** Strict event vocabulary + per-field bounds (allow-list law). */
+export const MISSION_CONTROL_EVENT_FIELDS = Object.freeze({
+  schema_version: 40, recorded_at: 40, task_ref: 200, task_id: 80, target_repo: 120,
+  event: 40, phase: 80, component: 60, classification: 120, tests_state: 80,
+  duration_ms: 12, commit_sha: 60, human_summary: 300,
+});
+const SECRET_KEY_RE = /(secret|token|cookie|password|authorization|api[_-]?key|session|credential)/i;
+/** Bounded allow-listed event; returns null when the row is not journalable. */
+export function sanitizeMissionControlEvent(raw = {}) {
+  if (!raw || typeof raw !== "object") return null;
+  if (typeof raw.event !== "string" || !raw.event.trim()) return null;
+  const out = { schema_version: MISSION_CONTROL_JOURNAL_SCHEMA };
+  for (const [key, max] of Object.entries(MISSION_CONTROL_EVENT_FIELDS)) {
+    if (key === "schema_version" || key === "event") continue;
+    if (SECRET_KEY_RE.test(key)) continue; // fail-closed: allow-list only
+    const value = raw[key];
+    if (value === undefined || value === null) continue;
+    if (key === "duration_ms") {
+      if (typeof value !== "number" || !Number.isFinite(value) || value < 0) continue;
+      out.duration_ms = Math.min(Math.round(value), 10 ** 11);
+      continue;
+    }
+    if (typeof value !== "string" || !value.trim()) continue;
+    out[key] = value.trim().slice(0, max);
+  }
+  out.event = raw.event.trim().slice(0, MISSION_CONTROL_EVENT_FIELDS.event);
+  if (typeof out.recorded_at !== "string") return null;
+  return out;
+}
+const JOURNAL_MAX_BYTES = 2 * 1024 * 1024; // bounded: rotate at 2 MiB
+const JOURNAL_MAX_READ_EVENTS = 500;
+/** Read the bounded recent tail of the journal. Malformed lines are skipped
+ *  silently (fail-safe), never throw into the history builder. */
+export function readMissionControlJournal(path = missionControlJournalPath(), limit = JOURNAL_MAX_READ_EVENTS) {
+  if (typeof path !== "string" || !path) return [];
+  let text = "";
+  try {
+    if (!existsSync(path)) return [];
+    text = readFileSync(path, "utf8");
+  } catch { return []; }
+  const lines = text.split(/\r?\n/);
+  const events = [];
+  for (let i = lines.length - 1; i >= 0 && events.length < limit; i -= 1) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    try {
+      const parsed = JSON.parse(line);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)
+        && parsed.schema_version === MISSION_CONTROL_JOURNAL_SCHEMA) {
+        events.push(parsed);
+      }
+    } catch { /* malformed entry skipped, never fatal */ }
+  }
+  return events.reverse(); // oldest → newest
+}
+/** Append-only bounded journal write. One JSON line per event; rotates to
+ *  .1 keeping the newest chunk when the size bound is exceeded. */
+export function appendMissionControlEvent(rawEvent, options = {}) {
+  const event = sanitizeMissionControlEvent(rawEvent);
+  if (!event) return null;
+  const path = options.journalPath || missionControlJournalPath();
+  if (typeof path !== "string" || !path) return null;
+  try {
+    const dir = dirname(path);
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    let line = `${JSON.stringify(event)}\n`;
+    try {
+      const size = statSync(path).size;
+      if (size + line.length > JOURNAL_MAX_BYTES) {
+        const rotated = `${path}.1`;
+        try { if (existsSync(rotated)) unlinkSync(rotated); } catch { /* best-effort */ }
+        try { renameSync(path, rotated); } catch { /* best-effort */ }
+      }
+    } catch { /* fresh file */ }
+    appendFileSync(path, line, "utf8");
+    return event;
+  } catch { return null; } // journal MUST never break the tick path
+}
+
+/** Build the bounded read-only history view (GET /v1/history). Derives
+ *  task-centric history from the AUTHORITATIVE receipts ledger + journal;
+ *  duplicates no execution authority. IDLE ticks are never engineering
+ *  tasks. Never mutates receipts. */
+export function buildMissionControlHistoryView(deps = {}) {
+  const status = deps.statusTracker && typeof deps.statusTracker.snapshot === "function"
+    ? safeSnapshot(deps.statusTracker) : null;
+  const lastTick = deps.lastTickStore && typeof deps.lastTickStore.snapshot === "function"
+    ? safeTick(deps.lastTickStore) : null;
+  const loadReceipts = deps.loadReceipts || (() => {
+    const loaded = loadReceiptsLedger(resolve(CANONICAL_REPO_PATH, RECEIPTS_PATH));
+    return loaded.ok ? loaded.receipts : [];
+  });
+  let receipts = [];
+  try { receipts = Array.isArray(loadReceipts()) ? loadReceipts() : []; } catch { receipts = []; }
+  const journal = readMissionControlJournal(deps.journalPath, deps.journalLimit || 200);
+  const nowIso = deps.nowIso ? deps.nowIso() : new Date().toISOString();
+
+  // --- Task-centric history from receipts (authoritative terminal states) ---
+  const TERMINAL_RECEIPT = new Set(["PASS", "STOP"]);
+  const byTask = new Map();
+  for (const receipt of receipts) {
+    if (!receipt || typeof receipt !== "object") continue;
+    const taskRef = typeof receipt.task_ref === "string" ? receipt.task_ref.slice(0, 200) : null;
+    if (!taskRef) continue;
+    const entry = byTask.get(taskRef) || { task_ref: taskRef, events: [] };
+    entry.events.push(receipt);
+    byTask.set(taskRef, entry);
+  }
+  const recentTasks = [];
+  for (const [taskRef, entry] of byTask) {
+    const sorted = [...entry.events].sort((a, b) => String(a.claimed_at || "").localeCompare(String(b.claimed_at || "")));
+    const latest = sorted[sorted.length - 1] || null;
+    const terminalReceipt = [...sorted].reverse().find((r) => TERMINAL_RECEIPT.has(String(r.state || "").toUpperCase()));
+    const claimedAt = typeof latest?.claimed_at === "string" ? latest.claimed_at : null;
+    const journalEvents = journal.filter((e) => e.task_ref === taskRef);
+    const startEvent = journalEvents.find((e) => e.event === "TASK_SELECTED");
+    const terminalEvent = [...journalEvents].reverse().find((e) => e.event === "TASK_PASS" || e.event === "TASK_STOP" || e.event === "HUMAN_GATE_REQUIRED");
+    const state = String(terminalReceipt?.state || (latest?.state ? latest.state : "")).toUpperCase();
+    const sourceRef = typeof latest?.source_ref === "string" ? latest.source_ref.slice(0, 200) : null;
+    const repoFromSource = sourceRef && sourceRef.startsWith("github:") ? sourceRef.slice("github:".length).split("@")[0] : null;
+    const repoMatch = repoFromSource && /^[\w.-]+\/[\w.-]+$/.test(repoFromSource) ? repoFromSource : null;
+    const task = {
+      task_ref: taskRef,
+      task_id: taskRef.replace(/^LOCAL_DEV_B_/, "") || taskRef,
+      target_repo: repoMatch,
+      claimed_at: claimedAt,
+      started_at: startEvent?.recorded_at || claimedAt,
+      terminal_at: terminalEvent?.recorded_at || null,
+      duration_ms: typeof terminalEvent?.duration_ms === "number" ? terminalEvent.duration_ms : null,
+      state,
+      outcome: state === "PASS" ? "PASS" : state === "STOP" ? "STOP" : (state === "EXECUTING" ? "EXECUTING" : (state ? state : "UNKNOWN")),
+      tests_state: terminalEvent?.tests_state || null,
+      commit_sha: terminalEvent?.commit_sha || null,
+      persistence_state: state === "PASS" ? "COMPLETED" : (state === "STOP" ? "NOT_COMPLETED" : null),
+      blocker: terminalEvent?.classification || (state === "STOP" ? (terminalReceipt?.interpretation_code || null) : null),
+      human_summary: terminalEvent?.human_summary || (state === "PASS" ? "Task completato con PASS." : state === "STOP" ? "Task terminato con STOP." : null),
+      event_count: journalEvents.length,
+    };
+    recentTasks.push(task);
+  }
+  recentTasks.sort((a, b) => String(a.started_at || "").localeCompare(String(b.started_at || "")));
+
+  // Active task: only a REAL active execution (status tracker), never a
+  // candidate scan or an idle tick.
+  const activeTask = status && status.active === true && status.task_ref
+    ? {
+        task_ref: status.task_ref,
+        task_id: status.task_ref.replace(/^LOCAL_DEV_B_/, ""),
+        phase: status.phase,
+        elapsed_ms: status.elapsed_ms,
+        qwen_profile: status.qwen_profile,
+        started_at: journal.filter((e) => e.task_ref === status.task_ref && e.event === "TASK_SELECTED").at(-1)?.recorded_at || null,
+      }
+    : null;
+
+  // Last terminal task: most recent receipts task with a terminal state OR
+  // the last active-journal terminal event — survives IDLE ticks by design.
+  let lastTerminal = null;
+  for (const task of [...recentTasks].reverse()) {
+    if (task.outcome === "PASS" || task.outcome === "STOP" || task.outcome === "HUMAN_GATE") {
+      lastTerminal = task;
+      break;
+    }
+  }
+  if (!lastTerminal) {
+    const t = [...journal].reverse().find((e) => (e.event === "TASK_PASS" || e.event === "TASK_STOP" || e.event === "HUMAN_GATE_REQUIRED") && e.task_ref);
+    if (t) lastTerminal = { task_ref: t.task_ref, task_id: t.task_ref.replace(/^LOCAL_DEV_B_/, ""), outcome: t.event === "TASK_PASS" ? "PASS" : (t.event === "HUMAN_GATE_REQUIRED" ? "HUMAN_GATE" : "STOP"), terminal_at: t.recorded_at, classification: t.classification || null, human_summary: t.human_summary || null, started_at: null, duration_ms: typeof t.duration_ms === "number" ? t.duration_ms : null, tests_state: t.tests_state || null, commit_sha: t.commit_sha || null, target_repo: t.target_repo || null };
+  }
+
+  return {
+    schema_version: HISTORY_SCHEMA,
+    generated_at: nowIso,
+    read_only: true,
+    journal_path_basename: "mission-control-events.jsonl",
+    latest_tick: lastTick ? {
+      recorded_at: lastTick.recorded_at,
+      classification: lastTick.classification,
+      execution_performed: lastTick.execution_performed === true,
+      task_ref: lastTick.task_ref || null,
+      reason_codes: Array.isArray(lastTick.reason_codes) ? lastTick.reason_codes.slice(0, 16) : [],
+    } : null,
+    active_task: activeTask,
+    last_terminal_task: lastTerminal,
+    recent_tasks: recentTasks.slice(-20).reverse(),
+    recent_events: journal.slice(-60).reverse(),
+  };
+}
+function safeSnapshot(tracker) { try { return tracker.snapshot(); } catch { return null; } }
+function safeTick(store) { try { return store.snapshot(); } catch { return null; } }/** QUEUE / CONTROL REPOSITORY (issue #90): owns queue, receipts, runtime
  * artifacts and dispatcher code. NOT the execution target for non-
  * control-plane backlog items; never simply replaced by a target repo. */
 export const QUEUE_REPO = "mrhz1973/control-plane";
@@ -1161,6 +1366,17 @@ export function persistReceiptsAtomic(targetPath, receipts) {
  */
 export async function performTick(body, deps = {}) {
   const requestId = typeof body?.request_id === "string" ? body.request_id : null;
+  // #94 mission-control journal: append-only durable observability OUTSIDE the
+  // worktree. Emits only REAL lifecycle transitions; journal failures never
+  // break the tick. Law (V4_PARTIAL_INJECTED_TICKDEPS_REAL_RUNTIME_ISOLATION):
+  // injected-deps ticks journal NEITHER — only the real runtime or an
+  // explicitly injected journalPath (offline tests) writes.
+  const journalPath = deps.missionControlJournalPath || (shouldPersistRuntimeArtifacts(deps) ? undefined : null);
+  const journalEmit = journalPath === null ? () => {} : (event) => {
+    try {
+      appendMissionControlEvent({ recorded_at: new Date().toISOString(), ...event }, journalPath ? { journalPath } : {});
+    } catch { /* observability only */ }
+  };
   // #89 idle-lifecycle handle: only an EXPLICITLY injected lifecycle is used
   // (real wiring happens in startServer). Declared before any hook usage.
   const qwenLifecycle = deps.qwenLifecycle || null;
@@ -1241,6 +1457,7 @@ export async function performTick(body, deps = {}) {
   // 1. Repo hygiene (fail-closed, non-destructive).
   const repoState = await verifyRepo();
   if (!repoState.ok) {
+    journalEmit({ event: "HUMAN_GATE_REQUIRED", phase: "REPO_HYGIENE", component: "dispatcher", classification: "HUMAN_GATE_REQUIRED", human_summary: `Gate umano richiesto in verifica repository: ${(repoState.reason_codes || []).slice(0, 3).join(", ")}` });
     return done(wrapTickResult({
       ok: false,
       request_id: requestId,
@@ -1398,6 +1615,16 @@ export async function performTick(body, deps = {}) {
       gate_summary: `TARGET_PATH_MISMATCH:${targetRepo}`,
     }));
   }
+  // #94: a REAL claim was selected and fenced — the one authoritative
+  // TASK_SELECTED hook (candidate scans never emit it).
+  journalEmit({
+    event: "TASK_SELECTED",
+    phase: "CLAIM",
+    component: "dispatcher",
+    task_ref: claim.task_ref,
+    target_repo: targetRepo,
+    human_summary: `Selezionato ${String(claim.task_ref || "").replace(/^LOCAL_DEV_B_/, "")} su ${targetRepo}.`,
+  });
   statusSafe("update", {
     phase: "QWEN_PREFLIGHT",
     task_ref: claim.task_ref,
@@ -1444,6 +1671,7 @@ export async function performTick(body, deps = {}) {
     const status = readiness?.reason_code || readiness?.status || "QWEN_SESSION_NOT_READY";
     statusSafe("update", { runtime_ready: false, last_event: "qwen_not_ready" });
     if (qwenLifecycle) qwenLifecycle.markPreflightEnd({ ready: false });
+    journalEmit({ event: "HUMAN_GATE_REQUIRED", phase: "QWEN_PREFLIGHT", component: "qwen-session-manager", task_ref: claim.task_ref, target_repo: targetRepo, classification: "HUMAN_GATE_REQUIRED", human_summary: `Runtime Qwen non pronto: ${String(status).slice(0, 80)}.` });
     return done(wrapTickResult({
       ok: false,
       request_id: requestId,
@@ -1457,6 +1685,22 @@ export async function performTick(body, deps = {}) {
   }
   statusSafe("update", { runtime_ready: true, last_event: "qwen_ready" });
   if (qwenLifecycle) qwenLifecycle.markPreflightEnd({ ready: true });
+  // #94: exact-profile runtime verified READY (preflight PASS + runtime ready).
+  journalEmit({
+    event: "PREFLIGHT_PASS",
+    phase: "QWEN_PREFLIGHT",
+    component: "qwen-session-manager",
+    task_ref: claim.task_ref,
+    target_repo: targetRepo,
+    human_summary: `Runtime Qwen pronto sul profilo esatto ${profileId || "non osservato"}.`,
+  });
+  journalEmit({
+    event: "RUNTIME_READY",
+    phase: "QWEN_PREFLIGHT",
+    component: "qwen-session-manager",
+    task_ref: claim.task_ref,
+    target_repo: targetRepo,
+  });
 
   // 3. Persist claim receipts + envelope ONLY after exact profile READY.
   // Real runtime (zero injected deps) persists BOTH; ANY injected performTick
@@ -1504,6 +1748,7 @@ export async function performTick(body, deps = {}) {
     } catch (err) {
       return done(persistFailed(err));
     }
+    journalEmit({ event: "HUMAN_GATE_REQUIRED", phase: "ADMISSION", component: "dispatcher", task_ref: claim.task_ref, target_repo: targetRepo, classification: "HUMAN_GATE_REQUIRED", human_summary: `Ammissione rifiutata: ${(admission?.reason_codes || ["MICRO_TASK_ADMISSION_REJECTED"]).slice(0, 3).join(", ")}.` });
     return done(wrapTickResult({
       ok: false,
       request_id: requestId,
@@ -1534,6 +1779,15 @@ export async function performTick(body, deps = {}) {
   if (qwenLifecycle) {
     qwenLifecycle.markExecutionStart({ taskRef: claim.task_ref, profileId });
   }
+  // #94: executor really started for the claimed task.
+  journalEmit({
+    event: "EXECUTOR_STARTED",
+    phase: "EXECUTING",
+    component: "opencode",
+    task_ref: claim.task_ref,
+    target_repo: targetRepo,
+    human_summary: `Avviata l'esecuzione di ${String(claim.task_ref || "").replace(/^LOCAL_DEV_B_/, "")}.`,
+  });
   let executorResult;
   try {
     const onStatus = (event = {}) => {
@@ -1544,6 +1798,14 @@ export async function performTick(body, deps = {}) {
         classification: event.classification,
         last_event: event.last_event || event.phase || "executor_event",
       });
+      // #94: authoritative executor status events (allow-listed vocabulary).
+      if (event.phase === "TESTS" && event.last_event === "tests_start") {
+        journalEmit({ event: "TESTS_STARTED", phase: "TESTS", component: "executor", task_ref: claim.task_ref, target_repo: targetRepo });
+      } else if (event.phase === "TESTS" && event.last_event === "tests_done") {
+        journalEmit({ event: event.tests_state === "PASS" ? "TESTS_PASS" : "TESTS_FAIL", phase: "TESTS", component: "executor", task_ref: claim.task_ref, target_repo: targetRepo, tests_state: event.tests_state || null });
+      } else if (event.phase === "PERSISTENCE" && event.last_event === "persistence_start") {
+        journalEmit({ event: "PERSISTENCE_STARTED", phase: "PERSISTENCE", component: "executor", task_ref: claim.task_ref, target_repo: targetRepo });
+      }
     };
     executorResult = await runExecutor(claim.envelope, { onStatus });
   } catch (err) {
@@ -1566,6 +1828,22 @@ export async function performTick(body, deps = {}) {
   } catch (err) {
     return done(persistFailed(err));
   }
+  // #94: authoritative terminal task event (duration/tests/commit when the
+  // executor result really carries them — never invented).
+  journalEmit({
+    event: terminalPass ? "TASK_PASS" : "TASK_STOP",
+    phase: "TERMINAL",
+    component: "dispatcher",
+    task_ref: claim.task_ref,
+    target_repo: targetRepo,
+    classification: typeof executorResult?.classification === "string" ? executorResult.classification : (terminalPass ? "PASS" : "STOP"),
+    tests_state: typeof executorResult?.tests_state === "string" ? executorResult.tests_state : (Array.isArray(executorResult?.tests) && executorResult.tests.length ? (executorResult.tests[executorResult.tests.length - 1]?.exit_code === 0 ? "PASS" : "FAIL") : null),
+    duration_ms: typeof executorResult?.timebox_used_s === "number" ? Math.round(executorResult.timebox_used_s * 1000) : null,
+    commit_sha: typeof executorResult?.final_head === "string" ? executorResult.final_head : null,
+    human_summary: terminalPass
+      ? `Task ${String(claim.task_ref || "").replace(/^LOCAL_DEV_B_/, "")} completato con PASS.`
+      : `Task ${String(claim.task_ref || "").replace(/^LOCAL_DEV_B_/, "")} fermato con STOP.`,
+  });
   return done(classificationFromExecutorResult(executorResult, requestId));
 }
 
@@ -1776,6 +2054,34 @@ export async function handleTickRequest(req, res, deps = {}) {
         read_only: true,
         ok: false,
         reason_codes: ["RESOURCES_FAILED", boundStr(err?.message || err, 80)],
+      });
+    }
+    return;
+  }
+
+  // Read-only mission-control history (issue #94). Bounded recent view from
+  // the durable journal + authoritative receipts. Never acquires the tick
+  // lock, never mutates receipts, duplicates no execution authority.
+  if (path === HISTORY_PATH) {
+    if (req.method !== "GET") {
+      send(405, wrapTickResult({ ok: false, classification: "SERVICE_ERROR", reason_codes: ["GET_ONLY"] }));
+      return;
+    }
+    try {
+      const history = buildMissionControlHistoryView({
+        statusTracker: deps.statusTracker,
+        lastTickStore: deps.lastTickStore,
+        loadReceipts: deps.diagnosticsLoadReceipts || deps.tickDeps?.loadReceipts,
+        journalPath: deps.missionControlJournalPath,
+        nowIso: deps.nowIso || deps.tickDeps?.nowIso,
+      });
+      send(200, history);
+    } catch (err) {
+      send(500, {
+        schema_version: HISTORY_SCHEMA,
+        read_only: true,
+        ok: false,
+        reason_codes: ["HISTORY_FAILED", boundStr(err?.message || err, 80)],
       });
     }
     return;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Focused offline tests for tools/serve-local-dev-autonomous-dispatcher-v1.mjs
  * (V4_LOCAL_DEV_N8N_ALWAYS_ON_LIVE_FAST_TRACK_V1, §I minimum test policy).
  * Covers ONLY: request validation, single-flight BUSY, max-one-task/tick,
@@ -1487,13 +1487,14 @@ async function dashboardHarness(initial = {}) {
       if (scenario.networkError) throw new Error("Errore rete simulato");
       const path = String(url);
       return {
-        ok: scenario.httpError !== true,
-        status: scenario.httpError ? 503 : 200,
+        ok: scenario.httpError !== true && !(scenario.httpHistoryError === true && path === "/v1/history"),
+        status: (scenario.httpError ? 503 : (scenario.httpHistoryError === true && path === "/v1/history" ? 503 : 200)),
         json: async () => {
           if (scenario.badJson) throw new SyntaxError("JSON non valido");
           if (path === STATUS_PATH) return scenario.status ?? null;
           if (path === DIAGNOSTICS_PATH) return scenario.diag ?? null;
           if (path === RESOURCES_PATH) return scenario.resources ?? { schema_version: RESOURCES_SCHEMA, workstation: {}, qwen: {}, vps_new: {}, quotas: { pools: {} }, chatgpt_web: {} };
+          if (path === "/v1/history") return scenario.history ?? { schema_version: "local-dev-mission-control-history-v1", read_only: true, latest_tick: null, active_task: null, last_terminal_task: null, recent_tasks: [], recent_events: [] };
           return null;
         },
       };
@@ -1518,11 +1519,13 @@ async function dashboardHarness(initial = {}) {
     getSectionOrder: () => [...sectionOrder],
     setScenario: (next) => { scenario = next; },
     evaluate: (script) => runInContext(script, context, { timeout: 2000 }),
-    render: (status, diag, resources) => {
+    render: (status, diag, resources, refreshMeta, history) => {
       context.__testStatus = status;
       context.__testDiag = diag;
       context.__testResources = resources ?? null;
-      return runInContext("render(__testStatus, __testDiag, __testResources)", context, { timeout: 2000 });
+      context.__testRefreshMeta = refreshMeta ?? null;
+      context.__testHistory = history ?? null;
+      return runInContext("render(__testStatus, __testDiag, __testResources, __testRefreshMeta, __testHistory)", context, { timeout: 2000 });
     },
   };
 }
@@ -1540,9 +1543,10 @@ await test("S35 dashboard startup, automatic and manual refresh execute only the
   assert.ok(dashboard.fetches.some((request) => request.url === STATUS_PATH));
   assert.ok(dashboard.fetches.some((request) => request.url === DIAGNOSTICS_PATH));
   assert.ok(dashboard.fetches.some((request) => request.url === RESOURCES_PATH));
+  assert.ok(dashboard.fetches.some((request) => request.url === "/v1/history"), "#94 history source fetched");
   for (const request of dashboard.fetches) {
     assert.equal(request.method, "GET");
-    assert.ok([STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH].includes(request.url), request.url);
+    assert.ok([STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH, "/v1/history"].includes(request.url), request.url);
   }
   assert.deepEqual(dashboard.otherNetwork, []);
   assert.doesNotMatch(dashboard.html, /<form\b|<script\b[^>]*\bsrc\s*=|\b(?:src|href)\s*=\s*["']https?:\/\/(?!127\.0\.0\.1:16080\/vnc\.html)/i);
@@ -1628,7 +1632,7 @@ await test("S39 refresh handles HTTP, network and malformed JSON failures withou
     const output = [...dashboard.elements.values()].map((node) => node.textContent + node.innerHTML).join("\n");
     assert.match(output, /errore|non (?:raggiungibile|disponibile)|connessione|fallit|aggiornamento/i);
   }
-  assert.ok(dashboard.fetches.every((request) => request.method === "GET" && [STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH].includes(request.url)));
+  assert.ok(dashboard.fetches.every((request) => request.method === "GET" && [STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH, "/v1/history"].includes(request.url)));
   assert.deepEqual(dashboard.otherNetwork, []);
 });
 
@@ -2330,7 +2334,7 @@ await test("S57 Qwen usage tooltips present; network remains GET-only without PO
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   assert.ok(dashboard.fetches.every((request) => request.method === "GET"));
-  assert.ok(dashboard.fetches.every((request) => [STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH].includes(request.url)));
+  assert.ok(dashboard.fetches.every((request) => [STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH, "/v1/history"].includes(request.url)));
   assert.ok(!dashboard.fetches.some((request) => /tick/i.test(request.url)));
   assert.deepEqual(dashboard.otherNetwork, []);
   assert.doesNotMatch(dashboardText(dashboard), /\[object Object\]/);
@@ -2813,7 +2817,7 @@ await test("S71 D-9408-A dashboard compact health: qwen no fake 100%; cursor no 
   const out = dashboardText(dashboard);
   assert.match(dashboard.html, /id="sec-ops"|id="ops-row"/);
   assert.match(dashboard.html, /id="sec-resources"/);
-  assert.match(dashboard.html, /Task \/ candidato/);
+  assert.match(dashboard.html, /Task attivo \/ ultimo terminato/);
   assert.match(dashboard.html, /Stato \/ motivo/);
   assert.match(dashboard.html, /Ultimo ciclo completato/);
   assert.doesNotMatch(dashboard.html, /Qwen e runtime|why-title|Perché il sistema è in questo stato/);
@@ -3015,7 +3019,7 @@ await test("S74 D-9408-D consolidated ops row: 3 cards; Qwen merged; no arrows; 
   const out = dashboardText(dashboard);
   assert.match(dashboard.html, /id="ops-row"|class="ops-row"/);
   assert.match(dashboard.html, /\.ops-row\{[^}]*grid-template-columns:repeat\(3,/);
-  assert.match(dashboard.html, /Task \/ candidato/);
+  assert.match(dashboard.html, /Task attivo \/ ultimo terminato/);
   assert.match(dashboard.html, /Stato \/ motivo/);
   assert.match(dashboard.html, /Ultimo ciclo completato/);
   assert.match(out, /NO_ELIGIBLE_READY/);
@@ -3248,6 +3252,311 @@ await test("S81 live diagnostics endpoint shape: tick_clock present and read-onl
   assert.equal(diag.tick_clock.last_observed_tick_at, "2026-09-15T22:20:41.000Z");
   assert.equal(diag.tick_clock.next_expected_tick_at, "2026-09-15T22:22:41.000Z");
 });
+
+// ===================== #94 MISSION CONTROL V2 (S82–S93) =====================
+import {
+  HISTORY_PATH,
+  HISTORY_SCHEMA,
+  MISSION_CONTROL_JOURNAL_SCHEMA,
+  missionControlJournalPath,
+  sanitizeMissionControlEvent,
+  appendMissionControlEvent,
+  readMissionControlJournal,
+  buildMissionControlHistoryView,
+} from "../../tools/serve-local-dev-autonomous-dispatcher-v1.mjs";
+
+const JOURNAL_DIR = mkdtempSync(join(tmpdir(), "mc94-journal-"));
+
+await test("S82 #94 journal path resolves outside the Git worktree (LOCALAPPDATA root)", () => {
+  const p = missionControlJournalPath({ LOCALAPPDATA: "C:\\FakeUser\\AppData\\Local" }, "C:\\FakeUser");
+  assert.ok(p.startsWith("C:\\FakeUser\\AppData\\Local\\ControlPlane\\runtime"), p);
+  assert.ok(p.endsWith("mission-control-events.jsonl"));
+  assert.doesNotMatch(p, /control-plane/i, "journal must not live in the repo worktree");
+  const fallback = missionControlJournalPath({}, "C:\\FakeHome");
+  assert.ok(fallback.startsWith(join("C:\\FakeHome", ".control-plane-runtime")), fallback);
+});
+
+await test("S83 #94 strict field allow-list + bounded sizes; secret-like and oversized fields are not persisted", () => {
+  const ev = sanitizeMissionControlEvent({
+    schema_version: "other", // overridden by canonical constant
+    recorded_at: "2026-09-19T00:00:00.000Z",
+    task_ref: "T".repeat(500),
+    event: "TASK_PASS",
+    api_token: "SUPERSECRET", // non-allowlisted + secret-like
+    session_id: "x", // non-allowlisted + secret-like
+    stdout: "raw output", // non-allowlisted
+    command_line: "node --secret-flag", // non-allowlisted
+    env_vars: { A: "1" }, // non-allowlisted
+    duration_ms: 12_345,
+    commit_sha: "c".repeat(200),
+    human_summary: "s".repeat(999),
+    nested: { deep: { object: true } }, // non-allowlisted
+  });
+  assert.equal(ev.schema_version, MISSION_CONTROL_JOURNAL_SCHEMA);
+  assert.equal(ev.task_ref.length, 200, "task_ref bounded to 200");
+  assert.equal(ev.commit_sha.length, 60, "commit_sha bounded to 60");
+  assert.equal(ev.human_summary.length, 300, "human_summary bounded to 300");
+  assert.equal(ev.duration_ms, 12345);
+  assert.ok(!("api_token" in ev) && !("session_id" in ev) && !("stdout" in ev));
+  assert.ok(!("command_line" in ev) && !("env_vars" in ev) && !("nested" in ev));
+  assert.equal(sanitizeMissionControlEvent(null), null);
+  assert.ok(sanitizeMissionControlEvent({ event: "X", recorded_at: "t" }), "unknown event names are bounded-shaped; the EMITTER vocabulary is the authority");
+  assert.equal(sanitizeMissionControlEvent({ event: "", recorded_at: "t" }), null, "empty event rejected");
+  assert.equal(sanitizeMissionControlEvent({ event: "TASK_PASS" }), null, "missing recorded_at rejected");
+});
+
+await test("S84 #94 journal append-only writes survive reload; malformed lines fail safely without breaking reads", async () => {
+  const jp = join(JOURNAL_DIR, "s84.jsonl");
+  const a = appendMissionControlEvent({ recorded_at: "2026-09-19T00:01:00.000Z", event: "TASK_SELECTED", task_ref: "LOCAL_DEV_B_D-94-A", target_repo: "mrhz1973/control-plane" }, { journalPath: jp });
+  assert.ok(a && a.event === "TASK_SELECTED");
+  appendMissionControlEvent({ recorded_at: "2026-09-19T00:02:00.000Z", event: "TASK_PASS", task_ref: "LOCAL_DEV_B_D-94-A", classification: "PASS", duration_ms: 9000 }, { journalPath: jp });
+  // Simulated dispatcher restart: a fresh read sees the same durable history.
+  const reloaded = readMissionControlJournal(jp);
+  assert.equal(reloaded.length, 2);
+  assert.equal(reloaded[0].event, "TASK_SELECTED");
+  assert.equal(reloaded[1].event, "TASK_PASS");
+  // Malformed + foreign-schema lines are skipped safely.
+  writeFileSync(jp, `${JSON.stringify(reloaded[1])}\n{not json\n{"schema_version":"other-v9","event":"X"}\n${JSON.stringify(reloaded[0])}\n`, "utf8");
+  const safe = readMissionControlJournal(jp);
+  assert.equal(safe.length, 2, "malformed/foreign lines skipped, never fatal");
+  assert.equal(readMissionControlJournal(join(JOURNAL_DIR, "absent.jsonl")).length, 0);
+});
+
+await test("S85 #94 GET /v1/history is read-only, GET-only, bounded view; POST rejected", async () => {
+  const tracker = createExecutionStatusTracker();
+  const lastTick = createLastTickStore();
+  lastTick.record({ ok: true, classification: "IDLE_CLEAN", request_id: "s85" }, { recorded_at: "2026-09-19T00:03:00.000Z", elapsed_ms: 200 });
+  let payload = null;
+  const res = mockRes();
+  const originalEnd = res.end;
+  res.end = (b) => { if (res.status === 200) payload = JSON.parse(b); originalEnd(b); };
+  await handleTickRequest(mockReq("GET", HISTORY_PATH), res, {
+    statusTracker: tracker,
+    lastTickStore: lastTick,
+    diagnosticsLoadReceipts: () => [
+      { task_ref: "LOCAL_DEV_B_D-94-H", claimed_at: "2026-09-18T09:00:39.780Z", state: "STOP", source_ref: "github:mrhz1973/control-plane@sha:reports/runtime/dev-queue/always-on/READY_X.md" },
+    ],
+    missionControlJournalPath: join(JOURNAL_DIR, "absent-s85.jsonl"),
+    nowIso: () => "2026-09-19T00:03:30.000Z",
+  });
+  assert.equal(res.status, 200);
+  assert.equal(payload.schema_version, HISTORY_SCHEMA);
+  assert.equal(payload.read_only, true);
+  assert.equal(payload.latest_tick.classification, "IDLE_CLEAN");
+  // IDLE_CLEAN tick with a real terminal task in receipts: LAST TERMINAL SURVIVES.
+  assert.ok(payload.last_terminal_task, "last terminal task present despite latest IDLE tick");
+  assert.equal(payload.last_terminal_task.task_ref, "LOCAL_DEV_B_D-94-H");
+  assert.equal(payload.last_terminal_task.outcome, "STOP");
+  assert.equal(payload.active_task, null, "no active task invented");
+  assert.ok(Array.isArray(payload.recent_tasks) && payload.recent_tasks.length === 1);
+  assert.ok(Array.isArray(payload.recent_events));
+  const resPost = mockRes();
+  await handleTickRequest(mockReq("POST", HISTORY_PATH, "{}"), resPost, {});
+  assert.equal(resPost.status, 405);
+});
+
+await test("S86 #94 active task and last terminal task remain separate; idle never overwrites terminal", async () => {
+  const tracker = createExecutionStatusTracker();
+  tracker.start({ request_id: "s86", task_ref: "LOCAL_DEV_B_D-94-ACTIVE", phase: "EXECUTING" });
+  const lastTick = createLastTickStore();
+  const view = buildMissionControlHistoryView({
+    statusTracker: tracker,
+    lastTickStore: lastTick,
+    loadReceipts: () => [
+      { task_ref: "LOCAL_DEV_B_D-94-DONE", claimed_at: "2026-09-18T00:00:00.000Z", state: "PASS", source_ref: "github:mrhz1973/control-plane@sha:p.md" },
+    ],
+    journalPath: join(JOURNAL_DIR, "absent-s86.jsonl"),
+    nowIso: () => "2026-09-19T00:04:00.000Z",
+  });
+  assert.equal(view.active_task.task_ref, "LOCAL_DEV_B_D-94-ACTIVE");
+  assert.equal(view.active_task.phase, "EXECUTING");
+  assert.equal(view.last_terminal_task.task_ref, "LOCAL_DEV_B_D-94-DONE");
+  assert.notEqual(view.active_task.task_ref, view.last_terminal_task.task_ref, "active vs terminal distinct");
+  // IDLE tracker: active becomes null, terminal still present.
+  tracker.finish({ classification: "IDLE_CLEAN" });
+  const view2 = buildMissionControlHistoryView({
+    statusTracker: tracker,
+    lastTickStore: lastTick,
+    loadReceipts: () => [
+      { task_ref: "LOCAL_DEV_B_D-94-DONE", claimed_at: "2026-09-18T00:00:00.000Z", state: "PASS", source_ref: "github:mrhz1973/control-plane@sha:p.md" },
+    ],
+    journalPath: join(JOURNAL_DIR, "absent-s86.jsonl"),
+    nowIso: () => "2026-09-19T00:04:30.000Z",
+  });
+  assert.equal(view2.active_task, null);
+  assert.equal(view2.last_terminal_task.task_ref, "LOCAL_DEV_B_D-94-DONE", "idle does NOT erase last terminal task");
+});
+
+await test("S87 #94 IDLE_CLEAN tick is not rendered as an engineering task in the dashboard", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" },
+    diag: { last_tick: { classification: "IDLE_CLEAN", recorded_at: "2026-09-19T00:05:00.000Z" }, queue: { eligible_count: 0 } },
+    history: {
+      schema_version: HISTORY_SCHEMA, read_only: true,
+      latest_tick: { recorded_at: "2026-09-19T00:05:00.000Z", classification: "IDLE_CLEAN", execution_performed: false, task_ref: null, reason_codes: [] },
+      active_task: null,
+      last_terminal_task: { task_ref: "LOCAL_DEV_B_D-94-LAST", task_id: "D-94-LAST", outcome: "STOP", terminal_at: "2026-09-18T09:30:00.000Z", started_at: "2026-09-18T09:00:00.000Z", duration_ms: 1800000, tests_state: "FAIL", commit_sha: null, persistence_state: "NOT_COMPLETED", blocker: "STOP:TEST_FAILED", human_summary: "Task fermato con STOP." },
+      recent_tasks: [{ task_ref: "LOCAL_DEV_B_D-94-LAST", task_id: "D-94-LAST", outcome: "STOP", claimed_at: "2026-09-18T09:00:39.780Z", terminal_at: "2026-09-18T09:30:00.000Z", duration_ms: 1800000, tests_state: "FAIL", commit_sha: null, persistence_state: "NOT_COMPLETED", blocker: "STOP:TEST_FAILED", state: "STOP", target_repo: "mrhz1973/control-plane" }],
+      recent_events: [],
+    },
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const pad = [...dashboard.htmlWrites].filter((w) => w.id === "ops-prima-adesso-dopo").at(-1)?.value || "";
+  assert.match(pad, /Prima/);
+  assert.match(pad, /D-94-LAST/, "last terminal task prominent in PRIMA");
+  assert.match(pad, /Nessun task in esecuzione/, "ADESSO explicitly idle");
+  assert.match(pad, /Nessun prossimo task determinato/, "DOPO honest unknown");
+  assert.doesNotMatch(pad, /IDLE_CLEAN/, "idle tick not represented as a task");
+  const term = [...dashboard.htmlWrites].filter((w) => w.id === "ops-terminal-body").at(-1)?.value || "";
+  assert.match(term, /D-94-LAST/);
+  assert.match(term, /STOP/);
+  const hist = [...dashboard.htmlWrites].filter((w) => w.id === "history-tasks").at(-1)?.value || "";
+  assert.match(hist, /D-94-LAST/);
+  assert.doesNotMatch(hist, /task-name">IDLE_CLEAN/, "no idle tick as engineering task row");
+});
+
+await test("S88 #94 phase rail derives completion only from real evidence; no invented completed phases", async () => {
+  const dashboard = await dashboardHarness({ status: { active: false }, diag: {} });
+  // STOP with NO journal evidence: no phase marked completed.
+  dashboard.render({ active: false, classification: "WORK_EXECUTED_STOP", phase: "TERMINAL" }, { last_tick: { classification: "WORK_EXECUTED_STOP" }, queue: {} }, null, {}, { recent_events: [] });
+  let rail = [...dashboard.htmlWrites].filter((w) => w.id === "ops-phase-rail").at(-1)?.value || "";
+  assert.match(rail, /terminal-stop current/);
+  assert.doesNotMatch(rail, /rail-step done/, "no invented completed phases without journal evidence");
+  // PASS terminal: all six phases completed (authoritative classification).
+  dashboard.render({ active: false, classification: "WORK_EXECUTED_PASS", phase: "TERMINAL" }, { last_tick: { classification: "WORK_EXECUTED_PASS" }, queue: {} }, null, {}, { recent_events: [] });
+  rail = [...dashboard.htmlWrites].filter((w) => w.id === "ops-phase-rail").at(-1)?.value || "";
+  const doneCount = (rail.match(/rail-step done/g) || []).length;
+  assert.equal(doneCount, 6, "PASS completes exactly the six canonical phases");
+  assert.match(rail, /terminal-pass current/);
+  // Active EXECUTING with journal evidence up to executor.
+  dashboard.render(
+    { active: true, phase: "EXECUTING", task_ref: "LOCAL_DEV_B_D-94-RUN", elapsed_ms: 45000 },
+    { last_tick: {}, queue: {} }, null, {},
+    { recent_events: [
+      { task_ref: "LOCAL_DEV_B_D-94-RUN", event: "TASK_SELECTED", recorded_at: "2026-09-19T00:06:00.000Z" },
+      { task_ref: "LOCAL_DEV_B_D-94-RUN", event: "PREFLIGHT_PASS", recorded_at: "2026-09-19T00:06:05.000Z" },
+      { task_ref: "LOCAL_DEV_B_D-94-RUN", event: "RUNTIME_READY", recorded_at: "2026-09-19T00:06:06.000Z" },
+      { task_ref: "LOCAL_DEV_B_D-94-RUN", event: "EXECUTOR_STARTED", recorded_at: "2026-09-19T00:06:10.000Z" },
+    ], active_task: { task_ref: "LOCAL_DEV_B_D-94-RUN" } },
+  );
+  rail = [...dashboard.htmlWrites].filter((w) => w.id === "ops-phase-rail").at(-1)?.value || "";
+  const doneRun = (rail.match(/rail-step done/g) || []).length;
+  assert.equal(doneRun, 4, "Selezione+Preflight+Runtime+Executor completed from real events");
+  assert.match(rail, /current[^>]*>\s*<span class="rdot"[^>]*><\/span>Executor/, "current stays EXECUTOR until a real TESTS event");
+  assert.doesNotMatch(rail, /done[^>]*>\s*<span class="rdot"[^>]*><\/span>Test/, "Test not completed without TESTS evidence");
+});
+
+await test("S89 #94 history endpoint failure does not blank unrelated good data (#85 LKG law extended)", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" },
+    diag: { last_tick: { classification: "IDLE_CLEAN", recorded_at: "2026-09-19T00:07:00.000Z" }, queue: { eligible_count: 2 } },
+    history: {
+      schema_version: HISTORY_SCHEMA, read_only: true, latest_tick: null, active_task: null,
+      last_terminal_task: { task_ref: "LOCAL_DEV_B_D-94-K", outcome: "PASS", terminal_at: "2026-09-18T10:00:00.000Z" },
+      recent_tasks: [{ task_ref: "LOCAL_DEV_B_D-94-K", outcome: "PASS", claimed_at: "2026-09-18T09:00:00.000Z" }], recent_events: [],
+    },
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  let pad = [...dashboard.htmlWrites].filter((w) => w.id === "ops-prima-adesso-dopo").at(-1)?.value || "";
+  assert.match(pad, /D-94-K/, "history good data rendered");
+  // Now history fails; status keeps working; PRIMA keeps the last-known-good.
+  dashboard.setScenario({ status: { active: false }, diag: { queue: { eligible_count: 1 } }, httpHistoryError: true });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  pad = [...dashboard.htmlWrites].filter((w) => w.id === "ops-prima-adesso-dopo").at(-1)?.value || "";
+  assert.match(pad, /D-94-K/, "last-known-good history retained on failure");
+  const alert = dashboard.element("data-alert");
+  assert.equal(alert.hidden, false, "partial state surfaced");
+});
+
+await test("S90 #94 COMPONENTI tab renders honest cards; PID/port only when observed", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false, phase: "TERMINAL" },
+    diag: { status: { active: false, phase: "TERMINAL" }, qwen: { reachable: false, lifecycle: { state: "AUTO_STOPPED" } }, queue: {} },
+    history: { recent_tasks: [], recent_events: [], active_task: null, last_terminal_task: null },
+  });
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const comps = [...dashboard.htmlWrites].filter((w) => w.id === "components-cards").at(-1)?.value || "";
+  for (const name of ["WF90", "Dispatcher", "Dispatcher Supervisor", "Qwen Local", "OpenCode", "Receipt Ledger", "GitHub", "Hermes"]) {
+    assert.ok(comps.includes(name), `component card present: ${name}`);
+  }
+  assert.match(comps, /Se lo chiudi:/, "closure consequence explained");
+  assert.match(comps, /non osservato/, "unobserved PID shown honestly as non osservato");
+  assert.match(comps, /finché il supervisor non lo riavvia/, "dispatcher closure consequence accurate");
+  assert.doesNotMatch(comps, /PID \d+/, "no invented PID when idle");
+});
+
+await test("S91 #94 tabs exist; OPERAZIONI default; switching persists trivially; no full-page reload", async () => {
+  const dashboard = await dashboardHarness({ status: { active: false }, diag: {} });
+  const ops = dashboard.element("tab-panel-operations");
+  const hist = dashboard.element("tab-panel-history");
+  const tech = dashboard.element("tab-panel-technical");
+  const comp = dashboard.element("tab-panel-components");
+  assert.equal(ops.hidden, false, "OPERAZIONI is the default visible tab");
+  assert.equal(hist.hidden && comp.hidden && tech.hidden, true, "others hidden by default");
+  assert.equal(dashboard.element("tab-operations").getAttribute("aria-selected"), "true");
+  // Switching is presentational only (no navigation, no reload).
+  await dashboard.element("tab-technical").fire("click");
+  assert.equal(dashboard.element("tab-panel-technical").hidden, false);
+  assert.equal(dashboard.element("tab-operations").getAttribute("aria-selected"), "false");
+  assert.equal(dashboard.localStore.get("control-plane.dashboard.tab.v1"), "technical", "tab persisted trivially");
+  assert.doesNotMatch(dashboard.html, /location\.reload/);
+  // Architecture route remains linked prominently.
+  assert.match(dashboard.html, /href="\/architecture"/);
+});
+
+await test("S92 #94 injected-deps ticks never write the real journal (isolation law)", async () => {
+  const realPath = missionControlJournalPath();
+  const before = readMissionControlJournal(realPath, 10_000).length;
+  // Injected-deps tick: repo hygiene failure (journal hook point) — no writes.
+  await performTick({ request_id: "s92-injected", source: "n8n", schema_version: REQUEST_SCHEMA }, {
+    verifyRepo: async () => ({ ok: false, reason_codes: ["TRACKED_DIRTY_CONFLICT"], gate_summary: "dirty" }),
+    statusTracker: createExecutionStatusTracker(),
+  });
+  const after = readMissionControlJournal(realPath, 10_000).length;
+  assert.equal(after, before, "injected-deps tick wrote no journal lines");
+  // Explicit injected path DOES write (offline-test affordance).
+  const jp = join(JOURNAL_DIR, "s92.jsonl");
+  await performTick({ request_id: "s92-explicit", source: "n8n", schema_version: REQUEST_SCHEMA }, {
+    missionControlJournalPath: jp,
+    verifyRepo: async () => ({ ok: false, reason_codes: ["X"], gate_summary: "x" }),
+    statusTracker: createExecutionStatusTracker(),
+  });
+  const lines = readMissionControlJournal(jp);
+  assert.ok(lines.some((l) => l.event === "HUMAN_GATE_REQUIRED"), "explicit path journals the gate event");
+});
+
+await test("S93 #94 history survives simulated dispatcher restart: view rebuilt purely from durable state", async () => {
+  const jp = join(JOURNAL_DIR, "s93.jsonl");
+  const receiptsPath = join(JOURNAL_DIR, "s93-receipts.json");
+  writeFileSync(receiptsPath, JSON.stringify([
+    { task_ref: "LOCAL_DEV_B_D-94-P1", claimed_at: "2026-09-18T08:00:00.000Z", state: "STOP", execution_started: true, replayable: false, source_ref: "github:mrhz1973/control-plane@aaa:reports/runtime/dev-queue/always-on/READY_P1.md" },
+    { task_ref: "LOCAL_DEV_B_D-94-P2", claimed_at: "2026-09-18T10:00:00.000Z", state: "PASS", execution_started: true, replayable: false, source_ref: "github:mrhz1973/control-plane@bbb:reports/runtime/dev-queue/always-on/READY_P2.md" },
+  ]), "utf8");
+  appendMissionControlEvent({ recorded_at: "2026-09-18T08:20:00.000Z", event: "TASK_STOP", task_ref: "LOCAL_DEV_B_D-94-P1", classification: "STOP:TEST_FAILED", tests_state: "FAIL", duration_ms: 1_200_000 }, { journalPath: jp });
+  appendMissionControlEvent({ recorded_at: "2026-09-18T10:40:00.000Z", event: "TASK_PASS", task_ref: "LOCAL_DEV_B_D-94-P2", classification: "PASS", tests_state: "PASS", duration_ms: 2_400_000, commit_sha: "94a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9" }, { journalPath: jp });
+  // Simulated restart: fresh stores, same durable journal + receipts.
+  const view = buildMissionControlHistoryView({
+    statusTracker: createExecutionStatusTracker(),
+    lastTickStore: createLastTickStore(),
+    loadReceipts: () => JSON.parse(readFileSync(receiptsPath, "utf8")),
+    journalPath: jp,
+    nowIso: () => "2026-09-19T00:08:00.000Z",
+  });
+  assert.equal(view.recent_tasks.length, 2);
+  assert.equal(view.last_terminal_task.task_ref, "LOCAL_DEV_B_D-94-P2", "most recent terminal (P2 PASS) wins");
+  assert.equal(view.last_terminal_task.outcome, "PASS");
+  assert.equal(view.last_terminal_task.commit_sha, "94a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9");
+  assert.equal(view.last_terminal_task.tests_state, "PASS");
+  const p1 = view.recent_tasks.find((t) => t.task_ref.endsWith("P1"));
+  assert.equal(p1.outcome, "STOP");
+  assert.equal(p1.blocker, "STOP:TEST_FAILED");
+  assert.equal(view.recent_events.length, 2, "journal events readable after restart");
+});
+
 
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 if (failures.length) process.exit(1);
