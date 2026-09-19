@@ -98,16 +98,41 @@ await test("A. terminal PASS produces exactly ONE reconciliation record + ONE re
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-await test("B. same terminal event observed twice → zero duplicates (idempotent)", () => {
+await test("B. same terminal event observed twice → zero duplicates (idempotent)", async () => {
   const dir = tmp();
   try {
     const store = loadReconciliationStore(join(dir, "store.json"));
     const r1 = reconcileTerminalPass({ store, queueDir: dir, repo: REPO, taskRef: F001R_TASK, taskId: "D-0103-F001R", commitSha: F001R_COMMIT, durationMs: 1000, nowIso: NOW });
     const r2 = reconcileTerminalPass({ store, queueDir: dir, repo: REPO, taskRef: F001R_TASK, taskId: "D-0103-F001R", commitSha: F001R_COMMIT, durationMs: 1000, nowIso: "2026-09-19T23:32:00.000Z" });
     assert.equal(store.records.length, 1);
-    assert.equal(r2.notifications.length, 0, "no second PASS notification");
     assert.equal(r2.journalEvents.length, 0, "no duplicate journal events");
     assert.equal(readdirOf(dir).filter((f) => f.endsWith(".md")).length, 1, "no duplicate READY");
+    // send not yet CONFIRMED: the PASS notification stays retryable (bounded
+    // to the single record) and the notify LEDGER is the dedup authority —
+    // a confirmed send (or an already-sent ledger hit) sets the flag once.
+    assert.equal(store.records[0].pass_notified_at, null, "flag set only after confirmed send");
+    assert.equal(r2.notifications.length, 1, "retryable PASS notification re-proposed until confirmed");
+    assert.equal(r2.notifications[0].key, r1.notifications[0].key, "same stable notify key");
+    // simulate the dispatcher flow: ledger already has the key →
+    // dispatchNotifications returns ALREADY_SENT → onConfirm sets the
+    // record flag exactly once → further observations propose nothing.
+    const ledgerPath = join(dir, "notify.json");
+    const ledger = loadNotifyLedger(ledgerPath);
+    markSent(ledger, r2.notifications[0].key, NOW);
+    saveNotifyLedgerAtomic(ledger, ledgerPath);
+    const rr = await dispatchNotifications({
+      requests: r2.notifications, ledger, transport: { ok: false }, nowIso: NOW,
+      fetchImpl: undefined, saveLedger: () => {},
+      onConfirm: (k, flag) => {
+        const rec = store.records.find((x) => x.key === k);
+        if (rec && !rec[flag]) rec[flag] = NOW;
+      },
+    });
+    assert.equal(rr.results[0].sent, false);
+    assert.equal(rr.results[0].reason, "ALREADY_SENT", "ledger is the dedup authority");
+    assert.equal(store.records[0].pass_notified_at, NOW, "flag set by onConfirm on ALREADY_SENT");
+    const r2b = reconcileTerminalPass({ store, queueDir: dir, repo: REPO, taskRef: F001R_TASK, taskId: "D-0103-F001R", commitSha: F001R_COMMIT, durationMs: 1000, nowIso: "2026-09-19T23:33:00.000Z" });
+    assert.equal(r2b.notifications.length, 0, "after confirmed send the notification is consumed");
     // crash-after-publication: fresh store (simulating lost store) but file on disk → still no duplicate
     const store2 = loadReconciliationStore(join(dir, "store2.json"));
     const r3 = reconcileTerminalPass({ store: store2, queueDir: dir, repo: REPO, taskRef: F001R_TASK, taskId: "D-0103-F001R", commitSha: F001R_COMMIT, durationMs: 1000, nowIso: "2026-09-19T23:34:00.000Z" });

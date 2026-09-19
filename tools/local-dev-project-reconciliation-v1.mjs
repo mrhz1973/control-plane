@@ -427,6 +427,8 @@ export function reconcileTerminalPass({ store, queueDir, repo, taskRef, taskId, 
     notifications.push({
       kind: "PASS",
       key: `pass|${key}`,
+      recordKey: key,
+      flag: "pass_notified_at",
       text: [
         "CONTROL PLANE — TASK PASS",
         `task: ${taskRef}`,
@@ -436,8 +438,8 @@ export function reconcileTerminalPass({ store, queueDir, repo, taskRef, taskId, 
         "next: project reconciliation queued",
       ].join("\n"),
     });
-    record.pass_notified_at = nowIso;
-    record.updated_at = nowIso;
+    // pass_notified_at is set by the CALLER only after a confirmed send
+    // (send failure must leave the request retryable).
   }
   return { ok: true, action: record.reconciler_ready_id ? "RECONCILER_QUEUED" : "NOOP", journalEvents, notifications, record };
 }
@@ -489,16 +491,14 @@ export function reconcileReconcilerTerminal({ store, queueDir, repo, taskRef, no
   if (decision.kind === "PROJECT_IDLE_COMPLETE") {
     journalEvents.push({ event: "PROJECT_IDLE_COMPLETE", phase: "PROJECT_RECONCILIATION", component: "dispatcher", task_ref: taskRef, target_repo: repo, classification: "PROJECT_IDLE_COMPLETE", human_summary: `Nessun lavoro residuo eligible in ${repo}.` });
     if (!record.summary_notified_at) {
-      notifications.push({ kind: "SUMMARY", key: `summary|${record.key}`, text: `CONTROL PLANE — PROJECT RECONCILED\nrepo: ${repo}\nresult: no eligible work remains (PROJECT_IDLE_COMPLETE)` });
-      record.summary_notified_at = nowIso;
+      notifications.push({ kind: "SUMMARY", key: `summary|${record.key}`, recordKey: record.key, flag: "summary_notified_at", text: `CONTROL PLANE — PROJECT RECONCILED\nrepo: ${repo}\nresult: no eligible work remains (PROJECT_IDLE_COMPLETE)` });
     }
     return { ok: true, action: "PROJECT_IDLE_COMPLETE", journalEvents, notifications, record };
   }
   if (decision.kind === "HUMAN_GATE") {
     journalEvents.push({ event: "RECONCILIATION_HUMAN_GATE", phase: "PROJECT_RECONCILIATION", component: "dispatcher", task_ref: taskRef, target_repo: repo, classification: "HUMAN_GATE_REQUIRED", human_summary: `Selezione next non univoca: ${decision.reason} (${(decision.candidates || []).join(", ")}).` });
     if (!record.summary_notified_at) {
-      notifications.push({ kind: "SUMMARY", key: `summary|${record.key}`, text: `CONTROL PLANE — PROJECT RECONCILED\nrepo: ${repo}\nresult: HUMAN_GATE (${decision.reason})\ncandidates: ${(decision.candidates || []).join(", ")}` });
-      record.summary_notified_at = nowIso;
+      notifications.push({ kind: "SUMMARY", key: `summary|${record.key}`, recordKey: record.key, flag: "summary_notified_at", text: `CONTROL PLANE — PROJECT RECONCILED\nrepo: ${repo}\nresult: HUMAN_GATE (${decision.reason})\ncandidates: ${(decision.candidates || []).join(", ")}` });
     }
     return { ok: true, action: "HUMAN_GATE", journalEvents, notifications, record, gate: decision };
   }
@@ -520,8 +520,7 @@ export function reconcileReconcilerTerminal({ store, queueDir, repo, taskRef, no
     journalEvents.push({ event: "SUCCESSOR_READY_PUBLISHED", phase: "PROJECT_RECONCILIATION", component: "dispatcher", task_ref: built.taskRef, target_repo: repo, classification: "NEXT_QUEUED", human_summary: `Successore ${built.id} accodato per ${repo}.` });
   }
   if (!record.summary_notified_at) {
-    notifications.push({ kind: "SUMMARY", key: `summary|${record.key}`, text: `CONTROL PLANE — PROJECT RECONCILED\nrepo: ${repo}\nresult: ${built.id} queued automatically\nnext tick: natural WF90 dispatch` });
-    record.summary_notified_at = nowIso;
+    notifications.push({ kind: "SUMMARY", key: `summary|${record.key}`, recordKey: record.key, flag: "summary_notified_at", text: `CONTROL PLANE — PROJECT RECONCILED\nrepo: ${repo}\nresult: ${built.id} queued automatically\nnext tick: natural WF90 dispatch` });
   }
   return { ok: true, action: "SUCCESSOR_QUEUED", journalEvents, notifications, record, successorId: built.id };
 }

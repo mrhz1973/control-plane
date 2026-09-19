@@ -120,8 +120,12 @@ export async function sendTelegramMessage({ token, chatId, text, fetchImpl = glo
 }
 
 /** Deduplicated dispatch of a batch of notification requests. Pure ledger
- * mutation + bounded side effects; deterministic and restart-safe. */
-export async function dispatchNotifications({ requests, ledger, transport, nowIso, fetchImpl, saveLedger }) {
+ * mutation + bounded side effects; deterministic and restart-safe.
+ * Each request may carry { recordKey, flag }: when present and the send is
+ * CONFIRMED, onConfirm(recordKey, flag) is invoked so the caller's durable
+ * reconciliation record marks the notification as sent only after success
+ * (send failure leaves the request retryable on the next observation). */
+export async function dispatchNotifications({ requests, ledger, transport, nowIso, fetchImpl, saveLedger, onConfirm }) {
   const results = [];
   if (!Array.isArray(requests) || !requests.length) return { ok: true, results };
   for (const req of requests) {
@@ -129,15 +133,21 @@ export async function dispatchNotifications({ requests, ledger, transport, nowIs
     if (!key || !req?.text) continue;
     if (alreadySent(ledger, key)) {
       results.push({ key, sent: false, reason: "ALREADY_SENT" });
+      if (typeof onConfirm === "function" && req.recordKey && req.flag) {
+        try { onConfirm(req.recordKey, req.flag); } catch { /* bounded */ }
+      }
       continue;
     }
     let send = { ok: false, reason: "TRANSPORT_UNAVAILABLE" };
     if (transport && transport.ok) {
-      send = await sendTelegramMessage({ token: transport.token, chatId: transport.chatId, text: req.text, fetchImpl });
+      send = await sendTelegramMessage({ token: transport.token, chatId: transport.chatId, text: req.text, fetchImpl: fetchImpl || globalThis.fetch });
     }
     if (send.ok) {
       markSent(ledger, key, nowIso);
       results.push({ key, sent: true });
+      if (typeof onConfirm === "function" && req.recordKey && req.flag) {
+        try { onConfirm(req.recordKey, req.flag); } catch { /* bounded */ }
+      }
     } else {
       results.push({ key, sent: false, reason: send.reason });
     }

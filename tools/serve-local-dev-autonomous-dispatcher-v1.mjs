@@ -1459,15 +1459,27 @@ async function runPostTerminalContinuation({ deps, receipts, nowIso, journalEmit
   } catch (err) {
     journalEmit({ event: "RECONCILIATION_SKIPPED", phase: "PROJECT_RECONCILIATION", component: "dispatcher", classification: "RECONCILIATION_STORE_WRITE_FAILED", human_summary: `Persistenza store riconciliazione fallita: ${boundStr(err?.code || err?.message, 60)}.` });
   }
-  // Notifications (dedup ledger; single bot; best-effort).
+  // Notifications (dedup ledger; single bot; best-effort). Confirmation
+  // callbacks set the record's *_notified_at flags ONLY after a confirmed
+  // send (or an already-sent ledger hit) — a failed send stays retryable.
   if (notifications.length && loadLedgerFn && saveLedgerFn && loadTransportFn) {
     try {
       const ledgerN = loadLedgerFn();
       const transport = loadTransportFn();
+      const recordByKey = (k) => store.records.find((r) => r && r.key === k) || null;
       await dispatchNotifications({
         requests: notifications, ledger: ledgerN, transport, nowIso,
-        fetchImpl, saveLedger: saveLedgerFn,
+        fetchImpl: rc.fetchImpl || undefined, saveLedger: saveLedgerFn,
+        onConfirm: (k, flag) => {
+          const rec = recordByKey(k);
+          if (rec && !rec[flag]) {
+            rec[flag] = nowIso;
+            rec.updated_at = nowIso;
+          }
+        },
       });
+      // re-persist the store AFTER confirm flags may have been set
+      try { saveStoreFn(store); } catch { /* already journal-emitted below */ }
     } catch (err) {
       journalEmit({ event: "NOTIFICATION_SKIPPED", phase: "PROJECT_RECONCILIATION", component: "dispatcher", classification: "NOTIFY_LEDGER_INVALID", human_summary: `Ledger notifiche non valido: ${boundStr(err?.code || err?.message, 60)}.` });
     }
