@@ -6,7 +6,7 @@ TASK_REF=V4_MISSION_CONTROL_V2_V1
 ISSUE_94=#94
 
 BASE_HEAD=0878b147bfaceccf155ef0b4cacbf77fd15ef9b2
-FINAL_HEAD=<filled at commit time>
+FINAL_HEAD=978b0bc21f7342ffc86811a4798af643bdc3b7d6
 ```
 
 ## Objective
