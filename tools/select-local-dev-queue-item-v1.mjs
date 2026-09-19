@@ -42,6 +42,11 @@ export function parseBacklogFile(markdown) {
  * BACKLOG_DEV_FIELDS_UNSUPPORTED), so the selector must not select it. */
 const LOCAL_DEV_KEYS = new Set(["dev_profile", "test_commands", "timebox_hint", "max_turns_hint"]);
 const PLANNER_PREFERRED = new Set(["qwen", "glm", "codex"]);
+/** #105: transport-identity parity with the bridge contract — the selector
+ * must never report eligible an item the bridge would reject on created_by
+ * or D-style ID shape (BACKLOG_CONTRACT_UNSUPPORTED / BACKLOG_ID_INVALID). */
+const REQUIRED_CREATED_BY = "gpt-web";
+const CANONICAL_ID_RE = /^D-\d+-[A-Za-z0-9_-]+$/;
 
 export function isAdmissible(item) {
   if (!(item && typeof item === "object" && !Array.isArray(item))) return false;
@@ -52,6 +57,8 @@ export function isAdmissible(item) {
   if (typeof item.planner?.preferred !== "string" || !PLANNER_PREFERRED.has(item.planner.preferred)) return false;
   if (typeof item.id !== "string" || !item.id) return false;
   if (typeof item.created_at !== "string" || !item.created_at) return false;
+  if (item.created_by !== REQUIRED_CREATED_BY) return false;
+  if (!CANONICAL_ID_RE.test(item.id)) return false;
   if (item.local_dev !== undefined && item.local_dev !== null) {
     if (typeof item.local_dev !== "object" || Array.isArray(item.local_dev)) return false;
     for (const k of Object.keys(item.local_dev)) {

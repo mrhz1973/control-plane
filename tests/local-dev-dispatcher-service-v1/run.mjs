@@ -460,6 +460,7 @@ function admissibleEntry(id, source = `${id}.md`) {
       execution: { target: "cursor" },
       planner: { preferred: "qwen" },
       created_at: "2026-09-01T00:00:00Z",
+      created_by: "gpt-web",
     },
   };
 }
@@ -1025,9 +1026,10 @@ await test("S26 GET /v1/diagnostics schema + IDLE explanation; read-only; POST 4
 
 await test("S27 diagnostics shows candidate + claim-blocked exclusion without mutating", async () => {
   const readyMd = `\`\`\`yaml
-id: D-UI-1
+id: D-9009-UI
 state: READY_FOR_PLANNING
 created_at: "2026-09-09T00:00:00Z"
+created_by: gpt-web
 risk_hint: low
 human_gate_required_if: []
 execution:
@@ -1040,7 +1042,7 @@ allowed_areas: ["docs/"]
   const queue = buildQueueScanDiagnostics({
     entries: [{ markdown: readyMd, source: "READY_DUI1.md", backlog_path: "q/READY_DUI1.md" }],
     receipts: [{
-      task_ref: "LOCAL_DEV_B_D-UI-1",
+      task_ref: "LOCAL_DEV_B_D-9009-UI",
       state: "PASS",
       execution_started: true,
       replayable: false,
@@ -1059,7 +1061,7 @@ allowed_areas: ["docs/"]
     nowIso: "2026-09-09T01:00:00.000Z",
   });
   assert.equal(open.eligible_count, 1);
-  assert.equal(open.candidate_task_ref, "LOCAL_DEV_B_D-UI-1");
+  assert.equal(open.candidate_task_ref, "LOCAL_DEV_B_D-9009-UI");
   assert.equal(open.candidate_source_file, "READY_DUI1.md");
 
   const expl = buildOperatorExplanation({

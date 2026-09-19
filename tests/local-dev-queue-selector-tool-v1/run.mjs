@@ -166,5 +166,53 @@ await test("canonical READY_D9403E.md is parseable and selector-admissible after
   assert.equal(r.selected.task_ref, "LOCAL_DEV_B_D-9403-E");
 });
 
+// ---------------- #105: F001 transport-identity parity regression ----------------
+await test("#105 old F001 shape (created_by tmar-project-chat / id TMAR-F001-103) is NOT eligible", async () => {
+  const oldMd = readFileSync(join(ROOT, "reports/runtime/dev-queue/always-on/READY_TMAR_F001_103.md"), "utf8").replace(/^\uFEFF/, "")
+    .replace(/^id: D-0103-F001$/m, "id: TMAR-F001-103")
+    .replace(/^created_by: gpt-web$/m, "created_by: tmar-project-chat");
+  const parsed = parseBacklogFile(oldMd);
+  assert.equal(parsed.ok, true, parsed.reason);
+  assert.equal(parsed.item.created_by, "tmar-project-chat");
+  assert.equal(parsed.item.id, "TMAR-F001-103");
+  // selector must NOT declare eligible what the bridge rejects
+  assert.equal(isAdmissible(parsed.item), false);
+  const r = selectNextQueueItem([{ ok: true, item: parsed.item, source: "READY_TMAR_F001_103.md" }], [], "2026-09-19T19:00:00.000Z");
+  assert.equal(r.selected, null);
+  assert.equal(r.reason_code, "NONE_ELIGIBLE_ALL_EXCLUDED");
+  // bridge confirms the exact rejection reasons
+  const b = await import("../../tools/bridge-backlog-to-local-dev-envelope-v1.mjs");
+  const br = b.buildLocalDevEnvelopeFromBacklog({
+    markdown: oldMd, repo: "mrhz1973/control-plane", commit: "a".repeat(40),
+    path: "reports/runtime/dev-queue/always-on/READY_TMAR_F001_103.md",
+    dispatchBaseHead: "b".repeat(40), now: new Date("2026-09-19T19:00:00Z"),
+  });
+  assert.equal(br.ok, false);
+  assert.ok(br.reason_codes.includes("BACKLOG_CONTRACT_UNSUPPORTED"), JSON.stringify(br.reason_codes));
+});
+
+await test("#105 normalized F001 shape (gpt-web / D-0103-F001) is eligible + bridge-consumable", async () => {
+  const md = readFileSync(join(ROOT, "reports/runtime/dev-queue/always-on/READY_TMAR_F001_103.md"), "utf8").replace(/^\uFEFF/, "");
+  const parsed = parseBacklogFile(md);
+  assert.equal(parsed.ok, true, parsed.reason);
+  assert.equal(parsed.item.created_by, "gpt-web");
+  assert.equal(parsed.item.id, "D-0103-F001");
+  assert.equal(isAdmissible(parsed.item), true);
+  const r = selectNextQueueItem([{ ok: true, item: parsed.item, source: "READY_TMAR_F001_103.md" }], [], "2026-09-19T19:00:00.000Z");
+  assert.equal(r.reason_code, "SELECTED");
+  assert.equal(r.selected.task_ref, "LOCAL_DEV_B_D-0103-F001");
+  assert.equal(r.selected.id, "D-0103-F001");
+  // bridge consumes the normalized shape: envelope builds OK
+  const b = await import("../../tools/bridge-backlog-to-local-dev-envelope-v1.mjs");
+  const br = b.buildLocalDevEnvelopeFromBacklog({
+    markdown: md, repo: "mrhz1973/control-plane", commit: "a".repeat(40),
+    path: "reports/runtime/dev-queue/always-on/READY_TMAR_F001_103.md",
+    dispatchBaseHead: "b".repeat(40), now: new Date("2026-09-19T19:00:00Z"),
+  });
+  assert.equal(br.ok, true, JSON.stringify(br.reason_codes));
+  assert.equal(br.envelope.task_ref, "LOCAL_DEV_B_D-0103-F001");
+  assert.equal(br.receipt.task_ref, "LOCAL_DEV_B_D-0103-F001");
+});
+
 process.stdout.write(`\n${passed} passed, ${failures.length} failed\n`);
 if (failures.length) process.exit(1);

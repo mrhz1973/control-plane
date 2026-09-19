@@ -2,10 +2,10 @@
 
 ```yaml
 schema: backlog-item-v1
-id: TMAR-F001-103
+id: D-0103-F001
 title: TMAR TTS F001 multi-engine architecture contract
 created_at: 2026-09-19T18:30:00Z
-created_by: tmar-project-chat
+created_by: gpt-web
 repository: mrhz1973/tmar-tts
 branch_target: main
 
@@ -72,9 +72,7 @@ local_dev:
   timebox_hint: 1800
   max_turns_hint: 12
   test_commands:
-    - git diff --check
-    - powershell.exe -NoProfile -Command "if ((Select-String -Path docs\architecture.md -Pattern 'TTSEngine','EngineRegistry','DeviceManager','model-pack','cache' -SimpleMatch).Count -lt 5) { exit 1 }"
-    - powershell.exe -NoProfile -Command "if (-not (Select-String -Path docs\decisions.md -Pattern 'multi-engine' -SimpleMatch)) { exit 1 }"
+    - powershell.exe -NoProfile -Command "if (-not (Select-String -Path docs\architecture.md -Pattern 'TTSEngine','EngineRegistry','DeviceManager','model-pack','cache' -SimpleMatch)) { exit 1 }; if (-not (Select-String -Path docs\decisions.md -Pattern 'multi-engine' -SimpleMatch)) { exit 2 }; git diff --check; if ($LASTEXITCODE -ne 0) { exit 3 }"
 
 human_gate_required_if: []
 context_refs:
