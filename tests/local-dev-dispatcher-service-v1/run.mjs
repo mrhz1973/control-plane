@@ -1384,7 +1384,7 @@ async function dashboardHarness(initial = {}) {
   const localStore = new Map();
   let timerId = 0;
   let scenario = initial;
-  let sectionOrder = ["resources", "ops", "agentops", "queue"];
+  let sectionOrder = ["agentops", "queue"];
   function element(id) {
     if (elements.has(id)) return elements.get(id);
     const listeners = new Map();
@@ -2847,16 +2847,16 @@ await test("S71 D-9408-A dashboard compact health: qwen no fake 100%; cursor no 
     assert.doesNotMatch(visible, /\b(?:OK|ATTENZIONE|ELEVATO|CRITICO|HEALTHY|WARNING|DANGER)\b/);
   }
   // Layout persistence (browser-local only)
-  dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['queue','resources','ops','agentops']))");
+  dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['queue','agentops']))");
   dashboard.evaluate("applySectionOrder(readSavedOrder())");
-  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["queue", "resources", "ops", "agentops"]));
-  assert.equal(dashboard.localStore.get("local-dev-dispatcher-dashboard-v1:section-order"), JSON.stringify(["queue", "resources", "ops", "agentops"]));
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["queue", "agentops"]));
+  assert.equal(dashboard.localStore.get("local-dev-dispatcher-dashboard-v1:section-order"), JSON.stringify(["queue", "agentops"]));
   dashboard.evaluate("resetLayout()");
-  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["resources", "ops", "agentops", "queue"]));
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["agentops", "queue"]));
   assert.equal(dashboard.localStore.has("local-dev-dispatcher-dashboard-v1:section-order"), false);
   // Invalid saved IDs fall back safely
-  dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['legacy','bogus']))");
-  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["resources", "ops", "agentops", "queue"]));
+  dashboard.evaluate("storageSet(LAYOUT_KEY, JSON.stringify(['legacy','bogus','resources']))");
+  assert.equal(JSON.stringify(dashboard.evaluate("readSavedOrder()")), JSON.stringify(["agentops", "queue"]));
 });
 
 await test("S72 D-9408-B disk free derived from used percent and free/total bytes", async () => {
@@ -3469,8 +3469,10 @@ await test("S89 #94 history endpoint failure does not blank unrelated good data 
   await dashboard.settle();
   pad = [...dashboard.htmlWrites].filter((w) => w.id === "ops-prima-adesso-dopo").at(-1)?.value || "";
   assert.match(pad, /D-94-K/, "last-known-good history retained on failure");
-  const alert = dashboard.element("data-alert");
-  assert.equal(alert.hidden, false, "partial state surfaced");
+  const health = dashboard.element("data-health");
+  assert.match(health.className, /partial/, "partial state surfaced in compact header indicator");
+  assert.match(dashboard.element("data-health-label").textContent, /Dati parziali/);
+  assert.equal(dashboard.element("data-alert").hidden, true, "full-width data alert stays collapsed");
 });
 
 await test("S90 #94 COMPONENTI tab renders honest cards; PID/port only when observed", async () => {
@@ -3494,20 +3496,77 @@ await test("S90 #94 COMPONENTI tab renders honest cards; PID/port only when obse
 await test("S91 #94 tabs exist; OPERAZIONI default; switching persists trivially; no full-page reload", async () => {
   const dashboard = await dashboardHarness({ status: { active: false }, diag: {} });
   const ops = dashboard.element("tab-panel-operations");
+  const live = dashboard.element("tab-panel-live");
   const hist = dashboard.element("tab-panel-history");
   const tech = dashboard.element("tab-panel-technical");
   const comp = dashboard.element("tab-panel-components");
   assert.equal(ops.hidden, false, "OPERAZIONI is the default visible tab");
-  assert.equal(hist.hidden && comp.hidden && tech.hidden, true, "others hidden by default");
+  assert.equal(live.hidden && hist.hidden && comp.hidden && tech.hidden, true, "others hidden by default");
   assert.equal(dashboard.element("tab-operations").getAttribute("aria-selected"), "true");
   // Switching is presentational only (no navigation, no reload).
   await dashboard.element("tab-technical").fire("click");
   assert.equal(dashboard.element("tab-panel-technical").hidden, false);
   assert.equal(dashboard.element("tab-operations").getAttribute("aria-selected"), "false");
   assert.equal(dashboard.localStore.get("control-plane.dashboard.tab.v1"), "technical", "tab persisted trivially");
+  await dashboard.element("tab-live").fire("click");
+  assert.equal(dashboard.element("tab-panel-live").hidden, false);
+  assert.match(dashboard.element("live-placeholder").innerHTML || dashboard.html, /ATTIVITÀ LIVE|#120 non ancora installato/);
   assert.doesNotMatch(dashboard.html, /location\.reload/);
   // Architecture route remains linked prominently.
   assert.match(dashboard.html, /href="\/architecture"/);
+});
+
+await test("S94 #121 compact header; zero-height gate; resources outside TECNICO; LIVE open from active task", async () => {
+  const dashboard = await dashboardHarness({
+    status: { active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" },
+    diag: { last_tick: { classification: "IDLE_CLEAN" }, queue: {} },
+    history: {
+      schema_version: "local-dev-mission-control-history-v1",
+      read_only: true,
+      active_task: null,
+      last_terminal_task: { task_ref: "LOCAL_DEV_B_D-0103-F004R", outcome: "PASS", commit_sha: "4ee42b227c20da139ba023f131ad087e8ff2f6d6", terminal_at: "2026-09-20T19:37:50.625Z" },
+      recent_tasks: [], recent_events: [],
+    },
+  });
+  assert.match(dashboard.html, /Control Plane[\s\S]*Local Dev Dispatcher/);
+  assert.match(dashboard.html, /id="data-health"/);
+  assert.match(dashboard.html, /class="page-head"[^>]*hidden|page-head\{display:none/);
+  assert.doesNotMatch(dashboard.html, /<div class="eyebrow">Console operativa<\/div>/);
+  // No HUMAN_GATE => gate hidden and strip without has-gate.
+  dashboard.render({ active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" }, { last_tick: { classification: "IDLE_CLEAN" }, queue: {} });
+  const gateIdle = dashboard.element("op-gate");
+  assert.equal(gateIdle.hidden, true);
+  assert.equal(dashboard.element("opstrip").classList.contains("has-gate"), false);
+  // HUMAN_GATE => compact gate visible.
+  dashboard.render(
+    { active: false, classification: "HUMAN_GATE_REQUIRED", phase: "TERMINAL" },
+    { last_tick: { classification: "HUMAN_GATE_REQUIRED", human_gate_required: true, reason_codes: ["TRACKED_DIRTY_CONFLICT"], gate_summary: "tracked dirty", task_ref: "LOCAL_DEV_B_D-X" }, explanation: { blocked_at: "repo_hygiene" } },
+  );
+  assert.equal(dashboard.element("op-gate").hidden, false);
+  assert.equal(dashboard.element("opstrip").classList.contains("has-gate"), true);
+  assert.match(dashboard.element("op-gate").innerHTML, /HUMAN GATE/);
+  // Resources are first-screen / outside TECNICO panel markup order.
+  const resIdx = dashboard.html.indexOf('id="sec-resources"');
+  const techIdx = dashboard.html.indexOf('id="tab-panel-technical"');
+  const tabsIdx = dashboard.html.indexOf('role="tablist"');
+  assert.ok(resIdx > 0 && tabsIdx > 0 && resIdx < tabsIdx, "resources precede tabs");
+  assert.ok(techIdx > tabsIdx, "technical tab after resources");
+  assert.doesNotMatch(dashboard.html.slice(techIdx, techIdx + 800), /id="sec-resources"/);
+  // First-screen cards include last terminal / next.
+  await dashboard.evaluate("refresh()");
+  await dashboard.settle();
+  const cards = [...dashboard.htmlWrites].filter((w) => w.id === "summary-cards").at(-1)?.value || "";
+  assert.match(cards, /Ultimo terminato/);
+  assert.match(cards, /D-0103-F004R|F004R/);
+  assert.match(cards, /Prossimo/);
+  // Active task can open LIVE.
+  dashboard.render({ active: true, phase: "EXECUTING", task_ref: "LOCAL_DEV_B_D-121-A", elapsed_ms: 5000 }, { last_tick: {}, queue: {} });
+  const taskHtml = [...dashboard.htmlWrites].filter((w) => w.id === "op-task").at(-1)?.value || "";
+  assert.match(taskHtml, /data-open-live="1"/);
+  assert.match(taskHtml, /D-121-A/);
+  dashboard.evaluate("applyTab('live')");
+  assert.equal(dashboard.element("tab-panel-live").hidden, false);
+  assert.equal(dashboard.element("tab-live").getAttribute("aria-selected"), "true");
 });
 
 await test("S92 #94 injected-deps ticks never write the real journal (isolation law)", async () => {

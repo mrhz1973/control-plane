@@ -8,18 +8,18 @@
   <style>
     :root{color-scheme:dark;--bg:#08090b;--panel:#111317;--raised:#181b21;--line:#292e37;--text:#eff2f7;--muted:#9ba5b5;--cyan:#65d6ee;--green:#73e3a4;--amber:#f5c16b;--orange:#f0a060;--red:#ff8792;--violet:#bcabff;--mono:ui-monospace,"Cascadia Code",Consolas,monospace;--sans:"Segoe UI",system-ui,sans-serif}
     *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0,rgba(72,100,147,.065),transparent 45%),var(--bg);color:var(--text);font:14px/1.5 var(--sans)}button,input,select{font:inherit}button,summary,select{cursor:pointer}button,input,select{color:var(--text);border:1px solid var(--line);border-radius:8px;background:var(--raised)}button{padding:8px 12px}button:hover{border-color:#52647b;background:#222833}button:disabled{opacity:.55;cursor:wait}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,.help:focus-visible,a:focus-visible,.sec-handle:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}a{color:inherit}h1,h2,h3,p{margin:0}h1{font-size:25px;letter-spacing:-.8px;font-weight:650}h2{font-size:15px;font-weight:650;letter-spacing:-.2px}h3{font-size:14px}code,.mono{font-family:var(--mono);font-size:12px;overflow-wrap:anywhere}pre{font:12px/1.6 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted);margin:10px 0 0}svg{flex:none}button svg{vertical-align:-3px;margin-right:6px}
-    .shell{max-width:1880px;margin:auto;padding:0 30px}.topbar{border-bottom:1px solid #20242b;background:#0b0d10}.topbar-inner{display:flex;align-items:center;justify-content:space-between;height:58px;gap:16px}.brand{display:flex;gap:12px;align-items:center}.brand-mark{display:grid;place-items:center;width:30px;height:30px;border:1px solid #344356;border-radius:8px;color:var(--cyan);background:#151e29}.brand-name{font-weight:650;letter-spacing:.2px}.breadcrumb{color:var(--muted);font-size:12px;border-left:1px solid var(--line);padding-left:14px}.read-only{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px}.read-only svg{color:var(--green)}
-    .page-head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 0 19px}.eyebrow{text-transform:uppercase;letter-spacing:1.8px;color:var(--muted);font-size:10px;font-weight:650;margin-bottom:4px}.page-head p{font-size:12px;color:var(--muted);margin-top:4px}.controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.auto{font-size:12px;display:flex;gap:7px;align-items:center;color:var(--muted)}input[type=checkbox]{accent-color:var(--cyan);width:15px;height:15px}.controls select{font-size:11px;padding:5px 8px}.freshness{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px}.dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 9px #73e3a422}.dot.off{background:var(--amber);box-shadow:none}
-    main{padding-bottom:24px!important}.summary-grid{display:grid;grid-template-columns:1.12fr 1.3fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px}.metric{border:1px solid var(--line);background:linear-gradient(135deg,#171a20,#111317);border-radius:12px;padding:14px 15px;min-width:0;min-height:113px;position:relative}.metric:before{content:"";height:2px;width:30px;background:currentColor;position:absolute;left:15px;top:-1px;opacity:.65}.metric-label{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:10px;font-weight:650;letter-spacing:1px;text-transform:uppercase}.metric-value{font-size:23px;line-height:1.25;letter-spacing:-.7px;font-weight:650;margin:12px 0 6px;overflow-wrap:anywhere}.metric-value.identity{font-size:20px;letter-spacing:-.3px}.metric-sub{font-size:11px;color:var(--muted);overflow-wrap:anywhere}.ok{color:var(--green)}.warn{color:var(--amber)}.caution{color:var(--orange)}.danger{color:var(--red)}.info{color:var(--cyan)}.identity{color:var(--violet)}.neutral{color:var(--muted)}
+    .shell{max-width:1880px;margin:auto;padding:0 30px}.topbar{border-bottom:1px solid #20242b;background:#0b0d10}.topbar-inner{display:flex;align-items:center;justify-content:space-between;min-height:52px;padding:8px 0;gap:14px;flex-wrap:wrap}.brand{display:flex;gap:10px;align-items:center;min-width:0}.brand-mark{display:grid;place-items:center;width:28px;height:28px;border:1px solid #344356;border-radius:8px;color:var(--cyan);background:#151e29;flex:none}.brand-name{font-weight:650;letter-spacing:.2px;white-space:nowrap}.brand-sep{color:var(--muted);font-weight:500;margin:0 2px}.brand-sub{color:var(--muted);font-size:12px;white-space:nowrap}.read-only{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;white-space:nowrap}.read-only svg{color:var(--green)}.topbar-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}.page-head{display:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden}.controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.auto{font-size:12px;display:flex;gap:7px;align-items:center;color:var(--muted)}input[type=checkbox]{accent-color:var(--cyan);width:15px;height:15px}.controls select{font-size:11px;padding:5px 8px}.freshness{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px}.dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 9px #73e3a422;flex:none}.dot.off{background:var(--amber);box-shadow:none}
+    .data-health{position:relative;border:1px solid var(--line);border-radius:8px;background:#10151c;padding:4px 10px;font-size:11px;color:var(--muted);list-style:none}.data-health>summary{list-style:none;display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none}.data-health>summary::-webkit-details-marker{display:none}.data-health.ok{border-color:#2c6a49;color:var(--green)}.data-health.partial{border-color:#6d5426;color:var(--amber)}.data-health .data-health-panel{position:absolute;right:0;top:calc(100% + 6px);z-index:30;min-width:260px;max-width:360px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#12161c;color:var(--text);box-shadow:0 12px 28px -16px #000c}.data-health .data-health-panel p{font-size:11px;color:#c3cad4;margin:0 0 6px}.data-health .data-health-panel p:last-child{margin-bottom:0}
+    main{padding-top:12px;padding-bottom:24px!important}.summary-grid{display:grid;grid-template-columns:1.12fr 1.3fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:12px}.metric{border:1px solid var(--line);background:linear-gradient(135deg,#171a20,#111317);border-radius:12px;padding:12px 14px;min-width:0;min-height:96px;position:relative}.metric:before{content:"";height:2px;width:30px;background:currentColor;position:absolute;left:15px;top:-1px;opacity:.65}.metric-label{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:10px;font-weight:650;letter-spacing:1px;text-transform:uppercase}.metric-value{font-size:21px;line-height:1.25;letter-spacing:-.7px;font-weight:650;margin:10px 0 5px;overflow-wrap:anywhere}.metric-value.identity{font-size:18px;letter-spacing:-.3px}.metric-sub{font-size:11px;color:var(--muted);overflow-wrap:anywhere}.metric.metric-live{cursor:pointer}.metric.metric-live:hover{border-color:#3d6471}.ok{color:var(--green)}.warn{color:var(--amber)}.caution{color:var(--orange)}.danger{color:var(--red)}.info{color:var(--cyan)}.identity{color:var(--violet)}.neutral{color:var(--muted)}.resources-first{margin:0 0 14px}
     .layout-toolbar{display:flex;justify-content:flex-end;gap:8px;margin:0 0 10px}.layout-toolbar button{font-size:11px;padding:5px 10px}#layout-root{display:flex;flex-direction:column;gap:14px}.dash-section{min-width:0}.sec-chrome{display:flex;align-items:center;gap:8px;padding:0 2px 6px}.sec-handle{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid var(--line);border-radius:6px;background:var(--raised);color:var(--muted);cursor:grab;font-size:12px;user-select:none}.sec-handle:active{cursor:grabbing}.sec-chrome .sec-label{font-size:10px;color:#758295;letter-spacing:.6px;text-transform:uppercase;margin-right:auto}
-    .panel{border:1px solid var(--line);border-radius:13px;background:var(--panel);min-width:0}.panel-head{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #242830}.panel-head .heading{display:flex;align-items:center;gap:8px}.section-index{font:10px var(--mono);color:#758295;margin-right:3px}.panel-body{padding:14px 16px}.pill{display:inline-flex;gap:6px;align-items:center;border:1px solid currentColor;border-radius:6px;padding:3px 7px;font-size:10px;line-height:1.4;font-weight:600;max-width:100%;overflow-wrap:anywhere}.pill.subtle{border-color:var(--line);background:#ffffff03;color:var(--muted)}.alert{padding:11px 15px;border:1px solid #784450;background:#27161c;border-radius:9px;font-size:12px;color:var(--red);margin:0 0 14px}.alert[hidden]{display:none}
+    .panel{border:1px solid var(--line);border-radius:13px;background:var(--panel);min-width:0}.panel-head{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #242830}.panel-head .heading{display:flex;align-items:center;gap:8px}.section-index{font:10px var(--mono);color:#758295;margin-right:3px}.panel-body{padding:14px 16px}.pill{display:inline-flex;gap:6px;align-items:center;border:1px solid currentColor;border-radius:6px;padding:3px 7px;font-size:10px;line-height:1.4;font-weight:600;max-width:100%;overflow-wrap:anywhere}.pill.subtle{border-color:var(--line);background:#ffffff03;color:var(--muted)}.alert{display:none!important}
     .ops-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:stretch}.ops-card{border:1px solid var(--line);background:linear-gradient(135deg,#171a20,#111317);border-radius:12px;padding:12px 14px;min-width:0;min-height:113px;display:flex;flex-direction:column;gap:4px;position:relative}.ops-card:before{content:"";height:2px;width:28px;background:currentColor;position:absolute;left:14px;top:-1px;opacity:.55}.ops-card .ops-title{color:var(--muted);font-size:10px;font-weight:650;letter-spacing:.8px;text-transform:uppercase}.ops-card .ops-main{font-size:16px;font-weight:650;letter-spacing:-.3px;line-height:1.25;margin:2px 0;overflow-wrap:anywhere}.ops-card .ops-line{font-size:11px;color:#c3cad4;line-height:1.4;overflow-wrap:anywhere}.ops-card .ops-line.mono{font-family:var(--mono);font-size:11px;color:var(--violet)}.ops-card details.res-more{margin-top:auto;padding-top:4px;border-top:1px solid #242830}.ops-card details.res-more>summary{font-size:10px;color:#758295;cursor:pointer;list-style:none}.ops-card details.res-more>summary::-webkit-details-marker{display:none}.ops-card details.res-more[open]>summary{color:var(--cyan)}
     .queue-panel>summary.queue-summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid transparent}.queue-panel>summary.queue-summary::-webkit-details-marker{display:none}.queue-panel[open]>summary.queue-summary{border-bottom-color:#242830}.queue-summary-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.queue-summary-metrics{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted)}.queue-summary-metrics strong{color:var(--text);font-size:13px;margin-right:4px}.toolbar{display:flex;gap:9px;padding:12px 16px;align-items:center;flex-wrap:wrap}.search{position:relative;flex:1;min-width:180px}.search svg{position:absolute;left:10px;top:10px;color:var(--muted)}.search input{width:100%;padding:7px 10px 7px 32px;background:#0c0e12;font-size:12px}.toolbar select{font-size:11px;padding:8px;max-width:180px}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:12px;text-align:left}th{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.7px;font-weight:500;padding:10px 16px;background:#0e1014;border-top:1px solid #242830;border-bottom:1px solid #242830}td{padding:12px 16px;border-bottom:1px solid #242830;vertical-align:top}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#ffffff02}.task-name{font-family:var(--mono);color:var(--violet);font-weight:600;font-size:12px}.source{font:10px var(--mono);color:var(--muted);display:block;margin-top:5px;overflow-wrap:anywhere}.row-state{font-size:11px;white-space:nowrap}.raw-reason{display:block;font:9px var(--mono);color:#a1a9b7;margin-top:5px}.queue-note{padding:12px 16px;border-top:1px solid #242830;color:var(--muted);font-size:11px}.empty{text-align:center;padding:24px 16px;color:var(--muted);font-size:12px}.receipt-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:12px}.receipt-grid dt{font-size:10px;color:var(--muted)}.receipt-grid dd{margin:3px 0 0;color:var(--text);font:11px var(--mono);overflow-wrap:anywhere}.receipt-note{margin:10px 0;color:var(--muted);font-size:11px;max-width:65ch}.receipt-details{min-width:135px}.receipt-details[open]{min-width:290px}details summary{font-size:11px;color:var(--muted);border-radius:3px}details summary:hover{color:var(--text)}details[open]>summary{color:var(--cyan)}.technical{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}.technical summary{font-size:11px}.facts{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin:0}.facts dt{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px}.facts dd{margin:4px 0 0;font-size:12px;overflow-wrap:anywhere}.model{padding:8px 0;border-top:1px solid #252931}.model:first-child{border-top:0;padding-top:0}.model-line{display:flex;justify-content:space-between;gap:12px;align-items:start}.model-id{font:11px/1.5 var(--mono);color:var(--violet);overflow-wrap:anywhere}.model-meta{margin-top:4px;color:var(--muted);font-size:10px}.technical-panel{margin-top:16px}.technical-panel>summary{padding:13px 18px;font-size:12px}.technical-panel .facts{padding:4px 18px 18px;grid-template-columns:repeat(4,minmax(0,1fr))}.footer{display:flex;justify-content:space-between;gap:15px;padding:15px 2px 0;color:#8993a3;font-size:10px}.footer code{font-size:10px}.help{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:14px;height:14px;border-radius:50%;border:1px solid #4c586b;color:#aebacc;font:9px var(--sans);text-transform:none;letter-spacing:0;cursor:help;vertical-align:1px}.tooltip{position:fixed;left:16px;top:70px;width:260px;max-width:calc(100vw - 24px);z-index:100;background:#222a36;border:1px solid #52617a;box-shadow:0 8px 24px #0009;padding:10px 12px;border-radius:8px;color:#f0f4fa;font:12px/1.5 var(--sans);text-transform:none;letter-spacing:0;pointer-events:none;visibility:hidden}.help:hover .tooltip,.help:focus .tooltip,.help:focus-visible .tooltip{visibility:visible}.help.tip-dismissed .tooltip{visibility:hidden}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
     .res-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:stretch}.res-stale{grid-column:1/-1;border:1px solid #6b5a2a;background:#221a09;color:var(--amber);border-radius:8px;padding:6px 10px;font-size:11px;margin-bottom:2px}.res-tile{border:1px solid var(--line);background:linear-gradient(135deg,#171a20,#111317);border-radius:12px;padding:9px 10px;min-width:0;min-height:150px;display:flex;flex-direction:column;gap:3px;position:relative}.res-tile:before{content:"";height:2px;width:28px;background:currentColor;position:absolute;left:9px;top:-1px;opacity:.55}.res-tile .res-title{display:flex;align-items:center;justify-content:space-between;gap:4px;color:var(--muted);font-size:9px;font-weight:650;letter-spacing:.6px;text-transform:uppercase}.resource-drag-handle{border:1px solid #3a4656;border-radius:5px;background:#10151c;color:var(--muted);font-size:12px;line-height:1;padding:3px 6px;cursor:grab;user-select:none}.resource-drag-handle:hover{border-color:var(--cyan);color:var(--cyan)}.resource-drag-handle:active{cursor:grabbing}.res-tile.dragging{opacity:.55}.res-tile .res-main{font-size:14px;font-weight:650;letter-spacing:-.3px;line-height:1.25;margin:2px 0 3px;overflow-wrap:anywhere}.res-tile .res-line{font-size:9px;color:var(--muted);line-height:1.35;overflow-wrap:anywhere}.res-tile .res-bars{display:grid;gap:2px;margin-top:2px}.res-tile details.res-more{margin-top:auto;padding-top:4px;border-top:1px solid #242830}.res-tile details.res-more>summary{font-size:10px;color:#758295;cursor:pointer;list-style:none}.res-tile details.res-more>summary::-webkit-details-marker{display:none}.res-tile details.res-more[open]>summary{color:var(--cyan)}.res-tile .quota-meta,.res-tile .obs-source{font-size:10px;color:#8b95a5;margin:2px 0}.hbar{display:grid;grid-template-columns:44px minmax(22px,1fr) 42px;gap:4px;align-items:center;margin:1px 0}.hbar-label{font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hbar-track{height:6px;border-radius:999px;background:#1a1f28;overflow:hidden;border:1px solid #2a313c}.hbar-fill{height:100%;width:0;border-radius:inherit;background:#6b7380;transition:width .15s linear}.hbar-fill.ok{background:var(--green)}.hbar-fill.warn{background:var(--amber)}.hbar-fill.caution{background:var(--orange)}.hbar-fill.danger{background:var(--red)}.hbar-fill.neutral{background:#6b7380}.hbar-val{font:9px var(--mono);text-align:right;white-space:nowrap}.quota-window-block{margin:8px 0 12px}.quota-reset{font-size:11px;color:#c3cad4;margin:3px 0 0;overflow-wrap:anywhere}
     @media(min-width:1700px){.metric{min-height:121px}.res-tile,.ops-card{min-height:150px}}
     @media(max-width:1200px){.shell{padding:0 20px}.summary-grid{grid-template-columns:repeat(3,1fr)}.metric{min-height:105px}.metric-value{font-size:21px}.res-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.res-tile,.ops-card{min-height:105px}}
-    @media(max-width:900px){.ops-row{grid-template-columns:repeat(2,minmax(0,1fr))}.page-head{align-items:start}.controls{justify-content:flex-end}.freshness{width:100%;justify-content:flex-end}.technical-panel .facts{grid-template-columns:repeat(2,1fr)}.res-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:620px){.shell{padding:0 12px}.breadcrumb{display:none}.page-head{flex-direction:column;gap:12px;padding-top:18px}.controls{justify-content:flex-start;gap:10px}.freshness{width:auto}.summary-grid{grid-template-columns:repeat(2,1fr)}.metric{padding:12px;min-height:102px}.metric-value{font-size:20px}.ops-row{grid-template-columns:1fr}.panel-body,.panel-head{padding:12px}.toolbar select{max-width:145px}.footer{flex-direction:column;gap:5px}.receipt-details[open]{min-width:230px}.res-grid{grid-template-columns:1fr}.hbar{grid-template-columns:48px minmax(24px,1fr) 42px;gap:4px}}
+    @media(max-width:900px){.ops-row{grid-template-columns:repeat(2,minmax(0,1fr))}.topbar-actions{width:100%;justify-content:flex-start}.technical-panel .facts{grid-template-columns:repeat(2,1fr)}.res-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:620px){.shell{padding:0 12px}.brand-sub{display:none}.controls{justify-content:flex-start;gap:10px}.summary-grid{grid-template-columns:repeat(2,1fr)}.metric{padding:12px;min-height:90px}.metric-value{font-size:18px}.ops-row{grid-template-columns:1fr}.panel-body,.panel-head{padding:12px}.toolbar select{max-width:145px}.footer{flex-direction:column;gap:5px}.receipt-details[open]{min-width:230px}.res-grid{grid-template-columns:1fr}.hbar{grid-template-columns:48px minmax(24px,1fr) 42px;gap:4px}}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.hbar-fill{transition:none}}
   </style>
   <style>
@@ -27,7 +27,8 @@
   </style>
   <style>
     .architecture-link{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #3d6471;border-radius:8px;color:var(--cyan);font-size:11px;text-decoration:none;background:#10212a}.architecture-link:hover{border-color:var(--cyan);background:#152d36}
-    .opstrip{display:grid;grid-template-columns:auto 1.35fr 1.25fr 1.3fr;grid-template-areas:'brand countdown meta task' 'rail rail rail rail' 'gate gate gate gate';gap:10px 18px;align-items:center;border:1px solid #2c3a49;border-radius:14px;background:linear-gradient(135deg,#101c26,#0d141b 55%,#101a24);padding:16px 20px 14px;margin:0 0 16px;box-shadow:0 0 0 1px #1a2733,0 10px 30px -18px #000a}
+    .opstrip{display:grid;grid-template-columns:auto 1.35fr 1.25fr 1.3fr;grid-template-areas:'brand countdown meta task' 'rail rail rail rail';gap:10px 18px;align-items:center;border:1px solid #2c3a49;border-radius:14px;background:linear-gradient(135deg,#101c26,#0d141b 55%,#101a24);padding:14px 18px 12px;margin:0 0 12px;box-shadow:0 0 0 1px #1a2733,0 10px 30px -18px #000a}
+    .opstrip.has-gate{grid-template-areas:'brand countdown meta task' 'rail rail rail rail' 'gate gate gate gate'}
     .opstrip-brand{grid-area:brand;display:flex;flex-direction:column;gap:3px;min-width:132px}
     .opstrip-title{font:650 15px/1.1 var(--sans);letter-spacing:2.4px;color:var(--text)}
     .opstrip-sub{font:600 9px/1.2 var(--mono);letter-spacing:1.4px;color:var(--muted);text-transform:uppercase}
@@ -46,6 +47,8 @@
     .opstrip-fact .v{font:11px var(--mono);color:var(--text);overflow-wrap:anywhere}
     .opstrip-fact .v.idle{color:var(--muted)}
     .opstrip-gate{grid-area:gate;border:1px solid #6d5426;background:#251d0e;border-radius:10px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+    .opstrip-gate[hidden]{display:none!important;padding:0!important;margin:0!important;border:0!important;height:0!important;min-height:0!important;overflow:hidden!important;background:transparent!important}
+    .opstrip-fact .v.task-live-link{color:var(--cyan);text-decoration:underline;cursor:pointer;background:none;border:0;padding:0;font:inherit}
     .opstrip-gate .gate-title{font:650 12px/1.2 var(--sans);letter-spacing:1.6px;color:var(--amber)}
     .opstrip-gate .gf{font-size:11px;color:#e8dcc0}
     .opstrip-gate .gf b{color:var(--amber);font-weight:650}
@@ -65,8 +68,11 @@
     .rail-step.terminal-pass.current::after{animation:none;border-color:var(--green)}
     .rail-arrow{color:#3a4656;font-size:11px;padding:0 3px;flex:none}
     @keyframes railBlink{50%{opacity:.25}}
-    @media(max-width:1200px){.opstrip{grid-template-columns:auto 1fr;grid-template-areas:'brand countdown' 'meta meta' 'task task' 'rail rail' 'gate gate'}}
+    @media(max-width:1200px){.opstrip{grid-template-columns:auto 1fr;grid-template-areas:'brand countdown' 'meta meta' 'task task' 'rail rail'}.opstrip.has-gate{grid-template-areas:'brand countdown' 'meta meta' 'task task' 'rail rail' 'gate gate'}}
     @media(max-width:620px){.opstrip{padding:13px 14px 12px}.opstrip-count-value{font-size:27px}.opstrip-meta-item .k{width:104px}}
+    .live-placeholder{border:1px dashed #3a4656;border-radius:12px;padding:22px 18px;background:#0d141b;text-align:left}
+    .live-placeholder h2{font-size:15px;margin-bottom:8px}
+    .live-placeholder p{font-size:12px;color:var(--muted);max-width:52ch}
   </style>
   <style>
     /* === #94 Mission Control V2: tab shell === */
@@ -108,13 +114,19 @@
 <body>
   <a class="sr-only" href="#main">Vai alla console</a>
   <div class="topbar"><div class="shell topbar-inner">
-    <div class="brand"><span class="brand-mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 3 9 5-9 5-9-5 9-5Z M3 12l9 5 9-5 M3 16l9 5 9-5"/></svg></span><span class="brand-name">Control Plane</span><span class="breadcrumb">Sviluppo locale / Dispatcher</span></div>
-    <span class="read-only"><svg width="13" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="4" y="8" width="12" height="9" rx="2"/><path d="M7 8V5a3 3 0 0 1 6 0v3"/></svg>Sola lettura</span>
+    <div class="brand"><span class="brand-mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m12 3 9 5-9 5-9-5 9-5Z M3 12l9 5 9-5 M3 16l9 5 9-5"/></svg></span><span class="brand-name">Control Plane</span><span class="brand-sep" aria-hidden="true">·</span><span class="brand-sub">Local Dev Dispatcher</span></div>
+    <div class="topbar-actions">
+      <a class="architecture-link" href="/architecture">🗺 Mappa Control Plane</a>
+      <details class="data-health ok" id="data-health">
+        <summary><span class="dot" id="data-health-dot" aria-hidden="true"></span><span id="data-health-label" role="status">Dati OK</span></summary>
+        <div class="data-health-panel" id="data-health-detail"><p>Tutte le fonti di lettura sono aggiornate.</p></div>
+      </details>
+      <span class="read-only"><svg width="13" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="4" y="8" width="12" height="9" rx="2"/><path d="M7 8V5a3 3 0 0 1 6 0v3"/></svg>Sola lettura</span>
+      <div class="controls"><span class="freshness"><span id="poll-dot" class="dot off" aria-hidden="true"></span><span id="poll-age" role="status">Connessione in corso…</span></span><label class="auto"><input id="auto-refresh" type="checkbox" checked>Auto</label><label class="auto">Intervallo<select id="refresh-interval" aria-label="Intervallo di aggiornamento automatico"><option value="3000">3 s</option><option value="5000">5 s</option><option value="10000">10 s</option><option value="30000">30 s</option></select></label><button id="refresh-button" type="button"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M16 8a6 6 0 1 0 0 5M16 3v5h-5"/></svg>Aggiorna</button></div>
+    </div>
   </div></div>
   <main class="shell" id="main">
-    <div class="page-head"><div><div class="eyebrow">Console operativa</div><h1>Local Dev Dispatcher</h1><p>Attività, decisioni e disponibilità del runtime locale.</p></div>
-      <div class="controls"><a class="architecture-link" href="/architecture">🗺 Mappa Control Plane</a><span class="freshness"><span id="poll-dot" class="dot off" aria-hidden="true"></span><span id="poll-age" role="status">Connessione in corso…</span></span><label class="auto"><input id="auto-refresh" type="checkbox" checked>Auto</label><label class="auto">Intervallo<select id="refresh-interval" aria-label="Intervallo di aggiornamento automatico"><option value="3000">3 s</option><option value="5000">5 s</option><option value="10000">10 s</option><option value="30000">30 s</option></select></label><button id="refresh-button" type="button"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M16 8a6 6 0 1 0 0 5M16 3v5h-5"/></svg>Aggiorna</button></div>
-    </div>
+    <div class="page-head" hidden aria-hidden="true"></div>
     <section class="opstrip" id="opstrip" aria-label="Stato operativo Control Plane">
       <div class="opstrip-brand"><span class="opstrip-title">CONTROL PLANE</span><span class="opstrip-sub">Ciclo LOCAL_DEV · WF90</span></div>
       <div class="opstrip-countdown">
@@ -133,9 +145,14 @@
     </section>
     <div id="data-alert" class="alert" role="alert" hidden></div>
     <section class="summary-grid" id="summary-cards" aria-label="Sintesi operativa"></section>
-    <!-- === #94 Mission Control V2 tabs === -->
+    <section class="resources-first dash-section" data-section="resources" id="sec-resources" aria-labelledby="resources-title">
+      <div class="panel"><div class="panel-head"><div class="heading"><span class="section-index">01</span><h2 id="resources-title">Risorse e quote</h2></div><span class="pill subtle">Osservatorio sola lettura</span></div>
+        <div class="panel-body" style="padding-top:12px" id="resources-cards"></div></div>
+    </section>
+    <!-- === #94 / #121 Mission Control tabs === -->
     <nav class="tabs" role="tablist" aria-label="Viste Mission Control">
       <button class="tab-btn" id="tab-operations" role="tab" aria-selected="true" aria-controls="tab-panel-operations" type="button">OPERAZIONI</button>
+      <button class="tab-btn" id="tab-live" role="tab" aria-selected="false" aria-controls="tab-panel-live" tabindex="-1" type="button">LIVE</button>
       <button class="tab-btn" id="tab-history" role="tab" aria-selected="false" aria-controls="tab-panel-history" tabindex="-1" type="button">STORICO</button>
       <button class="tab-btn" id="tab-components" role="tab" aria-selected="false" aria-controls="tab-panel-components" tabindex="-1" type="button">COMPONENTI</button>
       <button class="tab-btn" id="tab-technical" role="tab" aria-selected="false" aria-controls="tab-panel-technical" tabindex="-1" type="button">TECNICO</button>
@@ -159,6 +176,13 @@
       </div>
       <details class="panel technical-panel" id="ops-terminal-detail" style="margin-top:0"><summary>Dettaglio ultimo task terminato</summary><div id="ops-terminal-body" class="panel-body" style="padding-top:10px"></div></details>
     </section>
+    <section class="tab-panel" id="tab-panel-live" role="tabpanel" aria-labelledby="tab-live" hidden>
+      <div class="live-placeholder" id="live-placeholder">
+        <h2>ATTIVITÀ LIVE</h2>
+        <p>Nessuna attività live disponibile / #120 non ancora installato</p>
+        <p>Questo contenitore ospiterà traccia OpenCode/Qwen, file, comandi, test, git ed output sanitizzato.</p>
+      </div>
+    </section>
     <section class="tab-panel" id="tab-panel-history" role="tabpanel" aria-labelledby="tab-history" hidden>
       <div id="history-tasks"></div>
     </section>
@@ -173,11 +197,6 @@
     </div>
     <div class="layout-toolbar"><button id="reset-layout" type="button" title="Ripristina l’ordine predefinito delle sezioni (solo browser)">Ripristina layout</button></div>
     <div id="layout-root">
-      <section class="dash-section" data-section="resources" id="sec-resources" aria-labelledby="resources-title">
-        <div class="sec-chrome" data-chrome="resources"><span class="sec-label">Sezione</span></div>
-        <div class="panel"><div class="panel-head"><div class="heading"><span class="section-index">01</span><h2 id="resources-title">Risorse e quote</h2></div><span class="pill subtle">Osservatorio sola lettura</span></div>
-          <div class="panel-body" style="padding-top:12px" id="resources-cards"></div></div>
-      </section>
       <section class="dash-section" data-section="agentops" id="sec-agentops" aria-labelledby="agentops-title">
         <div class="sec-chrome" data-chrome="agentops"><span class="sec-label">Sezione</span></div>
         <div class="panel">
@@ -265,7 +284,7 @@
     const REASONS = Object.freeze({CLAIM_ALREADY_EXISTS:'Bloccato da claim',NO_ELIGIBLE_READY:'Nessun task eseguibile',CLAIM_SKIPPED_PRESENT:'Selezione fermata dal claim',NOT_READY:'Backlog non pronto',STATE_NOT_READY:'Backlog non pronto',NOT_LOCAL_DEV:'Destinazione non locale',HUMAN_GATE_REQUIRED:'Intervento umano richiesto',READ_FAILED:'Lettura del file non riuscita',EMPTY_FILE:'File vuoto',PARSE_FAILED:'Formato del backlog non valido',INVALID_ENTRY:'Elemento non valido',DIAGNOSTICS_QUEUE_SCAN_FAILED:'Scansione non disponibile',QWEN_SESSION_NOT_READY:'Runtime Qwen non pronto',MICRO_TASK_ADMISSION_REJECTED:'Ammissione del task rifiutata',TRACKED_DIRTY_CONFLICT:'Modifiche locali da verificare'});
     const STAGES = Object.freeze({queue_selection:'Selezione della coda','claim/bridge':'Registrazione del claim',qwen_preflight:'Verifica del runtime Qwen',admission:'Ammissione del task',repo_hygiene:'Verifica del repository',human_gate:'Verifica umana',executor:'Esecutore',service:'Servizio',single_flight:'Ciclo già in corso',diagnostics:'Diagnostica'});
     const LAYOUT_KEY = 'local-dev-dispatcher-dashboard-v1:section-order';
-    const CANONICAL_SECTIONS = Object.freeze(['resources','ops','agentops','queue']);
+    const CANONICAL_SECTIONS = Object.freeze(['agentops','queue']);
     const RESOURCE_LAYOUT_KEY = 'local-dev-dispatcher-dashboard-v1:resource-order';
     const CANONICAL_RESOURCES = Object.freeze(['workstation','vps','qwen','glm','codex','cursor']);
     const obj = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -400,16 +419,20 @@
       const phaseKey=opstripClock.phaseKey||derivePhaseKey(s,d.last_tick);
       const facts=[];
       const taskRef=scalar(s.task_ref)||(active?null:scalar(q.candidate_task_ref));
-      facts.push(['TASK',taskRef?shortTask(taskRef):'Nessun task',!taskRef]);
-      facts.push(['CONTROLLER',active?'Qwen Local':'—',!active]);
+      const taskLabel=taskRef?shortTask(taskRef):'Nessun task';
+      const taskHtml=active&&taskRef
+        ?`<button type="button" class="v task-live-link" data-open-live="1" title="Apri attività LIVE">${escapeHtml(taskLabel)}</button>`
+        :`<span class="v${!taskRef?' idle':''}">${escapeHtml(taskLabel)}</span>`;
+      facts.push(['TASK',taskHtml,false,true]);
+      facts.push(['CONTROLLER',active?'Qwen Local':'—',!active,false]);
       const profile=scalar(s.qwen_profile);
-      facts.push(['MODELLO',profile||(active?'Non osservato':'—'),!profile]);
+      facts.push(['MODELLO',profile||(active?'Non osservato':'—'),!profile,false]);
       const usage=deriveQwenUsage(s,Object.keys(obj(obj(resources).qwen)).length?obj(obj(resources).qwen):obj(d.qwen));
       const harness=active?(usage.harness||(phaseKey==='EXECUTOR'?'OpenCode':phaseKey==='QWEN_PREFLIGHT'?'OpenCode (preflight)':'Dispatcher')):'—';
-      facts.push(['HARNESS',harness,!active]);
-      facts.push(['FASE',phaseKey||'ATTESA',false]);
-      facts.push(['ELAPSED',active?activityClock(s.elapsed_ms)||'—':'—',!active]);
-      put('op-task',facts.map(([k,v,idle])=>`<span class="opstrip-fact"><span class="k">${escapeHtml(k)}</span><span class="v${idle?' idle':''}">${escapeHtml(v)}</span></span>`).join(''));
+      facts.push(['HARNESS',harness,!active,false]);
+      facts.push(['FASE',phaseKey||'ATTESA',false,false]);
+      facts.push(['ELAPSED',active?activityClock(s.elapsed_ms)||'—':'—',!active,false]);
+      put('op-task',facts.map(([k,v,idle,raw])=>`<span class="opstrip-fact"><span class="k">${escapeHtml(k)}</span>${raw?v:`<span class="v${idle?' idle':''}">${escapeHtml(v)}</span>`}</span>`).join(''));
     }
     function renderOpstripGate(diag,status){
       const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);
@@ -418,7 +441,9 @@
       const cls=text(s.classification||t.classification,'');
       const isGate=cls==='HUMAN_GATE_REQUIRED'||t.human_gate_required===true;
       if(!gateEl){return;}
-      if(!isGate){gateEl.hidden=true;gateEl.innerHTML='';return;}
+      const strip=el('opstrip');
+      if(!isGate){gateEl.hidden=true;gateEl.innerHTML='';if(strip)strip.classList.remove('has-gate');return;}
+      if(strip)strip.classList.add('has-gate');
       // #86 READ_ONLY_OPERATOR_VIEW: canonical human_gate metadata when present.
       const hg=obj(d.human_gate);
       const hgNew=Object.keys(hg).length>0&&hg.active===true;
@@ -658,7 +683,7 @@
         `</article>`).join(''));
     }
     function fact(name,value,key,mono=false){return `<div><dt>${escapeHtml(name)} ${help(key)}</dt><dd${mono?' class="mono"':''}>${escapeHtml(value)}</dd></div>`;}
-    function metric(name,value,sub,key,color='info',identity=false){return `<article class="metric ${color}"><div class="metric-label">${escapeHtml(name)} ${help(key)}</div><div class="metric-value${identity?' identity':''}">${escapeHtml(value)}</div><p class="metric-sub">${escapeHtml(sub)}</p></article>`;}
+    function metric(name,value,sub,key,color='info',identity=false,opts={}){const live=opts&&opts.openLive===true;return `<article class="metric ${color}${live?' metric-live':''}"${live?' data-open-live="1" role="link" tabindex="0" title="Apri attività LIVE"':''}><div class="metric-label">${escapeHtml(name)} ${help(key)}</div><div class="metric-value${identity?' identity':''}">${escapeHtml(value)}</div><p class="metric-sub">${escapeHtml(sub)}</p></article>`;}
     const el = id => document.getElementById(id);
     // Keep disclosure state and keyboard focus stable across refreshed snapshots.
     function put(id,html){const node=el(id);if(node.innerHTML===html)return;const openIds=Array.from(node.querySelectorAll('details[open]')).map(d=>d.id);const focused=document.activeElement;const focusId=node.contains(focused)?focused.id:null;const focusTip=node.contains(focused)?focused.getAttribute('aria-label'):null;node.innerHTML=html;for(const did of openIds){const d=document.getElementById(did);if(d)d.open=true;}if(focusId)document.getElementById(focusId)?.focus();else if(focusTip)Array.from(node.querySelectorAll('.help')).find(n=>n.getAttribute('aria-label')===focusTip)?.focus();}
@@ -1150,14 +1175,31 @@
       // === #94 STORICO + COMPONENTI (independent of the other sources) ===
       renderHistoryTab(history);
       renderComponentsTab(d,resources);
+      const lastTerm=obj(obj(history).last_terminal_task);
+      const lastTermLabel=lastTerm.task_ref?shortTask(lastTerm.task_ref):'Nessuno';
+      const lastTermOutcome=lastTerm.outcome?label(lastTerm.outcome==='HUMAN_GATE'?'HUMAN_GATE_REQUIRED':lastTerm.outcome):'—';
+      const lastCommit=lastTerm.commit_sha?String(lastTerm.commit_sha).slice(0,10):null;
+      const nextKnown=(()=>{
+        const hg=obj(d.human_gate);
+        if(hg.active===true)return 'Intervento umano richiesto';
+        const cand=scalar(q.candidate_task_ref);
+        if(cand)return shortTask(cand);
+        return 'Non ancora determinato';
+      })();
+      const statoLabel=active?'Al lavoro':(c==='HUMAN_GATE_REQUIRED'?'HUMAN GATE':c==='WORK_EXECUTED_PASS'||c==='PASS'?'PASS':c==='WORK_EXECUTED_STOP'||c==='STOP'?'STOP':s.active===false?'In attesa':'Sconosciuto');
       put('summary-cards',[
-        metric('Stato dispatcher',active?'Al lavoro':s.active===false?(c==='HUMAN_GATE_REQUIRED'?'Intervento umano':c==='SERVICE_ERROR'?'Errore servizio':'In attesa'):'Sconosciuto',active?label(s.phase):`Ultimo esito: ${label(c)}`,'active',active?'info':tone(c)),
-        metric('Task',s.task_ref?shortTask(s.task_ref):q.candidate_task_ref?shortTask(q.candidate_task_ref):'Nessun task',s.task_ref?(active?'Task in elaborazione':'Ultimo task osservato'):q.candidate_task_ref?'Candidato · non ancora avviato':'Nessun task selezionato','task_ref','identity',true),
+        metric('Stato',statoLabel,active?`Fase: ${label(s.phase)} · Elapsed ${duration(s.elapsed_ms)}`:`Ultimo esito: ${label(c)}`,'active',active?'info':tone(c)),
+        metric('Task corrente',s.task_ref?shortTask(s.task_ref):(active?'Ciclo attivo':'Nessuno'),active?'Apri LIVE per l’attività corrente':(q.candidate_task_ref?`Candidato: ${shortTask(q.candidate_task_ref)}`:'Nessun task selezionato'),'task_ref','identity',true,active&&s.task_ref?{openLive:true}:{}),
+        metric('Ultimo terminato',lastTermLabel,`${lastTermOutcome}${lastCommit?` · commit ${lastCommit}`:''}${lastTerm.terminal_at?` · ${date(lastTerm.terminal_at,true)}`:''}`,'recorded_at',tone(lastTerm.outcome||'')),
+        metric('Prossimo',nextKnown,active?'In corso — il prossimo arriverà a fine ciclo':'Governance / candidato noto','eligible_count','info'),
         metric('Coda',`${count(q.eligible_count)} eseguibili`,`${count(q.claim_present_count)} bloccati da claim`,'eligible_count',q.claim_present_count>0?'warn':'info'),
         metric('Qwen',qwenMetric.value,qwenMetric.sub,'qwen_reachable',qwenMetric.tone),
-        metric('Ultimo tick',date(t.recorded_at,true),t.recorded_at?date(t.recorded_at):'Nessun ciclo completato registrato','recorded_at','info'),
-        metric('Esecuzione',active?label(s.phase):label(t.classification||s.classification),active?`Durata ciclo: ${duration(s.elapsed_ms)}`:`Attività svolta nell’ultimo ciclo: ${yn(t.execution_performed)}`,'execution_performed',active?'info':tone(c)),
       ].join(''));
+      const taskCard=el('ops-task-card');
+      if(taskCard){
+        if(active&&s.task_ref){taskCard.setAttribute('data-open-live','1');taskCard.title='Apri attività LIVE';taskCard.style.cursor='pointer';}
+        else{taskCard.removeAttribute('data-open-live');taskCard.removeAttribute('title');taskCard.style.cursor='';}
+      }
       renderOperatorVisibility(d.operator_visibility,resources);
       renderOpsCards(s,t,q,e,usage);
       const qc=classifyQueueHistory(q.items);
@@ -1236,11 +1278,35 @@
       const staleNow=REFRESH_SOURCES.filter(src=>refreshState.sourceState.get(src.key).freshness==='STALE').map(src=>src.alert);
       const missing=REFRESH_SOURCES.filter(src=>refreshState.sourceState.get(src.key).freshness==='UNAVAILABLE_NO_DATA').map(src=>src.alert);
       const partial=staleNow.length>0||missing.length>0;
-      el('data-alert').hidden=!partial;el('data-alert').textContent=partial?`Dati parziali: ${[...missing,...staleNow.map(x=>`${x} (non aggiornato)`)].join(', ')}. I campi mancanti o non aggiornati non sono confermati.`:'';
+      const health=el('data-health');
+      const healthLabel=el('data-health-label');
+      const healthDot=el('data-health-dot');
+      const healthDetail=el('data-health-detail');
+      const alertLegacy=el('data-alert');
+      if(alertLegacy){alertLegacy.hidden=true;alertLegacy.textContent='';}
+      if(health&&healthLabel&&healthDetail){
+        health.className=`data-health ${partial?'partial':'ok'}`;
+        healthLabel.textContent=partial?'Dati parziali':'Dati OK';
+        if(healthDot)healthDot.className=partial?'dot off':'dot';
+        const lines=[];
+        if(missing.length)lines.push(`<p><b>Endpoint mancanti:</b> ${escapeHtml(missing.join(', '))}</p>`);
+        if(staleNow.length)lines.push(`<p><b>Endpoint non aggiornati:</b> ${escapeHtml(staleNow.join(', '))}</p>`);
+        lines.push(`<p><b>Ultima lettura valida:</b> ${escapeHtml(lastSuccess?lastSuccess.toLocaleTimeString('it-IT'):'nessuna')}</p>`);
+        if(!partial)lines.unshift('<p>Tutte le fonti di lettura sono aggiornate.</p>');
+        healthDetail.innerHTML=lines.join('');
+      }
       el('poll-dot').className=partial?'dot off':'dot';
       if(freshCount>0){el('poll-age').textContent=`${partial?'Lettura parziale':'Aggiornato'} alle ${lastSuccess.toLocaleTimeString('it-IT')}`;}
       else{el('poll-age').textContent=missing.length?`Dati non ancora disponibili: ${missing.join(', ')}.`:'Dati non disponibili';}
-    }catch{el('poll-dot').className='dot off';el('poll-age').textContent='Aggiornamento non riuscito';el('data-alert').hidden=false;el('data-alert').textContent=`Connessione al dispatcher non disponibile. ${lastSuccess?`Ultima lettura riuscita alle ${lastSuccess.toLocaleTimeString('it-IT')}. I dati sottostanti non sono aggiornati.`:'Nessuno stato confermato.'}`;
+    }catch{el('poll-dot').className='dot off';el('poll-age').textContent='Aggiornamento non riuscito';
+      const health=el('data-health');const healthLabel=el('data-health-label');const healthDetail=el('data-health-detail');const healthDot=el('data-health-dot');
+      if(health&&healthLabel&&healthDetail){
+        health.className='data-health partial';
+        healthLabel.textContent='Dati parziali';
+        if(healthDot)healthDot.className='dot off';
+        healthDetail.innerHTML=`<p><b>Connessione al dispatcher non disponibile.</b></p><p><b>Ultima lettura valida:</b> ${escapeHtml(lastSuccess?lastSuccess.toLocaleTimeString('it-IT'):'nessuna')}</p>`;
+      }
+      const alertLegacy=el('data-alert');if(alertLegacy){alertLegacy.hidden=true;alertLegacy.textContent='';}
       put('ops-state',`<div class="ops-main danger">Stato non verificabile</div><p class="ops-line">Fonti dispatcher non disponibili</p>`);
       renderOperatorVisibility(null);
       el('ops-state-card').className='ops-card danger';
@@ -1319,7 +1385,7 @@
     applyRefreshSchedule();
     // === #94 tabs: OPERAZIONI default; choice persisted trivially (localStorage) ===
     const TAB_KEY='control-plane.dashboard.tab.v1';
-    const TAB_IDS=Object.freeze(['operations','history','components','technical']);
+    const TAB_IDS=Object.freeze(['operations','live','history','components','technical']);
     function applyTab(id){
       if(!TAB_IDS.includes(id))id='operations';
       for(const t of TAB_IDS){
@@ -1332,6 +1398,15 @@
     for(const t of TAB_IDS){el(`tab-${t}`).addEventListener('click',()=>applyTab(t));}
     let storedTab=null;try{storedTab=storageGet(TAB_KEY);}catch{storedTab=null;}
     applyTab(TAB_IDS.includes(storedTab)?storedTab:'operations');
+    document.addEventListener('click',(event)=>{
+      const openLive=event.target.closest?.('[data-open-live="1"]');
+      if(openLive){event.preventDefault();applyTab('live');}
+    });
+    document.addEventListener('keydown',(event)=>{
+      if(event.key!=='Enter'&&event.key!==' ')return;
+      const openLive=event.target.closest?.('[data-open-live="1"]');
+      if(openLive){event.preventDefault();applyTab('live');}
+    });
     render(null,null,null);refresh();
     // Countdown updates client-side every second; anchored ONLY on real ticks.
     setInterval(renderOpstripCountdown,1000);
