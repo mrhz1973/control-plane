@@ -124,5 +124,97 @@ const MESSAGE_BUILDER_LINES = [
 export const NORMALIZER_JSCODE = NORMALIZER_LINES.join("\n");
 export const MESSAGE_BUILDER_JSCODE = MESSAGE_BUILDER_LINES.join("\n");
 
+/**
+ * WF90_TELEGRAM_ALERT_DEDUPE_V1 / #109 exact-once episode law.
+ * Embedded verbatim into "Code - Decide WF90 alert dedupe".
+ *
+ * - IDLE_CLEAN / BUSY never clear an active episode.
+ * - Signature excludes volatile gate_summary / dirty file counts.
+ * - True CLEAR only on WORK_EXECUTED_PASS (positive resolution).
+ * - State-read failure fails open (SEND).
+ */
+const DEDUPE_DECIDE_LINES = [
+  "const STATE_KEY = 'wf90:active_alert_signature';",
+  "const rows = $input.all().map((entry) => entry.json ?? {});",
+  "const stateReadFailed = rows.some((row) => Boolean(row && (row.error || row.errorMessage || row.__error)));",
+  "const normalized = $('Code - Normalize LOCAL_DEV tick result').first().json ?? {};",
+  "const actionable = normalized.notify_required === true;",
+  "const classification = typeof normalized.classification === 'string' ? normalized.classification : null;",
+  "const reasonCodes = Array.isArray(normalized.reason_codes) ? normalized.reason_codes : [];",
+  "const field = (value) => value === null || value === undefined ? null : String(value).trim();",
+  "let primaryReason = null;",
+  "let repoIdentity = null;",
+  "for (const raw of reasonCodes) {",
+  "  const s = String(raw || '').trim();",
+  "  if (!s) continue;",
+  "  if (/^REPO=/i.test(s)) {",
+  "    if (!repoIdentity) repoIdentity = s.replace(/^REPO=/i, '').trim() || null;",
+  "    continue;",
+  "  }",
+  "  if (!primaryReason) primaryReason = s;",
+  "}",
+  "if (!repoIdentity && typeof normalized.gate_summary === 'string') {",
+  "  const m = normalized.gate_summary.match(/\\[([A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+)\\]/);",
+  "  if (m) repoIdentity = m[1];",
+  "}",
+  "const signatureFields = actionable ? {",
+  "  classification: field(classification),",
+  "  task_ref: field(normalized.task_ref),",
+  "  phase: normalized.human_gate_required === true ? 'HUMAN_GATE' : 'NONE',",
+  "  reason_code: primaryReason || null,",
+  "  repo: repoIdentity || null,",
+  "} : null;",
+  "const alertSignature = signatureFields ? JSON.stringify(signatureFields) : null;",
+  "const stateRow = rows.find((row) => row && row.key === STATE_KEY);",
+  "const storedSignature = stateRow && typeof stateRow.value === 'string' ? stateRow.value : null;",
+  "let dedupeAction;",
+  "let dedupeReason;",
+  "if (actionable) {",
+  "  if (stateReadFailed) {",
+  "    dedupeAction = 'SEND';",
+  "    dedupeReason = 'STATE_READ_FAILED_FAIL_OPEN';",
+  "  } else if (storedSignature === alertSignature) {",
+  "    dedupeAction = 'SUPPRESS';",
+  "    dedupeReason = 'UNCHANGED_ACTIONABLE_STATE';",
+  "  } else {",
+  "    dedupeAction = 'SEND';",
+  "    dedupeReason = storedSignature ? 'CHANGED_ACTIONABLE_STATE' : 'NEW_ACTIONABLE_EPISODE';",
+  "  }",
+  "} else if (classification === 'WORK_EXECUTED_PASS') {",
+  "  dedupeAction = storedSignature ? 'CLEAR' : 'KEEP_EPISODE';",
+  "  dedupeReason = storedSignature ? 'PASS_RESOLVES_EPISODE' : 'NO_ACTIVE_EPISODE';",
+  "} else if (classification === 'IDLE_CLEAN') {",
+  "  dedupeAction = 'KEEP_EPISODE';",
+  "  dedupeReason = 'IDLE_KEEPS_EPISODE';",
+  "} else if (classification === 'BUSY') {",
+  "  dedupeAction = 'KEEP_EPISODE';",
+  "  dedupeReason = 'BUSY_KEEPS_EPISODE';",
+  "} else {",
+  "  dedupeAction = 'KEEP_EPISODE';",
+  "  dedupeReason = 'NON_ACTIONABLE_KEEPS_EPISODE';",
+  "}",
+  "return { json: {",
+  "  ...normalized,",
+  "  dedupe_state_key: STATE_KEY,",
+  "  dedupe_action: dedupeAction,",
+  "  dedupe_reason: dedupeReason,",
+  "  dedupe_state_read_ok: !stateReadFailed,",
+  "  prior_alert_signature_present: Boolean(storedSignature),",
+  "  alert_signature: alertSignature,",
+  "  alert_signature_fields: signatureFields,",
+  "} };",
+];
+
+export const DEDUPE_DECIDE_JSCODE = DEDUPE_DECIDE_LINES.join("\n");
+export const DEDUPE_DECIDE_NODE = "Code - Decide WF90 alert dedupe";
+export const DEDUPE_STATE_KEY = "wf90:active_alert_signature";
+export const DEDUPE_SIGNATURE_FIELDS = Object.freeze([
+  "classification",
+  "task_ref",
+  "phase",
+  "reason_code",
+  "repo",
+]);
+
 /** Node name constants (single source for artifact + tests). */
 export const MESSAGE_BUILDER_NODE = "Code - Build WF90 actionable gate message";
