@@ -436,6 +436,103 @@ await test("stable id: same terminal evidence → same reconciler id; different 
   assert.notEqual(d1, d3);
 });
 
+await test("#113 reconciler READY through real bridge gets multi-file budget (3600/24/1)", () => {
+  const built = buildReconcilerReadyMarkdown({
+    repo: REPO, terminalTaskRef: F001R_TASK, terminalTaskId: "D-0103-F001R",
+    terminalCommit: F001R_COMMIT, nowIso: NOW,
+  });
+  const parsed = parseBacklogFile(built.markdown);
+  assert.equal(parsed.ok, true, parsed.reason);
+  assert.equal(parsed.item.execution.loop_allowed, true);
+  assert.equal(parsed.item.execution.max_loop_rounds_hint, 1);
+  assert.deepEqual(parsed.item.scope.allowed_areas, PROJECT_CANON[REPO].reconcilerAllowedAreas);
+  assert.equal(parsed.item.scope.allowed_areas.length, 3);
+  const br = buildLocalDevEnvelopeFromBacklog({
+    markdown: built.markdown, repo: "mrhz1973/control-plane", commit: "a".repeat(40),
+    path: `reports/runtime/dev-queue/always-on/READY_${built.id}.md`,
+    dispatchBaseHead: "b".repeat(40), now: new Date(NOW),
+  });
+  assert.equal(br.ok, true, JSON.stringify(br.reason_codes));
+  assert.equal(br.envelope.timebox_seconds, 3600);
+  assert.equal(br.envelope.max_agent_turns, 24);
+  assert.equal(br.envelope.max_test_cycles, 1);
+  assert.deepEqual(br.envelope.allowed_paths, PROJECT_CANON[REPO].reconcilerAllowedAreas);
+});
+
+await test("#113 A: concrete record + same task_ref NO_COMMIT → no duplicate reconciler", () => {
+  const dir = tmp();
+  try {
+    const store = loadReconciliationStore(join(dir, "store.json"));
+    const first = reconcileTerminalPass({
+      store, queueDir: dir, repo: REPO, taskRef: F001R_TASK, taskId: "D-0103-F001R",
+      commitSha: F001R_COMMIT, durationMs: 1000, nowIso: NOW,
+    });
+    assert.equal(first.action, "RECONCILER_QUEUED");
+    const filesBefore = readdirOf(dir).filter((f) => f.endsWith(".md"));
+    assert.equal(filesBefore.length, 1);
+    const dup = reconcileTerminalPass({
+      store, queueDir: dir, repo: REPO, taskRef: F001R_TASK, taskId: "D-0103-F001R",
+      commitSha: null, durationMs: 1000, nowIso: "2026-09-19T23:46:00.000Z",
+    });
+    assert.equal(dup.action, "DEDUPED_TO_CONCRETE_LINEAGE");
+    assert.equal(dup.record.key, first.record.key);
+    assert.equal(readdirOf(dir).filter((f) => f.endsWith(".md")).length, 1);
+    assert.equal(store.records.filter((r) => r.terminal_task_ref === F001R_TASK).length, 1);
+    const receipts = [{
+      task_ref: F001R_TASK, state: "PASS",
+      source_ref: `github:${REPO}@${F001R_COMMIT}:reports/runtime/dev-queue/always-on/READY_x.md`,
+      claimed_at: NOW,
+    }];
+    assert.equal(detectUnreconciledTerminalPass({ receipts, store }).length, 0);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+await test("#113 B: different task_ref remains distinct", () => {
+  const dir = tmp();
+  try {
+    const store = loadReconciliationStore(join(dir, "store.json"));
+    const a = reconcileTerminalPass({
+      store, queueDir: dir, repo: REPO, taskRef: F001R_TASK, taskId: "D-0103-F001R",
+      commitSha: F001R_COMMIT, durationMs: 1000, nowIso: NOW,
+    });
+    const other = "LOCAL_DEV_B_D-0103-F002";
+    const b = reconcileTerminalPass({
+      store, queueDir: dir, repo: REPO, taskRef: other, taskId: "D-0103-F002",
+      commitSha: "dca00f55f74d24abcbc2fabbbdc958d020805836", durationMs: 1000, nowIso: NOW,
+    });
+    assert.equal(a.action, "RECONCILER_QUEUED");
+    assert.equal(b.action, "RECONCILER_QUEUED");
+    assert.notEqual(a.record.key, b.record.key);
+    assert.notEqual(a.record.reconciler_ready_id, b.record.reconciler_ready_id);
+    assert.equal(store.records.length, 2);
+    assert.equal(readdirOf(dir).filter((f) => f.endsWith(".md")).length, 2);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+await test("#113 C: same task_ref + different concrete commit → fail-closed contradiction", () => {
+  const dir = tmp();
+  try {
+    const store = loadReconciliationStore(join(dir, "store.json"));
+    const first = reconcileTerminalPass({
+      store, queueDir: dir, repo: REPO, taskRef: F001R_TASK, taskId: "D-0103-F001R",
+      commitSha: F001R_COMMIT, durationMs: 1000, nowIso: NOW,
+    });
+    assert.equal(first.ok, true);
+    const otherCommit = "0".repeat(40);
+    const conflict = reconcileTerminalPass({
+      store, queueDir: dir, repo: REPO, taskRef: F001R_TASK, taskId: "D-0103-F001R",
+      commitSha: otherCommit, durationMs: 1000, nowIso: "2026-09-19T23:50:00.000Z",
+    });
+    assert.equal(conflict.ok, false);
+    assert.equal(conflict.action, "TERMINAL_COMMIT_CONTRADICTION");
+    assert.equal(conflict.reason, "TERMINAL_COMMIT_CONTRADICTION");
+    assert.equal(store.records.length, 1);
+    assert.equal(readdirOf(dir).filter((f) => f.endsWith(".md")).length, 1);
+    assert.notEqual(reconciliationKey({ repo: REPO, taskRef: F001R_TASK, commitSha: F001R_COMMIT }),
+      reconciliationKey({ repo: REPO, taskRef: F001R_TASK, commitSha: otherCommit }));
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
 await test("reconciler READY respects target-repo execution semantics (repo=tmar-tts, docs-only)", () => {
   const dir = tmp();
   try {

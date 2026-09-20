@@ -260,7 +260,10 @@ export function buildReconcilerReadyMarkdown({ repo, terminalTaskRef, terminalTa
     "",
     "execution:",
     "  target: cursor",
-    "  loop_allowed: false",
+    // Qualify for the existing multi-file bridge budget (3 allowed paths +
+    // loop_allowed → timebox_seconds=3600 / max_agent_turns=24). Do NOT broaden
+    // the generic bridge cap; keep reconciler scope and rounds tightly bounded.
+    "  loop_allowed: true",
     "  max_loop_rounds_hint: 1",
     "",
     "acceptance:",
@@ -388,9 +391,52 @@ function recordByKey(store, key) {
  * returns the PASS notification payload (dedup handled by the caller's
  * notify ledger).
  */
+function concreteCommitRecordsForTask(store, repo, taskRef) {
+  const task = String(taskRef || "").trim();
+  return (store?.records || []).filter((r) => r
+    && r.repo === repo
+    && r.terminal_task_ref === task
+    && typeof r.terminal_commit === "string"
+    && r.terminal_commit.trim()
+    && r.terminal_commit.trim() !== "NO_COMMIT");
+}
+
 export function reconcileTerminalPass({ store, queueDir, repo, taskRef, taskId, commitSha, testsState, durationMs, nowIso, writeQueueFile }) {
   const canon = PROJECT_CANON[repo];
   if (!canon) return { ok: true, action: "NO_CANON_FOR_REPO", journalEvents: [], notifications: [] };
+  const commitTrim = typeof commitSha === "string" ? commitSha.trim() : "";
+  const concretePeers = concreteCommitRecordsForTask(store, repo, taskRef);
+  // Same repo + same terminal task_ref + NO_COMMIT observation must not spawn a
+  // second reconciler when a concrete-commit lineage already exists.
+  if (!commitTrim && concretePeers.length) {
+    return {
+      ok: true,
+      action: "DEDUPED_TO_CONCRETE_LINEAGE",
+      journalEvents: [],
+      notifications: [],
+      record: concretePeers[0],
+    };
+  }
+  // Same task_ref with a proven different concrete commit is contradictory
+  // evidence — fail closed; never silent-merge distinct terminal commits.
+  if (commitTrim && concretePeers.some((r) => r.terminal_commit !== commitTrim)) {
+    return {
+      ok: false,
+      action: "TERMINAL_COMMIT_CONTRADICTION",
+      reason: "TERMINAL_COMMIT_CONTRADICTION",
+      journalEvents: [{
+        event: "RECONCILIATION_HUMAN_GATE",
+        phase: "PROJECT_RECONCILIATION",
+        component: "dispatcher",
+        task_ref: taskRef,
+        target_repo: repo,
+        classification: "HUMAN_GATE_REQUIRED",
+        human_summary: `Contradictory terminal commit for ${taskRef}: existing concrete lineage conflicts with new observation.`,
+      }],
+      notifications: [],
+      record: concretePeers.find((r) => r.terminal_commit !== commitTrim) || null,
+    };
+  }
   const key = reconciliationKey({ repo, taskRef, commitSha });
   if (!key) return { ok: true, action: "KEY_INVALID", journalEvents: [], notifications: [] };
   let record = recordByKey(store, key);
@@ -580,6 +626,9 @@ export function detectUnreconciledTerminalPass({ receipts, store, repoCanonMap }
       && !isReconcilerTaskRef(r.task_ref));
     if (!passes.length) continue;
     const latest = passes.reduce((a, b) => (String(a.claimed_at || "") <= String(b.claimed_at || "") ? b : a));
+    // Concrete-commit lineage for this task_ref already owns reconciliation —
+    // do not invent a second NO_COMMIT reconciler for the same terminal.
+    if (concreteCommitRecordsForTask(store, repo, latest.task_ref).length) continue;
     const key = reconciliationKey({ repo, taskRef: latest.task_ref, commitSha: null });
     if (!key) continue;
     if (recordByKey(store, key)) continue;
