@@ -271,7 +271,9 @@
         1000,
         -120
       ],
-      "notes": "V4_TELEGRAM_ACTIONABLE_HUMAN_GATE_V1: text from the builder node; inlineKeyboard wired from builder output (MODE B) or suppressed by the builder returning empty markup semantics (MODE A keeps replyMarkup absent via reply_markup null handling at apply time). parse_mode HTML and credential in-memory clone rule unchanged; no decision semantics."
+      "notes": "V4_TELEGRAM_ACTIONABLE_HUMAN_GATE_V1: text from the builder node; inlineKeyboard wired from builder output (MODE B) or suppressed by the builder returning empty markup semantics (MODE A keeps replyMarkup absent via reply_markup null handling at apply time). parse_mode HTML and credential in-memory clone rule unchanged; no decision semantics. #109: onError continueRegularOutput so Persist can store alert signature even if Telegram transport rejects a send.",
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
