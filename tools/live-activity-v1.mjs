@@ -370,7 +370,6 @@ export function createLiveActivitySink(options = {}) {
   function end(status = "DONE") {
     try {
       if (lineBuf.trim()) ingestChunk("\n", "stdout");
-      state.active = false;
       pushEvent({
         event_type: "TASK_ACTIVITY",
         operation: status,
@@ -380,7 +379,9 @@ export function createLiveActivitySink(options = {}) {
         status,
         message: `execution:${status}`,
       });
+      state.active = false;
       if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
+      dirty = true;
       flush();
       closed = true;
     } catch { /* ignore */ }
@@ -437,7 +438,20 @@ export function readLiveActivityProjection(options = {}) {
       note: "Attività live non ancora osservata per il task corrente",
     };
   }
-  if (!activeTaskRef && fileState.active === true) stale = true;
+  // Idle projection: never present prior-task events as current work.
+  if (!activeTaskRef) {
+    return {
+      schema_version: LIVE_ACTIVITY_SCHEMA,
+      read_only: true,
+      active: false,
+      task_ref: null,
+      last_activity_at: fileState.last_activity_at || null,
+      events: [],
+      public_rationale: null,
+      freshness: "EMPTY",
+      note: "Nessuna attività live disponibile",
+    };
+  }
   if (activeTaskRef && fileState.active !== true) stale = true;
   const events = trimEvents(Array.isArray(fileState.events) ? fileState.events : [])
     .filter((e) => !activeTaskRef || !e.task_ref || e.task_ref === activeTaskRef);
