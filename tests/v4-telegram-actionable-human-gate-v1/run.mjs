@@ -3,7 +3,7 @@
  * V4_TELEGRAM_ACTIONABLE_HUMAN_GATE_V1 — focused offline tests (deterministic).
  *
  * Proves the canonical actionable-gate contract + WF90 normalization/build
- * logic + WF90 dedupe regression. No Telegram, no n8n, no network.
+ * logic + MODE A/B Telegram transport routing. No Telegram, no n8n, no network.
  */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -17,7 +17,19 @@ import {
   signCallbackValue,
   verifyCallbackValue,
 } from "../../tools/v4-actionable-gate-contract-v1.mjs";
-import { NORMALIZER_JSCODE, MESSAGE_BUILDER_JSCODE, MESSAGE_BUILDER_NODE } from "../../tools/wf90-actionable-gate-nodes-v1.mjs";
+import {
+  NORMALIZER_JSCODE,
+  MESSAGE_BUILDER_JSCODE,
+  MESSAGE_BUILDER_NODE,
+  TELEGRAM_INFO_NODE,
+  TELEGRAM_ACTIONABLE_NODE,
+  IF_MODE_B_TELEGRAM_NODE,
+  PERSIST_ALERT_STATE_NODE,
+  TELEGRAM_TEXT_EXPR,
+  MODE_B_ACTIONABLE_EXPR,
+  MODE_B_BUTTON_TEXT_EXPRS,
+  MODE_B_BUTTON_CALLBACK_EXPRS,
+} from "../../tools/wf90-actionable-gate-nodes-v1.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../..");
@@ -150,8 +162,12 @@ await test("builder-modeB-exact-buttons-bound-to-gate", () => {
   assert.equal(out.telegram_text.includes("TEST") || out.telegram_text.includes("AZIONABILE"), true);
 });
 
-// ---------- WF90 artifact regression (dedupe intact + additive wiring) ----------
+// ---------- WF90 artifact regression (MODE A/B transport + dedupe intact) ----------
 const artifact = JSON.parse(readFileSync(ARTIFACT, "utf8").replace(/^\uFEFF/, ""));
+const infoNode = artifact.nodes.find((n) => n.name === TELEGRAM_INFO_NODE);
+const actNode = artifact.nodes.find((n) => n.name === TELEGRAM_ACTIONABLE_NODE);
+const modeBIf = artifact.nodes.find((n) => n.name === IF_MODE_B_TELEGRAM_NODE);
+const persistNode = artifact.nodes.find((n) => n.name === PERSIST_ALERT_STATE_NODE);
 
 await test("artifact-dedupe-node-unchanged-semantics", () => {
   const decideNode = artifact.nodes.find((n) => n.name === DECIDE_NODE);
@@ -159,16 +175,70 @@ await test("artifact-dedupe-node-unchanged-semantics", () => {
   assert.equal(decideNode.parameters.mode, "runOnceForAllItems");
   assert.ok(decideNode.parameters.jsCode.includes("wf90:active_alert_signature"));
   assert.ok(decideNode.parameters.jsCode.includes("UNCHANGED_ACTIONABLE_STATE"));
+  assert.ok(decideNode.parameters.jsCode.includes("KEEP_EPISODE"));
 });
 
-await test("artifact-contains-message-builder-node-and-html-telegram-node", () => {
+await test("A MODE A routes informational Telegram with zero replyMarkup", () => {
+  assert.ok(infoNode, "informational Telegram node present");
+  assert.equal(infoNode.type, "n8n-nodes-base.telegram");
+  assert.equal(infoNode.parameters.text, TELEGRAM_TEXT_EXPR);
+  assert.equal(Object.prototype.hasOwnProperty.call(infoNode.parameters, "replyMarkup"), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(infoNode.parameters, "inlineKeyboard"), false);
+  assert.equal(artifact.connections[IF_MODE_B_TELEGRAM_NODE].main[1][0].node, TELEGRAM_INFO_NODE);
+});
+
+await test("B MODE B routes actionable Telegram with canonical 3 buttons", () => {
+  assert.ok(actNode, "actionable Telegram node present");
+  assert.equal(actNode.parameters.replyMarkup, "inlineKeyboard");
+  const buttons = actNode.parameters.inlineKeyboard.rows[0].row.buttons;
+  assert.equal(buttons.length, 3);
+  assert.deepEqual(buttons.map((b) => b.text), [...MODE_B_BUTTON_TEXT_EXPRS]);
+  assert.equal(artifact.connections[IF_MODE_B_TELEGRAM_NODE].main[0][0].node, TELEGRAM_ACTIONABLE_NODE);
+});
+
+await test("C MODE A never evaluates reply_markup.inline_keyboard expressions", () => {
+  const infoJson = JSON.stringify(infoNode.parameters);
+  assert.equal(infoJson.includes("reply_markup.inline_keyboard"), false);
+  assert.equal(infoJson.includes("callback_data"), false);
+});
+
+await test("D MODE B callback_data expressions unchanged", () => {
+  const buttons = actNode.parameters.inlineKeyboard.rows[0].row.buttons;
+  assert.deepEqual(
+    buttons.map((b) => b.additionalFields.callback_data),
+    [...MODE_B_BUTTON_CALLBACK_EXPRS],
+  );
+});
+
+await test("E both successful send paths persist alert state", () => {
+  assert.equal(artifact.connections[TELEGRAM_INFO_NODE].main[0][0].node, PERSIST_ALERT_STATE_NODE);
+  assert.equal(artifact.connections[TELEGRAM_ACTIONABLE_NODE].main[0][0].node, PERSIST_ALERT_STATE_NODE);
+  assert.ok(persistNode);
+  assert.ok(persistNode.parameters.columns.value.value.includes("alert_signature"));
+});
+
+await test("F Telegram error does not false-mark delivery success", () => {
+  // No continueRegularOutput on Telegram: failure stops before Persist.
+  assert.equal(infoNode.onError, undefined);
+  assert.equal(actNode.onError, undefined);
+  assert.equal(infoNode.alwaysOutputData, undefined);
+  assert.equal(actNode.alwaysOutputData, undefined);
+  // Persist remains only on successful Telegram main outputs (E).
+  const persistIncoming = Object.entries(artifact.connections)
+    .filter(([, c]) => (c.main || []).flat().some((edge) => edge.node === PERSIST_ALERT_STATE_NODE))
+    .map(([name]) => name)
+    .sort();
+  assert.deepEqual(persistIncoming, [TELEGRAM_ACTIONABLE_NODE, TELEGRAM_INFO_NODE].sort());
+});
+
+await test("artifact-contains-message-builder-and-mode-b-if-synced", () => {
   const builder = artifact.nodes.find((n) => n.name === MESSAGE_BUILDER_NODE);
   assert.ok(builder, "message builder node present");
-  assert.equal(builder.type, "n8n-nodes-base.code");
-  assert.equal(builder.parameters.mode, "runOnceForEachItem");
-  const tg = artifact.nodes.find((n) => n.name === "Telegram - LOCAL_DEV gate notification");
-  assert.equal(tg.parameters.text, "={{ $json.telegram_text }}");
-  assert.equal(tg.parameters.additionalFields.parse_mode, "HTML");
+  assert.equal(builder.parameters.jsCode, MESSAGE_BUILDER_JSCODE);
+  assert.ok(modeBIf);
+  assert.equal(modeBIf.parameters.conditions.conditions[0].leftValue, MODE_B_ACTIONABLE_EXPR);
+  assert.equal(modeBIf.parameters.conditions.conditions[0].operator.operation, "true");
+  assert.equal(artifact.nodes.some((n) => n.name === "Telegram - LOCAL_DEV gate notification"), false);
 });
 
 await test("artifact-schedule-timeout-and-dedupe-invariants-preserved", () => {

@@ -218,3 +218,22 @@ export const DEDUPE_SIGNATURE_FIELDS = Object.freeze([
 
 /** Node name constants (single source for artifact + tests). */
 export const MESSAGE_BUILDER_NODE = "Code - Build WF90 actionable gate message";
+export const TELEGRAM_INFO_NODE = "Telegram - LOCAL_DEV gate informational";
+export const TELEGRAM_ACTIONABLE_NODE = "Telegram - LOCAL_DEV gate actionable";
+export const IF_MODE_B_TELEGRAM_NODE = "IF - WF90 MODE B actionable telegram?";
+export const PERSIST_ALERT_STATE_NODE = "Data Table - Persist WF90 active alert state";
+export const TERMINAL_NODE = "Code - LOCAL_DEV tick terminal";
+
+/** Shared n8n expression strings — must match the WF90 artifact exactly. */
+export const TELEGRAM_TEXT_EXPR = "={{ $json.telegram_text }}";
+export const MODE_B_ACTIONABLE_EXPR = "={{ $json.actionable }}";
+export const MODE_B_BUTTON_TEXT_EXPRS = Object.freeze([
+  "={{ $json.reply_markup.inline_keyboard[0][0].text }}",
+  "={{ $json.reply_markup.inline_keyboard[0][1].text }}",
+  "={{ $json.reply_markup.inline_keyboard[0][2].text }}",
+]);
+export const MODE_B_BUTTON_CALLBACK_EXPRS = Object.freeze([
+  "={{ $json.reply_markup.inline_keyboard[0][0].callback_data }}",
+  "={{ $json.reply_markup.inline_keyboard[0][1].callback_data }}",
+  "={{ $json.reply_markup.inline_keyboard[0][2].callback_data }}",
+]);

@@ -2,7 +2,7 @@
   "schema": "control-plane-gpt-web-n8n-new-workflow-v1",
   "task_ref": "V4_LOCAL_DEV_N8N_ALWAYS_ON_LIVE_FAST_TRACK_V1",
   "authority": "GPT_WEB",
-  "purpose": "NEW isolated always-on workflow that ticks the Windows LOCAL_DEV autonomous dispatcher every 2 minutes over Tailscale-private transport, normalizes the bounded tick result, and deduplicates Telegram alerts by the active actionable state in the existing n8n Data Table control_plane_state (key wf90:active_alert_signature). A new or changed human-gate / executor-STOP / service-error state notifies once; an unchanged state is suppressed; IDLE_CLEAN/BUSY keep the active episode; CLEAR only on WORK_EXECUTED_PASS; semantic signature uses classification/task/phase/reason/repo (no dirty file-count). No WF40 node graph change. No production authorization. No D-0025 activation. Notification-only Telegram usage; credentials are cloned in memory at LIVE APPLY time and never persisted in this artifact. ISSUE #87: eligible HUMAN_GATE notifications may carry canonical bounded choices (operator_action_choices from the dispatcher) and render as an interactive Telegram handoff; informational gates unchanged. ISSUE #109: HUMAN_GATE exact-once dedupe — IDLE/BUSY do not clear wf90:active_alert_signature; semantic signature excludes volatile dirty file counts.",
+  "purpose": "NEW isolated always-on workflow that ticks the Windows LOCAL_DEV autonomous dispatcher every 2 minutes over Tailscale-private transport, normalizes the bounded tick result, and deduplicates Telegram alerts by the active actionable state in the existing n8n Data Table control_plane_state (key wf90:active_alert_signature). A new or changed human-gate / executor-STOP / service-error state notifies once; an unchanged state is suppressed; IDLE_CLEAN/BUSY keep the active episode; CLEAR only on WORK_EXECUTED_PASS; semantic signature uses classification/task/phase/reason/repo (no dirty file-count). No WF40 node graph change. No production authorization. No D-0025 activation. Notification-only Telegram usage; credentials are cloned in memory at LIVE APPLY time and never persisted in this artifact. ISSUE #87: eligible HUMAN_GATE notifications may carry canonical bounded choices (operator_action_choices from the dispatcher) and render as an interactive Telegram handoff; informational gates unchanged. ISSUE #109: HUMAN_GATE exact-once dedupe — IDLE/BUSY do not clear wf90:active_alert_signature; semantic signature excludes volatile dirty file counts. ISSUE #109 MODE A/B: split informational vs actionable Telegram nodes so MODE A never evaluates inlineKeyboard.",
   "authority_note": "This workflow JSON is GPT-Web-authored per operator dispatch V4_LOCAL_DEV_N8N_ALWAYS_ON_LIVE_FAST_TRACK_V1 (GPT_WEB authoring override of GPT_WEB_N8N_AUTHORING_REQUIRED).",
   "target_workflow": {
     "name_exact": "90 - CP V4 LOCAL DEV ALWAYS-ON DISPATCHER - ACTIVE",
@@ -224,6 +224,131 @@
     },
     {
       "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "control_plane_state"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ $('Code - Decide WF90 alert dedupe').first().json.dedupe_state_key }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ $('Code - Decide WF90 alert dedupe').first().json.dedupe_state_key }}",
+            "value": "={{ $('Code - Decide WF90 alert dedupe').first().json.alert_signature }}",
+            "updated_at": "={{ $now.toISO() }}",
+            "note": "WF90 active actionable alert signature"
+          }
+        },
+        "options": {}
+      },
+      "id": "90ld-0012-4012-8012-000000000012",
+      "name": "Data Table - Persist WF90 active alert state",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1720,
+        -120
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true,
+      "notes": "WF90_TELEGRAM_ALERT_DEDUPE_V1/#109: Persist ONLY after successful Telegram delivery (MODE A or MODE B). Write failure never suppresses a future alert."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const direct = $input.item.json ?? {};\nlet decision = {};\ntry { decision = $('Code - Decide WF90 alert dedupe').first().json ?? {}; } catch {}\nconst j = Object.keys(decision).length ? decision : direct;\nconst reason_codes = Array.isArray(j.reason_codes) ? j.reason_codes.slice(0, 16) : [];\nreturn { json: {\n  schema: 'local-dev-always-on-tick-terminal-v1',\n  classification: j.classification ?? null,\n  execution_performed: j.execution_performed === true,\n  task_ref: j.task_ref ?? null,\n  executor_classification: j.executor_classification ?? null,\n  reason_codes,\n  human_gate_required: j.human_gate_required === true,\n  notify_required: j.notify_required === true,\n  dedupe_action: j.dedupe_action ?? null,\n  dedupe_reason: j.dedupe_reason ?? null,\n  dedupe_state_key: j.dedupe_state_key ?? null,\n  dedupe_state_read_ok: j.dedupe_state_read_ok !== false,\n  tick_completed_at: new Date().toISOString()\n} };"
+      },
+      "id": "90ld-0007-4007-8007-000000000007",
+      "name": "Code - LOCAL_DEV tick terminal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// V4_TELEGRAM_ACTIONABLE_HUMAN_GATE_V1: render MODE A (informational) vs\n// MODE B (bounded actionable buttons) from the canonical normalized gate.\n// callback_data = 'ag:<nonce>:<CHOICE>:<hmac16>' with the dispatcher-issued\n// nonce; validation of any callback happens ONLY through the dispatcher gate\n// check endpoint. n8n is a TRANSPORT, never a decision authority.\nconst n = $('Code - Normalize LOCAL_DEV tick result').first().json ?? {};\nconst esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst g = n.actionable_gate;\nif (!g) {\n  return { json: { telegram_text: n.telegram_text, actionable: false, reply_markup: null } };\n}\nconst LABELS = { APPROVE_AND_CONTINUE: 'A — APPROVE_AND_CONTINUE', STOP: 'B — STOP', DEFER: 'C — DEFER' };\nconst buttons = g.choices.map((c) => ({ text: LABELS[c] || c, callback_data: 'ag:' + g.callback_nonce + ':' + c + ':' + g.callback_tag }));\nconst ttlLine = g.expires_at ? ('\\nvalid until: ' + esc(g.expires_at)) : '';\nconst confirmLine = g.requires_confirmation ? '\\nNOTA: la governance richiede una conferma aggiuntiva prima di qualsiasi esecuzione.' : '';\nconst text = [\n  '\\U0001F7E2 CONTROL PLANE — GATE ATTIVO (AZIONABILE)',\n  'gate: ' + esc(g.gate_id),\n  'task: ' + esc(n.task_ref || 'NONE'),\n  'classification: ' + esc(n.classification),\n  'reason: ' + esc((Array.isArray(n.reason_codes) && n.reason_codes.length ? n.reason_codes.join(',') : n.gate_summary) || 'none'),\n  '',\n  esc(g.summary || 'Richiesta decisione operatore.'),\n  g.detail ? esc(g.detail) : null,\n  ttlLine,\n  confirmLine,\n  '',\n  'Un solo tocco · una sola transizione · solo operatore.',\n].filter((v) => v !== null).join('\\n');\nreturn { json: {\n  telegram_text: text,\n  actionable: true,\n  gate_id: g.gate_id,\n  reply_markup: { inline_keyboard: [buttons] },\n} };"
+      },
+      "id": "90ld-0010-4010-8010-000000000010",
+      "name": "Code - Build WF90 actionable gate message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        -240
+      ],
+      "notes": "V4_TELEGRAM_ACTIONABLE_HUMAN_GATE_V1: MODE A passes telegram_text through (no buttons); MODE B renders exactly the canonical operator_action_choices as inline buttons bound to gate_id + dispatcher nonce. Telegram stays an interaction surface; the dispatcher gate check endpoint is the only validator."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "90ld-cond-mode-b",
+              "leftValue": "={{ $json.actionable }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "90ld-0014-4014-8014-000000000014",
+      "name": "IF - WF90 MODE B actionable telegram?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        -120
+      ],
+      "notes": "#109: route builder output to MODE B actionable Telegram vs MODE A informational Telegram."
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "LIVE_APPLY_IN_MEMORY_CLONE",
+        "text": "={{ $json.telegram_text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        },
+        "options": {}
+      },
+      "id": "90ld-0006-4006-8006-000000000006",
+      "name": "Telegram - LOCAL_DEV gate informational",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1240,
+        -40
+      ],
+      "notes": "#109 MODE A: informational Telegram only — no replyMarkup, no inlineKeyboard, no button expression evaluation."
+    },
+    {
+      "parameters": {
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "LIVE_APPLY_IN_MEMORY_CLONE",
@@ -263,86 +388,15 @@
           ]
         }
       },
-      "id": "90ld-0006-4006-8006-000000000006",
-      "name": "Telegram - LOCAL_DEV gate notification",
+      "id": "90ld-0013-4013-8013-000000000013",
+      "name": "Telegram - LOCAL_DEV gate actionable",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1000,
-        -120
+        1240,
+        -200
       ],
-      "notes": "V4_TELEGRAM_ACTIONABLE_HUMAN_GATE_V1: text from the builder node; inlineKeyboard wired from builder output (MODE B) or suppressed by the builder returning empty markup semantics (MODE A keeps replyMarkup absent via reply_markup null handling at apply time). parse_mode HTML and credential in-memory clone rule unchanged; no decision semantics. #109: onError continueRegularOutput so Persist can store alert signature even if Telegram transport rejects a send.",
-      "onError": "continueRegularOutput",
-      "alwaysOutputData": true
-    },
-    {
-      "parameters": {
-        "operation": "upsert",
-        "dataTableId": {
-          "__rl": true,
-          "mode": "name",
-          "value": "control_plane_state"
-        },
-        "matchType": "allConditions",
-        "filters": {
-          "conditions": [
-            {
-              "keyName": "key",
-              "keyValue": "={{ $('Code - Decide WF90 alert dedupe').first().json.dedupe_state_key }}"
-            }
-          ]
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "key": "={{ $('Code - Decide WF90 alert dedupe').first().json.dedupe_state_key }}",
-            "value": "={{ $('Code - Decide WF90 alert dedupe').first().json.alert_signature }}",
-            "updated_at": "={{ $now.toISO() }}",
-            "note": "WF90 active actionable alert signature"
-          }
-        },
-        "options": {}
-      },
-      "id": "90ld-0012-4012-8012-000000000012",
-      "name": "Data Table - Persist WF90 active alert state",
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1.1,
-      "position": [
-        1720,
-        -120
-      ],
-      "onError": "continueRegularOutput",
-      "alwaysOutputData": true,
-      "notes": "WF90_TELEGRAM_ALERT_DEDUPE_V1: persistence follows a successful notification; write failure never suppresses a future alert."
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const direct = $input.item.json ?? {};\nlet decision = {};\ntry { decision = $('Code - Decide WF90 alert dedupe').first().json ?? {}; } catch {}\nconst j = Object.keys(decision).length ? decision : direct;\nconst reason_codes = Array.isArray(j.reason_codes) ? j.reason_codes.slice(0, 16) : [];\nreturn { json: {\n  schema: 'local-dev-always-on-tick-terminal-v1',\n  classification: j.classification ?? null,\n  execution_performed: j.execution_performed === true,\n  task_ref: j.task_ref ?? null,\n  executor_classification: j.executor_classification ?? null,\n  reason_codes,\n  human_gate_required: j.human_gate_required === true,\n  notify_required: j.notify_required === true,\n  dedupe_action: j.dedupe_action ?? null,\n  dedupe_reason: j.dedupe_reason ?? null,\n  dedupe_state_key: j.dedupe_state_key ?? null,\n  dedupe_state_read_ok: j.dedupe_state_read_ok !== false,\n  tick_completed_at: new Date().toISOString()\n} };"
-      },
-      "id": "90ld-0007-4007-8007-000000000007",
-      "name": "Code - LOCAL_DEV tick terminal",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1000,
-        120
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "// V4_TELEGRAM_ACTIONABLE_HUMAN_GATE_V1: render MODE A (informational) vs\n// MODE B (bounded actionable buttons) from the canonical normalized gate.\n// callback_data = 'ag:<nonce>:<CHOICE>:<hmac16>' with the dispatcher-issued\n// nonce; validation of any callback happens ONLY through the dispatcher gate\n// check endpoint. n8n is a TRANSPORT, never a decision authority.\nconst n = $('Code - Normalize LOCAL_DEV tick result').first().json ?? {};\nconst esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst g = n.actionable_gate;\nif (!g) {\n  return { json: { telegram_text: n.telegram_text, actionable: false, reply_markup: null } };\n}\nconst LABELS = { APPROVE_AND_CONTINUE: 'A — APPROVE_AND_CONTINUE', STOP: 'B — STOP', DEFER: 'C — DEFER' };\nconst buttons = g.choices.map((c) => ({ text: LABELS[c] || c, callback_data: 'ag:' + g.callback_nonce + ':' + c + ':' + g.callback_tag }));\nconst ttlLine = g.expires_at ? ('\\nvalid until: ' + esc(g.expires_at)) : '';\nconst confirmLine = g.requires_confirmation ? '\\nNOTA: la governance richiede una conferma aggiuntiva prima di qualsiasi esecuzione.' : '';\nconst text = [\n  '\\U0001F7E2 CONTROL PLANE — GATE ATTIVO (AZIONABILE)',\n  'gate: ' + esc(g.gate_id),\n  'task: ' + esc(n.task_ref || 'NONE'),\n  'classification: ' + esc(n.classification),\n  'reason: ' + esc((Array.isArray(n.reason_codes) && n.reason_codes.length ? n.reason_codes.join(',') : n.gate_summary) || 'none'),\n  '',\n  esc(g.summary || 'Richiesta decisione operatore.'),\n  g.detail ? esc(g.detail) : null,\n  ttlLine,\n  confirmLine,\n  '',\n  'Un solo tocco · una sola transizione · solo operatore.',\n].filter((v) => v !== null).join('\\n');\nreturn { json: {\n  telegram_text: text,\n  actionable: true,\n  gate_id: g.gate_id,\n  reply_markup: { inline_keyboard: [buttons] },\n} };"
-      },
-      "id": "90ld-0010-4010-8010-000000000010",
-      "name": "Code - Build WF90 actionable gate message",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1000,
-        -240
-      ],
-      "notes": "V4_TELEGRAM_ACTIONABLE_HUMAN_GATE_V1: MODE A passes telegram_text through (no buttons); MODE B renders exactly the canonical operator_action_choices as inline buttons bound to gate_id + dispatcher nonce. Telegram stays an interaction surface; the dispatcher gate check endpoint is the only validator."
+      "notes": "#109 MODE B: actionable Telegram with canonical inlineKeyboard; expressions evaluate only on this route."
     }
   ],
   "connections": {
@@ -448,17 +502,6 @@
         ]
       ]
     },
-    "Telegram - LOCAL_DEV gate notification": {
-      "main": [
-        [
-          {
-            "node": "Data Table - Persist WF90 active alert state",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Data Table - Persist WF90 active alert state": {
       "main": [
         [
@@ -485,7 +528,47 @@
       "main": [
         [
           {
-            "node": "Telegram - LOCAL_DEV gate notification",
+            "node": "IF - WF90 MODE B actionable telegram?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - WF90 MODE B actionable telegram?": {
+      "main": [
+        [
+          {
+            "node": "Telegram - LOCAL_DEV gate actionable",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram - LOCAL_DEV gate informational",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - LOCAL_DEV gate actionable": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Persist WF90 active alert state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - LOCAL_DEV gate informational": {
+      "main": [
+        [
+          {
+            "node": "Data Table - Persist WF90 active alert state",
             "type": "main",
             "index": 0
           }
@@ -531,5 +614,6 @@
     "no_funnel": true
   },
   "task_ref_87": "V4_TELEGRAM_ACTIONABLE_HUMAN_GATE_V1",
-  "task_ref_109": "V4_WF90_HUMAN_GATE_EXACT_ONCE_DEDUPE_V1"
+  "task_ref_109": "V4_WF90_HUMAN_GATE_EXACT_ONCE_DEDUPE_V1",
+  "task_ref_109_mode_ab": "V4_WF90_MODE_A_TELEGRAM_TRANSPORT_V1"
 }

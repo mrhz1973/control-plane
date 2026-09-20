@@ -106,6 +106,10 @@ await test("graph-uses-existing-control-plane-state-and-three-way-decision", () 
   assert.ok(names.has("Data Table - Clear WF90 active alert state"));
   assert.ok(names.has("IF - WF90 send new actionable alert?"));
   assert.ok(names.has("IF - WF90 clear inactive alert episode?"));
+  assert.ok(names.has("IF - WF90 MODE B actionable telegram?"));
+  assert.ok(names.has("Telegram - LOCAL_DEV gate informational"));
+  assert.ok(names.has("Telegram - LOCAL_DEV gate actionable"));
+  assert.equal(names.has("Telegram - LOCAL_DEV gate notification"), false);
   const load = artifact.nodes.find((node) => node.name === "Data Table - Load WF90 active alert state");
   const persist = artifact.nodes.find((node) => node.name === "Data Table - Persist WF90 active alert state");
   const clear = artifact.nodes.find((node) => node.name === "Data Table - Clear WF90 active alert state");
@@ -115,6 +119,13 @@ await test("graph-uses-existing-control-plane-state-and-three-way-decision", () 
   }
   assert.equal(clear.parameters.operation, "deleteRows");
   assert.equal(artifact.connections[NORMALIZE_NODE].main[0][0].node, "Data Table - Load WF90 active alert state");
+  // Successful send paths only → Persist; Telegram must not continue-on-error into Persist.
+  assert.equal(artifact.connections["Telegram - LOCAL_DEV gate informational"].main[0][0].node, "Data Table - Persist WF90 active alert state");
+  assert.equal(artifact.connections["Telegram - LOCAL_DEV gate actionable"].main[0][0].node, "Data Table - Persist WF90 active alert state");
+  for (const tgName of ["Telegram - LOCAL_DEV gate informational", "Telegram - LOCAL_DEV gate actionable"]) {
+    const tg = artifact.nodes.find((node) => node.name === tgName);
+    assert.equal(tg.onError, undefined);
+  }
 });
 
 await test("A consecutive identical HUMAN_GATE send then suppress", () => {

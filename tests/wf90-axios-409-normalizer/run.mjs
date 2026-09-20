@@ -243,8 +243,12 @@ await test("pass-idle-busy-notification-policy-unchanged", () => {
   assert.equal(normalize(tickResult({ classification: "BUSY", ok: true })).notify_required, false);
 });
 
-const telegramNode = artifact.nodes.find((n) => n.name === "Telegram - LOCAL_DEV gate notification");
-assert.ok(telegramNode, "workflow artifact must contain Telegram gate notification node");
+const telegramInfoNode = artifact.nodes.find((n) => n.name === "Telegram - LOCAL_DEV gate informational");
+const telegramActNode = artifact.nodes.find((n) => n.name === "Telegram - LOCAL_DEV gate actionable");
+assert.ok(telegramInfoNode, "workflow artifact must contain MODE A informational Telegram node");
+assert.ok(telegramActNode, "workflow artifact must contain MODE B actionable Telegram node");
+// Prefer MODE A node for HTML/plain-text hygiene checks; both send paths must share it.
+const telegramNode = telegramInfoNode;
 // WF90_TELEGRAM_HUMAN_GATE_RELIABILITY_V1: the Telegram node consumes a plain-text
 // body prebuilt by the normalizer (telegram_text) — the proven WF40 shape. No raw
 // field interpolation in the Telegram text (unpaired underscores in
@@ -274,14 +278,18 @@ await test("telegram-node-plain-text-shape-no-markdown-parse-risk", () => {
   // FORCES parse_mode='Markdown' (legacy) when unset (GenericFunctions
   // addAdditionalFields), which rejects unpaired underscores with 400
   // "can't parse entities". HTML mode is underscore-safe.
-  assert.equal(telegramNode.parameters.operation, "sendMessage");
-  assert.equal(telegramNode.parameters.text, "={{ $json.telegram_text }}");
-  assert.equal(telegramNode.parameters.additionalFields?.appendAttribution, false);
-  assert.equal(telegramNode.parameters.additionalFields?.parse_mode, "HTML");
+  for (const node of [telegramInfoNode, telegramActNode]) {
+    assert.equal(node.parameters.operation, "sendMessage");
+    assert.equal(node.parameters.text, "={{ $json.telegram_text }}");
+    assert.equal(node.parameters.additionalFields?.appendAttribution, false);
+    assert.equal(node.parameters.additionalFields?.parse_mode, "HTML");
+  }
+  // MODE A must not carry replyMarkup; MODE B keeps canonical inlineKeyboard.
+  assert.equal(Object.prototype.hasOwnProperty.call(telegramInfoNode.parameters, "replyMarkup"), false);
+  assert.equal(telegramActNode.parameters.replyMarkup, "inlineKeyboard");
   // No dead HTTP-style jsonBody param may return.
   assert.equal(telegramJsonBody, "");
 });
-
 await test("normalizer-html-escapes-dynamic-telegram-values", () => {
   assert.match(normalizerNode.parameters.jsCode, /const esc/);
   const dispatcher = tickResult({
