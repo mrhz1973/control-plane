@@ -50,6 +50,23 @@ Scheduled Task: ControlPlane-V4-LocalDevDispatcher
 
 The repository PowerShell supervisor is the canonical lifetime owner for the Node child. It keeps exactly one dispatcher child active, writes durable runtime logs outside the Git worktree under `%LOCALAPPDATA%\ControlPlane\logs\local-dev-dispatcher.log`, and restarts an unexpectedly exited Node child after a bounded 10-second backoff. This preserves the single Windows Scheduled Task authority; it does not introduce a second scheduler, daemon, tick source, or dispatch authority. Task Scheduler restart-on-failure is not relied upon as the primary child-recovery mechanism.
 
+### Safe maintenance restart gate (#115)
+
+ALL operator / Cursor maintenance restarts of `ControlPlane-V4-LocalDevDispatcher` MUST go through the canonical fail-closed gate:
+
+```text
+tools/safe-restart-local-dev-dispatcher-v1.ps1
+  → node tools/safe-restart-local-dev-dispatcher-v1.mjs
+```
+
+Two-phase live idle fence (LIVE `GET /v1/status` only; never cached diagnostics):
+
+1. `PRECHECK_IDLE` — require `active === false` and no in-flight phase;
+2. bounded race delay;
+3. `FINAL_PREKILL_IDLE_CHECK` — re-query live status before any terminate.
+
+If either fence fails (active / BUSY / EXECUTING / unavailable / malformed / ambiguous): abort with `RESTART_DEFERRED_ACTIVE_EXECUTION` (or precise unavailable/ambiguous class). Zero `Stop-ScheduledTask` / `schtasks /End` / process kill. Do not invent ad-hoc restart snippets outside this entrypoint.
+
 Primary local bind:
 
 ```text
