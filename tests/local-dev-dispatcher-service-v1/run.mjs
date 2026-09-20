@@ -3569,6 +3569,123 @@ await test("S94 #121 compact header; zero-height gate; resources outside TECNICO
   assert.equal(dashboard.element("tab-live").getAttribute("aria-selected"), "true");
 });
 
+await test("S95 #121 last Control Plane event card from canonical history", async () => {
+  const dashboard = await dashboardHarness({ status: { active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" }, diag: { last_tick: { classification: "IDLE_CLEAN" }, queue: {} } });
+  assert.match(dashboard.html, /id="last-cp-event"/);
+  assert.match(dashboard.html, /ULTIMO EVENTO CONTROL PLANE/);
+
+  const passHistory = {
+    schema_version: HISTORY_SCHEMA,
+    read_only: true,
+    last_terminal_task: {
+      task_ref: "LOCAL_DEV_B_D-0103-F004R", outcome: "PASS", target_repo: "mrhz1973/tmar-tts",
+      duration_ms: 783000, commit_sha: "4ee42b227c20da139ba023f131ad087e8ff2f6d6", terminal_at: "2026-09-20T19:37:50.625Z",
+    },
+    recent_events: [{
+      event: "TASK_PASS", recorded_at: "2026-09-20T19:37:50.283Z", task_ref: "LOCAL_DEV_B_D-0103-F004R",
+      target_repo: "mrhz1973/tmar-tts", classification: "PASS", duration_ms: 783000,
+      commit_sha: "4ee42b227c20da139ba023f131ad087e8ff2f6d6", human_summary: "Task D-0103-F004R completato con PASS.",
+    }],
+  };
+  dashboard.render({ active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" }, { last_tick: { classification: "IDLE_CLEAN" }, queue: {} }, null, null, passHistory);
+  let card = dashboard.element("last-cp-event").innerHTML;
+  assert.match(card, /TASK PASS/);
+  assert.match(card, /D-0103-F004R/);
+  assert.match(card, /mrhz1973\/tmar-tts/);
+  assert.match(card, /783s/);
+  assert.match(card, /4ee42b227c20/);
+  assert.match(dashboard.element("last-cp-event").className, /\bpass\b/);
+  assert.doesNotMatch(card, /HUMAN GATE/);
+
+  const stopHistory = {
+    schema_version: HISTORY_SCHEMA, read_only: true,
+    last_terminal_task: { task_ref: "LOCAL_DEV_B_D-0103-F005", outcome: "STOP", blocker: "STOP:BOUNDS_TIMEBOX_EXPIRED", duration_ms: 3600000, target_repo: "mrhz1973/tmar-tts" },
+    recent_events: [{
+      event: "TASK_STOP", recorded_at: "2026-09-20T20:27:47.612Z", task_ref: "LOCAL_DEV_B_D-0103-F005",
+      target_repo: "mrhz1973/tmar-tts", classification: "STOP:BOUNDS_TIMEBOX_EXPIRED", duration_ms: 3600000,
+      human_summary: "Task D-0103-F005 fermato con STOP.",
+    }],
+  };
+  dashboard.render({ active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" }, { last_tick: { classification: "IDLE_CLEAN" }, queue: {} }, null, null, stopHistory);
+  card = dashboard.element("last-cp-event").innerHTML;
+  assert.match(card, /TASK STOP/);
+  assert.match(card, /BOUNDS_TIMEBOX_EXPIRED/);
+  assert.doesNotMatch(card, /HUMAN GATE|HUMAN ACTION REQUIRED/);
+  assert.match(dashboard.element("last-cp-event").className, /\bstop\b/);
+
+  const gateHistory = {
+    schema_version: HISTORY_SCHEMA, read_only: true, last_terminal_task: null,
+    recent_events: [{
+      event: "HUMAN_GATE_REQUIRED", recorded_at: "2026-09-20T20:38:41.533Z", phase: "REPO_HYGIENE",
+      classification: "HUMAN_GATE_REQUIRED", human_summary: "Gate umano richiesto: TRACKED_DIRTY_CONFLICT, REPO=mrhz1973/control-plane",
+      target_repo: "mrhz1973/control-plane",
+    }],
+  };
+  dashboard.render({ active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" }, { last_tick: { classification: "IDLE_CLEAN" }, queue: {} }, null, null, gateHistory);
+  card = dashboard.element("last-cp-event").innerHTML;
+  assert.match(card, /HUMAN GATE/);
+  assert.doesNotMatch(card, /TASK STOP/);
+  assert.match(card, /TRACKED_DIRTY_CONFLICT|HUMAN_GATE_REQUIRED/);
+  assert.match(dashboard.element("last-cp-event").className, /human-gate/);
+
+  const successorHistory = {
+    schema_version: HISTORY_SCHEMA, read_only: true,
+    recent_events: [{
+      event: "SUCCESSOR_READY_PUBLISHED", recorded_at: "2026-09-20T20:12:01.100Z",
+      task_ref: "LOCAL_DEV_B_D-0103-F005", target_repo: "mrhz1973/tmar-tts",
+      classification: "NEXT_QUEUED", human_summary: "Successore D-0103-F005 accodato per mrhz1973/tmar-tts.",
+    }],
+  };
+  dashboard.render({ active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" }, { last_tick: { classification: "IDLE_CLEAN" }, queue: {} }, null, null, successorHistory);
+  card = dashboard.element("last-cp-event").innerHTML;
+  assert.match(card, /PROJECT RECONCILED/);
+  assert.match(card, /D-0103-F005/);
+  assert.match(card, /queued automatically|NEXT_QUEUED/);
+  assert.match(card, /natural WF90/);
+  assert.match(dashboard.element("last-cp-event").className, /\bnext\b/);
+
+  const idleHistory = {
+    schema_version: HISTORY_SCHEMA, read_only: true,
+    recent_events: [{
+      event: "PROJECT_IDLE_COMPLETE", recorded_at: "2026-09-20T21:00:00.000Z",
+      target_repo: "mrhz1973/tmar-tts", classification: "PROJECT_IDLE_COMPLETE",
+      human_summary: "Nessun lavoro residuo eligible in mrhz1973/tmar-tts.",
+    }],
+  };
+  dashboard.render({ active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" }, { last_tick: { classification: "IDLE_CLEAN" }, queue: {} }, null, null, idleHistory);
+  card = dashboard.element("last-cp-event").innerHTML;
+  assert.match(card, /PROJECT IDLE COMPLETE/);
+  assert.match(card, /mrhz1973\/tmar-tts/);
+
+  // IDLE tick without significant events must keep last significant LKG.
+  dashboard.render({ active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" }, { last_tick: { classification: "IDLE_CLEAN" }, queue: {} }, null, null, {
+    schema_version: HISTORY_SCHEMA, read_only: true, recent_events: [{ event: "TICK", recorded_at: "2026-09-20T21:02:00.000Z", classification: "IDLE_CLEAN" }],
+  });
+  card = dashboard.element("last-cp-event").innerHTML;
+  assert.match(card, /PROJECT IDLE COMPLETE/, "IDLE does not erase last significant event");
+
+  // Semantic duplicates: newest wins once; no duplicated titles in one card.
+  dashboard.render({ active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" }, { last_tick: { classification: "IDLE_CLEAN" }, queue: {} }, null, null, {
+    schema_version: HISTORY_SCHEMA, read_only: true,
+    recent_events: [
+      { event: "HUMAN_GATE_REQUIRED", recorded_at: "2026-09-20T21:10:00.000Z", classification: "HUMAN_GATE_REQUIRED", human_summary: "same", target_repo: "mrhz1973/control-plane" },
+      { event: "HUMAN_GATE_REQUIRED", recorded_at: "2026-09-20T21:08:00.000Z", classification: "HUMAN_GATE_REQUIRED", human_summary: "same", target_repo: "mrhz1973/control-plane" },
+    ],
+  });
+  card = dashboard.element("last-cp-event").innerHTML;
+  assert.equal((card.match(/HUMAN GATE/g) || []).length, 1, "duplicate visual suppressed");
+
+  // Missing fields: omit / non invent.
+  dashboard.render({ active: false, classification: "IDLE_CLEAN", phase: "TERMINAL" }, { last_tick: { classification: "IDLE_CLEAN" }, queue: {} }, null, null, {
+    schema_version: HISTORY_SCHEMA, read_only: true,
+    recent_events: [{ event: "TASK_STOP", recorded_at: "2026-09-20T22:00:00.000Z", classification: "STOP:X" }],
+  });
+  card = dashboard.element("last-cp-event").innerHTML;
+  assert.match(card, /TASK STOP/);
+  assert.doesNotMatch(card, /Task: <b|Repo: <b|Durata:/);
+  assert.doesNotMatch(card, /\bundefined\b|\bnull\b|inventat/i);
+});
+
 await test("S92 #94 injected-deps ticks never write the real journal (isolation law)", async () => {
   const realPath = missionControlJournalPath();
   const before = readMissionControlJournal(realPath, 10_000).length;
