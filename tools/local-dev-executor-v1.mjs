@@ -18,6 +18,7 @@ import { buildOpenCodeProviderOverlay } from "./dispatch-opencode-execution-v1.m
 import { probeOpenCodeLocal, DISPATCH_CLI_CAPABILITIES } from "./probe-opencode-local-v1.mjs";
 import { loadQwenLocalRuntime } from "./qwen-local-runtime-v1.mjs";
 import { startLocalDevGenerationGuard } from "./local-dev-generation-guard-v1.mjs";
+import { createLiveActivitySink } from "./live-activity-v1.mjs";
 
 export const ENVELOPE_SCHEMA = "local-dev-task-envelope-v1";
 export const RESULT_SCHEMA = "local-dev-execution-result-v1";
@@ -489,22 +490,46 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
     });
   }
 
-  const emitStatus = (event = {}) => {
-    if (typeof options.onStatus !== "function") return;
+  // Shared live-activity sink for this task (#120). Observability only.
+  let liveActivity = options.liveActivity || null;
+  if (!liveActivity && options.disableLiveActivity !== true) {
     try {
-      const safe = {
-        phase: typeof event.phase === "string" ? event.phase.slice(0, 80) : undefined,
-        tests_state: typeof event.tests_state === "string" ? event.tests_state.slice(0, 80) : undefined,
-        files_touched: Array.isArray(event.files_touched)
-          ? event.files_touched.map((p) => String(p).slice(0, 200)).filter(Boolean).slice(0, 16)
-          : undefined,
-        classification: typeof event.classification === "string" ? event.classification.slice(0, 120) : undefined,
-        last_event: typeof event.last_event === "string" ? event.last_event.slice(0, 160) : undefined,
-      };
-      options.onStatus(safe);
+      liveActivity = createLiveActivitySink({
+        task_ref: envelope.task_ref,
+        envelope,
+        phase: "EXECUTOR",
+        env: options.env,
+        storagePath: options.liveActivityStoragePath,
+        disableDisk: options.liveActivityDisableDisk === true,
+      });
     } catch {
-      /* observability must never alter PASS/STOP */
+      liveActivity = null;
     }
+  }
+
+  const emitStatus = (event = {}) => {
+    if (typeof options.onStatus === "function") {
+      try {
+        const safe = {
+          phase: typeof event.phase === "string" ? event.phase.slice(0, 80) : undefined,
+          tests_state: typeof event.tests_state === "string" ? event.tests_state.slice(0, 80) : undefined,
+          files_touched: Array.isArray(event.files_touched)
+            ? event.files_touched.map((p) => String(p).slice(0, 200)).filter(Boolean).slice(0, 16)
+            : undefined,
+          classification: typeof event.classification === "string" ? event.classification.slice(0, 120) : undefined,
+          last_event: typeof event.last_event === "string" ? event.last_event.slice(0, 160) : undefined,
+        };
+        options.onStatus(safe);
+      } catch {
+        /* observability must never alter PASS/STOP */
+      }
+    }
+    // Passive live-activity phase projection (#120) — never throws into executor.
+    try {
+      if (liveActivity && typeof event.phase === "string" && event.phase.trim()) {
+        liveActivity.setPhase(event.phase.trim());
+      }
+    } catch { /* ignore */ }
   };
 
   const inferTestsState = (result) => {
@@ -537,6 +562,13 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
       files_touched: result.changed_files,
       last_event: `terminal:${result.classification}`,
     });
+    try {
+      if (liveActivity && options.liveActivity !== liveActivity) {
+        liveActivity.end?.(result.status === "PASS" ? "PASS" : "STOP");
+      } else {
+        liveActivity?.flush?.();
+      }
+    } catch { /* ignore */ }
     return result;
   };
 
@@ -637,6 +669,7 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
       }),
       capabilities: options.opencodeProbe?.capabilities || DISPATCH_CLI_CAPABILITIES,
       envelope,
+      liveActivity,
     });
     guardAccounting = guard.getAccounting();
   } catch (err) {
@@ -754,6 +787,7 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
     allowedCommands: envelope.allowed_commands,
     repoPath: envelope.target_repo_path,
     taskOutcome,
+    liveActivity,
   });
   const lastTest = testRuns?.[testRuns.length - 1];
   emitStatus({
@@ -816,6 +850,7 @@ export async function executeLocalDevTask(envelopeInput, options = {}) {
       envelope,
       changedFiles: changed,
       evidenceSubject: evidenceSubject(true, envelope.task_ref),
+      liveActivity,
     });
     if (!persistence || persistence.ok !== true) {
       return finish(applyConvergence({

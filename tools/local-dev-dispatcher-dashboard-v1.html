@@ -73,6 +73,15 @@
     .live-placeholder{border:1px dashed #3a4656;border-radius:12px;padding:22px 18px;background:#0d141b;text-align:left}
     .live-placeholder h2{font-size:15px;margin-bottom:8px}
     .live-placeholder p{font-size:12px;color:var(--muted);max-width:52ch}
+    .live-panel{display:grid;gap:14px}
+    .live-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;font-size:12px}
+    .live-meta div{background:#0d141b;border:1px solid #243041;border-radius:8px;padding:8px 10px}
+    .live-meta b{display:block;color:var(--muted);font-weight:500;font-size:10px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px}
+    .live-timeline{list-style:none;margin:0;padding:0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
+    .live-timeline li{display:grid;grid-template-columns:72px 72px 1fr;gap:8px;padding:4px 0;border-bottom:1px solid #1a2430}
+    .live-timeline .op{color:#9ecbff}
+    .live-stale{color:#e0b35a;font-size:11px;font-weight:600;letter-spacing:.04em}
+    .live-empty{color:var(--muted);font-size:13px}
   </style>
   <style>
     /* === #94 Mission Control V2: tab shell === */
@@ -182,10 +191,19 @@
       <details class="panel technical-panel" id="ops-terminal-detail" style="margin-top:0"><summary>Dettaglio ultimo task terminato</summary><div id="ops-terminal-body" class="panel-body" style="padding-top:10px"></div></details>
     </section>
     <section class="tab-panel" id="tab-panel-live" role="tabpanel" aria-labelledby="tab-live" hidden>
-      <div class="live-placeholder" id="live-placeholder">
-        <h2>ATTIVITÀ LIVE</h2>
-        <p>Nessuna attività live disponibile / #120 non ancora installato</p>
-        <p>Questo contenitore ospiterà traccia OpenCode/Qwen, file, comandi, test, git ed output sanitizzato.</p>
+      <div class="live-panel" id="live-panel">
+        <div class="live-placeholder" id="live-placeholder">
+          <h2>ATTIVITÀ LIVE</h2>
+          <p id="live-empty-note">Nessuna attività live disponibile</p>
+        </div>
+        <div id="live-active" hidden>
+          <h2>ATTIVITÀ LIVE <span class="live-stale" id="live-freshness" hidden>STALE</span></h2>
+          <div class="live-meta" id="live-meta"></div>
+          <ul class="live-timeline" id="live-timeline" aria-label="Timeline attività"></ul>
+          <details class="panel technical-panel" id="live-output-detail"><summary>OUTPUT RECENTE</summary><div id="live-output-body" class="panel-body" style="padding-top:10px"></div></details>
+          <details class="panel technical-panel" id="live-why-detail"><summary>Perché sta facendo questo?</summary><div id="live-why-body" class="panel-body" style="padding-top:10px"></div></details>
+          <p class="queue-note">Nessuna chain-of-thought privata esposta · sola lettura · telemetria passiva</p>
+        </div>
       </div>
     </section>
     <section class="tab-panel" id="tab-panel-history" role="tabpanel" aria-labelledby="tab-history" hidden>
@@ -226,7 +244,7 @@
     </div>
     </section>
     <details class="panel technical-panel" id="status-technical"><summary>Mostra dettagli tecnici del dispatcher</summary><dl class="facts" id="status-details"></dl></details>
-    <footer class="footer"><span>Osservazione locale · Nessuna azione di esecuzione disponibile in questa console.</span><span>Fonti: <code>GET /v1/status</code> · <code>GET /v1/diagnostics</code> · <code>GET /v1/resources</code> · <code>GET /v1/history</code> · <code>GET /v1/agent-activity</code></span></footer>
+    <footer class="footer"><span>Osservazione locale · Nessuna azione di esecuzione disponibile in questa console.</span><span>Fonti: <code>GET /v1/status</code> · <code>GET /v1/diagnostics</code> · <code>GET /v1/resources</code> · <code>GET /v1/history</code> · <code>GET /v1/live-activity</code> · <code>GET /v1/agent-activity</code></span></footer>
   </main>
   <script>
     'use strict';
@@ -1277,13 +1295,15 @@
       host.innerHTML=`<div class="lce-kicker">ULTIMO EVENTO CONTROL PLANE</div><div class="lce-title">${escapeHtml(title)}</div><div class="lce-facts">${facts.join('')||'<span>Campi aggiuntivi non osservati</span>'}</div>${more}`;
     }
 
-    function render(status,diag,resources,refreshMeta,history){const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);const t=obj(d.last_tick),q=obj(d.queue),w=obj(d.qwen);const resQwen=obj(obj(resources).qwen);const qwenObs=Object.keys(resQwen).length?resQwen:w;const usage=deriveQwenUsage(s,qwenObs);const fallback=fallbackExplanation(s,t,q);const e=typeof obj(d.explanation).action_required==='boolean'||obj(d.explanation).action_required===null?{...fallback,...obj(d.explanation)}:fallback;const active=s.active===true;const c=text(s.classification||t.classification,'');const models=list(w.models).map(obj).filter(m=>scalar(m.id));const qwenMetric=qwenSummaryMetric(usage);
+    function render(status,diag,resources,refreshMeta,history,liveActivity){const d=obj(diag);const s=Object.keys(obj(d.status)).length?obj(d.status):obj(status);const t=obj(d.last_tick),q=obj(d.queue),w=obj(d.qwen);const resQwen=obj(obj(resources).qwen);const qwenObs=Object.keys(resQwen).length?resQwen:w;const usage=deriveQwenUsage(s,qwenObs);const fallback=fallbackExplanation(s,t,q);const e=typeof obj(d.explanation).action_required==='boolean'||obj(d.explanation).action_required===null?{...fallback,...obj(d.explanation)}:fallback;const active=s.active===true;const c=text(s.classification||t.classification,'');const models=list(w.models).map(obj).filter(m=>scalar(m.id));const qwenMetric=qwenSummaryMetric(usage);
       renderOpstrip(d,s,resources);
       // === #94 Mission Control V2: OPERAZIONI (default human-first view) ===
       renderPrimaAdessoDopo(s,d,history);
       renderOpsPhaseRail(s,d,history);
       renderTerminalDetail(history);
       renderLastOperatorEvent(history);
+      // === #120 LIVE activity (existing refresh cycle; no second poll loop) ===
+      renderLiveTab(s,liveActivity,d);
       // === #94 STORICO + COMPONENTI (independent of the other sources) ===
       renderHistoryTab(history);
       renderComponentsTab(d,resources);
@@ -1319,6 +1339,75 @@
       put('status-details',fact('Fase',label(s.phase),'phase')+fact('Classificazione',label(s.classification),'classification')+fact('Identificativo ciclo',s.request_id,'request_id',true)+fact('Identificativo task',s.task_ref,'task_ref',true)+fact('Durata osservata',duration(s.elapsed_ms),'elapsed_ms')+fact('Processo',s.executor_pid,'executor_pid')+fact('Test',label(s.tests_state),'tests_state')+fact('Ultimo evento',s.last_event,'last_event',true)+fact('File coinvolti',list(s.files_touched).filter(v=>typeof v==='string').join(', ')||'Nessun file riportato','files_touched',true));
       renderResources(resources,s,{usage,models,qwenDiag:w},refreshMeta);
       renderAgentActivities(obj(d.agent_activity));
+    }
+    function liveEventLabel(ev){
+      const t=String(ev.event_type||'');
+      if(t==='FILE_READ')return 'READ';
+      if(t==='FILE_EDIT')return 'EDIT';
+      if(t==='COMMAND')return 'CMD';
+      if(t==='TEST')return 'TEST';
+      if(t==='GIT')return 'GIT';
+      if(t==='PERSISTENCE')return 'PERSIST';
+      if(t==='PHASE')return 'PHASE';
+      if(t==='OUTPUT')return 'OUT';
+      return 'ACT';
+    }
+    function renderLiveTab(status,liveActivity,diag){
+      const placeholder=el('live-placeholder');
+      const activeHost=el('live-active');
+      const note=el('live-empty-note');
+      const live=obj(liveActivity);
+      const s=obj(status);
+      const freshness=refreshState.sourceState?.get('liveActivity')?.freshness;
+      if(freshness==='UNAVAILABLE_NO_DATA'&&!live.schema_version){
+        if(placeholder)placeholder.hidden=false;
+        if(activeHost)activeHost.hidden=true;
+        if(note)note.textContent='dati live non disponibili';
+        return;
+      }
+      const events=list(live.events).map(obj).filter(e=>e.event_type);
+      const taskRef=text(live.task_ref||s.task_ref,'');
+      const active=s.active===true;
+      const isStale=live.freshness==='STALE'||freshness==='STALE';
+      if(!active&&!events.length){
+        if(placeholder)placeholder.hidden=false;
+        if(activeHost)activeHost.hidden=true;
+        if(note)note.textContent=text(live.note,'Nessuna attività live disponibile');
+        return;
+      }
+      if(placeholder)placeholder.hidden=true;
+      if(activeHost)activeHost.hidden=false;
+      const freshEl=el('live-freshness');
+      if(freshEl){freshEl.hidden=!isStale;freshEl.textContent='STALE';}
+      const qwen=text(s.qwen_profile||obj(obj(diag).operator_visibility).qwen_profile||obj(obj(diag).qwen).profile,'—');
+      const phase=text(s.phase||(events.at(-1)||{}).phase,'—');
+      const lastAt=text(live.last_activity_at||(events.at(-1)||{}).recorded_at,'—');
+      put('live-meta',
+        `<div><b>Task</b>${escapeHtml(taskRef?shortTask(taskRef):'—')}</div>`+
+        `<div><b>Qwen</b>${escapeHtml(qwen)}</div>`+
+        `<div><b>Harness</b>OpenCode</div>`+
+        `<div><b>Fase</b>${escapeHtml(label(phase))}</div>`+
+        `<div><b>Ultima attività</b>${escapeHtml(date(lastAt,true)||lastAt)}</div>`
+      );
+      const timeline=events.slice(-40).map(ev=>{
+        const when=date(ev.recorded_at,true)||'—';
+        const op=liveEventLabel(ev);
+        const detail=text(ev.path||ev.operation||ev.message||ev.status,'');
+        return `<li><span>${escapeHtml(when)}</span><span class="op">${escapeHtml(op)}</span><span>${escapeHtml(detail)}${ev.status&&ev.path?` · ${escapeHtml(ev.status)}`:''}</span></li>`;
+      }).join('');
+      put('live-timeline',timeline||'<li class="live-empty">Nessun evento osservabile ancora</li>');
+      const outputs=events.filter(e=>e.event_type==='OUTPUT').slice(-8);
+      put('live-output-body',outputs.length
+        ?`<ul class="live-timeline">${outputs.map(o=>`<li><span>${escapeHtml(date(o.recorded_at,true)||'—')}</span><span class="op">OUT</span><span>${escapeHtml(text(o.message,'[redacted]'))}</span></li>`).join('')}</ul>`
+        :'<p class="live-empty">Nessun excerpt di output disponibile</p>');
+      const why=obj(live.public_rationale);
+      put('live-why-body',
+        `<p><b>Obiettivo:</b> ${escapeHtml(text(why.objective,'Non determinato'))}</p>`+
+        `<p><b>Acceptance:</b> ${escapeHtml(text(why.acceptance,'—'))}</p>`+
+        `<p><b>Fase:</b> ${escapeHtml(text(why.phase||phase,'—'))}</p>`+
+        `<p><b>Perché:</b> ${escapeHtml(text(why.why,'Spiegazione pubblica non ancora derivata'))}</p>`+
+        `<p class="queue-note">${escapeHtml(text(why.notice,'Nessuna chain-of-thought privata esposta'))}</p>`
+      );
     }
     const AGENT_STATE_TONE=Object.freeze({ACTIVE:'info',WAITING:'warn',PASS:'ok',STOP:'danger',STALE:'caution',UNKNOWN:'muted'});
     const AGENT_STATE_LABEL=Object.freeze({ACTIVE:'Attiva',WAITING:'In attesa (decisione umana)',PASS:'Completata',STOP:'Fermata',STALE:'Non aggiornata',UNKNOWN:'Sconosciuta'});
@@ -1356,6 +1445,7 @@
       {key:'diagnostics',path:'/v1/diagnostics',alert:'/v1/diagnostics'},
       {key:'resources',path:'/v1/resources',alert:'/v1/resources'},
       {key:'history',path:'/v1/history',alert:'/v1/history'},
+      {key:'liveActivity',path:'/v1/live-activity',alert:'/v1/live-activity'},
     ];
     function readRefreshPref(){
       try{const raw=storageGet(REFRESH_PREF_KEY);if(!raw)return {...REFRESH_DEFAULTS};const parsed=JSON.parse(raw);const interval=typeof parsed==='object'&&parsed!==null?number(parsed.interval_ms):null;const auto=typeof parsed==='object'&&parsed!==null&&typeof parsed.auto_refresh_enabled==='boolean'?parsed.auto_refresh_enabled:null;
@@ -1369,7 +1459,7 @@
     async function refresh(){if(refreshing)return;refreshing=true;el('refresh-button').disabled=true;try{
       const responses=await Promise.allSettled(REFRESH_SOURCES.map(src=>readJson(src.path)));
       if(!refreshState.sourceState)refreshState.sourceState=new Map();
-      const snapshot={status:null,diagnostics:null,resources:null,history:null};
+      const snapshot={status:null,diagnostics:null,resources:null,history:null,liveActivity:null};
       REFRESH_SOURCES.forEach((src,i)=>{
         const ok=responses[i].status==='fulfilled';
         if(ok){refreshState.sourceState.set(src.key,{freshness:'FRESH',at:new Date()});snapshot[src.key]=responses[i].value;}
@@ -1382,8 +1472,9 @@
       const d=snapshot.diagnostics!==null?snapshot.diagnostics:(refreshState.sourceState.get('diagnostics').freshness==='STALE'?lastGood.diagnostics??null:null);
       const r=snapshot.resources!==null?snapshot.resources:(refreshState.sourceState.get('resources').freshness==='STALE'?lastGood.resources??null:null);
       const hh=snapshot.history!==null?snapshot.history:(refreshState.sourceState.get('history').freshness==='STALE'?lastGood.history??null:null);
-      if(s!==null||d!==null||r!==null||hh!==null){refreshState.lastGood={...(lastGood),...(snapshot.status!==null?{status:snapshot.status}:{}),...(snapshot.diagnostics!==null?{diagnostics:snapshot.diagnostics}:{}),...(snapshot.resources!==null?{resources:snapshot.resources}:{}),...(snapshot.history!==null?{history:snapshot.history}:{})};lastSuccess=new Date();}
-      render(s,d,r,{source_freshness:{status:refreshState.sourceState.get('status').freshness,diagnostics:refreshState.sourceState.get('diagnostics').freshness,resources:refreshState.sourceState.get('resources').freshness,history:refreshState.sourceState.get('history').freshness},last_known_good_at:refreshState.sourceState.get('resources').at?.toISOString?.()??null},hh);
+      const la=snapshot.liveActivity!==null?snapshot.liveActivity:(refreshState.sourceState.get('liveActivity').freshness==='STALE'?lastGood.liveActivity??null:null);
+      if(s!==null||d!==null||r!==null||hh!==null||la!==null){refreshState.lastGood={...(lastGood),...(snapshot.status!==null?{status:snapshot.status}:{}),...(snapshot.diagnostics!==null?{diagnostics:snapshot.diagnostics}:{}),...(snapshot.resources!==null?{resources:snapshot.resources}:{}),...(snapshot.history!==null?{history:snapshot.history}:{}),...(snapshot.liveActivity!==null?{liveActivity:snapshot.liveActivity}:{})};lastSuccess=new Date();}
+      render(s,d,r,{source_freshness:{status:refreshState.sourceState.get('status').freshness,diagnostics:refreshState.sourceState.get('diagnostics').freshness,resources:refreshState.sourceState.get('resources').freshness,history:refreshState.sourceState.get('history').freshness,liveActivity:refreshState.sourceState.get('liveActivity').freshness},last_known_good_at:refreshState.sourceState.get('resources').at?.toISOString?.()??null},hh,la);
       // Independent per-source freshness: STALE keeps values visible; a source
       // that never succeeded is UNAVAILABLE_NO_DATA (no invented values).
       const freshCount=REFRESH_SOURCES.filter(src=>refreshState.sourceState.get(src.key).freshness==='FRESH').length;

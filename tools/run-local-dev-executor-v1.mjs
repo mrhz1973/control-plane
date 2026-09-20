@@ -27,6 +27,7 @@ import { probeOpenCodeLocal } from "./probe-opencode-local-v1.mjs";
 import { startLocalDevGenerationGuard } from "./local-dev-generation-guard-v1.mjs";
 import { attachReviewStage } from "./run-review-stage-v1.mjs";
 import { reconcilePostExecWithOrigin } from "./local-dev-post-exec-integration-fence-v1.mjs";
+import { createLiveActivitySink } from "./live-activity-v1.mjs";
 
 export { classifyOpenCodeFailure, sanitizeOpenCodeDiagnostic } from "./local-dev-executor-v1.mjs";
 
@@ -89,8 +90,15 @@ export function defaultSpawn(executable, args, opts = {}) {
       // (RETRY4/RETRY5 pre-generation stall; production adapter proof Aug 31).
       stdio: ["ignore", "pipe", "pipe"],
     });
-    child.stdout?.on("data", (d) => (stdout += d));
-    child.stderr?.on("data", (d) => (stderr += d));
+    child.stdout?.on("data", (d) => {
+      stdout += d;
+      // Passive live-activity hook (#120): never throws into the spawn path.
+      try { if (typeof opts.onStdout === "function") opts.onStdout(d); } catch { /* ignore */ }
+    });
+    child.stderr?.on("data", (d) => {
+      stderr += d;
+      try { if (typeof opts.onStderr === "function") opts.onStderr(d); } catch { /* ignore */ }
+    });
     child.on("error", (err) => {
       settled = true;
       resolvePromise({
@@ -273,7 +281,7 @@ export function makeRunOpenCodeTask(deps = {}) {
   }));
   const removeTempConfig = deps.removeTempConfig || ((p) => { try { unlinkSync(p); } catch { /* best effort */ } });
 
-  return async ({ guardBaseUrl, modelId, modelSelector, providerOverlay, capabilities, envelope }) => {
+  return async ({ guardBaseUrl, modelId, modelSelector, providerOverlay, capabilities, envelope, liveActivity = null }) => {
     if (!guardBaseUrl || guardBaseUrl === DIRECT_QWEN_ENDPOINT || !guardBaseUrl.startsWith("http://127.0.0.1:")) {
       throw Object.assign(new Error("opencode target must be the DEV guard URL, never :8080 directly"), {
         code: "GUARD_TARGET_IS_DIRECT_QWEN_ENDPOINT",
@@ -309,6 +317,22 @@ export function makeRunOpenCodeTask(deps = {}) {
         detail: cfgCheck.error || "unknown",
       });
     }
+    // Passive live activity (#120): create sink if caller did not share one.
+    // Observability failure never blocks OpenCode execution.
+    let sink = liveActivity;
+    try {
+      if (!sink && deps.disableLiveActivity !== true) {
+        sink = (deps.createLiveActivitySink || createLiveActivitySink)({
+          task_ref: envelope.task_ref,
+          envelope,
+          phase: "OPENCODE",
+          env: deps.env,
+          storagePath: deps.liveActivityStoragePath,
+          disableDisk: deps.liveActivityDisableDisk === true,
+        });
+      }
+      try { sink?.setPhase?.("OPENCODE"); } catch { /* ignore */ }
+    } catch { sink = liveActivity || null; }
     let run;
     let timer = null;
     try {
@@ -348,6 +372,8 @@ export function makeRunOpenCodeTask(deps = {}) {
           OPENCODE_DISABLE_PRUNE: "1",
         },
         shell: false, // no-shell: argv stays literal data, never shell syntax
+        onStdout: (d) => { try { sink?.ingestChunk?.(d, "stdout"); } catch { /* ignore */ } },
+        onStderr: (d) => { try { sink?.ingestChunk?.(d, "stderr"); } catch { /* ignore */ } },
       }));
       let timedOut = false;
       const childOutcome = spawned.promise.then((r) =>
@@ -372,6 +398,10 @@ export function makeRunOpenCodeTask(deps = {}) {
     } finally {
       if (timer) clearTimeout(timer); // a PASS must not leave a late unhandled rejection
       removeTempConfig(configPath);
+      try {
+        if (sink && sink !== liveActivity) sink.end?.(run?.status === 0 ? "DONE" : "OPENCODE_EXIT");
+        else if (sink) sink.flush?.();
+      } catch { /* ignore */ }
     }
     if (run.status !== 0) {
       // Best-effort: persist the EXACT generated config for failure forensics
@@ -403,13 +433,39 @@ export function makeRunOpenCodeTask(deps = {}) {
  * — the RETRY9 STOP:TEST_FAILED root cause). */
 export function makeRunTests(deps = {}) {
   const spawnProc = deps.spawnProc || defaultSpawn;
-  return async ({ testCommand, maxTestCycles, repoPath }) => {
+  return async ({ testCommand, maxTestCycles, repoPath, liveActivity = null }) => {
     if (!testCommand) return [];
     const runs = [];
+    const sink = liveActivity || deps.liveActivity || null;
     for (let cycle = 1; cycle <= maxTestCycles; cycle += 1) {
-      const handle = asSpawnHandle(await spawnProc(testCommand, [], { cwd: repoPath, shell: true }));
+      try {
+        sink?.pushEvent?.({
+          event_type: "TEST",
+          operation: "TEST",
+          phase: "TESTS",
+          source: "executor",
+          message: "test cycle start",
+          status: `cycle:${cycle}`,
+        });
+      } catch { /* ignore */ }
+      const handle = asSpawnHandle(await spawnProc(testCommand, [], {
+        cwd: repoPath,
+        shell: true,
+        onStdout: (d) => { try { sink?.ingestChunk?.(d, "stdout"); } catch { /* ignore */ } },
+        onStderr: (d) => { try { sink?.ingestChunk?.(d, "stderr"); } catch { /* ignore */ } },
+      }));
       const result = await handle.promise;
       runs.push({ command: testCommand, exit_code: result.status, cycle });
+      try {
+        sink?.pushEvent?.({
+          event_type: "TEST",
+          operation: "TEST",
+          phase: "TESTS",
+          source: "executor",
+          status: result.status === 0 ? "PASS" : "FAIL",
+          message: result.status === 0 ? "PASS" : "FAIL",
+        });
+      } catch { /* ignore */ }
       if (result.status === 0) break;
     }
     return runs;
@@ -424,14 +480,40 @@ export function makePersistGit(deps = {}) {
   const reconcile =
     deps.reconcilePostExec ||
     ((args) => reconcilePostExecWithOrigin(args));
-  return async ({ envelope, changedFiles, evidenceSubject: subject }) => {
+  return async ({ envelope, changedFiles, evidenceSubject: subject, liveActivity = null }) => {
     const repo = envelope.target_repo_path;
+    const sink = liveActivity || deps.liveActivity || null;
+    try {
+      sink?.pushEvent?.({
+        event_type: "PERSISTENCE",
+        operation: "PERSIST",
+        phase: "PERSISTENCE",
+        source: "executor",
+        message: "preparing commit",
+      });
+      sink?.pushEvent?.({
+        event_type: "GIT",
+        operation: "git:status",
+        phase: "PERSISTENCE",
+        source: "executor",
+        message: "stage scoped paths",
+      });
+    } catch { /* ignore */ }
     const stageable = (changedFiles || []).filter((p) => pathAllowed(envelope.allowed_paths, p, pathMatch));
     if (stageable.length === 0) {
       return { ok: false, reason_codes: ["NOTHING_STAGEABLE_IN_SCOPE"] };
     }
     const add = await gitExec(repo, ["add", "--", ...stageable]);
     if (add.status !== 0) return { ok: false, reason_codes: ["GIT_ADD_FAILED"] };
+    try {
+      sink?.pushEvent?.({
+        event_type: "GIT",
+        operation: "git:commit",
+        phase: "PERSISTENCE",
+        source: "executor",
+        message: "commit scoped changes",
+      });
+    } catch { /* ignore */ }
     const commit = await gitExec(repo, ["commit", "-m", subject]);
     if (commit.status !== 0) return { ok: false, reason_codes: ["GIT_COMMIT_FAILED"] };
 
@@ -461,6 +543,15 @@ export function makePersistGit(deps = {}) {
       };
     }
 
+    try {
+      sink?.pushEvent?.({
+        event_type: "GIT",
+        operation: "git:push",
+        phase: "PERSISTENCE",
+        source: "executor",
+        message: "push origin HEAD",
+      });
+    } catch { /* ignore */ }
     const push = await gitExec(repo, ["push", "origin", "HEAD"]);
     if (push.status !== 0) {
       // Ordinary push rejection after origin moved again / non-ff — never force.
@@ -483,6 +574,16 @@ export function makePersistGit(deps = {}) {
     }
     const head = await gitExec(repo, ["rev-parse", "HEAD"]);
     if (head.status !== 0) return { ok: false, reason_codes: ["REV_PARSE_FAILED"] };
+    try {
+      sink?.pushEvent?.({
+        event_type: "GIT",
+        operation: "git:diff-check",
+        phase: "PERSISTENCE",
+        source: "executor",
+        status: "PASS",
+        message: "persistence complete",
+      });
+    } catch { /* ignore */ }
     return {
       ok: true,
       final_head: head.stdout.trim(),

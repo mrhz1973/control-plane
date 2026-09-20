@@ -62,6 +62,11 @@ import { buildResourceObservatory, createCanonicalVpsSshRunner, QWEN_OBSERVATION
 import { fetchCodexAppServerRateLimits } from "./codex-appserver-rate-limit-reader-v1.mjs";
 import { AGENT_ACTIVITY_SCHEMA, applyFreshness as defaultApplyFreshness, readActivities as defaultReadActivities } from "./agent-activity-registry-v1.mjs";
 import {
+  LIVE_ACTIVITY_PATH,
+  LIVE_ACTIVITY_SCHEMA,
+  readLiveActivityProjection,
+} from "./live-activity-v1.mjs";
+import {
   reconcileTerminalPass, reconcileReconcilerTerminal, reconcileTerminalStop,
   detectUnreconciledTerminalPass, isReconcilerTaskRef,
   loadReconciliationStore, saveReconciliationStoreAtomic,
@@ -83,6 +88,7 @@ export const TICK_PATH = "/v1/tick";
 export const STATUS_PATH = "/v1/status";
 export const DIAGNOSTICS_PATH = "/v1/diagnostics";
 export const AGENT_ACTIVITY_PATH = "/v1/agent-activity";
+export { LIVE_ACTIVITY_PATH, LIVE_ACTIVITY_SCHEMA };
 /** WF90 (canonical n8n tick owner) live schedule since
  * V4_WF90_2MIN_DASHBOARD_COUNTDOWN_AND_D9410A_UNBLOCK_V1 (2026-09-15). */
 export const WF90_INTERVAL_SECONDS = 120;
@@ -2175,6 +2181,42 @@ export async function handleTickRequest(req, res, deps = {}) {
     return;
   }
 
+  // Read-only live OpenCode/executor activity projection (#120). GET only,
+  // no tick lock, no mutations. Bounded sanitized ring buffer outside Git.
+  if (path === LIVE_ACTIVITY_PATH) {
+    if (req.method !== "GET") {
+      send(405, wrapTickResult({ ok: false, classification: "SERVICE_ERROR", reason_codes: ["GET_ONLY"] }));
+      return;
+    }
+    try {
+      let statusSnap = null;
+      try {
+        const tracker = deps.statusTracker || null;
+        statusSnap = tracker && typeof tracker.snapshot === "function"
+          ? tracker.snapshot()
+          : null;
+      } catch { statusSnap = null; }
+      const projection = (deps.readLiveActivity || readLiveActivityProjection)({
+        status: statusSnap,
+        storagePath: deps.liveActivityStoragePath,
+        env: deps.env,
+      });
+      send(200, projection);
+    } catch (err) {
+      send(500, {
+        schema_version: LIVE_ACTIVITY_SCHEMA,
+        read_only: true,
+        active: false,
+        events: [],
+        public_rationale: null,
+        freshness: "EMPTY",
+        note: "dati live non disponibili",
+        reason_codes: ["LIVE_ACTIVITY_READ_FAILED", boundStr(err?.message || err, 80)],
+      });
+    }
+    return;
+  }
+
   // Read-only resource + quota observatory (no tick lock, no mutations).
   if (path === RESOURCES_PATH) {
     if (req.method !== "GET") {
@@ -2347,6 +2389,7 @@ async function main() {
     status_path: STATUS_PATH,
     diagnostics_path: DIAGNOSTICS_PATH,
     agent_activity_path: AGENT_ACTIVITY_PATH,
+    live_activity_path: LIVE_ACTIVITY_PATH,
     resources_path: RESOURCES_PATH,
     dashboard_path: "/dashboard",
     architecture_path: ARCHITECTURE_PATH,

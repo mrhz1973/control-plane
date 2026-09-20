@@ -20,7 +20,8 @@ import test from "node:test";
 
 const DASHBOARD_FILE = resolve(dirname(fileURLToPath(import.meta.url)), "../../tools/local-dev-dispatcher-dashboard-v1.html");
 const REFRESH_PREF_KEY = "control-plane.dashboard.refresh.v1";
-const READ_ONLY_ENDPOINTS = ["/v1/status", "/v1/diagnostics", "/v1/resources"];
+const READ_ONLY_ENDPOINTS = ["/v1/status", "/v1/diagnostics", "/v1/resources", "/v1/history", "/v1/live-activity"];
+const REFRESH_SOURCE_COUNT = 5;
 
 // Deterministic dashboard harness (same pattern as #86/#service suites).
 // initial.prefillStore seeds localStorage BEFORE script evaluation (page reload).
@@ -244,7 +245,7 @@ await test("T7 changing interval cancels/replaces previous timer (no accumulatio
   // Firing the new timer executes refresh exactly once per tick.
   const before = dashboard.fetches.length;
   await dashboard.fireRefreshTimers();
-  assert.equal(dashboard.fetches.length - before, 3, "one timer tick = one full refresh (3 sources)");
+  assert.equal(dashboard.fetches.length - before, REFRESH_SOURCE_COUNT, "one timer tick = one full refresh (all sources)");
 });
 
 // ---- T8 single-flight refresh ---------------------------------------------------
@@ -264,7 +265,7 @@ await test("T8 only one refresh cycle may be in flight (overlap coalesced)", asy
   assert.ok(p1 && p2 && p3, "refresh calls returned promises");
   // Give p2/p3 a chance to (wrongly) start fetching.
   await dashboard.settle();
-  assert.equal(gatedCalls, 3, "only the first in-flight refresh fetches (p2/p3 coalesced)");
+  assert.equal(gatedCalls, REFRESH_SOURCE_COUNT, "only the first in-flight refresh fetches (p2/p3 coalesced)");
   releaseFetch();
   await Promise.allSettled([p1, p2, p3]);
   await dashboard.settle();
@@ -281,7 +282,7 @@ await test("T9 manual refresh works with auto OFF", async () => {
   const before = dashboard.fetches.length;
   dashboard.element("refresh-button").dispatch("click");
   await dashboard.settle();
-  assert.ok(dashboard.fetches.length >= before + 3, "manual Aggiorna fetches all sources with auto OFF");
+  assert.ok(dashboard.fetches.length >= before + REFRESH_SOURCE_COUNT, "manual Aggiorna fetches all sources with auto OFF");
   assert.ok(dashboard.fetches.includes("/v1/status"));
   assert.match(dashboard.element("poll-age").textContent, /Aggiornato alle|Lettura parziale/, "manual refresh updates the freshness indicator");
   assert.equal(dashboard.evaluate("refreshState.auto"), false, "manual refresh did not re-enable auto");
@@ -326,10 +327,9 @@ await test("T12 resources failure marks only resources stale", async () => {
   await dashboard.settle();
   const state = JSON.parse(dashboard.evaluate("JSON.stringify({s: refreshState.sourceState.get('status').freshness, d: refreshState.sourceState.get('diagnostics').freshness, r: refreshState.sourceState.get('resources').freshness})"));
   assert.deepEqual(state, { s: "FRESH", d: "FRESH", r: "STALE" });
-  const alert = dashboard.element("data-alert");
-  assert.equal(alert.hidden, false);
-  assert.match(alert.textContent, /\/v1\/resources/);
-  assert.doesNotMatch(alert.textContent, /\/v1\/status.*non aggiornato|\/v1\/diagnostics.*non aggiornato/, "healthy sources not flagged stale");
+  const healthDetail = dashboard.element("data-health-detail").innerHTML + dashboard.element("data-health-label").textContent;
+  assert.match(healthDetail, /\/v1\/resources|Dati parziali/);
+  assert.doesNotMatch(healthDetail, /\/v1\/status/, "healthy status not flagged in health detail as missing");
 });
 
 await test("T13 status remains fresh when resources fails", async () => {

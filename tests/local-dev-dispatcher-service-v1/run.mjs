@@ -1497,6 +1497,7 @@ async function dashboardHarness(initial = {}) {
           if (path === DIAGNOSTICS_PATH) return scenario.diag ?? null;
           if (path === RESOURCES_PATH) return scenario.resources ?? { schema_version: RESOURCES_SCHEMA, workstation: {}, qwen: {}, vps_new: {}, quotas: { pools: {} }, chatgpt_web: {} };
           if (path === "/v1/history") return scenario.history ?? { schema_version: "local-dev-mission-control-history-v1", read_only: true, latest_tick: null, active_task: null, last_terminal_task: null, recent_tasks: [], recent_events: [] };
+          if (path === "/v1/live-activity") return scenario.liveActivity ?? { schema_version: "local-dev-live-activity-v1", read_only: true, active: false, events: [], public_rationale: null, freshness: "EMPTY", note: "Nessuna attività live disponibile" };
           return null;
         },
       };
@@ -1546,9 +1547,10 @@ await test("S35 dashboard startup, automatic and manual refresh execute only the
   assert.ok(dashboard.fetches.some((request) => request.url === DIAGNOSTICS_PATH));
   assert.ok(dashboard.fetches.some((request) => request.url === RESOURCES_PATH));
   assert.ok(dashboard.fetches.some((request) => request.url === "/v1/history"), "#94 history source fetched");
+  assert.ok(dashboard.fetches.some((request) => request.url === "/v1/live-activity"), "#120 live-activity source fetched");
   for (const request of dashboard.fetches) {
     assert.equal(request.method, "GET");
-    assert.ok([STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH, "/v1/history"].includes(request.url), request.url);
+    assert.ok([STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH, "/v1/history", "/v1/live-activity"].includes(request.url), request.url);
   }
   assert.deepEqual(dashboard.otherNetwork, []);
   assert.doesNotMatch(dashboard.html, /<form\b|<script\b[^>]*\bsrc\s*=|\b(?:src|href)\s*=\s*["']https?:\/\/(?!127\.0\.0\.1:16080\/vnc\.html)/i);
@@ -1634,7 +1636,7 @@ await test("S39 refresh handles HTTP, network and malformed JSON failures withou
     const output = [...dashboard.elements.values()].map((node) => node.textContent + node.innerHTML).join("\n");
     assert.match(output, /errore|non (?:raggiungibile|disponibile)|connessione|fallit|aggiornamento/i);
   }
-  assert.ok(dashboard.fetches.every((request) => request.method === "GET" && [STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH, "/v1/history"].includes(request.url)));
+  assert.ok(dashboard.fetches.every((request) => request.method === "GET" && [STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH, "/v1/history", "/v1/live-activity"].includes(request.url)));
   assert.deepEqual(dashboard.otherNetwork, []);
 });
 
@@ -2336,7 +2338,7 @@ await test("S57 Qwen usage tooltips present; network remains GET-only without PO
   await dashboard.evaluate("refresh()");
   await dashboard.settle();
   assert.ok(dashboard.fetches.every((request) => request.method === "GET"));
-  assert.ok(dashboard.fetches.every((request) => [STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH, "/v1/history"].includes(request.url)));
+  assert.ok(dashboard.fetches.every((request) => [STATUS_PATH, DIAGNOSTICS_PATH, RESOURCES_PATH, "/v1/history", "/v1/live-activity"].includes(request.url)));
   assert.ok(!dashboard.fetches.some((request) => /tick/i.test(request.url)));
   assert.deepEqual(dashboard.otherNetwork, []);
   assert.doesNotMatch(dashboardText(dashboard), /\[object Object\]/);
