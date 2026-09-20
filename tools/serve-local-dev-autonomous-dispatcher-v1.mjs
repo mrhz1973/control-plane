@@ -75,6 +75,10 @@ import {
   loadNotifyLedger, saveNotifyLedgerAtomic, dispatchNotifications,
   loadTelegramTransportConfig, evaluateStall, alreadySent, markSent,
 } from "./local-dev-terminal-notifier-v1.mjs";
+import {
+  observeSentinel, readSentinelProjection, WF90_STALE_DETECTION_MODE,
+  DISPATCHER_UNAVAILABLE_COVERAGE,
+} from "./local-dev-sentinel-v1.mjs";
 
 export const RESULT_SCHEMA = "local-dev-dispatch-tick-result-v1";
 export const REQUEST_SCHEMA = "local-dev-dispatch-tick-v1";
@@ -366,6 +370,8 @@ function emptyStatusSnapshot(partial = {}) {
     files_touched: [],
     classification: null,
     last_event: null,
+    started_at: null,
+    executor_timebox_seconds: null,
     ...partial,
   };
 }
@@ -396,6 +402,10 @@ export function createExecutionStatusTracker(options = {}) {
       files_touched: boundFilesTouched(state.files_touched),
       classification: boundStr(state.classification, 120),
       last_event: boundStr(state.last_event, 160),
+      started_at: state.active === true && startedAt != null
+        ? new Date(startedAt).toISOString()
+        : (boundStr(state.started_at, 40) || null),
+      executor_timebox_seconds: boundInt(state.executor_timebox_seconds, { allowNull: true, min: 1 }),
     };
   };
 
@@ -437,6 +447,9 @@ export function createExecutionStatusTracker(options = {}) {
       if (fields.last_event !== undefined) state.last_event = boundStr(fields.last_event, 160);
       if (fields.active !== undefined) state.active = fields.active === true;
       if (fields.terminal !== undefined) state.terminal = fields.terminal === true;
+      if (fields.executor_timebox_seconds !== undefined) {
+        state.executor_timebox_seconds = boundInt(fields.executor_timebox_seconds, { allowNull: true, min: 1 });
+      }
       return snapshot();
     },
     finish(fields = {}) {
@@ -982,6 +995,26 @@ export async function buildDiagnostics(deps = {}) {
     // Read-only agent/browser activity observatory (issue #79). Additive
     // field only — existing diagnostics fields unchanged (backward compat).
     agent_activity: buildAgentActivitySection(deps),
+    // #109 STALL sentinel health (read-only projection; never mutates).
+    sentinel: (() => {
+      try {
+        if (typeof deps.readSentinelProjection === "function") return deps.readSentinelProjection();
+        return readSentinelProjection(deps.sentinelStatePath);
+      } catch {
+        return {
+          schema_version: "local-dev-sentinel-state-v1",
+          read_only: true,
+          state_ok: false,
+          health: "DEGRADED",
+          reason: "SENTINEL_PROJECTION_FAILED",
+          task_ref: null,
+          since: null,
+          last_evaluated_at: null,
+          wf90_stale_detection_mode: WF90_STALE_DETECTION_MODE,
+          dispatcher_unavailable_coverage: DISPATCHER_UNAVAILABLE_COVERAGE,
+        };
+      }
+    })(),
   };
 }
 
@@ -1346,6 +1379,79 @@ export function shouldPersistRuntimeArtifacts(deps = {}) {
   );
 }
 
+function telegramIssuanceConfigPath() {
+  return join(homedir(), "AppData", "Local", "control-plane", "v4-runtime-authorization-issuance-config-v1.json");
+}
+
+/**
+ * #109 STALL sentinel observation — best-effort, never breaks the tick.
+ * Invokes evaluateStall() via observeSentinel on every natural observation.
+ */
+export async function runSentinelObservationForTick({
+  deps = {},
+  result = null,
+  journalEmit = null,
+  entries = null,
+  receipts = null,
+  nowIso = null,
+  statusSnap = null,
+  lastTickAtBefore = null,
+  busy = false,
+} = {}) {
+  try {
+    if (deps.sentinel === false) return { invoked: false, reason: "SENTINEL_DISABLED" };
+    const real = shouldPersistRuntimeArtifacts(deps);
+    if (!real && typeof deps.observeSentinel !== "function" && !deps.forceSentinel && !deps.sentinelStatePath) {
+      return { invoked: false, reason: "SENTINEL_ISOLATED_INJECTED" };
+    }
+    const iso = nowIso || (deps.nowIso ? deps.nowIso() : new Date().toISOString());
+    let queueEligibleCount = 0;
+    let candidateTaskRef = null;
+    let claimed = false;
+    if (Array.isArray(entries) && Array.isArray(receipts)) {
+      try {
+        const q = buildQueueScanDiagnostics({ entries, receipts, nowIso: iso });
+        queueEligibleCount = Number(q.eligible_count) || 0;
+        candidateTaskRef = q.candidate_task_ref || null;
+        claimed = (Number(q.claim_present_count) || 0) > 0 && queueEligibleCount === 0;
+      } catch { /* degrade queue fields */ }
+    }
+    if (busy) claimed = true;
+    const snap = statusSnap && typeof statusSnap === "object" ? statusSnap : null;
+    const active = snap?.active === true;
+    // Timebox only when actually observed on the tracker (no fabrication).
+    const timebox = Number.isFinite(Number(snap?.executor_timebox_seconds))
+      ? Number(snap.executor_timebox_seconds)
+      : null;
+    const observe = typeof deps.observeSentinel === "function" ? deps.observeSentinel : observeSentinel;
+    return await observe({
+      nowIso: iso,
+      classification: result?.classification || (busy ? "BUSY" : null),
+      humanGateRequired: result?.human_gate_required === true || result?.classification === "HUMAN_GATE_REQUIRED",
+      queueEligibleCount,
+      candidateTaskRef,
+      claimed,
+      active,
+      phase: snap?.phase || null,
+      taskRef: snap?.task_ref || result?.task_ref || null,
+      activeSince: snap?.started_at || null,
+      executorTimeboxSeconds: timebox,
+      lastTickAt: lastTickAtBefore || null,
+      wf90IntervalSeconds: WF90_INTERVAL_SECONDS,
+      journalEmit,
+      statePath: deps.sentinelStatePath,
+      telegramConfigPath: deps.telegramConfigPath || telegramIssuanceConfigPath(),
+      transport: deps.sentinelTransport,
+      fetchImpl: deps.fetchImpl,
+      notify: deps.sentinelNotify !== false,
+      loadState: deps.loadSentinelState,
+      saveState: deps.saveSentinelState,
+    });
+  } catch (err) {
+    return { invoked: false, reason: "SENTINEL_OBSERVE_FAILED", detail: String(err?.message || err).slice(0, 80) };
+  }
+}
+
 /**
  * Atomic same-directory receipts persist: write complete JSON to a unique
  * temp file, then rename onto receipts.json. Best-effort temp cleanup on
@@ -1518,6 +1624,12 @@ export async function performTick(body, deps = {}) {
   const statusSafe = (fn, ...args) => {
     try { return tracker && typeof tracker[fn] === "function" ? tracker[fn](...args) : null; } catch { return null; }
   };
+  // Capture prior tick timestamp BEFORE this tick records (WF90 stale = next observable event).
+  let lastTickAtBefore = null;
+  try {
+    lastTickAtBefore = deps.lastTickStore?.snapshot?.()?.recorded_at || null;
+  } catch { lastTickAtBefore = null; }
+  const sentinelCtx = { entries: null, receipts: null };
   const terminalClassification = (result) => {
     if (!result) return "SERVICE_ERROR";
     if (result.executor_classification) return result.executor_classification;
@@ -1525,7 +1637,7 @@ export async function performTick(body, deps = {}) {
     if (result.classification === "WORK_EXECUTED_STOP") return result.executor_classification || "STOP";
     return result.classification || "SERVICE_ERROR";
   };
-  const done = (result) => {
+  const done = async (result) => {
     // #89: after ANY terminal outcome (PASS, STOP, HUMAN_GATE, SERVICE_ERROR),
     // no real use remains: enter bounded IDLE_GRACE via markExecutionEnd when
     // an execution window was open. No injected lifecycle => no-op (never
@@ -1549,6 +1661,21 @@ export async function performTick(body, deps = {}) {
         });
       }
     } catch { /* observability only */ }
+    // #109: evaluateStall wiring on every natural tick observation.
+    try {
+      let statusSnap = null;
+      try { statusSnap = tracker && typeof tracker.snapshot === "function" ? tracker.snapshot() : null; } catch { statusSnap = null; }
+      await runSentinelObservationForTick({
+        deps,
+        result,
+        journalEmit,
+        entries: sentinelCtx.entries,
+        receipts: sentinelCtx.receipts,
+        nowIso: deps.nowIso ? deps.nowIso() : new Date().toISOString(),
+        statusSnap,
+        lastTickAtBefore,
+      });
+    } catch { /* sentinel never breaks tick */ }
     return result;
   };
 
@@ -1592,7 +1719,7 @@ export async function performTick(body, deps = {}) {
   const repoState = await verifyRepo();
   if (!repoState.ok) {
     journalEmit({ event: "HUMAN_GATE_REQUIRED", phase: "REPO_HYGIENE", component: "dispatcher", classification: "HUMAN_GATE_REQUIRED", human_summary: `Gate umano richiesto in verifica repository: ${(repoState.reason_codes || []).slice(0, 3).join(", ")}` });
-    return done(wrapTickResult({
+    return await done(wrapTickResult({
       ok: false,
       request_id: requestId,
       classification: "HUMAN_GATE_REQUIRED",
@@ -1617,7 +1744,7 @@ export async function performTick(body, deps = {}) {
       "RECEIPTS_LEDGER_NOT_ARRAY",
     ]);
     const specific = known.has(subtype) ? subtype : "RECEIPTS_LEDGER_READ_FAILED";
-    return done(wrapTickResult({
+    return await done(wrapTickResult({
       ok: false,
       request_id: requestId,
       classification: "SERVICE_ERROR",
@@ -1628,7 +1755,7 @@ export async function performTick(body, deps = {}) {
     }));
   }
   if (!Array.isArray(receipts)) {
-    return done(wrapTickResult({
+    return await done(wrapTickResult({
       ok: false,
       request_id: requestId,
       classification: "SERVICE_ERROR",
@@ -1654,6 +1781,8 @@ export async function performTick(body, deps = {}) {
       return { ok: false, source: e.source };
     }
   });
+  sentinelCtx.entries = entries;
+  sentinelCtx.receipts = receipts;
 
   // Pre-claim deterministic target selection (single-selection authority):
   // reuse the SAME selector decision the loop will use, only to resolve the
@@ -1670,7 +1799,7 @@ export async function performTick(body, deps = {}) {
   }
   const targetPath = resolveKnownLocalRepo(targetRepo);
   if (!targetPath) {
-    return done(wrapTickResult({
+    return await done(wrapTickResult({
       ok: false,
       request_id: requestId,
       classification: "HUMAN_GATE_REQUIRED",
@@ -1695,7 +1824,7 @@ export async function performTick(body, deps = {}) {
       targetState = await verifyRepoState({ repo: targetRepo, repoPath: targetPath });
     }
     if (!targetState.ok) {
-      return done(wrapTickResult({
+      return await done(wrapTickResult({
         ok: false,
         request_id: requestId,
         classification: "HUMAN_GATE_REQUIRED",
@@ -1728,7 +1857,7 @@ export async function performTick(body, deps = {}) {
     // (ONE reconciler READY + dedup PASS notification). Never claims in the
     // same tick as publication: the NEXT natural WF90 tick consumes it.
     const idleRecon = await runPostTerminalContinuation({ deps, receipts, nowIso, journalEmit });
-    return done(wrapTickResult({
+    return await done(wrapTickResult({
       ok: true,
       request_id: requestId,
       classification: "IDLE_CLEAN",
@@ -1745,7 +1874,7 @@ export async function performTick(body, deps = {}) {
   // still fenced there before any execution).
   const claimTargetPath = claim.envelope?.target_repo_path;
   if (typeof claimTargetPath === "string" && claimTargetPath !== targetPath) {
-    return done(wrapTickResult({
+    return await done(wrapTickResult({
       ok: false,
       request_id: requestId,
       classification: "SERVICE_ERROR",
@@ -1770,6 +1899,9 @@ export async function performTick(body, deps = {}) {
     task_ref: claim.task_ref,
     qwen_profile: claim?.envelope?.profile_id ?? null,
     last_event: "qwen_preflight",
+    executor_timebox_seconds: Number.isFinite(Number(claim?.envelope?.timebox_seconds))
+      ? Number(claim.envelope.timebox_seconds)
+      : null,
   });
 
   // #89 idle-lifecycle: execution requires Qwen -> cancel any pending idle
@@ -1793,7 +1925,7 @@ export async function performTick(body, deps = {}) {
   } catch (err) {
     statusSafe("update", { runtime_ready: false, last_event: "qwen_preflight_threw" });
     if (qwenLifecycle) qwenLifecycle.markPreflightEnd({ ready: false });
-    return done(wrapTickResult({
+    return await done(wrapTickResult({
       ok: false,
       request_id: requestId,
       classification: "HUMAN_GATE_REQUIRED",
@@ -1812,7 +1944,7 @@ export async function performTick(body, deps = {}) {
     statusSafe("update", { runtime_ready: false, last_event: "qwen_not_ready" });
     if (qwenLifecycle) qwenLifecycle.markPreflightEnd({ ready: false });
     journalEmit({ event: "HUMAN_GATE_REQUIRED", phase: "QWEN_PREFLIGHT", component: "qwen-session-manager", task_ref: claim.task_ref, target_repo: targetRepo, classification: "HUMAN_GATE_REQUIRED", human_summary: `Runtime Qwen non pronto: ${String(status).slice(0, 80)}.` });
-    return done(wrapTickResult({
+    return await done(wrapTickResult({
       ok: false,
       request_id: requestId,
       classification: "HUMAN_GATE_REQUIRED",
@@ -1866,7 +1998,7 @@ export async function performTick(body, deps = {}) {
     }
     if (persistReceiptsFn) persistReceiptsFn(ledger);
   } catch (err) {
-    return done(persistFailed(err));
+    return await done(persistFailed(err));
   }
 
   // 3b. MICRO_TASK_DELTA admission — AFTER claim, BEFORE executor.
@@ -1886,10 +2018,10 @@ export async function performTick(body, deps = {}) {
       });
       if (persistReceiptsFn) persistReceiptsFn(ledger);
     } catch (err) {
-      return done(persistFailed(err));
+      return await done(persistFailed(err));
     }
     journalEmit({ event: "HUMAN_GATE_REQUIRED", phase: "ADMISSION", component: "dispatcher", task_ref: claim.task_ref, target_repo: targetRepo, classification: "HUMAN_GATE_REQUIRED", human_summary: `Ammissione rifiutata: ${(admission?.reason_codes || ["MICRO_TASK_ADMISSION_REJECTED"]).slice(0, 3).join(", ")}.` });
-    return done(wrapTickResult({
+    return await done(wrapTickResult({
       ok: false,
       request_id: requestId,
       classification: "HUMAN_GATE_REQUIRED",
@@ -1909,7 +2041,7 @@ export async function performTick(body, deps = {}) {
     ledger = transitionLatestReceipt(ledger, claim.task_ref, "EXECUTING");
     if (persistReceiptsFn) persistReceiptsFn(ledger);
   } catch (err) {
-    return done(persistFailed(err));
+    return await done(persistFailed(err));
   }
   statusSafe("update", {
     phase: "EXECUTING",
@@ -1966,7 +2098,7 @@ export async function performTick(body, deps = {}) {
     );
     if (persistReceiptsFn) persistReceiptsFn(ledger);
   } catch (err) {
-    return done(persistFailed(err));
+    return await done(persistFailed(err));
   }
   // #94: authoritative terminal task event (duration/tests/commit when the
   // executor result really carries them — never invented).
@@ -2002,7 +2134,7 @@ export async function performTick(body, deps = {}) {
       durationMs: typeof executorResult?.timebox_used_s === "number" ? Math.round(executorResult.timebox_used_s * 1000) : null,
     },
   });
-  return done(classificationFromExecutorResult(executorResult, requestId));
+  return await done(classificationFromExecutorResult(executorResult, requestId));
 }
 
 // parseBacklog via the proven selector module (imported lazily to keep the
@@ -2306,6 +2438,25 @@ export async function handleTickRequest(req, res, deps = {}) {
   }
   // Single-flight: concurrent ticks are BUSY, never queued.
   if (deps.tryAcquireLock && !deps.tryAcquireLock()) {
+    // #109: still observe ACTIVE_PHASE_OVERRUN / health on BUSY (statusTracker).
+    try {
+      let statusSnap = null;
+      try {
+        statusSnap = deps.statusTracker && typeof deps.statusTracker.snapshot === "function"
+          ? deps.statusTracker.snapshot() : null;
+      } catch { statusSnap = null; }
+      const lastTickAtBefore = (() => {
+        try { return deps.lastTickStore?.snapshot?.()?.recorded_at || null; } catch { return null; }
+      })();
+      await runSentinelObservationForTick({
+        deps: { ...(deps.tickDeps || {}), statusTracker: deps.statusTracker, lastTickStore: deps.lastTickStore, forceSentinel: true },
+        result: { classification: "BUSY", reason_codes: ["EXECUTION_IN_FLIGHT"] },
+        statusSnap,
+        lastTickAtBefore,
+        busy: true,
+        nowIso: new Date().toISOString(),
+      });
+    } catch { /* sentinel never blocks BUSY */ }
     send(409, wrapTickResult({ ok: false, request_id: body.request_id, classification: "BUSY", reason_codes: ["EXECUTION_IN_FLIGHT"] }));
     return;
   }
