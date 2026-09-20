@@ -109,6 +109,45 @@ await test("R3 pre-existing untracked in-scope stays unstaged and protected", as
   assert.equal(r.preexisting_untracked_protected, 1);
 });
 
+// 3b. exact allowed_paths recovery: durable STOP drafts may be staged; non-exact stay protected
+await test("R3b exact allowed_paths pre-existing untracked is stageable; non-exact stays protected", async () => {
+  const exactEnv = env({
+    allowed_paths: [
+      "tmar/core/adapter_chatterbox.py",
+      "tests/test_chatterbox_adapter.py",
+      "generate_podcast.py",
+    ],
+  });
+  const pre = {
+    ambiguous: false,
+    paths: [
+      "tmar/core/adapter_chatterbox.py",
+      "tests/test_chatterbox_adapter.py",
+      "scratch.tmp",
+    ],
+  };
+  const r = await classifyPostExecutionChanges(
+    exactEnv,
+    pre,
+    fakeGit({
+      "status --porcelain=v1 -uall": okGit(
+        "?? tmar/core/adapter_chatterbox.py\n?? tests/test_chatterbox_adapter.py\n?? scratch.tmp\n M generate_podcast.py\n",
+      ),
+    }),
+  );
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.task_created_new, [
+    "tests/test_chatterbox_adapter.py",
+    "tmar/core/adapter_chatterbox.py",
+  ]);
+  assert.deepEqual(r.stageable, [
+    "generate_podcast.py",
+    "tests/test_chatterbox_adapter.py",
+    "tmar/core/adapter_chatterbox.py",
+  ]);
+  assert.equal(r.preexisting_untracked_protected, 1);
+});
+
 // 4. pre-existing untracked out-of-scope -> preserved (not staged, no violation)
 await test("R4 pre-existing untracked out-of-scope is preserved untouched", async () => {
   const pre = { ambiguous: false, paths: ["tools/tmp.txt"] };
