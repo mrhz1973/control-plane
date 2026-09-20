@@ -302,7 +302,7 @@ await test("normalizer-html-escapes-dynamic-telegram-values", () => {
   const out = normalize(envelope);
   assert.ok(out.telegram_text.includes("reason: tracked dirty: 2 &lt;file&gt; &amp; 1 more"));
   // Header is pure ASCII (em-dash caused transport mojibake on live apply).
-  assert.ok(out.telegram_text.startsWith("CONTROL PLANE - HUMAN ACTION REQUIRED"));
+  assert.ok(out.telegram_text.startsWith("CONTROL PLANE - HUMAN GATE"));
 });
 
 await test("normalizer-builds-plain-telegram-text-for-human-gate", () => {
@@ -315,11 +315,38 @@ await test("normalizer-builds-plain-telegram-text-for-human-gate", () => {
   const envelope = { error: { status: 409, message: `409 - ${JSON.stringify(dispatcher)}` } };
   const out = normalize(envelope);
   assert.equal(out.notify_required, true);
-  assert.ok(out.telegram_text.includes("CONTROL PLANE - HUMAN ACTION REQUIRED"));
+  assert.ok(out.telegram_text.startsWith("CONTROL PLANE - HUMAN GATE\n"));
   assert.ok(out.telegram_text.includes("classification: HUMAN_GATE_REQUIRED"));
   assert.ok(out.telegram_text.includes("reason: TRACKED_DIRTY_CONFLICT"));
   assert.ok(out.telegram_text.includes("task: NONE"));
   assert.ok(out.telegram_text.includes("origin: WF90"));
+  assert.ok(!out.telegram_text.includes("HUMAN ACTION REQUIRED"));
+});
+
+await test("semantic-wording-parity-stop-and-service-error-headlines", () => {
+  const stop = normalize(tickResult({
+    classification: "WORK_EXECUTED_STOP",
+    execution_performed: true,
+    human_gate_required: false,
+    task_ref: "LOCAL_DEV_B_D-0103-F005",
+    reason_codes: ["BOUNDS_TIMEBOX_EXPIRED"],
+    executor_classification: "STOP:BOUNDS_TIMEBOX_EXPIRED",
+  }));
+  assert.equal(stop.telegram_text.split("\n")[0], "CONTROL PLANE - TASK STOP");
+  assert.ok(!stop.telegram_text.includes("HUMAN ACTION REQUIRED"));
+  assert.ok(!stop.telegram_text.includes("phase: HUMAN_GATE"));
+  assert.ok(stop.telegram_text.includes("executor: STOP:BOUNDS_TIMEBOX_EXPIRED"));
+  assert.ok(stop.telegram_text.includes("task: LOCAL_DEV_B_D-0103-F005"));
+
+  const svc = normalize(tickResult({
+    classification: "SERVICE_ERROR",
+    human_gate_required: false,
+    reason_codes: ["TRANSPORT"],
+  }));
+  assert.equal(svc.telegram_text.split("\n")[0], "CONTROL PLANE - SERVICE ERROR");
+  assert.ok(!svc.telegram_text.includes("HUMAN GATE"));
+  assert.ok(!svc.telegram_text.includes("HUMAN ACTION REQUIRED"));
+  assert.ok(!svc.telegram_text.includes("phase: HUMAN_GATE"));
 });
 
 await test("telegram-text-no-unpaired-underscore-entity-risk-under-html", () => {

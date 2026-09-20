@@ -43,11 +43,24 @@ const NORMALIZER_LINES = [
   "// in HUMAN_GATE_REQUIRED/TRACKED_DIRTY_CONFLICT then trigger Telegram 400",
   "// 'can't parse entities'. We set parse_mode=HTML on the node and HTML-escape all",
   "// dynamic values here. No task invention: task_ref/executor stay NONE when unknown.",
+  "// #109 semantic wording parity with Mission Control: STOP != HUMAN_GATE != SERVICE_ERROR.",
   "const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');",
-  "const lines = ['CONTROL PLANE - HUMAN ACTION REQUIRED',",
+  "const HEADLINE_BY_CLASSIFICATION = {",
+  "  HUMAN_GATE_REQUIRED: 'CONTROL PLANE - HUMAN GATE',",
+  "  WORK_EXECUTED_STOP: 'CONTROL PLANE - TASK STOP',",
+  "  SERVICE_ERROR: 'CONTROL PLANE - SERVICE ERROR',",
+  "};",
+  "const headline = HEADLINE_BY_CLASSIFICATION[classification] || 'CONTROL PLANE - SERVICE ERROR';",
+  "let phaseLabel = 'NONE';",
+  "if (classification === 'HUMAN_GATE_REQUIRED' && humanGateRequired) {",
+  "  phaseLabel = 'HUMAN_GATE';",
+  "} else if (classification !== 'WORK_EXECUTED_STOP' && valid && typeof body.phase === 'string' && String(body.phase).trim()) {",
+  "  phaseLabel = esc(String(body.phase).trim());",
+  "}",
+  "const lines = [headline,",
   "  'classification: ' + classification,",
   "  'task: ' + ((valid && body.task_ref) ? esc(body.task_ref) : 'NONE'),",
-  "  'phase: ' + ((valid && body.human_gate_required) ? 'HUMAN_GATE' : 'NONE'),",
+  "  'phase: ' + phaseLabel,",
   "  'reason: ' + ((valid && Array.isArray(body.reason_codes) && body.reason_codes.length) ? esc(body.reason_codes.join(',')) : ((valid && body.gate_summary) ? esc(body.gate_summary) : 'none')),",
   "  'executor: ' + ((valid && body.executor_classification) ? esc(body.executor_classification) : 'NONE'),",
   "  'origin: WF90'];",
@@ -237,3 +250,8 @@ export const MODE_B_BUTTON_CALLBACK_EXPRS = Object.freeze([
   "={{ $json.reply_markup.inline_keyboard[0][1].callback_data }}",
   "={{ $json.reply_markup.inline_keyboard[0][2].callback_data }}",
 ]);
+
+/** ASCII-safe Telegram headlines — Mission Control semantic parity (#109). */
+export const TELEGRAM_HEADLINE_HUMAN_GATE = "CONTROL PLANE - HUMAN GATE";
+export const TELEGRAM_HEADLINE_TASK_STOP = "CONTROL PLANE - TASK STOP";
+export const TELEGRAM_HEADLINE_SERVICE_ERROR = "CONTROL PLANE - SERVICE ERROR";

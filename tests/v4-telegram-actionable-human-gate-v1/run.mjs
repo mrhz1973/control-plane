@@ -29,6 +29,9 @@ import {
   MODE_B_ACTIONABLE_EXPR,
   MODE_B_BUTTON_TEXT_EXPRS,
   MODE_B_BUTTON_CALLBACK_EXPRS,
+  TELEGRAM_HEADLINE_HUMAN_GATE,
+  TELEGRAM_HEADLINE_TASK_STOP,
+  TELEGRAM_HEADLINE_SERVICE_ERROR,
 } from "../../tools/wf90-actionable-gate-nodes-v1.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -104,8 +107,62 @@ await test("normalizer-preserves-existing-informational-shape", () => {
   const out = runNormalizer({ schema_version: "local-dev-dispatch-tick-result-v1", classification: "HUMAN_GATE_REQUIRED", execution_performed: false, human_gate_required: true, gate_summary: "tracked dirty: 2 file(s)", reason_codes: ["TRACKED_DIRTY_CONFLICT"] });
   assert.equal(out.human_gate_required, true);
   assert.equal(out.notify_required, true);
-  assert.equal(out.telegram_text.includes("CONTROL PLANE - HUMAN ACTION REQUIRED"), true);
+  assert.equal(out.telegram_text.startsWith(TELEGRAM_HEADLINE_HUMAN_GATE + "\n"), true);
+  assert.equal(out.telegram_text.includes("HUMAN ACTION REQUIRED"), false);
   assert.equal(out.actionable_gate, null); // no canonical choices -> informational
+});
+
+await test("A normalizer-human-gate-headline", () => {
+  const out = runNormalizer({
+    schema_version: "local-dev-dispatch-tick-result-v1", classification: "HUMAN_GATE_REQUIRED",
+    execution_performed: false, human_gate_required: true, reason_codes: ["TRACKED_DIRTY_CONFLICT"],
+  });
+  assert.equal(out.telegram_text.split("\n")[0], TELEGRAM_HEADLINE_HUMAN_GATE);
+  assert.match(out.telegram_text, /^CONTROL PLANE - HUMAN GATE\n/);
+  assert.match(out.telegram_text, /phase: HUMAN_GATE/);
+});
+
+await test("B normalizer-task-stop-headline", () => {
+  const out = runNormalizer({
+    schema_version: "local-dev-dispatch-tick-result-v1", classification: "WORK_EXECUTED_STOP",
+    execution_performed: true, human_gate_required: false, task_ref: "LOCAL_DEV_B_D-0103-F005",
+    reason_codes: ["BOUNDS_TIMEBOX_EXPIRED"], executor_classification: "STOP:BOUNDS_TIMEBOX_EXPIRED",
+  });
+  assert.equal(out.telegram_text.split("\n")[0], TELEGRAM_HEADLINE_TASK_STOP);
+});
+
+await test("C normalizer-service-error-headline", () => {
+  const out = runNormalizer({
+    schema_version: "local-dev-dispatch-tick-result-v1", classification: "SERVICE_ERROR",
+    execution_performed: false, human_gate_required: false, reason_codes: ["HTTP_TRANSPORT"],
+  });
+  assert.equal(out.telegram_text.split("\n")[0], TELEGRAM_HEADLINE_SERVICE_ERROR);
+});
+
+await test("D E stop-text-excludes-human-action-required-and-phase-human-gate", () => {
+  const out = runNormalizer({
+    schema_version: "local-dev-dispatch-tick-result-v1", classification: "WORK_EXECUTED_STOP",
+    execution_performed: true, human_gate_required: false, task_ref: "T-STOP",
+    reason_codes: ["BOUNDS_TIMEBOX_EXPIRED"], executor_classification: "STOP:BOUNDS_TIMEBOX_EXPIRED",
+  });
+  assert.equal(out.telegram_text.includes("HUMAN ACTION REQUIRED"), false);
+  assert.equal(out.telegram_text.includes("phase: HUMAN_GATE"), false);
+  assert.match(out.telegram_text, /phase: NONE/);
+  assert.match(out.telegram_text, /classification: WORK_EXECUTED_STOP/);
+  assert.match(out.telegram_text, /task: T-STOP/);
+  assert.match(out.telegram_text, /executor: STOP:BOUNDS_TIMEBOX_EXPIRED/);
+});
+
+await test("F service-error-not-presented-as-human-gate", () => {
+  const out = runNormalizer({
+    schema_version: "local-dev-dispatch-tick-result-v1", classification: "SERVICE_ERROR",
+    execution_performed: false, human_gate_required: false, reason_codes: ["X"],
+  });
+  assert.equal(out.telegram_text.includes("HUMAN ACTION REQUIRED"), false);
+  assert.equal(out.telegram_text.includes("HUMAN GATE"), false);
+  assert.equal(out.telegram_text.includes("phase: HUMAN_GATE"), false);
+  assert.equal(out.actionable_gate, null);
+  assert.match(out.telegram_text, /classification: SERVICE_ERROR/);
 });
 
 await test("normalizer-additive-actionable-metadata-modeB", () => {
@@ -143,10 +200,30 @@ const runBuilder = (normalized) => {
 };
 
 await test("builder-modeA-message-only-zero-buttons", () => {
-  const out = runBuilder({ telegram_text: "CONTROL PLANE - HUMAN ACTION REQUIRED", classification: "HUMAN_GATE_REQUIRED", actionable_gate: null });
+  const out = runBuilder({ telegram_text: TELEGRAM_HEADLINE_HUMAN_GATE, classification: "HUMAN_GATE_REQUIRED", actionable_gate: null });
   assert.equal(out.actionable, false);
   assert.equal(out.reply_markup, null);
-  assert.equal(out.telegram_text, "CONTROL PLANE - HUMAN ACTION REQUIRED");
+  assert.equal(out.telegram_text, TELEGRAM_HEADLINE_HUMAN_GATE);
+});
+
+await test("G I J stop-and-service-error-force-modeA-informational-path", () => {
+  for (const classification of ["WORK_EXECUTED_STOP", "SERVICE_ERROR"]) {
+    const normalized = runNormalizer({
+      schema_version: "local-dev-dispatch-tick-result-v1",
+      classification,
+      execution_performed: classification === "WORK_EXECUTED_STOP",
+      human_gate_required: false,
+      task_ref: classification === "WORK_EXECUTED_STOP" ? "T-1" : null,
+      reason_codes: ["R1"],
+      executor_classification: classification === "WORK_EXECUTED_STOP" ? "STOP:TEST" : null,
+      operator_action_gate_id: "GATE-SHOULD-IGNORE",
+      operator_action_choices: ["APPROVE_AND_CONTINUE", "STOP", "DEFER"],
+    });
+    assert.equal(normalized.actionable_gate, null, classification + " must not be actionable");
+    const built = runBuilder(normalized);
+    assert.equal(built.actionable, false);
+    assert.equal(built.reply_markup, null);
+  }
 });
 
 await test("builder-modeB-exact-buttons-bound-to-gate", () => {
