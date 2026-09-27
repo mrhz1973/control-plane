@@ -2,11 +2,11 @@
 
 ## Maildocs M002 — aggiornamento 2026-09-27
 
-App `mrhz1973/Automazione-Posta-Documenti-Gdrive`, main `76b8622`, issue #19:
+App `mrhz1973/Automazione-Posta-Documenti-Gdrive`, main `b1572f6`, issue #19:
 corretti il richiamo a figli non pubblicati e la selezione ripetuta di elementi
 già completati. WF02–WF07 ora pubblicati senza schedule propri; WF10 ripubblicato
-tramite UI (20m), WF01 invariato (15m). Canary limitati riusciti; verifica del tick
-naturale pendente. Gmail readonly ricollegato dall'utente, nessun nuovo permesso.
+tramite UI (20m), WF01 invariato (15m). Canary limitati riusciti; tick naturale 383902 completato alle 20:41:03 UTC,
+audit PIPELINE_COMPLETED della versione m002-orch-v3. Gmail readonly ricollegato dall'utente, nessun nuovo permesso.
 Backup privato app preservato; nessun restart condiviso, modifica CP, bind o
 servizio aggiunto. Non confondere pubblicazione con prova end-to-end. Stato
 dettagliato nel checkpoint M002 applicativo; registri VPS aggiornati.
