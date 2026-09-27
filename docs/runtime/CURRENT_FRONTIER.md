@@ -12,10 +12,10 @@ servizio aggiunto. Non confondere pubblicazione con prova end-to-end. Stato
 dettagliato nel checkpoint M002 applicativo; registri VPS aggiornati.
 Migrazione applicativa 005 sorgenti/ricevute append-only applicata; canary ACAM
 DB documento 34 pagato da ricevuta verificata, audit unico e rerun idempotente.
-Helper AGN acquisizione PDF qualificato ma non schedulato. Migrazioni006/007 applicate. WF14/15/16 pubblicati senza timer; WF17 pubblicato
-da UI ogni20m. Canary integrato384152/audit266 riuscito, primo tick naturale
-WF17 pendente alle22:03:56UTC. Mappa16 pubblicati (4CP+12Maildocs), tre timer
-Maildocs: WF01 15m, WF10 20m, WF17 20m. LinkGmailAGN/reporting ancora pendenti.
+Helper AGN acquisizione PDF qualificato ma non schedulato. Migrazioni 006/007 applicate. WF14/15/16 pubblicati senza timer; WF17 pubblicato
+da UI ogni 20m. Canary integrato384152/audit266 riuscito, primo tick naturale
+WF17 pendente alle 22:03:56UTC. Mappa16 pubblicati (4 CP + 12 Maildocs), tre timer
+Maildocs: WF01 15m, WF10 20m, WF17 20m. Link Gmail AGN/reporting ancora pendenti.
 
 
 > **Unica fonte canonica dello stato operativo vivo.**
@@ -1009,3 +1009,6 @@ Report:
 CURRENT_NEXT=NO_READY_ENGINEERING_TASKS
 NEXT=NO_READY_ENGINEERING_TASKS
 ```
+
+### Maildocs M002 — aggiornamento 28/09 locale
+WF17 primo tick naturale 384204 concluso il 27/09 alle 22:20:43 UTC, audit 272. WF18 Utility Reporting pubblicato da UI, 20m, versione m002-report-v1: canary audit 273/274 e rerun 275 con zero scritture. Primo tick naturale WF18 ancora pendente. Mappa aggiornata: 17 pubblicati (4 Control Plane + 13 Maildocs); quattro timer Maildocs WF01 15m, WF10/WF17/WF18 20m. Figli WF02–WF07 e WF14–WF16 senza timer. Nessun restart, nuovo bind o cambio permessi. App main 7b195bd, issue #19; riepilogo dedicato, note personali preservate. Gmail link/nuovi allegati e gate etichette restano pendenti. Questa nota prevale sulle precedenti mappe Maildocs.
