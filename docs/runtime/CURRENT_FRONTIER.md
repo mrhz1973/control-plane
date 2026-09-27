@@ -2,7 +2,7 @@
 
 ## Maildocs M002 — aggiornamento 2026-09-27
 
-App `mrhz1973/Automazione-Posta-Documenti-Gdrive`, main `b1572f6`, issue #19:
+App `mrhz1973/Automazione-Posta-Documenti-Gdrive`, main `1f670fe`, issue #19:
 corretti il richiamo a figli non pubblicati e la selezione ripetuta di elementi
 già completati. WF02–WF07 ora pubblicati senza schedule propri; WF10 ripubblicato
 tramite UI (20m), WF01 invariato (15m). Canary limitati riusciti; tick naturale 383902 completato alle 20:41:03 UTC,
@@ -10,6 +10,10 @@ audit PIPELINE_COMPLETED della versione m002-orch-v3. Gmail readonly ricollegato
 Backup privato app preservato; nessun restart condiviso, modifica CP, bind o
 servizio aggiunto. Non confondere pubblicazione con prova end-to-end. Stato
 dettagliato nel checkpoint M002 applicativo; registri VPS aggiornati.
+Migrazione applicativa 005 sorgenti/ricevute append-only applicata; canary ACAM
+DB documento 34 pagato da ricevuta verificata, audit unico e rerun idempotente.
+Helper AGN acquisizione PDF qualificato ma non schedulato. Nuovi rami/ricevute
+periodiche ancora da collegare; nessuna variazione alla mappa pubblicazioni.
 
 
 > **Unica fonte canonica dello stato operativo vivo.**
