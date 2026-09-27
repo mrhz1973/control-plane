@@ -2,7 +2,7 @@
 
 ## Maildocs M002 — aggiornamento 2026-09-27
 
-App `mrhz1973/Automazione-Posta-Documenti-Gdrive`, main `1f670fe`, issue #19:
+App `mrhz1973/Automazione-Posta-Documenti-Gdrive`, main `3a0feba`, issue #19:
 corretti il richiamo a figli non pubblicati e la selezione ripetuta di elementi
 già completati. WF02–WF07 ora pubblicati senza schedule propri; WF10 ripubblicato
 tramite UI (20m), WF01 invariato (15m). Canary limitati riusciti; tick naturale 383902 completato alle 20:41:03 UTC,
@@ -12,8 +12,10 @@ servizio aggiunto. Non confondere pubblicazione con prova end-to-end. Stato
 dettagliato nel checkpoint M002 applicativo; registri VPS aggiornati.
 Migrazione applicativa 005 sorgenti/ricevute append-only applicata; canary ACAM
 DB documento 34 pagato da ricevuta verificata, audit unico e rerun idempotente.
-Helper AGN acquisizione PDF qualificato ma non schedulato. Nuovi rami/ricevute
-periodiche ancora da collegare; nessuna variazione alla mappa pubblicazioni.
+Helper AGN acquisizione PDF qualificato ma non schedulato. Migrazioni006/007 applicate. WF14/15/16 pubblicati senza timer; WF17 pubblicato
+da UI ogni20m. Canary integrato384152/audit266 riuscito, primo tick naturale
+WF17 pendente alle22:03:56UTC. Mappa16 pubblicati (4CP+12Maildocs), tre timer
+Maildocs: WF01 15m, WF10 20m, WF17 20m. LinkGmailAGN/reporting ancora pendenti.
 
 
 > **Unica fonte canonica dello stato operativo vivo.**
