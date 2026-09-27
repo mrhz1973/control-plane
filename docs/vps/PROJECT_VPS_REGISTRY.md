@@ -122,3 +122,18 @@ Current next: HUMAN CUTOVER GATE — final OLD write freeze, proven DB/state syn
 WF17 primo tick naturale 384204 concluso il 27/09 alle 22:20:43 UTC, audit 272. WF18 Utility Reporting pubblicato da UI, 20m, versione m002-report-v1: canary audit 273/274 e rerun 275 con zero scritture. Primo tick naturale WF18 ancora pendente. Mappa aggiornata: 17 pubblicati (4 Control Plane + 13 Maildocs); quattro timer Maildocs WF01 15m, WF10/WF17/WF18 20m. Figli WF02–WF07 e WF14–WF16 senza timer. Nessun restart, nuovo bind o cambio permessi. App main 7b195bd, issue #19; riepilogo dedicato, note personali preservate. Gmail link/nuovi allegati e gate etichette restano pendenti. Questa nota prevale sulle precedenti mappe Maildocs.
 
 Maildocs aggiornamento successivo: WF19 AGN Gmail Link Intake pubblicato 20m dopo canary reale; prima sorgente gmail_link 96 riusa documento 69 senza copie Drive. Migrazione 008 applicata dopo rollback dei test. Nuove sorgenti restano awaiting_archive. Mappa 18 pubblicati (4 CP + 14 Maildocs), cinque timer WF01 15m e WF10/WF17/WF18/WF19 20m. App main 3727824; primi tick WF18/WF19 ancora da verificare. Nessun restart, cambio credenziali o nuovo bind.
+
+### Maildocs — frontiera vincolante 28/09 locale, app 5a6616f
+WF18/WF19 primi tick naturali verificati: audit 289/285 alle 22:40 UTC del 27/09.
+Migrazioni 009/010 applicate dopo prove rollback: collegamento archivio esistente
+e commit archivio con SHA/ID riservato. WF20 importato INATTIVO, canary senza
+candidati, upload reale non ancora qualificato. Suite app 407 PASS.
+WF19 aggiornato e ripubblicato m002-agn-link-v2 per secondo formato email osservato.
+Auto-review ha poi respinto diagnosi di un capability URL AGN diverso da quello
+autorizzato; respinto anche Unpublish WF19 per assenza di autorizzazione specifica
+alla sospensione. Domanda utente pendente per link AGN storici/futuri oppure pausa
+WF19. **WF19 resta attivo e pubblicato**: non aggirare questi gate con altro mezzo.
+Mappa invariata: 18 pubblicati (4 CP + 14 Maildocs), cinque timer Maildocs
+WF01 15m, WF10/WF17/WF18/WF19 20m; WF20 non schedulato in produzione.
+Nessun restart, modifica credenziali, nuovo bind o mutazione Control Plane.
+Questa sezione prevale sui precedenti stati Maildocs nello stesso documento.
