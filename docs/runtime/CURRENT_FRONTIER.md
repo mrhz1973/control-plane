@@ -1,5 +1,17 @@
 # CURRENT FRONTIER — LIVE STATE
 
+## Maildocs M002 — aggiornamento 2026-09-27
+
+App `mrhz1973/Automazione-Posta-Documenti-Gdrive`, main `76b8622`, issue #19:
+corretti il richiamo a figli non pubblicati e la selezione ripetuta di elementi
+già completati. WF02–WF07 ora pubblicati senza schedule propri; WF10 ripubblicato
+tramite UI (20m), WF01 invariato (15m). Canary limitati riusciti; verifica del tick
+naturale pendente. Gmail readonly ricollegato dall'utente, nessun nuovo permesso.
+Backup privato app preservato; nessun restart condiviso, modifica CP, bind o
+servizio aggiunto. Non confondere pubblicazione con prova end-to-end. Stato
+dettagliato nel checkpoint M002 applicativo; registri VPS aggiornati.
+
+
 > **Unica fonte canonica dello stato operativo vivo.**
 
 > **CURRENT OPENCLAW RECONCILIATION**: `OPENCLAW_FINAL_DISPOSITION=SCOPED_RETENTION` · broker/fallback/agent runtime `RETIRED` · `OPENCLAW_QUOTA_OBSERVATION_LANE=KEEP_SCOPED` · `OPENCLAW_QUOTA_SCOPE=glm_coding_plan` · `GLM_QUOTA_AUTHORITY=OPENCLAW` · `CODEX_QUOTA_AUTHORITY=CODEX_APP_SERVER` · `CODEX_OPENCLAW_AUTHORITY=NO` · `CODEX_OPENCLAW_FALLBACK=NO` · `V4_HERMES_PHASE_D_CONTEXT_ROLLOVER_STALE_GENERATION_FENCE_V2=PASS` · `PHASE_D=PASS` · `ISSUE_73=CLOSED_COMPLETED` · `ACTIVE_PRODUCTION_AUTHORIZATION_FINAL=0` · `ISSUE_35_NEXT=WAIT_FOR_SUBSCRIPTION_ASTRA_AVAILABILITY_OR_NEW_EVIDENCE (child-local; global NEXT resumed) · CURRENT_NEXT_then=V4_EXPIRING_ALLOWANCE_USE_POLICY_V1 [historical; PASS; consumed]`
