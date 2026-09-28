@@ -137,3 +137,15 @@ Mappa invariata: 18 pubblicati (4 CP + 14 Maildocs), cinque timer Maildocs
 WF01 15m, WF10/WF17/WF18/WF19 20m; WF20 non schedulato in produzione.
 Nessun restart, modifica credenziali, nuovo bind o mutazione Control Plane.
 Questa sezione prevale sui precedenti stati Maildocs nello stesso documento.
+
+
+## Maildocs M002 — ripresa autorizzata 28/09/2026
+
+App main 44cfefd, issue #19: utente autorizza link bolletta AGN dal 2024 e
+futuri esclusivamente p.eglue.it. Il precedente gate di apertura è superato;
+WF19 resta attivo, nessuna sospensione dedotta. Helper acquisizione aggiornato
+senza restart: limite HTML 2 MiB dopo risposta osservata 1.628.735 byte.
+Canary duplicate_reused documento 73/source 154; nessuna nuova copia Drive.
+407 test PASS. Link non disponibili o non PDF restano review; vecchi scarti
+selettore riprogrammati una sola volta. Mappa pubblicazione invariata, WF20
+inattivo e ramo upload reale non qualificato. Nessuna mutazione infrastrutturale.
