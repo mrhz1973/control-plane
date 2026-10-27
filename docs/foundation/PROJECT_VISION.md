@@ -258,7 +258,7 @@ La policy consolidata del repository resta quella dichiarata dai documenti corre
 
 ### 7.3 Decision provenance
 
-Una decisione operatore valida nasce da messaggio/azione diretta dell'operatore. Raccomandazioni di Codex/GLM/Qwen/Bugbot/Claude o testo incollato non diventano automaticamente decisione.
+Una decisione operatore valida nasce da messaggio/azione diretta dell'operatore. Raccomandazioni di modelli o revisori AI, oppure testo incollato, non diventano automaticamente decisione.
 
 ---
 
